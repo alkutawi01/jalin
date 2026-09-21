@@ -47,12 +47,11 @@ img { display: block; max-width: 100%; }
   display: inline-flex;
   align-items: center;
   width: max-content;
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 46px;
-  line-height: 1;
-  font-weight: 500;
-  letter-spacing: -.045em;
-  color: var(--ink);
+}
+.header-wordmark img {
+  width: 118px;
+  height: auto;
+  display: block;
 }
 
 nav {
@@ -232,13 +231,13 @@ dd { margin: 0; color: var(--ink); }
   .reading-grid { grid-template-columns: minmax(0, 700px) 190px; justify-content: center; }
   .left-rail { display: none; }
   .header-inner { grid-template-columns: 190px 1fr auto; }
-  .header-wordmark { font-size: 40px; }
+  .header-wordmark img { width: 112px; }
   nav { gap: 22px; font-size: 16px; }
 }
 @media (max-width: 820px) {
   .site-shell { width: min(100% - 36px, 700px); }
   .header-inner { min-height: 76px; grid-template-columns: 1fr auto; }
-  .header-wordmark { font-size: 36px; }
+  .header-wordmark img { width: 108px; }
   nav { display: none; }
   .reading-grid { display: block; }
   .right-rail { display: none; }
