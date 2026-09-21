@@ -65,7 +65,12 @@ export default function StoryMarkdown({
       components={{
         h1: () => null,
         p: ({ children }) => <p>{decorateChildren(children, glossary)}</p>,
-        em: ({ children }) => <em>{decorateChildren(children, glossary)}</em>
+        em: ({ children }) => <em>{decorateChildren(children, glossary)}</em>,
+        hr: () => (
+          <div className="scene-break" aria-hidden="true">
+            <span>•</span>
+          </div>
+        )
       }}
     >
       {children}
