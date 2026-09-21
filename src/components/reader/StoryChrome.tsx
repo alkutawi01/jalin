@@ -63,69 +63,49 @@ export function EditorialImage({
   rights: string;
   kind?: "hero" | "inline";
 }) {
+  const figureClass = (kind === "hero" ? "hero-figure" : "inline-figure") + " editorial-image";
   return (
-    <figure className={\`\${kind === "hero" ? "hero-figure" : "inline-figure"} editorial-image\`}>
+    <figure className={figureClass}>
       <img src={src} alt={alt} />
       <div className="image-rights" aria-hidden="true">{rights}</div>
     </figure>
   );
 }
 
-export function LeftRail({
-  rows,
-  note
-}: {
-  rows: WorkMetaRow[];
-  note?: string;
-}) {
+export function LeftRail({ rows, note }: { rows: WorkMetaRow[]; note?: string }) {
   return (
     <aside className="left-rail">
       <div className="rail-card sticky">
         <div className="rail-label">Tentang karya</div>
         <dl>
           {rows.map((row) => (
-            <div key={row.label}>
-              <dt>{row.label}</dt>
-              <dd>{row.value}</dd>
-            </div>
+            <div key={row.label}><dt>{row.label}</dt><dd>{row.value}</dd></div>
           ))}
         </dl>
-        {note ? (
-          <>
-            <div className="rail-rule" />
-            <p className="maya-note">{note}</p>
-          </>
-        ) : null}
+        {note ? <>
+          <div className="rail-rule" />
+          <p className="maya-note">{note}</p>
+        </> : null}
       </div>
     </aside>
   );
 }
 
-export function RightRail({
-  characters,
-  editorial
-}: {
-  characters: CharacterMeta[];
-  editorial: EditorialCredit[];
-}) {
+export function RightRail({ characters, editorial }: { characters: CharacterMeta[]; editorial: EditorialCredit[] }) {
   return (
     <aside className="right-rail">
       <div className="rail-card sticky">
         <div className="rail-label">Watak</div>
         {characters.map((character) => (
           <div className="rail-person" key={character.name}>
-            <b>{character.name}</b>
-            <span>{character.role}</span>
+            <b>{character.name}</b><span>{character.role}</span>
           </div>
         ))}
-
         <div className="rail-rule" />
-
         <div className="rail-label">Editorial</div>
         {editorial.map((credit) => (
-          <div className="editorial-meta" key={\`\${credit.role}-\${credit.name}\`}>
-            <span>{credit.role}</span>
-            <b>{credit.name}</b>
+          <div className="editorial-meta" key={credit.role + "-" + credit.name}>
+            <span>{credit.role}</span><b>{credit.name}</b>
           </div>
         ))}
       </div>
@@ -136,9 +116,7 @@ export function RightRail({
 export function StoryEnd({ title }: { title: string }) {
   return (
     <div className="site-shell story-end">
-      <span>Tamat</span>
-      <div className="end-rule" />
-      <p>{title} · Jalin</p>
+      <span>Tamat</span><div className="end-rule" /><p>{title} · Jalin</p>
     </div>
   );
 }
@@ -147,11 +125,7 @@ export function SiteFooter() {
   return (
     <footer className="site-footer">
       <div className="site-shell footer-inner">
-        <img
-          className="footer-logo"
-          src="/brand/jalin-logo-primary.svg"
-          alt="Jalin — oleh Adjung"
-        />
+        <img className="footer-logo" src="/brand/jalin-logo-primary.svg" alt="Jalin — oleh Adjung" />
       </div>
     </footer>
   );
