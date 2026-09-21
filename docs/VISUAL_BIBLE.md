@@ -116,6 +116,6 @@ Prinsip operasi:
 
 1. Hero: wide environmental shot beranda/rumah kampung dengan Pak Long dan Along, tanpa menonjolkan kerusi secara terperinci.
 2. Inline 01: kerusi rotan + kain lusuh pada paku — canonical object image untuk kerusi.
-3. Inline 02: satu tangan tua Pak Long memegang pen di atas buku nota — tiada tangan kedua, tiada teks boleh dibaca.
+3. Inline 02: adegan MENJELANG SENJA sahaja — Pak Long meminta pen dan menulis namanya sendiri. Tunjukkan satu tangan tua Pak Long memegang pen di atas buku nota; tiada tangan kedua, tiada teks boleh dibaca. Jangan gunakan visual ini untuk bahagian lebih awal apabila Along yang menulis cerita bapanya.
 
 Maksimum 3 visual untuk cerpen ini.
