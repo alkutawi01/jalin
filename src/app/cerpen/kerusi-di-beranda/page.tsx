@@ -56,27 +56,34 @@ function GlossaryTerm({
   );
 }
 
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 function decorateGlossary(text: string): ReactNode[] {
   const terms = Object.keys(glossary).sort((a, b) => b.length - a.length);
   const pattern = new RegExp(
-    `(${terms.map((term) => term.replace(/[.*+?^${}()|[\\]\\]/g, "\\const visuals = {
-  hero: "https://pikaso.cdnpk.net/private/production/5503670371/render.png?token=exp=1790294400~hmac=74fcc5c0b8f73bd9875848af25586012176f93f027a7e8f97e32673c30b08a79",
-  notebook: "https://pikaso.cdnpk.net/private/production/5503875125/render.png?token=exp=1790294400~hmac=26e272750ae0ab0ffd738c1815d1de7ddd6b0800e8d07173bab6f24a6a63d876"
-};")).join("|")})`,
+    `(${terms.map(escapeRegExp).join("|")})`,
     "gi"
   );
 
   return text.split(pattern).map((part, index) => {
-    const key = terms.find((term) => term.toLowerCase() === part.toLowerCase());
+    const key = terms.find(
+      (term) => term.toLowerCase() === part.toLowerCase()
+    );
+
     if (!key) return part;
+
     return (
-      <GlossaryTerm key={`${part}-${index}`} term={key as keyof typeof glossary}>
+      <GlossaryTerm
+        key={`${part}-${index}`}
+        term={key as keyof typeof glossary}
+      >
         {part}
       </GlossaryTerm>
     );
   });
 }
-
 function decorateChildren(children: ReactNode): ReactNode {
   return React.Children.map(children, (child) =>
     typeof child === "string" ? decorateGlossary(child) : child
