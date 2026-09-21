@@ -34,7 +34,11 @@ Rujuk `docs/VISUAL_BIBLE.md`.
 > Nota: generated concept images ialah reference visual. Untuk production, logo perlu disimpan sebagai aset bersih dengan geometry dan typography yang konsisten; jangan regenerate logo setiap kali diperlukan.
 
 
-## Horizontal header lockup
+## Canonical usage — LOCKED
 
-- `jalin-logo-horizontal.svg` — emblem di kiri, wordmark Jalin di kanan; lockup utama untuk header/navigation.
-- Gunakan stacked logo untuk cover/brand card, bukan header sempit.
+- Header/navigation: use `jalin-wordmark.svg` only.
+- Footer/brand card: use `jalin-logo-primary.svg`.
+- Favicon/icon-only contexts: use the canonical round mark asset.
+- Do not crop, reconstruct, combine, redraw or regenerate the wordmark in UI code.
+- Do not create alternate logo lockups unless explicitly approved by the human editor.
+- The current `jalin-wordmark.svg` and `jalin-logo-primary.svg` were replaced from user-approved source artwork and are the production source of truth.
