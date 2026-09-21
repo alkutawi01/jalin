@@ -1,0 +1,27 @@
+{
+  "work": "nombor-giliran-117",
+  "provider": "Magnific",
+  "status": "staging-reference",
+  "rule": "All generated or edited images used by Jalin must go through Magnific.",
+  "note": "Creation IDs are canonical provenance. Signed CDN URLs in the reader are temporary and must be replaced by durable object-storage assets before public launch.",
+  "visuals": [
+    {
+      "role": "hero",
+      "creation_id": "mEjyWoyhJQ",
+      "model": "Seedream 5 Pro",
+      "scene": "Rohani menunggu di hospital sambil memegang nombor giliran; wajah tidak jelas."
+    },
+    {
+      "role": "inline-nasi-lemak",
+      "creation_id": "jURpFvgLD0",
+      "model": "Seedream 5 Pro",
+      "scene": "Dapur sebelum Subuh dengan bakul biru dan bungkusan nasi lemak; tiada manusia."
+    },
+    {
+      "role": "inline-hearing-aids",
+      "creation_id": "O60hjs7ynm",
+      "model": "Seedream 5 Pro",
+      "scene": "Sepasang alat bantu dengar di atas meja kecil bersama beg sekolah dan buku; tiada manusia."
+    }
+  ]
+}

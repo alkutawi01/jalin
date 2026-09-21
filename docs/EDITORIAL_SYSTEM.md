@@ -71,6 +71,18 @@ Cerpen ialah karya lengkap, walaupun panjang.
 
 Bersiri ialah karya episodik dengan canon. Continuity review wajib bagi episod baharu.
 
+## Pengayaan kosa kata
+
+Jalin juga berfungsi sebagai pendedahan bahasa, tetapi bukan bahan latihan sekolah.
+
+Untuk prosa baharu:
+- sisipkan beberapa perkataan Melayu aras tinggi, tepat atau kurang lazim secara semula jadi apabila konteks mengizinkan;
+- utamakan perkataan yang benar-benar memperhalus makna, suasana atau ritma prosa;
+- konteks ayat sebaiknya membantu pembaca mengagak maknanya;
+- perkataan yang berguna untuk pembelajaran boleh ditandai dalam glosari;
+- jangan memenuhi perenggan dengan kata arkaik, sinonim ganjil atau diksi “thesaurus” yang merosakkan suara watak;
+- kelancaran dan ketepatan tetap lebih penting daripada menunjukkan keluasan kosa kata.
+
 ## Human control
 
 AI boleh membantu menulis, menyemak, merumus, menterjemah dan menghasilkan visual. AI tidak boleh menerbitkan secara bebas tanpa gate editorial manusia.

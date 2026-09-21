@@ -27,15 +27,17 @@ Jalin bukan platform novel penuh. Novel Pendek telah dikeluarkan daripada taxono
 12. Jangan anggap terjemahan moden bebas hak cipta hanya kerana karya asal sudah domain awam.
 13. Jangan overengineer MVP.
 14. Perubahan besar pada schema, auth, publishing flow atau deployment perlu didokumenkan dahulu.
-15. Jika workflow visual menetapkan Magnific, WAJIB guna Magnific; jangan silently substitute tool lain dan jangan salah nyatakan provenance.
+15. **Semua imej yang dijana atau diedit untuk digunakan dalam Jalin WAJIB melalui Magnific.** Jangan silently substitute generator/editor lain. Rekod provenance Magnific untuk aset produksi atau staging yang dipilih.
 16. Muka manusia dalam ilustrasi fiksyen Jalin tidak boleh jelas secara default; gunakan crop, belakang, profil separa, siluet atau obstruction kecuali editor manusia meluluskan sebaliknya.
 17. Setiap visual mesti dipaut pada adegan teks spesifik dan disemak fakta adegan sebelum generation.
 18. Jika tidak pasti siapa melakukan tindakan, objek/lokasi canonical, tool, atau face rule: STOP dan semak source terlebih dahulu.
 19. Ikut `docs/VISUAL_GENERATION_GUARDRAILS.md` untuk semua generation, edit dan approval visual.
+20. **Satu permintaan UI hendaklah dibatch menjadi satu commit/deploy seboleh mungkin.** Elakkan satu commit bagi setiap fail apabila perubahan itu sebahagian daripada permintaan UI yang sama, supaya deployment Vercel tidak membazir.
+21. Untuk prosa baharu Jalin, gunakan beberapa kosa kata Melayu aras tinggi / kurang lazim secara organik untuk memperkaya pembaca; jangan memaksa diksi yang kabur atau arkaik semata-mata untuk nampak sasterawi. Istilah yang berguna boleh dimasukkan ke glosari.
 
 ## Working style
 
-- Utamakan perubahan kecil yang boleh diuji.
+- Utamakan perubahan kecil yang boleh diuji, tetapi batch perubahan yang datang daripada satu permintaan UI.
 - Pisahkan content model daripada UI.
 - Gunakan TypeScript strict.
 - Pastikan reka bentuk responsif dan mobile-first.

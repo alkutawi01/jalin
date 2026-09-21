@@ -21,7 +21,12 @@ import type {
   WorkMetaRow
 } from "../../../components/reader/types";
 
-const hero = "https://pikaso.cdnpk.net/private/production/5508775655/render.png?token=exp=1790294400~hmac=edf32d50f9b9bd85575d5cdcab4f16e2550c5134cac333d5302fb1857b58149c";
+const visuals = {
+  hero: "https://pikaso.cdnpk.net/private/production/5508775655/render.png?token=exp=1790294400~hmac=edf32d50f9b9bd85575d5cdcab4f16e2550c5134cac333d5302fb1857b58149c",
+  nasiLemak: "https://pikaso.cdnpk.net/private/production/5510701304/render.png?token=exp=1790294400~hmac=b257ac0ac3e377e1484afed0a34b05b42f3db2b4a9b4a9523bd14bd42d7815c0",
+  hearingAids: "https://pikaso.cdnpk.net/private/production/5510702867/render.png?token=exp=1790294400~hmac=92c9ca336fd3b24125157ad78fc15e7b08b4aedb9dd43afaf8271bb334d70520"
+};
+
 const title = "Nombor Giliran 117";
 const rights = "NOMBOR GILIRAN 117 · © ADJUNG 2026 · ILUSTRASI JALIN";
 
@@ -77,6 +82,13 @@ const mobileInfo: StoryInfoData = {
   note: "Penulis Maya bekerja di bawah kawal selia editorial manusia."
 };
 
+function splitAfter(text: string, anchor: string): [string, string] {
+  const index = text.indexOf(anchor);
+  if (index < 0) return [text, ""];
+  const end = index + anchor.length;
+  return [text.slice(0, end), text.slice(end)];
+}
+
 export default function NomborGiliran117Page() {
   const raw = fs.readFileSync(
     path.join(process.cwd(), "content/drafts/nombor-giliran-117.md"),
@@ -88,6 +100,12 @@ export default function NomborGiliran117Page() {
     ? parsed.content.slice(0, internalNotesIndex)
     : parsed.content
   ).replace(/\n---\s*$/, "").trim();
+
+  const kitchenAnchor = "Begitulah hampir setiap pagi.";
+  const hearingAnchor = "Alat bantu dengar itu kekal di atas meja hingga Maghrib.";
+
+  const [throughKitchen, afterKitchen] = splitAfter(publicStory, kitchenAnchor);
+  const [throughHearing, afterHearing] = splitAfter(afterKitchen, hearingAnchor);
 
   return (
     <>
@@ -104,7 +122,7 @@ export default function NomborGiliran117Page() {
         <div className="site-shell">
           <EditorialImage
             kind="hero"
-            src={hero}
+            src={visuals.hero}
             alt="Seorang wanita Melayu berusia duduk di kerusi menunggu hospital sambil memegang nombor giliran; wajahnya tidak kelihatan jelas."
             rights={rights}
           />
@@ -117,7 +135,23 @@ export default function NomborGiliran117Page() {
           />
 
           <article className="story-body">
-            <StoryMarkdown glossary={glossary}>{publicStory}</StoryMarkdown>
+            <StoryMarkdown glossary={glossary}>{throughKitchen}</StoryMarkdown>
+
+            <EditorialImage
+              src={visuals.nasiLemak}
+              alt="Bakul plastik biru berisi bungkusan nasi lemak di dapur rumah sederhana sebelum Subuh."
+              rights={rights}
+            />
+
+            <StoryMarkdown glossary={glossary}>{throughHearing}</StoryMarkdown>
+
+            <EditorialImage
+              src={visuals.hearingAids}
+              alt="Sepasang alat bantu dengar di atas meja kecil bersama beg sekolah dan buku latihan pada lewat petang."
+              rights={rights}
+            />
+
+            <StoryMarkdown glossary={glossary}>{afterHearing}</StoryMarkdown>
           </article>
 
           <RightRail characters={characters} editorial={editorial} />
