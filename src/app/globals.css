@@ -414,7 +414,7 @@ dd { margin: 0; color: var(--ink); }
     background: var(--paper);
     box-shadow: 0 -12px 38px rgba(24,52,60,.18);
     transition: transform .18s ease-out;
-    touch-action: none;
+    touch-action: pan-y;
   }
 
   .sheet-drag-zone {
@@ -422,6 +422,7 @@ dd { margin: 0; color: var(--ink); }
     display: grid;
     place-items: center;
     cursor: grab;
+    touch-action: none;
   }
 
   .sheet-grabber {
