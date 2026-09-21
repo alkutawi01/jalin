@@ -42,3 +42,13 @@ Sebelum menerbitkan karya/fragmen terjemahan:
 ## Human control
 
 AI boleh membantu menulis, menyemak, merumus dan menghasilkan visual. AI tidak boleh menerbitkan secara bebas tanpa gate editorial manusia.
+
+
+## Tipografi dialog
+
+Untuk prosa Jalin:
+- gunakan tanda petik pembuka dan penutup tipografik: **“ … ”**;
+- jangan gunakan tanda petik lurus ASCII **" … "** dalam teks terbitan;
+- apostrof dan petik tunggal juga perlu menggunakan glyph tipografik yang betul apabila diperlukan;
+- proses editorial/QA mesti menandai tanda petik lurus yang tertinggal sebelum status READY;
+- renderer tidak boleh bergantung pada “smart quotes” automatik browser kerana hasil boleh berbeza mengikut font/platform.
