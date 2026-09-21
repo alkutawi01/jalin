@@ -505,3 +505,50 @@ dd { margin: 0; color: var(--ink); }
     font-size: 7px;
   }
 }
+
+
+.contributor-page {
+  max-width: 760px;
+  padding-top: 84px;
+  padding-bottom: 110px;
+}
+.contributor-kicker {
+  color: var(--clay);
+  font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+.contributor-page h1 {
+  margin: 12px 0 10px;
+  font-size: clamp(46px, 7vw, 72px);
+  line-height: 1;
+  font-weight: 500;
+  letter-spacing: -.035em;
+}
+.contributor-badge {
+  display: inline-block;
+  margin-bottom: 34px;
+  border: 1px solid rgba(167,100,80,.32);
+  border-radius: 999px;
+  padding: 5px 10px;
+  color: var(--clay);
+  font-family: Inter, ui-sans-serif, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+}
+.contributor-copy {
+  font-size: 20px;
+  line-height: 1.75;
+}
+.contributor-copy p { margin: 0 0 1.25em; }
+.contributor-disclosure {
+  margin-top: 42px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+  color: var(--ink-soft);
+  font-family: Inter, ui-sans-serif, sans-serif;
+  font-size: 12px;
+  line-height: 1.6;
+}
