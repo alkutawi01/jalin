@@ -1,9 +1,25 @@
 import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
-import React, { type ReactNode } from "react";
-import ReactMarkdown from "react-markdown";
-import MobileStoryInfo from "./MobileStoryInfo";
+import {
+  EditorialImage,
+  LeftRail,
+  RightRail,
+  SiteFooter,
+  SiteHeader,
+  StoryEnd,
+  StoryHead
+} from "../../../components/reader/StoryChrome";
+import StoryMarkdown from "../../../components/reader/StoryMarkdown";
+import MobileStoryInfo from "../../../components/reader/MobileStoryInfo";
+import type {
+  BylineCredit,
+  CharacterMeta,
+  EditorialCredit,
+  GlossaryMap,
+  StoryInfoData,
+  WorkMetaRow
+} from "../../../components/reader/types";
 
 const visuals = {
   hero: "https://pikaso.cdnpk.net/private/production/5503670371/render.png?token=exp=1790294400~hmac=74fcc5c0b8f73bd9875848af25586012176f93f027a7e8f97e32673c30b08a79",
@@ -11,7 +27,10 @@ const visuals = {
   rubberEstate: "https://pikaso.cdnpk.net/private/production/5505649615/render.png?token=exp=1790294400~hmac=616a3c2ce038181c8ef2e6eb4583183320e5896a3c76b5f91fb9697fb33dd37d"
 };
 
-const glossary = {
+const title = "Kerusi di Beranda";
+const rights = "KERUSI DI BERANDA · © ADJUNG 2026 · ILUSTRASI JALIN";
+
+const glossary: GlossaryMap = {
   "kemerosotan kognitif": {
     meaning: "kemerosotan pada keupayaan mental seperti mengingat, memahami atau berfikir.",
     source: "Kamus Dewan / PRPM"
@@ -36,75 +55,39 @@ const glossary = {
     meaning: "nilai perasaan atau kenangan yang melekat pada sesuatu benda.",
     source: "Terjemahan editorial Jalin"
   }
-} as const;
+};
 
-function GlossaryTerm({
-  term,
-  children
-}: {
-  term: keyof typeof glossary;
-  children: ReactNode;
-}) {
-  const item = glossary[term];
-  return (
-    <span className="glossary-term" tabIndex={0}>
-      {children}
-      <span className="glossary-tooltip" role="tooltip">
-        <strong>{term}</strong>
-        <span>{item.meaning}</span>
-        <small>{item.source}</small>
-      </span>
-    </span>
-  );
-}
+const byline: BylineCredit[] = [
+  { name: "Nara Zahin", maya: true },
+  { name: "Rafiq Naim", maya: true }
+];
 
-function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
+const workMeta: WorkMetaRow[] = [
+  { label: "Bentuk", value: "Cerpen" },
+  { label: "Genre", value: "Keluarga" },
+  { label: "Bacaan", value: "± 12 min" },
+  { label: "Status", value: "Karya asli Jalin" },
+  { label: "ID", value: "JLN-CER-0001" },
+  { label: "Versi", value: "v0.1" }
+];
 
-function decorateGlossary(text: string): ReactNode[] {
-  const terms = Object.keys(glossary).sort((a, b) => b.length - a.length);
-  const pattern = new RegExp(
-    `(${terms.map(escapeRegExp).join("|")})`,
-    "gi"
-  );
+const characters: CharacterMeta[] = [
+  { name: "Pak Long Rashid", role: "Bapa" },
+  { name: "Along", role: "Anak" }
+];
 
-  return text.split(pattern).map((part, index) => {
-    const key = terms.find(
-      (term) => term.toLowerCase() === part.toLowerCase()
-    );
+const editorial: EditorialCredit[] = [
+  { role: "Penulis", name: "Nara Zahin · Maya" },
+  { role: "Penulis & penyemak", name: "Rafiq Naim · Maya" },
+  { role: "Editor", name: "Izzat Anas" }
+];
 
-    if (!key) return part;
-
-    return (
-      <GlossaryTerm
-        key={`${part}-${index}`}
-        term={key as keyof typeof glossary}
-      >
-        {part}
-      </GlossaryTerm>
-    );
-  });
-}
-function decorateChildren(children: ReactNode): ReactNode {
-  return React.Children.map(children, (child) =>
-    typeof child === "string" ? decorateGlossary(child) : child
-  );
-}
-
-function StoryMarkdown({ children }: { children: string }) {
-  return (
-    <ReactMarkdown
-      components={{
-        h1: () => null,
-        p: ({ children }) => <p>{decorateChildren(children)}</p>,
-        em: ({ children }) => <em>{decorateChildren(children)}</em>
-      }}
-    >
-      {children}
-    </ReactMarkdown>
-  );
-}
+const mobileInfo: StoryInfoData = {
+  work: workMeta,
+  characters,
+  editorial,
+  note: "Panel Bacaan AI belum dipaparkan sehingga format penilaiannya dimuktamadkan."
+};
 
 export default function KerusiDiBerandaPage() {
   const raw = fs.readFileSync(
@@ -126,137 +109,59 @@ export default function KerusiDiBerandaPage() {
 
   return (
     <>
-      <header className="site-header">
-        <div className="site-shell header-inner">
-          <a className="header-wordmark" href="/" aria-label="Jalin utama">
-            <img src="/brand/jalin-wordmark.svg" alt="Jalin" />
-          </a>
-          <nav aria-label="Navigasi utama">
-            <a href="/">Utama</a>
-            <a className="active" href="/cerpen/kerusi-di-beranda">Cerpen</a>
-            <a href="#">Novel Pendek</a>
-            <a href="#">Bersiri</a>
-            <a href="#">Koleksi</a>
-          </nav>
-          <button className="save-button" type="button">♡ Simpan</button>
-        </div>
-      </header>
+      <SiteHeader active="cerpen" />
 
       <main>
-        <div className="site-shell story-head">
-          <div className="story-kicker">Cerpen · Keluarga</div>
-          <h1>Kerusi di Beranda</h1>
-          <p className="dek">
-            Di sebuah beranda yang menyimpan lebih banyak daripada yang pernah ditanya,
-            seorang anak mula menulis sebelum sebahagian cerita keluarganya hilang.
-          </p>
-          <div className="byline">
-            <span>Oleh</span>
-            <a href="#">Nara Zahin <span className="maya-label">· Maya</span></a>
-            <span>&amp;</span>
-            <a href="#">Rafiq Naim <span className="maya-label">· Maya</span></a>
-          </div>
-        </div>
+        <StoryHead
+          kicker="Cerpen · Keluarga"
+          title={title}
+          dek="Di sebuah beranda yang menyimpan lebih banyak daripada yang pernah ditanya, seorang anak mula menulis sebelum sebahagian cerita keluarganya hilang."
+          byline={byline}
+        />
 
         <div className="site-shell">
-          <figure className="hero-figure editorial-image">
-            <img src={visuals.hero} alt="Kerusi rotan lama di beranda rumah kampung dengan kain lusuh pada tiang kayu." />
-            <div className="image-rights" aria-hidden="true">
-              KERUSI DI BERANDA · © ADJUNG 2026 · ILUSTRASI JALIN
-            </div>
-          </figure>
+          <EditorialImage
+            kind="hero"
+            src={visuals.hero}
+            alt="Kerusi rotan lama di beranda rumah kampung dengan kain lusuh pada tiang kayu."
+            rights={rights}
+          />
         </div>
 
         <div className="site-shell reading-grid">
-          <aside className="left-rail">
-            <div className="rail-card sticky">
-              <div className="rail-label">Tentang karya</div>
-              <dl>
-                <div><dt>Bentuk</dt><dd>Cerpen</dd></div>
-                <div><dt>Genre</dt><dd>Keluarga</dd></div>
-                <div><dt>Bacaan</dt><dd>± 12 min</dd></div>
-                <div><dt>Status</dt><dd>Karya asli Jalin</dd></div>
-                <div><dt>ID</dt><dd>JLN-CER-0001</dd></div>
-                <div><dt>Versi</dt><dd>v0.1</dd></div>
-              </dl>
-              <div className="rail-rule" />
-              <p className="maya-note">Penulis Maya bekerja di bawah kawal selia editorial manusia.</p>
-            </div>
-          </aside>
+          <LeftRail
+            rows={workMeta}
+            note="Penulis Maya bekerja di bawah kawal selia editorial manusia."
+          />
 
           <article className="story-body">
-            <StoryMarkdown>{beforeRubber + rubberAnchor}</StoryMarkdown>
+            <StoryMarkdown glossary={glossary}>{beforeRubber + rubberAnchor}</StoryMarkdown>
 
-            <figure className="inline-figure editorial-image">
-              <img
-                src={visuals.rubberEstate}
-                alt="Barisan pokok getah lama yang tidak ditoreh, dengan semak mula memenuhi lantai kebun."
-              />
-              <div className="image-rights" aria-hidden="true">
-                KERUSI DI BERANDA · © ADJUNG 2026 · ILUSTRASI JALIN
-              </div>
-            </figure>
+            <EditorialImage
+              src={visuals.rubberEstate}
+              alt="Barisan pokok getah lama yang tidak ditoreh, dengan semak mula memenuhi lantai kebun."
+              rights={rights}
+            />
 
-            <StoryMarkdown>{betweenRubberAndNotebook}</StoryMarkdown>
+            <StoryMarkdown glossary={glossary}>{betweenRubberAndNotebook}</StoryMarkdown>
 
-            <figure className="inline-figure editorial-image">
-              <img src={visuals.notebook} alt="Tangan tua Pak Long memegang pen di atas buku nota di meja beranda." />
-              <div className="image-rights" aria-hidden="true">
-                KERUSI DI BERANDA · © ADJUNG 2026 · ILUSTRASI JALIN
-              </div>
-            </figure>
+            <EditorialImage
+              src={visuals.notebook}
+              alt="Tangan tua Pak Long memegang pen di atas buku nota di meja beranda."
+              rights={rights}
+            />
 
-            <StoryMarkdown>{notebookAnchor + ending}</StoryMarkdown>
+            <StoryMarkdown glossary={glossary}>{notebookAnchor + ending}</StoryMarkdown>
           </article>
 
-          <aside className="right-rail">
-            <div className="rail-card sticky">
-              <div className="rail-label">Watak</div>
-              <div className="rail-person">
-                <b>Pak Long Rashid</b>
-                <span>Bapa</span>
-              </div>
-              <div className="rail-person">
-                <b>Along</b>
-                <span>Anak</span>
-              </div>
-
-              <div className="rail-rule" />
-
-              <div className="rail-label">Editorial</div>
-              <div className="editorial-meta">
-                <span>Penulis</span>
-                <b>Nara Zahin · Maya</b>
-              </div>
-              <div className="editorial-meta">
-                <span>Penulis & penyemak</span>
-                <b>Rafiq Naim · Maya</b>
-              </div>
-              <div className="editorial-meta">
-                <span>Editor</span>
-                <b>Izzat Anas</b>
-              </div>
-            </div>
-          </aside>
+          <RightRail characters={characters} editorial={editorial} />
         </div>
 
-        <div className="site-shell story-end">
-          <span>Tamat</span>
-          <div className="end-rule" />
-          <p>Kerusi di Beranda · Jalin</p>
-        </div>
-        <MobileStoryInfo />
+        <StoryEnd title={title} />
+        <MobileStoryInfo data={mobileInfo} />
       </main>
 
-      <footer className="site-footer">
-        <div className="site-shell footer-inner">
-          <img
-            className="footer-logo"
-            src="/brand/jalin-logo-primary.svg"
-            alt="Jalin — oleh Adjung"
-          />
-        </div>
-      </footer>
+      <SiteFooter />
     </>
   );
 }
