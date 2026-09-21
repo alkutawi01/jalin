@@ -22,9 +22,9 @@ import type {
 } from "../../../components/reader/types";
 
 const visuals = {
-  hero: "https://pikaso.cdnpk.net/private/production/5503670371/render.png?token=exp=1790294400~hmac=74fcc5c0b8f73bd9875848af25586012176f93f027a7e8f97e32673c30b08a79",
-  notebook: "https://pikaso.cdnpk.net/private/production/5503875125/render.png?token=exp=1790294400~hmac=26e272750ae0ab0ffd738c1815d1de7ddd6b0800e8d07173bab6f24a6a63d876",
-  rubberEstate: "https://pikaso.cdnpk.net/private/production/5505649615/render.png?token=exp=1790294400~hmac=616a3c2ce038181c8ef2e6eb4583183320e5896a3c76b5f91fb9697fb33dd37d"
+  hero: "https://pikaso.cdnpk.net/private/production/5508922841/render.png?token=exp=1790294400~hmac=bb311f6892fa9d26a4927581da7848dcd9d8b15a4eeb5bd12f92964ca0f18931",
+  notebook: "https://pikaso.cdnpk.net/private/production/5508950473/render.png?token=exp=1790294400~hmac=eef4dc2e33c283283eac84dfccbccb77352aa3aac20fed7240527cfb749c85b9",
+  rubberEstate: "https://pikaso.cdnpk.net/private/production/5508937214/render.png?token=exp=1790294400~hmac=cc4eba50b39aa20a5d58e7e8762e9a447d363c56a8b6dc8e82ab217a4ce748d3"
 };
 
 const title = "Kerusi di Beranda";
