@@ -223,3 +223,57 @@ dd { margin: 0; color: var(--ink); }
   .story-body { font-size: 18px; line-height: 1.75; }
   .inline-figure { width: 100%; margin: 36px 0 42px; }
 }
+
+
+.glossary-term {
+  position: relative;
+  border-bottom: 1px dotted rgba(167,100,80,.75);
+  cursor: help;
+  outline: none;
+}
+.glossary-term:hover,
+.glossary-term:focus {
+  color: var(--clay);
+}
+.glossary-tooltip {
+  position: absolute;
+  z-index: 30;
+  left: 50%;
+  bottom: calc(100% + 10px);
+  width: min(280px, 80vw);
+  transform: translateX(-50%) translateY(4px);
+  padding: 12px 14px;
+  border: 1px solid rgba(24,52,60,.1);
+  border-radius: 8px;
+  background: #fffdf8;
+  box-shadow: 0 12px 32px rgba(24,52,60,.12);
+  color: var(--ink);
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  line-height: 1.45;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity .14s ease, transform .14s ease;
+}
+.glossary-tooltip strong,
+.glossary-tooltip span,
+.glossary-tooltip small {
+  display: block;
+}
+.glossary-tooltip strong {
+  margin-bottom: 5px;
+  font-family: Georgia, serif;
+  font-size: 14px;
+}
+.glossary-tooltip small {
+  margin-top: 7px;
+  color: #8a9597;
+  font-size: 10px;
+}
+.glossary-term:hover .glossary-tooltip,
+.glossary-term:focus .glossary-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
