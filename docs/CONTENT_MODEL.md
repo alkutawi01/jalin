@@ -1,43 +1,92 @@
-# Content Model v0.1
+# Content Model v0.2
 
 Dokumen ini menerangkan model konseptual; schema sebenar belum dilock.
 
-## Core entities
+## Core entity: Work
 
-### Work
+Semua kandungan awam menggunakan unit `Work`.
+
+Cadangan field:
 - id
 - slug
 - title
-- type: short_story | short_novel | serial
+- type: synopsis | short_story | translation | fragment | serial_episode
+- series_id: nullable
 - genre
-- synopsis
+- dek / short_description
 - status
 - access_mode: free | subscriber | promotional
 - hero_asset_id
+- source_work_id: nullable
 - published_at
 
-### Chapter
-Untuk Novel Pendek dan Bersiri.
+## Content body and pagination
+
+Cerpen, Sinopsis, Terjemahan dan Fragmen ialah **satu Work**, walaupun panjang.
+
+Body boleh dipecahkan secara teknikal kepada `ReadingSection` / `Page` untuk pagination dan progress, tanpa menukarnya menjadi bab novel.
+
+### ReadingSection
 - id
 - work_id
-- number
-- title
+- sequence
 - body
-- status
-- published_at
+- page_label: nullable
+- estimated_read_minutes: nullable
 
-Cerpen tunggal tidak memerlukan Chapter kecuali keputusan teknikal kemudian menyederhanakan storage.
+Pagination ialah presentation/read-state concern, bukan taxonomy kandungan.
 
-### GlossaryTerm
+## Bersiri
+
+### Series
 - id
-- work_id atau chapter_id
+- slug
+- title
+- synopsis
+- status
+- hero_asset_id
+
+Setiap episod Bersiri direkodkan sebagai Work dengan `type: serial_episode` dan `series_id`.
+
+Ini membolehkan setiap episod mempunyai:
+- URL sendiri;
+- ilustrasi sendiri;
+- glosari sendiri;
+- publish date sendiri;
+- progress sendiri.
+
+## SourceWork
+
+Digunakan untuk Sinopsis, Terjemahan dan Fragmen.
+
+Cadangan field:
+- id
+- original_title
+- author
+- original_language
+- publication_year
+- source_edition
+- source_url_or_reference
+- rights_status
+- rights_notes
+- verified_at
+- verified_by
+
+Tiada content derivative berasaskan karya lama boleh READY tanpa provenance yang mencukupi.
+
+## GlossaryTerm
+
+- id
+- work_id
+- reading_section_id: nullable
 - term
 - meaning
 - occurrence/anchor metadata
 
 Makna mesti ringkas.
 
-### Contributor
+## Contributor
+
 - id
 - display_name
 - kind: human | virtual
@@ -45,16 +94,25 @@ Makna mesti ringkas.
 - bio
 - avatar_asset_id
 - disclosure
+- virtual_badge_label: nullable
 
-### Credit
-Menyokong kredit berperingkat seperti:
+### Internal-only contributor metadata
+Mapping model seperti Claude/ChatGPT tidak perlu dipaparkan pada byline awam kecuali editor memilih untuk berbuat demikian.
+
+## Credit
+
+Menyokong:
 - original_story
+- written_by
 - drafted_by
 - reviewed_by
 - translated_by
+- adapted_by
+- source_author
 - illustrated_by
 
-### Asset
+## Asset
+
 Metadata sahaja. Fail media berada di object storage.
 - id
 - type
@@ -65,14 +123,16 @@ Metadata sahaja. Fail media berada di object storage.
 - approved
 - visual_reference_role
 
-### ReadingProgress
+## ReadingProgress
+
 - user_id
 - work_id
-- chapter_id
+- reading_section_id: nullable
 - position
 - updated_at
 
-### SavedWork
+## SavedWork
+
 - user_id
 - work_id
 
@@ -83,6 +143,7 @@ Model hendaklah boleh dikembangkan untuk:
 - reader feedback;
 - notifications;
 - series influence signals;
+- thematic collections;
 - richer editorial metadata.
 
 Jangan bina UI untuk ciri masa depan hanya kerana field mungkin disediakan.
