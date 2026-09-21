@@ -24,7 +24,7 @@ Pak Long meletakkan cawan itu ke atas meja, agak kuat sehingga sedikit airnya tu
 
 "Jangan cepat sangat jawab." Suaranya lebih keras daripada yang diniatkannya. "Biar aku cari sendiri. Kalau kau jawab, aku tak payah cari. Kalau aku tak cari, hilanglah terus."
 
-Along berdiri di situ, tangannya masih pada bingkai pintu. Sepanjang tiga puluh empat tahun mengenali bapanya, dia belum pernah ditegur begitu.
+Along berdiri di situ, tangannya masih pada bingkai pintu. Sepanjang tiga puluh empat tahun menjadi anaknya, dia belum pernah ditegur begitu.
 
 Dia duduk di kerusi rotan yang satu lagi, kerusi yang sudah longgar anyamannya, yang sepatutnya lama dibuang tetapi tidak pernah dibuang.
 
@@ -40,7 +40,7 @@ Seekor ayam jantan berkokok di belakang rumah jiran, tiga kali, salah waktu.
 
 Doktor di klinik itu masih muda, mungkin baru lima tahun bertugas. Dia bercakap dengan Along di luar bilik pemeriksaan, sementara Pak Long menunggu di kerusi koridor sambil memerhati kipas siling berpusing.
 
-"Ini bukan strok, bukan barah," kata doktor itu. "Kemerosotan kognitif. Perkembangannya perlahan. Ada perkara yang boleh kita bantu urus dan pantau, tetapi mungkin ada perkara yang akan jadi semakin sukar untuk dia capai."
+"Setakat pemeriksaan hari ini, kita tak nampak tanda strok atau masalah akut," kata doktor itu. "Tapi ada tanda kemerosotan kognitif yang kita perlu pantau. Ada perkara yang boleh kita bantu urus, dan mungkin ada perkara yang akan jadi semakin sukar untuk dia capai."
 
 "Apa yang saya patut buat?" tanya Along. "Saya patut latih dia? Suruh dia ingat? Orang kata kena buat latihan ingatan setiap hari."
 
@@ -144,7 +144,7 @@ Mereka duduk sehingga tengah hari. Pak Long bercerita tersekat-sekat, kadang-kad
 
 Yang ditulisnya bukan kisah harimau.
 
-Yang ditulisnya ialah perkara-perkara kecil yang selama ini tidak pernah diketahuinya. Bahawa bapanya kehilangan separuh jari kelingking kiri kerana pisau torehan, bukan disebabkan kemalangan tetapi kerana dia bekerja dalam gelap pada pukul empat pagi selama dua tahun untuk melangsaikan hutang rumah. Bahawa bapanya tidak pernah suka kopi, tetapi meminumnya setiap pagi kerana arwah isterinya suka membancuh kopi. Bahawa nama Along dipilih kerana bapanya sendiri anak bongsu yang tidak pernah dipanggil apa-apa selain "adik" sehingga umur empat puluh.
+Yang ditulisnya ialah perkara-perkara kecil yang selama ini tidak pernah diketahuinya. Bahawa bapanya kehilangan separuh jari kelingking kiri terkena pisau torehan ketika bekerja dalam gelap pada pukul empat pagi, pada tahun-tahun dia melangsaikan hutang rumah. Bahawa bapanya tidak pernah suka kopi, tetapi meminumnya setiap pagi kerana arwah isterinya suka membancuh kopi. Bahawa nama Along dipilih kerana bapanya sendiri anak bongsu yang tidak pernah dipanggil apa-apa selain "adik" sehingga umur empat puluh.
 
 "Aku nak ada seorang dalam rumah ni yang orang panggil ikut pangkat. Along. Bukan adik, bukan hoi," kata Pak Long. "Bunyi macam kecil. Tapi masa tu, aku rasa besar."
 
@@ -168,7 +168,6 @@ Along memandang halaman yang separuh siap itu.
 
 Pada halaman keempat, dia berhenti dan membaca semula apa yang ditulisnya.
 
-Ada hal-hal yang rupanya hanya perlu ditanya sekali, sebelum waktunya habis.
 
 Ada satu ketika Pak Long berhenti agak lama. Apabila dia bersuara semula, suaranya jernih dan tersusun.
 
@@ -271,7 +270,9 @@ Perubahan utama:
 
 ## Cadangan glosari
 
-- *sentimental value* — nilai perasaan atau kenangan yang melekat pada sesuatu benda.
-- ditoreh — disadap dengan membuat torehan pada kulit pokok getah.
+- *sentimental value* — nilai emosi atau kenangan yang melekat pada sesuatu benda.
+- kemerosotan kognitif — kemerosotan pada keupayaan seperti mengingat, berfikir atau memahami.
+- diagnosis — pengenalpastian sesuatu penyakit atau keadaan berdasarkan pemeriksaan.
+- ditoreh — dibuat torehan nipis pada kulit pokok getah supaya lateks dapat mengalir.
 - perancah — binaan sementara untuk pekerja melakukan kerja di tempat tinggi.
 - penyelia tapak — orang yang mengawasi kerja di tapak pembinaan.
