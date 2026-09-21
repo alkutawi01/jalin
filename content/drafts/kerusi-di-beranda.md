@@ -3,7 +3,7 @@ title: "Kerusi di Beranda"
 slug: "kerusi-di-beranda"
 type: "cerpen"
 genre: "keluarga"
-status: "draft"
+status: "review"
 authors:
   - "Nara Zahin"
   - "Rafiq Naim"
@@ -12,29 +12,25 @@ audience: "13-17"
 
 # Kerusi di Beranda
 
-Pak Long Rashid memegang cawan itu selama hampir seminit sebelum dia sedar dia sedang mencari namanya.
-
-Bulat. Panas. Wap naik dari permukaannya. Dia tahu dia perlu meniupnya dahulu. Dia tahu rasanya pahit dahulu, kemudian sedikit manis. Tetapi nama benda itu tersangkut di suatu tempat yang tidak dapat dicapainya, seperti kunci yang jatuh ke dalam longkang — masih kelihatan, tetapi tidak sampai oleh hujung jari.
+Pak Long Rashid memegang cawan itu hampir seminit sebelum dia sedar bahawa yang dicarinya bukan rasa atau baunya, tetapi namanya. Cawan itu bulat dan panas; wap nipis naik dari permukaan. Dia tahu minuman itu perlu ditiup dahulu dan rasanya akan pahit sebelum meninggalkan sedikit manis di hujung lidah. Namun nama benda itu tersangkut di suatu tempat yang tidak dapat dicapainya, seperti kunci yang jatuh ke dalam longkang—masih kelihatan, tetapi tidak sampai oleh hujung jari.
 
 “Assalamualaikum,” kata Along dari muka pintu.
 
-Pak Long mengangkat muka sedikit.
+Pak Long mengangkat muka.
 
 “Kopi,” tambah Along.
 
-Pak Long meletakkan cawan itu ke atas meja, agak kuat sehingga sedikit airnya tumpah. “Aku tahu.”
+Pak Long meletakkan cawan itu ke atas meja agak kuat sehingga sedikit airnya tumpah. “Aku tahu.”
 
 “Saya cuma—”
 
 “Jangan cepat sangat jawab.” Suaranya lebih keras daripada yang diniatkannya. “Biar aku cari sendiri. Kalau kau jawab, aku tak payah cari. Kalau aku tak cari, hilanglah terus.”
 
-Along berdiri di situ, tangannya masih pada bingkai pintu. Sepanjang tiga puluh empat tahun menjadi anaknya, dia belum pernah ditegur begitu.
+Along berdiri seketika dengan tangan masih pada bingkai pintu. Sepanjang tiga puluh empat tahun menjadi anaknya, dia belum pernah ditegur begitu. Kemudian dia duduk di kerusi rotan yang satu lagi, kerusi yang sudah longgar anyamannya dan sepatutnya lama dibuang, tetapi entah bagaimana masih kekal di beranda itu.
 
-Dia duduk di kerusi rotan yang satu lagi, kerusi yang sudah longgar anyamannya, yang sepatutnya lama dibuang tetapi tidak pernah dibuang.
+Di hadapan mereka, jalan tanah merah membelah kampung kepada dua. Di sebelah kiri berdiri rumah-rumah baharu berbumbung genting oren; di sebelah kanan terbentang kebun getah yang sudah tiga tahun tidak ditoreh, pokok-pokoknya masih tegak dalam barisan yang semakin dilupakan.
 
-Di hadapan mereka, jalan tanah merah membelah kampung kepada dua. Di sebelah kiri, rumah-rumah baharu berbumbung genting oren. Di sebelah kanan, kebun getah yang sudah tiga tahun tidak ditoreh, pokok-pokoknya berdiri dalam barisan yang semakin dilupakan.
-
-Seekor ayam jantan berkokok di belakang rumah jiran, tiga kali, salah waktu.
+Seekor ayam jantan berkokok tiga kali di belakang rumah jiran, salah waktu.
 
 “Ayam Hamid tu,” kata Pak Long. “Dah tiga tahun aku suruh dia sembelih. Dia kata ayam tu ada *sentimental value*.” Dia menyebut dua patah perkataan Inggeris itu dengan geram, seolah-olah kedua-duanya satu penghinaan peribadi. “*Sentimental value*. Ayam.”
 
@@ -42,7 +38,9 @@ Seekor ayam jantan berkokok di belakang rumah jiran, tiga kali, salah waktu.
 
 “Itu lain.” Pak Long menghirup kopinya. “Kerusi tak bangunkan orang pukul empat pagi.”
 
-Doktor di klinik itu masih muda, mungkin baru lima tahun bertugas. Dia bercakap dengan Along di luar bilik pemeriksaan, sementara Pak Long menunggu di kerusi koridor sambil memerhati kipas siling berpusing.
+***
+
+Doktor di klinik itu masih muda. Dia bercakap dengan Along di luar bilik pemeriksaan, sementara Pak Long menunggu di kerusi koridor sambil memerhati kipas siling berpusing.
 
 “Setakat pemeriksaan hari ini, kita tak nampak tanda strok atau masalah akut,” kata doktor itu. “Tapi ada tanda kemerosotan kognitif yang kita perlu pantau. Ada perkara yang boleh kita bantu urus, dan mungkin ada perkara yang akan jadi semakin sukar untuk dia capai.”
 
@@ -50,27 +48,27 @@ Doktor di klinik itu masih muda, mungkin baru lima tahun bertugas. Dia bercakap 
 
 “Jangan jadikan setiap hari macam ujian. Kalau dia tersangkut pada nama atau tarikh, beri dia masa. Kalau dia minta bantuan, barulah bantu. Yang penting dia jangan rasa setiap lupa itu satu kegagalan.”
 
-Along mengangguk, tetapi masih tidak puas.
+Along mengangguk, tetapi wajahnya masih menyimpan soalan.
 
 “Lepas tu apa yang tinggal?”
 
-Doktor itu diam seketika sebelum menjawab. “Kadang-kadang orang masih pegang perkara yang lebih besar daripada nama atau tarikh. Kebiasaan. Rasa. Orang yang penting. Tapi setiap orang berbeza.”
+Doktor itu diam seketika. “Kadang-kadang orang masih pegang perkara yang lebih besar daripada nama atau tarikh. Kebiasaan. Rasa. Orang yang penting. Tapi setiap orang berbeza.”
 
-Sepanjang perjalanan pulang, Along cuba menyusun semula ayat itu dan gagal. Yang menghantuinya bukan diagnosis itu. Yang menghantuinya ialah satu soalan yang tidak sempat ditanyanya di klinik: kalau bapanya mula kehilangan cerita, apa sebenarnya yang dia sendiri tahu untuk dikembalikan?
+Sepanjang perjalanan pulang, ayat itu berulang dalam kepala Along tanpa pernah tersusun kemas. Yang menghantuinya bukan diagnosis tersebut, tetapi satu pertanyaan yang tidak sempat dilontarkan di klinik: kalau bapanya mula kehilangan cerita, apa sebenarnya yang dia sendiri tahu untuk dikembalikan?
 
-Sepanjang dia membesar, Pak Long bercerita setiap malam raya. Kisah banjir tahun tujuh puluh sembilan. Kisah harimau di tepi ladang. Kisah bagaimana dia hampir lemas menyelamatkan seekor kerbau yang akhirnya mati juga tiga hari kemudian. Cerita-cerita itu diulang begitu kerap sehingga Along boleh menyudahkan ayatnya. Dan pada suatu ketika — dia tidak ingat bila — dia mula memotong.
+Sepanjang Along membesar, Pak Long bercerita setiap malam raya—kisah banjir tahun tujuh puluh sembilan, kisah harimau di tepi ladang, kisah bagaimana dia hampir lemas menyelamatkan seekor kerbau yang mati juga tiga hari kemudian. Cerita-cerita itu diulang begitu kerap sehingga Along boleh menyudahkan ayatnya, dan pada suatu ketika yang tidak lagi dapat diingatinya, dia mula memotong.
 
 Ya, bapa, harimau tu. Saya dah dengar.
 
-Sebahagian cerita itu telah berhenti sampai kepadanya lama sebelum penyakit datang.
+Kini dia sedar bahawa sebahagian cerita itu telah berhenti sampai kepadanya lama sebelum penyakit datang.
+
+***
 
 “Kau tengok apa?” tanya Pak Long.
 
 “Kerusi ni.” Along menepuk lengan kerusi rotan yang longgar itu. “Kenapa bapa tak buang? Dah bertahun-tahun rosak.”
 
-Pak Long tidak menjawab. Dia mengambil cawan kopinya, meniupnya, dan meneguk. Along menyangka soalannya sudah hilang begitu sahaja.
-
-Kemudian, hampir lima minit kemudian, tanpa sebarang pendahuluan:
+Pak Long tidak menjawab. Dia mengambil cawan, meniupnya dan meneguk perlahan. Along menyangka soalannya telah hanyut begitu sahaja, tetapi hampir lima minit kemudian Pak Long bersuara tanpa sebarang pendahuluan.
 
 “Kerusi tu kerusi mak kau.”
 
@@ -82,25 +80,25 @@ Dia diam sebentar, dan Along menyangka itu sahaja.
 
 “Mula-mula aku jumpa dia kat pasar Jumaat. Dia jual ubi. Aku beli tiga kali dalam sehari sebab aku tak reti nak cakap apa. Petang tu balik rumah, mak aku tanya kenapa beli ubi banyak sangat.” Pak Long ketawa kecil, ketawa yang lebih menyerupai hembusan. “Dia bukan orang cantik sangat. Tapi dia jenis yang bila dia dengar orang cakap, dia betul-betul dengar. Zaman tu jarang. Zaman sekarang pun jarang.”
 
-Along tidak bergerak, takut sebarang bunyi akan mematahkan sesuatu.
+Along tidak bergerak, seolah-olah sebarang bunyi yang dibuatnya boleh mematahkan sesuatu yang baru sahaja muncul.
 
-“Kahwin tiga bulan lepas tu. Rumah ni belum siap lagi. Kami tidur bawah rumah orang enam bulan. Dia tak pernah mengadu sekali pun. Aku yang mengadu.” Dia berhenti lagi, lebih lama kali ini. “Bila dia meninggal, orang kampung datang, kemas rumah. Malam tu orang surau datang baca Yasin. Esoknya ada seorang tu angkat kerusi tu nak buang sebab dah buruk. Aku jerit kat dia. Depan orang ramai aku jerit.” Suaranya turun. “Malu aku sampai sekarang.”
+“Kahwin tiga bulan lepas tu. Rumah ni belum siap lagi. Kami menumpang rumah orang enam bulan. Dia tak pernah mengadu sekali pun. Aku yang mengadu.” Pak Long berhenti lagi, kali ini lebih lama. “Bila dia meninggal, orang kampung datang kemas rumah. Malam tu orang surau datang baca Yasin. Esoknya ada seorang tu angkat kerusi ni nak buang sebab dah buruk. Aku jerit kat dia. Depan orang ramai aku jerit.” Suaranya merendah. “Malu aku sampai sekarang.”
 
 “Kenapa bapa tak cerita?”
 
 “Kau tak tanya.”
 
-Ayat itu diucapkan biasa sahaja, tanpa nada menuduh.
+Ayat itu diucapkan biasa sahaja, tanpa nada menuduh, dan justeru itulah ia terasa lebih berat.
 
-Pak Long menunjuk ke arah tiang beranda, ke sehelai kain lusuh yang tersangkut pada paku, warnanya sudah tidak dapat ditentukan lagi.
+Pak Long kemudian menunjuk ke arah tiang beranda, kepada sehelai kain lusuh yang tersangkut pada paku. Warnanya sudah lama luntur sehingga sukar ditentukan warna asalnya.
 
 “Kain tu dia punya. Dia lap meja pagi-pagi, lepas tu sangkut kat situ supaya kering. Bila dah kering dia lipat empat. Aku selalu marah dia, buat apa lipat kain buruk macam nak simpan kain baju raya. Dia kata, benda yang kita guna tiap-tiap hari kena dijaga elok-elok, sebab benda tu yang tolong kita hidup.”
 
-Dia berhenti seketika.
+Dia berhenti, mencari sesuatu dalam ingatannya.
 
 “Aku ingat dia mengarut. Sekarang setiap pagi aku lap meja tu, aku sangkut kain tu kat paku yang sama, dan aku lipat empat. Bukan sebab aku rindu. Aku memang rindu, tapi bukan sebab tu.” Dia mencari perkataan itu lebih lama daripada biasa. “Sebab aku baru faham bahawa dia betul.”
 
-Along memandang kain itu. Dia sudah melihatnya beribu-ribu kali dan tidak pernah sekali pun bertanya kenapa kain buruk itu masih di situ.
+Along memandang kain tersebut. Dia sudah melihatnya beribu-ribu kali, namun tidak pernah sekali pun bertanya mengapa kain buruk itu masih di situ.
 
 “Mak kau pun ada perangai yang aku tak suka,” sambung Pak Long. “Dia simpan duit dalam tin biskut, tak pernah bagitahu aku berapa. Dua puluh tahun aku tak tahu. Bila dia meninggal aku buka tin tu, dalam tu ada duit sikit dan sekeping kertas. Bukan surat pun. Senarai je.”
 
@@ -110,13 +108,15 @@ Along memandang kain itu. Dia sudah melihatnya beribu-ribu kali dan tidak pernah
 
 Along memandang bapanya. “Kertas tu ada lagi?”
 
-“Ada.” Dia berhenti. “Tapi aku dah tak ingat aku simpan kat mana.”
+“Ada.” Pak Long diam sejenak. “Tapi aku dah tak ingat aku simpan kat mana.”
 
-“Bukan sebab kerusi tu ada apa-apa,” sambung Pak Long selepas lama diam. “Kerusi je. Tapi kalau kerusi tu hilang, aku tak ada tempat nak letak dia bila aku bayangkan dia.”
+Selepas lama membisu, dia menambah, “Bukan sebab kerusi tu ada apa-apa. Kerusi je. Tapi kalau kerusi tu hilang, aku tak ada tempat nak letak dia bila aku bayangkan dia.”
 
-Along memandang anyaman yang terurai itu.
+Along memandang anyaman yang terlerai pada lengan kerusi itu. Buat pertama kalinya, kerusi tersebut tidak kelihatan seperti barang lama yang enggan dibuang, tetapi seperti sebuah tempat yang masih dihuni oleh ingatan.
 
-Dia bangun, masuk ke dalam, dan kembali dengan sebuah buku nota yang dibelinya di kedai runcit pagi tadi bersama roti dan minyak masak, tanpa rancangan.
+***
+
+Along bangun, masuk ke dalam rumah dan kembali dengan sebuah buku nota yang dibelinya di kedai runcit pagi tadi bersama roti dan minyak masak, tanpa sebarang rancangan untuk menggunakannya.
 
 “Bapa, cerita balik. Saya nak tulis.”
 
@@ -140,35 +140,31 @@ Pak Long tidak menjawab lama.
 
 “Aku tak tahu pun kau ingat sampai sekarang.”
 
-Mereka membiarkan perkara itu di situ, tidak selesai.
+Mereka membiarkan perkara itu di situ, tidak selesai dan tidak dipaksa selesai.
 
-“Saya tetap nak dengar sekarang,” kata Along akhirnya.
+“Saya tetap nak dengar sekarang,” kata Along.
 
-Mereka duduk sehingga tengah hari. Pak Long bercerita tersekat-sekat, kadang-kadang berhenti panjang di tengah ayat. Along belajar untuk tidak menolong. Jika dia diam cukup lama, kadang-kadang perkataan itu pulang sendiri; kadang-kadang tidak, dan bapanya akan berkata sahaja, “Benda tu,” lalu meneruskan cerita, dan cerita itu tetap sampai.
+Mereka duduk sehingga tengah hari. Pak Long bercerita tersekat-sekat, adakalanya terhenti panjang di tengah ayat. Along belajar untuk tidak menyambut setiap kekosongan dengan jawapan. Jika dia menunggu cukup lama, kadang-kadang perkataan itu pulang sendiri; kadang-kadang tidak, dan bapanya hanya akan berkata, “Benda tu,” sebelum meneruskan cerita. Anehnya, cerita itu tetap sampai.
 
-Dari surau hujung jalan, azan Zuhur mula naik, nipis pada mulanya, kemudian memenuhi udara panas di beranda.
-
-Pak Long diam seketika. Along meletakkan pen di atas buku nota.
+Dari surau di hujung jalan, azan Zuhur kedengaran sayup sebelum perlahan-lahan memenuhi udara panas di beranda. Pak Long berhenti bercakap dan Along meletakkan pen di atas buku nota.
 
 “Masuk dululah,” kata Along.
 
-Pak Long mengangguk perlahan. “Ya.”
+Pak Long mengangguk. “Ya.”
 
-Mereka bangun tanpa banyak cakap. Selepas solat, mereka kembali semula ke beranda. Along membuka halaman yang sama, dan Pak Long menyambung dari mana yang masih dapat dicapainya.
+Mereka bangun tanpa banyak bicara. Selepas solat, kedua-duanya kembali ke beranda. Along membuka halaman yang sama, dan Pak Long menyambung dari tempat yang masih dapat dicapainya.
 
-Yang ditulisnya bukan kisah harimau.
-
-Yang ditulisnya ialah perkara-perkara kecil yang selama ini tidak pernah diketahuinya. Bahawa bapanya kehilangan separuh jari kelingking kiri terkena pisau torehan ketika bekerja dalam gelap pada pukul empat pagi, pada tahun-tahun dia melangsaikan hutang rumah. Bahawa bapanya tidak pernah suka kopi, tetapi meminumnya setiap pagi kerana arwah isterinya suka membancuh kopi. Bahawa nama Along dipilih kerana bapanya sendiri anak bongsu yang tidak pernah dipanggil apa-apa selain “adik” sehingga umur empat puluh.
+Yang ditulis Along bukan kisah harimau, tetapi perkara-perkara kecil yang selama ini tidak pernah diketahuinya: bapanya kehilangan separuh jari kelingking kiri terkena pisau torehan ketika bekerja dalam gelap pada pukul empat pagi, pada tahun-tahun dia melangsaikan hutang rumah; bapanya sebenarnya tidak pernah suka kopi, tetapi meminumnya setiap pagi kerana arwah isterinya suka membancuh kopi; nama Along pula dipilih kerana Pak Long sendiri anak bongsu yang tidak pernah dipanggil apa-apa selain “adik” sehingga umur empat puluh.
 
 “Aku nak ada seorang dalam rumah ni yang orang panggil ikut pangkat. Along. Bukan adik, bukan hoi,” kata Pak Long. “Bunyi macam kecil. Tapi masa tu, aku rasa besar.”
 
-Along menulis, dan tangannya tidak cukup laju.
+Along menulis secepat yang mampu, tetapi tangannya tetap terasa lambat.
 
-Telefonnya berbunyi di tengah satu cerita tentang kereta lembu. Nama penyelia tapak di skrin, dan Along tahu lelaki itu tidak menelefon pada hari Sabtu untuk perkara kecil. Ada perancah runtuh di tingkat dua; seorang pekerja jatuh; hospital sudah dimaklumkan. Dia berdiri, berjalan ke hujung beranda, dan bercakap selama enam minit.
+Telefonnya berbunyi ketika Pak Long sedang bercerita tentang kereta lembu. Nama penyelia tapak tertera pada skrin, dan Along tahu lelaki itu tidak menelefon pada hari Sabtu untuk perkara kecil. Sebuah perancah runtuh di tingkat dua, seorang pekerja jatuh, dan hospital sudah dimaklumkan. Along berdiri, berjalan ke hujung beranda lalu bercakap selama enam minit.
 
-Tiada apa-apa yang boleh dipersalahkan padanya. Itulah yang membuatkannya lebih teruk.
+Tiada apa-apa yang boleh dipersalahkan padanya. Itulah yang membuatkannya lebih perit.
 
-Apabila dia kembali, Pak Long sedang memandang kebun getah.
+Apabila Along kembali, Pak Long sedang memandang kebun getah.
 
 “Tadi bapa cakap pasal kereta lembu.”
 
@@ -176,22 +172,23 @@ Apabila dia kembali, Pak Long sedang memandang kebun getah.
 
 “Ada. Bapa cakap atuk beli daripada orang Kerian.”
 
-Pak Long mengerutkan dahi, cuba, dan tidak menemuinya. “Dah tak ada.”
+Pak Long mengerutkan dahi. Dia cuba mencari semula jalan kepada cerita itu, tetapi akhirnya menggeleng. “Dah tak ada.”
 
-Along memandang halaman yang separuh siap itu.
+Along memandang halaman yang separuh siap. Di hadapannya ada bukti bahawa sebuah cerita boleh lenyap bukan sahaja kerana tidak pernah diceritakan, tetapi juga kerana sempat terhenti pada waktu yang salah.
 
-Pada halaman keempat, dia berhenti dan membaca semula apa yang ditulisnya.
+Pada halaman keempat, dia berhenti membaca semula catatannya.
 
+***
 
-Ada satu ketika Pak Long berhenti agak lama. Apabila dia bersuara semula, suaranya jernih dan tersusun.
+Ada satu ketika Pak Long terdiam begitu lama sehingga Along menyangka dia sudah kehabisan cerita. Namun apabila orang tua itu bersuara semula, suaranya jernih dan tersusun.
 
 “Along. Kau tahu apa yang paling teruk?”
 
 “Apa, bapa?”
 
-“Bukan lupa. Sesiapa pun boleh lupa.” Dia memandang lurus ke jalan tanah merah itu. “Yang teruk ialah bila aku sedar aku sedang lupa. Aku tengok muka kau, aku tahu kau penting, aku tahu aku sayang kau — tapi nama kau tak ada. Dan aku berdiri kat situ, tengok diri aku sendiri jatuh, tapi tak sempat pegang apa-apa.”
+“Bukan lupa. Sesiapa pun boleh lupa.” Pak Long memandang lurus ke jalan tanah merah. “Yang teruk ialah bila aku sedar aku sedang lupa. Aku tengok muka kau, aku tahu kau penting, aku tahu aku sayang kau—tapi nama kau tak ada. Dan aku berdiri kat situ, tengok diri aku sendiri jatuh, tapi tak sempat pegang apa-apa.”
 
-Along tidak memalingkan muka. Dia tetap menulis, kerana tangannya perlu ada kerja.
+Along tidak memalingkan muka. Dia terus menulis kerana tangannya memerlukan sesuatu untuk dilakukan.
 
 “Bapa,” katanya akhirnya, “saya ada.”
 
@@ -201,9 +198,9 @@ Along tidak memalingkan muka. Dia tetap menulis, kerana tangannya perlu ada kerj
 
 “Simpan apa?”
 
-Along mengangkat buku nota itu sedikit. “Semua ni. Kalau bapa tak boleh masuk bilik tu lagi, tak apa. Apa yang masih ada dalam ingatan bapa, saya simpan di luar. Bapa boleh datang tengok bila-bila.”
+Along mengangkat buku nota sedikit. “Semua ni. Kalau bapa tak boleh masuk bilik tu lagi, tak apa. Apa yang masih ada dalam ingatan bapa, saya simpan di luar. Bapa boleh datang tengok bila-bila.”
 
-Pak Long memandang buku nota itu lama. Kemudian dia menghulurkan tangan, bukan untuk mengambilnya, tetapi untuk menyentuh kulit buku itu sebentar.
+Pak Long memandang buku nota itu lama. Kemudian dia menghulurkan tangan, bukan untuk mengambilnya, sekadar menyentuh kulit buku itu dengan hujung jari.
 
 “Esok aku mungkin tak ingat aku dah cerita ni,” katanya.
 
@@ -213,11 +210,13 @@ Pak Long memandang buku nota itu lama. Kemudian dia menghulurkan tangan, bukan u
 
 “Saya dah tulis.”
 
-“Bukan tu yang aku tanya.” Pak Long memandangnya, dan buat seketika matanya tajam seperti dahulu. “Kau ingat?”
+“Bukan tu yang aku tanya.” Pak Long memandangnya, dan untuk seketika matanya kembali tajam seperti dahulu. “Kau ingat?”
 
-Along menutup buku nota itu.
+Along menutup buku nota.
 
 “Saya ingat, bapa.”
+
+***
 
 Menjelang senja, Pak Long meminta pen.
 
@@ -225,62 +224,61 @@ Menjelang senja, Pak Long meminta pen.
 
 “Bagi je.”
 
-Along menghulurkan pen dan membuka satu halaman kosong. Pak Long memegang pen itu seperti orang memegang alat yang pernah dikenalinya. Dia menulis satu huruf. Berhenti. Menulis satu lagi. Berhenti lebih lama.
+Along menghulurkannya dan membuka satu halaman kosong. Pak Long memegang pen itu seperti seseorang memegang alat yang pernah sangat dikenalinya. Dia menulis satu huruf, berhenti, kemudian menulis satu lagi dan berhenti lebih lama.
 
-Along membuka mulut hendak menyebut, dan menutupnya semula.
+Along sempat membuka mulut hendak menyebut sesuatu, tetapi menutupnya semula.
 
-Tangan tua itu bergetar sedikit di atas kertas. Wajah Pak Long merah, bukan kerana sedih, tetapi kerana marah — marah kepada tangan itu, kepada huruf itu, kepada dirinya sendiri yang pernah menulis nama itu berpuluh ribu kali di atas resit getah, borang klinik, surat daripada sekolah anak-anaknya.
+Tangan tua itu bergetar sedikit di atas kertas. Wajah Pak Long memerah, bukan kerana sedih tetapi kerana marah—kepada tangannya, kepada huruf-huruf itu, kepada dirinya sendiri yang pernah menulis nama tersebut berpuluh ribu kali di atas resit getah, borang klinik dan surat daripada sekolah anak-anak.
 
 “Jangan tolong,” katanya, walaupun Along tidak berkata apa-apa.
 
 “Ya, bapa.”
 
-Hampir empat minit berlalu sebelum pen itu bergerak semula, laju tiba-tiba, dan huruf yang tinggal keluar sekali gus.
+Masa berlalu sebelum pen itu bergerak lagi. Huruf yang tersisa akhirnya keluar satu demi satu sehingga sebuah nama lengkap tertera di atas kertas.
 
 Rashid.
 
-Dia memandang perkataan itu lama, kemudian menolak buku nota itu semula kepada anaknya.
+Pak Long memandang perkataan itu lama, kemudian menolak buku nota tersebut kembali kepada anaknya.
 
 “Simpan.”
 
-Sebelum masuk ke dalam rumah, dia berhenti di muka pintu dan bertanya, “Kau nama apa tadi?”
+Sebelum masuk ke dalam rumah, dia berhenti di muka pintu.
+
+“Kau nama apa tadi?”
 
 “Along.”
 
 “Along,” ulangnya, seperti menimbang perkataan itu sebelum menyimpannya semula. “Ya. Anak aku.”
 
-Along memasang lampu beranda. Mentol itu berkelip dua kali sebelum menyala penuh.
+Along memasang lampu beranda. Mentolnya berkelip dua kali sebelum menyala penuh. Dia duduk seketika lagi dengan buku nota di ribaan, ditemani detik jam dinding yang kedengaran dari sebalik dinding papan.
 
-Dia duduk sekejap lagi di situ, buku nota di ribaan, bunyi jam dinding dari dalam rumah kedengaran di sebalik dinding papan.
+Pagi esoknya, Pak Long sudah berada di beranda apabila Along keluar membawa dua cawan. Satu diletakkan di atas meja, satu lagi di atas lengan kerusi rotan yang kosong.
 
-Pagi esoknya, Pak Long sudah pun di beranda apabila Along keluar membawa dua cawan. Dia meletakkan satu di atas meja dan satu lagi di atas lengan kerusi rotan itu.
+Pak Long memandang cawan di kerusi itu lama. “Kenapa kau letak kat situ?”
 
-Pak Long memandang cawan yang di kerusi kosong itu, lama.
-
-“Kenapa kau letak kat situ?”
-
-Along membuka mulut. Di dalam buku nota di atas ribaannya ada empat halaman yang menjawab soalan itu — pasar Jumaat, ubi, enam bulan di bawah rumah orang, kain yang dilipat empat.
-
-Dia boleh membacakannya. Bapanya akan mendengar, dan mungkin mengangguk, dan mungkin percaya, seperti orang mendengar cerita tentang orang lain.
+Along membuka mulut. Di dalam buku nota di atas ribaannya ada empat halaman yang boleh menjawab soalan tersebut—pasar Jumaat, ubi, enam bulan menumpang rumah orang, kain yang dilipat empat. Dia boleh membacakan semuanya. Bapanya mungkin akan mendengar, mungkin mengangguk, mungkin juga mempercayainya seperti seseorang mendengar cerita tentang orang lain.
 
 “Sebab tempat tu memang tempat cawan,” katanya.
 
-“Oh.” Pak Long mengangguk, berpuas hati, dan meniup kopinya.
+“Oh.” Pak Long mengangguk, berpuas hati, lalu meniup kopinya.
 
-Along membuka halaman baharu. Tangannya di atas kertas, pen tidak bergerak. Di belakang rumah jiran, ayam Hamid berkokok, salah waktu seperti biasa, dan tidak seorang pun daripada mereka mengomel tentangnya pagi itu.
+Along membuka halaman baharu. Tangannya terletak di atas kertas, tetapi pen belum bergerak. Di belakang rumah jiran, ayam Hamid berkokok salah waktu seperti biasa, dan pagi itu tidak seorang pun daripada mereka mengomel tentangnya.
 
 ---
 
 ## Nota editorial dalaman
 
-Versi ini ialah draf editorial pertama Jalin. Belum diterbitkan.
+Semakan editorial kedua Jalin, 21 September 2026.
 
-Perubahan utama:
-- melembutkan dialog doktor supaya tidak mendakwa satu urutan kemerosotan kognitif sebagai universal;
-- mengurangkan ayat yang menerangkan tema terlalu terus;
-- mengekalkan motif kerusi, kain, kopi, buku nota dan ayam sebagai struktur emosi;
-- mengekalkan konflik Along–Pak Long tanpa penyelesaian penuh;
-- mengekalkan adegan nama “Rashid” dan penutup pagi berikutnya sebagai paksi akhir cerpen.
+Perubahan:
+- struktur plot, motif dan pengakhiran dikekalkan;
+- ritma prosa dibina semula supaya lebih dekat dengan cerpen Melayu: perenggan bergerak sebagai unit naratif, bukan rentetan “cinematic beats” satu ayat;
+- ayat pendek dikekalkan hanya apabila mempunyai fungsi hentakan atau jeda;
+- beberapa ayat yang terlalu menerangkan tema diganti dengan imej/tindakan;
+- frasa “tidur bawah rumah orang” diperjelas menjadi “menumpang rumah orang”;
+- tempoh “hampir empat minit” ketika Rashid menulis namanya dibuang kerana terasa terlalu diukur;
+- kosa kata sedikit lebih tinggi diperkenalkan secara sederhana: saban, sayup, terlerai, tersisa;
+- unsur Melayu-Islam kekal organik melalui salam, azan, solat dan Yasin tanpa menjadikan cerpen didaktik.
 
 ## Cadangan glosari
 
@@ -290,3 +288,7 @@ Perubahan utama:
 - ditoreh — dibuat torehan nipis pada kulit pokok getah supaya lateks dapat mengalir.
 - perancah — binaan sementara untuk pekerja melakukan kerja di tempat tinggi.
 - penyelia tapak — orang yang mengawasi kerja di tapak pembinaan.
+- saban — setiap; berulang pada waktu tertentu.
+- sayup — samar kerana jauh, khususnya bunyi atau pandangan.
+- terlerai — terurai atau terbuka daripada ikatan/susunan.
+- tersisa — masih berbaki atau tinggal sedikit.

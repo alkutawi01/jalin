@@ -54,6 +54,22 @@ const glossary: GlossaryMap = {
   "sentimental value": {
     meaning: "nilai perasaan atau kenangan yang melekat pada sesuatu benda.",
     source: "Terjemahan editorial Jalin"
+  },
+  "saban": {
+    meaning: "setiap; berulang pada waktu tertentu.",
+    source: "Kamus Dewan / glosari editorial Jalin"
+  },
+  "sayup": {
+    meaning: "samar kerana jauh, khususnya bunyi atau pandangan.",
+    source: "Kamus Dewan / glosari editorial Jalin"
+  },
+  "terlerai": {
+    meaning: "terurai atau terbuka daripada ikatan atau susunan.",
+    source: "Kamus Dewan / glosari editorial Jalin"
+  },
+  "tersisa": {
+    meaning: "masih berbaki atau tinggal sedikit.",
+    source: "Glosari editorial Jalin"
   }
 };
 
@@ -68,7 +84,7 @@ const workMeta: WorkMetaRow[] = [
   { label: "Bacaan", value: "± 12 min" },
   { label: "Status", value: "Karya asli Jalin" },
   { label: "ID", value: "JLN-CER-0001" },
-  { label: "Versi", value: "v0.1" }
+  { label: "Versi", value: "v0.2" }
 ];
 
 const characters: CharacterMeta[] = [
@@ -101,7 +117,7 @@ export default function KerusiDiBerandaPage() {
     : parsed.content
   ).replace(/\n---\s*$/, "").trim();
 
-  const rubberAnchor = "Di hadapan mereka, jalan tanah merah membelah kampung kepada dua. Di sebelah kiri, rumah-rumah baharu berbumbung genting oren. Di sebelah kanan, kebun getah yang sudah tiga tahun tidak ditoreh, pokok-pokoknya berdiri dalam barisan yang semakin dilupakan.";
+  const rubberAnchor = "Di hadapan mereka, jalan tanah merah membelah kampung kepada dua. Di sebelah kiri berdiri rumah-rumah baharu berbumbung genting oren; di sebelah kanan terbentang kebun getah yang sudah tiga tahun tidak ditoreh, pokok-pokoknya masih tegak dalam barisan yang semakin dilupakan.";
   const notebookAnchor = "Menjelang senja, Pak Long meminta pen.";
 
   const [beforeRubber, afterRubber = ""] = publicStory.split(rubberAnchor);
