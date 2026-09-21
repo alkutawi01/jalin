@@ -194,7 +194,7 @@ Suatu malam Danish duduk di lantai dapur sambil memerhatikan tangannya.
 
 Rohani mengulang isyarat yang sama beberapa kali.
 
-*Mak.*
+“Mak.”
 
 Danish cuba menirunya.
 
@@ -208,13 +208,13 @@ Kali ini tepat.
 
 Kemudian dia menunjuk Rohani.
 
-*Mak.*
+“Mak.”
 
 Rohani terpaku. Sudip di tangannya masih menitis sambal ke lantai.
 
 Danish mengulang isyarat itu sambil tersenyum.
 
-*Mak.*
+“Mak.”
 
 Rohani ketawa sambil menangis.
 
@@ -374,7 +374,7 @@ Danish tidak memandang.
 
 Tangannya bergerak.
 
-*Penat.*
+“Penat.”
 
 “Sekolah?”
 
@@ -382,7 +382,7 @@ Danish mengangguk.
 
 Beberapa saat kemudian tangannya bergerak lagi.
 
-*Mereka ketawakan saya.*
+“Mereka ketawakan saya.”
 
 Rohani menunggu.
 
@@ -502,7 +502,7 @@ Rohani mengerutkan dahi.
 
 Danish mengambil beg itu, membukanya dan mengeluarkan sebungkus roti yang masih belum disentuh.
 
-*Mak belum makan.*
+“Mak belum makan.”
 
 “Saya tak lapar.”
 
@@ -522,7 +522,7 @@ Kemudian Danish mengeluarkan sebuah bungkusan kecil daripada begnya sendiri.
 
 Tangannya bergerak.
 
-*Mak.*
+“Mak.”
 
 Isyarat itu begitu biasa sekarang sehingga Rohani hampir terlupa betapa sukarnya dahulu mereka belajar menggunakannya.
 
@@ -538,7 +538,7 @@ Rohani mengangkat kening.
 
 Danish tersenyum sebelum tangannya bergerak lagi.
 
-*Telefon mak dah rosak. Mak selalu kata nanti nak video call cucu.*
+“Telefon mak dah rosak. Mak selalu kata nanti nak video call cucu.”
 
 Rohani mencebik.
 
@@ -548,11 +548,11 @@ Danish ketawa tanpa suara, bahunya terhenjut-henjut.
 
 Kemudian dia mengambil tangan Rohani.
 
-*Dulu mak tunggu Danish.*
+“Dulu mak tunggu Danish.”
 
 Dia berhenti.
 
-*Sekarang Danish tunggu mak.*
+“Sekarang Danish tunggu mak.”
 
 Skrin di hadapan mereka bertukar.
 
@@ -576,7 +576,7 @@ Versi terbitan Jalin. Semakan akhir editorial manusia diluluskan pada 21 Septemb
 
 Perubahan akhir:
 - “Ani” dikhususkan sebagai panggilan Azman kepada Rohani;
-- dialog bahasa isyarat Danish diseragamkan dalam italik tanpa tanda petik;
+- dialog bahasa isyarat Danish diseragamkan sebagai dialog terjemahan dalam tanda petik tipografik, tanpa italik;
 - babak sekolah diperluas supaya konflik Danish hadir sebagai adegan, bukan ringkasan;
 - frame hospital dibayar semula melalui lutut Rohani, roti dan pertukaran peranan ibu-anak;
 - motif ketukan “Tok. Tok.” kembali secara halus pada penutup.
