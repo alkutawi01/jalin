@@ -1,0 +1,26 @@
+{
+  "work": "kerusi-di-beranda",
+  "provider": "Magnific",
+  "status": "staging-reference",
+  "note": "Creation IDs are canonical provenance. Signed CDN URLs in the reader are temporary and must be replaced by durable object-storage assets before public launch.",
+  "visuals": [
+    {
+      "role": "hero",
+      "creation_id": "TdExepDVNR",
+      "model": "Seedream 5 Pro",
+      "scene": "Kerusi rotan lama di beranda rumah kampung; suasana pagi; figura manusia sekunder; muka tidak jelas."
+    },
+    {
+      "role": "inline-rubber-estate",
+      "creation_id": "LwZMwrgswO",
+      "model": "Seedream 5 Pro",
+      "scene": "Barisan pokok getah lama yang tidak ditoreh; semak dan daun gugur; tiada manusia."
+    },
+    {
+      "role": "inline-notebook",
+      "creation_id": "xS3TwzajfW",
+      "model": "Seedream 5 Pro",
+      "scene": "Tangan tua memegang pen di atas buku nota pada waktu senja; Along tidak membantu; tiada tulisan terbaca."
+    }
+  ]
+}
