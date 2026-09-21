@@ -31,23 +31,16 @@ function GlossaryTerm({
 
 function decorateGlossary(text: string, glossary: GlossaryMap): ReactNode[] {
   const terms = Object.keys(glossary).sort((a, b) => b.length - a.length);
-
   if (terms.length === 0) return [text];
 
-  const pattern = new RegExp(
-    \`(\${terms.map(escapeRegExp).join("|")})\`,
-    "gi"
-  );
+  const pattern = new RegExp("(" + terms.map(escapeRegExp).join("|") + ")", "gi");
 
   return text.split(pattern).map((part, index) => {
-    const key = terms.find(
-      (term) => term.toLowerCase() === part.toLowerCase()
-    );
-
+    const key = terms.find((term) => term.toLowerCase() === part.toLowerCase());
     if (!key) return part;
 
     return (
-      <GlossaryTerm key={\`\${part}-\${index}\`} term={key} glossary={glossary}>
+      <GlossaryTerm key={part + "-" + index} term={key} glossary={glossary}>
         {part}
       </GlossaryTerm>
     );
