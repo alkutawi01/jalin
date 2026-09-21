@@ -5,7 +5,7 @@ import ReactMarkdown from "react-markdown";
 
 const visuals = {
   hero: "https://pikaso.cdnpk.net/private/production/5503670371/render.png?token=exp=1790294400~hmac=74fcc5c0b8f73bd9875848af25586012176f93f027a7e8f97e32673c30b08a79",
-  notebook: "https://pikaso.cdnpk.net/private/production/5503710850/render.png?token=exp=1790294400~hmac=3a37462768af20e102c7b1dfd8382152da6d015dc7ad00330b3d44fc081134bd"
+  notebook: "https://pikaso.cdnpk.net/private/production/5503875125/render.png?token=exp=1790294400~hmac=26e272750ae0ab0ffd738c1815d1de7ddd6b0800e8d07173bab6f24a6a63d876"
 };
 
 function StoryMarkdown({ children }: { children: string }) {
