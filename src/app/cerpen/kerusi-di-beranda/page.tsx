@@ -225,11 +225,11 @@ export default function KerusiDiBerandaPage() {
 
       <footer className="site-footer">
         <div className="site-shell footer-inner">
-          <img className="footer-mark" src="/brand/jalin-icon-color.svg" alt="" aria-hidden="true" />
-          <div className="footer-brand">
-            <strong>Jalin</strong>
-            <span>oleh Adjung</span>
-          </div>
+          <img
+            className="footer-logo"
+            src="/brand/jalin-logo-primary.svg"
+            alt="Jalin — oleh Adjung"
+          />
         </div>
       </footer>
     </>
