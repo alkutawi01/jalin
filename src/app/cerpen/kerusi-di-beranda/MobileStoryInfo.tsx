@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type Tab = "karya" | "watak" | "editorial";
 
@@ -9,6 +9,48 @@ export default function MobileStoryInfo() {
   const [tab, setTab] = useState<Tab>("karya");
   const [dragY, setDragY] = useState(0);
   const startY = useRef<number | null>(null);
+  const edgeStart = useRef<{ x: number; y: number } | null>(null);
+
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") setOpen(false);
+    }
+
+    function onTouchStart(event: TouchEvent) {
+      if (open || event.touches.length !== 1) return;
+      const touch = event.touches[0];
+      if (touch.clientX >= window.innerWidth - 24) {
+        edgeStart.current = { x: touch.clientX, y: touch.clientY };
+      }
+    }
+
+    function onTouchEnd(event: TouchEvent) {
+      if (open || !edgeStart.current || event.changedTouches.length !== 1) {
+        edgeStart.current = null;
+        return;
+      }
+
+      const touch = event.changedTouches[0];
+      const dx = edgeStart.current.x - touch.clientX;
+      const dy = Math.abs(edgeStart.current.y - touch.clientY);
+
+      if (dx > 54 && dy < 72) {
+        setOpen(true);
+      }
+
+      edgeStart.current = null;
+    }
+
+    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("touchstart", onTouchStart, { passive: true });
+    window.addEventListener("touchend", onTouchEnd, { passive: true });
+
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("touchstart", onTouchStart);
+      window.removeEventListener("touchend", onTouchEnd);
+    };
+  }, [open]);
 
   function onPointerDown(event: React.PointerEvent<HTMLDivElement>) {
     startY.current = event.clientY;
