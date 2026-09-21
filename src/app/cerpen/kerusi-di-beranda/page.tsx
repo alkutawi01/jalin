@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
+import React, { type ReactNode } from "react";
 import ReactMarkdown from "react-markdown";
 
 const visuals = {
@@ -8,13 +9,87 @@ const visuals = {
   notebook: "https://pikaso.cdnpk.net/private/production/5503875125/render.png?token=exp=1790294400~hmac=26e272750ae0ab0ffd738c1815d1de7ddd6b0800e8d07173bab6f24a6a63d876"
 };
 
+const glossary = {
+  "kemerosotan kognitif": {
+    meaning: "kemerosotan pada keupayaan mental seperti mengingat, memahami atau berfikir.",
+    source: "Kamus Dewan / PRPM"
+  },
+  "diagnosis": {
+    meaning: "pengenalpastian sesuatu penyakit berdasarkan tanda dan gejalanya.",
+    source: "Kamus Dewan / PRPM"
+  },
+  "ditoreh": {
+    meaning: "digores pada kulit pokok, seperti pokok getah, untuk mendapatkan hasilnya.",
+    source: "Kamus Dewan / PRPM"
+  },
+  "perancah": {
+    meaning: "rangka sementara yang dipasang sebagai tempat atau tumpuan semasa kerja binaan.",
+    source: "Kamus Dewan / PRPM"
+  },
+  "penyelia tapak": {
+    meaning: "orang yang mengawasi kerja di sesuatu tapak.",
+    source: "Kamus Dewan / PRPM"
+  },
+  "sentimental value": {
+    meaning: "nilai perasaan atau kenangan yang melekat pada sesuatu benda.",
+    source: "Terjemahan editorial Jalin"
+  }
+} as const;
+
+function GlossaryTerm({
+  term,
+  children
+}: {
+  term: keyof typeof glossary;
+  children: ReactNode;
+}) {
+  const item = glossary[term];
+  return (
+    <span className="glossary-term" tabIndex={0}>
+      {children}
+      <span className="glossary-tooltip" role="tooltip">
+        <strong>{term}</strong>
+        <span>{item.meaning}</span>
+        <small>{item.source}</small>
+      </span>
+    </span>
+  );
+}
+
+function decorateGlossary(text: string): ReactNode[] {
+  const terms = Object.keys(glossary).sort((a, b) => b.length - a.length);
+  const pattern = new RegExp(
+    `(${terms.map((term) => term.replace(/[.*+?^${}()|[\\]\\]/g, "\\const visuals = {
+  hero: "https://pikaso.cdnpk.net/private/production/5503670371/render.png?token=exp=1790294400~hmac=74fcc5c0b8f73bd9875848af25586012176f93f027a7e8f97e32673c30b08a79",
+  notebook: "https://pikaso.cdnpk.net/private/production/5503875125/render.png?token=exp=1790294400~hmac=26e272750ae0ab0ffd738c1815d1de7ddd6b0800e8d07173bab6f24a6a63d876"
+};")).join("|")})`,
+    "gi"
+  );
+
+  return text.split(pattern).map((part, index) => {
+    const key = terms.find((term) => term.toLowerCase() === part.toLowerCase());
+    if (!key) return part;
+    return (
+      <GlossaryTerm key={`${part}-${index}`} term={key as keyof typeof glossary}>
+        {part}
+      </GlossaryTerm>
+    );
+  });
+}
+
+function decorateChildren(children: ReactNode): ReactNode {
+  return React.Children.map(children, (child) =>
+    typeof child === "string" ? decorateGlossary(child) : child
+  );
+}
+
 function StoryMarkdown({ children }: { children: string }) {
   return (
     <ReactMarkdown
       components={{
         h1: () => null,
-        p: ({ children }) => <p>{children}</p>,
-        em: ({ children }) => <em>{children}</em>
+        p: ({ children }) => <p>{decorateChildren(children)}</p>,
+        em: ({ children }) => <em>{decorateChildren(children)}</em>
       }}
     >
       {children}
@@ -116,7 +191,7 @@ export default function KerusiDiBerandaPage() {
                 <b>perancah</b>
                 <span>binaan sementara untuk bekerja di tempat tinggi.</span>
               </div>
-              <p className="glossary-hint">Tooltip dalam teks akan diaktifkan pada iterasi seterusnya.</p>
+              <p className="glossary-hint">Perkataan bertanda halus boleh disentuh atau dihover untuk melihat makna.</p>
             </div>
           </aside>
         </div>
