@@ -22,8 +22,21 @@ function run(cmd, args, options = {}) {
 
 async function syncOnce() {
   const status = await run("git", ["status", "--porcelain"]);
-  if (status.stdout.trim()) {
-    process.stdout.write("\n[dev:sync] Local changes detected; auto-pull paused.\n");
+
+  const blockingChanges = status.stdout
+    .split(/\r?\n/)
+    .filter(Boolean)
+    .filter((line) => {
+      const file = line.slice(3).trim();
+      return file !== "package-lock.json" && file !== "next-env.d.ts";
+    });
+
+  if (blockingChanges.length) {
+    process.stdout.write(
+      "\n[dev:sync] Real local changes detected; auto-pull paused:\n" +
+      blockingChanges.map((line) => "  " + line).join("\n") +
+      "\n"
+    );
     return;
   }
 
