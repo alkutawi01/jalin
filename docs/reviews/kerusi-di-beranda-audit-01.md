@@ -91,3 +91,14 @@ Belum boleh ditandakan READY sehingga:
 2. visual canonical dihasilkan dan diaudit;
 3. halaman bacaan diuji pada desktop + mobile;
 4. tooltip glosari dipasang dan diperiksa.
+
+
+## Correction log
+
+### Writer continuity
+There are two separate writing actions in the story and they must not be conflated:
+
+1. Earlier, **Along** writes down Pak Long's stories. This includes the line “Along menulis, dan tangannya tidak cukup laju.”
+2. Later, **Pak Long** asks for the pen and writes his own name, “Rashid.”
+
+The current inline notebook illustration is intended only for the second scene. Any caption, alt text, prompt or placement suggesting Pak Long was the one writing the earlier notes is incorrect and must be rejected.
