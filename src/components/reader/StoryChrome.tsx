@@ -1,6 +1,6 @@
 import type { BylineCredit, CharacterMeta, EditorialCredit, WorkMetaRow } from "./types";
 
-export function SiteHeader({ active }: { active?: "cerpen" | "novel-pendek" | "bersiri" }) {
+export function SiteHeader({ active }: { active?: "cerpen" | "bersiri" | "terjemahan" | "fragmen" | "sinopsis" }) {
   return (
     <header className="site-header">
       <div className="site-shell header-inner">
@@ -10,9 +10,10 @@ export function SiteHeader({ active }: { active?: "cerpen" | "novel-pendek" | "b
         <nav aria-label="Navigasi utama">
           <a href="/">Utama</a>
           <a className={active === "cerpen" ? "active" : undefined} href="/cerpen">Cerpen</a>
-          <a className={active === "novel-pendek" ? "active" : undefined} href="/novel-pendek">Novel Pendek</a>
           <a className={active === "bersiri" ? "active" : undefined} href="/bersiri">Bersiri</a>
-          <a href="/koleksi">Koleksi</a>
+          <a className={active === "terjemahan" ? "active" : undefined} href="/terjemahan">Terjemahan</a>
+          <a className={active === "fragmen" ? "active" : undefined} href="/fragmen">Fragmen</a>
+          <a className={active === "sinopsis" ? "active" : undefined} href="/sinopsis">Sinopsis</a>
         </nav>
         <button className="save-button" type="button">♡ Simpan</button>
       </div>
