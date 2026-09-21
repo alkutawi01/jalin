@@ -1,0 +1,139 @@
+import fs from "node:fs";
+import path from "node:path";
+import matter from "gray-matter";
+import ReactMarkdown from "react-markdown";
+
+const visuals = {
+  hero: "https://pikaso.cdnpk.net/private/production/5503669923/render.png?token=exp=1790294400~hmac=09ede7bf0b05ffbf6d14b84f635d5c239aed7d4b7e60bbc61f132820de899616",
+  chair: "https://pikaso.cdnpk.net/private/production/5503670371/render.png?token=exp=1790294400~hmac=74fcc5c0b8f73bd9875848af25586012176f93f027a7e8f97e32673c30b08a79",
+  notebook: "https://pikaso.cdnpk.net/private/production/5503669905/render.png?token=exp=1790294400~hmac=c731b46815a5d803645f16eacc86b4aa516284e57542cf5f586933eecbdeb0f2"
+};
+
+function StoryMarkdown({ children }: { children: string }) {
+  return (
+    <ReactMarkdown
+      components={{
+        h1: () => null,
+        p: ({ children }) => <p>{children}</p>,
+        em: ({ children }) => <em>{children}</em>
+      }}
+    >
+      {children}
+    </ReactMarkdown>
+  );
+}
+
+export default function KerusiDiBerandaPage() {
+  const raw = fs.readFileSync(
+    path.join(process.cwd(), "content/drafts/kerusi-di-beranda.md"),
+    "utf8"
+  );
+  const parsed = matter(raw);
+  const publicStory = parsed.content.split("\n---\n\n## Nota editorial dalaman")[0];
+
+  const chairAnchor = "Pak Long menunjuk ke arah tiang beranda";
+  const notebookAnchor = "Menjelang senja, Pak Long meminta pen.";
+
+  const [beforeChair, chairRest = ""] = publicStory.split(chairAnchor);
+  const [middle, ending = ""] = chairRest.split(notebookAnchor);
+
+  return (
+    <>
+      <header className="site-header">
+        <div className="site-shell header-inner">
+          <a href="/" aria-label="Jalin utama">
+            <img className="header-logo" src="/brand/jalin-wordmark.svg" alt="Jalin — oleh Adjung" />
+          </a>
+          <nav aria-label="Navigasi utama">
+            <a href="/">Utama</a>
+            <a className="active" href="/cerpen/kerusi-di-beranda">Cerpen</a>
+            <a href="#">Novel Pendek</a>
+            <a href="#">Bersiri</a>
+            <a href="#">Koleksi</a>
+          </nav>
+          <button className="save-button" type="button">♡ Simpan</button>
+        </div>
+      </header>
+
+      <main>
+        <div className="site-shell story-head">
+          <div className="story-kicker">Cerpen · Keluarga</div>
+          <h1>Kerusi di Beranda</h1>
+          <p className="dek">
+            Di sebuah beranda yang menyimpan lebih banyak daripada yang pernah ditanya,
+            seorang anak mula menulis sebelum sebahagian cerita keluarganya hilang.
+          </p>
+          <div className="byline">
+            <span>Oleh</span>
+            <a href="#">Nara Zahin <b className="maya-badge">Maya</b></a>
+            <span>&amp;</span>
+            <a href="#">Rafiq Naim <b className="maya-badge">Maya</b></a>
+          </div>
+        </div>
+
+        <div className="site-shell">
+          <figure className="hero-figure">
+            <img src={visuals.hero} alt="Beranda rumah kampung dengan dua kerusi rotan, Pak Long dan Along pada waktu pagi." />
+          </figure>
+        </div>
+
+        <div className="site-shell reading-grid">
+          <aside className="left-rail">
+            <div className="rail-card sticky">
+              <div className="rail-label">Tentang karya</div>
+              <dl>
+                <div><dt>Bentuk</dt><dd>Cerpen</dd></div>
+                <div><dt>Genre</dt><dd>Keluarga</dd></div>
+                <div><dt>Bacaan</dt><dd>± 12 min</dd></div>
+              </dl>
+              <div className="rail-rule" />
+              <p className="maya-note"><b>Maya</b> menandakan penulis maya Jalin yang bekerja di bawah kawal selia editorial manusia.</p>
+            </div>
+          </aside>
+
+          <article className="story-body">
+            <StoryMarkdown>{beforeChair}</StoryMarkdown>
+
+            <figure className="inline-figure">
+              <img src={visuals.chair} alt="Kerusi rotan lama dan kain lusuh pada tiang beranda." />
+              <figcaption>Benda yang digunakan setiap hari kadang-kadang menyimpan cerita paling lama.</figcaption>
+            </figure>
+
+            <StoryMarkdown>{chairAnchor + middle}</StoryMarkdown>
+
+            <figure className="inline-figure">
+              <img src={visuals.notebook} alt="Tangan Pak Long memegang pen di atas buku nota sementara tangan Along berada berhampiran." />
+            </figure>
+
+            <StoryMarkdown>{notebookAnchor + ending}</StoryMarkdown>
+          </article>
+
+          <aside className="right-rail">
+            <div className="rail-card sticky">
+              <div className="rail-label">Glosari</div>
+              <div className="glossary-item">
+                <b>kemerosotan kognitif</b>
+                <span>kemerosotan pada keupayaan seperti mengingat, berfikir atau memahami.</span>
+              </div>
+              <div className="glossary-item">
+                <b>ditoreh</b>
+                <span>dibuat torehan nipis pada kulit pokok getah supaya lateks dapat mengalir.</span>
+              </div>
+              <div className="glossary-item">
+                <b>perancah</b>
+                <span>binaan sementara untuk bekerja di tempat tinggi.</span>
+              </div>
+              <p className="glossary-hint">Tooltip dalam teks akan diaktifkan pada iterasi seterusnya.</p>
+            </div>
+          </aside>
+        </div>
+
+        <div className="site-shell story-end">
+          <span>Tamat</span>
+          <div className="end-rule" />
+          <p>Kerusi di Beranda · Jalin</p>
+        </div>
+      </main>
+    </>
+  );
+}
