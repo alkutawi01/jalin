@@ -16,7 +16,11 @@ Pak Long Rashid memegang cawan itu selama hampir seminit sebelum dia sedar dia s
 
 Bulat. Panas. Wap naik dari permukaannya. Dia tahu dia perlu meniupnya dahulu. Dia tahu rasanya pahit dahulu, kemudian sedikit manis. Tetapi nama benda itu tersangkut di suatu tempat yang tidak dapat dicapainya, seperti kunci yang jatuh ke dalam longkang — masih kelihatan, tetapi tidak sampai oleh hujung jari.
 
-"Kopi," kata Along dari muka pintu.
+"Assalamualaikum," kata Along dari muka pintu.
+
+Pak Long mengangkat muka sedikit.
+
+"Kopi," tambah Along.
 
 Pak Long meletakkan cawan itu ke atas meja, agak kuat sehingga sedikit airnya tumpah. "Aku tahu."
 
@@ -80,7 +84,7 @@ Dia diam sebentar, dan Along menyangka itu sahaja.
 
 Along tidak bergerak, takut sebarang bunyi akan mematahkan sesuatu.
 
-"Kahwin tiga bulan lepas tu. Rumah ni belum siap lagi. Kami tidur bawah rumah orang enam bulan. Dia tak pernah mengadu sekali pun. Aku yang mengadu." Dia berhenti lagi, lebih lama kali ini. "Bila dia meninggal, orang kampung datang, kemas rumah. Ada seorang tu angkat kerusi tu nak buang sebab dah buruk. Aku jerit kat dia. Depan orang ramai aku jerit." Suaranya turun. "Malu aku sampai sekarang."
+"Kahwin tiga bulan lepas tu. Rumah ni belum siap lagi. Kami tidur bawah rumah orang enam bulan. Dia tak pernah mengadu sekali pun. Aku yang mengadu." Dia berhenti lagi, lebih lama kali ini. "Bila dia meninggal, orang kampung datang, kemas rumah. Malam tu orang surau datang baca Yasin. Esoknya ada seorang tu angkat kerusi tu nak buang sebab dah buruk. Aku jerit kat dia. Depan orang ramai aku jerit." Suaranya turun. "Malu aku sampai sekarang."
 
 "Kenapa bapa tak cerita?"
 
@@ -141,6 +145,16 @@ Mereka membiarkan perkara itu di situ, tidak selesai.
 "Saya tetap nak dengar sekarang," kata Along akhirnya.
 
 Mereka duduk sehingga tengah hari. Pak Long bercerita tersekat-sekat, kadang-kadang berhenti panjang di tengah ayat. Along belajar untuk tidak menolong. Jika dia diam cukup lama, kadang-kadang perkataan itu pulang sendiri; kadang-kadang tidak, dan bapanya akan berkata sahaja, "Benda tu," lalu meneruskan cerita, dan cerita itu tetap sampai.
+
+Dari surau hujung jalan, azan Zuhur mula naik, nipis pada mulanya, kemudian memenuhi udara panas di beranda.
+
+Pak Long diam seketika. Along meletakkan pen di atas buku nota.
+
+"Masuk dululah," kata Along.
+
+Pak Long mengangguk perlahan. "Ya."
+
+Mereka bangun tanpa banyak cakap. Selepas solat, mereka kembali semula ke beranda. Along membuka halaman yang sama, dan Pak Long menyambung dari mana yang masih dapat dicapainya.
 
 Yang ditulisnya bukan kisah harimau.
 
