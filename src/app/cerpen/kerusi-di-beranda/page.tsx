@@ -58,8 +58,8 @@ const glossary: GlossaryMap = {
 };
 
 const byline: BylineCredit[] = [
-  { name: "Nara Zahin", maya: true },
-  { name: "Rafiq Naim", maya: true }
+  { name: "Nara Zahin", maya: true, href: "/penulis/nara-zahin" },
+  { name: "Rafiq Naim", maya: true, href: "/penulis/rafiq-naim" }
 ];
 
 const workMeta: WorkMetaRow[] = [
