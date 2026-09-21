@@ -6,7 +6,8 @@ import ReactMarkdown from "react-markdown";
 
 const visuals = {
   hero: "https://pikaso.cdnpk.net/private/production/5503670371/render.png?token=exp=1790294400~hmac=74fcc5c0b8f73bd9875848af25586012176f93f027a7e8f97e32673c30b08a79",
-  notebook: "https://pikaso.cdnpk.net/private/production/5503875125/render.png?token=exp=1790294400~hmac=26e272750ae0ab0ffd738c1815d1de7ddd6b0800e8d07173bab6f24a6a63d876"
+  notebook: "https://pikaso.cdnpk.net/private/production/5503875125/render.png?token=exp=1790294400~hmac=26e272750ae0ab0ffd738c1815d1de7ddd6b0800e8d07173bab6f24a6a63d876",
+  rubberEstate: "https://pikaso.cdnpk.net/private/production/5505649615/render.png?token=exp=1790294400~hmac=616a3c2ce038181c8ef2e6eb4583183320e5896a3c76b5f91fb9697fb33dd37d"
 };
 
 const glossary = {
@@ -116,8 +117,11 @@ export default function KerusiDiBerandaPage() {
     : parsed.content
   ).replace(/\n---\s*$/, "").trim();
 
+  const rubberAnchor = "Di hadapan mereka, jalan tanah merah membelah kampung kepada dua. Di sebelah kiri, rumah-rumah baharu berbumbung genting oren. Di sebelah kanan, kebun getah yang sudah tiga tahun tidak ditoreh, pokok-pokoknya berdiri dalam barisan yang semakin dilupakan.";
   const notebookAnchor = "Menjelang senja, Pak Long meminta pen.";
-  const [beforeNotebook, ending = ""] = publicStory.split(notebookAnchor);
+
+  const [beforeRubber, afterRubber = ""] = publicStory.split(rubberAnchor);
+  const [betweenRubberAndNotebook, ending = ""] = afterRubber.split(notebookAnchor);
 
   return (
     <>
@@ -174,7 +178,16 @@ export default function KerusiDiBerandaPage() {
           </aside>
 
           <article className="story-body">
-            <StoryMarkdown>{beforeNotebook}</StoryMarkdown>
+            <StoryMarkdown>{beforeRubber + rubberAnchor}</StoryMarkdown>
+
+            <figure className="inline-figure">
+              <img
+                src={visuals.rubberEstate}
+                alt="Barisan pokok getah lama yang tidak ditoreh, dengan semak mula memenuhi lantai kebun."
+              />
+            </figure>
+
+            <StoryMarkdown>{betweenRubberAndNotebook}</StoryMarkdown>
 
             <figure className="inline-figure">
               <img src={visuals.notebook} alt="Tangan tua Pak Long memegang pen di atas buku nota di meja beranda." />
