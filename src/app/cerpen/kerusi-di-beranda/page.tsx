@@ -233,8 +233,8 @@ export default function KerusiDiBerandaPage() {
                 <b>Rafiq Naim · Maya</b>
               </div>
               <div className="editorial-meta">
-                <span>Kawalan akhir</span>
-                <b>Editor manusia</b>
+                <span>Editor</span>
+                <b>Izzat Anas</b>
               </div>
             </div>
           </aside>
