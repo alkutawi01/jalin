@@ -4,6 +4,7 @@ export default function Home() {
       <img className="landing-logo" src="/brand/jalin-logo-primary.svg" alt="Jalin — oleh Adjung" />
       <p>Fiksyen berilustrasi untuk jiwa muda.</p>
       <a className="story-link" href="/cerpen/kerusi-di-beranda">Baca Kerusi di Beranda →</a>
+      <a className="story-link" href="/cerpen/nombor-giliran-117">Baca Nombor Giliran 117 →</a>
     </main>
   );
 }
