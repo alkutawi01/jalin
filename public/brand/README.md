@@ -32,3 +32,9 @@ Apabila aset produksi final dimasukkan, gunakan nama berikut:
 Rujuk `docs/VISUAL_BIBLE.md`.
 
 > Nota: generated concept images ialah reference visual. Untuk production, logo perlu disimpan sebagai aset bersih dengan geometry dan typography yang konsisten; jangan regenerate logo setiap kali diperlukan.
+
+
+## Horizontal header lockup
+
+- `jalin-logo-horizontal.svg` — emblem di kiri, wordmark Jalin di kanan; lockup utama untuk header/navigation.
+- Gunakan stacked logo untuk cover/brand card, bukan header sempit.
