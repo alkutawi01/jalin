@@ -1,4 +1,4 @@
-# Editorial System v0.2
+# Editorial System v0.3
 
 ## Prinsip
 
@@ -10,7 +10,7 @@ Kualiti, keselamatan pembaca remaja, provenance dan kesinambungan cerita mengata
 
 DRAFT → REVIEW → RIGHTS_CHECK → VISUAL_REVIEW → READY → PUBLISHED
 
-`RIGHTS_CHECK` wajib untuk Sinopsis, Terjemahan dan Fragmen yang berasaskan karya pihak lain. Untuk Cerpen/Bersiri asli, gate ini boleh ditanda `N/A`.
+`RIGHTS_CHECK` wajib untuk Sinopsis, Terjemahan dan Fragmen yang berasaskan karya pihak lain. Untuk Cerpen/Novela/Bersiri asli, gate ini boleh ditanda `N/A`.
 
 Manusia mempunyai kuasa akhir untuk publish/unpublish.
 
@@ -26,17 +26,67 @@ Sebelum terbit:
 - ilustrasi;
 - metadata asas;
 - provenance / hak penggunaan jika berkaitan;
-- pagination jika karya panjang.
+- pagination jika karya panjang;
+- nombor versi dan tarikh semakan.
 
 ## Metadata awam MVP
 
-- jenis karya: Sinopsis / Cerpen / Terjemahan / Fragmen / Bersiri
+- jenis karya: Cerpen / Novela / Bersiri / Terjemahan / Fragmen / Sinopsis
 - genre
 - contributor/byline
 - badge `Maya` untuk contributor maya
+- tarikh terbit
+- tarikh kemas kini terakhir
+- versi semasa
 - sumber asal / pengarang asal untuk karya derivative apabila berkaitan
 
 Elakkan taxonomy terlalu kompleks pada versi awal.
+
+## Living text & versioning
+
+Karya asli Jalin ialah **living text**.
+
+Selepas terbit, karya masih boleh:
+- diperhalus bahasanya;
+- diperbetul fakta kecil;
+- ditambah atau diganti visual;
+- diperluas glosari;
+- diperbaiki pacing atau kejelasan;
+- menerima major revision apabila perlu.
+
+Peraturan:
+- perubahan minor menggunakan peningkatan versi minor;
+- perubahan substantif pada struktur, plot, ending atau identiti karya menggunakan major version;
+- perubahan bermakna perlu mempunyai tarikh semakan dan ringkasan dalam **Sejarah editorial**;
+- typo/koma kecil tidak perlu masuk sejarah awam;
+- major revision tidak boleh disamarkan sebagai kemas kini kecil.
+
+## Sistem kredit
+
+Kredit Jalin mengikuti logik produksi, hampir seperti kredit filem.
+
+Kredit hendaklah berdasarkan sumbangan sebenar. Antara istilah yang boleh digunakan:
+- Idea asal
+- Draf awal
+- Penulis
+- Penyunting cerita
+- Penyunting bahasa
+- Penyemak fakta
+- Penyunting akhir
+- Editor / Editor penerbitan
+- Penyelidikan
+- Penterjemah
+- Penyunting terjemahan
+- Adaptasi
+- Penceritaan semula
+- Pengarah seni
+- Ilustrator
+- Penyunting visual
+- Semakan hak & sumber
+
+Rail reader menunjukkan kredit utama sahaja. Kredit lengkap dipaparkan melalui **Kredit penuh** atau seksyen editorial khusus.
+
+Jangan beri kredit “Penulis” kepada seseorang yang hanya membuat semakan bahasa atau penyelidikan.
 
 ## Sinopsis
 
@@ -65,13 +115,15 @@ Fragmen perlu:
 - mengekalkan teks asal/terjemahan dengan integriti;
 - menyatakan karya asal, pengarang dan provenance.
 
-## Cerpen & Bersiri asli
+## Cerpen, Novela & Bersiri asli
 
-Cerpen ialah karya lengkap, walaupun panjang.
+Cerpen ialah karya lengkap pendek hingga sederhana.
+
+Novela ialah karya fiksyen lengkap long-form yang masih satu Work. Ia boleh mempunyai bab atau bahagian dalaman dan sesuai untuk pagination.
 
 Bersiri ialah karya episodik dengan canon. Continuity review wajib bagi episod baharu.
 
-## Ritma prosa cerpen
+## Ritma prosa cerpen dan novela
 
 Prosa Jalin tidak boleh bergantung pada rentetan ayat pendek yang dipisahkan menjadi perenggan satu baris secara berlebihan.
 

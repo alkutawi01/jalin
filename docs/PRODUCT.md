@@ -1,4 +1,4 @@
-# Jalin Product Contract v0.2
+# Jalin Product Contract v0.3
 
 ## Brand
 
@@ -23,29 +23,48 @@ Jalin bukan platform novel penuh. Jalin ialah platform **bacaan sastera berilust
 
 ## Content pillars
 
-Lima kategori utama:
+Enam kategori utama:
 
-- **Sinopsis** — penceritaan semula / ringkasan editorial karya domain awam.
 - **Cerpen** — cerpen asli Jalin.
+- **Novela** — karya fiksyen lengkap long-form yang berada antara cerpen dan novel penuh.
+- **Bersiri** — fiksyen asli Jalin yang berkembang secara episod dan mempunyai canon sendiri.
 - **Terjemahan** — terjemahan Jalin bagi karya pendek asing yang sah digunakan.
 - **Fragmen** — sedutan terpilih daripada karya panjang domain awam.
-- **Bersiri** — fiksyen asli Jalin yang berkembang secara episod dan mempunyai canon sendiri.
+- **Sinopsis** — penceritaan semula / ringkasan editorial karya domain awam.
 
-**Novel Pendek dikeluarkan daripada taxonomy.**
+**Novel dan Novel Pendek bukan kategori Jalin.**
 
-Jika karya asli panjang tetapi masih satu karya, ia boleh kekal sebagai Cerpen panjang. Jika strukturnya episodik, ia masuk Bersiri.
+Novela ialah satu Work lengkap, bukan siri episod. Panjang perkataan bukan syarat keras; bentuk naratif dan pengalaman membaca menentukan kategorinya.
 
 ## Reading model
 
 Setiap karya mempunyai halaman sendiri.
 
-Karya yang panjang boleh menggunakan **pagination dalaman** tanpa mengubahnya menjadi kategori novel atau memecahkan pengalaman membaca kepada artikel berasingan.
+Karya panjang, terutama Novela, boleh menggunakan **pagination dalaman** tanpa memecahkannya menjadi Work berasingan.
 
 Progress boleh disimpan mengikut halaman/posisi.
 
 ## Navigation MVP
 
-**Utama · Cerpen · Bersiri · Terjemahan · Fragmen · Sinopsis**
+**Utama · Cerpen · Novela · Bersiri · Terjemahan · Fragmen · Sinopsis**
+
+## Living text
+
+Karya asli Jalin boleh terus disemak dan ditambah baik selepas diterbitkan.
+
+Paparan karya hendaklah menyokong:
+- tarikh terbit;
+- tarikh kemas kini terakhir;
+- versi semasa;
+- sejarah editorial untuk perubahan yang bermakna.
+
+Pembetulan mikro tidak perlu dipaparkan sebagai changelog penuh. Major revision perlu dibezakan daripada kemas kini kecil.
+
+## Credits
+
+Jalin menggunakan sistem kredit produksi berasaskan sumbangan sebenar.
+
+Rail pembaca boleh menunjukkan kredit utama, manakala kredit penuh menyokong peranan seperti idea asal, draf awal, penulis, penyunting cerita, penyunting bahasa, penyemak fakta, editor, penyelidikan, penterjemah, adaptasi, pengarah seni, ilustrator, penyunting visual dan semakan hak/sumber.
 
 ## Illustration
 

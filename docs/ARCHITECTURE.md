@@ -1,4 +1,4 @@
-# Architecture v0.2
+# Architecture v0.3
 
 ## Baseline
 
@@ -19,9 +19,10 @@ Semua kategori menggunakan pola asas yang sama:
 - illustrations
 - glossary
 - credits
+- editorial history
 - reading progress
 
-Cerpen, Sinopsis, Terjemahan dan Fragmen kekal sebagai satu Work walaupun panjang.
+Cerpen, Novela, Sinopsis, Terjemahan dan Fragmen kekal sebagai satu Work walaupun panjang.
 
 ### Pagination
 
@@ -35,7 +36,22 @@ Keperluan:
 - metadata karya, kredit dan glossary tidak perlu diduplikasi sebagai Work berasingan;
 - pagination tidak boleh diwujudkan semata-mata untuk pageview/SEO.
 
+Novela ialah stress-test utama pagination long-form. **Waktu Sebenar** ialah test corpus awal.
+
 Bersiri menggunakan satu Series dengan episod berasingan.
+
+## Credits & editorial history
+
+Reader perlu menyokong dua lapisan kredit:
+- rail ringkas untuk kredit utama;
+- paparan **Kredit penuh** untuk keseluruhan produksi.
+
+Work juga perlu memaparkan metadata versi secara ringan:
+- tarikh terbit;
+- kemas kini terakhir;
+- versi semasa.
+
+Sejarah editorial penuh tidak perlu sentiasa terbuka; ia boleh dipaparkan melalui panel/section berasingan.
 
 ## Layout principle
 
@@ -88,6 +104,8 @@ Hybrid, bukan CMS besar:
 - glosari;
 - pagination/section breaks;
 - visual;
+- kredit produksi;
+- versi + sejarah editorial;
 - publish/unpublish.
 
 ## Security

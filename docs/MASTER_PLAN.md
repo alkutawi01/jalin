@@ -1,4 +1,4 @@
-# Jalin Master Plan v0.2
+# Jalin Master Plan v0.3
 
 Status: **LOCKED — 21 September 2026**
 
@@ -12,7 +12,7 @@ Prinsip ringkas:
 
 > **Jalin ialah tempat menemui cerita.**
 
-## 2. Lima bentuk kandungan utama
+## 2. Enam bentuk kandungan utama
 
 ### Sinopsis
 Penceritaan semula / ringkasan editorial karya domain awam yang membantu pembaca menikmati keseluruhan alur tanpa membaca novel penuh.
@@ -26,9 +26,18 @@ Penceritaan semula / ringkasan editorial karya domain awam yang membantu pembaca
 Cerpen asli yang diterbitkan oleh Jalin.
 
 - lengkap sebagai satu karya;
-- boleh pendek atau panjang;
+- pendek hingga sederhana;
 - boleh mempunyai ilustrasi editorial;
 - penulis boleh manusia atau penulis maya yang didedahkan secara telus.
+
+### Novela
+Karya fiksyen lengkap yang lebih panjang daripada cerpen tetapi tidak dibangunkan sebagai novel penuh atau siri episodik.
+
+- satu Work lengkap;
+- sesuai menggunakan pagination dalaman;
+- boleh mempunyai bab atau bahagian dalaman tanpa menjadikannya Bersiri;
+- panjang perkataan bukan hukum keras; keputusan berdasarkan struktur dan pengalaman membaca;
+- Waktu Sebenar digunakan sebagai test corpus awal untuk pagination long-form.
 
 ### Terjemahan
 Terjemahan Jalin bagi cerpen atau karya pendek daripada bahasa asing.
@@ -55,22 +64,24 @@ Fiksyen asli Jalin yang berkembang secara episod.
 
 ## 3. Yang dikeluarkan daripada product taxonomy
 
-**Novel Pendek tidak lagi menjadi kategori Jalin.**
+**Novel Pendek dan Novel tidak menjadi kategori Jalin.**
 
-Jika karya asli menjadi panjang:
-- ia kekal sebagai Cerpen panjang jika masih satu karya lengkap; atau
-- ia menjadi Bersiri jika secara struktur lebih sesuai dibahagikan kepada episod.
+Karya asli panjang ditentukan mengikut bentuk:
+- kekal Cerpen jika masih sebuah cerpen lengkap;
+- menjadi Novela jika pengalaman bacaannya jelas long-form tetapi tetap satu karya lengkap;
+- menjadi Bersiri jika secara struktur diterbitkan sebagai episod canonical.
 
-Jalin tidak dibina sebagai tempat membaca novel penuh moden.
+Jalin tidak dibina sebagai tempat membaca novel penuh moden secara umum.
 
 ## 4. Reading model
 
 Setiap item kandungan mempunyai **halaman karya sendiri**.
 
-Jenis kandungan yang panjang masih dianggap satu karya dan boleh menggunakan **pagination dalaman**.
+Karya panjang, terutama Novela, boleh menggunakan **pagination dalaman** tanpa menukarkannya menjadi siri atau pecahan artikel.
 
 Contoh:
 - /cerpen/kerusi-di-beranda
+- /novela/waktu-sebenar
 - /terjemahan/the-bet
 - /fragmen/les-miserables-jean-valjean
 - /sinopsis/frankenstein
@@ -85,7 +96,7 @@ Prinsip pagination:
 
 ## 5. Navigation MVP
 
-**Utama · Cerpen · Bersiri · Terjemahan · Fragmen · Sinopsis**
+**Utama · Cerpen · Novela · Bersiri · Terjemahan · Fragmen · Sinopsis**
 
 “Koleksi” boleh diperkenalkan kemudian untuk kurasi tematik, tetapi bukan navigation pillar wajib pada MVP.
 
@@ -99,7 +110,47 @@ Semua kategori berada di bawah pengalaman Jalin yang sama:
 - bahasa Melayu yang natural dan terjaga;
 - unsur Melayu-Islam hadir secara organik apabila dunia cerita memerlukannya, bukan sebagai tampalan didaktik.
 
-## 7. AI contributors
+## 7. Living text & sejarah editorial
+
+Karya asli Jalin dianggap **living text**: teks boleh terus disemak dan ditambah baik selepas terbit, dengan kawalan versi dan jejak editorial.
+
+Metadata awam minimum:
+- tarikh terbit pertama;
+- tarikh kemas kini terakhir;
+- versi semasa.
+
+Prinsip versi:
+- perubahan kecil/substantif ringan seperti bahasa, glosari, visual, fakta kecil dan kelancaran menggunakan versi minor, contohnya v1.1 → v1.2;
+- perubahan besar pada struktur, plot, ending atau identiti karya menggunakan major revision, contohnya v1.x → v2.0;
+- jangan ubah karya secara senyap sehingga identiti asal hilang.
+
+Perubahan bermakna direkodkan dalam **Sejarah editorial**. Perubahan mikro seperti koma atau typo tidak perlu disenaraikan satu per satu.
+
+## 8. Kredit produksi
+
+Jalin menggunakan sistem kredit yang boleh berkembang seperti produksi filem.
+
+Rail pembaca memaparkan kredit utama sahaja. Kredit penuh boleh mengandungi, apabila berkaitan:
+- Idea asal
+- Draf awal
+- Penulis
+- Penyunting cerita
+- Penyunting bahasa
+- Penyemak fakta
+- Penyunting akhir
+- Editor / Editor penerbitan
+- Penyelidikan
+- Penterjemah
+- Penyunting terjemahan
+- Adaptasi / Penceritaan semula
+- Pengarah seni
+- Ilustrator
+- Penyunting visual
+- Semakan hak & sumber
+
+Kredit diberi berdasarkan sumbangan sebenar, bukan jawatan organisasi.
+
+## 9. AI contributors
 
 Penulis/penyemak maya boleh mempunyai nama dan persona tersendiri.
 
@@ -113,7 +164,7 @@ Mapping awal:
 - **Nara Zahin** → persona berasaskan Claude
 - **Rafiq Naim** → persona berasaskan ChatGPT
 
-## 8. Public-domain governance
+## 10. Public-domain governance
 
 “Lama” tidak bermaksud automatik bebas hak cipta.
 
@@ -124,15 +175,16 @@ Sebelum Sinopsis, Terjemahan atau Fragmen diterbitkan:
 4. bezakan hak cipta karya asal daripada hak cipta terjemahan/edisi moden;
 5. hentikan penerbitan jika status tidak cukup pasti.
 
-## 9. MVP priority
+## 11. MVP priority
 
 Keutamaan:
 1. reader page yang cantik dan stabil;
-2. Cerpen asli pertama;
+2. Cerpen asli awal yang menjadi benchmark editorial;
 3. sistem visual + glosari + pagination;
-4. contributor pages;
-5. satu contoh setiap kategori baharu selepas workflow sah;
-6. akaun asas: simpan, sejarah, sambung bacaan.
+4. Novela sebagai stress-test long-form reader;
+5. contributor pages;
+6. satu contoh setiap kategori baharu selepas workflow sah;
+7. akaun asas: simpan, sejarah, sambung bacaan.
 
 Bukan keutamaan MVP:
 - komen;
@@ -142,7 +194,7 @@ Bukan keutamaan MVP:
 - CMS besar;
 - novel penuh.
 
-## 10. Technical baseline
+## 12. Technical baseline
 
 - Next.js + TypeScript
 - PostgreSQL
@@ -151,4 +203,4 @@ Bukan keutamaan MVP:
 - GitHub sebagai source code + dokumentasi
 - backup PostgreSQL automatik + offsite copy
 
-Teknologi mesti menyokong content type dan pagination tanpa mengikat Jalin kepada satu vendor hosting.
+Teknologi mesti menyokong content type, kredit berbilang peranan, sejarah editorial dan pagination tanpa mengikat Jalin kepada satu vendor hosting.

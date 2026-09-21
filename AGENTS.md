@@ -7,9 +7,9 @@ Dokumen ini ialah arahan kerja bersama untuk semua AI/agent yang menyentuh repos
 Jalin — oleh Adjung ialah platform bacaan sastera berilustrasi untuk remaja 13–17 tahun.
 
 Kategori utama:
-**Sinopsis · Cerpen · Terjemahan · Fragmen · Bersiri**
+**Cerpen · Novela · Bersiri · Terjemahan · Fragmen · Sinopsis**
 
-Jalin bukan platform novel penuh. Novel Pendek telah dikeluarkan daripada taxonomy.
+Jalin bukan platform novel penuh. Novel dan Novel Pendek tidak berada dalam taxonomy.
 
 ## Hard rules
 
@@ -20,7 +20,7 @@ Jalin bukan platform novel penuh. Novel Pendek telah dikeluarkan daripada taxono
 5. Penulis/penyemak maya boleh menggunakan persona bernama, tetapi mesti mempunyai disclosure awam yang jelas; byline menggunakan penanda halus seperti `Maya`.
 6. Semua ilustrasi mesti mematuhi Jalin House Style.
 7. Untuk watak/lokasi berulang, guna canonical visual reference apabila tersedia; jangan reka semula daripada prompt teks sahaja.
-8. Cerpen, Sinopsis, Terjemahan dan Fragmen ialah satu `Work`; jika panjang, gunakan pagination dalaman, bukan model Novel Pendek.
+8. Cerpen, Novela, Sinopsis, Terjemahan dan Fragmen ialah satu `Work`; jika panjang, gunakan pagination dalaman.
 9. Bersiri terdiri daripada episod canonical yang mempunyai kesinambungan.
 10. Semua karya perlu menyokong glosari ringkas pada perkataan terpilih.
 11. Sinopsis, Terjemahan dan Fragmen berasaskan karya lama tidak boleh READY tanpa provenance dan semakan hak penggunaan/domain awam.
@@ -34,6 +34,9 @@ Jalin bukan platform novel penuh. Novel Pendek telah dikeluarkan daripada taxono
 19. Ikut `docs/VISUAL_GENERATION_GUARDRAILS.md` untuk semua generation, edit dan approval visual.
 20. **Satu permintaan UI hendaklah dibatch menjadi satu commit/deploy seboleh mungkin.** Elakkan satu commit bagi setiap fail apabila perubahan itu sebahagian daripada permintaan UI yang sama, supaya deployment Vercel tidak membazir.
 21. Untuk prosa baharu Jalin, gunakan beberapa kosa kata Melayu aras tinggi / kurang lazim secara organik untuk memperkaya pembaca; jangan memaksa diksi yang kabur atau arkaik semata-mata untuk nampak sasterawi. Istilah yang berguna boleh dimasukkan ke glosari.
+22. Karya asli Jalin ialah **living text**. Simpan tarikh terbit, tarikh kemas kini dan versi; rekod perubahan bermakna dalam Sejarah editorial.
+23. Kredit mesti berdasarkan sumbangan sebenar. Jangan menyamakan penyunting, penyemak fakta atau penyelidik dengan “Penulis” jika mereka tidak menulis karya.
+24. Novela ialah satu Work lengkap long-form, bukan Bersiri dan bukan Novel penuh.
 
 ## Working style
 

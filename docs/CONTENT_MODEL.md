@@ -1,4 +1,4 @@
-# Content Model v0.2
+# Content Model v0.3
 
 Dokumen ini menerangkan model konseptual; schema sebenar belum dilock.
 
@@ -10,7 +10,7 @@ Cadangan field:
 - id
 - slug
 - title
-- type: synopsis | short_story | translation | fragment | serial_episode
+- type: synopsis | short_story | novella | translation | fragment | serial_episode
 - series_id: nullable
 - genre
 - dek / short_description
@@ -18,13 +18,15 @@ Cadangan field:
 - access_mode: free | subscriber | promotional
 - hero_asset_id
 - source_work_id: nullable
-- published_at
+- first_published_at
+- updated_at
+- current_version
 
 ## Content body and pagination
 
-Cerpen, Sinopsis, Terjemahan dan Fragmen ialah **satu Work**, walaupun panjang.
+Cerpen, Novela, Sinopsis, Terjemahan dan Fragmen ialah **satu Work**, walaupun panjang.
 
-Body boleh dipecahkan secara teknikal kepada `ReadingSection` / `Page` untuk pagination dan progress, tanpa menukarnya menjadi bab novel.
+Body boleh dipecahkan secara teknikal kepada `ReadingSection` / `Page` untuk pagination dan progress.
 
 ### ReadingSection
 - id
@@ -33,6 +35,8 @@ Body boleh dipecahkan secara teknikal kepada `ReadingSection` / `Page` untuk pag
 - body
 - page_label: nullable
 - estimated_read_minutes: nullable
+
+Novela boleh mempunyai bab atau bahagian dalaman dalam ReadingSection, tetapi bab itu tidak menjadi Work berasingan.
 
 Pagination ialah presentation/read-state concern, bukan taxonomy kandungan.
 
@@ -54,6 +58,27 @@ Ini membolehkan setiap episod mempunyai:
 - glosari sendiri;
 - publish date sendiri;
 - progress sendiri.
+
+## EditorialRevision
+
+Digunakan untuk sejarah editorial karya hidup.
+
+Cadangan field:
+- id
+- work_id
+- version
+- revision_type: minor | major
+- summary
+- reviewed_at
+- published_at
+- approved_by
+- notes_internal: nullable
+
+Prinsip:
+- typo/koma kecil tidak perlu menghasilkan rekod awam;
+- perubahan bahasa, visual, fakta kecil atau glosari boleh direkod sebagai minor;
+- perubahan struktur, plot, ending atau identiti karya direkod sebagai major;
+- sejarah editorial awam hanya memaparkan ringkasan yang berguna kepada pembaca.
 
 ## SourceWork
 
@@ -101,15 +126,41 @@ Mapping model seperti Claude/ChatGPT tidak perlu dipaparkan pada byline awam kec
 
 ## Credit
 
-Menyokong:
-- original_story
+Credit perlu fleksibel dan berasaskan sumbangan sebenar, bukan hard-coded kepada beberapa jawatan sahaja.
+
+Cadangan field:
+- id
+- work_id
+- contributor_id: nullable
+- display_name
+- role_key
+- role_label
+- sequence
+- is_primary
+- public
+- note: nullable
+
+Contoh `role_key`:
+- original_idea
+- initial_draft
 - written_by
-- drafted_by
-- reviewed_by
+- story_editor
+- language_editor
+- fact_checker
+- final_editor
+- publication_editor
+- research
 - translated_by
+- translation_editor
 - adapted_by
+- retold_by
 - source_author
+- art_direction
 - illustrated_by
+- visual_editor
+- rights_review
+
+UI tidak perlu memaparkan semua peranan pada rail kanan. Rail menunjukkan kredit utama; panel/section **Kredit penuh** memaparkan keseluruhan produksi.
 
 ## Asset
 
@@ -122,6 +173,8 @@ Metadata sahaja. Fail media berada di object storage.
 - height
 - approved
 - visual_reference_role
+- provider
+- provider_creation_id: nullable
 
 ## ReadingProgress
 
