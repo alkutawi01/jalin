@@ -4,9 +4,9 @@ import matter from "gray-matter";
 import ReactMarkdown from "react-markdown";
 
 const visuals = {
-  hero: "https://pikaso.cdnpk.net/private/production/5503669923/render.png?token=exp=1790294400~hmac=09ede7bf0b05ffbf6d14b84f635d5c239aed7d4b7e60bbc61f132820de899616",
+  hero: "https://pikaso.cdnpk.net/private/production/5503711160/render.png?token=exp=1790294400~hmac=667a5b1e361065cd9b77ce39799be5770a64436cbdb0fdfad9c099fbd6b70d70",
   chair: "https://pikaso.cdnpk.net/private/production/5503670371/render.png?token=exp=1790294400~hmac=74fcc5c0b8f73bd9875848af25586012176f93f027a7e8f97e32673c30b08a79",
-  notebook: "https://pikaso.cdnpk.net/private/production/5503669905/render.png?token=exp=1790294400~hmac=c731b46815a5d803645f16eacc86b4aa516284e57542cf5f586933eecbdeb0f2"
+  notebook: "https://pikaso.cdnpk.net/private/production/5503710850/render.png?token=exp=1790294400~hmac=3a37462768af20e102c7b1dfd8382152da6d015dc7ad00330b3d44fc081134bd"
 };
 
 function StoryMarkdown({ children }: { children: string }) {
@@ -73,7 +73,7 @@ export default function KerusiDiBerandaPage() {
 
         <div className="site-shell">
           <figure className="hero-figure">
-            <img src={visuals.hero} alt="Beranda rumah kampung dengan dua kerusi rotan, Pak Long dan Along pada waktu pagi." />
+            <img src={visuals.hero} alt="Beranda rumah kampung pada waktu pagi dengan Pak Long dan Along sebagai dua figura kecil." />
           </figure>
         </div>
 
@@ -102,7 +102,7 @@ export default function KerusiDiBerandaPage() {
             <StoryMarkdown>{chairAnchor + middle}</StoryMarkdown>
 
             <figure className="inline-figure">
-              <img src={visuals.notebook} alt="Tangan Pak Long memegang pen di atas buku nota sementara tangan Along berada berhampiran." />
+              <img src={visuals.notebook} alt="Tangan tua Pak Long memegang pen di atas buku nota di meja beranda." />
             </figure>
 
             <StoryMarkdown>{notebookAnchor + ending}</StoryMarkdown>
