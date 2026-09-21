@@ -99,7 +99,7 @@ export default function MobileStoryInfo() {
                 <div className="sheet-stack">
                   <div><span>Penulis</span><b>Nara Zahin · Maya</b></div>
                   <div><span>Penulis & penyemak</span><b>Rafiq Naim · Maya</b></div>
-                  <div><span>Kawalan akhir</span><b>Editor manusia</b></div>
+                  <div><span>Editor</span><b>Izzat Anas</b></div>
                   <p className="sheet-note">Panel Bacaan AI belum dipaparkan sehingga format penilaiannya dimuktamadkan.</p>
                 </div>
               )}
