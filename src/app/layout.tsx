@@ -3,7 +3,11 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Jalin — oleh Adjung",
-  description: "Fiksyen berilustrasi untuk jiwa muda."
+  description: "Fiksyen berilustrasi untuk jiwa muda.",
+  icons: {
+    icon: "/brand/jalin-favicon.svg",
+    shortcut: "/brand/jalin-favicon.svg"
+  }
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
