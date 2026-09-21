@@ -128,7 +128,7 @@ export default function KerusiDiBerandaPage() {
       <header className="site-header">
         <div className="site-shell header-inner">
           <a className="header-wordmark" href="/" aria-label="Jalin utama">
-            <img src="/brand/jalin-wordmark-header.svg" alt="Jalin" />
+            <img src="/brand/jalin-wordmark.svg" alt="Jalin" />
           </a>
           <nav aria-label="Navigasi utama">
             <a href="/">Utama</a>
