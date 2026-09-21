@@ -798,7 +798,12 @@ Already substantially started:
 - desktop metadata/editorial rails;
 - mobile Info bottom sheet;
 - footer/header brand use;
-- named editor credit.
+- named editor credit;
+- reusable reader foundation extracted from the Cerpen reference page:
+  - shared story chrome;
+  - shared glossary Markdown renderer;
+  - shared mobile Info sheet;
+  - shared reader data types.
 
 Still prototype/static:
 
@@ -830,11 +835,10 @@ Exceptions:
 
 ## Immediate next tasks
 
-1. Finish Fasa A audit on current logo/header/footer and design tokens.
-2. Finish Fasa B1/B2 with a full desktop + mobile QA of `Kerusi di Beranda`.
-3. Build reusable reader components rather than leaving the current page as one-off code.
-4. Build Novel Pendek reader prototype.
-5. Build Bersiri reader prototype.
-6. Then lock PostgreSQL schema v1.
+1. Complete the remaining visual acceptance checks for `Kerusi di Beranda` at representative desktop/mobile widths.
+2. Build the Novel Pendek reader prototype using the extracted reusable reader components.
+3. Build the Bersiri reader prototype from the same reader foundation.
+4. Compare all three formats and close any shared-component gaps.
+5. Then lock PostgreSQL schema v1.
 
 This document is the default execution sequence unless Izzat Anas changes it.
