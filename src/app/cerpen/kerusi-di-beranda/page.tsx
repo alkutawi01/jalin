@@ -3,6 +3,7 @@ import path from "node:path";
 import matter from "gray-matter";
 import React, { type ReactNode } from "react";
 import ReactMarkdown from "react-markdown";
+import MobileStoryInfo from "./MobileStoryInfo";
 
 const visuals = {
   hero: "https://pikaso.cdnpk.net/private/production/5503670371/render.png?token=exp=1790294400~hmac=74fcc5c0b8f73bd9875848af25586012176f93f027a7e8f97e32673c30b08a79",
@@ -151,15 +152,18 @@ export default function KerusiDiBerandaPage() {
           </p>
           <div className="byline">
             <span>Oleh</span>
-            <a href="#">Nara Zahin <b className="maya-badge">Maya</b></a>
+            <a href="#">Nara Zahin <span className="maya-label">· Maya</span></a>
             <span>&amp;</span>
-            <a href="#">Rafiq Naim <b className="maya-badge">Maya</b></a>
+            <a href="#">Rafiq Naim <span className="maya-label">· Maya</span></a>
           </div>
         </div>
 
         <div className="site-shell">
-          <figure className="hero-figure">
+          <figure className="hero-figure editorial-image">
             <img src={visuals.hero} alt="Kerusi rotan lama di beranda rumah kampung dengan kain lusuh pada tiang kayu." />
+            <div className="image-rights" aria-hidden="true">
+              KERUSI DI BERANDA · © ADJUNG 2026 · ILUSTRASI JALIN
+            </div>
           </figure>
         </div>
 
@@ -171,26 +175,35 @@ export default function KerusiDiBerandaPage() {
                 <div><dt>Bentuk</dt><dd>Cerpen</dd></div>
                 <div><dt>Genre</dt><dd>Keluarga</dd></div>
                 <div><dt>Bacaan</dt><dd>± 12 min</dd></div>
+                <div><dt>Status</dt><dd>Karya asli Jalin</dd></div>
+                <div><dt>ID</dt><dd>JLN-CER-0001</dd></div>
+                <div><dt>Versi</dt><dd>v0.1</dd></div>
               </dl>
               <div className="rail-rule" />
-              <p className="maya-note"><b>Maya</b> menandakan penulis maya Jalin yang bekerja di bawah kawal selia editorial manusia.</p>
+              <p className="maya-note">Penulis Maya bekerja di bawah kawal selia editorial manusia.</p>
             </div>
           </aside>
 
           <article className="story-body">
             <StoryMarkdown>{beforeRubber + rubberAnchor}</StoryMarkdown>
 
-            <figure className="inline-figure">
+            <figure className="inline-figure editorial-image">
               <img
                 src={visuals.rubberEstate}
                 alt="Barisan pokok getah lama yang tidak ditoreh, dengan semak mula memenuhi lantai kebun."
               />
+              <div className="image-rights" aria-hidden="true">
+                KERUSI DI BERANDA · © ADJUNG 2026 · ILUSTRASI JALIN
+              </div>
             </figure>
 
             <StoryMarkdown>{betweenRubberAndNotebook}</StoryMarkdown>
 
-            <figure className="inline-figure">
+            <figure className="inline-figure editorial-image">
               <img src={visuals.notebook} alt="Tangan tua Pak Long memegang pen di atas buku nota di meja beranda." />
+              <div className="image-rights" aria-hidden="true">
+                KERUSI DI BERANDA · © ADJUNG 2026 · ILUSTRASI JALIN
+              </div>
             </figure>
 
             <StoryMarkdown>{notebookAnchor + ending}</StoryMarkdown>
@@ -198,20 +211,31 @@ export default function KerusiDiBerandaPage() {
 
           <aside className="right-rail">
             <div className="rail-card sticky">
-              <div className="rail-label">Glosari</div>
-              <div className="glossary-item">
-                <b>kemerosotan kognitif</b>
-                <span>kemerosotan pada keupayaan seperti mengingat, berfikir atau memahami.</span>
+              <div className="rail-label">Watak</div>
+              <div className="rail-person">
+                <b>Pak Long Rashid</b>
+                <span>Bapa</span>
               </div>
-              <div className="glossary-item">
-                <b>ditoreh</b>
-                <span>dibuat torehan nipis pada kulit pokok getah supaya lateks dapat mengalir.</span>
+              <div className="rail-person">
+                <b>Along</b>
+                <span>Anak</span>
               </div>
-              <div className="glossary-item">
-                <b>perancah</b>
-                <span>binaan sementara untuk bekerja di tempat tinggi.</span>
+
+              <div className="rail-rule" />
+
+              <div className="rail-label">Editorial</div>
+              <div className="editorial-meta">
+                <span>Penulis</span>
+                <b>Nara Zahin · Maya</b>
               </div>
-              <p className="glossary-hint">Perkataan bertanda halus boleh disentuh atau dihover untuk melihat makna.</p>
+              <div className="editorial-meta">
+                <span>Penulis & penyemak</span>
+                <b>Rafiq Naim · Maya</b>
+              </div>
+              <div className="editorial-meta">
+                <span>Kawalan akhir</span>
+                <b>Editor manusia</b>
+              </div>
             </div>
           </aside>
         </div>
@@ -221,6 +245,7 @@ export default function KerusiDiBerandaPage() {
           <div className="end-rule" />
           <p>Kerusi di Beranda · Jalin</p>
         </div>
+        <MobileStoryInfo />
       </main>
 
       <footer className="site-footer">
