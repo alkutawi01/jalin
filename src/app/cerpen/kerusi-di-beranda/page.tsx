@@ -4,8 +4,7 @@ import matter from "gray-matter";
 import ReactMarkdown from "react-markdown";
 
 const visuals = {
-  hero: "https://pikaso.cdnpk.net/private/production/5503711160/render.png?token=exp=1790294400~hmac=667a5b1e361065cd9b77ce39799be5770a64436cbdb0fdfad9c099fbd6b70d70",
-  chair: "https://pikaso.cdnpk.net/private/production/5503670371/render.png?token=exp=1790294400~hmac=74fcc5c0b8f73bd9875848af25586012176f93f027a7e8f97e32673c30b08a79",
+  hero: "https://pikaso.cdnpk.net/private/production/5503670371/render.png?token=exp=1790294400~hmac=74fcc5c0b8f73bd9875848af25586012176f93f027a7e8f97e32673c30b08a79",
   notebook: "https://pikaso.cdnpk.net/private/production/5503710850/render.png?token=exp=1790294400~hmac=3a37462768af20e102c7b1dfd8382152da6d015dc7ad00330b3d44fc081134bd"
 };
 
@@ -29,13 +28,14 @@ export default function KerusiDiBerandaPage() {
     "utf8"
   );
   const parsed = matter(raw);
-  const publicStory = parsed.content.split("\n---\n\n## Nota editorial dalaman")[0];
+  const internalNotesIndex = parsed.content.indexOf("## Nota editorial dalaman");
+  const publicStory = (internalNotesIndex >= 0
+    ? parsed.content.slice(0, internalNotesIndex)
+    : parsed.content
+  ).replace(/\n---\s*$/, "").trim();
 
-  const chairAnchor = "Pak Long menunjuk ke arah tiang beranda";
   const notebookAnchor = "Menjelang senja, Pak Long meminta pen.";
-
-  const [beforeChair, chairRest = ""] = publicStory.split(chairAnchor);
-  const [middle, ending = ""] = chairRest.split(notebookAnchor);
+  const [beforeNotebook, ending = ""] = publicStory.split(notebookAnchor);
 
   return (
     <>
@@ -73,7 +73,7 @@ export default function KerusiDiBerandaPage() {
 
         <div className="site-shell">
           <figure className="hero-figure">
-            <img src={visuals.hero} alt="Beranda rumah kampung pada waktu pagi dengan Pak Long dan Along sebagai dua figura kecil." />
+            <img src={visuals.hero} alt="Kerusi rotan lama di beranda rumah kampung dengan kain lusuh pada tiang kayu." />
           </figure>
         </div>
 
@@ -92,14 +92,7 @@ export default function KerusiDiBerandaPage() {
           </aside>
 
           <article className="story-body">
-            <StoryMarkdown>{beforeChair}</StoryMarkdown>
-
-            <figure className="inline-figure">
-              <img src={visuals.chair} alt="Kerusi rotan lama dan kain lusuh pada tiang beranda." />
-              <figcaption>Benda yang digunakan setiap hari kadang-kadang menyimpan cerita paling lama.</figcaption>
-            </figure>
-
-            <StoryMarkdown>{chairAnchor + middle}</StoryMarkdown>
+            <StoryMarkdown>{beforeNotebook}</StoryMarkdown>
 
             <figure className="inline-figure">
               <img src={visuals.notebook} alt="Tangan tua Pak Long memegang pen di atas buku nota di meja beranda." />
