@@ -43,20 +43,16 @@ img { display: block; max-width: 100%; }
   gap: 32px;
 }
 
-.header-inner > a {
+.header-wordmark {
   display: inline-flex;
   align-items: center;
   width: max-content;
-  overflow: visible;
-}
-
-.header-logo {
-  width: 172px;
-  height: auto;
-  max-height: 66px;
-  object-fit: contain;
-  object-position: left center;
-  overflow: visible;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 42px;
+  line-height: 1;
+  font-weight: 500;
+  letter-spacing: -.045em;
+  color: var(--ink);
 }
 
 nav {
@@ -229,13 +225,13 @@ dd { margin: 0; color: var(--ink); }
   .reading-grid { grid-template-columns: minmax(0, 700px) 190px; justify-content: center; }
   .left-rail { display: none; }
   .header-inner { grid-template-columns: 190px 1fr auto; }
-  .header-logo { width: 158px; max-height: 60px; }
+  .header-wordmark { font-size: 38px; }
   nav { gap: 20px; font-size: 15px; }
 }
 @media (max-width: 820px) {
   .site-shell { width: min(100% - 36px, 700px); }
   .header-inner { min-height: 76px; grid-template-columns: 1fr auto; }
-  .header-logo { width: 150px; max-height: 56px; }
+  .header-wordmark { font-size: 36px; }
   nav { display: none; }
   .reading-grid { display: block; }
   .right-rail { display: none; }
@@ -299,4 +295,40 @@ dd { margin: 0; color: var(--ink); }
   opacity: 1;
   visibility: visible;
   transform: translateX(-50%) translateY(0);
+}
+
+
+.site-footer {
+  border-top: 1px solid rgba(24,52,60,.1);
+  padding: 30px 0 34px;
+}
+.footer-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+.footer-mark {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+}
+.footer-brand {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.05;
+}
+.footer-brand strong {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -.03em;
+  color: var(--ink);
+}
+.footer-brand span {
+  margin-top: 3px;
+  font-family: Arial, sans-serif;
+  font-size: 10px;
+  letter-spacing: .04em;
+  color: #7b8789;
 }
