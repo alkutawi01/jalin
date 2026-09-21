@@ -123,8 +123,8 @@ export default function KerusiDiBerandaPage() {
     <>
       <header className="site-header">
         <div className="site-shell header-inner">
-          <a href="/" aria-label="Jalin utama">
-            <img className="header-logo" src="/brand/jalin-logo-horizontal.svg" alt="Jalin — oleh Adjung" />
+          <a className="header-wordmark" href="/" aria-label="Jalin utama">
+            Jalin
           </a>
           <nav aria-label="Navigasi utama">
             <a href="/">Utama</a>
@@ -209,6 +209,16 @@ export default function KerusiDiBerandaPage() {
           <p>Kerusi di Beranda · Jalin</p>
         </div>
       </main>
+
+      <footer className="site-footer">
+        <div className="site-shell footer-inner">
+          <img className="footer-mark" src="/brand/jalin-icon-color.svg" alt="" aria-hidden="true" />
+          <div className="footer-brand">
+            <strong>Jalin</strong>
+            <span>oleh Adjung</span>
+          </div>
+        </div>
+      </footer>
     </>
   );
 }
