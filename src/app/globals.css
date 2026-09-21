@@ -6,7 +6,7 @@
   --line: #ddd7cc;
   --clay: #a76450;
   --beige: #d8b9a6;
-  --max: 1240px;
+  --max: 1180px;
 }
 
 * { box-sizing: border-box; }
@@ -57,7 +57,7 @@ img { display: block; max-width: 100%; }
 nav {
   display: flex;
   justify-content: center;
-  gap: 32px;
+  gap: 24px;
   font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-size: 16px;
   line-height: 1.2;
