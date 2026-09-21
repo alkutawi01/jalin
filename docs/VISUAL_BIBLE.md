@@ -96,3 +96,26 @@ Prosa kekal medium utama. Visual menyokong:
 - identiti siri.
 
 Ilustrasi tidak perlu menceritakan seluruh bab seperti komik.
+
+
+## Visual Continuity Rule — LOCKED
+
+Untuk setiap karya, elakkan menjana lebih daripada satu ilustrasi berasingan bagi objek simbolik atau lokasi yang sama, kecuali terdapat keperluan naratif yang jelas.
+
+Jika satu ilustrasi objek/lokasi telah diluluskan, ilustrasi itu menjadi rujukan kanonik bagi karya tersebut.
+
+Prinsip operasi:
+- satu objek simbolik utama = satu ilustrasi kanonik;
+- satu lokasi utama = satu canonical view;
+- watak berulang mesti menggunakan reference pack kanonik;
+- jangan jana semula objek/lokasi yang sama daripada teks kosong;
+- jika objek perlu muncul semula, gunakan reference kanonik atau tampilkan hanya secara incidental/tidak terperinci;
+- lebih sedikit visual yang konsisten lebih baik daripada banyak visual yang bercanggah.
+
+### Kerusi di Beranda — shot list final
+
+1. Hero: wide environmental shot beranda/rumah kampung dengan Pak Long dan Along, tanpa menonjolkan kerusi secara terperinci.
+2. Inline 01: kerusi rotan + kain lusuh pada paku — canonical object image untuk kerusi.
+3. Inline 02: satu tangan tua Pak Long memegang pen di atas buku nota — tiada tangan kedua, tiada teks boleh dibaca.
+
+Maksimum 3 visual untuk cerpen ini.
