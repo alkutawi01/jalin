@@ -46,6 +46,26 @@ const glossary: GlossaryMap = {
   "pereka antara muka": {
     meaning: "orang yang mereka bentuk paparan dan cara pengguna berinteraksi dengan aplikasi atau sistem digital.",
     source: "Glosari editorial Jalin"
+  },
+  "saban": {
+    meaning: "setiap; kerap berlaku pada setiap waktu tertentu.",
+    source: "Kamus Dewan / glosari editorial Jalin"
+  },
+  "meresap": {
+    meaning: "masuk atau tersebar perlahan-lahan sehingga menyeluruh.",
+    source: "Kamus Dewan / glosari editorial Jalin"
+  },
+  "sayup": {
+    meaning: "kedengaran atau kelihatan samar kerana jauh.",
+    source: "Kamus Dewan / glosari editorial Jalin"
+  },
+  "berderau": {
+    meaning: "terasa berdebar atau bergoncang secara tiba-tiba kerana terkejut, cemas atau takut.",
+    source: "Glosari editorial Jalin"
+  },
+  "sekelumit": {
+    meaning: "sedikit sekali; bahagian yang sangat kecil.",
+    source: "Kamus Dewan / glosari editorial Jalin"
   }
 };
 
@@ -60,7 +80,7 @@ const workMeta: WorkMetaRow[] = [
   { label: "Bacaan", value: "± 11 min" },
   { label: "Status", value: "Karya asli Jalin" },
   { label: "ID", value: "JLN-CER-0002" },
-  { label: "Versi", value: "v1.0" }
+  { label: "Versi", value: "v1.1" }
 ];
 
 const characters: CharacterMeta[] = [

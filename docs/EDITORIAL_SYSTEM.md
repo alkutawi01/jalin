@@ -71,6 +71,18 @@ Cerpen ialah karya lengkap, walaupun panjang.
 
 Bersiri ialah karya episodik dengan canon. Continuity review wajib bagi episod baharu.
 
+## Ritma prosa cerpen
+
+Prosa Jalin tidak boleh bergantung pada rentetan ayat pendek yang dipisahkan menjadi perenggan satu baris secara berlebihan.
+
+Panduan:
+- bina perenggan berdasarkan satu gerak, pemerhatian, emosi atau unit adegan yang lengkap;
+- variasikan panjang ayat: gabungkan ayat sederhana dan panjang dengan ayat pendek yang benar-benar mempunyai fungsi;
+- ayat satu atau dua perkataan boleh digunakan untuk hentakan emosi, motif atau perubahan fokus, tetapi bukan sebagai rentak lalai;
+- elakkan gaya mekanikal seperti satu fakta = satu perenggan jika beberapa fakta masih berada dalam unit naratif yang sama;
+- dialog boleh berdiri sendiri mengikut giliran penutur, tetapi naratif di antara dialog hendaklah mengalir dan tidak terlalu terfragmentasi;
+- utamakan irama prosa Melayu yang semula jadi, bukan pola “cinematic beats” bahasa Inggeris yang dipindahkan terus ke dalam Bahasa Melayu.
+
 ## Pengayaan kosa kata
 
 Jalin juga berfungsi sebagai pendedahan bahasa, tetapi bukan bahan latihan sekolah.
