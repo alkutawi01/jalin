@@ -18,6 +18,11 @@ Jalin — oleh Adjung ialah platform fiksyen berilustrasi untuk remaja 13–17 t
 8. Semua karya perlu menyokong glosari ringkas pada perkataan terpilih.
 9. Jangan overengineer MVP.
 10. Perubahan besar pada schema, auth, publishing flow atau deployment perlu didokumenkan dahulu.
+11. Jika workflow visual menetapkan Magnific, WAJIB guna Magnific; jangan silently substitute tool lain dan jangan salah nyatakan provenance.
+12. Muka manusia dalam ilustrasi fiksyen Jalin tidak boleh jelas secara default; gunakan crop, belakang, profil separa, siluet atau obstruction kecuali editor manusia meluluskan sebaliknya.
+13. Setiap visual mesti dipaut pada adegan teks spesifik dan disemak fakta adegan sebelum generation.
+14. Jika tidak pasti siapa melakukan tindakan, objek/lokasi canonical, tool, atau face rule: STOP dan semak source terlebih dahulu.
+15. Ikut `docs/VISUAL_GENERATION_GUARDRAILS.md` untuk semua generation, edit dan approval visual.
 
 ## Working style
 
