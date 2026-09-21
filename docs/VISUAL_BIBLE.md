@@ -114,8 +114,12 @@ Prinsip operasi:
 
 ### Kerusi di Beranda — shot list final
 
-1. Hero: wide environmental shot beranda/rumah kampung dengan Pak Long dan Along, tanpa menonjolkan kerusi secara terperinci.
-2. Inline 01: kerusi rotan + kain lusuh pada paku — canonical object image untuk kerusi.
+1. Hero: **kerusi di beranda** sebagai subjek utama dan canonical hero. Jangan cipta hero kedua yang bersaing dengan kerusi ini.
+2. Inline 01: visual baharu mesti membawa beat lain dan tidak menjadikan kerusi sebagai subjek utama sekali lagi.
 3. Inline 02: adegan MENJELANG SENJA sahaja — Pak Long meminta pen dan menulis namanya sendiri. Tunjukkan satu tangan tua Pak Long memegang pen di atas buku nota; tiada tangan kedua, tiada teks boleh dibaca. Jangan gunakan visual ini untuk bahagian lebih awal apabila Along yang menulis cerita bapanya.
+4. Semua visual manusia: muka tidak jelas secara default.
+5. Workflow generation untuk karya ini: **Magnific**.
 
 Maksimum 3 visual untuk cerpen ini.
+
+Rujuk juga `docs/VISUAL_GENERATION_GUARDRAILS.md`.
