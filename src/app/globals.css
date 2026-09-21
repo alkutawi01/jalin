@@ -117,6 +117,7 @@ nav a.active { color: var(--ink); border-bottom: 1px solid var(--clay); padding-
   color: #697678;
 }
 .byline a { color: var(--ink); font-weight: 600; }
+.byline-credit { display: contents; }
 .maya-label {
   margin-left: 2px;
   color: #879093;
