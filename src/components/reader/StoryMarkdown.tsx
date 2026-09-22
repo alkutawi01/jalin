@@ -6,6 +6,33 @@ function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^$()|[\]\\{}]/g, "\\$&");
 }
 
+function mergeLines(markdown: string): string {
+  const normalized = markdown.replace(/\r\n/g, "\n");
+  const sections = normalized.split("\n***\n");
+  return sections.map((section) => {
+    const lines = section.split("\n");
+    const result: string[] = [];
+    let paragraph: string[] = [];
+
+    for (const line of lines) {
+      if (line.trim() === "") {
+        if (paragraph.length > 0) {
+          result.push(paragraph.join(" "));
+          paragraph = [];
+        }
+      } else {
+        paragraph.push(line);
+      }
+    }
+
+    if (paragraph.length > 0) {
+      result.push(paragraph.join(" "));
+    }
+
+    return result.join("\n");
+  }).join("\n\n***\n\n");
+}
+
 function GlossaryTerm({
   term,
   glossary,
@@ -73,7 +100,7 @@ export default function StoryMarkdown({
         )
       }}
     >
-      {children}
+      {mergeLines(children)}
     </ReactMarkdown>
   );
 }
