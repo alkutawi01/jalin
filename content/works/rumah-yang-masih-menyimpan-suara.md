@@ -46,21 +46,21 @@ editorialHistory:
     date: '2026-09-22'
 visuals:
   - role: hero
-    src: 'https://pikaso.cdnpk.net/private/production/5515726032/render.png?token=exp=1790294400~hmac=1fd1a350317c0b590aa953c23bcbbf2dd07970c0564a342b711905ea31570736'
+    src: /visuals/rumah-yang-masih-menyimpan-suara/hero.png
     alt: Rumah lama keluarga Aiman dalam suasana petang yang tenang.
-    provider: Magnific
+    provider: magnific
     creationId: Xm5ZOkMBfo
   - role: inline
-    src: 'https://pikaso.cdnpk.net/private/production/5515733478/render.png?token=exp=1790294400~hmac=aa34844adc6dbf8fa6b65df6891add4d8671bdab426975d19efeb3feac2e7c06'
+    src: /visuals/rumah-yang-masih-menyimpan-suara/inline-1.png
     alt: Meja kecil di bilik Mak dengan sekeping nota tulisan tangan dan barang peribadi.
-    provider: Magnific
+    provider: magnific
     creationId: WDaOL1OcXe
     anchor: 'Dan di atas meja kecil, ada sekeping kertas dengan tulisan tangan Mak.'
     place: after
   - role: inline
-    src: 'https://pikaso.cdnpk.net/private/production/5515734399/render.png?token=exp=1790294400~hmac=8f5e5140b80f248626f4e9d970e152703a258e847b06bb5a76b72b85d9d0715b'
+    src: /visuals/rumah-yang-masih-menyimpan-suara/inline-2.png
     alt: Aiman berdiri di beranda rumah lama sambil memandang halaman pada waktu petang.
-    provider: Magnific
+    provider: magnific
     creationId: mEjYiz2hJQ
     anchor: 'Sebelum mereka pulang, Aiman berdiri sekali lagi di beranda.'
     place: after
