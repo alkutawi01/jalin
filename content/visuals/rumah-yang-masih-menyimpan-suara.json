@@ -1,0 +1,26 @@
+{
+  "work": "rumah-yang-masih-menyimpan-suara",
+  "creator": "Magnific",
+  "assets": [
+    {
+      "role": "hero",
+      "creation_id": "Xm5ZOkMBfo",
+      "model": "Seedream 5 Pro",
+      "prompt": "Jalin House Style. Hero illustration for Malay youth literary story Rumah yang Masih Menyimpan Suara. Scene based on the anchor: Rumah itu masih berdiri seperti dahulu."
+    },
+    {
+      "role": "inline",
+      "name": "rumah-meja",
+      "creation_id": "WDaOL1OcXe",
+      "model": "Seedream 5 Pro",
+      "prompt": "Jalin House Style. Inline illustration based on the anchor: Dan di atas meja kecil, ada sekeping kertas dengan tulisan tangan Mak."
+    },
+    {
+      "role": "inline",
+      "name": "rumah-beranda",
+      "creation_id": "mEjYiz2hJQ",
+      "model": "Seedream 5 Pro",
+      "prompt": "Jalin House Style. Inline illustration based on the anchor: Aiman berdiri sekali lagi di beranda."
+    }
+  ]
+}
