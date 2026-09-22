@@ -12,3 +12,8 @@ export {
   getContributorDisplay,
 } from "./contributors";
 export type { ContributorMeta } from "./contributors";
+
+export type { ContentRepository } from "./repository";
+export { getContentRepository, resetContentRepository } from "./repository-factory";
+export { MarkdownContentRepository } from "./markdown-repository";
+export { DatabaseContentRepository } from "./database-repository";
