@@ -66,6 +66,7 @@ export function EditorialImage({
   kind?: "hero" | "inline";
 }) {
   const figureClass = (kind === "hero" ? "hero-figure" : "inline-figure") + " editorial-image";
+  if (!src) return null;
   return (
     <figure className={figureClass}>
       <img src={src} alt={alt} />
