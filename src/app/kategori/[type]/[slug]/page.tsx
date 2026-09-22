@@ -10,7 +10,8 @@ import {
 } from "../../../../components/reader/StoryChrome";
 import StoryMarkdown from "../../../../components/reader/StoryMarkdown";
 import MobileStoryInfo from "../../../../components/reader/MobileStoryInfo";
-import { getWorkBySlug, getWorksByType } from "../../../../lib/content";
+import { initContentRepository } from "../../../../lib/content";
+import { getWorkBySlug, getWorksByType } from "../../../../lib/content/workLoader";
 import { getContributorDisplay } from "../../../../lib/content/contributors";
 import type {
   BylineCredit,
@@ -24,11 +25,16 @@ import type { WorkType } from "../../../../lib/content/types";
 
 export const dynamicParams = false;
 
-export function generateStaticParams() {
+export async function generateStaticParams() {
   const types: WorkType[] = ["cerpen", "novela", "terjemahan", "bersiri", "fragmen", "sinopsis"];
   const params: { type: string; slug: string }[] = [];
+
+  const repo = await initContentRepository();
+  const useRepo = repo.constructor.name === "DatabaseContentRepository";
+
   for (const type of types) {
-    for (const work of getWorksByType(type)) {
+    const works = useRepo ? repo.getWorksByType(type) : getWorksByType(type);
+    for (const work of works) {
       params.push({ type, slug: work.slug });
     }
   }
@@ -54,13 +60,21 @@ function splitBody(body: string, anchor: string, place: "before" | "after"): [st
   return [body.slice(0, end), body.slice(end)];
 }
 
+async function getWork(slug: string) {
+  const repo = await initContentRepository();
+  if (repo.constructor.name === "DatabaseContentRepository") {
+    return repo.getWork(slug);
+  }
+  return getWorkBySlug(slug);
+}
+
 export default async function WorkPage({
   params
 }: {
   params: Promise<{ type: string; slug: string }>;
 }) {
   const { type, slug } = await params;
-  const work = getWorkBySlug(slug);
+  const work = await getWork(slug);
   if (!work || work.type !== type) {
     notFound();
   }

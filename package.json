@@ -11,7 +11,8 @@
     "validate-content": "node scripts/validate-content.mjs",
     "db:migrate": "npx tsx scripts/db-migrate.ts",
     "db:seed": "npx tsx scripts/db-seed.ts",
-    "db:verify": "npx tsx scripts/db-verify.ts"
+    "db:verify": "npx tsx scripts/db-verify.ts",
+    "content:compare": "npx tsx scripts/content-compare.ts"
   },
   "dependencies": {
     "gray-matter": "^4.0.3",

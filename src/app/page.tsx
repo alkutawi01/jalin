@@ -1,5 +1,6 @@
 import { SiteFooter, SiteHeader } from "../components/reader/StoryChrome";
-import { getAllWorks, getWorksByType } from "../lib/content";
+import { initContentRepository } from "../lib/content";
+import { getAllWorks, getWorksByType } from "../lib/content/workLoader";
 import type { Work, WorkType } from "../lib/content/types";
 
 function formatDate(date: string | undefined): string {
@@ -138,8 +139,16 @@ function EditorialSelection({ works }: { works: Work[] }) {
   );
 }
 
-export default function Home() {
-  const allWorks = getAllWorks();
+async function getWorks() {
+  const repo = await initContentRepository();
+  if (repo.constructor.name === "DatabaseContentRepository") {
+    return repo.getWorks();
+  }
+  return getAllWorks();
+}
+
+export default async function Home() {
+  const allWorks = await getWorks();
 
   const sorted = [...allWorks].sort((a, b) => {
     const aDate = a.updatedAt ?? a.publishedAt ?? "";

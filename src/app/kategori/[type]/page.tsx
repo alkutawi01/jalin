@@ -1,5 +1,6 @@
 import { SiteFooter, SiteHeader } from "../../../components/reader/StoryChrome";
-import { getWorksByType } from "../../../lib/content";
+import { initContentRepository } from "../../../lib/content";
+import { getWorksByType } from "../../../lib/content/workLoader";
 import type { Work, WorkType } from "../../../lib/content/types";
 import { notFound } from "next/navigation";
 
@@ -67,12 +68,20 @@ function WorkCard({ work, type }: { work: Work; type: string }) {
   );
 }
 
+async function getWorks(type: string): Promise<Work[]> {
+  const repo = await initContentRepository();
+  if (repo.constructor.name === "DatabaseContentRepository") {
+    return repo.getWorksByType(type as WorkType);
+  }
+  return getWorksByType(type as WorkType);
+}
+
 export default async function CategoryPage({ params }: { params: Promise<{ type: string }> }) {
   const { type } = await params;
   const meta = CATEGORY_META[type];
   if (!meta) notFound();
 
-  const works = getWorksByType(type as WorkType).sort((a, b) => {
+  const works = (await getWorks(type)).sort((a, b) => {
     const aDate = a.updatedAt ?? a.publishedAt ?? "";
     const bDate = b.updatedAt ?? b.publishedAt ?? "";
     return bDate.localeCompare(aDate);
