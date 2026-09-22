@@ -159,9 +159,20 @@ Nota: `body` untuk MVP kekal dalam fail markdown yang sama; pemisahan `revisions
 
 ## D. Migration strategy
 
-Migrasi dilakukan satu karya pada satu masa, tanpa mengubah pengalaman pembaca, kemudian disusuli pembuangan kod lama. Tiada perubahan schema DB yang diperlukan pada peringkat ini (belum ada DB).
+Migrasi dilakukan dalam lima langkah. **WorkLoader dibina dahulu** supaya setiap karya yang dimigrasi melalui laluan data sebenar yang akan digunakan semua kategori pada masa depan. Tiada perubahan schema DB yang diperlukan pada peringkat ini (belum ada DB).
 
-### Step 1 — Kerusi di Beranda (JLN-CER-0001)
+### Step 1 — WorkLoader foundation
+
+- Bina lapisan abstraksi `src/lib/content/`:
+  - `types.ts` — jenis data Work, Credit, VisualRef, GlossaryEntry, EditorialRevision, Contributor;
+  - `workLoader.ts` — fungsi `getWorkBySlug(slug)`, `getWorksByType(type)`;
+  - `index.ts` — export bersama.
+- Loader membaca `content/works/*.md`, `content/contributors/*.md`, `content/visuals/*.json`, `content/revisions/*.json`.
+- Belum migrate sebarang karya. Belum ubah `page.tsx`. Belum ubah UI.
+
+Hasil: laluan data abstraksi wujud untuk semua karya.
+
+### Step 2 — Migrasi Kerusi di Beranda (JLN-CER-0001)
 
 - Cipta `content/works/kerusi-di-beranda.md` daripada `content/drafts/kerusi-di-beranda.md`:
   - pindahkan metadata penuh ke frontmatter (id, type, genre, status, publishedAt, updatedAt, version);
@@ -173,25 +184,22 @@ Migrasi dilakukan satu karya pada satu masa, tanpa mengubah pengalaman pembaca, 
 
 Hasil: metadata Kerusi hidup dalam satu fail sumber.
 
-### Step 2 — Nombor Giliran 117 (JLN-CER-0002)
+### Step 3 — Tukar reader Kerusi kepada WorkLoader
 
-- Ulang proses yang sama untuk `content/works/nombor-giliran-117.md`.
+- Tukar halaman `src/app/cerpen/kerusi-di-beranda/page.tsx` untuk mengambil data daripada WorkLoader, bukan hard-code.
+
+Hasil: ujian pertama laluan sebenar yang akan digunakan semua karya.
+
+### Step 4 — Migrasi Nombor Giliran 117 (JLN-CER-0002)
+
+- Ulang proses Step 2 untuk `content/works/nombor-giliran-117.md`.
 - Pastikan byline konsisten (kredit boleh memaut contributor key yang sama dengan Kerusi).
 - Catat v1.0 → v1.1 dalam `content/revisions/nombor-giliran-117.json`.
+- Tukar reader Nombor Giliran 117 kepada WorkLoader (seperti Step 3).
 
-Hasil: dua cerpen sumber tunggal.
+Hasil: kedua-dua cerpen sumber tunggal melalui satu loader.
 
-### Step 3 — Reader guna Work loader
-
-- Bina satu utility `WorkLoader` yang membaca `content/works/*.md`, `content/visuals/*.json`, `content/revisions/*.json` dan `content/contributors/*.md`.
-- Tukar halaman `src/app/cerpen/<slug>/page.tsx` untuk mengambil data daripada loader, bukan hard-code.
-- Route `/penulis/[slug]` mula membaca senarai contributor daripada `content/contributors/` (bukan whitelist hard-code).
-- Glosari datang daripada frontmatter Work, bukan `GlossaryMap` TS.
-- Visual berasal dari `visuals/` (production URL), bukan hard-code.
-
-Hasil: satu laluan data bagi semua kategori; metadata TS lama mula diabaikan.
-
-### Step 4 — Buang hard-code lama
+### Step 5 — Buang hard-code lama
 
 - Padam metadata/glossary/visual byline TS yang berlebihan daripada `page.tsx`.
 - Padam/park file `content/drafts/*.md` selepas semua rujukan bertukar ke `content/works/`.
