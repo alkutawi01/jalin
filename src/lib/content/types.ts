@@ -32,6 +32,9 @@ export interface VisualRef {
 
   provider?: string;
   creationId?: string;
+
+  anchor?: string;
+  place?: "before" | "after";
 }
 
 export interface SourceWorkRef {
@@ -51,6 +54,10 @@ export interface EditorialRevision {
 export interface CharacterMeta {
   name: string;
   role: string;
+}
+
+export interface ReaderMeta {
+  note?: string;
 }
 
 export interface Work {
@@ -84,6 +91,8 @@ export interface Work {
   metadata?: {
     characters?: CharacterMeta[];
   };
+
+  reader?: ReaderMeta;
 
   sourceWork?: SourceWorkRef;
 }

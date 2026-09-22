@@ -47,11 +47,17 @@ visuals:
     alt: "Barisan pokok getah lama yang tidak ditoreh, dengan semak mula memenuhi lantai kebun."
     provider: Magnific
     creationId: LwZMwrgswO
+    anchor: "Di hadapan mereka, jalan tanah merah membelah kampung kepada dua. Di sebelah kiri berdiri rumah-rumah baharu berbumbung genting oren; di sebelah kanan terbentang kebun getah yang sudah tiga tahun tidak ditoreh, pokok-pokoknya masih tegak dalam barisan yang semakin dilupakan."
+    place: after
   - role: inline-notebook
     src: "https://pikaso.cdnpk.net/private/production/5508950473/render.png?token=exp=1790294400~hmac=eef4dc2e33c283283eac84dfccbccb77352aa3aac20fed7240527cfb749c85b9"
     alt: "Tangan tua Pak Long memegang pen di atas buku nota di meja beranda."
     provider: Magnific
     creationId: xS3TwzajfW
+    anchor: "Menjelang senja, Pak Long meminta pen."
+    place: before
+reader:
+  note: "Panel Bacaan AI belum dipaparkan sehingga format penilaiannya dimuktamadkan."
 glossary:
   - term: "kemerosotan kognitif"
     meaning: "kemerosotan pada keupayaan mental seperti mengingat, memahami atau berfikir."

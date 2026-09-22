@@ -59,7 +59,9 @@ function normalizeVisuals(visuals: unknown): VisualRef[] {
       src: String(entry.src ?? ""),
       alt: String(entry.alt ?? ""),
       provider: entry.provider ? String(entry.provider) : undefined,
-      creationId: entry.creationId ? String(entry.creationId) : undefined
+      creationId: entry.creationId ? String(entry.creationId) : undefined,
+      anchor: entry.anchor ? String(entry.anchor) : undefined,
+      place: entry.place === "before" ? "before" : "after"
     };
   });
 }
@@ -95,6 +97,9 @@ function parseWorkSlug(slug: string): Work | undefined {
   const metadata = data.metadata && typeof data.metadata === "object"
     ? data.metadata as Work["metadata"]
     : undefined;
+  const reader = data.reader && typeof data.reader === "object"
+    ? { note: (data.reader as Record<string, unknown>).note ? String((data.reader as Record<string, unknown>).note) : undefined }
+    : undefined;
 
   return {
     id: String(data.id ?? ""),
@@ -114,7 +119,8 @@ function parseWorkSlug(slug: string): Work | undefined {
     visuals: normalizeVisuals(data.visuals),
     glossary: normalizeGlossary(data.glossary),
     editorialHistory: normalizeEditorialHistory(data.editorialHistory),
-    metadata
+    metadata,
+    reader
   };
 }
 

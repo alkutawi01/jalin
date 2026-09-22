@@ -60,6 +60,8 @@ visuals:
       sebelum Subuh.
     provider: Magnific
     creationId: jURpFvgLD0
+    anchor: Begitulah hampir setiap pagi.
+    place: after
   - role: inline-hearing-aids
     src: >-
       https://pikaso.cdnpk.net/private/production/5510702867/render.png?token=exp=1790294400~hmac=92c9ca336fd3b24125157ad78fc15e7b08b4aedb9dd43afaf8271bb334d70520
@@ -68,6 +70,8 @@ visuals:
       latihan pada lewat petang.
     provider: Magnific
     creationId: O60hjs7ynm
+    anchor: Alat bantu dengar itu kekal di atas meja hingga Maghrib.
+    place: after
 glossary:
   - term: kehilangan pendengaran sensorineural
     meaning: >-
@@ -106,6 +110,8 @@ glossary:
   - term: sekelumit
     meaning: sedikit sekali; bahagian yang sangat kecil.
     source: Kamus Dewan / glosari editorial Jalin
+reader:
+  note: Penulis Maya bekerja di bawah kawal selia editorial manusia.
 ---
 # Nombor Giliran 117
 
