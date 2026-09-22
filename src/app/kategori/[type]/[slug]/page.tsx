@@ -11,7 +11,7 @@ import {
 import StoryMarkdown from "../../../../components/reader/StoryMarkdown";
 import MobileStoryInfo from "../../../../components/reader/MobileStoryInfo";
 import { getWorkBySlug, getWorksByType } from "../../../../lib/content";
-import { getContributorMeta } from "../../../../lib/content/contributors";
+import { getContributorDisplay } from "../../../../lib/content/contributors";
 import type {
   BylineCredit,
   CharacterMeta,
@@ -73,10 +73,10 @@ export default async function WorkPage({
   const byline: BylineCredit[] = work.credits
     .filter((credit) => credit.byline)
     .map((credit) => {
-      const meta = getContributorMeta(credit.slug);
+      const display = getContributorDisplay(credit.slug);
       return {
-        name: meta?.name ?? credit.slug,
-        maya: meta?.kind === "virtual",
+        name: display.name,
+        maya: display.kind === "virtual",
         href: `/penulis/${credit.slug}`
       };
     });
@@ -95,8 +95,7 @@ export default async function WorkPage({
   const characters: CharacterMeta[] = work.metadata?.characters ?? [];
 
   const editorial: EditorialCredit[] = work.credits.map((credit) => {
-    const meta = getContributorMeta(credit.slug);
-    const name = meta?.name ?? credit.slug;
+    const display = getContributorDisplay(credit.slug);
     const label = credit.role === "initial_draft"
       ? "Penulis"
       : credit.role === "story_editor"
@@ -106,7 +105,7 @@ export default async function WorkPage({
           : credit.role;
     return {
       role: label,
-      name: meta?.kind === "virtual" ? `${name} · Maya` : name
+      name: display.kind === "virtual" ? `${display.name} · Maya` : display.name
     };
   });
 

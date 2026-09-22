@@ -1,28 +1,29 @@
-import fs from "node:fs";
-import path from "node:path";
-import matter from "gray-matter";
+const CONTRIBUTOR_MAP: Record<string, { name: string; kind: "human" | "virtual" }> = {
+  chatgpt: { name: "Rafiq Naim", kind: "virtual" },
+  mimo: { name: "Amir Syafiq", kind: "virtual" },
+  "izzat-anas": { name: "Izzat Anas", kind: "human" },
+};
 
 export interface ContributorMeta {
-  slug: string;
   name: string;
-  kind: string;
-  role?: string;
+  kind: "human" | "virtual";
 }
 
 export function getContributorMeta(slug: string): ContributorMeta | undefined {
-  const contributorPath = path.join(process.cwd(), "content", "contributors", `${slug}.md`);
-  if (!fs.existsSync(contributorPath)) return undefined;
-  const parsed = matter(fs.readFileSync(contributorPath, "utf8"));
-  return {
-    slug,
-    name: String(parsed.data.name ?? slug),
-    kind: String(parsed.data.kind ?? "human"),
-    role: parsed.data.role ? String(parsed.data.role) : undefined
-  };
+  const mapped = CONTRIBUTOR_MAP[slug];
+  if (mapped) return mapped;
+  return undefined;
 }
 
-export function getContributors(slugs: string[]): ContributorMeta[] {
-  return slugs
-    .map((slug) => getContributorMeta(slug))
-    .filter((meta): meta is ContributorMeta => meta !== undefined);
+export function getContributors(): ContributorMeta[] {
+  return Object.entries(CONTRIBUTOR_MAP).map(([slug, meta]) => ({
+    slug,
+    ...meta,
+  }));
+}
+
+export function getContributorDisplay(slug: string): { name: string; kind: "human" | "virtual" } {
+  const mapped = CONTRIBUTOR_MAP[slug];
+  if (mapped) return mapped;
+  return { name: slug, kind: "human" };
 }
