@@ -16,14 +16,17 @@ export type WorkStatus =
 export interface ContributorRef {
   slug: string;
   role: string;
+  byline?: boolean;
 }
 
 export interface GlossaryEntry {
   term: string;
-  definition: string;
+  meaning: string;
+  source: string;
 }
 
 export interface VisualRef {
+  role?: string;
   src: string;
   alt: string;
 
@@ -45,6 +48,11 @@ export interface EditorialRevision {
   date: string;
 }
 
+export interface CharacterMeta {
+  name: string;
+  role: string;
+}
+
 export interface Work {
   id: string;
   slug: string;
@@ -54,6 +62,9 @@ export interface Work {
   status: WorkStatus;
 
   genre?: string;
+  audience?: string;
+  dek?: string;
+  readingMinutes?: number;
 
   publishedAt?: string;
   updatedAt?: string;
@@ -69,6 +80,10 @@ export interface Work {
   glossary: GlossaryEntry[];
 
   editorialHistory: EditorialRevision[];
+
+  metadata?: {
+    characters?: CharacterMeta[];
+  };
 
   sourceWork?: SourceWorkRef;
 }
