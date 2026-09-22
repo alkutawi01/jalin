@@ -137,7 +137,7 @@ function compareWork(markdown: Work, database: Work): string[] {
 }
 
 async function main() {
-  console.log("Content Comparison: Markdown vs Database\n");
+  console.log("WORK PARITY CHECK\n");
 
   const markdownRepo = new MarkdownContentRepository();
   const databaseRepo = new DatabaseContentRepository();
@@ -153,8 +153,6 @@ async function main() {
   const results: ComparisonResult[] = [];
 
   for (const slug of SLUGS) {
-    console.log(`Comparing: ${slug}`);
-
     const markdownWork = markdownRepo.getWork(slug);
     const databaseWork = databaseRepo.getWork(slug);
 
@@ -184,24 +182,21 @@ async function main() {
     });
   }
 
-  console.log("\nResults:\n");
-
-  let allPassed = true;
-
   for (const result of results) {
     const icon = result.passed ? "✓" : "✗";
     console.log(`${icon} ${result.slug}`);
 
     if (!result.passed) {
-      allPassed = false;
       for (const diff of result.differences) {
         console.log(`  - ${diff}`);
       }
     }
   }
 
-  console.log("\n" + (allPassed ? "All comparisons passed!" : "Some comparisons failed."));
-  process.exit(allPassed ? 0 : 1);
+  const totalDiffs = results.reduce((sum, r) => sum + r.differences.length, 0);
+  console.log(`\nDifferences: ${totalDiffs}`);
+
+  process.exit(totalDiffs === 0 ? 0 : 1);
 }
 
 main();

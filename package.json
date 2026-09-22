@@ -12,7 +12,7 @@
     "db:migrate": "npx tsx scripts/db-migrate.ts",
     "db:seed": "npx tsx scripts/db-seed.ts",
     "db:verify": "npx tsx scripts/db-verify.ts",
-    "content:compare": "npx tsx scripts/content-compare.ts"
+    "content:compare": "npx tsx scripts/content-source-compare.ts"
   },
   "dependencies": {
     "gray-matter": "^4.0.3",
