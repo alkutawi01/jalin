@@ -12,6 +12,7 @@ import {
 } from "../../../components/reader/StoryChrome";
 import StoryMarkdown from "../../../components/reader/StoryMarkdown";
 import MobileStoryInfo from "../../../components/reader/MobileStoryInfo";
+import { getWorkBySlug } from "../../../lib/content";
 import type {
   BylineCredit,
   CharacterMeta,
@@ -21,111 +22,85 @@ import type {
   WorkMetaRow
 } from "../../../components/reader/types";
 
-const visuals = {
-  hero: "https://pikaso.cdnpk.net/private/production/5508775655/render.png?token=exp=1790294400~hmac=edf32d50f9b9bd85575d5cdcab4f16e2550c5134cac333d5302fb1857b58149c",
-  nasiLemak: "https://pikaso.cdnpk.net/private/production/5510701304/render.png?token=exp=1790294400~hmac=b257ac0ac3e377e1484afed0a34b05b42f3db2b4a9b4a9523bd14bd42d7815c0",
-  hearingAids: "https://pikaso.cdnpk.net/private/production/5510702867/render.png?token=exp=1790294400~hmac=92c9ca336fd3b24125157ad78fc15e7b08b4aedb9dd43afaf8271bb334d70520"
-};
-
-const title = "Nombor Giliran 117";
-const rights = "NOMBOR GILIRAN 117 · © ADJUNG 2026 · ILUSTRASI JALIN";
-
-const glossary: GlossaryMap = {
-  "kehilangan pendengaran sensorineural": {
-    meaning: "kehilangan pendengaran yang berpunca daripada masalah pada telinga dalam atau laluan saraf pendengaran.",
-    source: "Glosari editorial Jalin"
-  },
-  "alat bantu dengar": {
-    meaning: "alat elektronik kecil yang membantu menguatkan bunyi untuk orang yang mengalami kehilangan pendengaran.",
-    source: "Glosari editorial Jalin"
-  },
-  "bahasa isyarat": {
-    meaning: "bahasa visual yang menggunakan bentuk dan pergerakan tangan, ekspresi serta ruang untuk berkomunikasi.",
-    source: "Glosari editorial Jalin"
-  },
-  "pereka antara muka": {
-    meaning: "orang yang mereka bentuk paparan dan cara pengguna berinteraksi dengan aplikasi atau sistem digital.",
-    source: "Glosari editorial Jalin"
-  },
-  "saban": {
-    meaning: "setiap; kerap berlaku pada setiap waktu tertentu.",
-    source: "Kamus Dewan / glosari editorial Jalin"
-  },
-  "meresap": {
-    meaning: "masuk atau tersebar perlahan-lahan sehingga menyeluruh.",
-    source: "Kamus Dewan / glosari editorial Jalin"
-  },
-  "sayup": {
-    meaning: "kedengaran atau kelihatan samar kerana jauh.",
-    source: "Kamus Dewan / glosari editorial Jalin"
-  },
-  "berderau": {
-    meaning: "terasa berdebar atau bergoncang secara tiba-tiba kerana terkejut, cemas atau takut.",
-    source: "Glosari editorial Jalin"
-  },
-  "sekelumit": {
-    meaning: "sedikit sekali; bahagian yang sangat kecil.",
-    source: "Kamus Dewan / glosari editorial Jalin"
-  }
-};
-
-const byline: BylineCredit[] = [
-  { name: "Nara Zahin", maya: true },
-  { name: "Rafiq Naim", maya: true }
-];
-
-const workMeta: WorkMetaRow[] = [
-  { label: "Bentuk", value: "Cerpen" },
-  { label: "Genre", value: "Keluarga" },
-  { label: "Bacaan", value: "± 11 min" },
-  { label: "Status", value: "Karya asli Jalin" },
-  { label: "ID", value: "JLN-CER-0002" },
-  { label: "Versi", value: "v1.1" }
-];
-
-const characters: CharacterMeta[] = [
-  { name: "Rohani", role: "Ibu" },
-  { name: "Danish", role: "Anak" },
-  { name: "Azman", role: "Suami Rohani" }
-];
-
-const editorial: EditorialCredit[] = [
-  { role: "Penulis", name: "Nara Zahin · Maya" },
-  { role: "Penulis & penyemak", name: "Rafiq Naim · Maya" },
-  { role: "Editor", name: "Izzat Anas" }
-];
-
-const mobileInfo: StoryInfoData = {
-  work: workMeta,
-  characters,
-  editorial,
-  note: "Penulis Maya bekerja di bawah kawal selia editorial manusia."
-};
-
-function splitAfter(text: string, anchor: string): [string, string] {
-  const index = text.indexOf(anchor);
-  if (index < 0) return [text, ""];
-  const end = index + anchor.length;
-  return [text.slice(0, end), text.slice(end)];
+function getContributorMeta(slug: string): { name: string; kind: string } | undefined {
+  const contributorPath = path.join(process.cwd(), "content", "contributors", `${slug}.md`);
+  if (!fs.existsSync(contributorPath)) return undefined;
+  const parsed = matter(fs.readFileSync(contributorPath, "utf8"));
+  return {
+    name: String(parsed.data.name ?? slug),
+    kind: String(parsed.data.kind ?? "human")
+  };
 }
 
+const rights = "NOMBOR GILIRAN 117 · © ADJUNG 2026 · ILUSTRASI JALIN";
+
 export default function NomborGiliran117Page() {
-  const raw = fs.readFileSync(
-    path.join(process.cwd(), "content/drafts/nombor-giliran-117.md"),
-    "utf8"
-  );
-  const parsed = matter(raw);
-  const internalNotesIndex = parsed.content.indexOf("## Nota editorial dalaman");
-  const publicStory = (internalNotesIndex >= 0
-    ? parsed.content.slice(0, internalNotesIndex)
-    : parsed.content
-  ).replace(/\n---\s*$/, "").trim();
+  const work = getWorkBySlug("nombor-giliran-117");
+  if (!work) {
+    throw new Error("Work 'nombor-giliran-117' tidak ditemui");
+  }
+
+  const glossary: GlossaryMap = {};
+  for (const entry of work.glossary) {
+    glossary[entry.term] = { meaning: entry.meaning, source: entry.source };
+  }
+
+  const byline: BylineCredit[] = work.credits
+    .filter((credit) => credit.byline)
+    .map((credit) => {
+      const meta = getContributorMeta(credit.slug);
+      return {
+        name: meta?.name ?? credit.slug,
+        maya: meta?.kind === "virtual",
+        href: `/penulis/${credit.slug}`
+      };
+    });
+
+  const workMeta: WorkMetaRow[] = [
+    { label: "Bentuk", value: "Cerpen" },
+    { label: "Genre", value: work.genre ?? "Keluarga" },
+    { label: "Bacaan", value: work.readingMinutes ? `± ${work.readingMinutes} min` : "—" },
+    { label: "Status", value: "Karya asli Jalin" },
+    { label: "ID", value: work.id },
+    { label: "Versi", value: work.version }
+  ];
+
+  const characters: CharacterMeta[] = work.metadata?.characters ?? [];
+
+  const editorial: EditorialCredit[] = work.credits.map((credit) => {
+    const meta = getContributorMeta(credit.slug);
+    const name = meta?.name ?? credit.slug;
+    const label = credit.role === "initial_draft"
+      ? "Penulis"
+      : credit.role === "story_editor"
+        ? "Penulis & penyemak"
+        : credit.role === "final_editor"
+          ? "Editor"
+          : credit.role;
+    return {
+      role: label,
+      name: meta?.kind === "virtual" ? `${name} · Maya` : name
+    };
+  });
+
+  const mobileInfo: StoryInfoData = {
+    work: workMeta,
+    characters,
+    editorial,
+    note: "Penulis Maya bekerja di bawah kawal selia editorial manusia."
+  };
+
+  const publicStory = work.body;
 
   const kitchenAnchor = "Begitulah hampir setiap pagi.";
   const hearingAnchor = "Alat bantu dengar itu kekal di atas meja hingga Maghrib.";
 
   const [throughKitchen, afterKitchen] = splitAfter(publicStory, kitchenAnchor);
-  const [throughHearing, afterHearing] = splitAfter(afterKitchen, hearingAnchor);
+  const [throughHearing, afterHearing] = splitAfter(afterKitchen ?? "", hearingAnchor);
+
+  const hero = work.visuals.find((visual) => visual.role === "hero");
+  const nasiLemakViz = work.visuals.find((visual) => visual.role === "inline-nasi-lemak");
+  const hearingAidsViz = work.visuals.find((visual) => visual.role === "inline-hearing-aids");
 
   return (
     <>
@@ -134,16 +109,16 @@ export default function NomborGiliran117Page() {
       <main>
         <StoryHead
           kicker="Cerpen · Keluarga"
-          title={title}
-          dek="Seorang ibu menunggu nombor gilirannya dipanggil, sambil mengingati tahun-tahun ketika dialah yang tidak pernah berhenti menunggu untuk anaknya."
+          title={work.title}
+          dek={work.dek ?? ""}
           byline={byline}
         />
 
         <div className="site-shell">
           <EditorialImage
             kind="hero"
-            src={visuals.hero}
-            alt="Seorang wanita Melayu berusia duduk di kerusi menunggu hospital sambil memegang nombor giliran; wajahnya tidak kelihatan jelas."
+            src={hero?.src ?? ""}
+            alt={hero?.alt ?? ""}
             rights={rights}
           />
         </div>
@@ -158,16 +133,16 @@ export default function NomborGiliran117Page() {
             <StoryMarkdown glossary={glossary}>{throughKitchen}</StoryMarkdown>
 
             <EditorialImage
-              src={visuals.nasiLemak}
-              alt="Bakul plastik biru berisi bungkusan nasi lemak di dapur rumah sederhana sebelum Subuh."
+              src={nasiLemakViz?.src ?? ""}
+              alt={nasiLemakViz?.alt ?? ""}
               rights={rights}
             />
 
             <StoryMarkdown glossary={glossary}>{throughHearing}</StoryMarkdown>
 
             <EditorialImage
-              src={visuals.hearingAids}
-              alt="Sepasang alat bantu dengar di atas meja kecil bersama beg sekolah dan buku latihan pada lewat petang."
+              src={hearingAidsViz?.src ?? ""}
+              alt={hearingAidsViz?.alt ?? ""}
               rights={rights}
             />
 
@@ -177,11 +152,18 @@ export default function NomborGiliran117Page() {
           <RightRail characters={characters} editorial={editorial} />
         </div>
 
-        <StoryEnd title={title} />
+        <StoryEnd title={work.title} />
         <MobileStoryInfo data={mobileInfo} />
       </main>
 
       <SiteFooter />
     </>
   );
+}
+
+function splitAfter(text: string, anchor: string): [string, string] {
+  const index = text.indexOf(anchor);
+  if (index < 0) return [text, ""];
+  const end = index + anchor.length;
+  return [text.slice(0, end), text.slice(end)];
 }
