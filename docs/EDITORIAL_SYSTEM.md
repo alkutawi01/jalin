@@ -8,9 +8,18 @@ Kualiti, keselamatan pembaca remaja, provenance dan kesinambungan cerita mengata
 
 ## Status kandungan
 
-DRAFT → REVIEW → RIGHTS_CHECK → VISUAL_REVIEW → READY → PUBLISHED
+### Current MVP States
+`DRAFT → REVIEW → READY → PUBLISHED`
 
-`RIGHTS_CHECK` wajib untuk Sinopsis, Terjemahan dan Fragmen yang berasaskan karya pihak lain. Untuk Cerpen/Novela/Bersiri asli, gate ini boleh ditanda `N/A`.
+Optional end states: `ARCHIVED` (karya yang pernah terbit tetapi ditarik), `REJECTED` (karya yang tidak layak terbit).
+
+### Future Editorial Gates (not yet implemented)
+Apabila sistem berkembang, state machine akan bertambah:
+
+- `RIGHTS_CHECK` — wajib untuk Sinopsis, Terjemahan dan Fragmen yang berasaskan karya pihak lain. Untuk Cerpen/Novela/Bersiri asli, gate ini boleh ditanda `N/A`.
+- `VISUAL_REVIEW` — semakan visual sebelum terbit, terutama untuk karya yang mempunyai ilustrasi.
+
+Untuk MVP, dua gate ini dilakukan secara manual di luar state machine.
 
 Manusia mempunyai kuasa akhir untuk publish/unpublish.
 

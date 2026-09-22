@@ -10,7 +10,8 @@ Cadangan field:
 - id
 - slug
 - title
-- type: synopsis | short_story | novella | translation | fragment | serial_episode
+- type: cerpen | novela | bersiri | terjemahan | fragmen | sinopsis
+- kind: cerpen | novela | bersiri (Novela and cerpen are single works; bersiri has multiple episodes)
 - series_id: nullable
 - genre
 - dek / short_description
@@ -18,9 +19,26 @@ Cadangan field:
 - access_mode: free | subscriber | promotional
 - hero_asset_id
 - source_work_id: nullable
+- section: nullable (e.g. "rumah" section for targeted homepage links)
+- sectionPath: nullable (e.g. "/cerpen" for homepage cards)
 - first_published_at
 - updated_at
 - current_version
+
+### Work ID Convention
+Format: `JLN-{TYPE}-{NUMBER}` where:
+- `CER` = Cerpen
+- `NOV` = Novela
+- `BER` = Bersiri
+- `TER` = Terjemahan
+- `FRA` = Fragmen
+- `SIN` = Sinopsis
+
+Example: `JLN-CER-0001`, `JLN-NOV-0001`
+
+### Slug Format
+- Cerpen, Novela, Fragmen, Sinopsis: `/k/{slug}` (e.g. `/k/rumah`)
+- Bersiri episodes: `/k/{slug}` for each episode (e.g. `/k/cerita-hujan-ep1`)
 
 ## Content body and pagination
 
@@ -47,7 +65,8 @@ Pagination ialah presentation/read-state concern, bukan taxonomy kandungan.
 - slug
 - title
 - synopsis
-- status
+- kind: continuous | anthology
+- status: ongoing | completed
 - hero_asset_id
 
 Setiap episod Bersiri direkodkan sebagai Work dengan `type: serial_episode` dan `series_id`.
@@ -123,6 +142,10 @@ Makna mesti ringkas.
 
 ### Internal-only contributor metadata
 Mapping model seperti Claude/ChatGPT tidak perlu dipaparkan pada byline awam kecuali editor memilih untuk berbuat demikian.
+
+AI tools names must never appear publicly. Use human pen names:
+- ChatGPT → "Rafiq Naim" (writing assistant)
+- MiMo → "Amir Syafiq" (editorial assistant)
 
 ## Credit
 

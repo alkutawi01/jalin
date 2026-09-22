@@ -10,7 +10,7 @@ MVP Jalin perlu membuktikan empat perkara:
 
 1. pengalaman membaca fiksyen Melayu yang premium dan selesa;
 2. sistem editorial yang teliti dan boleh diaudit;
-3. kandungan pelbagai bentuk: Cerpen, Novel Pendek, dan Bersiri;
+3. kandungan pelbagai bentuk: Cerpen, Novela, dan Bersiri;
 4. akaun asas yang membolehkan pembaca simpan dan sambung bacaan.
 
 MVP **tidak** perlu membuktikan komuniti, gamifikasi, komen, self-publishing atau subscription berbayar.
@@ -21,10 +21,10 @@ MVP **tidak** perlu membuktikan komuniti, gamifikasi, komen, self-publishing ata
 
 - Homepage Jalin.
 - Halaman indeks Cerpen.
-- Halaman indeks Novel Pendek.
+- Halaman indeks Novela.
 - Halaman indeks Bersiri.
 - Halaman karya.
-- Halaman bab untuk Novel Pendek/Bersiri.
+- Halaman bab untuk Novela/Bersiri.
 - Carian asas.
 - Genre filter asas.
 - Akaun pengguna.
@@ -149,7 +149,7 @@ Semak:
 - image rights strip;
 - no horizontal overflow.
 
-## B3. Novel Pendek reader
+## B3. Novela reader
 
 Bina komponen reusable:
 
@@ -163,7 +163,7 @@ Bina komponen reusable:
 
 ## B4. Bersiri reader
 
-Guna reader Novel Pendek sebagai asas, tambah:
+Guna reader Novela sebagai asas, tambah:
 
 - status siri;
 - latest episode/chapter;
@@ -325,7 +325,7 @@ Minimum sections:
 - featured work;
 - latest;
 - Cerpen;
-- Novel Pendek;
+- Novela;
 - Bersiri;
 - continue reading for logged-in users.
 
@@ -336,7 +336,7 @@ Avoid overcrowding.
 Create:
 
 - `/cerpen`
-- `/novel-pendek`
+- `/novela`
 - `/bersiri`
 
 Cards show only useful metadata:
@@ -403,7 +403,7 @@ Record recently opened works/chapters.
 Cerpen:
 - percentage or stable reading position.
 
-Novel/Bersiri:
+Novela/Bersiri:
 - chapter + position.
 
 Update with sensible throttling; do not write on every scroll pixel.
@@ -450,8 +450,8 @@ Editorial rail/panel:
 Assign stable IDs, e.g.:
 
 - `JLN-CER-0001`
-- `JLN-NPD-0001`
-- `JLN-BSR-0001`
+- `JLN-NOV-0001`
+- `JLN-BER-0001`
 
 Do not reuse IDs after publication.
 
@@ -496,7 +496,7 @@ Kamus Dewan Edisi Keempat is primary Malay-language reference when applicable.
 
 Enforce:
 
-`DRAFT → REVIEW → VISUAL_REVIEW → READY → PUBLISHED`
+`DRAFT → REVIEW → READY → PUBLISHED`
 
 Only authorized human editor can transition to PUBLISHED or unpublish.
 
@@ -635,7 +635,7 @@ Target launch pack should include all three pillars.
 Practical minimum:
 
 - several Cerpen;
-- at least one complete Novel Pendek;
+- at least one complete Novela;
 - at least one Bersiri with enough initial chapters to establish value.
 
 Exact quantity is editorial, not technical. Quality and continuity override volume.
@@ -836,7 +836,7 @@ Exceptions:
 ## Immediate next tasks
 
 1. Complete the remaining visual acceptance checks for `Kerusi di Beranda` at representative desktop/mobile widths.
-2. Build the Novel Pendek reader prototype using the extracted reusable reader components.
+2. Build the Novela reader prototype using the extracted reusable reader components.
 3. Build the Bersiri reader prototype from the same reader foundation.
 4. Compare all three formats and close any shared-component gaps.
 5. Then lock PostgreSQL schema v1.

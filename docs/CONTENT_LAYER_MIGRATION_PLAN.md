@@ -1,5 +1,7 @@
 # Jalin Content Layer Migration Plan v1
 
+> **⚠️ STALE**: Dokumen ini telah digantikan oleh `ADMIN_CONSOLE_PLAN.md`. Content layer migration kini dilaksanakan sebagai Fasa A dalam `ADMIN_CONSOLE_PLAN.md`. Dokumen ini dikekalkan untuk rujukan sejarah sahaja.
+
 Status: DRAF FOR SEMAKAN — belum kod dilaksanakan
 Tarikh: 22 September 2026
 Author: OpenCode/big-pickle, di bawah arahan editorial AI (Rafiq Naim) dan manusia (Izzat)

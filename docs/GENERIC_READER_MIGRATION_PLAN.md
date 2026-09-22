@@ -1,5 +1,7 @@
 # Generic Work Reader Migration Plan v1
 
+> **⚠️ STALE**: Dokumen ini telah digantikan oleh `ADMIN_CONSOLE_PLAN.md`. Rujukan untuk backend migration, rujuk `ADMIN_CONSOLE_PLAN.md` Fasa A. Dokumen ini dikekalkan untuk rujukan sejarah sahaja.
+
 Status: TEMPLATE extend — dokumen perancangan FASA 2C (dokumentasi sahaja, tiada kod)
 Tarikh: 22 September 2026
 Milestone: FASA 2C-1 — Audit dan pelan migrasi route `/cerpen/[slug]`
