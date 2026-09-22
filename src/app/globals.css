@@ -264,6 +264,38 @@ dd { margin: 0; color: var(--ink); }
 .landing p { color: var(--ink-soft); }
 .story-link { border-bottom: 1px solid var(--clay); padding-bottom: 4px; }
 
+.category-head { padding: 56px 0 12px; }
+.category-kicker {
+  margin: 0 0 8px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .13em;
+  color: var(--clay);
+}
+.category-head h1 { margin: 0; font-size: 44px; line-height: 1.1; }
+.category-intro { color: var(--ink-soft); margin: 12px 0 0; font-size: 17px; }
+
+.work-list { display: grid; gap: 18px; padding: 24px 0 72px; }
+.work-card {
+  border-top: 1px solid var(--line);
+  transition: border-color .18s ease;
+}
+.work-card a { display: block; padding: 26px 4px 22px; }
+.work-card:hover { border-color: var(--clay); }
+.work-card-meta {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--ink-soft);
+}
+.work-card-title { margin: 10px 0 8px; font-size: 27px; line-height: 1.25; }
+.work-card-dek { margin: 0; color: var(--ink-soft); font-size: 16px; line-height: 1.55; }
+.work-card-updated { margin-top: 14px; font-size: 13px; color: var(--ink-soft); }
+
 @media (max-width: 1050px) {
   .reading-grid { grid-template-columns: minmax(0, 700px) 190px; justify-content: center; }
   .left-rail { display: none; }
