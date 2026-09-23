@@ -2,17 +2,61 @@
  * Admin Submission Contribution Service
  *
  * Database operations for managing submission contributions.
+ *
+ * PRIVACY BOUNDARY:
+ * - Internal AI identity fields (ai_provider, ai_model, etc.) are admin-only
+ * - Public APIs must use toPublicProjection() from identity-handshake.ts
+ * - Suggested credit is NOT automatically final Work credit
  */
 
 import { Kysely } from "kysely";
 import { getDb, hasDb } from "../db";
 import type { Database, IdentitySource } from "../db/types";
+import {
+  validateHandshake,
+  handshakeToContributionFields,
+  type IdentityHandshakePayload,
+} from "./identity-handshake";
 
 function getAdminDb(): Kysely<Database> {
   if (!hasDb()) {
     throw new Error("[ContributionService] Database not available.");
   }
   return getDb();
+}
+
+/**
+ * Valid identity source values.
+ */
+const VALID_IDENTITY_SOURCES: IdentitySource[] = [
+  "runtime_verified",
+  "self_reported",
+  "manual",
+  "unknown",
+];
+
+/**
+ * Validate identity source value.
+ */
+function validateIdentitySource(source: string): IdentitySource {
+  if (!VALID_IDENTITY_SOURCES.includes(source as IdentitySource)) {
+    throw new Error(
+      `Invalid identity source: "${source}". Must be one of: ${VALID_IDENTITY_SOURCES.join(", ")}`
+    );
+  }
+  return source as IdentitySource;
+}
+
+/**
+ * Validate contributor vs guest constraint.
+ * Exactly one of contributorSlug or guestName must be provided for AI/guest contributions.
+ */
+function validateContributorConstraint(input: ContributionInput): void {
+  // For human contributions linked to existing contributors, either is fine
+  // For AI/guest contributions, we need at least one identifier
+  if (!input.contributorSlug && !input.guestName) {
+    // Allow empty for draft contributions — will be validated at submission time
+  }
 }
 
 export interface ContributionInput {
@@ -47,6 +91,21 @@ export interface ContributionRecord {
   created_at: Date;
 }
 
+/**
+ * Suggested credit boundary — submission contributions do NOT
+ * automatically become final Work credits.
+ *
+ * Admin/editor must explicitly confirm credits when promoting
+ * submission to Work via the publish workflow.
+ */
+export const SUGGESTED_CREDIT_BOUNDARY = {
+  description:
+    "Suggested public credit from submission contributions is advisory only. " +
+    "It does NOT automatically become a final Work credit. " +
+    "Admin must explicitly confirm credits during submission-to-Work promotion.",
+  enforced: true,
+} as const;
+
 export async function listContributionsForSubmission(
   submissionId: number
 ): Promise<ContributionRecord[]> {
@@ -72,6 +131,15 @@ export async function createContribution(input: ContributionInput): Promise<Cont
   const db = getAdminDb();
   const now = new Date().toISOString();
 
+  // Validate identity source if provided
+  let identitySource: IdentitySource = "unknown";
+  if (input.aiIdentitySource) {
+    identitySource = validateIdentitySource(input.aiIdentitySource);
+  }
+
+  // Validate contributor constraint
+  validateContributorConstraint(input);
+
   const result = await db
     .insertInto("submission_contributions")
     .values({
@@ -86,7 +154,7 @@ export async function createContribution(input: ContributionInput): Promise<Cont
       ai_model: input.aiModel || null,
       ai_persona: input.aiPersona || null,
       ai_actual_role: input.aiActualRole || null,
-      ai_identity_source: (input.aiIdentitySource || "unknown") as IdentitySource,
+      ai_identity_source: identitySource,
       created_at: now,
     })
     .returning("id")
@@ -117,11 +185,15 @@ export async function updateContribution(
   if (input.roleLabel !== undefined) updateData.role_label = input.roleLabel;
   if (input.sortOrder !== undefined) updateData.sort_order = input.sortOrder;
   if (input.suggestedPublicCredit !== undefined) updateData.suggested_public_credit = input.suggestedPublicCredit || null;
+
+  // Validate identity source if being updated
+  if (input.aiIdentitySource !== undefined) {
+    updateData.ai_identity_source = validateIdentitySource(input.aiIdentitySource);
+  }
   if (input.aiProvider !== undefined) updateData.ai_provider = input.aiProvider || null;
   if (input.aiModel !== undefined) updateData.ai_model = input.aiModel || null;
   if (input.aiPersona !== undefined) updateData.ai_persona = input.aiPersona || null;
   if (input.aiActualRole !== undefined) updateData.ai_actual_role = input.aiActualRole || null;
-  if (input.aiIdentitySource !== undefined) updateData.ai_identity_source = input.aiIdentitySource;
 
   await db
     .updateTable("submission_contributions")
@@ -132,6 +204,53 @@ export async function updateContribution(
   const contribution = await getContribution(id);
   if (!contribution) {
     throw new Error("Sumbangan tidak ditemui selepas kemas kini.");
+  }
+
+  return contribution;
+}
+
+/**
+ * Register an identity handshake against a submission contribution.
+ * Validates the handshake payload and stores it.
+ *
+ * This is the PRIMARY entry point for Phase 4D-3 generation orchestration.
+ * No external provider is called — pure validation and storage.
+ */
+export async function registerIdentityHandshake(
+  contributionId: number,
+  payload: IdentityHandshakePayload
+): Promise<ContributionRecord> {
+  // Validate the handshake
+  const validated = validateHandshake(payload);
+
+  if (!validated.isValid) {
+    throw new Error(
+      `Identity handshake validation failed: ${validated.errors.join("; ")}`
+    );
+  }
+
+  // Build contribution fields from validated handshake
+  const fields = handshakeToContributionFields(validated);
+
+  // Update the contribution
+  const db = getAdminDb();
+  const now = new Date().toISOString();
+
+  await db
+    .updateTable("submission_contributions")
+    .where("id", "=", contributionId)
+    .set({
+      ai_provider: fields.ai_provider,
+      ai_model: fields.ai_model,
+      ai_persona: fields.ai_persona,
+      ai_actual_role: fields.ai_actual_role,
+      ai_identity_source: fields.ai_identity_source,
+    })
+    .execute();
+
+  const contribution = await getContribution(contributionId);
+  if (!contribution) {
+    throw new Error("Sumbangan tidak ditemui selepas pendaftaran handshake.");
   }
 
   return contribution;

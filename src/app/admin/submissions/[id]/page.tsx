@@ -372,6 +372,64 @@ export default function EditSubmissionPage() {
 
         {editingContribution && (
           <div className="admin-credit-form">
+            <div className="admin-section" style={{ marginBottom: "1rem", padding: "0.75rem", background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: "6px" }}>
+              <h4 style={{ margin: "0 0 0.25rem", fontSize: "0.85rem", color: "#166534" }}>Identiti Awam (Paparan kepada pembaca)</h4>
+              <p style={{ margin: 0, fontSize: "0.8rem", color: "#15803d" }}>
+                Bahagian ini menentukan nama dan peranan yang DIPAPARKAN kepada pembaca. Identiti teknikal AI TIDAK akan didedahkan.
+              </p>
+            </div>
+
+            <div className="admin-form-row">
+              <div className="admin-form-group">
+                <label>Persona / Nama Awam</label>
+                <input
+                  type="text"
+                  value={editingContribution.ai_persona || editingContribution.guest_name || ""}
+                  onChange={(e) => setEditingContribution((prev) => ({
+                    ...prev,
+                    ai_persona: e.target.value || undefined,
+                    guest_name: e.target.value || undefined,
+                  }))}
+                  placeholder="Contoh: Rafiq Naim, Nara Zahin, Amir Syafiq"
+                />
+                <span className="admin-form-hint">Nama yang akan dipaparkan dalam kredit awam</span>
+              </div>
+              <div className="admin-form-group">
+                <label>Peranan Awam</label>
+                <input
+                  type="text"
+                  value={editingContribution.role_label || ""}
+                  onChange={(e) => setEditingContribution((prev) => ({
+                    ...prev,
+                    role_label: e.target.value,
+                  }))}
+                  placeholder="Contoh: Penulis, Penyunting, Penyemak"
+                />
+              </div>
+              <div className="admin-form-group">
+                <label>Kredit Awam (Cadangan)</label>
+                <input
+                  type="text"
+                  value={editingContribution.suggested_public_credit || ""}
+                  onChange={(e) => setEditingContribution((prev) => ({
+                    ...prev,
+                    suggested_public_credit: e.target.value || undefined,
+                  }))}
+                  placeholder="Teks kredit yang dicadangkan"
+                />
+                <span className="admin-form-hint" style={{ color: "#b45309" }}>
+                  Cadangan sahaja — TIDAK akan menjadi kredit muktamad secara automatik
+                </span>
+              </div>
+            </div>
+
+            <div className="admin-section" style={{ margin: "1rem 0", padding: "0.75rem", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: "6px" }}>
+              <h4 style={{ margin: "0 0 0.25rem", fontSize: "0.85rem", color: "#991b1b" }}>Identiti Dalaman (Admin sahaja — TIDAK didedahkan kepada awam)</h4>
+              <p style={{ margin: 0, fontSize: "0.8rem", color: "#b91c1c" }}>
+                Maklumat teknikal AI hanya untuk rujukan admin. Provider/model/tool TIDAK akan sesekali muncul di laman awam.
+              </p>
+            </div>
+
             <div className="admin-form-row">
               <div className="admin-form-group">
                 <label>Penyumbang Slug</label>
@@ -385,20 +443,6 @@ export default function EditSubmissionPage() {
                 />
               </div>
               <div className="admin-form-group">
-                <label>Nama Tetamu</label>
-                <input
-                  type="text"
-                  value={editingContribution.guest_name || ""}
-                  onChange={(e) => setEditingContribution((prev) => ({
-                    ...prev,
-                    guest_name: e.target.value || undefined,
-                  }))}
-                />
-              </div>
-            </div>
-
-            <div className="admin-form-row">
-              <div className="admin-form-group">
                 <label>Peranan Key</label>
                 <input
                   type="text"
@@ -406,28 +450,6 @@ export default function EditSubmissionPage() {
                   onChange={(e) => setEditingContribution((prev) => ({
                     ...prev,
                     role_key: e.target.value || undefined,
-                  }))}
-                />
-              </div>
-              <div className="admin-form-group">
-                <label>Peranan Label</label>
-                <input
-                  type="text"
-                  value={editingContribution.role_label || ""}
-                  onChange={(e) => setEditingContribution((prev) => ({
-                    ...prev,
-                    role_label: e.target.value,
-                  }))}
-                />
-              </div>
-              <div className="admin-form-group">
-                <label>Kredit Awam</label>
-                <input
-                  type="text"
-                  value={editingContribution.suggested_public_credit || ""}
-                  onChange={(e) => setEditingContribution((prev) => ({
-                    ...prev,
-                    suggested_public_credit: e.target.value || undefined,
                   }))}
                 />
               </div>
@@ -457,20 +479,6 @@ export default function EditSubmissionPage() {
                 />
               </div>
               <div className="admin-form-group">
-                <label>AI Persona</label>
-                <input
-                  type="text"
-                  value={editingContribution.ai_persona || ""}
-                  onChange={(e) => setEditingContribution((prev) => ({
-                    ...prev,
-                    ai_persona: e.target.value || undefined,
-                  }))}
-                />
-              </div>
-            </div>
-
-            <div className="admin-form-row">
-              <div className="admin-form-group">
                 <label>AI Peranan Sebenar</label>
                 <input
                   type="text"
@@ -481,6 +489,9 @@ export default function EditSubmissionPage() {
                   }))}
                 />
               </div>
+            </div>
+
+            <div className="admin-form-row">
               <div className="admin-form-group">
                 <label>Sumber Identiti</label>
                 <select
@@ -516,23 +527,41 @@ export default function EditSubmissionPage() {
             <table className="admin-table">
               <thead>
                 <tr>
-                  <th>Penyumbang</th>
+                  <th>Identiti Awam</th>
                   <th>Peranan</th>
                   <th>Kredit Awam</th>
-                  <th>AI Persona</th>
-                  <th>Identiti</th>
+                  <th>Identiti Dalaman</th>
+                  <th>Sumber</th>
                   <th>Aksi</th>
                 </tr>
               </thead>
               <tbody>
                 {contributions.map((c) => (
                   <tr key={c.id}>
-                    <td>{c.contributor_slug || c.guest_name || "—"}</td>
-                    <td>{c.role_label}</td>
-                    <td>{c.suggested_public_credit || "—"}</td>
-                    <td>{c.ai_persona || "—"}</td>
                     <td>
-                      <span className={`admin-kind admin-kind-${c.ai_identity_source === "runtime_verified" ? "human" : "virtual"}`}>
+                      <strong>{c.ai_persona || c.guest_name || c.contributor_slug || "—"}</strong>
+                    </td>
+                    <td>{c.role_label}</td>
+                    <td>
+                      <span style={{ fontSize: "0.85em", color: "#6b7280" }}>
+                        {c.suggested_public_credit || "—"}
+                      </span>
+                      {c.suggested_public_credit && (
+                        <span style={{ fontSize: "0.75em", color: "#b45309", marginLeft: "4px" }}>(cadangan)</span>
+                      )}
+                    </td>
+                    <td>
+                      {c.ai_provider ? (
+                        <span style={{ fontSize: "0.8em", color: "#6b7280" }}>
+                          {c.ai_provider}/{c.ai_model || "?"}
+                          {c.ai_actual_role && <span style={{ color: "#9ca3af" }}> ({c.ai_actual_role})</span>}
+                        </span>
+                      ) : (
+                        <span style={{ color: "#9ca3af" }}>—</span>
+                      )}
+                    </td>
+                    <td>
+                      <span className={`admin-kind admin-kind-${c.ai_identity_source === "runtime_verified" ? "human" : c.ai_identity_source === "manual" ? "organization" : "virtual"}`}>
                         {c.ai_identity_source}
                       </span>
                     </td>
