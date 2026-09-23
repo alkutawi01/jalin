@@ -66,11 +66,15 @@ export class DatabaseContentRepository implements ContentRepository {
     for (const c of dbCredits) {
       const wid = String(c.work_id);
       if (!creditsByWork.has(wid)) creditsByWork.set(wid, []);
-      creditsByWork.get(wid)!.push({
-        slug: String(c.contributor_slug || c.guest_name || ""),
-        role: String(c.role_label || ""),
-        byline: Boolean(c.byline),
-      });
+
+      // Only include public credits in the public content repository
+      if (c.is_public) {
+        creditsByWork.get(wid)!.push({
+          slug: String(c.contributor_slug || c.guest_name || ""),
+          role: String(c.role_label || ""),
+          byline: Boolean(c.byline),
+        });
+      }
     }
 
     const visualsByWork = new Map<string, VisualRef[]>();

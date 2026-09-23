@@ -41,6 +41,7 @@ export async function POST(request: NextRequest) {
       guestName: body.guestName || undefined,
       roleLabel: body.roleLabel.trim(),
       byline: Boolean(body.byline),
+      isPublic: body.isPublic !== false,
       sortOrder: body.sortOrder || 0,
     });
 

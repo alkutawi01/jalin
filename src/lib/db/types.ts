@@ -56,6 +56,7 @@ export interface Credits {
   guest_name: string | null;
   role_label: string;
   byline: boolean;
+  is_public: boolean;
   sort_order: number;
   created_at: ColumnType<Date, string | Date, string | Date>;
 }

@@ -1449,6 +1449,11 @@ dd { margin: 0; color: var(--ink); }
   width: auto;
 }
 
+.admin-checkbox-group {
+  display: flex;
+  gap: 16px;
+}
+
 /* ── Admin Publish Preview ── */
 .admin-publish-preview {
   background: var(--white);

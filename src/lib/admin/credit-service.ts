@@ -22,6 +22,7 @@ export interface CreditInput {
   guestName?: string;
   roleLabel: string;
   byline: boolean;
+  isPublic: boolean;
   sortOrder: number;
 }
 
@@ -32,6 +33,7 @@ export interface CreditRecord {
   guest_name: string | null;
   role_label: string;
   byline: boolean;
+  is_public: boolean;
   sort_order: number;
   created_at: Date;
 }
@@ -95,6 +97,7 @@ export async function createCredit(input: CreditInput): Promise<CreditRecord> {
       guest_name: input.guestName || null,
       role_label: input.roleLabel,
       byline: input.byline,
+      is_public: input.isPublic,
       sort_order: input.sortOrder,
       created_at: now,
     })
@@ -148,6 +151,7 @@ export async function updateCredit(
   if (input.guestName !== undefined) updateData.guest_name = input.guestName || null;
   if (input.roleLabel !== undefined) updateData.role_label = input.roleLabel;
   if (input.byline !== undefined) updateData.byline = input.byline;
+  if (input.isPublic !== undefined) updateData.is_public = input.isPublic;
   if (input.sortOrder !== undefined) updateData.sort_order = input.sortOrder;
 
   await db

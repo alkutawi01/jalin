@@ -43,6 +43,7 @@ interface CreditData {
   guest_name: string | null;
   role_label: string;
   byline: boolean;
+  is_public: boolean;
   sort_order: number;
 }
 
@@ -816,17 +817,30 @@ export default function EditWorkPage() {
 
                 <div className="admin-form-group">
                   <label>&nbsp;</label>
-                  <label className="admin-checkbox-label">
-                    <input
-                      type="checkbox"
-                      checked={editingCredit.byline || false}
-                      onChange={(e) => setEditingCredit((prev) => ({
-                        ...prev,
-                        byline: e.target.checked,
-                      }))}
-                    />
-                    Byline
-                  </label>
+                  <div className="admin-checkbox-group">
+                    <label className="admin-checkbox-label">
+                      <input
+                        type="checkbox"
+                        checked={editingCredit.byline || false}
+                        onChange={(e) => setEditingCredit((prev) => ({
+                          ...prev,
+                          byline: e.target.checked,
+                        }))}
+                      />
+                      Byline
+                    </label>
+                    <label className="admin-checkbox-label">
+                      <input
+                        type="checkbox"
+                        checked={editingCredit.is_public !== false}
+                        onChange={(e) => setEditingCredit((prev) => ({
+                          ...prev,
+                          is_public: e.target.checked,
+                        }))}
+                      />
+                      Public
+                    </label>
+                  </div>
                 </div>
               </div>
 
@@ -859,6 +873,7 @@ export default function EditWorkPage() {
                     <th>Penyumbang</th>
                     <th>Peranan</th>
                     <th>Byline</th>
+                    <th>Public</th>
                     <th>Order</th>
                     <th>Aksi</th>
                   </tr>
@@ -873,6 +888,7 @@ export default function EditWorkPage() {
                       </td>
                       <td>{credit.role_label}</td>
                       <td>{credit.byline ? "Ya" : "Tidak"}</td>
+                      <td>{credit.is_public ? "Ya" : "Tidak"}</td>
                       <td>{credit.sort_order}</td>
                       <td>
                         <div className="admin-table-actions">

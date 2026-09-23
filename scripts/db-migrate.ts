@@ -78,6 +78,7 @@ async function migrate() {
               guest_name: null,
               role_label: String(credit.role || ""),
               byline: Boolean(credit.byline),
+              is_public: true,
               sort_order: i,
               created_at: new Date(),
             })
