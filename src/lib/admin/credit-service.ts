@@ -65,13 +65,17 @@ export async function getCredit(id: number): Promise<CreditRecord | undefined> {
 
 /**
  * Create a new credit.
+ * Enforces XOR: exactly one of contributorSlug or guestName must be provided.
  */
 export async function createCredit(input: CreditInput): Promise<CreditRecord> {
   const db = getAdminDb();
 
-  // Validate: must have either contributorSlug or guestName
+  // Enforce XOR: exactly one of contributorSlug or guestName
   if (!input.contributorSlug && !input.guestName) {
     throw new Error("Must provide either contributor or guest name.");
+  }
+  if (input.contributorSlug && input.guestName) {
+    throw new Error("Cannot provide both contributor and guest name.");
   }
 
   // If contributorSlug provided, verify it exists
@@ -182,6 +186,7 @@ export async function deleteCredit(id: number): Promise<void> {
 
 /**
  * Reorder credits for a work.
+ * Uses a single transaction to ensure atomicity.
  * Normalizes sort_order to sequential values (1, 2, 3...).
  */
 export async function reorderCredits(
@@ -190,15 +195,39 @@ export async function reorderCredits(
 ): Promise<CreditRecord[]> {
   const db = getAdminDb();
 
-  // Update each credit's sort_order
-  for (let i = 0; i < creditIds.length; i++) {
-    await db
-      .updateTable("credits")
-      .where("id", "=", creditIds[i])
-      .where("work_id", "=", workId)
-      .set({ sort_order: i + 1 })
-      .execute();
+  // Validate: all IDs must exist and belong to same work
+  const existingCredits = await db
+    .selectFrom("credits")
+    .where("work_id", "=", workId)
+    .select("id")
+    .execute();
+
+  const existingIds = new Set(existingCredits.map((c) => c.id));
+
+  // Check all provided IDs exist
+  for (const id of creditIds) {
+    if (!existingIds.has(id)) {
+      throw new Error(`Credit ${id} not found in work ${workId}.`);
+    }
   }
+
+  // Check no duplicates
+  const uniqueIds = new Set(creditIds);
+  if (uniqueIds.size !== creditIds.length) {
+    throw new Error("Duplicate credit IDs in reorder request.");
+  }
+
+  // Use transaction for atomicity
+  await db.transaction().execute(async (trx) => {
+    for (let i = 0; i < creditIds.length; i++) {
+      await trx
+        .updateTable("credits")
+        .where("id", "=", creditIds[i])
+        .where("work_id", "=", workId)
+        .set({ sort_order: i + 1 })
+        .execute();
+    }
+  });
 
   // Return updated list
   return listCreditsForWork(workId);
