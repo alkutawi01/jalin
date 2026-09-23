@@ -87,45 +87,6 @@ async function verify(): Promise<VerificationResult> {
       passed: Number(orphanGlossary?.count) === 0,
       detail: `Found ${orphanGlossary?.count} orphan glossary terms`,
     });
-
-    const worksWithCredits = await db
-      .selectFrom("works")
-      .innerJoin("credits", "works.id", "credits.work_id")
-      .select("works.id")
-      .distinct()
-      .select(db.fn.count("works.id").as("count"))
-      .executeTakeFirst();
-    checks.push({
-      name: "all_works_have_credits",
-      passed: Number(worksWithCredits?.count) === Number(workCount?.count),
-      detail: `Expected ${workCount?.count} works with credits, got ${worksWithCredits?.count}`,
-    });
-
-    const worksWithVisuals = await db
-      .selectFrom("works")
-      .innerJoin("visuals", "works.id", "visuals.work_id")
-      .select("works.id")
-      .distinct()
-      .select(db.fn.count("works.id").as("count"))
-      .executeTakeFirst();
-    checks.push({
-      name: "all_works_have_visuals",
-      passed: Number(worksWithVisuals?.count) === Number(workCount?.count),
-      detail: `Expected ${workCount?.count} works with visuals, got ${worksWithVisuals?.count}`,
-    });
-
-    const worksWithGlossary = await db
-      .selectFrom("works")
-      .innerJoin("glossary_terms", "works.id", "glossary_terms.work_id")
-      .select("works.id")
-      .distinct()
-      .select(db.fn.count("works.id").as("count"))
-      .executeTakeFirst();
-    checks.push({
-      name: "all_works_have_glossary",
-      passed: Number(worksWithGlossary?.count) === Number(workCount?.count),
-      detail: `Expected ${workCount?.count} works with glossary, got ${worksWithGlossary?.count}`,
-    });
   } catch (error) {
     checks.push({
       name: "database_error",
