@@ -51,7 +51,29 @@ interface ContributorOption {
   display_name: string;
 }
 
-type Tab = "content" | "metadata" | "credits";
+interface VisualData {
+  id: number;
+  work_id: string;
+  role: string;
+  src: string;
+  alt: string | null;
+  provider: string | null;
+  creation_id: string | null;
+  anchor: string | null;
+  place: string;
+  sort_order: number;
+}
+
+interface GlossaryData {
+  id: number;
+  work_id: string;
+  term: string;
+  meaning: string;
+  source: string;
+  sort_order: number;
+}
+
+type Tab = "content" | "metadata" | "credits" | "visuals" | "glossary";
 
 export default function EditWorkPage() {
   const router = useRouter();
@@ -83,6 +105,14 @@ export default function EditWorkPage() {
   const [editingCredit, setEditingCredit] = useState<Partial<CreditData> | null>(null);
   const [creditError, setCreditError] = useState<string | null>(null);
 
+  const [visuals, setVisuals] = useState<VisualData[]>([]);
+  const [editingVisual, setEditingVisual] = useState<Partial<VisualData> | null>(null);
+  const [visualError, setVisualError] = useState<string | null>(null);
+
+  const [glossaryTerms, setGlossaryTerms] = useState<GlossaryData[]>([]);
+  const [editingGlossary, setEditingGlossary] = useState<Partial<GlossaryData> | null>(null);
+  const [glossaryError, setGlossaryError] = useState<string | null>(null);
+
   useEffect(() => {
     async function loadWork() {
       try {
@@ -113,6 +143,8 @@ export default function EditWorkPage() {
     loadWork();
     loadCredits();
     loadContributors();
+    loadVisuals();
+    loadGlossary();
   }, [workId]);
 
   async function loadCredits() {
@@ -138,6 +170,28 @@ export default function EditWorkPage() {
       }
     } catch {
       // Ignore contributor loading errors
+    }
+  }
+
+  async function loadVisuals() {
+    try {
+      const res = await fetch(`/api/admin/visuals?workId=${workId}`);
+      if (res.ok) {
+        setVisuals(await res.json());
+      }
+    } catch {
+      // Ignore visual loading errors
+    }
+  }
+
+  async function loadGlossary() {
+    try {
+      const res = await fetch(`/api/admin/glossary?workId=${workId}`);
+      if (res.ok) {
+        setGlossaryTerms(await res.json());
+      }
+    } catch {
+      // Ignore glossary loading errors
     }
   }
 
@@ -233,6 +287,130 @@ export default function EditWorkPage() {
     }
   }
 
+  async function handleSaveVisual() {
+    if (!editingVisual) return;
+
+    setVisualError(null);
+
+    try {
+      if (editingVisual.id) {
+        // Update existing visual
+        const res = await fetch(`/api/admin/visuals/${editingVisual.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(editingVisual),
+        });
+
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.error || "Gagal menyimpan visual.");
+        }
+      } else {
+        // Create new visual
+        const res = await fetch("/api/admin/visuals", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...editingVisual,
+            workId,
+            sortOrder: visuals.length + 1,
+          }),
+        });
+
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.error || "Gagal mencipta visual.");
+        }
+      }
+
+      setEditingVisual(null);
+      loadVisuals();
+    } catch (err) {
+      setVisualError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+    }
+  }
+
+  async function handleDeleteVisual(id: number) {
+    if (!confirm("Pasti ingin memadam visual ini?")) return;
+
+    try {
+      const res = await fetch(`/api/admin/visuals/${id}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Gagal memadam visual.");
+      }
+
+      loadVisuals();
+    } catch (err) {
+      setVisualError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+    }
+  }
+
+  async function handleSaveGlossary() {
+    if (!editingGlossary) return;
+
+    setGlossaryError(null);
+
+    try {
+      if (editingGlossary.id) {
+        // Update existing term
+        const res = await fetch(`/api/admin/glossary/${editingGlossary.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(editingGlossary),
+        });
+
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.error || "Gagal menyimpan glossary.");
+        }
+      } else {
+        // Create new term
+        const res = await fetch("/api/admin/glossary", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...editingGlossary,
+            workId,
+            sortOrder: glossaryTerms.length + 1,
+          }),
+        });
+
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.error || "Gagal mencipta glossary.");
+        }
+      }
+
+      setEditingGlossary(null);
+      loadGlossary();
+    } catch (err) {
+      setGlossaryError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+    }
+  }
+
+  async function handleDeleteGlossary(id: number) {
+    if (!confirm("Pasti ingin memadam glossary ini?")) return;
+
+    try {
+      const res = await fetch(`/api/admin/glossary/${id}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Gagal memadam glossary.");
+      }
+
+      loadGlossary();
+    } catch (err) {
+      setGlossaryError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+    }
+  }
+
   async function handleArchive() {
     if (!confirm("Pasti ingin mengarkibkan karya ini?")) return;
 
@@ -312,6 +490,18 @@ export default function EditWorkPage() {
           onClick={() => setActiveTab("credits")}
         >
           Kredit ({credits.length})
+        </button>
+        <button
+          className={`admin-tab ${activeTab === "visuals" ? "admin-tab-active" : ""}`}
+          onClick={() => setActiveTab("visuals")}
+        >
+          Visual ({visuals.length})
+        </button>
+        <button
+          className={`admin-tab ${activeTab === "glossary" ? "admin-tab-active" : ""}`}
+          onClick={() => setActiveTab("glossary")}
+        >
+          Glosari ({glossaryTerms.length})
         </button>
       </div>
 
@@ -608,6 +798,328 @@ export default function EditWorkPage() {
                             type="button"
                             className="admin-btn admin-btn-sm admin-btn-danger"
                             onClick={() => handleDeleteCredit(credit.id)}
+                          >
+                            Padam
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
+      {activeTab === "visuals" && (
+        <div className="admin-visuals">
+          {visualError && (
+            <div className="admin-alert admin-alert-error">{visualError}</div>
+          )}
+
+          <div className="admin-credits-header">
+            <h3>Visual Karya</h3>
+            <button
+              type="button"
+              className="admin-btn admin-btn-sm admin-btn-primary"
+              onClick={() => setEditingVisual({
+                role: "inline",
+                src: "",
+                alt: "",
+                place: "after",
+              })}
+            >
+              + Tambah Visual
+            </button>
+          </div>
+
+          {editingVisual && (
+            <div className="admin-credit-form">
+              <div className="admin-form-row">
+                <div className="admin-form-group">
+                  <label>Role *</label>
+                  <select
+                    value={editingVisual.role || "inline"}
+                    onChange={(e) => setEditingVisual((prev) => ({
+                      ...prev,
+                      role: e.target.value,
+                    }))}
+                  >
+                    <option value="hero">Hero</option>
+                    <option value="inline">Inline</option>
+                    <option value="section">Section</option>
+                  </select>
+                </div>
+
+                <div className="admin-form-group">
+                  <label>Place</label>
+                  <select
+                    value={editingVisual.place || "after"}
+                    onChange={(e) => setEditingVisual((prev) => ({
+                      ...prev,
+                      place: e.target.value,
+                    }))}
+                  >
+                    <option value="before">Before</option>
+                    <option value="after">After</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="admin-form-group">
+                <label>Src *</label>
+                <input
+                  type="text"
+                  value={editingVisual.src || ""}
+                  onChange={(e) => setEditingVisual((prev) => ({
+                    ...prev,
+                    src: e.target.value,
+                  }))}
+                  placeholder="/visuals/work-name/hero.png"
+                />
+              </div>
+
+              <div className="admin-form-group">
+                <label>Alt</label>
+                <input
+                  type="text"
+                  value={editingVisual.alt || ""}
+                  onChange={(e) => setEditingVisual((prev) => ({
+                    ...prev,
+                    alt: e.target.value,
+                  }))}
+                  placeholder="Deskripsi visual"
+                />
+              </div>
+
+              <div className="admin-form-row">
+                <div className="admin-form-group">
+                  <label>Provider</label>
+                  <input
+                    type="text"
+                    value={editingVisual.provider || ""}
+                    onChange={(e) => setEditingVisual((prev) => ({
+                      ...prev,
+                      provider: e.target.value,
+                    }))}
+                    placeholder="magnific"
+                  />
+                </div>
+
+                <div className="admin-form-group">
+                  <label>Creation ID</label>
+                  <input
+                    type="text"
+                    value={editingVisual.creation_id || ""}
+                    onChange={(e) => setEditingVisual((prev) => ({
+                      ...prev,
+                      creation_id: e.target.value,
+                    }))}
+                    placeholder="Xm5ZOkMBfo"
+                  />
+                </div>
+              </div>
+
+              <div className="admin-form-group">
+                <label>Anchor</label>
+                <input
+                  type="text"
+                  value={editingVisual.anchor || ""}
+                  onChange={(e) => setEditingVisual((prev) => ({
+                    ...prev,
+                    anchor: e.target.value,
+                  }))}
+                  placeholder="Teks anchor dalam manuskrip"
+                />
+              </div>
+
+              <div className="admin-form-actions">
+                <button
+                  type="button"
+                  className="admin-btn admin-btn-outline"
+                  onClick={() => setEditingVisual(null)}
+                >
+                  Batal
+                </button>
+                <button
+                  type="button"
+                  className="admin-btn admin-btn-primary"
+                  onClick={handleSaveVisual}
+                >
+                  Simpan Visual
+                </button>
+              </div>
+            </div>
+          )}
+
+          {visuals.length === 0 ? (
+            <p className="admin-table-empty">Tiada visual untuk karya ini.</p>
+          ) : (
+            <div className="admin-table-wrap">
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>Role</th>
+                    <th>Src</th>
+                    <th>Alt</th>
+                    <th>Provider</th>
+                    <th>Order</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {visuals.map((visual) => (
+                    <tr key={visual.id}>
+                      <td>
+                        <span className={`admin-kind admin-kind-${visual.role}`}>
+                          {visual.role}
+                        </span>
+                      </td>
+                      <td><code>{visual.src.substring(0, 30)}...</code></td>
+                      <td>{visual.alt || "—"}</td>
+                      <td>{visual.provider || "—"}</td>
+                      <td>{visual.sort_order}</td>
+                      <td>
+                        <div className="admin-table-actions">
+                          <button
+                            type="button"
+                            className="admin-btn admin-btn-sm"
+                            onClick={() => setEditingVisual(visual)}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            type="button"
+                            className="admin-btn admin-btn-sm admin-btn-danger"
+                            onClick={() => handleDeleteVisual(visual.id)}
+                          >
+                            Padam
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
+      {activeTab === "glossary" && (
+        <div className="admin-glossary">
+          {glossaryError && (
+            <div className="admin-alert admin-alert-error">{glossaryError}</div>
+          )}
+
+          <div className="admin-credits-header">
+            <h3>Glosari Karya</h3>
+            <button
+              type="button"
+              className="admin-btn admin-btn-sm admin-btn-primary"
+              onClick={() => setEditingGlossary({
+                term: "",
+                meaning: "",
+                source: "",
+              })}
+            >
+              + Tambah Term
+            </button>
+          </div>
+
+          {editingGlossary && (
+            <div className="admin-credit-form">
+              <div className="admin-form-group">
+                <label>Term *</label>
+                <input
+                  type="text"
+                  value={editingGlossary.term || ""}
+                  onChange={(e) => setEditingGlossary((prev) => ({
+                    ...prev,
+                    term: e.target.value,
+                  }))}
+                  placeholder="Istilah"
+                />
+              </div>
+
+              <div className="admin-form-group">
+                <label>Definisi *</label>
+                <textarea
+                  value={editingGlossary.meaning || ""}
+                  onChange={(e) => setEditingGlossary((prev) => ({
+                    ...prev,
+                    meaning: e.target.value,
+                  }))}
+                  rows={3}
+                  placeholder="Maksud istilah"
+                />
+              </div>
+
+              <div className="admin-form-group">
+                <label>Sumber</label>
+                <input
+                  type="text"
+                  value={editingGlossary.source || ""}
+                  onChange={(e) => setEditingGlossary((prev) => ({
+                    ...prev,
+                    source: e.target.value,
+                  }))}
+                  placeholder="Sumber rujukan"
+                />
+              </div>
+
+              <div className="admin-form-actions">
+                <button
+                  type="button"
+                  className="admin-btn admin-btn-outline"
+                  onClick={() => setEditingGlossary(null)}
+                >
+                  Batal
+                </button>
+                <button
+                  type="button"
+                  className="admin-btn admin-btn-primary"
+                  onClick={handleSaveGlossary}
+                >
+                  Simpan Term
+                </button>
+              </div>
+            </div>
+          )}
+
+          {glossaryTerms.length === 0 ? (
+            <p className="admin-table-empty">Tiada glosari untuk karya ini.</p>
+          ) : (
+            <div className="admin-table-wrap">
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>Term</th>
+                    <th>Definisi</th>
+                    <th>Sumber</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {glossaryTerms.map((term) => (
+                    <tr key={term.id}>
+                      <td className="admin-table-title">{term.term}</td>
+                      <td>{term.meaning}</td>
+                      <td>{term.source || "—"}</td>
+                      <td>
+                        <div className="admin-table-actions">
+                          <button
+                            type="button"
+                            className="admin-btn admin-btn-sm"
+                            onClick={() => setEditingGlossary(term)}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            type="button"
+                            className="admin-btn admin-btn-sm admin-btn-danger"
+                            onClick={() => handleDeleteGlossary(term.id)}
                           >
                             Padam
                           </button>
