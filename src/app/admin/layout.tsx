@@ -23,6 +23,11 @@ export default function AdminLayout({
             <a href="/admin/works" className="admin-nav-link">Karya</a>
             <a href="/admin/contributors" className="admin-nav-link">Penyumbang</a>
             <a href="/" className="admin-nav-link admin-nav-public">Laman Awam →</a>
+            <form action="/api/admin/auth/logout" method="POST" className="admin-nav-form">
+              <button type="submit" className="admin-nav-link admin-nav-logout">
+                Log Keluar
+              </button>
+            </form>
           </nav>
         </div>
       </header>

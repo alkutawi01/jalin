@@ -1481,3 +1481,67 @@ dd { margin: 0; color: var(--ink); }
 .admin-sync-new {
   color: #084298;
 }
+
+/* ── Admin Login ── */
+.admin-login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5f3ef;
+}
+
+.admin-login-card {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 48px;
+  width: 100%;
+  max-width: 400px;
+}
+
+.admin-login-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.admin-login-header h1 {
+  font-size: 28px;
+  margin: 0 0 8px 0;
+  color: var(--ink);
+  letter-spacing: 0.1em;
+}
+
+.admin-login-header p {
+  margin: 0;
+  color: var(--ink-soft);
+}
+
+.admin-login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.admin-btn-full {
+  width: 100%;
+}
+
+/* ── Admin Nav Logout ── */
+.admin-nav-form {
+  display: inline;
+}
+
+.admin-nav-logout {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14px;
+  color: rgba(255,255,255,.6);
+  transition: color 0.2s;
+}
+
+.admin-nav-logout:hover {
+  color: var(--white);
+}
