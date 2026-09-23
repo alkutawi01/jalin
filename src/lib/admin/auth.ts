@@ -8,6 +8,8 @@
  * - ADMIN_SECRET: Required in production. Secret token for admin login.
  * - ADMIN_ALLOWED_EMAILS: Comma-separated list of allowed admin emails.
  * - ADMIN_DEV_BYPASS: Set to "true" to enable dev bypass (development only).
+ *
+ * SECURITY: Production auth fails closed. Missing config = access denied.
  */
 
 import { cookies } from "next/headers";
@@ -24,9 +26,32 @@ const SESSION_COOKIE = "jalin-admin-session";
 const SESSION_EXPIRY = 24 * 60 * 60 * 1000; // 24 hours
 
 /**
+ * Get the admin secret. Fails closed if not configured.
+ */
+function getAdminSecret(): string | null {
+  const secret = process.env.ADMIN_SECRET;
+  if (!secret) {
+    if (process.env.NODE_ENV === "production") {
+      console.error("[AdminAuth] CRITICAL: ADMIN_SECRET not configured in production.");
+    }
+    return null;
+  }
+  return secret;
+}
+
+/**
+ * Get allowed emails. Fails closed if empty in production.
+ */
+function getAllowedEmails(): string[] {
+  const emails = process.env.ADMIN_ALLOWED_EMAILS?.split(",").map(e => e.trim()).filter(Boolean) || [];
+  return emails;
+}
+
+/**
  * Check if admin access is allowed.
  * In development mode with dev bypass enabled, always returns true.
  * In production, requires valid session.
+ * FAIL CLOSED: missing config = deny.
  */
 export async function isAdminAllowed(): Promise<boolean> {
   // Development mode with explicit dev bypass
@@ -42,6 +67,7 @@ export async function isAdminAllowed(): Promise<boolean> {
 /**
  * Get current admin user from session.
  * Returns null if not authenticated.
+ * FAIL CLOSED: invalid session = null.
  */
 export async function getCurrentAdmin(): Promise<AdminUser | null> {
   // Development mode with explicit dev bypass
@@ -69,24 +95,43 @@ export async function getCurrentAdmin(): Promise<AdminUser | null> {
 /**
  * Login with admin credentials.
  * Returns session token if valid.
+ * FAIL CLOSED: missing config = deny all.
  */
 export async function loginAdmin(email: string, password: string): Promise<string | null> {
   // Check if admin secret is configured
-  const adminSecret = process.env.ADMIN_SECRET;
+  const adminSecret = getAdminSecret();
   if (!adminSecret) {
-    console.error("[AdminAuth] ADMIN_SECRET not configured.");
+    console.error("[AdminAuth] Login rejected: ADMIN_SECRET not configured.");
     return null;
   }
 
   // Check if email is in allowlist
-  const allowedEmails = process.env.ADMIN_ALLOWED_EMAILS?.split(",").map(e => e.trim()) || [];
-  if (allowedEmails.length > 0 && !allowedEmails.includes(email)) {
+  const allowedEmails = getAllowedEmails();
+  if (allowedEmails.length === 0) {
+    // Empty allowlist = deny everyone (fail closed)
+    console.warn("[AdminAuth] Login rejected: ADMIN_ALLOWED_EMAILS is empty.");
+    return null;
+  }
+  if (!allowedEmails.includes(email)) {
     console.warn(`[AdminAuth] Email "${email}" not in allowlist.`);
     return null;
   }
 
-  // Validate password against admin secret
-  if (password !== adminSecret) {
+  // Validate password against admin secret (timing-safe)
+  const passwordBuffer = Buffer.from(password);
+  const secretBuffer = Buffer.from(adminSecret);
+
+  if (passwordBuffer.length !== secretBuffer.length) {
+    console.warn("[AdminAuth] Invalid password attempt.");
+    return null;
+  }
+
+  let result = 0;
+  for (let i = 0; i < passwordBuffer.length; i++) {
+    result |= passwordBuffer[i]! ^ secretBuffer[i]!;
+  }
+
+  if (result !== 0) {
     console.warn("[AdminAuth] Invalid password attempt.");
     return null;
   }
@@ -132,7 +177,11 @@ export async function setSessionCookie(token: string): Promise<void> {
  * Sign session data with HMAC.
  */
 function signSession(data: Record<string, unknown>): string {
-  const secret = process.env.ADMIN_SECRET || "dev-secret";
+  const secret = getAdminSecret();
+  if (!secret) {
+    throw new Error("Cannot sign session: ADMIN_SECRET not configured.");
+  }
+
   const payload = Buffer.from(JSON.stringify(data)).toString("base64url");
   const signature = crypto
     .createHmac("sha256", secret)
@@ -144,6 +193,7 @@ function signSession(data: Record<string, unknown>): string {
 
 /**
  * Validate and decode session token.
+ * FAIL CLOSED: invalid signature, expired, or missing role = null.
  */
 function validateSession(token: string): AdminUser | null {
   try {
@@ -152,15 +202,29 @@ function validateSession(token: string): AdminUser | null {
       return null;
     }
 
-    // Verify signature
-    const secret = process.env.ADMIN_SECRET || "dev-secret";
+    const secret = getAdminSecret();
+    if (!secret) {
+      return null;
+    }
+
+    // Verify signature (timing-safe)
     const expectedSignature = crypto
       .createHmac("sha256", secret)
       .update(payload)
       .digest("base64url");
 
-    if (signature !== expectedSignature) {
-      console.warn("[AdminAuth] Invalid session signature.");
+    if (signature.length !== expectedSignature.length) {
+      return null;
+    }
+
+    const sigBuffer = Buffer.from(signature);
+    const expBuffer = Buffer.from(expectedSignature);
+    let result = 0;
+    for (let i = 0; i < sigBuffer.length; i++) {
+      result |= sigBuffer[i]! ^ expBuffer[i]!;
+    }
+
+    if (result !== 0) {
       return null;
     }
 
@@ -169,7 +233,20 @@ function validateSession(token: string): AdminUser | null {
 
     // Check expiry
     if (data.expires && data.expires < Date.now()) {
-      console.warn("[AdminAuth] Session expired.");
+      return null;
+    }
+
+    // Check role
+    if (data.role !== "admin") {
+      return null;
+    }
+
+    // Check allowlist
+    const allowedEmails = getAllowedEmails();
+    if (allowedEmails.length === 0) {
+      return null;
+    }
+    if (!allowedEmails.includes(data.email)) {
       return null;
     }
 
