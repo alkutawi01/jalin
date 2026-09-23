@@ -11,3 +11,5 @@ coverage/
 .vercel/
 storage/
 backups/
+.vercel
+.env*

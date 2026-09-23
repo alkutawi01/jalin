@@ -1,3 +1,6 @@
+import "dotenv/config";
+import { config } from "dotenv";
+config({ path: ".env.local", override: true });
 import * as fs from "node:fs";
 import * as path from "node:path";
 import matter from "gray-matter";

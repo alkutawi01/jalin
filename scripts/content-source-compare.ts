@@ -1,3 +1,6 @@
+import "dotenv/config";
+import { config } from "dotenv";
+config({ path: ".env.local", override: true });
 import { MarkdownContentRepository } from "../src/lib/content/markdown-repository";
 import { DatabaseContentRepository } from "../src/lib/content/database-repository";
 import type { Work, ContributorRef, VisualRef, GlossaryEntry } from "../src/lib/content/types";

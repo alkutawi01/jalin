@@ -1,3 +1,6 @@
+import "dotenv/config";
+import { config } from "dotenv";
+config({ path: ".env.local", override: true });
 import { Kysely, PostgresDialect } from "kysely";
 import { Migrator } from "kysely/migration";
 import { Pool } from "pg";

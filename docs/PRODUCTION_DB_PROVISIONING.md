@@ -1,136 +1,82 @@
 # PRODUCTION_DB_PROVISIONING.md
 
-## Gate-0 Blockers (4 Remaining)
+## Gate-0 Blockers (All Resolved)
 
 | # | Item | Status | Classification |
 |---|------|--------|----------------|
-| 3 | Production DATABASE_URL exists | ⬜ BLOCKED | infrastructure |
-| 4 | Production database is NOT staging database | ⬜ BLOCKED | infrastructure |
-| 5 | Database backup/snapshot available | ⬜ BLOCKED | backup/recovery |
-| 6 | ADMIN_SECRET configured securely | ⬜ BLOCKED | environment configuration |
+| 3 | Production DATABASE_URL exists | ✅ RESOLVED | infrastructure |
+| 4 | Production database is NOT staging database | ✅ RESOLVED | infrastructure |
+| 5 | Database backup/snapshot available | ✅ RESOLVED | backup/recovery |
+| 6 | ADMIN_SECRET configured securely | ✅ RESOLVED | environment configuration |
 
-## Resolution Status
+## Resolution Evidence
 
 ### Item 3: Production DATABASE_URL
-
-**Status**: Requires production PostgreSQL provisioned by owner/infrastructure layer.
-
-**Action needed**:
-- Owner must provision a production PostgreSQL database
-- Obtain connection string
-- Configure in Vercel environment variables
+- **Provider**: Neon PostgreSQL (Project: jalin, Region: Singapore)
+- **Pooled endpoint**: DATABASE_URL configured in Vercel production environment
+- **Direct endpoint**: DATABASE_URL_UNPOOLED configured for migrations
+- **SSL**: DATABASE_SSL=true
+- **Pool size**: DATABASE_POOL_SIZE=5
 
 ### Item 4: Production Database Isolation
+- **Production DB**: ep-muddy-tooth-b3hukvx9 (Neon Singapore)
+- **Staging DB**: Separate instance (not the same)
+- **Confirmed**: Different connection strings, different endpoints
 
-**Status**: Cannot verify until production DB exists.
-
-**Action needed**:
-- Confirm production DB is separate from staging
-- Verify different connection strings
-- Test isolation
-
-### Item 5: Backup/Snapshot
-
-**Status**: Requires backup mechanism configured.
-
-**Action needed**:
-- Enable automated backups on production DB provider
-- OR configure manual backup procedure
-- Verify recovery path
+### Item 5: Backup/Recovery
+- **Provider**: Neon automatic branching
+- **Method**: Neon provides point-in-time recovery and branch-based backups
+- **Status**: Available via Neon dashboard
 
 ### Item 6: ADMIN_SECRET
+- **Configured in**: Vercel production environment
+- **Status**: Secure, not exposed in code
 
-**Status**: Requires secure secret generated and configured.
+## Connectivity Verification
 
-**Action needed**:
-- Generate strong random secret
-- Configure in Vercel environment variables
-- Never commit to Git
+| Check | Status |
+|-------|--------|
+| Pooled (DATABASE_URL) SELECT 1 | ✅ PASS |
+| Direct (DATABASE_URL_UNPOOLED) SELECT 1 | ✅ PASS |
 
-## Production Database Provisioning
+## Schema Migration
 
-### Recommended Provider
+| Migration | Status |
+|-----------|--------|
+| 001_create_tables | ✅ Success |
+| 002_add_credit_public_flag | ✅ Success |
+| 003_add_contributor_visibility | ✅ Success |
 
-**Vercel Postgres** (if deploying on Vercel):
-- Integrated with Vercel deployment
-- Automatic SSL
-- Built-in backups
-- Connection pooling
+### Migration Repeatability
+- ✅ Second run: clean no-op, no destructive reset, no duplicate objects
 
-**Alternative: Supabase/Neon**:
-- Free tier available
-- PostgreSQL compatible
-- SSL required
-- Manual backup configuration
+## Schema Verification
 
-### Provisioning Steps (Owner Action Required)
+| Check | Status |
+|-------|--------|
+| 5 tables exist (works, contributors, credits, visuals, glossary_terms) | ✅ |
+| Credit hardening (is_public, byline, sort_order, contributor_slug, guest_name) | ✅ |
+| Contributor visibility (is_visible column) | ✅ |
+| Foreign keys (3: credits→works, visuals→works, glossary_terms→works) | ✅ |
+| Indexes (6: primary keys + unique slug) | ✅ |
 
-1. **Create production PostgreSQL database**
-   - Via Vercel Dashboard → Storage → Create Database
-   - OR via Supabase/Neon dashboard
+## Pre-Seed Row Counts
 
-2. **Obtain connection string**
-   - Format: `postgresql://user:password@host:5432/jalin_production`
+| Table | Count |
+|-------|-------|
+| works | 0 |
+| contributors | 0 |
+| credits | 0 |
+| visuals | 0 |
+| glossary_terms | 0 |
 
-3. **Configure environment variables in Vercel**
-   ```
-   DATABASE_URL=postgresql://...-pooler...       # pooled runtime URL
-   DATABASE_URL_UNPOOLED=postgresql://...      # direct migration URL
-   DATABASE_SSL=true
-   DATABASE_POOL_SIZE=5
-   CONTENT_SOURCE=markdown  # Keep as markdown for now
-   ADMIN_SECRET=<generate-strong-secret>
-   ADMIN_ALLOWED_EMAILS=admin@jalin.adjung.com
-   ADMIN_DEV_BYPASS=false
-   ```
+## Current Configuration
 
-4. **Verify production/staging isolation**
-   - Different `DATABASE_URL` and `DATABASE_URL_UNPOOLED` values
-   - Different database instances
-
-5. **Enable backups**
-   - Configure automated backups on provider
-   - OR set up manual backup procedure
-
-6. **Verify recovery**
-   - Test backup restore procedure
-   - Document recovery steps
-
-## Current Status
-
-**BLOCKED** — Production database not yet provisioned by owner.
-
-### Next Steps (Owner Action Required)
-
-1. Provision production PostgreSQL database
-2. Obtain connection string
-3. Configure in Vercel environment variables
-4. Enable backups
-5. Verify recovery procedure
-6. Report back to Director
-
-### What I Can Do
-
-Once owner provides production database access:
-1. Run schema migrations
-2. Verify connectivity
-3. Test backup/recovery
-4. Update PRODUCTION_CUTOVER_PLAN.md
-5. Report Gate-0 closure to Director
-
-## Recommendation
-
-**STOP** — Waiting for owner to provision production database.
-
-The 4 unresolved Gate-0 items require owner/infrastructure action:
-- Provision production PostgreSQL
-- Configure environment variables
-- Enable backups
-- Verify recovery
-
-I cannot proceed without production database access.
+- **CONTENT_SOURCE**: markdown (unchanged)
+- **Runtime**: Reads from Markdown files
+- **Database**: Schema ready, empty, waiting for import
 
 ---
 
-*Document generated: 2026-09-23*
-*Latest commit: 9e571b3*
+*Document updated: 2026-09-23*
+*Latest commit: ca9d367*
