@@ -113,6 +113,16 @@ export default function EditWorkPage() {
   const [editingGlossary, setEditingGlossary] = useState<Partial<GlossaryData> | null>(null);
   const [glossaryError, setGlossaryError] = useState<string | null>(null);
 
+  const [publishPreview, setPublishPreview] = useState<{
+    isNew: boolean;
+    currentExists: boolean;
+    metadataChanged: boolean;
+    bodyChanged: boolean;
+  } | null>(null);
+  const [publishing, setPublishing] = useState(false);
+  const [publishError, setPublishError] = useState<string | null>(null);
+  const [publishSuccess, setPublishSuccess] = useState<string | null>(null);
+
   useEffect(() => {
     async function loadWork() {
       try {
@@ -411,6 +421,54 @@ export default function EditWorkPage() {
     }
   }
 
+  async function loadPublishPreview() {
+    try {
+      const res = await fetch(`/api/admin/publish?action=preview&workId=${workId}`);
+      if (res.ok) {
+        setPublishPreview(await res.json());
+      }
+    } catch {
+      // Ignore preview loading errors
+    }
+  }
+
+  async function handlePublish() {
+    if (!confirm("Pasti ingin menerbitkan karya ini ke Markdown?")) return;
+
+    setPublishing(true);
+    setPublishError(null);
+    setPublishSuccess(null);
+
+    try {
+      const res = await fetch("/api/admin/publish", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "publish",
+          workId,
+        }),
+      });
+
+      const result = await res.json();
+
+      if (!res.ok || !result.success) {
+        throw new Error(result.error || "Gagal menerbitkan.");
+      }
+
+      setPublishSuccess(`Berjaya diterbitkan ke ${result.filePath}`);
+      setTimeout(() => setPublishSuccess(null), 5000);
+      loadPublishPreview();
+    } catch (err) {
+      setPublishError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+    } finally {
+      setPublishing(false);
+    }
+  }
+
+  useEffect(() => {
+    loadPublishPreview();
+  }, [workId]);
+
   async function handleArchive() {
     if (!confirm("Pasti ingin mengarkibkan karya ini?")) return;
 
@@ -452,6 +510,16 @@ export default function EditWorkPage() {
             <a href={`/admin/works/${workId}/preview`} className="admin-btn admin-btn-outline">
               Preview
             </a>
+            {publishPreview && (
+              <button
+                type="button"
+                onClick={handlePublish}
+                className="admin-btn admin-btn-primary"
+                disabled={publishing}
+              >
+                {publishing ? "Menerbitkan..." : "Publish to Markdown"}
+              </button>
+            )}
             <button
               type="button"
               onClick={handleArchive}
@@ -470,6 +538,27 @@ export default function EditWorkPage() {
 
       {success && (
         <div className="admin-alert admin-alert-success">{success}</div>
+      )}
+
+      {publishError && (
+        <div className="admin-alert admin-alert-error">{publishError}</div>
+      )}
+
+      {publishSuccess && (
+        <div className="admin-alert admin-alert-success">{publishSuccess}</div>
+      )}
+
+      {publishPreview && (
+        <div className="admin-publish-preview">
+          <h3>Sinkronisasi</h3>
+          {publishPreview.isNew ? (
+            <p className="admin-sync-status admin-sync-new">MARKDOWN MISSING — Karya ini belum ada sebagai Markdown.</p>
+          ) : publishPreview.metadataChanged || publishPreview.bodyChanged ? (
+            <p className="admin-sync-status admin-sync-changed">DB CHANGED — Perubahan dalam database belum diterbitkan ke Markdown.</p>
+          ) : (
+            <p className="admin-sync-status admin-sync-ok">IN SYNC — Database dan Markdown adalah selari.</p>
+          )}
+        </div>
       )}
 
       <div className="admin-tabs">

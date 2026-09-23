@@ -1448,3 +1448,36 @@ dd { margin: 0; color: var(--ink); }
 .admin-checkbox-label input[type="checkbox"] {
   width: auto;
 }
+
+/* ── Admin Publish Preview ── */
+.admin-publish-preview {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 16px 24px;
+  margin-bottom: 24px;
+}
+
+.admin-publish-preview h3 {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  color: var(--ink-soft);
+}
+
+.admin-sync-status {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.admin-sync-ok {
+  color: #0f5132;
+}
+
+.admin-sync-changed {
+  color: #856404;
+}
+
+.admin-sync-new {
+  color: #084298;
+}
