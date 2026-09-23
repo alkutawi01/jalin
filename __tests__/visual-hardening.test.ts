@@ -37,7 +37,7 @@ import {
   MAX_VISUAL_RETRY_COUNT,
   classifyVisualError,
 } from "../src/lib/admin/visual-generation/adapter";
-import { isVercelRuntime, objectStorageConfigured } from "../src/lib/admin/visual-generation/asset-storage";
+import { isVercelRuntime, objectStorageConfigured, storeVisualAsset, buildImmutableObjectKey } from "../src/lib/admin/visual-generation/asset-storage";
 import { createMockVisualAdapter } from "../src/lib/admin/visual-generation/mock-adapter";
 
 let passed = 0;
@@ -571,8 +571,87 @@ async function main() {
     delete process.env.OBJECT_STORAGE_ENDPOINT;
     assert(isVercelRuntime(), "Detects Vercel runtime");
     assert(!objectStorageConfigured(), "Object storage not configured when env empty");
-    // storeVisualAsset on Vercel without object storage must not finalize —
-    // covered indirectly: backend rules documented; unit for pure helpers above.
+
+    // ============================================================
+    // 4b. Durable object URL / immutable keys (4D-5R2)
+    // ============================================================
+    console.log("\n=== Durable Storage Contract (4D-5R2) ===");
+
+    // Immutable keys: same id+version+hash → same key; different version/hash → different
+    const k1 = buildImmutableObjectKey(12, "png", 1, "abcdef0123456789");
+    const k2 = buildImmutableObjectKey(12, "png", 2, "abcdef0123456789");
+    const k3 = buildImmutableObjectKey(12, "png", 1, "deadbeef00000000");
+    const k4 = buildImmutableObjectKey(12, "png", 1, "abcdef0123456789");
+    assertEqual(k1, "assets/visuals/vr-12-v1-abcdef01.png", "Immutable key format");
+    assert(k1 !== k2, "Different version → different key (no overwrite)");
+    assert(k1 !== k3, "Different content hash → different key (no overwrite)");
+    assertEqual(k1, k4, "Same inputs → deterministic key");
+
+    // Configure object storage env for storeVisualAsset contract tests
+    const savedOs = {
+      ENDPOINT: process.env.OBJECT_STORAGE_ENDPOINT,
+      BUCKET: process.env.OBJECT_STORAGE_BUCKET,
+      AK: process.env.OBJECT_STORAGE_ACCESS_KEY_ID,
+      SK: process.env.OBJECT_STORAGE_SECRET_ACCESS_KEY,
+      VERCEL: process.env.VERCEL,
+    };
+    process.env.OBJECT_STORAGE_ENDPOINT = "https://storage.example.test";
+    process.env.OBJECT_STORAGE_BUCKET = "jalin-assets";
+    process.env.OBJECT_STORAGE_ACCESS_KEY_ID = "test-ak-not-real";
+    process.env.OBJECT_STORAGE_SECRET_ACCESS_KEY = "test-sk-not-real";
+    process.env.VERCEL = "1";
+
+    const pngBytes = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 1, 2, 3]);
+    const putSeen: { url: string | null } = { url: null };
+    const mockFetch = (async (url: string | URL, init?: RequestInit) => {
+      const u = String(url);
+      if (init?.method === "PUT") {
+        putSeen.url = u;
+        return new Response("", { status: 200 });
+      }
+      // provider download
+      return new Response(pngBytes, { status: 200, headers: { "Content-Type": "image/png" } });
+    }) as typeof fetch;
+
+    const stored = await storeVisualAsset("https://cdn-magnific.example/transient.png", 42, "image/png", {
+      version: 3,
+      fetchImpl: mockFetch,
+    });
+    assertEqual(stored.backend, "object_storage", "Object storage backend used");
+    assertEqual(stored.finalized, true, "Object storage success → finalized");
+    assert(stored.stableAssetPath !== null, "stableAssetPath set");
+    assertIncludes(stored.stableAssetPath || "", "https://storage.example.test/jalin-assets/", "Canonical path is durable object URL (put.url kept)");
+    assertIncludes(stored.stableAssetPath || "", "vr-42-v3-", "Canonical path uses immutable key with version");
+    assertNotIncludes(stored.stableAssetPath || "", "cdn-magnific", "Canonical path is never provider URL");
+    assertNotIncludes(stored.stableAssetPath || "", "/assets/visuals/vr-42.png", "Canonical path is NOT legacy local path when object storage used");
+    assert(putSeen.url !== null && putSeen.url.includes("/jalin-assets/assets/visuals/vr-42-v3-"), "PUT went to immutable object key");
+
+    // Vercel without object storage → cannot finalize local path
+    delete process.env.OBJECT_STORAGE_ENDPOINT;
+    delete process.env.OBJECT_STORAGE_BUCKET;
+    delete process.env.OBJECT_STORAGE_ACCESS_KEY_ID;
+    delete process.env.OBJECT_STORAGE_SECRET_ACCESS_KEY;
+    process.env.VERCEL = "1";
+    const vercelNoOs = await storeVisualAsset("https://cdn-magnific.example/x.png", 43, "image/png", {
+      version: 1,
+      fetchImpl: mockFetch,
+    });
+    assertEqual(vercelNoOs.finalized, false, "Vercel without object storage → finalized=false");
+    assert(vercelNoOs.stableAssetPath === null, "Vercel without object storage → no stable path");
+    assertEqual(vercelNoOs.providerAssetUrl, "https://cdn-magnific.example/x.png", "Provider URL retained for provenance");
+
+    // Restore env for remaining tests
+    if (savedOs.ENDPOINT === undefined) delete process.env.OBJECT_STORAGE_ENDPOINT;
+    else process.env.OBJECT_STORAGE_ENDPOINT = savedOs.ENDPOINT;
+    if (savedOs.BUCKET === undefined) delete process.env.OBJECT_STORAGE_BUCKET;
+    else process.env.OBJECT_STORAGE_BUCKET = savedOs.BUCKET;
+    if (savedOs.AK === undefined) delete process.env.OBJECT_STORAGE_ACCESS_KEY_ID;
+    else process.env.OBJECT_STORAGE_ACCESS_KEY_ID = savedOs.AK;
+    if (savedOs.SK === undefined) delete process.env.OBJECT_STORAGE_SECRET_ACCESS_KEY;
+    else process.env.OBJECT_STORAGE_SECRET_ACCESS_KEY = savedOs.SK;
+    if (savedOs.VERCEL === undefined) delete process.env.VERCEL;
+    else process.env.VERCEL = savedOs.VERCEL;
+
     if (vercelBefore === undefined) delete process.env.VERCEL;
     else process.env.VERCEL = vercelBefore;
 

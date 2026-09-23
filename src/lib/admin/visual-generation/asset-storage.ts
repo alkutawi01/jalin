@@ -5,17 +5,24 @@
  *
  * Magnific result → durable storage adapter → stable Jalin asset reference.
  *
- * Durability rules (Phase 4D-5R):
+ * Durability rules (Phase 4D-5R / 4D-5R2):
  * - Local development: public/assets/visuals/ is acceptable (finalized=true).
  * - Vercel/serverless runtime: local FS is ephemeral — NEVER mark finalized=true
  *   from local FS writes when VERCEL=1.
  * - Production durable path: S3-compatible OBJECT_STORAGE_* when configured.
+ * - On successful object PUT, canonical stableAssetPath IS the durable object
+ *   public URL (put.url) — never a local /assets/... path that does not exist
+ *   on Vercel (no proxy/rewrite serves that path).
+ * - Object keys are immutable: include version + content hash so regeneration
+ *   never silently overwrites a previously approved asset.
  * - If durable storage fails: finalized=false, provider URL kept for provenance
  *   only, attachment blocked.
+ * - Public access model: bucket/endpoint must be public-read for canonical
+ *   URLs (no expiring signed URLs in visuals.src). Credentials never leave server.
  */
 
 export interface AssetStorageResult {
-  /** Stable asset path/URL usable by Jalin (public asset path). */
+  /** Stable asset path/URL usable by Jalin (durable object URL or local path). */
   stableAssetPath: string | null;
   /** True if the asset has been persisted to durable storage. */
   finalized: boolean;
@@ -25,17 +32,34 @@ export interface AssetStorageResult {
   backend: "object_storage" | "local_fs" | "none";
 }
 
+export interface StoreVisualAssetOptions {
+  /**
+   * Monotonic version for this visual request (e.g. attempt/retry count + 1).
+   * Combined with content hash so regeneration never overwrites an old object.
+   */
+  version?: number;
+  /** Injectable fetch for tests. */
+  fetchImpl?: typeof fetch;
+}
+
 export function isVercelRuntime(): boolean {
   return process.env.VERCEL === "1" || process.env.VERCEL === "true";
 }
 
 export function objectStorageConfigured(): boolean {
-  return !!(
-    process.env.OBJECT_STORAGE_ENDPOINT?.trim() &&
-    process.env.OBJECT_STORAGE_BUCKET?.trim() &&
-    process.env.OBJECT_STORAGE_ACCESS_KEY_ID?.trim() &&
-    process.env.OBJECT_STORAGE_SECRET_ACCESS_KEY?.trim()
-  );
+  const endpoint = process.env.OBJECT_STORAGE_ENDPOINT?.trim();
+  const bucket = process.env.OBJECT_STORAGE_BUCKET?.trim();
+  const accessKeyId = process.env.OBJECT_STORAGE_ACCESS_KEY_ID?.trim();
+  const secretAccessKey = process.env.OBJECT_STORAGE_SECRET_ACCESS_KEY?.trim();
+  if (!endpoint || !bucket || !accessKeyId || !secretAccessKey) return false;
+  // Reject placeholder / non-URL endpoints (e.g. "[SENSITIVE]", empty-looking values).
+  try {
+    const u = new URL(endpoint);
+    if (u.protocol !== "http:" && u.protocol !== "https:") return false;
+  } catch {
+    return false;
+  }
+  return true;
 }
 
 function extFromMime(mimeType: string): string {
@@ -43,12 +67,26 @@ function extFromMime(mimeType: string): string {
   return ext.replace(/[^a-z0-9]/gi, "").toLowerCase() || "png";
 }
 
-function publicObjectKey(visualRequestId: number, ext: string): string {
-  return `assets/visuals/vr-${visualRequestId}.${ext}`;
+/**
+ * Immutable object key: vr-{id}-v{version}-{hash8}.{ext}
+ * Different version or different bytes → different key (no silent overwrite).
+ */
+export function buildImmutableObjectKey(
+  visualRequestId: number,
+  ext: string,
+  version: number,
+  contentHashHex: string
+): string {
+  const safeExt = ext.replace(/[^a-z0-9]/gi, "").toLowerCase() || "png";
+  const v = Number.isFinite(version) && version > 0 ? Math.floor(version) : 1;
+  const hash = (contentHashHex || "0").replace(/[^a-f0-9]/gi, "").toLowerCase().slice(0, 8) || "0";
+  return `assets/visuals/vr-${visualRequestId}-v${v}-${hash}.${safeExt}`;
 }
 
-function publicLocalPath(visualRequestId: number, ext: string): string {
-  return `/assets/visuals/vr-${visualRequestId}.${ext}`;
+/** Local-dev only path under public/ (not used on Vercel). */
+export function publicLocalPath(visualRequestId: number, ext: string, version: number = 1, hash8: string = "local"): string {
+  const key = buildImmutableObjectKey(visualRequestId, ext, version, hash8);
+  return `/${key}`;
 }
 
 function objectPublicUrl(key: string): string {
@@ -131,7 +169,8 @@ async function putObjectStorage(
     const authorization = `${algorithm} Credential=${accessKeyId}/${credentialScope}, SignedHeaders=${signedHeaders}, Signature=${signature}`;
 
     const url = `${endpoint.origin}${canonicalUri}`;
-    const response = await fetch(url, {
+    const doFetch = optionsFetchImpl();
+    const response = await doFetch(url, {
       method: "PUT",
       headers: {
         ...headers,
@@ -155,25 +194,39 @@ async function putObjectStorage(
   }
 }
 
+/** Module-level fetch override for tests (set by storeVisualAsset options). */
+let _testFetchImpl: typeof fetch | undefined;
+function optionsFetchImpl(): typeof fetch {
+  return _testFetchImpl ?? fetch;
+}
+
 /**
  * Attempt to persist a provider asset to durable storage.
  *
  * Returns finalized=true only when persistence is durable for the runtime:
- * - object storage upload success → durable
+ * - object storage upload success → durable; stableAssetPath = durable object URL
  * - local FS write outside Vercel → durable for development
  * - local FS write on Vercel → NOT durable → finalized=false
+ *
+ * NEVER returns providerAssetUrl as stableAssetPath.
+ * NEVER returns a local /assets/... path when the object lives only in object storage.
  */
 export async function storeVisualAsset(
   providerAssetUrl: string,
   visualRequestId: number,
-  mimeType: string = "image/png"
+  mimeType: string = "image/png",
+  options: StoreVisualAssetOptions = {}
 ): Promise<AssetStorageResult> {
   if (!providerAssetUrl) {
     return { stableAssetPath: null, finalized: false, providerAssetUrl, backend: "none" };
   }
 
+  const doFetch = options.fetchImpl ?? fetch;
+  const prevTestFetch = _testFetchImpl;
+  if (options.fetchImpl) _testFetchImpl = options.fetchImpl;
+
   try {
-    const response = await fetch(providerAssetUrl, {
+    const response = await doFetch(providerAssetUrl, {
       signal: AbortSignal.timeout(30_000),
     });
 
@@ -183,14 +236,17 @@ export async function storeVisualAsset(
 
     const buffer = Buffer.from(await response.arrayBuffer());
     const ext = extFromMime(mimeType);
+    const crypto = await import("node:crypto");
+    const contentHash = crypto.createHash("sha256").update(buffer).digest("hex");
+    const version = options.version ?? 1;
+    const key = buildImmutableObjectKey(visualRequestId, ext, version, contentHash);
 
-    // Preferred durable path: object storage
+    // Preferred durable path: object storage → canonical = durable object URL
     if (objectStorageConfigured()) {
-      const key = publicObjectKey(visualRequestId, ext);
       const put = await putObjectStorage(buffer, key, mimeType);
       if (put.ok && put.url) {
         return {
-          stableAssetPath: publicLocalPath(visualRequestId, ext),
+          stableAssetPath: put.url,
           finalized: true,
           providerAssetUrl,
           backend: "object_storage",
@@ -212,16 +268,19 @@ export async function storeVisualAsset(
     const path = await import("path");
     const publicDir = path.join(process.cwd(), "public", "assets", "visuals");
     await fs.mkdir(publicDir, { recursive: true });
-    const filePath = path.join(publicDir, `vr-${visualRequestId}.${ext}`);
+    const filename = key.split("/").pop() || `vr-${visualRequestId}.${ext}`;
+    const filePath = path.join(publicDir, filename);
     await fs.writeFile(filePath, buffer);
 
     return {
-      stableAssetPath: publicLocalPath(visualRequestId, ext),
+      stableAssetPath: `/${key}`,
       finalized: true,
       providerAssetUrl,
       backend: "local_fs",
     };
   } catch {
     return { stableAssetPath: null, finalized: false, providerAssetUrl, backend: "none" };
+  } finally {
+    _testFetchImpl = prevTestFetch;
   }
 }

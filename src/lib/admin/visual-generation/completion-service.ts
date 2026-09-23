@@ -257,12 +257,15 @@ export async function completeVisualGeneration(
   }
 
   const attempts = parseAttemptHistory(vr.attempt_history);
+  // Immutable storage version: never reuse a prior object key on regenerate.
+  const storageVersion = (vr.retry_count ?? 0) + attempts.length + 1;
 
   try {
     const storage = await storeVisualAsset(
       input.providerAssetUrl,
       vr.id,
-      input.mimeType ?? "image/png"
+      input.mimeType ?? "image/png",
+      { version: storageVersion }
     );
 
     attempts.push({

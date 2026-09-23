@@ -38,18 +38,21 @@ async function main() {
     process.exit(1);
   }
 
+  let status = submission.status;
+  let assetUrl: string | null = null;
   // Bounded poll: up to 20 attempts, 6s apart (~2 min max)
-  let final = submission;
   for (let i = 0; i < 20; i++) {
     await new Promise((r) => setTimeout(r, 6000));
     try {
-      final = await adapter.pollVisualTask!(submission.taskId);
+      const polled = await adapter.pollVisualTask!(submission.taskId);
+      status = polled.status;
+      assetUrl = polled.assetUrl;
     } catch (e) {
       console.error("POLL_ERROR:", e instanceof Error ? e.message : e);
       continue;
     }
-    console.log(`POLL ${i + 1}: status=${final.status} url=${final.assetUrl ?? "-"}`);
-    if (["completed", "failed", "cancelled"].includes(final.status)) break;
+    console.log(`POLL ${i + 1}: status=${status} url=${assetUrl ?? "-"}`);
+    if (["completed", "failed", "cancelled"].includes(status)) break;
   }
 
   console.log(
@@ -57,19 +60,16 @@ async function main() {
     JSON.stringify(
       {
         taskId: submission.taskId,
-        status: final.status,
-        hasAsset: !!final.assetUrl,
-        assetHost: final.assetUrl ? new URL(final.assetUrl).host : null,
-        width: final.width,
-        height: final.height,
-        mimeType: final.mimeType,
+        status,
+        hasAsset: !!assetUrl,
+        assetHost: assetUrl ? new URL(assetUrl).host : null,
       },
       null,
       2
     )
   );
 
-  if (final.status === "completed" && final.assetUrl) {
+  if (status === "completed" && assetUrl) {
     console.log("SMOKE_TEST=PASS");
     process.exit(0);
   }

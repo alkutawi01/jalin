@@ -127,6 +127,56 @@ Also green: `npx tsc --noEmit`, `npm run validate-content`, `npm run db:verify` 
 
 One real Mystic submission (non-public asset, not attached to any published Work) to verify live endpoint + auth + async `task_id` round-trip. See report for task ID and outcome. Does not approve, attach, or publish.
 
+**Result:** PASS — task `bb293888-5b9b-42d9-846b-90a11f864306` → `COMPLETED` via `GET /v1/ai/mystic/{id}`.
+
+## Phase 4D-5R2 — Production Stable Asset URL Closure
+
+### Blocker (4D-5R review)
+
+`storeVisualAsset()` discarded `put.url` and returned `stableAssetPath: /assets/visuals/vr-{id}.{ext}` even when the object lived only in object storage. **No** `next.config` rewrite/proxy maps that path in production → on Vercel, `asset_finalized=true` could point `visuals.src` at a 404.
+
+### Fix (canonical strategy: Option A — direct durable object URL)
+
+On successful object PUT:
+
+- `stableAssetPath` = durable object public URL (`${ENDPOINT}/${BUCKET}/${key}`) — i.e. **kept `put.url`**
+- Never a local `/assets/...` path when backend is `object_storage`
+- Never a Magnific/provider transient URL
+- Local FS path only when **not** Vercel and object storage is unavailable/failed
+
+**Public access model:** path-style public URL; bucket/endpoint must be **public-read** for published assets. No expiring signed URLs in `source_asset_path`. Credentials stay server-side only. `objectStorageConfigured()` now rejects non-URL / placeholder endpoints.
+
+**Immutability:** keys are `assets/visuals/vr-{id}-v{version}-{hash8}.{ext}` where `version = retry_count + attempt_history.length + 1` and `hash8` is SHA-256 prefix of content. Regeneration cannot silently overwrite a prior approved object.
+
+### Attach gate regression
+
+Unchanged: `asset_finalized === true` AND non-empty `source_asset_path` AND approved. `visuals.src` = `source_asset_path` only (no provider URL fallback).
+
+### Automated tests (4D-5R2 additions)
+
+- Immutable key format / version & hash isolation
+- Object storage success returns durable object URL (`put.url` kept)
+- Canonical path never provider URL / never legacy local path when object storage used
+- Vercel without object storage → `finalized=false`, no stable path
+- Existing attach-gate cases A–E still pass
+
+### Real storage smoke — ARCHITECTURAL BLOCKER (local env)
+
+Local `.env.local` `OBJECT_STORAGE_*` values are literal placeholders (`[SENSITIVE]`, length 11, not a valid URL). `objectStorageConfigured()` correctly returns **false** → storage fails closed (`finalized=false`). Therefore the live object PUT + HTTP retrieval checklist **cannot complete** from this environment until real S3-compatible credentials (public-read bucket) are present in local `.env.local` and/or verified on Vercel.
+
+**Not worked around:** safety rules unchanged (no finalize without durable path; no provider URL as canonical src). Script ready: `npx tsx scripts/storage-smoke.ts` once credentials are real.
+
+### Storage smoke checklist (pending real credentials)
+
+1. provider asset copied to durable storage  
+2. `finalized=true`  
+3. `source_asset_path` populated  
+4. canonical path HTTP success  
+5. content is an image  
+6. second GET still OK (durable across calls)  
+7. not Magnific transient URL  
+8–10. no approve/attach/publish (storage-only)
+
 ## Guardrails Preserved
 
 - `docs/VISUAL_GENERATION_GUARDRAILS.md` (LOCKED) — generation, edit, approval flows unchanged in intent.

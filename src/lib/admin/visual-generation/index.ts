@@ -44,8 +44,9 @@ export {
   storeVisualAsset,
   isVercelRuntime,
   objectStorageConfigured,
+  buildImmutableObjectKey,
 } from "./asset-storage";
-export type { AssetStorageResult } from "./asset-storage";
+export type { AssetStorageResult, StoreVisualAssetOptions } from "./asset-storage";
 export {
   verifyWebhookSignature,
   signWebhookContent,
