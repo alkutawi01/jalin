@@ -17,13 +17,14 @@
 ### Admin Components
 
 - Works CRUD (create, read, update, archive)
-- Contributors CRUD
-- Credits CRUD
-- Visuals CRUD
+- Contributors CRUD (with visibility flag)
+- Credits CRUD (with public flag, XOR constraint)
+- Visuals CRUD (with Magnific provenance)
 - Glossary CRUD
-- Publish to Markdown workflow
+- Publish to Markdown workflow (private credits excluded)
 - Sync status display
 - Backup/rollback mechanism
+- Token-based authentication (HMAC, fail-closed)
 
 ### Public Components
 
@@ -47,6 +48,7 @@
 - ✅ `npm run db:verify` checks database integrity
 - ✅ Foreign key relationships intact
 - ✅ No orphaned records
+- ✅ Optional relations (zero credits/visuals/glossary allowed)
 
 ### Public Routes
 - ✅ Markdown mode: all routes functional
@@ -58,33 +60,64 @@
 - ✅ `/admin/works/[id]` editor loads
 - ✅ `/admin/contributors` list loads
 - ✅ `/admin/contributors/[slug]` editor loads
+- ✅ `/admin/login` page loads
+
+## Security
+
+### Authentication
+- ✅ Token-based authentication with HMAC signing
+- ✅ Session cookies (HttpOnly, Secure, SameSite)
+- ✅ Owner allowlist via ADMIN_ALLOWED_EMAILS
+- ✅ Server-side middleware protection for /admin and /api/admin
+- ✅ Login/logout flow
+- ✅ Dev bypass via ADMIN_DEV_BYPASS (disabled in production)
+- ✅ Fail-closed design (missing config = deny)
+- ✅ Timing-safe signature comparison
+- ✅ Empty allowlist = deny all
+
+### Credit Privacy
+- ✅ is_public flag on credits table
+- ✅ Private credits excluded from public content repository
+- ✅ Private credits excluded from publish serializer
+- ✅ Admin can toggle public/private per credit
+
+### Contributor Visibility
+- ✅ is_visible flag on contributors table
+- ✅ Hidden contributors excluded from public listings
+- ✅ Hidden contributors remain historically referenced
+- ✅ Admin can toggle visible/hidden per contributor
+
+### Data Contract
+- ✅ XOR constraint: contributor XOR guest (never both, never neither)
+- ✅ Discriminated guest identity (no fake contributor slug)
+- ✅ API error sanitization (safe codes, no SQL leakage)
+- ✅ Credit reorder exact-set validation
+- ✅ Atomic credit reorder transaction
 
 ## Known Limitations
 
-### Authentication
-- Admin uses development bypass (no production auth)
-- Admin routes accessible without authentication in development
-- **Blocker for production**: Need NextAuth or similar before switching to database mode
-
-### Performance
-- DatabaseContentRepository loads all data into memory on init
-- Suitable for current scale (3 works, 5 contributors)
-- May need pagination for larger datasets
+### Database Connection
+- Connection pool uses default settings
+- May need tuning for production load
 
 ### Publish Workflow
 - Publish creates/overwrites Markdown files
 - Backup mechanism exists but rollback is manual
 - External Markdown changes detected but require manual resolution
 
+### Isolated DB Verification
+- No isolated DATABASE_URL available for testing
+- DB verification requires manual testing
+
 ## Blocking Issues
 
-1. **Admin Authentication**: No production authentication implemented
-   - Risk: Unauthorized access to admin routes
-   - Mitigation: Keep admin routes internal/VPN-only until auth implemented
+1. **Isolated PostgreSQL Verification**: No test DATABASE_URL available
+   - Risk: Cannot verify DB operations from empty state
+   - Mitigation: Document limitation, test manually when available
 
-2. **Database Connection Pool**: Using default pool size
-   - Risk: May need tuning for production load
-   - Mitigation: Monitor and adjust `DATABASE_POOL_SIZE`
+2. **Dependency Security**: npm audit may show vulnerabilities
+   - Risk: Potential security issues
+   - Mitigation: Document and triage findings
 
 ## Non-Blocking Issues
 
@@ -121,6 +154,8 @@ CONTENT_SOURCE=database
 DATABASE_URL=postgresql://user:password@host:5432/jalin
 DATABASE_SSL=true  # if required
 DATABASE_POOL_SIZE=10
+ADMIN_SECRET=your-secret-here
+ADMIN_ALLOWED_EMAILS=admin@jalin.adjung.com
 ```
 
 ### To Revert to Markdown Mode
@@ -143,6 +178,8 @@ CONTENT_SOURCE=markdown
 8. **Glossary works**: Check term tooltips
 9. **Credits display**: Check byline and editorial credits
 10. **Admin functional**: Check `/admin/works` loads from database
+11. **Auth works**: Check login/logout, session validation
+12. **Publish works**: Check database → Markdown publish
 
 ## Recommendation
 
@@ -154,30 +191,35 @@ CONTENT_SOURCE=markdown
 - Markdown/Database parity verified
 - Publish workflow with safety checks in place
 - Rollback mechanism available
+- Authentication implemented and hardened
+- Credit privacy enforced
+- Contributor visibility enforced
+- XOR constraint enforced
+- API error sanitization implemented
 - No critical data loss risks identified
 
 ### Preconditions for Staging
 
 1. Set up PostgreSQL database for staging environment
-2. Run migration: `npm run db:migrate`
-3. Configure environment variables
+2. Run migration: `npm run db:schema:migrate && npm run db:seed`
+3. Configure environment variables (ADMIN_SECRET, ADMIN_ALLOWED_EMAILS)
 4. Test with staging traffic
 
 ### Preconditions for Production
 
-1. Implement admin authentication (NextAuth or similar)
+1. Isolated PostgreSQL verification (from empty DB)
 2. Load test with production-like data
 3. Monitor database performance
 4. Establish backup/monitoring procedures
+5. Dependency security audit
 
 ## Future Considerations
 
 1. **Database as Primary**: After staging validation, consider making database the primary source
-2. **Admin Authentication**: Required before production deployment
-3. **AI Submission Pipeline**: Can be added after cutover stability confirmed
-4. **Series/Episodes**: Can be added after basic workflow stable
+2. **AI Submission Pipeline**: Can be added after cutover stability confirmed
+3. **Series/Episodes**: Can be added after basic workflow stable
 
 ---
 
 *Document generated: 2026-09-23*
-*Latest commit: 9e61a4a*
+*Latest commit: a452f3a*
