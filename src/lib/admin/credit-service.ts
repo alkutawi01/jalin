@@ -187,6 +187,7 @@ export async function deleteCredit(id: number): Promise<void> {
 /**
  * Reorder credits for a work.
  * Uses a single transaction to ensure atomicity.
+ * Requires exact set equality: submitted IDs must equal all credit IDs for the Work.
  * Normalizes sort_order to sequential values (1, 2, 3...).
  */
 export async function reorderCredits(
@@ -195,19 +196,24 @@ export async function reorderCredits(
 ): Promise<CreditRecord[]> {
   const db = getAdminDb();
 
-  // Validate: all IDs must exist and belong to same work
+  // Get all existing credit IDs for this work
   const existingCredits = await db
     .selectFrom("credits")
     .where("work_id", "=", workId)
     .select("id")
     .execute();
 
-  const existingIds = new Set(existingCredits.map((c) => c.id));
+  const existingIds = existingCredits.map((c) => c.id).sort();
+  const submittedIds = [...creditIds].sort();
 
-  // Check all provided IDs exist
-  for (const id of creditIds) {
-    if (!existingIds.has(id)) {
-      throw new Error(`Credit ${id} not found in work ${workId}.`);
+  // Exact set equality: submitted IDs must equal all credit IDs
+  if (existingIds.length !== submittedIds.length) {
+    throw new Error(`Expected ${existingIds.length} credit IDs, received ${submittedIds.length}.`);
+  }
+
+  for (let i = 0; i < existingIds.length; i++) {
+    if (existingIds[i] !== submittedIds[i]) {
+      throw new Error(`Credit ID mismatch: expected ${existingIds[i]}, got ${submittedIds[i]}.`);
     }
   }
 
