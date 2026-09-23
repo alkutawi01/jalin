@@ -1362,3 +1362,89 @@ dd { margin: 0; color: var(--ink); }
 .admin-preview-body p {
   margin-bottom: 1.5em;
 }
+
+/* ── Admin Tabs ── */
+.admin-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid var(--line);
+  margin-bottom: 24px;
+}
+
+.admin-tab {
+  padding: 12px 24px;
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink-soft);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: all 0.2s;
+}
+
+.admin-tab:hover {
+  color: var(--ink);
+}
+
+.admin-tab-active {
+  color: var(--ink);
+  border-bottom-color: var(--clay);
+}
+
+/* ── Admin Kind Badges ── */
+.admin-kind {
+  display: inline-block;
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.admin-kind-human {
+  background: #d1e7dd;
+  color: #0f5132;
+}
+
+.admin-kind-virtual {
+  background: #cfe2ff;
+  color: #084298;
+}
+
+.admin-kind-organization {
+  background: #e8e4dc;
+  color: var(--ink-soft);
+}
+
+/* ── Admin Credits ── */
+.admin-credits-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.admin-credits-header h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.admin-credit-form {
+  background: #f5f3ef;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.admin-checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.admin-checkbox-label input[type="checkbox"] {
+  width: auto;
+}
