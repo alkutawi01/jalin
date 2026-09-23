@@ -17,7 +17,7 @@ export type WorkStatus =
 
 export type ContributorKind = "human" | "virtual" | "organization";
 
-export type VisualRole = "hero" | "inline" | "section";
+export type VisualRole = "hero" | "inline" | "section" | "decorative";
 
 export type VisualPlace = "before" | "after";
 
@@ -73,6 +73,7 @@ export interface Visuals {
   anchor: string | null;
   place: VisualPlace;
   sort_order: number;
+  is_asset_finalized: boolean;
   created_at: ColumnType<Date, string | Date, string | Date>;
 }
 
@@ -153,11 +154,19 @@ export interface PromptTemplates {
 }
 
 export type VisualRequestStatus =
-  | "pending"
+  | "draft"
+  | "queued"
   | "generating"
   | "generated"
+  | "failed"
+  | "under_review"
   | "approved"
-  | "rejected";
+  | "rejected"
+  | "attached";
+
+export type ApprovalState = "pending" | "approved" | "rejected";
+
+export type AspectRatio = "1:1" | "3:2" | "2:3" | "16:9" | "9:16" | "4:3" | "3:4";
 
 export interface VisualRequests {
   id: Generated<number>;
@@ -174,7 +183,25 @@ export interface VisualRequests {
   alt_text: string | null;
   anchor: string | null;
   place: VisualPlace;
-  approval_state: string;
+  approval_state: ApprovalState;
+  requested_by: string;
+  approved_by: string | null;
+  error_category: ErrorCategory | null;
+  error_message: string | null;
+  retry_count: number;
+  idempotency_key: string | null;
+  aspect_ratio: AspectRatio;
+  model: string | null;
+  prompt_composed: string | null;
+  asset_width: number | null;
+  asset_height: number | null;
+  asset_mime_type: string | null;
+  asset_finalized: boolean;
+  started_at: ColumnType<Date | null, string | Date | null, string | Date | null>;
+  completed_at: ColumnType<Date | null, string | Date | null, string | Date | null>;
+  approved_at: ColumnType<Date | null, string | Date | null, string | Date | null>;
+  rejected_at: ColumnType<Date | null, string | Date | null, string | Date | null>;
+  failed_at: ColumnType<Date | null, string | Date | null, string | Date | null>;
   created_at: ColumnType<Date, string | Date, string | Date>;
   updated_at: ColumnType<Date, string | Date, string | Date>;
 }

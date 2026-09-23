@@ -7,6 +7,17 @@ const VISUAL_ROLES = [
   { value: "hero", label: "Hero" },
   { value: "inline", label: "Inline" },
   { value: "section", label: "Section" },
+  { value: "decorative", label: "Decorative" },
+];
+
+const ASPECT_RATIOS = [
+  { value: "3:2", label: "3:2" },
+  { value: "2:3", label: "2:3" },
+  { value: "1:1", label: "1:1" },
+  { value: "16:9", label: "16:9" },
+  { value: "9:16", label: "9:16" },
+  { value: "4:3", label: "4:3" },
+  { value: "3:4", label: "3:4" },
 ];
 
 const PLACES = [
@@ -14,18 +25,28 @@ const PLACES = [
   { value: "after", label: "After" },
 ];
 
-const STATUSES = [
+const GENERATION_STATUSES = [
+  { value: "draft", label: "Draf" },
   { value: "pending", label: "Menunggu" },
+  { value: "queued", label: "Dalam Barisan" },
   { value: "generating", label: "Menjana" },
   { value: "generated", label: "Dijana" },
+  { value: "failed", label: "Gagal" },
+  { value: "under_review", label: "Semakan" },
   { value: "approved", label: "Diluluskan" },
   { value: "rejected", label: "Ditolak" },
+  { value: "attached", label: "Dipaut" },
 ];
 
 const APPROVAL_STATES = [
   { value: "pending", label: "Menunggu" },
   { value: "approved", label: "Diluluskan" },
   { value: "rejected", label: "Ditolak" },
+];
+
+const PROVIDERS = [
+  { value: "magnific", label: "Magnific" },
+  { value: "mock", label: "Mock (Test)" },
 ];
 
 interface VisualRequestData {
@@ -44,6 +65,24 @@ interface VisualRequestData {
   anchor: string | null;
   place: string;
   approval_state: string;
+  requested_by: string;
+  approved_by: string | null;
+  error_category: string | null;
+  error_message: string | null;
+  retry_count: number;
+  idempotency_key: string | null;
+  aspect_ratio: string;
+  model: string | null;
+  prompt_composed: string | null;
+  asset_width: number | null;
+  asset_height: number | null;
+  asset_mime_type: string | null;
+  asset_finalized: boolean;
+  started_at: string | null;
+  completed_at: string | null;
+  approved_at: string | null;
+  rejected_at: string | null;
+  failed_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -66,14 +105,24 @@ export default function EditVisualRequestPage() {
     provider: "magnific",
     providerRequestId: "",
     providerCreationId: "",
-    status: "pending",
+    status: "draft",
     sourceAssetUrl: "",
     sourceAssetPath: "",
     altText: "",
     anchor: "",
     place: "after",
     approvalState: "pending",
+    aspectRatio: "3:2",
+    model: "",
   });
+
+  const [record, setRecord] = useState<VisualRequestData | null>(null);
+  const [genProvider, setGenProvider] = useState("mock");
+  const [genModel, setGenModel] = useState("");
+  const [genOverride, setGenOverride] = useState("");
+  const [generating, setGenerating] = useState(false);
+  const [approving, setApproving] = useState(false);
+  const [attaching, setAttaching] = useState(false);
 
   useEffect(() => {
     async function loadRequest() {
@@ -81,6 +130,7 @@ export default function EditVisualRequestPage() {
         const res = await fetch(`/api/admin/visual-requests/${requestId}`);
         if (!res.ok) throw new Error("Visual request tidak ditemui.");
         const r: VisualRequestData = await res.json();
+        setRecord(r);
 
         setForm({
           workId: r.work_id || "",
@@ -97,6 +147,8 @@ export default function EditVisualRequestPage() {
           anchor: r.anchor || "",
           place: r.place,
           approvalState: r.approval_state,
+          aspectRatio: r.aspect_ratio || "3:2",
+          model: r.model || "",
         });
       } catch (err) {
         setError(err instanceof Error ? err.message : "Ralat memuatkan visual request.");
@@ -135,6 +187,114 @@ export default function EditVisualRequestPage() {
       setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleGenerate() {
+    setGenerating(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      const res = await fetch(`/api/admin/visual-requests/${requestId}/generate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          provider: genProvider,
+          model: genModel || undefined,
+          editorialOverride: genOverride || undefined,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Gagal menjana visual.");
+      setSuccess(`Penjanaan selesai — status: ${data.status}.` + (data.errorMessage ? ` ${data.errorMessage}` : ""));
+      // Reload to get fresh state
+      const refreshed = await fetch(`/api/admin/visual-requests/${requestId}`);
+      if (refreshed.ok) {
+        const r: VisualRequestData = await refreshed.json();
+        setRecord(r);
+        setForm((prev) => ({
+          ...prev,
+          status: r.status,
+          approvalState: r.approval_state,
+          providerRequestId: r.provider_request_id || "",
+          providerCreationId: r.provider_creation_id || "",
+          sourceAssetUrl: r.source_asset_url || "",
+          sourceAssetPath: r.source_asset_path || "",
+          model: r.model || "",
+        }));
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+    } finally {
+      setGenerating(false);
+    }
+  }
+
+  async function handleApprove() {
+    setApproving(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      const res = await fetch(`/api/admin/visual-requests/${requestId}/approve`, { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Gagal meluluskan.");
+      setSuccess("Visual diluluskan.");
+      const refreshed = await fetch(`/api/admin/visual-requests/${requestId}`);
+      if (refreshed.ok) {
+        const r: VisualRequestData = await refreshed.json();
+        setRecord(r);
+        setForm((prev) => ({ ...prev, status: r.status, approvalState: r.approval_state }));
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+    } finally {
+      setApproving(false);
+    }
+  }
+
+  async function handleReject() {
+    if (!confirm("Pasti ingin menolak visual ini?")) return;
+    setApproving(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      const res = await fetch(`/api/admin/visual-requests/${requestId}/reject`, { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Gagal menolak.");
+      setSuccess("Visual ditolak.");
+      const refreshed = await fetch(`/api/admin/visual-requests/${requestId}`);
+      if (refreshed.ok) {
+        const r: VisualRequestData = await refreshed.json();
+        setRecord(r);
+        setForm((prev) => ({ ...prev, status: r.status, approvalState: r.approval_state }));
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+    } finally {
+      setApproving(false);
+    }
+  }
+
+  async function handleAttach() {
+    if (!confirm("Pautkan visual ini ke Work? Work TIDAK akan diterbitkan secara automatik.")) return;
+    setAttaching(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      const res = await fetch(`/api/admin/visual-requests/${requestId}/attach`, { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Gagal memautkan.");
+      setSuccess(`Visual dipautkan (visual ID: ${data.visualId}).`);
+      const refreshed = await fetch(`/api/admin/visual-requests/${requestId}`);
+      if (refreshed.ok) {
+        const r: VisualRequestData = await refreshed.json();
+        setRecord(r);
+        setForm((prev) => ({ ...prev, status: r.status }));
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+    } finally {
+      setAttaching(false);
     }
   }
 
@@ -179,6 +339,91 @@ export default function EditVisualRequestPage() {
       {error && <div className="admin-alert admin-alert-error">{error}</div>}
       {success && <div className="admin-alert admin-alert-success">{success}</div>}
 
+      {/* Generation Status vs Editorial Approval — clearly separated */}
+      {record && (
+        <div className="admin-form" style={{ marginBottom: 24, padding: 16, border: "1px solid var(--border, #ddd)", borderRadius: 8 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+            <div>
+              <h3 style={{ margin: "0 0 8px", fontSize: 14, textTransform: "uppercase", opacity: 0.7 }}>Generation Status</h3>
+              <p style={{ margin: 0 }}>
+                <strong>{record.status}</strong>
+                {record.error_category && <span style={{ color: "#c0392b" }}> — {record.error_category}: {record.error_message}</span>}
+              </p>
+              {record.provider_request_id && <p style={{ margin: "4px 0 0", fontSize: 12, opacity: 0.7 }}>Request: {record.provider_request_id}</p>}
+              {record.provider_creation_id && <p style={{ margin: "4px 0 0", fontSize: 12, opacity: 0.7 }}>Creation: {record.provider_creation_id}</p>}
+              {record.asset_width && record.asset_height && (
+                <p style={{ margin: "4px 0 0", fontSize: 12, opacity: 0.7 }}>{record.asset_width}×{record.asset_height} {record.asset_mime_type}</p>
+              )}
+              <p style={{ margin: "4px 0 0", fontSize: 12, opacity: 0.7 }}>
+                Asset: {record.asset_finalized ? "Stabil (final)" : "Sementara (provider URL)"}
+              </p>
+            </div>
+            <div>
+              <h3 style={{ margin: "0 0 8px", fontSize: 14, textTransform: "uppercase", opacity: 0.7 }}>Editorial Approval</h3>
+              <p style={{ margin: 0 }}><strong>{record.approval_state}</strong></p>
+              {record.approved_by && <p style={{ margin: "4px 0 0", fontSize: 12, opacity: 0.7 }}>Oleh: {record.approved_by}</p>}
+            </div>
+          </div>
+
+          {/* Preview */}
+          {record.source_asset_url && (
+            <div style={{ marginTop: 12 }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={record.source_asset_path || record.source_asset_url}
+                alt={record.alt_text || "Preview visual"}
+                style={{ maxWidth: "100%", maxHeight: 320, borderRadius: 6 }}
+              />
+            </div>
+          )}
+
+          {/* Actions */}
+          <div style={{ display: "flex", gap: 8, marginTop: 16, flexWrap: "wrap" }}>
+            {["draft", "pending", "generated", "failed", "rejected"].includes(record.status) && (
+              <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                <select value={genProvider} onChange={(e) => setGenProvider(e.target.value)} style={{ padding: "6px 10px" }}>
+                  {PROVIDERS.map((p) => <option key={p.value} value={p.value}>{p.label}</option>)}
+                </select>
+                <input
+                  type="text"
+                  value={genModel}
+                  onChange={(e) => setGenModel(e.target.value)}
+                  placeholder="model (optional)"
+                  style={{ padding: "6px 10px", width: 160 }}
+                />
+                <input
+                  type="text"
+                  value={genOverride}
+                  onChange={(e) => setGenOverride(e.target.value)}
+                  placeholder="Editorial override (optional)"
+                  style={{ padding: "6px 10px", width: 220 }}
+                />
+                <button type="button" onClick={handleGenerate} className="admin-btn admin-btn-primary" disabled={generating}>
+                  {generating ? "Menjana..." : "Generate"}
+                </button>
+              </div>
+            )}
+
+            {["under_review", "generated"].includes(record.status) && record.source_asset_url && (
+              <>
+                <button type="button" onClick={handleApprove} className="admin-btn admin-btn-primary" disabled={approving}>
+                  {approving ? "Memproses..." : "Approve"}
+                </button>
+                <button type="button" onClick={handleReject} className="admin-btn admin-btn-danger" disabled={approving}>
+                  Reject
+                </button>
+              </>
+            )}
+
+            {record.status === "approved" && record.work_id && (
+              <button type="button" onClick={handleAttach} className="admin-btn admin-btn-primary" disabled={attaching}>
+                {attaching ? "Memautkan..." : "Attach to Work"}
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className="admin-form">
         <div className="admin-form-row">
           <div className="admin-form-group">
@@ -219,12 +464,28 @@ export default function EditVisualRequestPage() {
 
           <div className="admin-form-group">
             <label htmlFor="provider">Provider</label>
-            <input
+            <select
               id="provider"
-              type="text"
               value={form.provider}
               onChange={(e) => setForm((prev) => ({ ...prev, provider: e.target.value }))}
-            />
+            >
+              {PROVIDERS.map((p) => (
+                <option key={p.value} value={p.value}>{p.label}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="admin-form-group">
+            <label htmlFor="aspectRatio">Aspect Ratio</label>
+            <select
+              id="aspectRatio"
+              value={form.aspectRatio}
+              onChange={(e) => setForm((prev) => ({ ...prev, aspectRatio: e.target.value }))}
+            >
+              {ASPECT_RATIOS.map((a) => (
+                <option key={a.value} value={a.value}>{a.label}</option>
+              ))}
+            </select>
           </div>
 
           <div className="admin-form-group">
@@ -255,20 +516,20 @@ export default function EditVisualRequestPage() {
 
         <div className="admin-form-row">
           <div className="admin-form-group">
-            <label htmlFor="status">Status</label>
+            <label htmlFor="status">Status (Generation)</label>
             <select
               id="status"
               value={form.status}
               onChange={(e) => setForm((prev) => ({ ...prev, status: e.target.value }))}
             >
-              {STATUSES.map((s) => (
+              {GENERATION_STATUSES.map((s) => (
                 <option key={s.value} value={s.value}>{s.label}</option>
               ))}
             </select>
           </div>
 
           <div className="admin-form-group">
-            <label htmlFor="approvalState">Kelulusan</label>
+            <label htmlFor="approvalState">Kelulusan (Editorial)</label>
             <select
               id="approvalState"
               value={form.approvalState}
@@ -278,6 +539,17 @@ export default function EditVisualRequestPage() {
                 <option key={a.value} value={a.value}>{a.label}</option>
               ))}
             </select>
+          </div>
+
+          <div className="admin-form-group">
+            <label htmlFor="model">Model</label>
+            <input
+              id="model"
+              type="text"
+              value={form.model}
+              onChange={(e) => setForm((prev) => ({ ...prev, model: e.target.value }))}
+              placeholder="magnific-spark"
+            />
           </div>
         </div>
 

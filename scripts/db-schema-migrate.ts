@@ -193,13 +193,31 @@ const migrations = {
         .addColumn("provider", "text", (col) => col.notNull().defaultTo("magnific"))
         .addColumn("provider_request_id", "text")
         .addColumn("provider_creation_id", "text")
-        .addColumn("status", "text", (col) => col.notNull().defaultTo("pending"))
+        .addColumn("status", "text", (col) => col.notNull().defaultTo("draft"))
         .addColumn("source_asset_url", "text")
         .addColumn("source_asset_path", "text")
         .addColumn("alt_text", "text")
         .addColumn("anchor", "text")
         .addColumn("place", "text", (col) => col.notNull().defaultTo("after"))
         .addColumn("approval_state", "text", (col) => col.notNull().defaultTo("pending"))
+        .addColumn("requested_by", "text", (col) => col.notNull().defaultTo("admin"))
+        .addColumn("approved_by", "text")
+        .addColumn("error_category", "text")
+        .addColumn("error_message", "text")
+        .addColumn("retry_count", "integer", (col) => col.notNull().defaultTo(0))
+        .addColumn("idempotency_key", "text")
+        .addColumn("aspect_ratio", "text", (col) => col.notNull().defaultTo("3:2"))
+        .addColumn("model", "text")
+        .addColumn("prompt_composed", "text")
+        .addColumn("asset_width", "integer")
+        .addColumn("asset_height", "integer")
+        .addColumn("asset_mime_type", "text")
+        .addColumn("asset_finalized", "boolean", (col) => col.notNull().defaultTo(false))
+        .addColumn("started_at", "timestamptz")
+        .addColumn("completed_at", "timestamptz")
+        .addColumn("approved_at", "timestamptz")
+        .addColumn("rejected_at", "timestamptz")
+        .addColumn("failed_at", "timestamptz")
         .addColumn("created_at", "timestamptz", (col) => col.notNull().defaultTo("now()"))
         .addColumn("updated_at", "timestamptz", (col) => col.notNull().defaultTo("now()"))
         .execute();
@@ -273,6 +291,75 @@ const migrations = {
     },
     async down(db: Kysely<unknown>) {
       await db.schema.alterTable("work_submissions").dropColumn("promoted_at").execute();
+    },
+  },
+  "007_enhance_visual_requests": {
+    async up(db: Kysely<unknown>) {
+      await db.schema.alterTable("visual_requests").addColumn("started_at", "timestamptz").execute();
+      await db.schema.alterTable("visual_requests").addColumn("completed_at", "timestamptz").execute();
+      await db.schema.alterTable("visual_requests").addColumn("approved_at", "timestamptz").execute();
+      await db.schema.alterTable("visual_requests").addColumn("rejected_at", "timestamptz").execute();
+      await db.schema.alterTable("visual_requests").addColumn("failed_at", "timestamptz").execute();
+      await db.schema
+        .alterTable("visual_requests")
+        .addColumn("requested_by", "text", (col) => col.notNull().defaultTo("admin"))
+        .execute();
+      await db.schema.alterTable("visual_requests").addColumn("approved_by", "text").execute();
+      await db.schema.alterTable("visual_requests").addColumn("error_category", "text").execute();
+      await db.schema.alterTable("visual_requests").addColumn("error_message", "text").execute();
+      await db.schema
+        .alterTable("visual_requests")
+        .addColumn("retry_count", "integer", (col) => col.notNull().defaultTo(0))
+        .execute();
+      await db.schema.alterTable("visual_requests").addColumn("idempotency_key", "text").execute();
+      await db.schema
+        .alterTable("visual_requests")
+        .addColumn("aspect_ratio", "text", (col) => col.notNull().defaultTo("3:2"))
+        .execute();
+      await db.schema.alterTable("visual_requests").addColumn("model", "text").execute();
+      await db.schema.alterTable("visual_requests").addColumn("prompt_composed", "text").execute();
+      await db.schema.alterTable("visual_requests").addColumn("asset_width", "integer").execute();
+      await db.schema.alterTable("visual_requests").addColumn("asset_height", "integer").execute();
+      await db.schema.alterTable("visual_requests").addColumn("asset_mime_type", "text").execute();
+      await db.schema
+        .alterTable("visual_requests")
+        .addColumn("asset_finalized", "boolean", (col) => col.notNull().defaultTo(false))
+        .execute();
+      await db.schema
+        .createIndex("visual_requests_status_idx")
+        .on("visual_requests")
+        .column("status")
+        .execute();
+      await db.schema
+        .createIndex("visual_requests_approval_idx")
+        .on("visual_requests")
+        .column("approval_state")
+        .execute();
+    },
+    async down(db: Kysely<unknown>) {
+      await db.schema.dropIndex("visual_requests_approval_idx").execute();
+      await db.schema.dropIndex("visual_requests_status_idx").execute();
+      const cols = [
+        "asset_finalized", "asset_mime_type", "asset_height", "asset_width",
+        "prompt_composed", "model", "aspect_ratio", "idempotency_key",
+        "retry_count", "error_message", "error_category", "approved_by",
+        "requested_by", "failed_at", "rejected_at", "approved_at",
+        "completed_at", "started_at",
+      ];
+      for (const c of cols) {
+        await db.schema.alterTable("visual_requests").dropColumn(c).execute();
+      }
+    },
+  },
+  "008_add_visual_asset_finalized": {
+    async up(db: Kysely<unknown>) {
+      await db.schema
+        .alterTable("visuals")
+        .addColumn("is_asset_finalized", "boolean", (col) => col.defaultTo(false))
+        .execute();
+    },
+    async down(db: Kysely<unknown>) {
+      await db.schema.alterTable("visuals").dropColumn("is_asset_finalized").execute();
     },
   },
 };

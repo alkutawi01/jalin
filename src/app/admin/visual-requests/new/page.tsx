@@ -7,6 +7,17 @@ const VISUAL_ROLES = [
   { value: "hero", label: "Hero" },
   { value: "inline", label: "Inline" },
   { value: "section", label: "Section" },
+  { value: "decorative", label: "Decorative" },
+];
+
+const ASPECT_RATIOS = [
+  { value: "3:2", label: "3:2 (Landskap)" },
+  { value: "2:3", label: "2:3 (Potret)" },
+  { value: "1:1", label: "1:1 (Segi Empat)" },
+  { value: "16:9", label: "16:9 (Wide)" },
+  { value: "9:16", label: "9:16 (Tegak)" },
+  { value: "4:3", label: "4:3" },
+  { value: "3:4", label: "3:4" },
 ];
 
 const PLACES = [
@@ -28,6 +39,7 @@ export default function NewVisualRequestPage() {
     altText: "",
     anchor: "",
     place: "after",
+    aspectRatio: "3:2",
   });
 
   async function handleSubmit(e: React.FormEvent) {
@@ -129,6 +141,21 @@ export default function NewVisualRequestPage() {
             >
               {PLACES.map((p) => (
                 <option key={p.value} value={p.value}>{p.label}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div className="admin-form-row">
+          <div className="admin-form-group">
+            <label htmlFor="aspectRatio">Aspect Ratio</label>
+            <select
+              id="aspectRatio"
+              value={form.aspectRatio}
+              onChange={(e) => setForm((prev) => ({ ...prev, aspectRatio: e.target.value }))}
+            >
+              {ASPECT_RATIOS.map((a) => (
+                <option key={a.value} value={a.value}>{a.label}</option>
               ))}
             </select>
           </div>

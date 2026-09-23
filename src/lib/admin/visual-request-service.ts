@@ -30,6 +30,8 @@ export interface VisualRequestInput {
   anchor?: string;
   place?: string;
   approvalState?: string;
+  aspectRatio?: string;
+  model?: string;
 }
 
 export interface VisualRequestRecord {
@@ -48,6 +50,24 @@ export interface VisualRequestRecord {
   anchor: string | null;
   place: string;
   approval_state: string;
+  requested_by: string;
+  approved_by: string | null;
+  error_category: string | null;
+  error_message: string | null;
+  retry_count: number;
+  idempotency_key: string | null;
+  aspect_ratio: string;
+  model: string | null;
+  prompt_composed: string | null;
+  asset_width: number | null;
+  asset_height: number | null;
+  asset_mime_type: string | null;
+  asset_finalized: boolean;
+  started_at: Date | null;
+  completed_at: Date | null;
+  approved_at: Date | null;
+  rejected_at: Date | null;
+  failed_at: Date | null;
   created_at: Date;
   updated_at: Date;
 }
@@ -84,13 +104,18 @@ export async function createVisualRequest(input: VisualRequestInput): Promise<Vi
       provider: input.provider || "magnific",
       provider_request_id: input.providerRequestId || null,
       provider_creation_id: input.providerCreationId || null,
-      status: (input.status || "pending") as VisualRequestStatus,
+      status: (input.status || "draft") as VisualRequestStatus,
       source_asset_url: input.sourceAssetUrl || null,
       source_asset_path: input.sourceAssetPath || null,
       alt_text: input.altText || null,
       anchor: input.anchor || null,
       place: (input.place || "after") as VisualPlace,
-      approval_state: input.approvalState || "pending",
+      approval_state: (input.approvalState || "pending") as "pending" | "approved" | "rejected",
+      aspect_ratio: (input.aspectRatio || "3:2") as "1:1" | "3:2" | "2:3" | "16:9" | "9:16" | "4:3" | "3:4",
+      model: input.model || null,
+      requested_by: "admin",
+      retry_count: 0,
+      asset_finalized: false,
       created_at: now,
       updated_at: now,
     })
@@ -131,6 +156,8 @@ export async function updateVisualRequest(
   if (input.anchor !== undefined) updateData.anchor = input.anchor || null;
   if (input.place !== undefined) updateData.place = input.place;
   if (input.approvalState !== undefined) updateData.approval_state = input.approvalState;
+  if (input.aspectRatio !== undefined) updateData.aspect_ratio = input.aspectRatio;
+  if (input.model !== undefined) updateData.model = input.model || null;
   updateData.updated_at = now;
 
   await db

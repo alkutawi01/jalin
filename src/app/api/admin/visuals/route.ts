@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "role diperlukan." }, { status: 400 });
     }
 
-    const validRoles = ["hero", "inline", "section"];
+    const validRoles = ["hero", "inline", "section", "decorative"];
     if (!validRoles.includes(body.role)) {
       return NextResponse.json({ error: "role tidak sah." }, { status: 400 });
     }

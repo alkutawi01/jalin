@@ -50,7 +50,7 @@ export async function PATCH(
 
     // Validate role if provided
     if (body.role) {
-      const validRoles = ["hero", "inline", "section"];
+      const validRoles = ["hero", "inline", "section", "decorative"];
       if (!validRoles.includes(body.role)) {
         return NextResponse.json({ error: "role tidak sah." }, { status: 400 });
       }

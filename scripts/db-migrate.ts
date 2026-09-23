@@ -103,6 +103,7 @@ async function migrate() {
               anchor: visual.anchor ? String(visual.anchor) : null,
               place: (visual.place || "after") as "before" | "after",
               sort_order: i,
+              is_asset_finalized: false,
               created_at: new Date(),
             })
             .execute();

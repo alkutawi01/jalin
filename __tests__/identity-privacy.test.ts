@@ -228,7 +228,7 @@ assertEqual(publicProj.roleLabel, "Penulis", "Public projection has roleLabel");
 assertEqual(publicProj.suggestedPublicCredit, "Rafiq Naim — Penulis", "Public projection has suggestedPublicCredit");
 
 // Admin projection includes internal fields
-const adminProj = toAdminProjection(mockContribution);
+const adminProj = toAdminProjection(mockContribution as never);
 assertEqual(adminProj.aiProvider, "openai", "Admin projection has aiProvider");
 assertEqual(adminProj.aiModel, "gpt-4", "Admin projection has aiModel");
 assertEqual(adminProj.aiPersona, "Rafiq Naim", "Admin projection has aiPersona");

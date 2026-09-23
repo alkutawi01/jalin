@@ -3,11 +3,16 @@ import { hasDb } from "../../../lib/db";
 export const dynamic = "force-dynamic";
 
 const STATUS_LABELS: Record<string, string> = {
+  draft: "Draf",
   pending: "Menunggu",
+  queued: "Dalam Barisan",
   generating: "Menjana",
   generated: "Dijana",
+  failed: "Gagal",
+  under_review: "Semakan",
   approved: "Diluluskan",
   rejected: "Ditolak",
+  attached: " Dipaut",
 };
 
 const APPROVAL_LABELS: Record<string, string> = {
@@ -93,7 +98,7 @@ export default async function AdminVisualRequestsPage() {
                   </td>
                   <td>{r.provider}</td>
                   <td>
-                    <span className={`admin-status admin-status-${r.status === "approved" ? "published" : r.status === "rejected" ? "archived" : "review"}`}>
+                    <span className={`admin-status admin-status-${r.status === "approved" || r.status === "attached" ? "published" : r.status === "rejected" || r.status === "failed" ? "archived" : "review"}`}>
                       {STATUS_LABELS[r.status] ?? r.status}
                     </span>
                   </td>

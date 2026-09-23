@@ -40,6 +40,7 @@ export interface VisualRecord {
   anchor: string | null;
   place: VisualPlace;
   sort_order: number;
+  is_asset_finalized: boolean;
   created_at: Date;
 }
 
@@ -86,6 +87,7 @@ export async function createVisual(input: VisualInput): Promise<VisualRecord> {
       anchor: input.anchor || null,
       place: input.place || "after",
       sort_order: input.sortOrder,
+      is_asset_finalized: false,
       created_at: new Date().toISOString(),
     })
     .returning("id")

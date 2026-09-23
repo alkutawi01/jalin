@@ -91,46 +91,42 @@ async function verify(): Promise<VerificationResult> {
       detail: `${generationRequestCount?.count} generation requests found`,
     });
 
-    const orphanCredits = await db
-      .selectFrom("credits")
-      .leftJoin("works", "credits.work_id", "works.id")
-      .where("works.id", "is", null)
-      .select(db.fn.count("credits.id").as("count"))
-      .executeTakeFirst();
-    checks.push({
-      name: "credit_links",
-      passed: Number(orphanCredits?.count) === 0,
-      detail: `Found ${orphanCredits?.count} orphan credits`,
-    });
-
-    const orphanVisuals = await db
-      .selectFrom("visuals")
-      .leftJoin("works", "visuals.work_id", "works.id")
-      .where("works.id", "is", null)
-      .select(db.fn.count("visuals.id").as("count"))
-      .executeTakeFirst();
-    checks.push({
-      name: "visual_links",
-      passed: Number(orphanVisuals?.count) === 0,
-      detail: `Found ${orphanVisuals?.count} orphan visuals`,
-    });
-
-    const orphanGlossary = await db
-      .selectFrom("glossary_terms")
-      .leftJoin("works", "glossary_terms.work_id", "works.id")
-      .where("works.id", "is", null)
-      .select(db.fn.count("glossary_terms.id").as("count"))
-      .executeTakeFirst();
-    checks.push({
-      name: "glossary_links",
-      passed: Number(orphanGlossary?.count) === 0,
-      detail: `Found ${orphanGlossary?.count} orphan glossary terms`,
-    });
-
     // Verify schema hardening using raw SQL via Pool
     const pool = new Pool({
       connectionString: process.env.DATABASE_URL_UNPOOLED || process.env.DATABASE_URL,
       ssl: process.env.DATABASE_SSL === "true" ? { rejectUnauthorized: false } : false,
+    });
+
+    // Verify visual_requests schema hardening (Phase 4D-5)
+    const vrColRes = await pool.query(
+      "SELECT column_name FROM information_schema.columns WHERE table_name = 'visual_requests' AND column_name IN ('started_at', 'completed_at', 'approved_at', 'rejected_at', 'failed_at', 'requested_by', 'approved_by', 'error_category', 'error_message', 'retry_count', 'idempotency_key', 'aspect_ratio', 'model', 'prompt_composed', 'asset_width', 'asset_height', 'asset_mime_type', 'asset_finalized')"
+    );
+    const vrCols = vrColRes.rows.map((r: { column_name: string }) => r.column_name);
+    const vrExpected = ["started_at", "completed_at", "approved_at", "rejected_at", "failed_at", "requested_by", "approved_by", "error_category", "error_message", "retry_count", "idempotency_key", "aspect_ratio", "model", "prompt_composed", "asset_width", "asset_height", "asset_mime_type", "asset_finalized"];
+    checks.push({
+      name: "visual_request_hardening",
+      passed: vrExpected.every((c) => vrCols.includes(c)),
+      detail: `visual_requests columns: ${vrCols.length}/${vrExpected.length} present`,
+    });
+
+    // Verify visuals.is_asset_finalized exists
+    const vsColRes = await pool.query(
+      "SELECT column_name FROM information_schema.columns WHERE table_name = 'visuals' AND column_name = 'is_asset_finalized'"
+    );
+    checks.push({
+      name: "visual_asset_finalized",
+      passed: vsColRes.rows.length > 0,
+      detail: vsColRes.rows.length > 0 ? "is_asset_finalized column exists" : "is_asset_finalized column missing",
+    });
+
+    // Verify visual_requests indexes exist
+    const vrIdxRes = await pool.query(
+      "SELECT indexname FROM pg_indexes WHERE schemaname = 'public' AND tablename = 'visual_requests'"
+    );
+    checks.push({
+      name: "visual_request_indexes",
+      passed: vrIdxRes.rows.length >= 2,
+      detail: `Found ${vrIdxRes.rows.length} indexes on visual_requests`,
     });
 
     // Check credits table has is_public, byline, sort_order columns
@@ -173,6 +169,42 @@ async function verify(): Promise<VerificationResult> {
       name: "indexes",
       passed: idxRes.rows.length >= 5,
       detail: `Found ${idxRes.rows.length} indexes: ${idxRes.rows.map((r: { indexname: string }) => r.indexname).join(", ")}`,
+    });
+
+    const orphanCredits = await db
+      .selectFrom("credits")
+      .leftJoin("works", "credits.work_id", "works.id")
+      .where("works.id", "is", null)
+      .select(db.fn.count("credits.id").as("count"))
+      .executeTakeFirst();
+    checks.push({
+      name: "credit_links",
+      passed: Number(orphanCredits?.count) === 0,
+      detail: `Found ${orphanCredits?.count} orphan credits`,
+    });
+
+    const orphanVisuals = await db
+      .selectFrom("visuals")
+      .leftJoin("works", "visuals.work_id", "works.id")
+      .where("works.id", "is", null)
+      .select(db.fn.count("visuals.id").as("count"))
+      .executeTakeFirst();
+    checks.push({
+      name: "visual_links",
+      passed: Number(orphanVisuals?.count) === 0,
+      detail: `Found ${orphanVisuals?.count} orphan visuals`,
+    });
+
+    const orphanGlossary = await db
+      .selectFrom("glossary_terms")
+      .leftJoin("works", "glossary_terms.work_id", "works.id")
+      .where("works.id", "is", null)
+      .select(db.fn.count("glossary_terms.id").as("count"))
+      .executeTakeFirst();
+    checks.push({
+      name: "glossary_links",
+      passed: Number(orphanGlossary?.count) === 0,
+      detail: `Found ${orphanGlossary?.count} orphan glossary terms`,
     });
 
     await pool.end();

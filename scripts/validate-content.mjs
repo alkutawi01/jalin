@@ -41,7 +41,8 @@ function validateWork(filePath) {
 
   if (Array.isArray(data.visuals)) {
     for (const visual of data.visuals) {
-      if (visual.provider === "Magnific" && !visual.creationId) {
+      const provider = String(visual.provider || "");
+      if (provider.toLowerCase() === "magnific" && !visual.creationId) {
         errors.push({
           file: fileName,
           field: "visuals",
