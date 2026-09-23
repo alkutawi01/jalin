@@ -7,9 +7,10 @@
 ```bash
 # Staging-specific
 CONTENT_SOURCE=database
-DATABASE_URL=postgresql://staging_user:staging_pass@staging-host:5432/jalin_staging
+DATABASE_URL=postgresql://staging_user:staging_pass@staging-pooler-host/jalin_staging
+DATABASE_URL_UNPOOLED=postgresql://staging_user:staging_pass@staging-direct-host/jalin_staging
 DATABASE_SSL=true
-DATABASE_POOL_SIZE=10
+DATABASE_POOL_SIZE=5
 
 # Auth
 ADMIN_SECRET=staging-secret-key
@@ -22,7 +23,7 @@ NEXT_PUBLIC_APP_URL=https://staging.jalin.adjung.com
 
 ### Isolation
 
-- Separate DATABASE_URL from production
+- Separate `DATABASE_URL` and `DATABASE_URL_UNPOOLED` from production
 - Separate deployment environment
 - No destructive access to production DB
 - CONTENT_SOURCE=database only in staging
@@ -36,6 +37,8 @@ npm run db:schema:migrate
 ```
 
 Result: ✅ Creates all tables with proper constraints
+
+The schema command requires `DATABASE_URL_UNPOOLED`; it rejects pooled endpoints and never falls back to `DATABASE_URL`.
 
 ### Data Seed
 

@@ -56,7 +56,8 @@
 
 | Aspect | Staging | Production | Gap |
 |--------|---------|------------|-----|
-| DATABASE_URL | Staging DB | Production DB | Separate DB required |
+| DATABASE_URL | Staging pooled URL | Production pooled URL | Separate DB required |
+| DATABASE_URL_UNPOOLED | Staging direct URL | Production direct URL | Separate DB required |
 | CONTENT_SOURCE | database | markdown | Change required |
 | ADMIN_SECRET | Staging secret | Production secret | Different secret required |
 | ADMIN_ALLOWED_EMAILS | Staging emails | Production emails | Different emails required |
@@ -70,7 +71,7 @@
 ### Pre-Cutover Steps
 
 1. Create production PostgreSQL database
-2. Configure DATABASE_URL in production environment
+2. Configure pooled `DATABASE_URL` and direct `DATABASE_URL_UNPOOLED` in production environment
 3. Apply schema migrations: `npm run db:schema:migrate`
 4. Seed/import current canonical content: `npm run db:seed`
 5. Verify counts: `npm run db:verify`

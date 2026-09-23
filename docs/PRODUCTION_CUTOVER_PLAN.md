@@ -28,9 +28,10 @@
 
 ```bash
 # Database
-DATABASE_URL=postgresql://user:password@host:5432/jalin_production
+DATABASE_URL=postgresql://user:password@pooled-host/jalin_production
+DATABASE_URL_UNPOOLED=postgresql://user:password@direct-host/jalin_production
 DATABASE_SSL=true
-DATABASE_POOL_SIZE=10
+DATABASE_POOL_SIZE=5
 
 # Content Source
 CONTENT_SOURCE=database
@@ -51,7 +52,8 @@ ADMIN_DEV_BYPASS=false
 
 | Aspect | Development | Staging | Production |
 |--------|-------------|---------|------------|
-| DATABASE_URL | Local | Staging DB | Production DB |
+| DATABASE_URL | Local pooled URL | Staging pooled URL | Production pooled URL |
+| DATABASE_URL_UNPOOLED | Local direct URL | Staging direct URL | Production direct URL |
 | CONTENT_SOURCE | markdown | database | database |
 | ADMIN_SECRET | dev-secret | staging-secret | production-secret |
 | ADMIN_ALLOWED_EMAILS | admin@jalin.local | admin@jalin.adjung.com | admin@jalin.adjung.com |
@@ -59,7 +61,7 @@ ADMIN_DEV_BYPASS=false
 | NODE_ENV | development | production | production |
 | NEXT_PUBLIC_APP_URL | http://localhost:3000 | https://staging.jalin.adjung.com | https://jalin.adjung.com |
 | DATABASE_SSL | false | true | true |
-| DATABASE_POOL_SIZE | 5 | 10 | 10 |
+| DATABASE_POOL_SIZE | 5 | 5 | 5 |
 
 ## Production DB Preparation
 
@@ -75,7 +77,7 @@ GRANT ALL PRIVILEGES ON DATABASE jalin_production TO jalin_user;
 ### Step 2: Apply Schema Migrations
 
 ```bash
-DATABASE_URL=postgresql://user:password@host:5432/jalin_production \
+DATABASE_URL_UNPOOLED=postgresql://user:password@direct-host/jalin_production \
 npm run db:schema:migrate
 ```
 
@@ -164,9 +166,10 @@ CONTENT_SOURCE=database
 1. **Set environment variable in Vercel**
    - Go to Vercel Dashboard → jalin → Settings → Environment Variables
    - Add/Update `CONTENT_SOURCE` = `database`
-   - Add/Update `DATABASE_URL` = `postgresql://...`
+   - Add/Update `DATABASE_URL` = pooled runtime URL
+   - Add/Update `DATABASE_URL_UNPOOLED` = direct migration URL
    - Add/Update `DATABASE_SSL` = `true`
-   - Add/Update `DATABASE_POOL_SIZE` = `10`
+   - Add/Update `DATABASE_POOL_SIZE` = `5`
    - Add/Update `ADMIN_SECRET` = `<production-secret>`
    - Add/Update `ADMIN_ALLOWED_EMAILS` = `admin@jalin.adjung.com`
    - Add/Update `ADMIN_DEV_BYPASS` = `false`

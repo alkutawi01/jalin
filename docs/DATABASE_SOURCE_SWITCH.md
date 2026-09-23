@@ -24,7 +24,8 @@ Switch between them using the `CONTENT_SOURCE` environment variable.
 CONTENT_SOURCE=markdown
 # or
 CONTENT_SOURCE=database
-DATABASE_URL=postgresql://user:password@localhost:5432/jalin
+DATABASE_URL=postgresql://user:password@pooled-host/jalin
+DATABASE_URL_UNPOOLED=postgresql://user:password@direct-host/jalin
 ```
 
 ### Environment Variables
@@ -32,9 +33,12 @@ DATABASE_URL=postgresql://user:password@localhost:5432/jalin
 | Variable | Values | Default | Description |
 |----------|--------|---------|-------------|
 | `CONTENT_SOURCE` | `markdown`, `database` | `markdown` | Selects content backend |
-| `DATABASE_URL` | PostgreSQL URI | — | Required when `CONTENT_SOURCE=database` |
+| `DATABASE_URL` | Pooled PostgreSQL URI | — | Runtime connection used by Next.js/Kysely, verification, and parity checks |
+| `DATABASE_URL_UNPOOLED` | Direct PostgreSQL URI | — | Required only for schema migrations and session-level operations |
 | `DATABASE_SSL` | `true`, `false` | `false` | Enable SSL for database connection |
-| `DATABASE_POOL_SIZE` | number | `10` | Connection pool size |
+| `DATABASE_POOL_SIZE` | positive integer | `5` | Runtime connection pool size |
+
+Schema migrations never fall back to `DATABASE_URL`. A missing, invalid, or pooled `DATABASE_URL_UNPOOLED` fails before connecting, and validation errors never include credentials.
 
 ## How It Works
 
@@ -81,11 +85,21 @@ WORK PARITY CHECK
 Differences: 0
 ```
 
-### Seed Database
+### Schema Migration
+
+```bash
+npm run db:schema:migrate
+```
+
+This command requires the direct `DATABASE_URL_UNPOOLED` connection.
+
+### Import Markdown Content
 
 ```bash
 npm run db:migrate
 ```
+
+`db:migrate`, `db:verify`, and `content:compare` use the pooled runtime `DATABASE_URL`. `db:seed` parses source content and does not require session-level migration semantics.
 
 ### Verify Database
 

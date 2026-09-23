@@ -74,9 +74,10 @@
 
 3. **Configure environment variables in Vercel**
    ```
-   DATABASE_URL=postgresql://...
+   DATABASE_URL=postgresql://...-pooler...       # pooled runtime URL
+   DATABASE_URL_UNPOOLED=postgresql://...      # direct migration URL
    DATABASE_SSL=true
-   DATABASE_POOL_SIZE=10
+   DATABASE_POOL_SIZE=5
    CONTENT_SOURCE=markdown  # Keep as markdown for now
    ADMIN_SECRET=<generate-strong-secret>
    ADMIN_ALLOWED_EMAILS=admin@jalin.adjung.com
@@ -84,7 +85,7 @@
    ```
 
 4. **Verify production/staging isolation**
-   - Different DATABASE_URL values
+   - Different `DATABASE_URL` and `DATABASE_URL_UNPOOLED` values
    - Different database instances
 
 5. **Enable backups**

@@ -1,18 +1,24 @@
 import { Kysely, PostgresDialect } from "kysely";
 import { Migrator } from "kysely/migration";
 import { Pool } from "pg";
+import {
+  databaseSslEnabled,
+  requireMigrationDatabaseUrl,
+} from "../src/lib/db/env";
 import type { Database } from "../src/lib/db/types";
 
-const DATABASE_URL = process.env.DATABASE_URL;
-
-if (!DATABASE_URL) {
-  console.error("DATABASE_URL environment variable is required.");
+let databaseUrl: string;
+try {
+  databaseUrl = requireMigrationDatabaseUrl();
+} catch (error) {
+  console.error(error instanceof Error ? error.message : "Invalid migration environment.");
   process.exit(1);
 }
 
 const pool = new Pool({
-  connectionString: DATABASE_URL,
-  ssl: process.env.DATABASE_SSL === "true" ? { rejectUnauthorized: false } : false,
+  connectionString: databaseUrl,
+  ssl: databaseSslEnabled() ? { rejectUnauthorized: false } : false,
+  max: 1,
 });
 
 const db = new Kysely<Database>({
@@ -135,22 +141,29 @@ const migrator = new Migrator({
 async function main() {
   console.log("Running schema migrations...\n");
 
-  const { results, error } = await migrator.migrateToLatest();
+  try {
+    const { results, error } = await migrator.migrateToLatest();
 
-  if (error) {
-    console.error("Migration failed:");
-    console.error(error);
-    process.exit(1);
-  }
-
-  if (results) {
-    for (const result of results) {
-      console.log(`${result.status === "Success" ? "✓" : "✗"} ${result.migrationName}: ${result.status}`);
+    if (error) {
+      const code =
+        typeof error === "object" && error !== null && "code" in error
+          ? String(error.code)
+          : undefined;
+      console.error(`Migration failed${code ? ` (code ${code})` : ""}.`);
+      process.exitCode = 1;
+      return;
     }
-  }
 
-  console.log("\nSchema migrations complete.");
-  await db.destroy();
+    if (results) {
+      for (const result of results) {
+        console.log(`${result.status === "Success" ? "✓" : "✗"} ${result.migrationName}: ${result.status}`);
+      }
+    }
+
+    console.log("\nSchema migrations complete.");
+  } finally {
+    await db.destroy();
+  }
 }
 
-main();
+void main();

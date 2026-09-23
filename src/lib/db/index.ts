@@ -1,18 +1,22 @@
 import { Kysely, PostgresDialect } from "kysely";
 import { Pool } from "pg";
 import type { Database } from "./types";
-
-const DATABASE_URL = process.env.DATABASE_URL;
+import {
+  databaseSslEnabled,
+  getDatabasePoolSize,
+  getRuntimeDatabaseUrl,
+} from "./env";
 
 function createDb(): Kysely<Database> | null {
-  if (!DATABASE_URL) {
+  const databaseUrl = getRuntimeDatabaseUrl();
+  if (!databaseUrl) {
     return null;
   }
 
   const pool = new Pool({
-    connectionString: DATABASE_URL,
-    ssl: process.env.DATABASE_SSL === "true" ? { rejectUnauthorized: false } : false,
-    max: parseInt(process.env.DATABASE_POOL_SIZE || "5", 10),
+    connectionString: databaseUrl,
+    ssl: databaseSslEnabled() ? { rejectUnauthorized: false } : false,
+    max: getDatabasePoolSize(),
   });
 
   return new Kysely<Database>({
@@ -35,7 +39,7 @@ export function getDb(): Kysely<Database> {
 }
 
 export function hasDb(): boolean {
-  return DATABASE_URL !== undefined && DATABASE_URL !== "";
+  return getRuntimeDatabaseUrl() !== undefined;
 }
 
 export async function closeDb(): Promise<void> {

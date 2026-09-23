@@ -151,12 +151,15 @@
 ```bash
 # .env
 CONTENT_SOURCE=database
-DATABASE_URL=postgresql://user:password@host:5432/jalin
+DATABASE_URL=postgresql://user:password@pooled-host/jalin
+DATABASE_URL_UNPOOLED=postgresql://user:password@direct-host/jalin
 DATABASE_SSL=true  # if required
-DATABASE_POOL_SIZE=10
+DATABASE_POOL_SIZE=5
 ADMIN_SECRET=your-secret-here
 ADMIN_ALLOWED_EMAILS=admin@jalin.adjung.com
 ```
+
+Runtime access uses pooled `DATABASE_URL`. `npm run db:schema:migrate` requires direct `DATABASE_URL_UNPOOLED` and rejects `-pooler` endpoints; it does not fall back to the runtime URL.
 
 ### To Revert to Markdown Mode
 
