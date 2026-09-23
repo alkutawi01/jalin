@@ -119,6 +119,21 @@ export default function EditSubmissionPage() {
   const [genSuccess, setGenSuccess] = useState<string | null>(null);
   const [genHistory, setGenHistory] = useState<GenerationRequestData[]>([]);
 
+  const [promoteSlug, setPromoteSlug] = useState("");
+  const [creditConfigs, setCreditConfigs] = useState<Array<{
+    contributionId: number;
+    include: boolean;
+    roleLabel: string;
+    isPublic: boolean;
+    byline: boolean;
+    sortOrder: number;
+    contributorSlug?: string;
+    guestName?: string;
+  }>>([]);
+  const [promoting, setPromoting] = useState(false);
+  const [promoteError, setPromoteError] = useState<string | null>(null);
+  const [promoteSuccess, setPromoteSuccess] = useState<string | null>(null);
+
   useEffect(() => {
     async function loadSubmission() {
       try {
@@ -153,7 +168,19 @@ export default function EditSubmissionPage() {
     try {
       const res = await fetch(`/api/admin/contributions?submissionId=${submissionId}`);
       if (res.ok) {
-        setContributions(await res.json());
+        const data: ContributionData[] = await res.json();
+        setContributions(data);
+        // Initialize credit configs for promotion
+        setCreditConfigs(data.map((c, idx) => ({
+          contributionId: c.id,
+          include: true,
+          roleLabel: c.role_label,
+          isPublic: true,
+          byline: true,
+          sortOrder: idx + 1,
+          contributorSlug: c.contributor_slug || undefined,
+          guestName: (c.ai_persona || c.guest_name || undefined),
+        })));
       }
     } catch {
       // Ignore
@@ -218,6 +245,51 @@ export default function EditSubmissionPage() {
       setGenError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
     } finally {
       setGenerating(false);
+    }
+  }
+
+  function updateCreditConfig(contributionId: number, updates: Partial<typeof creditConfigs[number]>) {
+    setCreditConfigs((prev) =>
+      prev.map((c) => (c.contributionId === contributionId ? { ...c, ...updates } : c))
+    );
+  }
+
+  async function handlePromote() {
+    if (!confirm("Pasti ingin mempromosikan submission ini ke Work? Tindakan ini tidak boleh dibatalkan.")) {
+      return;
+    }
+
+    setPromoting(true);
+    setPromoteError(null);
+    setPromoteSuccess(null);
+
+    try {
+      const res = await fetch(`/api/admin/submissions/${submissionId}/promote`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          slug: promoteSlug || undefined,
+          credits: creditConfigs,
+          promotedBy: "admin",
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Gagal mempromosikan.");
+      }
+
+      setPromoteSuccess(`Berjaya! Work ${data.workId} dicipta. ${data.promotedCreditCount} kredit disalin.`);
+      setForm((prev) => ({ ...prev, resultWorkId: data.workId }));
+
+      if (data.warnings?.length > 0) {
+        setPromoteSuccess((prev) => `${prev}\nAmaran: ${data.warnings.join(", ")}`);
+      }
+    } catch (err) {
+      setPromoteError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+    } finally {
+      setPromoting(false);
     }
   }
 
@@ -793,6 +865,146 @@ export default function EditSubmissionPage() {
                   ))}
                 </tbody>
               </table>
+            </div>
+          </div>
+        )}
+      </section>
+
+      <section className="admin-section" style={{ marginTop: "2rem" }}>
+        <div className="admin-credits-header">
+          <h3>Promosi ke Work</h3>
+        </div>
+
+        {form.resultWorkId ? (
+          <div className="admin-section" style={{ padding: "1rem", background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: "6px" }}>
+            <p style={{ margin: 0, fontSize: "0.9rem", color: "#166534" }}>
+              Submission ini sudah dipromosikan ke <strong>{form.resultWorkId}</strong>.
+            </p>
+            <a href={`/admin/works/${form.resultWorkId}`} className="admin-btn admin-btn-sm" style={{ marginTop: "0.5rem" }}>
+              Lihat Work
+            </a>
+          </div>
+        ) : form.status !== "approved" ? (
+          <div className="admin-section" style={{ padding: "1rem", background: "#fefce8", border: "1px solid #fef08a", borderRadius: "6px" }}>
+            <p style={{ margin: 0, fontSize: "0.85rem", color: "#854d0e" }}>
+              Status submission mestilah "approved" untuk mempromosikan. Status sekarang: <strong>{form.status}</strong>.
+            </p>
+          </div>
+        ) : !form.proposedType || !form.proposedTitle || !form.manuscript ? (
+          <div className="admin-section" style={{ padding: "1rem", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: "6px" }}>
+            <p style={{ margin: 0, fontSize: "0.85rem", color: "#991b1b" }}>
+              Field berikut diperlukan untuk promosi:
+            </p>
+            <ul style={{ margin: "0.5rem 0 0", fontSize: "0.85rem", color: "#991b1b" }}>
+              {!form.proposedType && <li>Jenis Karya</li>}
+              {!form.proposedTitle && <li>Tajuk</li>}
+              {!form.manuscript && <li>Manuskrip</li>}
+            </ul>
+          </div>
+        ) : (
+          <div>
+            <div className="admin-section" style={{ marginBottom: "1rem", padding: "0.75rem", background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: "6px" }}>
+              <p style={{ margin: 0, fontSize: "0.85rem", color: "#1e40af" }}>
+                Promosi akan mencipta Work canonical dengan status "ready". Tidak akan menerbitkan secara automatik.
+              </p>
+            </div>
+
+            {promoteError && <div className="admin-alert admin-alert-error">{promoteError}</div>}
+            {promoteSuccess && <div className="admin-alert admin-alert-success">{promoteSuccess}</div>}
+
+            <div className="admin-form-group">
+              <label>Slug Work</label>
+              <input
+                type="text"
+                value={promoteSlug}
+                onChange={(e) => setPromoteSlug(e.target.value)}
+                placeholder={form.proposedSlug || "auto-dari-tajuk"}
+              />
+              <span className="admin-form-hint">Kosongkan untuk auto-generate dari tajuk</span>
+            </div>
+
+            <div style={{ marginTop: "1rem" }}>
+              <h4 style={{ marginBottom: "0.5rem", fontSize: "0.9rem" }}>Konfigurasi Kredit</h4>
+              <p style={{ fontSize: "0.8rem", color: "#6b7280", marginBottom: "0.75rem" }}>
+                Pilih sumbangan yang hendak dimasukkan sebagai kredit Work muktamad. Identiti dalaman AI TIDAK akan disalin.
+              </p>
+
+              {contributions.length === 0 ? (
+                <p style={{ fontSize: "0.85rem", color: "#9ca3af" }}>Tiada sumbangan untuk dikonfigurasi.</p>
+              ) : (
+                <div className="admin-table-wrap">
+                  <table className="admin-table">
+                    <thead>
+                      <tr>
+                        <th>Sertai</th>
+                        <th>Identiti</th>
+                        <th>Peranan Akhir</th>
+                        <th>Awam</th>
+                        <th>Byline</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {contributions.map((c, idx) => {
+                        const config = creditConfigs.find((cc) => cc.contributionId === c.id);
+                        const included = config?.include ?? true;
+                        return (
+                          <tr key={c.id} style={{ opacity: included ? 1 : 0.5 }}>
+                            <td>
+                              <input
+                                type="checkbox"
+                                checked={included}
+                                onChange={(e) => updateCreditConfig(c.id, { include: e.target.checked })}
+                              />
+                            </td>
+                            <td>
+                              <strong>{c.ai_persona || c.guest_name || c.contributor_slug || "—"}</strong>
+                              {c.ai_provider && (
+                                <span style={{ fontSize: "0.75em", color: "#9ca3af", marginLeft: "4px" }}>
+                                  ({c.ai_provider})
+                                </span>
+                              )}
+                            </td>
+                            <td>
+                              <input
+                                type="text"
+                                value={config?.roleLabel || c.role_label}
+                                onChange={(e) => updateCreditConfig(c.id, { roleLabel: e.target.value })}
+                                style={{ width: "150px" }}
+                              />
+                            </td>
+                            <td>
+                              <input
+                                type="checkbox"
+                                checked={config?.isPublic ?? true}
+                                onChange={(e) => updateCreditConfig(c.id, { isPublic: e.target.checked })}
+                              />
+                            </td>
+                            <td>
+                              <input
+                                type="checkbox"
+                                checked={config?.byline ?? true}
+                                onChange={(e) => updateCreditConfig(c.id, { byline: e.target.checked })}
+                              />
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
+            <div className="admin-form-actions" style={{ marginTop: "1.5rem" }}>
+              <button
+                type="button"
+                className="admin-btn admin-btn-primary"
+                onClick={handlePromote}
+                disabled={promoting || contributions.length === 0}
+                style={{ background: "#7c3aed", borderColor: "#7c3aed" }}
+              >
+                {promoting ? "Memproses..." : "Promote ke Work"}
+              </button>
             </div>
           </div>
         )}

@@ -111,6 +111,7 @@ export interface WorkSubmissions {
   reviewed_at: ColumnType<Date | null, string | Date | null, string | Date | null>;
   reviewer_notes: string | null;
   result_work_id: string | null;
+  promoted_at: ColumnType<Date | null, string | Date | null, string | Date | null>;
 }
 
 export type IdentitySource =

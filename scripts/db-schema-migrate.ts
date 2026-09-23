@@ -264,6 +264,17 @@ const migrations = {
       await db.schema.dropTable("generation_requests").execute();
     },
   },
+  "006_add_promoted_at": {
+    async up(db: Kysely<unknown>) {
+      await db.schema
+        .alterTable("work_submissions")
+        .addColumn("promoted_at", "timestamptz")
+        .execute();
+    },
+    async down(db: Kysely<unknown>) {
+      await db.schema.alterTable("work_submissions").dropColumn("promoted_at").execute();
+    },
+  },
 };
 
 const migrator = new Migrator({
