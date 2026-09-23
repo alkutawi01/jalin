@@ -69,8 +69,10 @@ export class DatabaseContentRepository implements ContentRepository {
 
       // Only include public credits in the public content repository
       if (c.is_public) {
+        // Discriminated identity: contributor OR guest, never both
+        const slug = c.contributor_slug || `guest:${c.guest_name}`;
         creditsByWork.get(wid)!.push({
-          slug: String(c.contributor_slug || c.guest_name || ""),
+          slug: String(slug || ""),
           role: String(c.role_label || ""),
           byline: Boolean(c.byline),
         });

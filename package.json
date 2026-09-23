@@ -9,6 +9,7 @@
     "lint": "next lint",
     "dev:sync": "node scripts/dev-sync.mjs",
     "validate-content": "node scripts/validate-content.mjs",
+    "db:schema:migrate": "npx tsx scripts/db-schema-migrate.ts",
     "db:migrate": "npx tsx scripts/db-migrate.ts",
     "db:seed": "npx tsx scripts/db-seed.ts",
     "db:verify": "npx tsx scripts/db-verify.ts",

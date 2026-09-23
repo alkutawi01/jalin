@@ -81,14 +81,20 @@ export async function serializeWork(workId: string): Promise<SerializedWork> {
   if (work.published_at) frontmatter.publishedAt = work.published_at;
   if (work.updated_at) frontmatter.updatedAt = work.updated_at;
 
-  // Serialize credits
-  if (credits.length > 0) {
-    frontmatter.credits = credits.map((c) => {
+  // Serialize credits (only public credits for publication)
+  const publicCredits = credits.filter((c) => c.is_public);
+  if (publicCredits.length > 0) {
+    frontmatter.credits = publicCredits.map((c) => {
       const credit: Record<string, unknown> = {
-        contributor: c.contributor_slug || c.guest_name,
         role: c.role_label,
         byline: c.byline,
       };
+      // Discriminated identity: contributor OR guest, never both
+      if (c.contributor_slug) {
+        credit.contributor = c.contributor_slug;
+      } else if (c.guest_name) {
+        credit.displayName = c.guest_name;
+      }
       return credit;
     });
   }
