@@ -1,0 +1,78 @@
+import { initContentRepository } from "../../lib/content";
+import { getAllWorks } from "../../lib/content/workLoader";
+
+async function getStats() {
+  const repo = await initContentRepository();
+  const useDb = repo.constructor.name === "DatabaseContentRepository";
+
+  const works = useDb ? repo.getWorks() : getAllWorks();
+
+  return {
+    contentSource: useDb ? "database" : "markdown",
+    totalWorks: works.length,
+    worksByType: {
+      cerpen: works.filter((w) => w.type === "cerpen").length,
+      novela: works.filter((w) => w.type === "novela").length,
+      bersiri: works.filter((w) => w.type === "bersiri").length,
+      terjemahan: works.filter((w) => w.type === "terjemahan").length,
+      fragmen: works.filter((w) => w.type === "fragmen").length,
+      sinopsis: works.filter((w) => w.type === "sinopsis").length,
+    },
+  };
+}
+
+export default async function AdminDashboard() {
+  const stats = await getStats();
+
+  return (
+    <div className="admin-dashboard">
+      <header className="admin-page-header">
+        <h1>Dashboard</h1>
+        <p className="admin-page-sub">Jalin Admin Console</p>
+      </header>
+
+      <div className="admin-stats-grid">
+        <div className="admin-stat-card">
+          <div className="admin-stat-label">Sumber Kandungan</div>
+          <div className="admin-stat-value">{stats.contentSource}</div>
+        </div>
+        <div className="admin-stat-card">
+          <div className="admin-stat-label">Jumlah Karya</div>
+          <div className="admin-stat-value">{stats.totalWorks}</div>
+        </div>
+        <div className="admin-stat-card">
+          <div className="admin-stat-label">Cerpen</div>
+          <div className="admin-stat-value">{stats.worksByType.cerpen}</div>
+        </div>
+        <div className="admin-stat-card">
+          <div className="admin-stat-label">Novela</div>
+          <div className="admin-stat-value">{stats.worksByType.novela}</div>
+        </div>
+        <div className="admin-stat-card">
+          <div className="admin-stat-label">Bersiri</div>
+          <div className="admin-stat-value">{stats.worksByType.bersiri}</div>
+        </div>
+        <div className="admin-stat-card">
+          <div className="admin-stat-label">Terjemahan</div>
+          <div className="admin-stat-value">{stats.worksByType.terjemahan}</div>
+        </div>
+      </div>
+
+      <section className="admin-section">
+        <h2>Navigasi Admin</h2>
+        <div className="admin-nav-grid">
+          <a href="/admin/works" className="admin-nav-card">
+            <h3>Karya</h3>
+            <p>Urus karya sastera — metadata, status, kredit</p>
+            <span className="admin-nav-status">Placeholder</span>
+          </a>
+          <a href="/admin/contributors" className="admin-nav-card">
+            <h3>Penyumbang</h3>
+            <p>Urus penyumbang — penulis, editor, penyemak</p>
+            <span className="admin-nav-status">Placeholder</span>
+          </a>
+        </div>
+      </section>
+    </div>
+  );
+}
