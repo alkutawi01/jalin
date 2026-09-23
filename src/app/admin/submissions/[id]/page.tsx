@@ -60,6 +60,30 @@ interface ContributionData {
   ai_identity_source: string;
 }
 
+interface GenerationRequestData {
+  id: number;
+  submission_id: number;
+  prompt_template_id: number | null;
+  provider: string;
+  model: string;
+  status: string;
+  requested_by: string;
+  provider_request_id: string | null;
+  token_input: number | null;
+  token_output: number | null;
+  token_total: number | null;
+  estimated_cost_cents: number | null;
+  currency: string;
+  error_category: string | null;
+  error_message: string | null;
+  result_manuscript: string | null;
+  idempotency_key: string;
+  started_at: string | null;
+  completed_at: string | null;
+  failed_at: string | null;
+  created_at: string;
+}
+
 export default function EditSubmissionPage() {
   const params = useParams();
   const submissionId = params.id as string;
@@ -84,6 +108,16 @@ export default function EditSubmissionPage() {
   const [contributions, setContributions] = useState<ContributionData[]>([]);
   const [editingContribution, setEditingContribution] = useState<Partial<ContributionData> | null>(null);
   const [contribError, setContribError] = useState<string | null>(null);
+
+  const [genForm, setGenForm] = useState({
+    provider: "mock",
+    model: "mock-v1",
+    submissionBrief: "",
+  });
+  const [generating, setGenerating] = useState(false);
+  const [genError, setGenError] = useState<string | null>(null);
+  const [genSuccess, setGenSuccess] = useState<string | null>(null);
+  const [genHistory, setGenHistory] = useState<GenerationRequestData[]>([]);
 
   useEffect(() => {
     async function loadSubmission() {
@@ -112,6 +146,7 @@ export default function EditSubmissionPage() {
 
     loadSubmission();
     loadContributions();
+    loadGenerationHistory();
   }, [submissionId]);
 
   async function loadContributions() {
@@ -122,6 +157,67 @@ export default function EditSubmissionPage() {
       }
     } catch {
       // Ignore
+    }
+  }
+
+  async function loadGenerationHistory() {
+    try {
+      const res = await fetch(`/api/admin/generate/history?submissionId=${submissionId}`);
+      if (res.ok) {
+        setGenHistory(await res.json());
+      }
+    } catch {
+      // Ignore
+    }
+  }
+
+  async function handleGenerate() {
+    if (!genForm.submissionBrief.trim()) {
+      setGenError("Arahan/brief diperlukan.");
+      return;
+    }
+    setGenerating(true);
+    setGenError(null);
+    setGenSuccess(null);
+
+    try {
+      const res = await fetch("/api/admin/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          submissionId: Number(submissionId),
+          provider: genForm.provider,
+          model: genForm.model,
+          submissionBrief: genForm.submissionBrief,
+          submissionTitle: form.proposedTitle,
+          workType: form.proposedType || undefined,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Gagal menjana.");
+      }
+
+      if (data.status === "succeeded") {
+        setGenSuccess(`Penjanaan berjaya. ID: ${data.requestId}`);
+        // Refresh submission data to show new manuscript
+        const subRes = await fetch(`/api/admin/submissions/${submissionId}`);
+        if (subRes.ok) {
+          const sub = await subRes.json();
+          setForm((prev) => ({ ...prev, manuscript: sub.manuscript || prev.manuscript }));
+        }
+      } else {
+        setGenError(`Penjanaan gagal: ${data.errorMessage || "Ralat tidak diketahui."}`);
+      }
+
+      loadGenerationHistory();
+      loadContributions();
+    } catch (err) {
+      setGenError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+    } finally {
+      setGenerating(false);
     }
   }
 
@@ -579,6 +675,125 @@ export default function EditSubmissionPage() {
                 ))}
               </tbody>
             </table>
+          </div>
+        )}
+      </section>
+
+      <section className="admin-section" style={{ marginTop: "2rem" }}>
+        <div className="admin-credits-header">
+          <h3>Penjanaan AI</h3>
+        </div>
+
+        <div className="admin-section" style={{ marginBottom: "1rem", padding: "0.75rem", background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: "6px" }}>
+          <p style={{ margin: 0, fontSize: "0.85rem", color: "#1e40af" }}>
+            Penjanaan akan mencipta draf submission baharu. Tidak akan mewujudkan Work atau menerbitkan secara automatik.
+          </p>
+        </div>
+
+        {genError && <div className="admin-alert admin-alert-error">{genError}</div>}
+        {genSuccess && <div className="admin-alert admin-alert-success">{genSuccess}</div>}
+
+        <div className="admin-form-row">
+          <div className="admin-form-group">
+            <label htmlFor="genProvider">Provider</label>
+            <select
+              id="genProvider"
+              value={genForm.provider}
+              onChange={(e) => {
+                const provider = e.target.value;
+                setGenForm((prev) => ({
+                  ...prev,
+                  provider,
+                  model: provider === "openai" ? "gpt-4o-mini" : provider === "mock" ? "mock-v1" : prev.model,
+                }));
+              }}
+            >
+              <option value="mock">Mock (Ujian)</option>
+              <option value="openai">OpenAI</option>
+            </select>
+          </div>
+
+          <div className="admin-form-group">
+            <label htmlFor="genModel">Model</label>
+            <select
+              id="genModel"
+              value={genForm.model}
+              onChange={(e) => setGenForm((prev) => ({ ...prev, model: e.target.value }))}
+            >
+              {genForm.provider === "mock" && (
+                <option value="mock-v1">mock-v1</option>
+              )}
+              {genForm.provider === "openai" && (
+                <>
+                  <option value="gpt-4o-mini">gpt-4o-mini</option>
+                  <option value="gpt-4o">gpt-4o</option>
+                  <option value="gpt-4-turbo">gpt-4-turbo</option>
+                </>
+              )}
+            </select>
+          </div>
+        </div>
+
+        <div className="admin-form-group">
+          <label htmlFor="genBrief">Arahan / Brief</label>
+          <textarea
+            id="genBrief"
+            value={genForm.submissionBrief}
+            onChange={(e) => setGenForm((prev) => ({ ...prev, submissionBrief: e.target.value }))}
+            rows={4}
+            className="admin-textarea"
+            placeholder="Nyatakan konsep, tema, atau arahan untuk penjanaan draf..."
+          />
+        </div>
+
+        <div className="admin-form-actions">
+          <button
+            type="button"
+            className="admin-btn admin-btn-primary"
+            onClick={handleGenerate}
+            disabled={generating}
+          >
+            {generating ? "Menjana..." : "Jana Draf"}
+          </button>
+        </div>
+
+        {genHistory.length > 0 && (
+          <div style={{ marginTop: "1.5rem" }}>
+            <h4 style={{ marginBottom: "0.5rem", fontSize: "0.9rem" }}>Sejarah Penjanaan</h4>
+            <div className="admin-table-wrap">
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Provider</th>
+                    <th>Model</th>
+                    <th>Status</th>
+                    <th>Tokens</th>
+                    <th>Masa</th>
+                    <th>Ralat</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {genHistory.map((g) => (
+                    <tr key={g.id}>
+                      <td>{g.id}</td>
+                      <td>{g.provider}</td>
+                      <td>{g.model}</td>
+                      <td>
+                        <span className={`admin-kind admin-kind-${g.status === "succeeded" ? "human" : g.status === "failed" ? "organization" : "virtual"}`}>
+                          {g.status}
+                        </span>
+                      </td>
+                      <td>{g.token_total ?? "—"}</td>
+                      <td>{g.completed_at ? new Date(g.completed_at).toLocaleString("ms-MY") : g.started_at ? "Berjalan..." : "—"}</td>
+                      <td style={{ maxWidth: "200px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {g.error_message || "—"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </section>

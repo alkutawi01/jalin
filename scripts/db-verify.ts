@@ -84,6 +84,13 @@ async function verify(): Promise<VerificationResult> {
       detail: `${visualRequestCount?.count} visual requests found`,
     });
 
+    const generationRequestCount = await db.selectFrom("generation_requests").select(db.fn.count("id").as("count")).executeTakeFirst();
+    checks.push({
+      name: "generation_request_count",
+      passed: true,
+      detail: `${generationRequestCount?.count} generation requests found`,
+    });
+
     const orphanCredits = await db
       .selectFrom("credits")
       .leftJoin("works", "credits.work_id", "works.id")
@@ -160,7 +167,7 @@ async function verify(): Promise<VerificationResult> {
 
     // Check indexes exist
     const idxRes = await pool.query(
-      "SELECT indexname FROM pg_indexes WHERE schemaname = 'public' AND tablename IN ('works', 'contributors', 'credits', 'visuals', 'glossary_terms', 'work_submissions', 'submission_contributions', 'prompt_templates', 'visual_requests')"
+      "SELECT indexname FROM pg_indexes WHERE schemaname = 'public' AND tablename IN ('works', 'contributors', 'credits', 'visuals', 'glossary_terms', 'work_submissions', 'submission_contributions', 'prompt_templates', 'visual_requests', 'generation_requests')"
     );
     checks.push({
       name: "indexes",

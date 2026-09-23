@@ -178,6 +178,46 @@ export interface VisualRequests {
   updated_at: ColumnType<Date, string | Date, string | Date>;
 }
 
+export type GenerationRequestStatus =
+  | "queued"
+  | "running"
+  | "succeeded"
+  | "failed"
+  | "cancelled";
+
+export type ErrorCategory =
+  | "auth"
+  | "rate_limit"
+  | "timeout"
+  | "provider_error"
+  | "validation_error"
+  | "unknown";
+
+export interface GenerationRequests {
+  id: Generated<number>;
+  submission_id: number;
+  prompt_template_id: number | null;
+  prompt_composed: string;
+  provider: string;
+  model: string;
+  status: GenerationRequestStatus;
+  requested_by: string;
+  provider_request_id: string | null;
+  token_input: number | null;
+  token_output: number | null;
+  token_total: number | null;
+  estimated_cost_cents: number | null;
+  currency: string;
+  error_category: ErrorCategory | null;
+  error_message: string | null;
+  result_manuscript: string | null;
+  idempotency_key: string;
+  started_at: ColumnType<Date | null, string | Date | null, string | Date | null>;
+  completed_at: ColumnType<Date | null, string | Date | null, string | Date | null>;
+  failed_at: ColumnType<Date | null, string | Date | null, string | Date | null>;
+  created_at: ColumnType<Date, string | Date, string | Date>;
+}
+
 export interface Database {
   works: Works;
   contributors: Contributors;
@@ -188,4 +228,5 @@ export interface Database {
   submission_contributions: SubmissionContributions;
   prompt_templates: PromptTemplates;
   visual_requests: VisualRequests;
+  generation_requests: GenerationRequests;
 }
