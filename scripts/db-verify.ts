@@ -56,6 +56,34 @@ async function verify(): Promise<VerificationResult> {
       detail: `${glossaryCount?.count} glossary terms found`,
     });
 
+    const submissionCount = await db.selectFrom("work_submissions").select(db.fn.count("id").as("count")).executeTakeFirst();
+    checks.push({
+      name: "submission_count",
+      passed: true,
+      detail: `${submissionCount?.count} submissions found`,
+    });
+
+    const contributionCount = await db.selectFrom("submission_contributions").select(db.fn.count("id").as("count")).executeTakeFirst();
+    checks.push({
+      name: "contribution_count",
+      passed: true,
+      detail: `${contributionCount?.count} submission contributions found`,
+    });
+
+    const promptCount = await db.selectFrom("prompt_templates").select(db.fn.count("id").as("count")).executeTakeFirst();
+    checks.push({
+      name: "prompt_count",
+      passed: true,
+      detail: `${promptCount?.count} prompt templates found`,
+    });
+
+    const visualRequestCount = await db.selectFrom("visual_requests").select(db.fn.count("id").as("count")).executeTakeFirst();
+    checks.push({
+      name: "visual_request_count",
+      passed: true,
+      detail: `${visualRequestCount?.count} visual requests found`,
+    });
+
     const orphanCredits = await db
       .selectFrom("credits")
       .leftJoin("works", "credits.work_id", "works.id")
@@ -132,7 +160,7 @@ async function verify(): Promise<VerificationResult> {
 
     // Check indexes exist
     const idxRes = await pool.query(
-      "SELECT indexname FROM pg_indexes WHERE schemaname = 'public' AND tablename IN ('works', 'contributors', 'credits', 'visuals', 'glossary_terms')"
+      "SELECT indexname FROM pg_indexes WHERE schemaname = 'public' AND tablename IN ('works', 'contributors', 'credits', 'visuals', 'glossary_terms', 'work_submissions', 'submission_contributions', 'prompt_templates', 'visual_requests')"
     );
     checks.push({
       name: "indexes",

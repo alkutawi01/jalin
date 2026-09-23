@@ -86,10 +86,106 @@ export interface GlossaryTerms {
   created_at: ColumnType<Date, string | Date, string | Date>;
 }
 
+export type SubmissionStatus =
+  | "draft"
+  | "submitted"
+  | "under_review"
+  | "changes_requested"
+  | "approved"
+  | "rejected"
+  | "published";
+
+export type SubmitterType = "human" | "ai" | "guest";
+
+export interface WorkSubmissions {
+  id: Generated<number>;
+  proposed_type: WorkType | null;
+  proposed_title: string | null;
+  proposed_slug: string | null;
+  manuscript: string | null;
+  dek: string | null;
+  status: SubmissionStatus;
+  submitter_type: SubmitterType;
+  created_at: ColumnType<Date, string | Date, string | Date>;
+  updated_at: ColumnType<Date, string | Date, string | Date>;
+  reviewed_at: ColumnType<Date | null, string | Date | null, string | Date | null>;
+  reviewer_notes: string | null;
+  result_work_id: string | null;
+}
+
+export type IdentitySource =
+  | "runtime_verified"
+  | "self_reported"
+  | "manual"
+  | "unknown";
+
+export interface SubmissionContributions {
+  id: Generated<number>;
+  submission_id: number;
+  contributor_slug: string | null;
+  guest_name: string | null;
+  role_key: string | null;
+  role_label: string;
+  sort_order: number;
+  suggested_public_credit: string | null;
+  ai_provider: string | null;
+  ai_model: string | null;
+  ai_persona: string | null;
+  ai_actual_role: string | null;
+  ai_identity_source: IdentitySource;
+  created_at: ColumnType<Date, string | Date, string | Date>;
+}
+
+export type PromptStatus = "active" | "inactive";
+
+export interface PromptTemplates {
+  id: Generated<number>;
+  name: string;
+  prompt_text: string;
+  scope: string;
+  work_type: WorkType | null;
+  work_id: string | null;
+  version: number;
+  status: PromptStatus;
+  created_at: ColumnType<Date, string | Date, string | Date>;
+  updated_at: ColumnType<Date, string | Date, string | Date>;
+}
+
+export type VisualRequestStatus =
+  | "pending"
+  | "generating"
+  | "generated"
+  | "approved"
+  | "rejected";
+
+export interface VisualRequests {
+  id: Generated<number>;
+  work_id: string | null;
+  submission_id: number | null;
+  visual_role: VisualRole;
+  prompt: string;
+  provider: string;
+  provider_request_id: string | null;
+  provider_creation_id: string | null;
+  status: VisualRequestStatus;
+  source_asset_url: string | null;
+  source_asset_path: string | null;
+  alt_text: string | null;
+  anchor: string | null;
+  place: VisualPlace;
+  approval_state: string;
+  created_at: ColumnType<Date, string | Date, string | Date>;
+  updated_at: ColumnType<Date, string | Date, string | Date>;
+}
+
 export interface Database {
   works: Works;
   contributors: Contributors;
   credits: Credits;
   visuals: Visuals;
   glossary_terms: GlossaryTerms;
+  work_submissions: WorkSubmissions;
+  submission_contributions: SubmissionContributions;
+  prompt_templates: PromptTemplates;
+  visual_requests: VisualRequests;
 }

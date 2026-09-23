@@ -86,7 +86,18 @@ export default async function AdminDashboard() {
           <a href="/admin/contributors" className="admin-nav-card">
             <h3>Penyumbang</h3>
             <p>Urus penyumbang — penulis, editor, penyemak</p>
-            <span className="admin-nav-status">Placeholder</span>
+          </a>
+          <a href="/admin/submissions" className="admin-nav-card">
+            <h3>Submissions</h3>
+            <p>Urus submission karya — semakan, kelulusan</p>
+          </a>
+          <a href="/admin/prompts" className="admin-nav-card">
+            <h3>Prompt Templates</h3>
+            <p>Urus template prompt editorial</p>
+          </a>
+          <a href="/admin/visual-requests" className="admin-nav-card">
+            <h3>Visual Requests</h3>
+            <p>Urus permintaan visual — Magnific pipeline</p>
           </a>
         </div>
       </section>

@@ -1,0 +1,558 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
+
+const WORK_TYPES = [
+  { value: "cerpen", label: "Cerpen" },
+  { value: "novela", label: "Novela" },
+  { value: "bersiri", label: "Bersiri" },
+  { value: "terjemahan", label: "Terjemahan" },
+  { value: "fragmen", label: "Fragmen" },
+  { value: "sinopsis", label: "Sinopsis" },
+];
+
+const STATUSES = [
+  { value: "draft", label: "Draf" },
+  { value: "submitted", label: "Dihantar" },
+  { value: "under_review", label: "Dalam Semakan" },
+  { value: "changes_requested", label: "Perubahan Diminta" },
+  { value: "approved", label: "Diluluskan" },
+  { value: "rejected", label: "Ditolak" },
+  { value: "published", label: "Diterbitkan" },
+];
+
+const SUBMITTER_TYPES = [
+  { value: "human", label: "Manusia" },
+  { value: "ai", label: "AI" },
+  { value: "guest", label: "Tetamu" },
+];
+
+interface SubmissionData {
+  id: number;
+  proposed_type: string | null;
+  proposed_title: string | null;
+  proposed_slug: string | null;
+  manuscript: string | null;
+  dek: string | null;
+  status: string;
+  submitter_type: string;
+  created_at: string;
+  updated_at: string;
+  reviewed_at: string | null;
+  reviewer_notes: string | null;
+  result_work_id: string | null;
+}
+
+interface ContributionData {
+  id: number;
+  submission_id: number;
+  contributor_slug: string | null;
+  guest_name: string | null;
+  role_key: string | null;
+  role_label: string;
+  sort_order: number;
+  suggested_public_credit: string | null;
+  ai_provider: string | null;
+  ai_model: string | null;
+  ai_persona: string | null;
+  ai_actual_role: string | null;
+  ai_identity_source: string;
+}
+
+export default function EditSubmissionPage() {
+  const params = useParams();
+  const submissionId = params.id as string;
+
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+
+  const [form, setForm] = useState({
+    proposedType: "",
+    proposedTitle: "",
+    proposedSlug: "",
+    manuscript: "",
+    dek: "",
+    status: "draft",
+    submitterType: "human",
+    reviewerNotes: "",
+    resultWorkId: "",
+  });
+
+  const [contributions, setContributions] = useState<ContributionData[]>([]);
+  const [editingContribution, setEditingContribution] = useState<Partial<ContributionData> | null>(null);
+  const [contribError, setContribError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function loadSubmission() {
+      try {
+        const res = await fetch(`/api/admin/submissions/${submissionId}`);
+        if (!res.ok) throw new Error("Submission tidak ditemui.");
+        const sub: SubmissionData = await res.json();
+
+        setForm({
+          proposedType: sub.proposed_type || "",
+          proposedTitle: sub.proposed_title || "",
+          proposedSlug: sub.proposed_slug || "",
+          manuscript: sub.manuscript || "",
+          dek: sub.dek || "",
+          status: sub.status,
+          submitterType: sub.submitter_type,
+          reviewerNotes: sub.reviewer_notes || "",
+          resultWorkId: sub.result_work_id || "",
+        });
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Ralat memuatkan submission.");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadSubmission();
+    loadContributions();
+  }, [submissionId]);
+
+  async function loadContributions() {
+    try {
+      const res = await fetch(`/api/admin/contributions?submissionId=${submissionId}`);
+      if (res.ok) {
+        setContributions(await res.json());
+      }
+    } catch {
+      // Ignore
+    }
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setSaving(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const res = await fetch(`/api/admin/submissions/${submissionId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Gagal menyimpan.");
+      }
+
+      setSuccess("Berjaya disimpan.");
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleSaveContribution() {
+    if (!editingContribution) return;
+    setContribError(null);
+
+    try {
+      if (editingContribution.id) {
+        const res = await fetch(`/api/admin/contributions/${editingContribution.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(editingContribution),
+        });
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.error || "Gagal menyimpan sumbangan.");
+        }
+      } else {
+        const res = await fetch("/api/admin/contributions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...editingContribution,
+            submissionId: Number(submissionId),
+            sortOrder: contributions.length + 1,
+          }),
+        });
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.error || "Gagal mencipta sumbangan.");
+        }
+      }
+
+      setEditingContribution(null);
+      loadContributions();
+    } catch (err) {
+      setContribError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+    }
+  }
+
+  async function handleDeleteContribution(id: number) {
+    if (!confirm("Pasti ingin memadam sumbangan ini?")) return;
+
+    try {
+      const res = await fetch(`/api/admin/contributions/${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Gagal memadam sumbangan.");
+      }
+      loadContributions();
+    } catch (err) {
+      setContribError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="admin-loading">
+        <p>Memuatkan submission...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="admin-form-page">
+      <header className="admin-page-header">
+        <div className="admin-page-header-row">
+          <div>
+            <h1>Edit Submission</h1>
+            <p className="admin-page-sub">ID: {submissionId}</p>
+          </div>
+          <a href="/admin/submissions" className="admin-btn admin-btn-outline">
+            Kembali
+          </a>
+        </div>
+      </header>
+
+      {error && <div className="admin-alert admin-alert-error">{error}</div>}
+      {success && <div className="admin-alert admin-alert-success">{success}</div>}
+
+      <form onSubmit={handleSubmit} className="admin-form">
+        <div className="admin-form-row">
+          <div className="admin-form-group">
+            <label htmlFor="proposedType">Jenis Karya</label>
+            <select
+              id="proposedType"
+              value={form.proposedType}
+              onChange={(e) => setForm((prev) => ({ ...prev, proposedType: e.target.value }))}
+            >
+              <option value="">— Pilih —</option>
+              {WORK_TYPES.map((t) => (
+                <option key={t.value} value={t.value}>{t.label}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="admin-form-group">
+            <label htmlFor="status">Status</label>
+            <select
+              id="status"
+              value={form.status}
+              onChange={(e) => setForm((prev) => ({ ...prev, status: e.target.value }))}
+            >
+              {STATUSES.map((s) => (
+                <option key={s.value} value={s.value}>{s.label}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="admin-form-group">
+            <label htmlFor="submitterType">Penyerah</label>
+            <select
+              id="submitterType"
+              value={form.submitterType}
+              onChange={(e) => setForm((prev) => ({ ...prev, submitterType: e.target.value }))}
+            >
+              {SUBMITTER_TYPES.map((t) => (
+                <option key={t.value} value={t.value}>{t.label}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div className="admin-form-group">
+          <label htmlFor="proposedTitle">Tajuk</label>
+          <input
+            id="proposedTitle"
+            type="text"
+            value={form.proposedTitle}
+            onChange={(e) => setForm((prev) => ({ ...prev, proposedTitle: e.target.value }))}
+          />
+        </div>
+
+        <div className="admin-form-group">
+          <label htmlFor="proposedSlug">Slug</label>
+          <input
+            id="proposedSlug"
+            type="text"
+            value={form.proposedSlug}
+            onChange={(e) => setForm((prev) => ({ ...prev, proposedSlug: e.target.value }))}
+          />
+        </div>
+
+        <div className="admin-form-group">
+          <label htmlFor="dek">Dek</label>
+          <input
+            id="dek"
+            type="text"
+            value={form.dek}
+            onChange={(e) => setForm((prev) => ({ ...prev, dek: e.target.value }))}
+          />
+        </div>
+
+        <div className="admin-form-group">
+          <label htmlFor="manuscript">Manuskrip</label>
+          <textarea
+            id="manuscript"
+            value={form.manuscript}
+            onChange={(e) => setForm((prev) => ({ ...prev, manuscript: e.target.value }))}
+            rows={20}
+            className="admin-textarea"
+          />
+        </div>
+
+        <div className="admin-form-group">
+          <label htmlFor="reviewerNotes">Nota Penyunting</label>
+          <textarea
+            id="reviewerNotes"
+            value={form.reviewerNotes}
+            onChange={(e) => setForm((prev) => ({ ...prev, reviewerNotes: e.target.value }))}
+            rows={4}
+            className="admin-textarea"
+          />
+        </div>
+
+        <div className="admin-form-group">
+          <label htmlFor="resultWorkId">Work ID (selepas kelulusan)</label>
+          <input
+            id="resultWorkId"
+            type="text"
+            value={form.resultWorkId}
+            onChange={(e) => setForm((prev) => ({ ...prev, resultWorkId: e.target.value }))}
+            placeholder="JLN-CER-XXXX"
+          />
+        </div>
+
+        <div className="admin-form-actions">
+          <a href="/admin/submissions" className="admin-btn admin-btn-outline">
+            Kembali
+          </a>
+          <button type="submit" className="admin-btn admin-btn-primary" disabled={saving}>
+            {saving ? "Menyimpan..." : "Simpan Perubahan"}
+          </button>
+        </div>
+      </form>
+
+      <section className="admin-section" style={{ marginTop: "2rem" }}>
+        <div className="admin-credits-header">
+          <h3>Sumbangan</h3>
+          <button
+            type="button"
+            className="admin-btn admin-btn-sm admin-btn-primary"
+            onClick={() => setEditingContribution({
+              contributor_slug: "",
+              guest_name: "",
+              role_key: "",
+              role_label: "",
+              ai_provider: "",
+              ai_model: "",
+              ai_persona: "",
+              ai_actual_role: "",
+              ai_identity_source: "unknown",
+            })}
+          >
+            + Tambah Sumbangan
+          </button>
+        </div>
+
+        {contribError && <div className="admin-alert admin-alert-error">{contribError}</div>}
+
+        {editingContribution && (
+          <div className="admin-credit-form">
+            <div className="admin-form-row">
+              <div className="admin-form-group">
+                <label>Penyumbang Slug</label>
+                <input
+                  type="text"
+                  value={editingContribution.contributor_slug || ""}
+                  onChange={(e) => setEditingContribution((prev) => ({
+                    ...prev,
+                    contributor_slug: e.target.value || undefined,
+                  }))}
+                />
+              </div>
+              <div className="admin-form-group">
+                <label>Nama Tetamu</label>
+                <input
+                  type="text"
+                  value={editingContribution.guest_name || ""}
+                  onChange={(e) => setEditingContribution((prev) => ({
+                    ...prev,
+                    guest_name: e.target.value || undefined,
+                  }))}
+                />
+              </div>
+            </div>
+
+            <div className="admin-form-row">
+              <div className="admin-form-group">
+                <label>Peranan Key</label>
+                <input
+                  type="text"
+                  value={editingContribution.role_key || ""}
+                  onChange={(e) => setEditingContribution((prev) => ({
+                    ...prev,
+                    role_key: e.target.value || undefined,
+                  }))}
+                />
+              </div>
+              <div className="admin-form-group">
+                <label>Peranan Label</label>
+                <input
+                  type="text"
+                  value={editingContribution.role_label || ""}
+                  onChange={(e) => setEditingContribution((prev) => ({
+                    ...prev,
+                    role_label: e.target.value,
+                  }))}
+                />
+              </div>
+              <div className="admin-form-group">
+                <label>Kredit Awam</label>
+                <input
+                  type="text"
+                  value={editingContribution.suggested_public_credit || ""}
+                  onChange={(e) => setEditingContribution((prev) => ({
+                    ...prev,
+                    suggested_public_credit: e.target.value || undefined,
+                  }))}
+                />
+              </div>
+            </div>
+
+            <div className="admin-form-row">
+              <div className="admin-form-group">
+                <label>AI Provider</label>
+                <input
+                  type="text"
+                  value={editingContribution.ai_provider || ""}
+                  onChange={(e) => setEditingContribution((prev) => ({
+                    ...prev,
+                    ai_provider: e.target.value || undefined,
+                  }))}
+                />
+              </div>
+              <div className="admin-form-group">
+                <label>AI Model</label>
+                <input
+                  type="text"
+                  value={editingContribution.ai_model || ""}
+                  onChange={(e) => setEditingContribution((prev) => ({
+                    ...prev,
+                    ai_model: e.target.value || undefined,
+                  }))}
+                />
+              </div>
+              <div className="admin-form-group">
+                <label>AI Persona</label>
+                <input
+                  type="text"
+                  value={editingContribution.ai_persona || ""}
+                  onChange={(e) => setEditingContribution((prev) => ({
+                    ...prev,
+                    ai_persona: e.target.value || undefined,
+                  }))}
+                />
+              </div>
+            </div>
+
+            <div className="admin-form-row">
+              <div className="admin-form-group">
+                <label>AI Peranan Sebenar</label>
+                <input
+                  type="text"
+                  value={editingContribution.ai_actual_role || ""}
+                  onChange={(e) => setEditingContribution((prev) => ({
+                    ...prev,
+                    ai_actual_role: e.target.value || undefined,
+                  }))}
+                />
+              </div>
+              <div className="admin-form-group">
+                <label>Sumber Identiti</label>
+                <select
+                  value={editingContribution.ai_identity_source || "unknown"}
+                  onChange={(e) => setEditingContribution((prev) => ({
+                    ...prev,
+                    ai_identity_source: e.target.value,
+                  }))}
+                >
+                  <option value="unknown">Unknown</option>
+                  <option value="runtime_verified">Runtime Verified</option>
+                  <option value="self_reported">Self Reported</option>
+                  <option value="manual">Manual</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="admin-form-actions">
+              <button type="button" className="admin-btn admin-btn-outline" onClick={() => setEditingContribution(null)}>
+                Batal
+              </button>
+              <button type="button" className="admin-btn admin-btn-primary" onClick={handleSaveContribution}>
+                Simpan Sumbangan
+              </button>
+            </div>
+          </div>
+        )}
+
+        {contributions.length === 0 ? (
+          <p className="admin-table-empty">Tiada sumbangan untuk submission ini.</p>
+        ) : (
+          <div className="admin-table-wrap">
+            <table className="admin-table">
+              <thead>
+                <tr>
+                  <th>Penyumbang</th>
+                  <th>Peranan</th>
+                  <th>Kredit Awam</th>
+                  <th>AI Persona</th>
+                  <th>Identiti</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                {contributions.map((c) => (
+                  <tr key={c.id}>
+                    <td>{c.contributor_slug || c.guest_name || "—"}</td>
+                    <td>{c.role_label}</td>
+                    <td>{c.suggested_public_credit || "—"}</td>
+                    <td>{c.ai_persona || "—"}</td>
+                    <td>
+                      <span className={`admin-kind admin-kind-${c.ai_identity_source === "runtime_verified" ? "human" : "virtual"}`}>
+                        {c.ai_identity_source}
+                      </span>
+                    </td>
+                    <td>
+                      <div className="admin-table-actions">
+                        <button type="button" className="admin-btn admin-btn-sm" onClick={() => setEditingContribution(c)}>
+                          Edit
+                        </button>
+                        <button type="button" className="admin-btn admin-btn-sm admin-btn-danger" onClick={() => handleDeleteContribution(c.id)}>
+                          Padam
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+    </div>
+  );
+}
