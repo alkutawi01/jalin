@@ -1,7 +1,25 @@
 import { initContentRepository } from "../../lib/content";
 import { getAllWorks } from "../../lib/content/workLoader";
+import { hasDb } from "../../lib/db";
+
+export const dynamic = "force-dynamic";
 
 async function getStats() {
+  if (!hasDb()) {
+    return {
+      contentSource: "markdown",
+      totalWorks: getAllWorks().length,
+      worksByType: {
+        cerpen: getAllWorks().filter((w) => w.type === "cerpen").length,
+        novela: getAllWorks().filter((w) => w.type === "novela").length,
+        bersiri: getAllWorks().filter((w) => w.type === "bersiri").length,
+        terjemahan: getAllWorks().filter((w) => w.type === "terjemahan").length,
+        fragmen: getAllWorks().filter((w) => w.type === "fragmen").length,
+        sinopsis: getAllWorks().filter((w) => w.type === "sinopsis").length,
+      },
+    };
+  }
+
   const repo = await initContentRepository();
   const useDb = repo.constructor.name === "DatabaseContentRepository";
 
@@ -64,7 +82,6 @@ export default async function AdminDashboard() {
           <a href="/admin/works" className="admin-nav-card">
             <h3>Karya</h3>
             <p>Urus karya sastera — metadata, status, kredit</p>
-            <span className="admin-nav-status">Placeholder</span>
           </a>
           <a href="/admin/contributors" className="admin-nav-card">
             <h3>Penyumbang</h3>
