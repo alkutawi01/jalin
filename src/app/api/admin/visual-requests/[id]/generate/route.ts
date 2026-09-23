@@ -10,11 +10,12 @@ import {
  * POST /api/admin/visual-requests/[id]/generate
  *
  * Trigger visual generation for a visual request via provider adapter.
- * Body: { provider, model?, editorialOverride? }
+ * Body: { provider, model?, editorialOverride?, executionMode? }
+ *
+ * Magnific path is ASYNC: may return status=generating with provider task ID.
+ * Completion arrives via webhook / poll / connector → completeVisualGeneration.
  *
  * Requires: admin auth (via middleware)
- * Returns: generation result with provenance.
- *
  * Generation ≠ Approval. Never auto-approves or auto-attaches.
  */
 export async function POST(
@@ -30,10 +31,18 @@ export async function POST(
     }
 
     const body = await request.json();
-    const { provider, model, editorialOverride } = body;
+    const { provider, model, editorialOverride, executionMode } = body;
 
     if (!provider || typeof provider !== "string") {
       return NextResponse.json({ error: "provider diperlukan." }, { status: 400 });
+    }
+
+    if (
+      executionMode !== undefined &&
+      executionMode !== "magnific_api" &&
+      executionMode !== "magnific_connector"
+    ) {
+      return NextResponse.json({ error: "executionMode tidak sah." }, { status: 400 });
     }
 
     // Select adapter
@@ -63,7 +72,8 @@ export async function POST(
     }
 
     const db = getDb();
-    const idempotencyKey = `vis-${numId}-${provider}-${model || "default"}-${Date.now()}`;
+    // Stable idempotency key — no Date.now() (double-click protected by active lock).
+    const idempotencyKey = `vis-${numId}-${provider}-${model || "default"}`;
 
     const result = await executeVisualGeneration(
       db,
@@ -74,6 +84,7 @@ export async function POST(
         requestedBy: "admin",
         editorialOverride: editorialOverride ?? null,
         idempotencyKey,
+        executionMode: (executionMode as "magnific_api" | "magnific_connector" | undefined) || "magnific_api",
       },
       adapter
     );

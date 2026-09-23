@@ -14,9 +14,7 @@
     "db:seed": "npx tsx scripts/db-seed.ts",
     "db:verify": "npx tsx scripts/db-verify.ts",
     "content:compare": "npx tsx scripts/content-source-compare.ts",
-    "test": "npx tsx __tests__/visual-generation.test.ts && npx tsx __tests__/generation-orchestration.test.ts && npx tsx __tests__/identity-privacy.test.ts && npx tsx __tests__/promotion-workflow.test.ts",
-    "test": "npx tsx __tests__/visual-generation.test.ts && npx tsx __tests__/generation-orchestration.test.ts && npx tsx __tests__/identity-privacy.test.ts && npx tsx __tests__/promotion-workflow.test.ts",
-    "test": "npx tsx __tests__/visual-generation.test.ts && npx tsx __tests__/generation-orchestration.test.ts && npx tsx __tests__/identity-privacy.test.ts && npx tsx __tests__/promotion-workflow.test.ts"
+    "test": "npx tsx __tests__/visual-generation.test.ts && npx tsx __tests__/visual-hardening.test.ts && npx tsx __tests__/generation-orchestration.test.ts && npx tsx __tests__/identity-privacy.test.ts && npx tsx __tests__/promotion-workflow.test.ts"
   },
   "dependencies": {
     "gray-matter": "^4.0.3",

@@ -99,14 +99,24 @@ async function verify(): Promise<VerificationResult> {
 
     // Verify visual_requests schema hardening (Phase 4D-5)
     const vrColRes = await pool.query(
-      "SELECT column_name FROM information_schema.columns WHERE table_name = 'visual_requests' AND column_name IN ('started_at', 'completed_at', 'approved_at', 'rejected_at', 'failed_at', 'requested_by', 'approved_by', 'error_category', 'error_message', 'retry_count', 'idempotency_key', 'aspect_ratio', 'model', 'prompt_composed', 'asset_width', 'asset_height', 'asset_mime_type', 'asset_finalized')"
+      "SELECT column_name FROM information_schema.columns WHERE table_name = 'visual_requests' AND column_name IN ('started_at', 'completed_at', 'approved_at', 'rejected_at', 'failed_at', 'requested_by', 'approved_by', 'error_category', 'error_message', 'retry_count', 'idempotency_key', 'aspect_ratio', 'model', 'prompt_composed', 'asset_width', 'asset_height', 'asset_mime_type', 'asset_finalized', 'execution_mode', 'attempt_history', 'last_webhook_id')"
     );
     const vrCols = vrColRes.rows.map((r: { column_name: string }) => r.column_name);
-    const vrExpected = ["started_at", "completed_at", "approved_at", "rejected_at", "failed_at", "requested_by", "approved_by", "error_category", "error_message", "retry_count", "idempotency_key", "aspect_ratio", "model", "prompt_composed", "asset_width", "asset_height", "asset_mime_type", "asset_finalized"];
+    const vrExpected = ["started_at", "completed_at", "approved_at", "rejected_at", "failed_at", "requested_by", "approved_by", "error_category", "error_message", "retry_count", "idempotency_key", "aspect_ratio", "model", "prompt_composed", "asset_width", "asset_height", "asset_mime_type", "asset_finalized", "execution_mode", "attempt_history", "last_webhook_id"];
     checks.push({
       name: "visual_request_hardening",
       passed: vrExpected.every((c) => vrCols.includes(c)),
       detail: `visual_requests columns: ${vrCols.length}/${vrExpected.length} present`,
+    });
+
+    // Verify Phase 4D-5R execution_mode indexes
+    const execIdxRes = await pool.query(
+      "SELECT indexname FROM pg_indexes WHERE schemaname = 'public' AND tablename = 'visual_requests' AND indexname IN ('visual_requests_task_idx', 'visual_requests_execution_mode_idx')"
+    );
+    checks.push({
+      name: "visual_execution_indexes",
+      passed: execIdxRes.rows.length >= 2,
+      detail: `Found ${execIdxRes.rows.length}/2 execution hardening indexes`,
     });
 
     // Verify visuals.is_asset_finalized exists

@@ -59,7 +59,7 @@ async function main() {
   assertEqual(mock.providerName, "mock", "Mock provider name is 'mock'");
   assert(mock.validateModel("mock-v1"), "mock-v1 valid");
   assert(mock.validateModel("mock-deterministic"), "mock-deterministic valid");
-  assert(!mock.validateModel("magnific-spark"), "magnific-spark not valid for mock");
+  assert(!mock.validateModel("flexible"), "flexible not valid for mock");
 
   const mockResp = await mock.generateVisual({
     prompt: "A chair on a porch at golden hour",
@@ -88,7 +88,9 @@ async function main() {
   const magnific = createMagnificAdapter();
   assertEqual(magnific.providerName, "magnific", "Magnific provider name");
   assert(MAGNIFIC_SUPPORTED_MODELS.length >= 1, "Magnific has supported models");
-  assert(magnific.validateModel("magnific-spark"), "magnific-spark valid");
+  assert(magnific.validateModel("flexible"), "flexible valid (official Mystic model)");
+  assert(magnific.validateModel("realism"), "realism valid (official Mystic model)");
+  assert(!magnific.validateModel("magnific-spark"), "fabricated magnific-spark NOT valid");
   assert(!magnific.validateModel("mock-v1"), "mock-v1 not valid for Magnific");
 
   const originalKey = process.env.MAGNIFIC_API_KEY;
@@ -114,6 +116,11 @@ async function main() {
       (e as Error).message,
       "Bearer",
       "Error does not leak Bearer token"
+    );
+    assertNotIncludes(
+      (e as Error).message,
+      "Authorization",
+      "Error does not mention Authorization header"
     );
   }
   assert(threwWithoutKey, "Generation without key throws");
@@ -238,7 +245,7 @@ async function main() {
   // ============================================================
   console.log("\n=== Idempotency Key ===");
 
-  const key = `vis-12-magnific-magnific-spark-${Date.now()}`;
+  const key = `vis-12-magnific-flexible`;
   assert(key.startsWith("vis-12-magnific-"), "Visual idempotency key has expected format");
 
   // ============================================================

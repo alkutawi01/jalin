@@ -32,6 +32,16 @@ export interface VisualRequestInput {
   approvalState?: string;
   aspectRatio?: string;
   model?: string;
+  executionMode?: string;
+}
+
+export interface VisualAttemptEntryPublic {
+  at?: string;
+  mode?: string;
+  taskId?: string | null;
+  status?: string;
+  webhookId?: string;
+  errorCategory?: string | null;
 }
 
 export interface VisualRequestRecord {
@@ -63,6 +73,9 @@ export interface VisualRequestRecord {
   asset_height: number | null;
   asset_mime_type: string | null;
   asset_finalized: boolean;
+  execution_mode: string | null;
+  attempt_history: VisualAttemptEntryPublic[] | string | null;
+  last_webhook_id: string | null;
   started_at: Date | null;
   completed_at: Date | null;
   approved_at: Date | null;
@@ -113,6 +126,9 @@ export async function createVisualRequest(input: VisualRequestInput): Promise<Vi
       approval_state: (input.approvalState || "pending") as "pending" | "approved" | "rejected",
       aspect_ratio: (input.aspectRatio || "3:2") as "1:1" | "3:2" | "2:3" | "16:9" | "9:16" | "4:3" | "3:4",
       model: input.model || null,
+      execution_mode: (input.executionMode as "magnific_api" | "magnific_connector" | null) || "magnific_api",
+      attempt_history: "[]",
+      last_webhook_id: null,
       requested_by: "admin",
       retry_count: 0,
       asset_finalized: false,
@@ -158,6 +174,10 @@ export async function updateVisualRequest(
   if (input.approvalState !== undefined) updateData.approval_state = input.approvalState;
   if (input.aspectRatio !== undefined) updateData.aspect_ratio = input.aspectRatio;
   if (input.model !== undefined) updateData.model = input.model || null;
+  if (input.executionMode !== undefined) {
+    updateData.execution_mode =
+      input.executionMode === "magnific_connector" ? "magnific_connector" : "magnific_api";
+  }
   updateData.updated_at = now;
 
   await db

@@ -166,7 +166,19 @@ export type VisualRequestStatus =
 
 export type ApprovalState = "pending" | "approved" | "rejected";
 
+export type VisualExecutionMode = "magnific_api" | "magnific_connector";
+
 export type AspectRatio = "1:1" | "3:2" | "2:3" | "16:9" | "9:16" | "4:3" | "3:4";
+
+export interface VisualAttemptEntry {
+  at: string;
+  mode: VisualExecutionMode | "poll" | "webhook";
+  taskId?: string | null;
+  status?: string;
+  webhookId?: string;
+  errorCategory?: string | null;
+  note?: string;
+}
 
 export interface VisualRequests {
   id: Generated<number>;
@@ -197,6 +209,10 @@ export interface VisualRequests {
   asset_height: number | null;
   asset_mime_type: string | null;
   asset_finalized: boolean;
+  execution_mode: VisualExecutionMode | null;
+  /** JSON-serialized attempt chronology (text column). */
+  attempt_history: string | null;
+  last_webhook_id: string | null;
   started_at: ColumnType<Date | null, string | Date | null, string | Date | null>;
   completed_at: ColumnType<Date | null, string | Date | null, string | Date | null>;
   approved_at: ColumnType<Date | null, string | Date | null, string | Date | null>;
@@ -218,6 +234,7 @@ export type ErrorCategory =
   | "rate_limit"
   | "timeout"
   | "provider_error"
+  | "webhook_signature_error"
   | "validation_error"
   | "unknown";
 

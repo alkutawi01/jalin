@@ -64,6 +64,7 @@ export async function PATCH(
       approvalState: body.approvalState,
       aspectRatio: body.aspectRatio,
       model: body.model,
+      executionMode: body.executionMode,
     });
 
     return NextResponse.json(visualRequest);
