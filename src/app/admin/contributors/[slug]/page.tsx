@@ -15,6 +15,7 @@ interface ContributorData {
   kind: string;
   bio: string | null;
   disclosure: string | null;
+  is_visible: boolean;
   created_at: string;
 }
 
@@ -34,6 +35,7 @@ export default function EditContributorPage() {
     kind: "human",
     bio: "",
     disclosure: "",
+    isVisible: true,
   });
 
   useEffect(() => {
@@ -49,6 +51,7 @@ export default function EditContributorPage() {
           kind: contributor.kind,
           bio: contributor.bio || "",
           disclosure: contributor.disclosure || "",
+          isVisible: contributor.is_visible,
         });
       } catch (err) {
         setError(err instanceof Error ? err.message : "Ralat memuatkan penyumbang.");
@@ -165,6 +168,18 @@ export default function EditContributorPage() {
             onChange={(e) => setForm((prev) => ({ ...prev, disclosure: e.target.value }))}
           />
           <span className="admin-form-hint">Disclosure awam untuk penyumbang maya/AI.</span>
+        </div>
+
+        <div className="admin-form-group">
+          <label className="admin-checkbox-label">
+            <input
+              type="checkbox"
+              checked={form.isVisible}
+              onChange={(e) => setForm((prev) => ({ ...prev, isVisible: e.target.checked }))}
+            />
+            Visible on public pages
+          </label>
+          <span className="admin-form-hint">Sembunyikan penyumbang ini daripada senarai awam.</span>
         </div>
 
         <div className="admin-form-actions">

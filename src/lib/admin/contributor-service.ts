@@ -25,6 +25,7 @@ export interface ContributorInput {
   kind: ContributorKind;
   bio?: string;
   disclosure?: string;
+  isVisible?: boolean;
 }
 
 export interface ContributorRecord {
@@ -33,6 +34,7 @@ export interface ContributorRecord {
   kind: ContributorKind;
   bio: string | null;
   disclosure: string | null;
+  is_visible: boolean;
   created_at: Date;
   updated_at: Date;
 }
@@ -100,6 +102,7 @@ export async function createContributor(input: ContributorInput): Promise<Contri
       kind: input.kind,
       bio: input.bio || null,
       disclosure: input.disclosure || null,
+      is_visible: input.isVisible !== false,
       created_at: now,
       updated_at: now,
     })
@@ -140,6 +143,7 @@ export async function updateContributor(
   if (input.kind !== undefined) updateData.kind = input.kind;
   if (input.bio !== undefined) updateData.bio = input.bio || null;
   if (input.disclosure !== undefined) updateData.disclosure = input.disclosure || null;
+  if (input.isVisible !== undefined) updateData.is_visible = input.isVisible;
 
   await db
     .updateTable("contributors")
@@ -157,9 +161,16 @@ export async function updateContributor(
 }
 
 /**
- * Hide/deactivate a contributor (soft delete).
- * Does not permanently delete to preserve historical credit relationships.
+ * Hide a contributor (soft delete).
+ * Sets is_visible to false while preserving all data.
  */
 export async function hideContributor(slug: string): Promise<ContributorRecord> {
-  return updateContributor(slug, { bio: "" });
+  return updateContributor(slug, { isVisible: false });
+}
+
+/**
+ * Show a contributor (restore from hidden).
+ */
+export async function showContributor(slug: string): Promise<ContributorRecord> {
+  return updateContributor(slug, { isVisible: true });
 }

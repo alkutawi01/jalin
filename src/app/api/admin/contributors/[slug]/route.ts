@@ -50,6 +50,7 @@ export async function PATCH(
       kind: body.kind,
       bio: body.bio,
       disclosure: body.disclosure,
+      isVisible: body.isVisible,
     });
 
     return NextResponse.json(contributor);

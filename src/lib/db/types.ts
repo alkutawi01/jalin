@@ -45,6 +45,7 @@ export interface Contributors {
   kind: ContributorKind;
   bio: string | null;
   disclosure: string | null;
+  is_visible: boolean;
   created_at: ColumnType<Date, string | Date, string | Date>;
   updated_at: ColumnType<Date, string | Date, string | Date>;
 }

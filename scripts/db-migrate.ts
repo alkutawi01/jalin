@@ -35,6 +35,7 @@ async function migrate() {
             kind: contributor.kind as "human" | "virtual" | "organization",
             bio: contributor.bio,
             disclosure: contributor.disclosure || null,
+            is_visible: true,
             created_at: new Date(),
             updated_at: new Date(),
           })

@@ -39,6 +39,7 @@ export async function POST(request: NextRequest) {
       kind: body.kind,
       bio: body.bio || undefined,
       disclosure: body.disclosure || undefined,
+      isVisible: body.isVisible !== false,
     });
 
     return NextResponse.json(contributor, { status: 201 });

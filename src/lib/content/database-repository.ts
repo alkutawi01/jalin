@@ -115,10 +115,13 @@ export class DatabaseContentRepository implements ContentRepository {
     }
 
     for (const c of dbContributors) {
-      this.contributorsCache.set(String(c.slug), {
-        name: String(c.display_name || ""),
-        kind: c.kind as "human" | "virtual",
-      });
+      // Only include visible contributors in the public content repository
+      if (c.is_visible) {
+        this.contributorsCache.set(String(c.slug), {
+          name: String(c.display_name || ""),
+          kind: c.kind as "human" | "virtual",
+        });
+      }
     }
 
     this.loaded = true;
