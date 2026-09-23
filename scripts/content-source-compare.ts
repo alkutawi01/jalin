@@ -1,6 +1,8 @@
 import "dotenv/config";
 import { config } from "dotenv";
 config({ path: ".env.local", override: true });
+// Force CONTENT_SOURCE=database for parity check regardless of production setting
+process.env.CONTENT_SOURCE = "database";
 import { MarkdownContentRepository } from "../src/lib/content/markdown-repository";
 import { DatabaseContentRepository } from "../src/lib/content/database-repository";
 import type { Work, ContributorRef, VisualRef, GlossaryEntry } from "../src/lib/content/types";
@@ -154,7 +156,7 @@ async function main() {
 
   if (!databaseRepo.isEnabled()) {
     console.error("DatabaseContentRepository not enabled.");
-    console.error("Ensure DATABASE_URL is set and CONTENT_SOURCE=database");
+    console.error("Ensure DATABASE_URL is set.");
     process.exit(1);
   }
 

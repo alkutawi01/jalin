@@ -1,3 +1,6 @@
+import "dotenv/config";
+import { config } from "dotenv";
+config({ path: ".env.local", override: true });
 import { getDb, hasDb, closeDb } from "../src/lib/db";
 import { getAllWorks, getAllContributors, validateAllData } from "./db-seed";
 
