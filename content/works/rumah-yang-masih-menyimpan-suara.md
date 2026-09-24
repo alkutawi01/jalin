@@ -6,20 +6,20 @@ type: cerpen
 status: review
 genre: Keluarga · Ingatan
 audience: 13-17
-version: v1.1
-updatedAt: '2026-09-22'
+version: v1.2
+updatedAt: '2026-09-24'
 dek: >-
   Sebuah kisah tentang seorang anak yang kembali ke rumah lama keluarganya dan
   menemukan bahawa sesetengah kenangan tidak pernah benar-benar pergi.
 readingMinutes: 12
 metadata:
   characters:
-    - name: Aiman
-      role: Anak
-    - name: Mak
-      role: Ibu
-    - name: Farid
-      role: Adik
+    - name: "Aiman"
+      role: "Anak"
+    - name: "Mak"
+      role: "Ibu"
+    - name: "Farid"
+      role: "Adik"
 credits:
   - contributor: chatgpt
     role: co_writer
@@ -44,6 +44,12 @@ editorialHistory:
       objek rumah sebagai pembawa ingatan; unsur Melayu-Islam semula jadi;
       keputusan konkret terhadap rumah di penutup
     date: '2026-09-22'
+  - version: v1.2
+    type: minor
+    summary: >-
+      Sesi editorial 1: merapikan ritma perenggan, dialog, kesinambungan kecil,
+      tanda petik tipografik dan diksi Melayu tanpa mengubah struktur cerita.
+    date: '2026-09-24'
 visuals:
   - role: hero
     src: /visuals/rumah-yang-masih-menyimpan-suara/hero.png
@@ -81,310 +87,168 @@ glossary:
 
 # Rumah yang Masih Menyimpan Suara
 
-Aiman tidak pernah menyangka bahawa sebuah rumah boleh membuatkan seseorang berasa seperti sedang bertemu semula dengan manusia yang sudah tiada.
+Aiman tidak pernah menyangka bahawa sebuah rumah boleh membuatkan seseorang berasa seperti sedang bertemu semula dengan manusia yang sudah tiada. Sudah hampir dua tahun dia tidak membuka pintu pagar rumah itu; bukan kerana dia membencinya, tetapi kerana terlalu banyak perkara masih tinggal di dalamnya. Ada rumah yang kosong kerana tidak berpenghuni. Ada juga rumah yang kosong kerana terlalu banyak perkara pernah hidup di dalamnya. Rumah lama keluarganya termasuk dalam jenis yang kedua.
 
-Sudah hampir dua tahun dia tidak membuka pintu pagar rumah itu.
+Petang itu, Aiman berdiri di hadapan pagar besi yang mula berkarat. Daun kering memenuhi halaman kecil yang dahulu disapu Mak setiap pagi. Sebelum matahari naik tinggi, Mak sudah berada di luar dengan penyapu di tangan. Aiman masih dapat membayangkan bunyi geserannya di atas simen—bunyi kecil yang dahulu tidak pernah dianggap penting, tetapi kini menjadi antara perkara yang paling dirinduinya.
 
-Bukan kerana dia membenci tempat itu.
+Dia membuka pintu pagar perlahan-lahan. Rumah itu masih berdiri seperti dahulu: cat dindingnya sudah pudar, pasu bunga di hadapan tingkap tidak lagi dipenuhi warna, tetapi ruang tamu, beranda dan dapur kecil di belakang masih tersusun dalam bentuk yang dikenalnya. Semuanya seperti menunggu seseorang pulang.
 
-Sebaliknya, kerana terlalu banyak perkara yang masih tinggal di dalamnya.
+“Aiman.”
 
-Ada rumah yang kosong kerana tidak berpenghuni.
+Dia menoleh. Farid berdiri di belakangnya sambil membawa beberapa kotak.
 
-Ada juga rumah yang kosong kerana terlalu banyak perkara yang pernah hidup di dalamnya.
+“Lama kau tak datang.”
 
-Rumah lama keluarganya termasuk dalam jenis yang kedua.
+Aiman tersenyum kecil. “Ya.”
 
-Petang itu, Aiman berdiri di hadapan pagar besi yang sudah mula berkarat. Daun kering memenuhi halaman kecil yang dahulu selalu disapu Mak setiap pagi. Dahulu, sebelum matahari naik tinggi, Mak sudah berada di luar rumah dengan penyapu di tangan.
-
-Aiman masih boleh membayangkan bunyi geseran penyapu itu.
-
-Satu bunyi kecil yang dahulu tidak pernah dianggap penting.
-
-Sekarang, bunyi itu menjadi antara perkara yang paling dirinduinya.
-
-Dia membuka pintu pagar perlahan-lahan.
-
-Rumah itu masih berdiri seperti dahulu.
-
-Cat dindingnya sudah pudar. Pasu bunga di hadapan tingkap sudah tidak lagi dipenuhi bunga seperti zaman kecilnya. Tetapi bentuk rumah itu masih sama.
-
-Ruang tamu.
-
-Beranda.
-
-Dapur kecil di belakang.
-
-Semuanya seperti menunggu seseorang pulang.
-
-"Aiman."
-
-Dia menoleh.
-
-Farid berdiri di belakangnya sambil membawa beberapa kotak.
-
-"Lama kau tak datang."
-
-Aiman tersenyum kecil.
-
-"Ya."
-
-Itulah sahaja jawapan yang keluar.
-
-Kadang-kadang ada perkara yang terlalu panjang untuk dijelaskan dengan ayat pendek.
+Itulah sahaja jawapan yang keluar. Ada perkara yang terlalu panjang untuk dijelaskan dengan satu ayat.
 
 Mereka masuk bersama-sama.
 
-"Kita kena tolak-milih hari ini," kata Farid sambil meletakkan kotak itu di ruang tamu. "Aku dah hubungi orang. Ada ejen nak datang tengok hujung minggu ini."
+“Kita kena pilih dan asingkan barang hari ini,” kata Farid sambil meletakkan kotak di ruang tamu. “Aku dah hubungi orang. Ada ejen nak datang tengok hujung minggu ini.”
 
-Aiman berhenti di tengah langkah.
+Aiman berhenti di tengah langkah. “Ejen?”
 
-"Ejen?"
+“Untuk jual rumah ni.”
 
-"Untuk jual rumah ni."
+Aiman diam seketika sebelum berkata, dengan suara yang cuba ditenangkan, “Mak belum pun setahun tiada.”
 
-Aiman diam seketika. Kemudian dia berkata, dengan suara yang cuba dibiasakan tenang: "Mak belum pun setahun tiada."
+“Aku bukan tak sayang rumah ni, Aiman.” Farid mengeluh. “Tapi kita berdua tinggal di bandar. Rumah ni kosong, pagar berkarat, dinding pudar. Makin lama kita biar, makin susah nak urus.”
 
-"Pun begitu." Farid mengeluh. "Aku bukan tak sayang rumah ni, Aiman. Tapi kita berdua tinggal di bandar. Rumah ni kosong, pagar berkarat, dinding pudar. Makin lama kita biar, makin susah nak urus."
+“Jadi kita jual?”
 
-"Jadi kita jual?" Aiman bertanya, dan walaupun dia tidak mahu kedengaran menuduh, perkataan itu keluar sejuk.
+“Tak semestinya terus. Aku cuma cakap kita kena buat keputusan. Rumah ni pusaka Mak, tapi rumah bukan benda yang boleh kita biar tergantung.”
 
-"Tak semestinya terus," kata Farid. "Aku hanya cakap, kita kena buat keputusan. Rumah ni pusaka Mak. Tapi rumah bukan benda yang boleh kita biar tergantung."
+“Kita boleh simpan.”
 
-"Kita boleh simpan."
+“Simpan untuk apa?”
 
-"Simpan untuk apa?"
+Aiman tidak menjawab. Soalan itu mudah disebut tetapi sukar dijawab. Untuk apa sebenarnya dia mahu menyimpan rumah ini? Jawapan yang paling jujur terasa dekat, namun belum bersedia keluar.
 
-Aiman tidak menjawab.
+Mereka mula mengemas tanpa banyak bercakap. Beberapa barang perlu disusun, sebahagiannya perlu diberikan kepada orang lain, dan ada yang mungkin terpaksa dibuang. Namun selepas beberapa minit, Aiman sedar tugas itu tidak semudah yang disangka. Setiap benda mempunyai cerita.
 
-Mungkin kerana soalan itu bukan bentuknya yang sukar, tetapi sebabnya. Untuk apa dia benar-benar mahu menyimpan rumah ini? Dia belum tentu tahu. Jawapan yang paling jujur ada di dalam dirinya, tetapi belum bersedia keluar.
+Kerusi kayu di ruang tamu mengingatkannya kepada malam-malam ketika Mak menunggu mereka pulang daripada kelas mengaji. Jam dinding lama pula mengingatkannya kepada suara Mak yang selalu menyuruh mereka bersiap ke sekolah. Jarumnya sudah lama berhenti pada satu waktu yang tidak pernah disebut oleh sesiapa.
 
-Mereka mula mengemas tanpa banyak bercakap.
+“Dulu Mak tengok jam tu berkali-kali sehari,” kata Aiman perlahan.
 
-Rumah itu perlu dikemas. Beberapa barang perlu disusun. Mereka perlu membuat keputusan tentang apa yang patut disimpan dan apa yang patut diberikan kepada orang lain.
+Farid memandang jam itu. “Aku rasa kau yang selalu tak sempat tengok. Sebab tu kau lambat ke sekolah.”
 
-Tetapi selepas beberapa minit berada di dalam rumah, Aiman sedar bahawa tugas itu tidak semudah yang disangka.
+Aiman tersenyum pahit. “Kau pun sama. Kau tak pernah kira pinggan atas meja bila Mak suruh kemas.”
 
-Setiap benda mempunyai cerita.
+Farid hampir ketawa. “Itu cerita lain.”
 
-Kerusi kayu di ruang tamu mengingatkannya kepada malam-malam ketika Mak menunggu mereka pulang daripada kelas mengaji.
-
-Jam dinding lama di dinding mengingatkannya kepada suara Mak yang selalu menyuruh mereka bersiap ke sekolah. Jam itu sudah lama berhenti, jarumnya tidak bergerak lagi pada waktu yang tidak pernah disebut oleh sesiapa. Aiman masih ingat, setiap pagi, Mak yang menyentuh jam itu untuk menyemak waktu solat.
-
-"Dulu Mak check jam tu lima kali sehari," kata Aiman perlahan.
-
-"Lima?" Farid memandang jam itu. "Bukan lima, aku rasa. Empat waktu dalam rumah, satu."
-
-Aiman tersenyum pahit.
-
-"Sebab tu masa kita kecik, kau selalu lambat ke sekolah dan Mak yang kena bawa," katanya. "Sebab kau tak pernah count pinggan atas meja."
-
-Farid hampir tertawa. "Itu cerita lain."
-
-"Jam pun, akhirnya kau yang betul," kata Aiman. "Mak suka nampak jam tu bergerak. Dia kata, kalau jam tegak, hidup pun tegak. Kau sedar tak, bila mak dah tak boleh berdiri lama, dia pindah jam tu ke bilik dia supaya nampak dari katil?"
+“Pasal jam pun, akhirnya kau yang ingat lebih tepat. Mak suka nampak jam tu bergerak. Dia kata, kalau jam tegak, hidup pun tegak. Kau sedar tak, bila Mak dah tak boleh berdiri lama, dia pindah jam tu ke bilik supaya nampak dari katil?”
 
 Farid diam.
 
-"Aku ingat waktu Abah pergi," kata Aiman selepas seketika, "Mak pergi kerja buat orang. Kita berdua duduk rumah. Aku tak berapa ingat sangat, baru darjah satu, kau pun belum lahir lagi."
+“Aku ingat waktu Abah pergi,” sambung Aiman. “Mak pergi bekerja di rumah orang. Masa tu aku darjah satu, kau belum lahir lagi. Dia suruh aku tunggu di rumah dan tunjuk jam tu. ‘Bila jarum sampai angka tujuh, Mak balik,’ katanya. Aku duduk atas lantai, tengok jam tu berjam-jam. Bila jarumnya sampai tujuh, betul-betul Mak balik. Sejak tu aku percaya jam tu yang buat Mak balik.”
 
-Farid hanya mendengar.
+“Itu sebab kau tak pernah bagi orang tukar jam tu.”
 
-"Mak suruh aku jaga rumah jangan tinggal. Dia bawa aku ke bilik dia dan tunjuk jam tu. 'Bila jarum tu sampai angka tujuh,' katanya, 'Mak balik.' Aku duduk atas lantai, tengok jam tu berjam-jam. Bila jarumnya sampai tujuh, betul-betul Mak balik. Sejak tu aku percaya jam tu buat Mak balik."
-
-"Itu sebab kau tak pernah nak tukar jam ke dalam zaman bateri tu," kata Farid.
-
-Aiman mengangguk. "Boleh jadi. Mungkin sebab tu aku masih nak simpan benda ni. Bukan sebab jam tu mahal. Tapi sebab benda tu pernah jadi cara Mak bagi aku keyakinan yang dia akan kembali."
+Aiman mengangguk. “Mungkin. Bukan sebab jam tu mahal. Tapi sebab benda tu pernah jadi cara Mak bagi aku keyakinan bahawa dia akan kembali.”
 
 Mereka mengemas lebih perlahan selepas itu.
 
-Di dalam sebuah kotak di dapur, Aiman menjumpai buku resipi Mak. Kulitnya sedap ditutup dengan kertas minyak. Bahagian dalam penuh dengan tulisan tangan — bahan, sukatan yang sering diubah, dan di satu sudut yang penuh dakwat, ayat pendek: "untuk anak-anak".
+Di dalam sebuah kotak di dapur, Aiman menjumpai buku resipi Mak. Kulitnya sudah dibalut dengan kertas minyak. Bahagian dalam penuh dengan tulisan tangan—bahan, sukatan yang sering diubah, dan di satu sudut yang penuh dakwat, ayat pendek: “untuk anak-anak”.
 
-"Mak jual nasi lemak waktu kita kecik," kata Farid, memandang buku itu dari sisi. "Ingat? Kita kena salin macam-macam barang, tapi pinggan dan senduk kena susun belakang."
+“Mak jual nasi lemak waktu kita kecil,” kata Farid, memandang buku itu dari sisi. “Ingat? Kita kena susun macam-macam barang. Pinggan dengan senduk mesti di belakang.”
 
-"Yang Aiman ingat," kata Aiman, "ialah bau daun pisang. Lagi satu, rasa. Mak tak pernah tulis sukatan mana yang betul. Dia ubah setiap minggu. Kita tak pernah tahu mana satu yang sebenarnya."
+“Yang aku ingat ialah bau daun pisang. Lagi satu, rasa. Mak tak pernah tulis sukatan mana yang betul. Dia ubah setiap minggu.”
 
-"Dia kata, nasi lemak akan ikut tangan masaknya," kata Farid dengan suara yang hampir sama dengan Mak.
+“Dia kata nasi lemak ikut tangan orang yang memasak.”
 
-Aiman membuka halaman seterusnya. Di situ ada sekeping kertas kemerahan yang sudah lama tersepit, kelihatan seperti nota kecil yang ditulis pada waktu malam.
+Aiman membuka halaman seterusnya. Di situ ada sekeping kertas kemerahan yang sudah lama tersepit, seperti nota kecil yang ditulis pada waktu malam. Dia tidak berani membukanya—bukan kerana takut, tetapi kerana kertas itu masih berbau sabun, seperti pernah disimpan dekat tempat Mak tidur.
 
-Dia tidak berani membukanya.
+Mereka meninggalkan dapur dan berpindah ke bahagian belakang rumah untuk menyusun barang yang hendak dibuang. Di situ, berhampiran tempat Mak pernah menggantung kain langsir putih, Farid berhenti.
 
-Bukan kerana takut.
+“Bilik Mak,” katanya.
 
-Tetapi kerana kertas itu masih berbau sabun, seperti pernah diletakkan berdekatan dengan tempat Mak tidur.
+Aiman mengangguk. Pintu itu sudah lama tidak dibuka, bukan kerana dikunci, tetapi kerana mereka berdua tidak pernah benar-benar bersedia. Dia memegang tombol pintu dan berdiri beberapa saat. Ada perkara yang boleh dilakukan dengan tangan, tetapi belum tentu mampu dilakukan oleh hati. Akhirnya dia membuka pintu.
 
-Mereka meninggalkan dapur dan berpindah ke halaman untuk menyusun barang yang akan dibuang. Di bahagian belakang rumah, tempat Mak pernah menggantung kain langsir putih, Farid berhenti.
-
-"Sini, bilik Mak," katanya.
-
-Bilik Mak.
-
-Tiwik.
-
-Aiman mengangguk.
-
-Pintu itu sudah lama tidak dibuka.
-
-Bukan kerana dikunci.
-
-Tetapi kerana mereka berdua tidak pernah benar-benar bersedia.
-
-Aiman memegang tombol pintu.
-
-Untuk beberapa saat, dia hanya berdiri di situ.
-
-Ada perkara yang kita boleh lakukan dengan tangan, tetapi belum tentu mampu dilakukan oleh hati.
-
-Akhirnya dia membuka pintu.
-
-Bilik itu tidak banyak berubah.
-
-Telekung masih tersusun di penjuru.
-
-Sejadah dilipat kemas di atas tilam.
-
-Beberapa buku masih berada di atas rak.
+Bilik itu tidak banyak berubah. Telekung masih tersusun di penjuru, sejadah dilipat kemas di atas tilam, dan beberapa buku masih berada di rak.
 
 Dan di atas meja kecil, ada sekeping kertas dengan tulisan tangan Mak.
 
-Bukan surat panjang.
+Bukan surat panjang. Hanya beberapa baris.
 
-Hanya beberapa baris.
+“Jangan lupa makan.”
 
-"Jangan lupa makan."
+Aiman ketawa kecil sebelum matanya mula berair. Itulah Mak. Walaupun selepas tiada, perkara pertama yang masih difikirkannya ialah anak-anak.
 
-Aiman ketawa kecil.
+“Mak selalu cakap,” kata Farid, “kalau nak tahu hati Mak, tengok tempat solat Mak. Tempat tu paling bersih dalam rumah.”
 
-Kemudian matanya mula berair.
+Aiman memandang sejadah itu. Lipatannya kemas, seolah-olah Mak sendiri masih menentukan caranya.
 
-Itulah Mak.
+“Aku masih ingat satu malam. Masa tu aku darjah empat. Aku gagal satu ujian di sekolah. Aku balik merajuk, tak mahu makan, tak mahu cakap dengan sesiapa. Mak duduk sebelah aku sambil mengemas kain jahitannya. Dia tak cakap apa-apa.”
 
-Walaupun selepas tiada, perkara pertama yang masih difikirkannya ialah anak-anak.
+“Mak memang jarang marah,” kata Farid.
 
-"Mak selalu cakap," kata Farid, "kalau nak tahu hati Mak, tengok tempat solat Mak. Tempat tu paling bersih dalam rumah."
+“Bukan setakat itu. Malam tu aku terjaga dekat pukul sebelas. Aku nampak Mak duduk di depan rumah sambil minum kopi. Dia belum tidur. Bukan sebab ada kerja, tapi sebab dia tahu aku sedih. Dia tak boleh buat aku lupa kegagalan tu, tapi dia mahu pastikan ada orang yang ada bila aku bangun.”
 
-Aiman memandang sejadah itu. Lipatannya kemas, dengan cara yang tidak pernah diajarkan oleh sesiapa — seolah-olah Mak sendiri yang menentukan.
+Aiman berhenti seketika. “Pagi esoknya, depan aku ada sepinggan roti jala yang Mak buat. Tak ada nota panjang. Cuma makanan yang dia tahu aku suka.”
 
-"Aku masih ingat satu malam," kata Aiman. "Waktu tu aku darjah empat. Aku gagal satu ujian kat sekolah. Aku balik terus merajuk, tak nak makan, tak nak cakap dengan sesiapa. Mak duduk sebelah aku sambil kemas kain jahitan dia. Dia tak cakap apa-apa waktu tu."
+“Itu Mak,” kata Farid perlahan.
 
-"Mak memang jarang marah," kata Farid.
+“Banyak benda yang aku tak sempat tanya. Sekarang kalau aku nak tahu, aku kena cari sendiri. Kadang-kadang aku fikir, mungkin sebab tu Mak simpan semua benda ni.”
 
-"Bukan setakat tu," kata Aiman. "Bila aku dah tidur dekat pukul sebelas, aku terjaga. Aku tengok depan rumah, mak tengah duduk sambil buat air kopi dan menunggu waktu subuh. Dia tak tidur. Bukan sebab ada kerja. Tapi sebab dia tahu aku sedih. Dia tak boleh buat aku lupa kegagalan tu, tapi dia nak pastikan ada orang yang ada bila aku bangun."
+“Aku selalu fikir rumah ni cuma tempat kita tinggal.”
 
-Aiman berhenti seketika.
+Aiman memandang sekeliling. “Sekarang?”
 
-"Dan bila aku bangun pagi tu, depan mataku ada sepinggan roti jala yang mak buat. Dia taruh macam biasa. Tak ada nota panjang. Cuma makanan yang dia tahu aku suka."
+Farid menarik nafas. “Mungkin rumah ni tempat semua benda yang kita tak sempat cakap masih tinggal.”
 
-"Itu Mak," kata Farid perlahan.
+Aiman tidak menjawab. Ada suara yang tidak lagi boleh didengar, tetapi masih hidup melalui cara seseorang mengingati manusia yang telah pergi.
 
-"Banyak benda yang dia tak sempat aku tanya," kata Aiman. "Sekarang kalau aku nak tahu, aku kena cari sendiri. Pastu aku fikir, mungkin sebab tu dia simpan semua benda ni."
+Ketika tengah hari, Mak Cik Salmah dari rumah sebelah datang meninjau sambil membawa sepinggan kuih seri muka yang masih panas.
 
-"Aku selalu fikir rumah ni cuma tempat kita tinggal," kata Farid.
+“Assalamualaikum, Aiman, Farid. Lama tak nampak muka.”
 
-Aiman memandang sekeliling.
+“Waalaikumsalam, Makcik,” jawab Aiman.
 
-"Apa sekarang?"
+“Makcik nampak kamu berdua mengemas dari tadi.” Mak Cik Salmah meletakkan pinggan di atas meja dapur yang sudah dikelap. “Kesian rumah kecil ni. Dulu mak kamu rajin bertanam bunga dalam pasu. Sekarang pasu pun dah kering.”
 
-Farid menarik nafas.
+“Kami tengah susun barang,” kata Farid.
 
-"Mungkin rumah ni tempat semua benda yang kita tak sempat cakap masih tinggal."
-
-Aiman tidak menjawab.
-
-Kerana dia tahu adiknya betul.
-
-Ada suara yang tidak lagi boleh didengar.
-
-Tetapi ada suara yang masih hidup melalui cara kita mengingati seseorang.
-
-Ketika tengah hari, Mak Cik Salmah dari rumah sebelah datang meninjau. Dia membawa sepinggan kuih seri muka yang masih panas.
-
-"Assalamualaikum, Aiman, Farid. Lama tak nampak muka."
-
-"Aleikumsalam, Makcik," kata Aiman.
-
-"Makcik ingat hari tu ada orang tolong bersihkan halaman." Mak Cik Salmah meletakkan pinggan di atas meja dapur yang sudah dikelap. "Kesian rumah kecik ni. Dulu Makcik selalu nampak mak kamu bertanam bunga kat pasu. Dah sekarang pasu tu pun dah kering."
-
-"Kami tengah susun barang," kata Farid.
-
-Mak Cik Salmah mengangguk, dan sebelum keluar, dia berpaling.
-
-"Makcik nak bagi tahu satu benda." Suaranya rendah. "Seingat Makcik, setiap kali mak kamu solat Subuh, dia duduk lama sikit atas sejadah. Makcik dengar dia baca doa untuk anak-anak dia, supaya anak-anak dia bahagia walau dia tak nampak. Makcik dengar dia sebut nama kamu berdua."
+Mak Cik Salmah mengangguk. Sebelum keluar, dia berpaling semula. “Makcik nak beritahu satu benda. Setiap kali mak kamu selesai solat Subuh, dia duduk lama sikit atas sejadah. Makcik pernah dengar dia berdoa untuk anak-anak dia, supaya kamu bahagia walaupun dia tak dapat tengok semuanya. Dia sebut nama kamu berdua.”
 
 Farid membeku.
 
-Mak Cik Salmah tersenyum nipis. "Makcik pun tak tahu nak cakap apa. Cuma biar kamu tahu, rumah tu, bukan pasu atau penyapu yang mak kamu tinggalkan paling banyak. Doa itu banyak." Dia menepuk lengan Aiman perlahan dan pulang.
+Mak Cik Salmah tersenyum nipis. “Makcik cuma rasa kamu patut tahu. Rumah tu bukan pasu atau penyapu yang mak kamu tinggalkan paling banyak. Doa dia yang banyak.” Dia menepuk lengan Aiman perlahan sebelum pulang.
 
-Mereka menghabiskan masa sepanjang petang itu menyarung barang, mengelap tingkap, dan menutup bilik-bilik. Menjelang waktu asar, Farid berhenti dan duduk di beranda. Aiman duduk di sebelahnya.
+Mereka meneruskan kerja sepanjang petang, mengelap tingkap dan menutup bilik-bilik. Menjelang Asar, Farid duduk di beranda. Aiman duduk di sebelahnya.
 
-"Aku ada satu benda nak tunjuk kau," kata Aiman.
+“Aku ada satu benda nak tunjuk kau,” kata Aiman.
 
-Dia membawa keluar sebatang penyapu dari celah dapur.
+Dia membawa keluar sebatang penyapu dari dapur. Penyapu itu sudah lama; lidi-lidinya menipis, tetapi pegangannya masih licin akibat sentuhan tangan Mak selama bertahun-tahun.
 
-Penyapu itu sudah lama, lidi-lidinya menipis, tetapi pegangannya masih licin kerana disapu tangan Mak selama bertahun-tahun.
+“Aku nak minta satu benda.”
 
-"Aku nak minta izin sesuatu," kata Aiman.
+“Apa?”
 
-"Apa?"
+“Aku nak simpan rumah ni sekejap lagi. Bukan selamanya. Biar aku tinggal di sini seminggu, sapu halaman macam Mak dulu. Lepas tu, kalau aku rasa tetap tak boleh, aku setuju kita jual.”
 
-"Aku nak simpan rumah ni sekejap lagi." Aiman memandang halaman yang penuh daun kering. "Bukan selamanya. Tapi biar aku sapu halaman ni dulu. Biar aku hidup kat sini selama seminggu, seperti yang Mak dulu lakukan. Lepas tu, kalau aku rasa tetap tak boleh, aku setuju untuk jual."
+Farid memandangnya lama sebelum tersenyum kecil. “Aku cuti minggu depan. Aku boleh ikut sekali.”
 
-Farid memandangnya lama.
+Mereka tidak berkata banyak selepas itu. Namun perbualan kecil di beranda itu terasa lebih berat dan lebih hangat daripada segala keputusan tentang rumah yang pernah dibincangkan. Dalam diam, Aiman mula merasai reda terhadap dua kehendak yang sama-sama benar: kehendak adiknya menjaga masa depan, dan kehendaknya sendiri menjaga suara masa lalu.
 
-Kemudian dia tersenyum kecil.
+Menjelang Maghrib, azan berkumandang dari masjid berdekatan. Bunyinya merentas kawasan yang semakin sunyi, melewati pokok dan pagar, lalu sampai ke beranda tempat mereka duduk. Aiman berdiri terlebih dahulu dan masuk ke ruang tamu, tempat Mak selalu menunggu mereka dengan sejadah yang dilipat kemas.
 
-"Aku ada rezeki minggu depan. Aku boleh ikut sekali."
+“Mak selalu tunggu kita solat dulu baru makan malam,” katanya.
 
-Mereka tidak berkata banyak selepas itu, dan entah mengapa, perbualan kecil di beranda itu terasa lebih berat dan lebih hangat daripada segala keputusan rumah yang telah dibincangkan. Dalam diam, Aiman rasakan sesuatu yang dulu sukar dicapainya — reda terhadap dua kehendak yang keduanya benar: kehendak adiknya menjaga kebersihan masa depan, dan kehendaknya sendiri menjaga suara masa lalu.
+“Waktu kita kecil,” jawab Farid.
 
-Menjelang waktu Maghrib, azan berkumandang dari masjid berdekatan. Bunyinya merentas kawasan perumahan yang sudah mula sunyi, melewati pokok, melewati pagar, sampai ke beranda tempat mereka duduk. Aiman berdiri terlebih dahulu. Dia buka kasutnya dan berjalan ke ruang tamu, tempat Mak selalu menunggu mereka dengan sejadah yang dilipat kemas.
+“Sekarang pun patut begitu.”
 
-"Mak selalu tunggu kita solat dulu baru makan malam," katanya.
+Mereka bersolat berjemaah di ruang tamu yang sama, dengan hembusan angin malam masuk melalui tingkap yang dibiarkan terbuka. Selepas selesai, Aiman duduk sejenak. Tempat itu masih terasa seperti syurga kecil—bukan kerana besar atau mewah, tetapi kerana dinding-dindingnya pernah mengelilingi doa-doa Mak.
 
-"Waktu kita kecik," kata Farid.
+“Mak pernah cakap,” kata Aiman perlahan, “kalau satu hari rumah ni terpaksa dijual, jangan susah hati. Rumah bukan masjid. Tapi dia simpan sejadah dia supaya sesiapa yang tinggal di sini masih ingat untuk solat.”
 
-"Sekarang pun memang patut."
-
-Mereka bersembahyang berjemaah di ruang tamu yang sama, dengan hembusan angin malam masuk melalui tingkap yang ditinggalkan terbuka. Selepas selesai, Aiman duduk sejenak. Dalam kesunyian, dia merasai sesuatu yang tidak pernah dia fikir akan datang lagi: tempat ini masih terasa seperti syurga kecil, bukan kerana besar atau mewah, tetapi kerana dinding-dindingnya pernah mengelilingi doa-doa Mak.
-
-"Mak pernah cakap," kata Aiman perlahan, "kalau satu hari rumah ni terpaksa dijual, jangan susah hati. Rumah bukan masjid. Tapi dia simpan sejadah dia biar sesiapa yang duduk kat rumah ni masih ingat untuk solat."
-
-Farid mengangguk.
-
-"Barangkali mak dah jaga semua tu untuk kita," katanya. "Aku rasa kita tak patut jual rumah ni cepat-cepat sambil lupa semua ni. Biar pulang sini seminggu dulu, sapu halaman, dengar azan dari beranda. Lepas tu kita tengok."
+Farid mengangguk. “Barangkali Mak dah jaga semua tu untuk kita. Aku rasa kita tak patut jual rumah ni tergesa-gesa sambil lupa semua ni. Kita pulang sini seminggu dulu, sapu halaman, dengar azan dari beranda. Lepas tu kita tengok.”
 
 Sebelum mereka pulang, Aiman berdiri sekali lagi di beranda.
 
-Tempat Mak selalu duduk pada waktu petang.
+Tempat Mak selalu duduk pada waktu petang. Dia memandang halaman yang semakin dipenuhi daun. Dahulu dia selalu fikir rumah ini terlalu kecil. Dia mahu cepat membesar dan pergi jauh. Apabila dia akhirnya pergi, dia tidak sedar ada sesuatu yang akan sentiasa menunggunya kembali—bukan rumah itu, tetapi versi dirinya yang pernah tinggal di dalamnya.
 
-Dia memandang halaman yang semakin dipenuhi daun.
+Aiman menutup pintu perlahan-lahan. Dia tidak tahu sama ada dia akan datang lagi dalam masa terdekat, tetapi hari itu dia belajar bahawa sesetengah tempat tidak menyimpan manusia; tempat hanya menyimpan jejak mereka. Kadangkala, jejak itu sudah cukup untuk membuatkan seseorang berasa bahawa kehilangan bukan bererti segala-galanya telah lenyap.
 
-Dahulu dia selalu fikir rumah ini terlalu kecil.
-
-Dia mahu cepat membesar.
-
-Dia mahu pergi jauh.
-
-Dan apabila dia akhirnya pergi, dia tidak sedar bahawa ada sesuatu yang akan sentiasa menunggunya kembali.
-
-Bukan rumah itu.
-
-Tetapi versi dirinya yang pernah tinggal di dalamnya.
-
-Aiman menutup pintu perlahan-lahan.
-
-Dia tidak tahu sama ada dia akan datang lagi dalam masa terdekat.
-
-Tetapi hari itu dia belajar satu perkara.
-
-Sesetengah tempat tidak menyimpan manusia.
-
-Tempat hanya menyimpan jejak mereka.
-
-Dan kadangkala, jejak itu sudah cukup untuk membuatkan seseorang berasa tidak pernah benar-benar kehilangan.
-
-Kenangan tidak datang untuk mengembalikan masa lalu.
-
-Kenangan datang untuk mengajar kita menghargai sesuatu yang pernah ada.
-
-Dan kadangkala, untuk menghargai, seseorang perlu kembali dan menyapu halaman yang diabaikan itu dahulu.
+Kenangan tidak datang untuk mengembalikan masa lalu. Kenangan datang untuk mengajar kita menghargai sesuatu yang pernah ada. Dan kadangkala, untuk menghargai, seseorang perlu kembali dan menyapu halaman yang telah lama diabaikan.
