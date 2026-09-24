@@ -154,7 +154,7 @@ npm run test:source-rights
 npm run test:structure            # novela + continuous + anthology
 npm run test:novela-race          # 4D-8R: true mid-publish Novela race
 npm run test:bersiri-race         # 4D-8R: true mid-publish Bersiri race
-npm run test:waktu-sebenar        # 4D-8R: 29-BAB structural import
+npm run test:waktu-sebenar        # canonical 30-BAB + EPILOG / 31-section structural import
 npm run test:mobile-qa            # 4D-8R: viewport QA
 ```
 
