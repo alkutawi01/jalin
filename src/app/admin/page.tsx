@@ -3,6 +3,7 @@ import { getAllWorks } from "../../lib/content/workLoader";
 import { hasDb } from "../../lib/db";
 import { getDb } from "../../lib/db";
 import { getEditorialHealth } from "../../lib/admin/editorial-health";
+import { ExportReportButton } from "../../components/admin/ExportReportButton";
 
 export const dynamic = "force-dynamic";
 
@@ -118,6 +119,7 @@ export default async function AdminDashboard() {
         {stats.editorialHealth ? (
           <>
             <p className="admin-section-meta">Last checked: {new Date().toLocaleString("ms-MY")}</p>
+            <ExportReportButton />
             <div className="admin-stats-grid">
             <div className="admin-stat-card">
               <div className="admin-stat-label">Authors</div>
