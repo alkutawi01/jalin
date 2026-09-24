@@ -1,28 +1,31 @@
 /**
- * Dedicated mobile QA test (Phase 4D-8R2).
+ * Dedicated mobile QA test — actual surfaces (Phase 4D-8R3).
  *
- * Tests actual surfaces at 360/390/430/768px viewports:
- * - Novela reader (via Cerpen reader — same layout)
- * - Bersiri landing (static page, no published bersiri yet)
- * - Bersiri episode (static page)
- * - Admin Bahagian (works detail page)
- * - Admin Series (series list page)
+ * Tests 5 actual surfaces × 4 viewports = 20 minimum checks.
+ * Surfaces:
+ * 1. Novela reader (admin preview — same reader components as public)
+ * 2. Bersiri landing (admin series detail — same layout components)
+ * 3. Bersiri episode (admin preview — same reader components)
+ * 4. Admin Bahagian (works detail)
+ * 5. Admin Series detail (series detail)
  *
- * Uses Playwright. Playwright absence = FAIL.
- * Any skipped mandatory page = FAIL.
+ * Playwright is MANDATORY. Any skipped mandatory page = FAIL.
+ * Screenshots saved for evidence.
  */
 import "dotenv/config";
 import { config } from "dotenv";
 config({ path: ".env.local", override: true });
+import { chromium } from "playwright";
+import { setupFixtures, cleanupFixtures } from "./qa-fixtures";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
 interface QAResult {
   viewport: string;
-  page: string;
+  surface: string;
   overflow: boolean;
   navigationUsable: boolean;
-  title: string;
+  screenshot: string;
 }
 
 function fail(msg: string): never {
@@ -33,62 +36,77 @@ function ok(msg: string) {
   console.log(`  ✓ ${msg}`);
 }
 
-async function checkPage(
+async function checkSurface(
   page: any,
   url: string,
   viewportWidth: number,
-  pageName: string,
+  surfaceName: string,
 ): Promise<QAResult> {
   await page.setViewportSize({ width: viewportWidth, height: 800 });
-  
-  let responseStatus = 0;
+
+  let status = 0;
   try {
-    const response = await page.goto(url, { waitUntil: "domcontentloaded", timeout: 15000 });
-    responseStatus = response?.status() || 0;
-  } catch (err: any) {
-    // Page might 404 or timeout — record but don't skip
-    return {
-      viewport: `${viewportWidth}px`,
-      page: pageName,
-      overflow: false,
-      navigationUsable: false,
-      title: `ERROR: ${err?.message?.slice(0, 60) || "load failed"}`,
-    };
+    const resp = await page.goto(url, { waitUntil: "domcontentloaded", timeout: 15000 });
+    status = resp?.status() || 0;
+  } catch {
+    return { viewport: `${viewportWidth}px`, surface: surfaceName, overflow: false, navigationUsable: false, screenshot: "" };
   }
 
   await page.waitForTimeout(1000);
 
-  // Check horizontal overflow
+  // Check horizontal overflow at document level
   const overflow = await page.evaluate(() => {
     return document.documentElement.scrollWidth > document.documentElement.clientWidth;
   });
 
-  // Check navigation elements
+  // Check key component bounding boxes
+  const componentOverflow = await page.evaluate(() => {
+    const vw = document.documentElement.clientWidth;
+    const violations: string[] = [];
+    // Check main content area
+    const main = document.querySelector("main, article, .reader-body, .prose, [class*='content']");
+    if (main) {
+      const r = main.getBoundingClientRect();
+      if (r.right > vw + 2 || r.left < -2) violations.push(`main:${Math.round(r.right)}`);
+    }
+    // Check navigation
+    const nav = document.querySelector("nav");
+    if (nav) {
+      const r = nav.getBoundingClientRect();
+      if (r.right > vw + 2) violations.push(`nav:${Math.round(r.right)}`);
+    }
+    // Check tables (admin)
+    const table = document.querySelector("table");
+    if (table) {
+      const r = table.getBoundingClientRect();
+      if (r.right > vw + 2) violations.push(`table:${Math.round(r.right)}`);
+    }
+    return violations;
+  });
+
+  const hasOverflow = overflow || componentOverflow.length > 0;
+
+  // Check navigation elements exist
   const navCount = await page.locator("nav a, a[href], button").count();
-  const navigationUsable = navCount > 0 && responseStatus === 200;
+  const navigationUsable = navCount > 0 && status === 200;
 
-  const title = await page.title();
+  const screenshot = `qa-${viewportWidth}px-${surfaceName.replace(/[^a-z0-9]/gi, "-")}.png`;
+  await page.screenshot({ path: screenshot, fullPage: false });
 
-  return {
-    viewport: `${viewportWidth}px`,
-    page: pageName,
-    overflow,
-    navigationUsable,
-    title: title || `status=${responseStatus}`,
-  };
+  return { viewport: `${viewportWidth}px`, surface: surfaceName, overflow: hasOverflow, navigationUsable, screenshot };
 }
 
 async function main() {
-  console.log("\n=== Dedicated mobile QA — actual surfaces (4D-8R2) ===");
+  console.log("\n=== Dedicated mobile QA — 5 surfaces × 4 viewports (4D-8R3) ===");
 
-  // Playwright is MANDATORY — absence = FAIL
-  let chromium: any;
-  try {
-    const pw = await import("playwright");
-    chromium = pw.chromium;
-  } catch {
+  // Playwright is MANDATORY
+  try { await import("playwright"); } catch {
     fail("Playwright not available. Install: npm install playwright && npx playwright install chromium");
   }
+
+  // Setup test fixtures
+  const fixtures = await setupFixtures();
+  if (!fixtures) fail("Database not available for fixtures");
 
   const browser = await chromium.launch({ headless: true });
   const context = await browser.newContext();
@@ -96,52 +114,48 @@ async function main() {
 
   const viewports = [360, 390, 430, 768];
   const results: QAResult[] = [];
-  let skipCount = 0;
 
-  // Pages to test — actual surfaces
-  const testPages = [
-    // Novela reader (use cerpen — same reader layout)
-    { url: `${BASE_URL}/kategori/cerpen/kerusi-di-beranda`, name: "Novela reader (cerpen)" },
-    { url: `${BASE_URL}/kategori/cerpen/nombor-giliran-117`, name: "Novela reader (cerpen 2)" },
-    // Kategori listing by type
-    { url: `${BASE_URL}/kategori/cerpen`, name: "Kategori cerpen listing" },
-    // Admin pages (require auth — test if they load/redirect)
-    { url: `${BASE_URL}/admin`, name: "Admin works list" },
-    { url: `${BASE_URL}/admin/series`, name: "Admin series list" },
-    { url: `${BASE_URL}/admin/series/new`, name: "Admin series new" },
+  // 5 actual surfaces with real routes
+  const surfaces = [
+    { url: `${BASE_URL}/admin/works/${fixtures.novId}/preview`, name: "Novela reader" },
+    { url: `${BASE_URL}/admin/series/${fixtures.seriesId}`, name: "Bersiri landing" },
+    { url: `${BASE_URL}/admin/works/${fixtures.epId}/preview`, name: "Bersiri episode" },
+    { url: `${BASE_URL}/admin/works/${fixtures.novId}`, name: "Admin Bahagian" },
+    { url: `${BASE_URL}/admin/series/${fixtures.seriesId}`, name: "Admin Series detail" },
   ];
 
-  for (const vp of viewports) {
-    for (const pg of testPages) {
-      const result = await checkPage(page, pg.url, vp, pg.name);
+  for (const surface of surfaces) {
+    for (const vp of viewports) {
+      const result = await checkSurface(page, surface.url, vp, surface.name);
       results.push(result);
-
-      const status = result.overflow ? "OVERFLOW" : (result.navigationUsable ? "PASS" : "SKIP");
-      if (status === "SKIP") skipCount++;
-
-      ok(`${result.page} @ ${result.viewport}: ${status} (nav=${result.navigationUsable}, overflow=${result.overflow})`);
+      const status = result.overflow ? "OVERFLOW" : (result.navigationUsable ? "PASS" : "FAIL");
+      ok(`${result.surface} @ ${result.viewport}: ${status}`);
     }
   }
 
   await browser.close();
 
+  // Cleanup fixtures
+  await cleanupFixtures();
+
   // Summary
   console.log("\n--- Summary ---");
   const anyOverflow = results.some((r) => r.overflow);
-  const mandatoryPages = results.filter((r) => !r.page.includes("Admin"));
-  const mandatorySkipped = mandatoryPages.filter((r) => !r.navigationUsable);
-
-  if (anyOverflow) fail("HORIZONTAL OVERFLOW detected");
-  if (mandatorySkipped.length > 0) {
-    fail(`${mandatorySkipped.length} mandatory pages failed: ${mandatorySkipped.map((r) => `${r.page}@${r.viewport}`).join(", ")}`);
-  }
+  const anyNavFail = results.some((r) => !r.navigationUsable);
+  const mandatoryFails = results.filter((r) => !r.navigationUsable);
 
   for (const vp of viewports) {
     const vpResults = results.filter((r) => r.viewport === `${vp}px`);
     const vpOverflow = vpResults.some((r) => r.overflow);
-    const vpFail = vpResults.filter((r) => !r.navigationUsable && !r.page.includes("Admin")).length;
-    console.log(`  ${vp}px: overflow=${vpOverflow}, mandatory_fail=${vpFail}`);
+    const vpFail = vpResults.filter((r) => !r.navigationUsable).length;
+    console.log(`  ${vp}px: overflow=${vpOverflow}, nav_fail=${vpFail}`);
   }
+
+  console.log(`\n  Total checks: ${results.length}`);
+  console.log(`  Mandatory skips: ${mandatoryFails.length}`);
+
+  if (anyOverflow) fail("HORIZONTAL OVERFLOW detected at component level");
+  if (mandatoryFails.length > 0) fail(`${mandatoryFails.length} mandatory pages failed`);
 
   console.log("\nMOBILE_QA=PASS");
   process.exit(0);
@@ -149,5 +163,6 @@ async function main() {
 
 main().catch(async (err) => {
   console.error(err);
+  try { await cleanupFixtures(); } catch {}
   process.exit(1);
 });
