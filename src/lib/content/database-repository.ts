@@ -57,6 +57,8 @@ function mapWork(
     publishedAt: row.published_at ? new Date(row.published_at).toISOString() : undefined,
     updatedAt: row.updated_at ? new Date(row.updated_at).toISOString() : undefined,
     version: String(row.version || "v0.1"),
+    versionLabel: row.version_label ? String(row.version_label) : null,
+    revisionCount: row.revision_count ? Number(row.revision_count) : 0,
     body: String(row.body || ""),
     credits,
     visuals,
@@ -81,6 +83,7 @@ export class DatabaseContentRepository implements ContentRepository {
   private seriesEpisodes: Map<string, SeriesEpisodeRef[]> = new Map();
   private workIdBySlug: Map<string, string> = new Map();
   private seriesIdByWorkId: Map<string, string> = new Map();
+  private revisionSnapshots: Map<string, Work> = new Map();
   private loaded = false;
 
   constructor() {
@@ -105,6 +108,16 @@ export class DatabaseContentRepository implements ContentRepository {
     const dbSections = await db.selectFrom("reading_sections").orderBy("position", "asc").selectAll().execute();
     const dbSeries = await db.selectFrom("series").selectAll().execute();
     const dbEntries = await db.selectFrom("series_entries").orderBy("position", "asc").selectAll().execute();
+
+    // Load published revision snapshots for published works
+    const dbRevisions = await db.selectFrom("work_revisions").selectAll().execute();
+    for (const rev of dbRevisions) {
+      const workId = String(rev.work_id);
+      if (!this.revisionSnapshots.has(workId)) {
+        const snapshot = typeof rev.snapshot === "string" ? JSON.parse(rev.snapshot) : rev.snapshot;
+        this.revisionSnapshots.set(workId, snapshot);
+      }
+    }
 
     const sourcesByWork = new Map<string, SourceWorkRef>();
     for (const s of dbSources) {
@@ -196,24 +209,40 @@ export class DatabaseContentRepository implements ContentRepository {
     }
 
     // Public repository: only published Works are discoverable.
+    // Public repository: only published Works are discoverable.
+    // For published works, use the published revision snapshot instead of working copy.
     for (const row of dbWorks) {
       if (String(row.status || "") !== "published") continue;
       const wid = String(row.id);
       const seriesMeta = this.seriesIdByWorkId.has(wid)
         ? this.seriesCache.get(this.seriesIdByWorkId.get(wid)!)
         : undefined;
-      const work = mapWork(
-        row,
-        creditsByWork.get(wid) || [],
-        visualsByWork.get(wid) || [],
-        glossaryByWork.get(wid) || [],
-        sourcesByWork.get(wid),
-        this.sectionsByWorkId.get(wid),
-        seriesMeta
-      );
-      this.worksCache.set(work.slug, work);
-      this.worksByIdCache.set(wid, work);
-      this.workIdBySlug.set(work.slug, wid);
+
+      // Check if we have a published revision snapshot for this work
+      const snapshot = this.revisionSnapshots.get(wid);
+      if (snapshot) {
+        // Use the published revision snapshot for public view
+        const revisionWork = this.buildSnapshotWork(snapshot, wid);
+        if (revisionWork) {
+          this.worksCache.set(revisionWork.slug, revisionWork);
+          this.worksByIdCache.set(wid, revisionWork);
+          this.workIdBySlug.set(revisionWork.slug, wid);
+        }
+      } else {
+        // Fallback to working copy for published works without revision
+        const work = mapWork(
+          row,
+          creditsByWork.get(wid) || [],
+          visualsByWork.get(wid) || [],
+          glossaryByWork.get(wid) || [],
+          sourcesByWork.get(wid),
+          this.sectionsByWorkId.get(wid),
+          seriesMeta
+        );
+        this.worksCache.set(work.slug, work);
+        this.worksByIdCache.set(wid, work);
+        this.workIdBySlug.set(work.slug, wid);
+      }
     }
 
     // Build public series episode lists with eligibility rules.
@@ -346,5 +375,43 @@ export class DatabaseContentRepository implements ContentRepository {
     const match = episodes.find((e) => e.slug === episodeSlug);
     if (!match) return undefined;
     return this.worksCache.get(match.slug);
+  }
+
+  private buildSnapshotWork(snapshot: any, workId: string): Work | undefined {
+    if (!snapshot) return undefined;
+    try {
+      const work: Work = {
+        id: snapshot.id,
+        slug: snapshot.slug,
+        title: snapshot.title,
+        type: snapshot.type,
+        status: "published",
+        genre: snapshot.genre,
+        audience: snapshot.audience,
+        dek: snapshot.dek,
+        readingMinutes: snapshot.readingMinutes,
+        version: snapshot.version,
+        versionLabel: snapshot.versionLabel,
+        revisionCount: snapshot.revisionCount,
+        publishedAt: snapshot.publishedAt,
+        publishedBy: snapshot.publishedBy,
+        firstPublishedAt: snapshot.firstPublishedAt,
+        publishedRevisionId: snapshot.publishedRevisionId,
+        body: snapshot.body,
+        credits: snapshot.credits || [],
+        visuals: snapshot.visuals || [],
+        glossary: snapshot.glossary || [],
+        editorialHistory: snapshot.editorialHistory || [],
+        metadata: snapshot.metadata,
+        reader: snapshot.reader,
+        sourceWork: snapshot.sourceWork,
+        sections: snapshot.sections,
+        series: snapshot.series,
+        publishedRevision: snapshot.publishedRevision,
+      };
+      return work;
+    } catch {
+      return undefined;
+    }
   }
 }
