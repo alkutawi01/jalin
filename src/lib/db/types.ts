@@ -362,6 +362,17 @@ export interface EditorialAuditRuns {
   created_at: ColumnType<Date, string | Date, string | Date>;
 }
 
+export interface EditorialIssues {
+  id: string;
+  type: string;
+  work_id: string | null;
+  severity: string;
+  status: string;
+  message: string;
+  created_at: ColumnType<Date, string | Date, string | Date>;
+  resolved_at: ColumnType<Date | null, string | Date | null, string | Date | null>;
+}
+
 export interface Database {
   works: Works;
   contributors: Contributors;
@@ -379,4 +390,5 @@ export interface Database {
   series_entries: SeriesEntries;
   work_revisions: WorkRevisions;
   editorial_audit_runs: EditorialAuditRuns;
+  editorial_issues: EditorialIssues;
 }
