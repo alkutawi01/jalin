@@ -2,6 +2,7 @@ import { initContentRepository } from "../../lib/content";
 import { getAllWorks } from "../../lib/content/workLoader";
 import { hasDb } from "../../lib/db";
 import { getDb } from "../../lib/db";
+import { getEditorialHealth } from "../../lib/admin/editorial-health";
 
 export const dynamic = "force-dynamic";
 
@@ -18,6 +19,7 @@ async function getStats() {
         fragmen: getAllWorks().filter((w) => w.type === "fragmen").length,
         sinopsis: getAllWorks().filter((w) => w.type === "sinopsis").length,
       },
+      editorialHealth: null,
     };
   }
 
@@ -25,6 +27,13 @@ async function getStats() {
   const useDb = repo.constructor.name === "DatabaseContentRepository";
 
   const works = useDb ? repo.getWorks() : getAllWorks();
+  
+  let editorialHealth = null;
+  try {
+    editorialHealth = await getEditorialHealth();
+  } catch (e) {
+    // Ignore errors for now
+  }
 
   return {
     contentSource: useDb ? "database" : "markdown",
@@ -37,6 +46,7 @@ async function getStats() {
       fragmen: works.filter((w) => w.type === "fragmen").length,
       sinopsis: works.filter((w) => w.type === "sinopsis").length,
     },
+    editorialHealth,
   };
 }
 
@@ -105,24 +115,28 @@ export default async function AdminDashboard() {
 
       <section className="admin-section">
         <h2>Editorial Health</h2>
-        <div className="admin-stats-grid">
-          <div className="admin-stat-card">
-            <div className="admin-stat-label">Authors</div>
-            <div className="admin-stat-value">PASS</div>
+        {stats.editorialHealth ? (
+          <div className="admin-stats-grid">
+            <div className="admin-stat-card">
+              <div className="admin-stat-label">Authors</div>
+              <div className="admin-stat-value">{stats.editorialHealth.authors.status.toUpperCase()}</div>
+            </div>
+            <div className="admin-stat-card">
+              <div className="admin-stat-label">Revisions</div>
+              <div className="admin-stat-value">{stats.editorialHealth.revisions.status.toUpperCase()}</div>
+            </div>
+            <div className="admin-stat-card">
+              <div className="admin-stat-label">Visual Credits</div>
+              <div className="admin-stat-value">{stats.editorialHealth.visuals.status.toUpperCase()}</div>
+            </div>
+            <div className="admin-stat-card">
+              <div className="admin-stat-label">Translations</div>
+              <div className="admin-stat-value">{stats.editorialHealth.translations.status.toUpperCase()}</div>
+            </div>
           </div>
-          <div className="admin-stat-card">
-            <div className="admin-stat-label">Revisions</div>
-            <div className="admin-stat-value">PASS</div>
-          </div>
-          <div className="admin-stat-card">
-            <div className="admin-stat-label">Visual Credits</div>
-            <div className="admin-stat-value">WARNING</div>
-          </div>
-          <div className="admin-stat-card">
-            <div className="admin-stat-label">Translations</div>
-            <div className="admin-stat-value">WARNING</div>
-          </div>
-        </div>
+        ) : (
+          <p>Editorial health data not available</p>
+        )}
       </section>
     </div>
   );
