@@ -33,13 +33,36 @@ npm run audit:publish -- JLN-CER-0003
 
 ## Integration with Publish Flow
 
-The validator can be integrated into the admin publish workflow:
+The validator is now integrated into the publish API:
 
 1. Admin clicks "Publish"
 2. System runs validation
-3. If FAIL: Block publication, show errors
-4. If WARNING: Allow publication, log warnings
+3. If FAIL: Block publication, return error with issues
+4. If WARNING: Allow publication, continue
 5. If PASS: Proceed with publication
+
+## Error Response
+
+When publish is blocked, the API returns:
+
+```json
+{
+  "error": "Publish blocked",
+  "issues": [
+    "Work missing public author",
+    "Published revision ID points to missing revision"
+  ]
+}
+```
+
+## Who Fixes What
+
+| Issue Type | Responsible | Action |
+|------------|-------------|--------|
+| Missing author | Editor | Add contributor credit |
+| Missing revision | Editor | Create revision before publish |
+| Empty body | Writer | Add content |
+| Missing visual credit | Editor (KIV-S31) | Decision pending |
 
 ## Exit Codes
 

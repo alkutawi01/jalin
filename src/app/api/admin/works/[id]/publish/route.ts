@@ -21,8 +21,8 @@ export async function POST(
     
     if (failures.length > 0) {
       return NextResponse.json({ 
-        error: "Publish validation failed",
-        failures: failures.map(f => ({ category: f.category, message: f.message }))
+        error: "Publish blocked",
+        issues: failures.map(f => f.message)
       }, { status: 422 });
     }
     
