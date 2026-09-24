@@ -6,7 +6,7 @@ type: cerpen
 status: review
 genre: Keluarga · Ingatan
 audience: 13-17
-version: v1.6
+version: v1.7
 updatedAt: '2026-09-24'
 dek: >-
   Sebuah kisah tentang seorang anak yang kembali ke rumah lama keluarganya dan
@@ -76,6 +76,13 @@ editorialHistory:
     summary: >-
       Sesi editorial 5: menyelaraskan garis masa hari, memastikan penangguhan
       ejen benar-benar berlaku dalam adegan, dan merapikan dialog awal yang janggal.
+    date: '2026-09-24'
+  - version: v1.7
+    type: minor
+    summary: >-
+      Sesi editorial 6: menjelaskan kesinambungan lokasi jam dinding, memperincikan
+      ujian seminggu Aiman terhadap kemampuan menjaga rumah, dan mengganti dialog
+      aforistik dengan memori keluarga yang lebih khusus.
     date: '2026-09-24'
 visuals:
   - role: hero
@@ -164,13 +171,15 @@ Aiman tersenyum pahit. “Kau pun sama. Mak suruh angkat pinggan, kau selalu bua
 
 Farid hampir ketawa. “Itu cerita lain.”
 
-Aiman mengangkat jam itu sedikit dari paku, kemudian meletakkannya semula. “Mak suka nampak jam tu bergerak. Dia kata, kalau jam tegak, hidup pun tegak.”
+Aiman mengangkat jam itu sedikit dari paku, kemudian meletakkannya semula. “Mak suka jam ni tepat. Kalau lambat dua minit pun, dia suruh aku panjat kerusi betulkan.”
 
-“Aku dah lupa dia cakap macam tu.”
+Farid tersenyum. “Yang panjat kerusi selalunya kau.”
 
 “Masa Mak dah tak boleh berdiri lama, dia pindah jam ni ke bilik. Biar nampak dari katil.”
 
 Farid mengusap habuk pada bingkai jam. “Patutlah aku cari dulu tak jumpa.”
+
+“Lepas urusan Mak selesai, aku keluarkan jam ni semula. Sejak hari tu aku tak masuk bilik tu.”
 
 Aiman terdiam seketika. “Waktu Abah pergi, aku baru darjah satu. Kau belum lahir.”
 
@@ -254,7 +263,7 @@ Dia membawa keluar sebatang penyapu dari dapur. Penyapu itu sudah lama; lidi-lid
 
 “Apa?”
 
-“Aku nak simpan rumah ni sekejap lagi. Bukan selamanya. Biar aku tinggal di sini seminggu, sapu halaman macam Mak dulu. Lepas tu, kalau aku rasa tetap tak boleh, aku setuju kita jual.”
+“Aku nak simpan rumah ni sekejap lagi. Bukan selamanya. Biar aku tinggal di sini seminggu, sapu halaman macam Mak dulu. Lepas tu, kalau seminggu ni aku nampak aku tak mampu jaga rumah ni dengan betul, aku setuju kita jual.”
 
 Farid tidak terus menjawab. Dia memandang bahagian bumbung dapur yang bertompok hitam, kemudian ke pagar yang condong sedikit pada hujungnya.
 
