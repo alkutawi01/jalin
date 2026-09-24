@@ -6,7 +6,7 @@ type: cerpen
 status: review
 genre: Keluarga · Ingatan
 audience: 13-17
-version: v1.4
+version: v1.5
 updatedAt: '2026-09-24'
 dek: >-
   Sebuah kisah tentang seorang anak yang kembali ke rumah lama keluarganya dan
@@ -64,6 +64,13 @@ editorialHistory:
       setup objek yang tidak berpayoff, dan mengurangkan penjelasan tematik
       Mak Cik Salmah supaya resolusi kekal dipikul oleh tindakan watak utama.
     date: '2026-09-24'
+  - version: v1.5
+    type: minor
+    summary: >-
+      Sesi editorial 4: membetulkan kesinambungan keputusan Aiman tinggal
+      seminggu, memadatkan vignette sentimental pertengahan, mengembalikan
+      tekanan praktikal rumah, dan membuang penerangan tema serta dialog aforistik.
+    date: '2026-09-24'
 visuals:
   - role: hero
     src: /visuals/rumah-yang-masih-menyimpan-suara/hero.png
@@ -82,7 +89,7 @@ visuals:
     alt: Aiman berdiri di beranda rumah lama sambil memandang halaman pada waktu petang.
     provider: magnific
     creationId: mEjYiz2hJQ
-    anchor: 'Sebelum mereka pulang, Aiman berdiri sekali lagi di beranda.'
+    anchor: 'Sebelum Farid pulang, Aiman berdiri sekali lagi di beranda.'
     place: after
 glossary:
   - term: beranda
@@ -185,7 +192,11 @@ Di dalam sebuah kotak di dapur, Aiman menjumpai buku resipi Mak. Kulitnya sudah 
 
 Aiman menutup buku itu dan meletakkannya ke dalam kotak barang simpanan.
 
-Mereka meninggalkan dapur dan berpindah ke bahagian belakang rumah untuk menyusun barang yang hendak dibuang. Di situ, berhampiran tempat Mak pernah menggantung kain langsir putih, Farid berhenti.
+“Lepas ni aku nak tengok bumbung dapur,” kata Farid. “Kalau kita tangguh jual rumah ni, itu yang pertama kita kena baiki.”
+
+Aiman mengangguk. “Baik.”
+
+Mereka berpindah ke bahagian belakang rumah untuk menyusun barang yang hendak dibuang. Di situ, berhampiran tempat Mak pernah menggantung kain langsir putih, Farid berhenti.
 
 “Bilik Mak,” katanya.
 
@@ -199,33 +210,19 @@ Bukan surat panjang. Hanya beberapa baris.
 
 “Jangan lupa makan.”
 
-Aiman ketawa kecil sebelum matanya mula berair. Itulah Mak. Walaupun selepas tiada, perkara pertama yang masih difikirkannya ialah anak-anak.
+Aiman ketawa kecil sebelum matanya mula berair. Dia mengusap hujung kertas itu dengan ibu jari, kemudian meletakkannya semula di atas meja.
 
-“Mak selalu cakap,” kata Farid, “kalau nak tahu hati Mak, tengok tempat solat Mak. Tempat tu paling bersih dalam rumah.”
+“Mak selalu lipat sejadah ni lepas Subuh,” kata Farid. “Kalau aku lalu sini dengan kaki basah, dia suruh aku patah balik ambil kain lap.”
 
-Aiman memandang sejadah itu. Lipatannya kemas, seolah-olah Mak sendiri masih menentukan caranya.
+Aiman memandang sejadah itu. “Kau pernah kena lap sampai ke pintu dapur.”
 
-“Aku masih ingat satu malam. Masa tu aku darjah empat. Aku gagal satu ujian di sekolah.” Aiman duduk di hujung katil. “Aku balik merajuk, tak mahu makan, tak mahu cakap dengan sesiapa.”
+Farid tersenyum. “Jangan tambah cerita.”
 
-“Mak marah?”
-
-Aiman menggeleng. “Dia duduk sebelah aku sambil mengemas kain jahitan. Diam saja.”
-
-Farid tersenyum kecil. “Memang cara Mak.”
-
-“Malam tu aku terjaga dekat pukul sebelas. Mak masih dekat depan rumah, minum kopi.”
-
-“Buat kerja?”
-
-“Tak. Aku rasa dia tunggu aku bangun.” Aiman menunduk memandang tangannya. “Esok pagi ada roti jala atas meja. Tak ada nasihat panjang. Cuma makanan yang dia tahu aku suka.”
-
-“Itu Mak,” kata Farid perlahan.
-
-Aiman menutup semula kotak di bawah meja. “Banyak benda yang aku tak sempat tanya.”
+Aiman membuka laci meja, kemudian menutupnya semula. “Banyak benda yang aku tak sempat tanya.”
 
 “Aku pun.”
 
-Mereka diam. Angin dari tingkap menggerakkan hujung langsir yang sudah pudar.
+Farid menjenguk ke arah lorong. “Jom. Lepas ni bumbung dapur.”
 
 Ketika tengah hari, Mak Cik Salmah dari rumah sebelah datang meninjau sambil membawa sepinggan kuih seri muka yang masih panas.
 
@@ -279,9 +276,19 @@ Mereka bersolat berjemaah di ruang tamu yang sama, dengan hembusan angin malam m
 
 “Sekarang aku telefon ejen,” katanya. “Aku minta dia tangguh seminggu.”
 
-Aiman mengangguk. Tidak ada lagi yang perlu diputuskan malam itu.
+Aiman mengangguk.
 
-Sebelum mereka pulang, Aiman berdiri sekali lagi di beranda.
+Farid memasukkan telefon ke dalam poket. “Kau betul nak tidur sini malam ni?”
+
+“Ya. Tilam bilik depan masih elok. Esok pagi aku mula dengan halaman.”
+
+“Kalau hujan, tengok bahagian dapur. Aku tak percaya bumbung tu.”
+
+Aiman tersenyum kecil. “Aku tengok.”
+
+Tidak ada lagi yang perlu diputuskan malam itu.
+
+Sebelum Farid pulang, Aiman berdiri sekali lagi di beranda.
 
 Dia memandang halaman yang dipenuhi daun, kemudian turun tiga anak tangga dengan penyapu lama di tangan. Farid sudah berada di pagar ketika terdengar geseran lidi di atas simen.
 
@@ -289,4 +296,4 @@ Aiman menyapu satu jalur kecil di hadapan tangga—tidak cukup untuk membersihka
 
 Farid menunggu tanpa memanggilnya.
 
-Aiman menyandarkan penyapu pada dinding. Bunyi tadi sudah berhenti, tetapi untuk beberapa saat, dia masih dapat mendengarnya.
+Selepas pagar tertutup di belakang Farid, Aiman menyandarkan penyapu pada dinding. Bunyi tadi sudah berhenti, tetapi untuk beberapa saat, dia masih dapat mendengarnya.
