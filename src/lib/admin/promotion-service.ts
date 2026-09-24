@@ -186,6 +186,7 @@ export async function promoteSubmissionToWork(
         version: "v1.0",
         editorial_history: JSON.stringify(editorialHistory),
         published_at: null,
+        published_by: null,
         updated_at: now,
         created_at: now,
       } as never)

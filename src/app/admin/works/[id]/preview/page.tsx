@@ -27,6 +27,27 @@ interface WorkData {
   version: string;
 }
 
+interface CreditData {
+  role_label: string;
+  byline: boolean;
+  is_public: boolean;
+  contributor_slug: string | null;
+  guest_name: string | null;
+}
+
+interface GlossaryData {
+  term: string;
+  meaning: string;
+  source: string;
+}
+
+interface VisualData {
+  role: string;
+  src: string;
+  alt: string | null;
+  anchor: string | null;
+}
+
 export default function PreviewWorkPage() {
   const params = useParams();
   const workId = params.id as string;
@@ -34,6 +55,9 @@ export default function PreviewWorkPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [work, setWork] = useState<WorkData | null>(null);
+  const [credits, setCredits] = useState<CreditData[]>([]);
+  const [glossary, setGlossary] = useState<GlossaryData[]>([]);
+  const [visuals, setVisuals] = useState<VisualData[]>([]);
 
   useEffect(() => {
     async function loadWork() {
@@ -41,6 +65,14 @@ export default function PreviewWorkPage() {
         const res = await fetch(`/api/admin/works/${workId}`);
         if (!res.ok) throw new Error("Karya tidak ditemui.");
         setWork(await res.json());
+        const [cr, gl, vs] = await Promise.all([
+          fetch(`/api/admin/credits?workId=${workId}`).then((r) => (r.ok ? r.json() : [])),
+          fetch(`/api/admin/glossary?workId=${workId}`).then((r) => (r.ok ? r.json() : [])),
+          fetch(`/api/admin/visuals?workId=${workId}`).then((r) => (r.ok ? r.json() : [])),
+        ]);
+        setCredits(Array.isArray(cr) ? cr : []);
+        setGlossary(Array.isArray(gl) ? gl : []);
+        setVisuals(Array.isArray(vs) ? vs : []);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Ralat memuatkan karya.");
       } finally {
@@ -100,9 +132,31 @@ export default function PreviewWorkPage() {
           <p className="admin-preview-dek">{work.dek}</p>
         )}
 
+        {visuals.filter((v) => v.role === "hero").map((v) => (
+          <figure key={v.src} style={{ margin: "1rem 0" }}>
+            <img src={v.src} alt={v.alt || ""} style={{ maxWidth: "100%", height: "auto" }} />
+          </figure>
+        ))}
+
         <div className="admin-preview-body">
-          <StoryMarkdown glossary={{}}>{work.body || ""}</StoryMarkdown>
+          <StoryMarkdown
+            glossary={Object.fromEntries(
+              glossary.map((g) => [g.term, { meaning: g.meaning, source: g.source }])
+            )}
+          >
+            {work.body || ""}
+          </StoryMarkdown>
         </div>
+
+        {credits.filter((c) => c.is_public && c.byline).length > 0 && (
+          <footer style={{ marginTop: "1.5rem", opacity: 0.85 }}>
+            <strong>Kredit byline:</strong>{" "}
+            {credits
+              .filter((c) => c.is_public && c.byline)
+              .map((c) => c.guest_name || c.contributor_slug || c.role_label)
+              .join(" · ")}
+          </footer>
+        )}
       </article>
     </div>
   );

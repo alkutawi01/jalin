@@ -105,7 +105,9 @@ export class DatabaseContentRepository implements ContentRepository {
       });
     }
 
+    // Public repository: only published Works are discoverable.
     for (const row of dbWorks) {
+      if (String(row.status || "") !== "published") continue;
       const wid = String(row.id);
       const work = mapWork(
         row,

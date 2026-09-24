@@ -20,6 +20,9 @@ const STATUSES = [
   { value: "archived", label: "Arkib" },
 ];
 
+/** Statuses selectable in the metadata dropdown (published only via explicit Publish). */
+const EDITABLE_STATUSES = STATUSES.filter((s) => s.value !== "published");
+
 interface WorkData {
   id: string;
   slug: string;
@@ -33,7 +36,27 @@ interface WorkData {
   reading_minutes: number | null;
   version: string;
   published_at: string | null;
+  published_by?: string | null;
   updated_at: string;
+}
+
+interface ReadinessIssue {
+  code: string;
+  message: string;
+}
+
+interface ReadinessGate {
+  pass: boolean;
+  blockers: ReadinessIssue[];
+  warnings: ReadinessIssue[];
+}
+
+interface ReadinessData {
+  ready: boolean;
+  blockers: ReadinessIssue[];
+  warnings: ReadinessIssue[];
+  gates: Record<"content" | "credits" | "visuals" | "privacy" | "workflow", ReadinessGate>;
+  checkedAt: string;
 }
 
 interface CreditData {
@@ -124,6 +147,10 @@ export default function EditWorkPage() {
   const [publishError, setPublishError] = useState<string | null>(null);
   const [publishSuccess, setPublishSuccess] = useState<string | null>(null);
 
+  const [readiness, setReadiness] = useState<ReadinessData | null>(null);
+  const [readinessLoading, setReadinessLoading] = useState(false);
+  const [readinessError, setReadinessError] = useState<string | null>(null);
+
   useEffect(() => {
     async function loadWork() {
       try {
@@ -156,7 +183,59 @@ export default function EditWorkPage() {
     loadContributors();
     loadVisuals();
     loadGlossary();
+    loadReadiness();
   }, [workId]);
+
+  async function loadReadiness() {
+    setReadinessLoading(true);
+    setReadinessError(null);
+    try {
+      const res = await fetch(`/api/admin/works/${workId}/publication-readiness`);
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Gagal menyemak kesediaan terbit.");
+      }
+      setReadiness(await res.json());
+    } catch (err) {
+      setReadinessError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+    } finally {
+      setReadinessLoading(false);
+    }
+  }
+
+  async function handleExplicitPublish() {
+    if (!confirm("Terbitkan karya ini secara eksplisit? Tindakan ini menetapkan status published.")) return;
+    setPublishing(true);
+    setPublishError(null);
+    setPublishSuccess(null);
+    try {
+      const res = await fetch(`/api/admin/works/${workId}/publish`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Gagal menerbitkan.");
+      }
+      setPublishSuccess(
+        data.alreadyPublished
+          ? "Karya ini sudah pun diterbitkan (idempoten)."
+          : `Berjaya diterbitkan pada ${data.publishedAt ?? "—"}.`
+      );
+      const workRes = await fetch(`/api/admin/works/${workId}`);
+      if (workRes.ok) {
+        const work: WorkData = await workRes.json();
+        setForm((prev) => ({ ...prev, status: work.status }));
+      }
+      await loadReadiness();
+      setTimeout(() => setPublishSuccess(null), 5000);
+    } catch (err) {
+      setPublishError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      await loadReadiness();
+    } finally {
+      setPublishing(false);
+    }
+  }
 
   async function loadCredits() {
     try {
@@ -229,6 +308,7 @@ export default function EditWorkPage() {
 
       setSuccess("Berjaya disimpan.");
       setTimeout(() => setSuccess(null), 3000);
+      await loadReadiness();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
     } finally {
@@ -511,14 +591,29 @@ export default function EditWorkPage() {
             <a href={`/admin/works/${workId}/preview`} className="admin-btn admin-btn-outline">
               Preview
             </a>
+            {form.status !== "published" && readiness?.ready && (
+              <button
+                type="button"
+                onClick={handleExplicitPublish}
+                className="admin-btn admin-btn-primary"
+                disabled={publishing}
+              >
+                {publishing ? "Menerbitkan..." : "Terbitkan"}
+              </button>
+            )}
+            {form.status === "published" && (
+              <span className="admin-btn admin-btn-outline" aria-hidden="true" style={{ opacity: 0.7, cursor: "default" }}>
+                Sudah Terbit
+              </span>
+            )}
             {publishPreview && (
               <button
                 type="button"
                 onClick={handlePublish}
-                className="admin-btn admin-btn-primary"
+                className="admin-btn admin-btn-outline"
                 disabled={publishing}
               >
-                {publishing ? "Menerbitkan..." : "Publish to Markdown"}
+                {publishing ? "Menerbitkan..." : "Sync Markdown"}
               </button>
             )}
             <button
@@ -548,6 +643,82 @@ export default function EditWorkPage() {
       {publishSuccess && (
         <div className="admin-alert admin-alert-success">{publishSuccess}</div>
       )}
+
+      <section className="admin-publish-preview" aria-label="Publication Readiness">
+        <h3>Publication Readiness</h3>
+        {readinessLoading && <p>Menyemak kesediaan...</p>}
+        {readinessError && (
+          <div className="admin-alert admin-alert-error">{readinessError}</div>
+        )}
+        {readiness && !readinessLoading && (
+          <>
+            <p>
+              <strong>{readiness.ready ? "READY" : "NOT READY"}</strong>
+              {" · "}
+              <span style={{ opacity: 0.7 }}>
+                disemak {new Date(readiness.checkedAt).toLocaleString("ms-MY")}
+              </span>
+            </p>
+            <div className="admin-form-row">
+              {(["content", "credits", "visuals", "privacy", "workflow"] as const).map((name) => {
+                const gate = readiness.gates[name];
+                const labels: Record<string, string> = {
+                  content: "Kandungan",
+                  credits: "Kredit",
+                  visuals: "Visual",
+                  privacy: "Privasi",
+                  workflow: "Aliran kerja",
+                };
+                return (
+                  <span
+                    key={name}
+                    className={`admin-status ${gate.pass ? "admin-status-ready" : "admin-status-draft"}`}
+                    title={gate.pass ? "Lulus" : `Blocker: ${gate.blockers.length}`}
+                  >
+                    {labels[name]}: {gate.pass ? "✓" : `✗ (${gate.blockers.length})`}
+                  </span>
+                );
+              })}
+            </div>
+            {readiness.blockers.length > 0 && (
+              <ul className="admin-alert admin-alert-error" style={{ marginBottom: 0 }}>
+                {readiness.blockers.map((b) => (
+                  <li key={b.code + b.message}>[BLOCKER] {b.message}</li>
+                ))}
+              </ul>
+            )}
+            {readiness.warnings.length > 0 && (
+              <ul style={{ opacity: 0.85, marginTop: "0.5rem" }}>
+                {readiness.warnings.map((w) => (
+                  <li key={w.code + w.message}>[AMARAN] {w.message}</li>
+                ))}
+              </ul>
+            )}
+            {form.status === "ready" && readiness.ready && (
+              <div style={{ marginTop: "0.75rem" }}>
+                <button
+                  type="button"
+                  onClick={handleExplicitPublish}
+                  className="admin-btn admin-btn-primary"
+                  disabled={publishing}
+                >
+                  {publishing ? "Menerbitkan..." : "Terbitkan Karya Ini"}
+                </button>
+              </div>
+            )}
+            {form.status === "draft" || form.status === "review" ? (
+              <p style={{ marginTop: "0.5rem", opacity: 0.8 }}>
+                Naikkan status ke <strong>Sedia</strong> selepas semua gate lulus untuk membolehkan butang Terbitkan.
+              </p>
+            ) : null}
+          </>
+        )}
+        <div style={{ marginTop: "0.5rem" }}>
+          <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={loadReadiness} disabled={readinessLoading}>
+            Semak Semula
+          </button>
+        </div>
+      </section>
 
       {publishPreview && (
         <div className="admin-publish-preview">
@@ -679,11 +850,21 @@ export default function EditWorkPage() {
                 id="status"
                 value={form.status}
                 onChange={(e) => setForm((prev) => ({ ...prev, status: e.target.value }))}
+                disabled={form.status === "published"}
               >
-                {STATUSES.map((s) => (
-                  <option key={s.value} value={s.value}>{s.label}</option>
-                ))}
+                {form.status === "published" ? (
+                  <option value="published">Diterbitkan</option>
+                ) : (
+                  EDITABLE_STATUSES.map((s) => (
+                    <option key={s.value} value={s.value}>{s.label}</option>
+                  ))
+                )}
               </select>
+              {form.status === "published" && (
+                <span className="admin-form-hint">
+                  Status published ditetapkan melalui butang Terbitkan sahaja.
+                </span>
+              )}
             </div>
 
             <div className="admin-form-group">

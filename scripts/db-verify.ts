@@ -119,6 +119,17 @@ async function verify(): Promise<VerificationResult> {
       detail: `Found ${execIdxRes.rows.length}/2 execution hardening indexes`,
     });
 
+    // Verify Phase 4D-6 publication audit columns
+    const pubColRes = await pool.query(
+      "SELECT column_name FROM information_schema.columns WHERE table_name = 'works' AND column_name IN ('published_at', 'published_by')"
+    );
+    const pubCols = pubColRes.rows.map((r: { column_name: string }) => r.column_name);
+    checks.push({
+      name: "publication_audit",
+      passed: pubCols.includes("published_at") && pubCols.includes("published_by"),
+      detail: `works publication columns: ${pubCols.join(", ") || "none"}`,
+    });
+
     // Verify visuals.is_asset_finalized exists
     const vsColRes = await pool.query(
       "SELECT column_name FROM information_schema.columns WHERE table_name = 'visuals' AND column_name = 'is_asset_finalized'"

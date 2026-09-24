@@ -35,6 +35,7 @@ export interface Works {
   version: string;
   editorial_history: ColumnType<Record<string, unknown>, string | Record<string, unknown>, string | Record<string, unknown>>;
   published_at: ColumnType<Date | null, string | Date | null, string | Date | null>;
+  published_by: string | null;
   updated_at: ColumnType<Date, string | Date, string | Date>;
   created_at: ColumnType<Date, string | Date, string | Date>;
 }

@@ -144,17 +144,19 @@ function loadWorks(): void {
 
 export function getWorkBySlug(slug: string): Work | undefined {
   loadWorks();
-  return worksCache.find((entry) => entry.slug === slug)?.work;
+  const work = worksCache.find((entry) => entry.slug === slug)?.work;
+  if (!work || work.status !== "published") return undefined;
+  return work;
 }
 
 export function getWorksByType(type: WorkType): Work[] {
   loadWorks();
   return worksCache
-    .filter((entry) => entry.work.type === type)
+    .filter((entry) => entry.work.type === type && entry.work.status === "published")
     .map((entry) => entry.work);
 }
 
 export function getAllWorks(): Work[] {
   loadWorks();
-  return worksCache.map((entry) => entry.work);
+  return worksCache.filter((entry) => entry.work.status === "published").map((entry) => entry.work);
 }

@@ -44,11 +44,35 @@ export async function PATCH(
       }
     }
 
-    // Validate status if provided
+    // Validate status if provided.
+    // status=published is reserved for the explicit publish endpoint only.
+    // published → draft/review/ready is reserved for a future unpublish action (not raw PATCH).
     if (body.status) {
       const validStatuses = ["draft", "review", "ready", "published", "archived"];
       if (!validStatuses.includes(body.status)) {
         return NextResponse.json({ error: "Status tidak sah." }, { status: 400 });
+      }
+      if (body.status === "published" && existing.status !== "published") {
+        return NextResponse.json(
+          {
+            error:
+              'Gunakan butang Publish (POST /api/admin/works/[id]/publish) untuk menerbitkan. PATCH tidak boleh menetapkan status "published".',
+          },
+          { status: 400 }
+        );
+      }
+      if (
+        existing.status === "published" &&
+        body.status !== "published" &&
+        body.status !== "archived"
+      ) {
+        return NextResponse.json(
+          {
+            error:
+              'Work yang sudah terbit hanya boleh diarkib melalui PATCH (unpublish eksplisit belum disokong).',
+          },
+          { status: 400 }
+        );
       }
     }
 
@@ -63,7 +87,9 @@ export async function PATCH(
       dek: body.dek,
       readingMinutes: body.readingMinutes,
       version: body.version,
-      publishedAt: body.publishedAt,
+      // publishedAt is only meaningful alongside published status; ignore raw sets.
+      publishedAt:
+        body.status === "published" ? body.publishedAt : undefined,
     });
 
     return NextResponse.json(work);

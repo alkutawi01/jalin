@@ -46,6 +46,7 @@ export interface WorkRecord {
   version: string;
   editorial_history: unknown;
   published_at: Date | null;
+  published_by: string | null;
   updated_at: Date;
   created_at: Date;
 }
@@ -143,6 +144,7 @@ export async function createWork(input: WorkInput): Promise<WorkRecord> {
       version: input.version || "v0.1",
       editorial_history: JSON.stringify(editorialHistory),
       published_at: input.publishedAt || null,
+      published_by: null,
       updated_at: now,
       created_at: now,
     })

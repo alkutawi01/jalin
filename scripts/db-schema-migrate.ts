@@ -395,6 +395,23 @@ const migrations = {
       await db.schema.alterTable("visual_requests").dropColumn("execution_mode").execute();
     },
   },
+  "010_add_published_by": {
+    async up(db: Kysely<unknown>) {
+      await db.schema
+        .alterTable("works")
+        .addColumn("published_by", "text")
+        .execute();
+      await db.schema
+        .createIndex("works_published_at_idx")
+        .on("works")
+        .column("published_at")
+        .execute();
+    },
+    async down(db: Kysely<unknown>) {
+      await db.schema.dropIndex("works_published_at_idx").execute();
+      await db.schema.alterTable("works").dropColumn("published_by").execute();
+    },
+  },
 };
 
 const migrator = new Migrator({
