@@ -35,7 +35,7 @@ editorialHistory:
     type: initial
     summary: >-
       Manuskrip co-write pertama Rumah yang Masih Menyimpan Suara
-      oleh ChatGPT dan Mimo
+      oleh Rafiq Naim dan Amir Syafiq
     date: '2026-09-22'
   - version: v1.1
     type: major
