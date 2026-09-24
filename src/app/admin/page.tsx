@@ -120,18 +120,46 @@ export default async function AdminDashboard() {
             <div className="admin-stat-card">
               <div className="admin-stat-label">Authors</div>
               <div className="admin-stat-value">{stats.editorialHealth.authors.status.toUpperCase()}</div>
+              {stats.editorialHealth.authors.issues.length > 0 && (
+                <ul className="admin-stat-issues">
+                  {stats.editorialHealth.authors.issues.map((issue, i) => (
+                    <li key={i}>{issue}</li>
+                  ))}
+                </ul>
+              )}
             </div>
             <div className="admin-stat-card">
               <div className="admin-stat-label">Revisions</div>
               <div className="admin-stat-value">{stats.editorialHealth.revisions.status.toUpperCase()}</div>
+              {stats.editorialHealth.revisions.issues.length > 0 && (
+                <ul className="admin-stat-issues">
+                  {stats.editorialHealth.revisions.issues.map((issue, i) => (
+                    <li key={i}>{issue}</li>
+                  ))}
+                </ul>
+              )}
             </div>
             <div className="admin-stat-card">
               <div className="admin-stat-label">Visual Credits</div>
               <div className="admin-stat-value">{stats.editorialHealth.visuals.status.toUpperCase()}</div>
+              {stats.editorialHealth.visuals.issues.length > 0 && (
+                <ul className="admin-stat-issues">
+                  {stats.editorialHealth.visuals.issues.map((issue, i) => (
+                    <li key={i}>{issue}</li>
+                  ))}
+                </ul>
+              )}
             </div>
             <div className="admin-stat-card">
               <div className="admin-stat-label">Translations</div>
               <div className="admin-stat-value">{stats.editorialHealth.translations.status.toUpperCase()}</div>
+              {stats.editorialHealth.translations.issues.length > 0 && (
+                <ul className="admin-stat-issues">
+                  {stats.editorialHealth.translations.issues.map((issue, i) => (
+                    <li key={i}>{issue}</li>
+                  ))}
+                </ul>
+              )}
             </div>
           </div>
         ) : (
