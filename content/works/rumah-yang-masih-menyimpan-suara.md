@@ -6,8 +6,8 @@ type: cerpen
 status: review
 genre: Keluarga · Ingatan
 audience: 13-17
-version: v1.7
-updatedAt: '2026-09-24'
+version: v1.8
+updatedAt: '2026-09-25'
 dek: >-
   Sebuah kisah tentang seorang anak yang kembali ke rumah lama keluarganya dan
   menemukan bahawa sesetengah kenangan tidak pernah benar-benar pergi.
@@ -84,6 +84,13 @@ editorialHistory:
       ujian seminggu Aiman terhadap kemampuan menjaga rumah, dan mengganti dialog
       aforistik dengan memori keluarga yang lebih khusus.
     date: '2026-09-24'
+  - version: v1.8
+    type: minor
+    summary: >-
+      Sesi editorial 7: memberi Farid lapisan dukacita yang lebih jelas, memadatkan
+      rentetan vignette pertengahan, dan mengganti ayat aforistik umum dengan
+      tindakan serta ingatan yang lebih khusus kepada keluarga dan rumah.
+    date: '2026-09-25'
 visuals:
   - role: hero
     src: /visuals/rumah-yang-masih-menyimpan-suara/hero.png
@@ -135,7 +142,7 @@ Dia menoleh. Farid berdiri di belakangnya sambil membawa beberapa kotak.
 
 Aiman tersenyum kecil. “Ya.”
 
-Itulah sahaja jawapan yang keluar. Ada perkara yang terlalu panjang untuk dijelaskan dengan satu ayat.
+Itulah sahaja jawapan yang keluar. Dia menunduk, menolak pintu pagar lebih luas, lalu memberi laluan kepada Farid.
 
 Mereka masuk bersama-sama.
 
@@ -215,7 +222,7 @@ Mereka berpindah ke bahagian belakang rumah untuk menyusun barang yang hendak di
 
 “Bilik Mak,” katanya.
 
-Aiman mengangguk. Pintu itu sudah lama tidak dibuka, bukan kerana dikunci, tetapi kerana mereka berdua tidak pernah benar-benar bersedia. Dia memegang tombol pintu dan berdiri beberapa saat. Ada perkara yang boleh dilakukan dengan tangan, tetapi belum tentu mampu dilakukan oleh hati. Akhirnya dia membuka pintu.
+Aiman mengangguk. Pintu itu sudah lama tidak dibuka, bukan kerana dikunci, tetapi kerana mereka berdua tidak pernah benar-benar bersedia. Dia memegang tombol pintu. Jarinya lama tidak bergerak, seolah-olah menunggu Farid menyuruhnya berhenti. Tiada suara datang. Akhirnya dia memutarnya dan membuka pintu.
 
 Bilik itu tidak banyak berubah. Telekung masih tersusun di penjuru, sejadah dilipat kemas di atas tilam, dan beberapa buku masih berada di rak.
 
@@ -239,21 +246,7 @@ Aiman membuka laci meja, kemudian menutupnya semula. “Banyak benda yang aku ta
 
 Farid menjenguk ke arah lorong. “Jom. Lepas ni bumbung dapur.”
 
-Menjelang tengah hari, Mak Cik Salmah dari rumah sebelah datang meninjau sambil membawa sepinggan kuih seri muka yang masih panas.
-
-“Assalamualaikum, Aiman, Farid. Lama tak nampak muka.”
-
-“Waalaikumsalam, Makcik,” jawab Aiman.
-
-“Makcik nampak kamu berdua mengemas dari tadi.” Mak Cik Salmah meletakkan pinggan di atas meja dapur yang sudah dikelap. “Dulu mak kamu rajin bertanam bunga dalam pasu. Sekarang pasu pun dah kering.”
-
-“Kami tengah susun barang,” kata Farid.
-
-Mak Cik Salmah mengangguk. Ketika hendak keluar, dia memandang sekejap ke arah bilik Mak. “Dulu lepas Subuh, mak kamu selalu keluar siram bunga. Kalau nampak pasu mula layu, dia bising seorang diri.”
-
-Aiman tersenyum kecil, dan Mak Cik Salmah menepuk lengannya sebelum pulang.
-
-Selepas Mak Cik Salmah pulang, mereka meneruskan kerja hingga petang, mengelap tingkap dan menutup bilik-bilik. Menjelang Asar, Farid duduk di beranda. Aiman duduk di sebelahnya.
+Menjelang tengah hari, mereka berhenti sekejap untuk makan kuih seri muka yang dihantar Mak Cik Salmah dari rumah sebelah. Selepas itu mereka menyambung kerja, mengelap tingkap, memeriksa bahagian bumbung dapur yang bocor dan menutup bilik-bilik. Menjelang Asar, Farid duduk di beranda. Aiman duduk di sebelahnya.
 
 “Aku ada satu benda nak tunjuk kau,” kata Aiman.
 
@@ -274,6 +267,10 @@ Farid tidak terus menjawab. Dia memandang bahagian bumbung dapur yang bertompok 
 “Aku tak mahu kita simpan rumah ni sebab rasa bersalah, lepas tu biar dia rosak perlahan-lahan.”
 
 Aiman menggenggam pemegang penyapu. “Aku pun tak mahu.”
+
+Farid memandang ke arah dapur. “Aku pun teringat Mak tiap kali masuk situ. Dia selalu hulur sudu suruh aku rasa sambal, lepas tu marah sebab aku kata semuanya sedap.” Dia tersenyum sekejap, kemudian menggosok kedua-dua tapak tangannya pada seluar. “Mungkin sebab itu aku asyik fikir pasal bumbung, bil, ejen. Benda macam tu aku tahu macam mana nak urus.”
+
+Aiman memandang adiknya. “Yang lain kita urus pelan-pelan.”
 
 Farid menghela nafas. “Seminggu. Lepas tu kita buat keputusan betul-betul.”
 
