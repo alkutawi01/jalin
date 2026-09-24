@@ -33,7 +33,7 @@ import { DatabaseContentRepository } from "../src/lib/content/database-repositor
 
 const TEST_ID = "JLN-NOV-9990";
 const TEST_SLUG = "uji-waktu-sebenar-4d8r";
-const MANUSCRIPT_PATH = resolve(__dirname, "../content/manuscripts/Waktu_Sebenar_MASTER.txt");
+const MANUSCRIPT_PATH = resolve(__dirname, "../content/manuscripts/Waktu_Sebenar_Structural_Edit_v1.0.txt");
 
 function fail(msg: string): never {
   console.error(`FAIL: ${msg}`);
