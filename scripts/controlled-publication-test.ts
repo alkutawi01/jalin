@@ -201,19 +201,129 @@ async function main() {
   r = await evaluatePublicationReadiness(TEST_ID);
   if (!r?.ready) fail("restored Work should be ready again");
 
-  // 6. Explicit publish (authoritative readiness from transaction)
-  const result = await publishWorkExplicit(TEST_ID, { id: "controlled-test", email: "editor@jalin.local" });
-  if (result.alreadyPublished) fail("first publish should not be alreadyPublished");
-  if (result.status !== "published") fail("status should be published");
-  if (!result.publishedAt) fail("publishedAt should be set");
-  if (result.publishedBy !== "editor@jalin.local") fail("publishedBy should be stored");
-  if (!result.readiness?.ready) fail("response must return authoritative transactional readiness");
-  ok(`Explicit publish succeeded (published_at=${result.publishedAt}, published_by=${result.publishedBy})`);
+  // 5c. TRUE concurrent mutation (4D-6R2): row locks + SERIALIZABLE.
+  //     T1 holds FOR UPDATE on visuals/credits/… after readiness PASS.
+  //     T2 tries to flip is_asset_finalized → must BLOCK until T1 commits
+  //     (safe outcome A: publication commits against a stable snapshot).
+  // 5d. Same publish trx: T2 INSERT competing slug → works_slug_key UNIQUE 23505.
+  const COMPETING_ID = "work-uji-4d6-slug-race";
+  await db.deleteFrom("works").where("id", "=", COMPETING_ID).execute();
+
+  let t2VisualDone = false;
+  let t2VisualBlockedDuringTrx = false;
+  let slugRaceRejected = false;
+  let slugRaceCode = "";
+
+  const concurrentPublish = await publishWorkExplicit(
+    TEST_ID,
+    { id: "controlled-test", email: "editor@jalin.local" },
+    {
+      insideTransactionAfterReadiness: async () => {
+        // T2 visual: fire-and-forget on another pool connection — must block on FOR UPDATE.
+        void db
+          .updateTable("visuals")
+          .where("id", "=", visualRow.id)
+          .set({ is_asset_finalized: false })
+          .execute()
+          .then(() => {
+            t2VisualDone = true;
+          })
+          .catch(() => {
+            t2VisualDone = true;
+          });
+
+        // T2 slug: unique constraint rejects immediately (different row, same slug).
+        try {
+          await db
+            .insertInto("works")
+            .values({
+              id: COMPETING_ID,
+              slug: TEST_SLUG,
+              title: "Pesaing slug ujian",
+              type: "cerpen",
+              status: "ready",
+              body: "Manuskrip pesaing slug. ".repeat(10).trim(),
+              version: "v0.1",
+              editorial_history: "[]",
+              published_at: null,
+              published_by: null,
+              updated_at: new Date().toISOString(),
+              created_at: new Date().toISOString(),
+            } as never)
+            .execute();
+        } catch (err) {
+          slugRaceRejected = true;
+          slugRaceCode = String((err as { code?: string })?.code ?? "");
+        }
+
+        // Give T2 visual time to attempt the UPDATE while we still hold locks.
+        await new Promise((resolve) => setTimeout(resolve, 250));
+        t2VisualBlockedDuringTrx = !t2VisualDone;
+      },
+    }
+  );
+
+  if (!t2VisualBlockedDuringTrx) {
+    fail("concurrent visual: T2 must block on FOR UPDATE while publish trx holds locks");
+  }
+  if (concurrentPublish.alreadyPublished) fail("concurrent publish should not be alreadyPublished");
+  if (concurrentPublish.status !== "published") fail("concurrent publish should succeed (outcome A)");
+  if (!concurrentPublish.readiness?.ready) fail("concurrent publish must return ready transactional readiness");
+  if (!slugRaceRejected) fail("slug race: competing INSERT with same slug must be rejected");
+  if (slugRaceCode && slugRaceCode !== "23505") {
+    fail(`slug race: expected unique_violation 23505, got ${slugRaceCode}`);
+  }
+  const slugCount = await db
+    .selectFrom("works")
+    .where("slug", "=", TEST_SLUG)
+    .select(db.fn.count("id").as("c"))
+    .executeTakeFirst();
+  if (Number(slugCount?.c) !== 1) {
+    fail(`slug race: expected exactly 1 Work with slug, got ${slugCount?.c}`);
+  }
+  const competing = await db
+    .selectFrom("works")
+    .where("id", "=", COMPETING_ID)
+    .select("id")
+    .executeTakeFirst();
+  if (competing) fail("slug race: competing Work must not exist");
+
+  // After T1 commits, T2's visual UPDATE proceeds (post-commit) — restore for archive path.
+  for (let i = 0; i < 40 && !t2VisualDone; i++) {
+    await new Promise((resolve) => setTimeout(resolve, 50));
+  }
+  const visualAfter = await db
+    .selectFrom("visuals")
+    .where("id", "=", visualRow.id)
+    .selectAll()
+    .executeTakeFirst();
+  if (!visualAfter) fail("visual row missing after concurrent test");
+  // T2 may have flipped finalized=false after commit; restore so cleanup is consistent.
+  if (!visualAfter.is_asset_finalized) {
+    await db
+      .updateTable("visuals")
+      .where("id", "=", visualRow.id)
+      .set({ is_asset_finalized: true })
+      .execute();
+  }
+
+  ok(
+    `Concurrent visual: T2 blocked on FOR UPDATE (outcome A); publish committed stable snapshot`
+  );
+  ok(
+    `Duplicate-slug race: competing insert rejected (SQLSTATE ${slugRaceCode}); single slug retained`
+  );
+
+  // 6. Explicit publish already ran in 5c
+  if (concurrentPublish.publishedBy !== "editor@jalin.local") fail("publishedBy should be stored");
+  ok(
+    `Explicit publish succeeded (published_at=${concurrentPublish.publishedAt}, published_by=${concurrentPublish.publishedBy})`
+  );
 
   // 7. Idempotent republish
   const again = await publishWorkExplicit(TEST_ID, { id: "controlled-test", email: "editor@jalin.local" });
   if (!again.alreadyPublished) fail("second publish should be idempotent");
-  if (again.publishedAt !== result.publishedAt) fail("publishedAt must not change on idempotent republish");
+  if (again.publishedAt !== concurrentPublish.publishedAt) fail("publishedAt must not change on idempotent republish");
   ok("Idempotent republish: alreadyPublished=true, timestamp unchanged");
 
   // 8. Public visibility only after publish

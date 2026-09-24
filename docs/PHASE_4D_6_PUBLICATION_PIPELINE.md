@@ -1,6 +1,6 @@
 # Phase 4D-6 — Editorial Publication Pipeline
 
-Status: implemented + 4D-6R atomic recheck (pending Director gate).
+Status: implemented + 4D-6R transactional recheck + 4D-6R2 SERIALIZABLE closure (pending Director gate).
 Depends on: 4D-1..4D-5R2 (submissions, generation, promotion, Magnific, Neon Object Storage).
 
 ## Objective
@@ -120,16 +120,37 @@ production Works remain valid. Integrity blockers (title/slug/body/privacy) stil
 2. Load Work; if already `published` → idempotent `{ alreadyPublished: true, ... }`
 3. **Preflight** readiness (advisory/fast fail); blockers → HTTP 422
 4. Status must be `ready` → 422 otherwise
-5. **Transaction begins** — `beforeTransaction` test hook may run (race tests only)
+5. **SERIALIZABLE transaction** begins (`beforeTransaction` test hook may run first — race tests only)
 6. Inside the **same transaction**, reload Work + credits + visuals + glossary +
    visual_requests + contributors + duplicate-slug via `loadReadinessInput(trx, …)`
 7. **Authoritative transactional readiness recheck** — must return `ready === true`
    or the transaction rolls back (Work stays `ready`, audit fields unchanged)
-8. Single transaction commits: `status=published`, `published_at`, `published_by`,
+8. Optional test hook `insideTransactionAfterReadiness` (concurrent-writer simulation)
+9. Single transaction commits: `status=published`, `published_at`, `published_by`,
    append `editorial_history` publish entry, `updated_at`
-9. Response returns the **transactional** readiness object (not the preflight snapshot)
+10. Response returns the **transactional** readiness object (not the preflight snapshot)
 
 Preflight is advisory only; the transactional recheck is the publication gate.
+
+### Concurrency (4D-6R2)
+
+- Isolation: **SERIALIZABLE** on the publish transaction.
+- **Row locks (minimum safe mechanism):** readiness load inside the publish trx
+  uses `SELECT … FOR UPDATE` on `works`, `credits`, `visuals`, `glossary_terms`,
+  `visual_requests`, and competing-slug lookup; referenced contributors use `FOR SHARE`.
+  Concurrent writers to those rows **block** until publish commits or rolls back
+  (safe outcome A: publication commits against a stable snapshot).
+  SERIALIZABLE alone does **not** abort the read-visual / write-works rw pattern
+  under PostgreSQL SSI — locks are required.
+- Serialization/deadlock failures (SQLSTATE **40001**, **40P01**) retry the whole
+  publish transaction up to `PUBLISH_SERIALIZABLE_RETRY_MAX` (**3** attempts).
+  Each retry re-runs the authoritative readiness check under fresh locks.
+  Readiness failures do not retry.
+- Competing slug INSERT is rejected by DB unique constraint **`works_slug_key`**
+  (`works.slug TEXT UNIQUE`, SQLSTATE **23505**); readiness also reports
+  `slug_duplicate` via trx check.
+- Unsafe outcome (published Work with invalid mandatory relation at commit) is prevented by:
+  trx-wide locked readiness load + SERIALIZABLE commit + bounded retry recheck.
 
 Does **not** auto-fix blockers, generate/approve/attach visuals, or edit content.
 
@@ -178,10 +199,11 @@ near-public rendering (body, glossary, hero, public byline) without mutating sta
 
 ## Tests
 
-- `__tests__/publication-pipeline.test.ts` — pure readiness/publish-rule/visibility/race matrix
+- `__tests__/publication-pipeline.test.ts` — pure readiness/publish-rule/visibility/race/serialization-helper matrix
 - `scripts/publication-readiness-audit.ts` (`npm run audit:readiness`) — read-only audit of live Works
 - `scripts/controlled-publication-test.ts` (`npm run test:controlled-publish`) —
-  dedicated test Work draft→ready→**race invalidation**→publish→idempotent→archive
+  dedicated test Work draft→ready→race invalidation→**concurrent visual mutation**→
+  **duplicate-slug race**→publish→idempotent→archive
   (never touches production editorial Works)
 
 ## Verification checklist
@@ -192,6 +214,7 @@ near-public rendering (body, glossary, hero, public byline) without mutating sta
 - [x] Atomic + idempotent publish
 - [x] **Transactional readiness recheck (authoritative)** — 4D-6R
 - [x] All readiness relations loaded via trx (credits/visuals/glossary/visual_requests/slug)
+- [x] **SERIALIZABLE + FOR UPDATE/FOR SHARE row locks + bounded 40001 retry (max 3)** — 4D-6R2
 - [x] published_at / published_by audit
 - [x] Public routes: published only
 - [x] Admin preview private + non-mutating
@@ -199,3 +222,5 @@ near-public rendering (body, glossary, hero, public byline) without mutating sta
 - [x] Grandfather existing published Works
 - [x] No auto generate/approve/attach/publish
 - [x] Race regression: relation invalidated after preflight → publish blocked, status stays ready
+- [x] Concurrent visual mutation mid-trx → T2 blocked on FOR UPDATE; publish commits stable snapshot (outcome A)
+- [x] Duplicate-slug race → `works_slug_key` unique rejection (23505); single slug retained

@@ -11,6 +11,10 @@ import {
   type EvaluatePublicationReadinessInput,
   type ReadinessWorkInput,
 } from "../src/lib/admin/publication-readiness";
+import {
+  PUBLISH_SERIALIZABLE_RETRY_MAX,
+  isPublicationSerializationFailure,
+} from "../src/lib/admin/publication-service";
 
 let passed = 0;
 let failed = 0;
@@ -509,6 +513,37 @@ console.log("\n=== Race: post-preflight relation invalidation ===");
   );
   assert(slugRace.ready === false, "Duplicate slug after preflight fails transactional recheck");
   assert(slugRace.blockers.some((b) => b.code === "slug_duplicate"), "slug_duplicate blocker");
+}
+
+// ============================================================
+// 18. SERIALIZABLE retry helpers (4D-6R2)
+// ============================================================
+console.log("\n=== Serialization failure detection (4D-6R2) ===");
+{
+  assert(PUBLISH_SERIALIZABLE_RETRY_MAX >= 2 && PUBLISH_SERIALIZABLE_RETRY_MAX <= 3, "Retry max is bounded 2–3");
+  assert(
+    isPublicationSerializationFailure({ code: "40001" }),
+    "SQLSTATE 40001 is retryable"
+  );
+  assert(
+    isPublicationSerializationFailure({ code: "40P01" }),
+    "SQLSTATE 40P01 deadlock is retryable"
+  );
+  assert(
+    isPublicationSerializationFailure(
+      new Error("could not serialize access due to concurrent update")
+    ),
+    "Serialize access message is retryable"
+  );
+  assert(!isPublicationSerializationFailure({ code: "23505" }), "unique_violation is NOT retried");
+  assert(!isPublicationSerializationFailure({ code: "23503" }), "foreign_key_violation is NOT retried");
+  assert(
+    !isPublicationSerializationFailure(
+      new Error("Publication readiness (transaksi) gagal: visual_unfinalized")
+    ),
+    "Readiness failure is NOT retried"
+  );
+  assert(!isPublicationSerializationFailure(null), "null is not serialization failure");
 }
 
 console.log(`\n${passed} passed, ${failed} failed`);
