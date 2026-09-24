@@ -384,6 +384,14 @@ export interface EditorialIssueEvents {
   created_at: ColumnType<Date, string | Date, string | Date>;
 }
 
+export interface EditorialRoles {
+  id: string;
+  name: string;
+  description: string | null;
+  permissions_json: string;
+  created_at: ColumnType<Date, string | Date, string | Date>;
+}
+
 export interface Database {
   works: Works;
   contributors: Contributors;
@@ -403,4 +411,5 @@ export interface Database {
   editorial_audit_runs: EditorialAuditRuns;
   editorial_issues: EditorialIssues;
   editorial_issue_events: EditorialIssueEvents;
+  editorial_roles: EditorialRoles;
 }
