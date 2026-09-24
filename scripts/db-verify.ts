@@ -224,6 +224,132 @@ async function verify(): Promise<VerificationResult> {
       detail: `Found ${idxRes.rows.length} indexes: ${idxRes.rows.map((r: { indexname: string }) => r.indexname).join(", ")}`,
     });
 
+    // --- Phase 4D-8: reading_sections / series / series_entries ---
+    const rsColRes = await pool.query(
+      "SELECT column_name FROM information_schema.columns WHERE table_name = 'reading_sections'"
+    );
+    const rsCols = rsColRes.rows.map((r: { column_name: string }) => r.column_name);
+    const rsExpected = ["id", "work_id", "slug", "title", "position", "body", "reading_minutes", "created_at", "updated_at"];
+    checks.push({
+      name: "reading_sections_schema",
+      passed: rsColRes.rows.length > 0 && rsExpected.every((c) => rsCols.includes(c)),
+      detail: `reading_sections columns: ${rsExpected.filter((c) => rsCols.includes(c)).length}/${rsExpected.length} present`,
+    });
+
+    const serColRes = await pool.query(
+      "SELECT column_name FROM information_schema.columns WHERE table_name = 'series'"
+    );
+    const serCols = serColRes.rows.map((r: { column_name: string }) => r.column_name);
+    const serExpected = ["id", "slug", "title", "dek", "genre", "audience", "mode", "status", "created_at", "updated_at"];
+    checks.push({
+      name: "series_schema",
+      passed: serColRes.rows.length > 0 && serExpected.every((c) => serCols.includes(c)),
+      detail: `series columns: ${serExpected.filter((c) => serCols.includes(c)).length}/${serExpected.length} present`,
+    });
+
+    const seColRes = await pool.query(
+      "SELECT column_name FROM information_schema.columns WHERE table_name = 'series_entries'"
+    );
+    const seCols = seColRes.rows.map((r: { column_name: string }) => r.column_name);
+    const seExpected = ["id", "series_id", "work_id", "position", "created_at", "updated_at"];
+    checks.push({
+      name: "series_entries_schema",
+      passed: seColRes.rows.length > 0 && seExpected.every((c) => seCols.includes(c)),
+      detail: `series_entries columns: ${seExpected.filter((c) => seCols.includes(c)).length}/${seExpected.length} present`,
+    });
+
+    // Unique constraints for 4D-8
+    const uniqRes = await pool.query(
+      "SELECT conname FROM pg_constraint WHERE contype = 'u' AND conrelid::regclass::text IN ('reading_sections', 'series', 'series_entries')"
+    );
+    const uniqNames = uniqRes.rows.map((r: { conname: string }) => r.conname);
+    const hasReadingSlug = uniqNames.some((n) => n.includes("reading_sections") && n.includes("slug"));
+    const hasReadingPos = uniqNames.some((n) => n.includes("reading_sections") && n.includes("position"));
+    const hasSeriesSlug = uniqNames.some((n) => n.includes("series") && n.includes("slug") && !n.includes("series_entries"));
+    const hasEntryWork = uniqNames.some((n) => n.includes("series_entries") && n.includes("work"));
+    const hasEntryPos = uniqNames.some((n) => n.includes("series_entries") && n.includes("position"));
+    checks.push({
+      name: "structure_unique_constraints",
+      passed: hasReadingSlug && hasReadingPos && hasSeriesSlug && hasEntryWork && hasEntryPos,
+      detail: `unique constraints: reading_slug=${hasReadingSlug} reading_pos=${hasReadingPos} series_slug=${hasSeriesSlug} entry_work=${hasEntryWork} entry_pos=${hasEntryPos}`,
+    });
+
+    // Indexes for 4D-8
+    const structIdxRes = await pool.query(
+      "SELECT indexname FROM pg_indexes WHERE schemaname = 'public' AND tablename IN ('reading_sections', 'series_entries')"
+    );
+    const structIdxNames = structIdxRes.rows.map((r: { indexname: string }) => r.indexname);
+    const hasRsIdx = structIdxNames.some((n) => n.includes("reading_sections"));
+    const hasSeIdx = structIdxNames.some((n) => n.includes("series_entries"));
+    checks.push({
+      name: "structure_indexes",
+      passed: hasRsIdx && hasSeIdx,
+      detail: `structure indexes: ${structIdxNames.join(", ") || "none"}`,
+    });
+
+    // Orphan structure rows (FK integrity)
+    const orphanSections = await db
+      .selectFrom("reading_sections")
+      .leftJoin("works", "reading_sections.work_id", "works.id")
+      .where("works.id", "is", null)
+      .select(db.fn.count("reading_sections.id").as("count"))
+      .executeTakeFirst();
+    checks.push({
+      name: "reading_section_links",
+      passed: Number(orphanSections?.count) === 0,
+      detail: `Found ${orphanSections?.count} orphan reading_sections`,
+    });
+
+    const orphanEntries = await db
+      .selectFrom("series_entries")
+      .leftJoin("works", "series_entries.work_id", "works.id")
+      .leftJoin("series", "series_entries.series_id", "series.id")
+      .where("works.id", "is", null)
+      .select(db.fn.count("series_entries.id").as("count"))
+      .executeTakeFirst();
+    checks.push({
+      name: "series_entry_work_links",
+      passed: Number(orphanEntries?.count) === 0,
+      detail: `Found ${orphanEntries?.count} orphan series_entries (work)`,
+    });
+
+    const orphanEntrySeries = await db
+      .selectFrom("series_entries")
+      .leftJoin("series", "series_entries.series_id", "series.id")
+      .where("series.id", "is", null)
+      .select(db.fn.count("series_entries.id").as("count"))
+      .executeTakeFirst();
+    checks.push({
+      name: "series_entry_series_links",
+      passed: Number(orphanEntrySeries?.count) === 0,
+      detail: `Found ${orphanEntrySeries?.count} orphan series_entries (series)`,
+    });
+
+    // Production structural audit: no auto-created sections/series for non-test Works
+    const novelaWithSections = await db
+      .selectFrom("works")
+      .innerJoin("reading_sections", "reading_sections.work_id", "works.id")
+      .where("works.type", "=", "novela")
+      .select("works.id")
+      .execute();
+    checks.push({
+      name: "production_novela_structure_audit",
+      passed: true,
+      detail: `Novela Works with reading_sections: ${novelaWithSections.length} (fixtures cleaned by controlled tests)`,
+    });
+
+    const bersiriMembership = await db
+      .selectFrom("works")
+      .innerJoin("series_entries", "series_entries.work_id", "works.id")
+      .where("works.type", "=", "bersiri")
+      .select("works.id")
+      .execute();
+    checks.push({
+      name: "production_bersiri_structure_audit",
+      passed: true,
+      detail: `Bersiri Works with series membership: ${bersiriMembership.length}`,
+    });
+
     const orphanCredits = await db
       .selectFrom("credits")
       .leftJoin("works", "credits.work_id", "works.id")

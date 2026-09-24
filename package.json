@@ -17,7 +17,11 @@
     "test": "npx tsx __tests__/visual-generation.test.ts && npx tsx __tests__/visual-hardening.test.ts && npx tsx __tests__/generation-orchestration.test.ts && npx tsx __tests__/identity-privacy.test.ts && npx tsx __tests__/promotion-workflow.test.ts && npx tsx __tests__/publication-pipeline.test.ts",
     "audit:readiness": "npx tsx scripts/publication-readiness-audit.ts",
     "test:controlled-publish": "npx tsx scripts/controlled-publication-test.ts",
-    "test:source-rights": "npx tsx scripts/controlled-source-rights-test.ts"
+    "test:source-rights": "npx tsx scripts/controlled-source-rights-test.ts",
+    "test:controlled-novela": "npx tsx scripts/controlled-novela-test.ts",
+    "test:controlled-continuous": "npx tsx scripts/controlled-continuous-series-test.ts",
+    "test:controlled-anthology": "npx tsx scripts/controlled-anthology-test.ts",
+    "test:structure": "npx tsx scripts/controlled-novela-test.ts && npx tsx scripts/controlled-continuous-series-test.ts && npx tsx scripts/controlled-anthology-test.ts"
   },
   "dependencies": {
     "gray-matter": "^4.0.3",

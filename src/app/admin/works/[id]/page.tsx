@@ -55,7 +55,7 @@ interface ReadinessData {
   ready: boolean;
   blockers: ReadinessIssue[];
   warnings: ReadinessIssue[];
-  gates: Record<"content" | "credits" | "visuals" | "privacy" | "rights" | "workflow", ReadinessGate>;
+  gates: Record<"content" | "credits" | "visuals" | "privacy" | "rights" | "structure" | "workflow", ReadinessGate>;
   checkedAt: string;
 }
 
@@ -97,7 +97,17 @@ interface GlossaryData {
   sort_order: number;
 }
 
-type Tab = "content" | "metadata" | "credits" | "visuals" | "glossary" | "source";
+type Tab = "content" | "metadata" | "sections" | "credits" | "visuals" | "glossary" | "source";
+
+interface SectionData {
+  id: number;
+  work_id: string;
+  slug: string;
+  title: string | null;
+  position: number;
+  body: string;
+  reading_minutes: number | null;
+}
 
 const DERIVATIVE_TYPES = new Set(["terjemahan", "fragmen", "sinopsis"]);
 
@@ -180,6 +190,11 @@ export default function EditWorkPage() {
   const [editingGlossary, setEditingGlossary] = useState<Partial<GlossaryData> | null>(null);
   const [glossaryError, setGlossaryError] = useState<string | null>(null);
 
+  const [sections, setSections] = useState<SectionData[]>([]);
+  const [editingSection, setEditingSection] = useState<Partial<SectionData> | null>(null);
+  const [sectionError, setSectionError] = useState<string | null>(null);
+  const [sectionSuccess, setSectionSuccess] = useState<string | null>(null);
+
   const [publishPreview, setPublishPreview] = useState<{
     isNew: boolean;
     currentExists: boolean;
@@ -247,7 +262,94 @@ export default function EditWorkPage() {
     loadGlossary();
     loadReadiness();
     loadSourceRights();
+    loadSections();
   }, [workId]);
+
+  async function loadSections() {
+    try {
+      const res = await fetch(`/api/admin/works/${workId}/sections`);
+      if (res.ok) {
+        setSections(await res.json());
+      }
+    } catch {
+      // Ignore section loading errors
+    }
+  }
+
+  async function handleSaveSection() {
+    if (!editingSection) return;
+    setSectionError(null);
+    setSectionSuccess(null);
+    try {
+      if (editingSection.id) {
+        const res = await fetch(`/api/admin/works/${workId}/sections/${editingSection.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(editingSection),
+        });
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.error || "Gagal menyimpan bahagian.");
+        }
+      } else {
+        const res = await fetch(`/api/admin/works/${workId}/sections`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(editingSection),
+        });
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.error || "Gagal mencipta bahagian.");
+        }
+      }
+      setEditingSection(null);
+      setSectionSuccess("Bahagian disimpan.");
+      await loadSections();
+      await loadReadiness();
+      setTimeout(() => setSectionSuccess(null), 4000);
+    } catch (err) {
+      setSectionError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+    }
+  }
+
+  async function handleDeleteSection(id: number) {
+    if (!confirm("Pasti ingin memadam bahagian ini? Susunan selebihnya akan dirapatkan.")) return;
+    setSectionError(null);
+    try {
+      const res = await fetch(`/api/admin/works/${workId}/sections/${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Gagal memadam bahagian.");
+      }
+      await loadSections();
+      await loadReadiness();
+    } catch (err) {
+      setSectionError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+    }
+  }
+
+  async function handleMoveSection(index: number, direction: -1 | 1) {
+    const ids = sections.map((s) => s.id);
+    const target = index + direction;
+    if (target < 0 || target >= ids.length) return;
+    [ids[index], ids[target]] = [ids[target]!, ids[index]!];
+    setSectionError(null);
+    try {
+      const res = await fetch(`/api/admin/works/${workId}/sections/reorder`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sectionIds: ids }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Gagal menyusun semula.");
+      }
+      await loadSections();
+      await loadReadiness();
+    } catch (err) {
+      setSectionError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+    }
+  }
 
   async function loadSourceRights() {
     setSourceLoading(true);
@@ -831,7 +933,7 @@ export default function EditWorkPage() {
               </span>
             </p>
             <div className="admin-form-row">
-              {(["content", "credits", "visuals", "privacy", "rights", "workflow"] as const).map((name) => {
+              {(["content", "credits", "visuals", "privacy", "rights", "structure", "workflow"] as const).map((name) => {
                 const gate = readiness.gates[name];
                 const labels: Record<string, string> = {
                   content: "Kandungan",
@@ -839,6 +941,7 @@ export default function EditWorkPage() {
                   visuals: "Visual",
                   privacy: "Privasi",
                   rights: "Hak",
+                  structure: "Struktur",
                   workflow: "Aliran kerja",
                 };
                 return (
@@ -918,6 +1021,14 @@ export default function EditWorkPage() {
         >
           Metadata
         </button>
+        {form.type === "novela" && (
+          <button
+            className={`admin-tab ${activeTab === "sections" ? "admin-tab-active" : ""}`}
+            onClick={() => setActiveTab("sections")}
+          >
+            Bahagian ({sections.length})
+          </button>
+        )}
         <button
           className={`admin-tab ${activeTab === "credits" ? "admin-tab-active" : ""}`}
           onClick={() => setActiveTab("credits")}
@@ -1103,6 +1214,149 @@ export default function EditWorkPage() {
             </button>
           </div>
         </form>
+      )}
+
+      {activeTab === "sections" && form.type === "novela" && (
+        <div className="admin-sections">
+          {sectionError && <div className="admin-alert admin-alert-error">{sectionError}</div>}
+          {sectionSuccess && <div className="admin-alert admin-alert-success">{sectionSuccess}</div>}
+
+          <div className="admin-credits-header">
+            <h3>Bahagian Novela</h3>
+            <button
+              type="button"
+              className="admin-btn admin-btn-sm admin-btn-primary"
+              onClick={() => setEditingSection({ slug: "", title: "", body: "" })}
+            >
+              + Tambah Bahagian
+            </button>
+          </div>
+          <p className="admin-form-hint">
+            Novela kekal satu Work. Bahagian ialah struktur dalaman — bukan karya berasingan.
+            Apabila bahagian wujud, ia menjadi struktur kanonik pembaca.
+          </p>
+
+          {editingSection && (
+            <div className="admin-credit-form">
+              <div className="admin-form-row">
+                <div className="admin-form-group">
+                  <label>Slug *</label>
+                  <input
+                    type="text"
+                    value={editingSection.slug || ""}
+                    onChange={(e) => setEditingSection((prev) => ({ ...prev, slug: e.target.value }))}
+                    placeholder="bab-satu"
+                  />
+                </div>
+                <div className="admin-form-group">
+                  <label>Tajuk bahagian</label>
+                  <input
+                    type="text"
+                    value={editingSection.title || ""}
+                    onChange={(e) => setEditingSection((prev) => ({ ...prev, title: e.target.value }))}
+                    placeholder="Bab Satu"
+                  />
+                </div>
+              </div>
+              <div className="admin-form-group">
+                <label>Body (Markdown) *</label>
+                <textarea
+                  value={editingSection.body || ""}
+                  onChange={(e) => setEditingSection((prev) => ({ ...prev, body: e.target.value }))}
+                  rows={12}
+                  className="admin-textarea"
+                />
+              </div>
+              <div className="admin-form-actions">
+                <button
+                  type="button"
+                  className="admin-btn admin-btn-outline"
+                  onClick={() => setEditingSection(null)}
+                >
+                  Batal
+                </button>
+                <button
+                  type="button"
+                  className="admin-btn admin-btn-primary"
+                  onClick={handleSaveSection}
+                >
+                  Simpan Bahagian
+                </button>
+              </div>
+            </div>
+          )}
+
+          {sections.length === 0 ? (
+            <p className="admin-table-empty">
+              Tiada bahagian — Novela menggunakan works.body sahaja sehingga bahagian ditambah.
+            </p>
+          ) : (
+            <div className="admin-table-wrap">
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Slug</th>
+                    <th>Tajuk</th>
+                    <th>Body</th>
+                    <th>Susunan</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sections.map((section, index) => (
+                    <tr key={section.id}>
+                      <td>Bahagian {section.position}</td>
+                      <td><code>{section.slug}</code></td>
+                      <td>{section.title || "—"}</td>
+                      <td>{section.body.length} aksara</td>
+                      <td>
+                        <div className="admin-table-actions">
+                          <button
+                            type="button"
+                            className="admin-btn admin-btn-sm"
+                            onClick={() => handleMoveSection(index, -1)}
+                            disabled={index === 0}
+                            aria-label={`Naikkan Bahagian ${section.position}`}
+                          >
+                            ↑
+                          </button>
+                          <button
+                            type="button"
+                            className="admin-btn admin-btn-sm"
+                            onClick={() => handleMoveSection(index, 1)}
+                            disabled={index === sections.length - 1}
+                            aria-label={`Turunkan Bahagian ${section.position}`}
+                          >
+                            ↓
+                          </button>
+                        </div>
+                      </td>
+                      <td>
+                        <div className="admin-table-actions">
+                          <button
+                            type="button"
+                            className="admin-btn admin-btn-sm"
+                            onClick={() => setEditingSection(section)}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            type="button"
+                            className="admin-btn admin-btn-sm admin-btn-danger"
+                            onClick={() => handleDeleteSection(section.id)}
+                          >
+                            Padam
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
       )}
 
       {activeTab === "credits" && (

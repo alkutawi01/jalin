@@ -21,20 +21,26 @@ import type {
   StoryInfoData,
   WorkMetaRow
 } from "../../../../components/reader/types";
-import type { WorkType } from "../../../../lib/content/types";
+import type { ReadingSection, WorkType } from "../../../../lib/content/types";
 
 export const dynamicParams = false;
 
 export async function generateStaticParams() {
   const types: WorkType[] = ["cerpen", "novela", "terjemahan", "bersiri", "fragmen", "sinopsis"];
-  const params: { type: string; slug: string }[] = [];
+  const params: { type: string; slug: string; sectionSlug?: string }[] = [];
 
   const repo = await initContentRepository();
   const useRepo = repo.constructor.name === "DatabaseContentRepository";
 
   for (const type of types) {
+    if (type === "bersiri") continue; // nested/series routes own bersiri URLs
     const works = useRepo ? repo.getWorksByType(type) : getWorksByType(type);
     for (const work of works) {
+      if (type === "novela" && work.sections && work.sections.length > 0) {
+        for (const section of work.sections) {
+          params.push({ type, slug: work.slug, sectionSlug: section.slug });
+        }
+      }
       params.push({ type, slug: work.slug });
     }
   }
@@ -68,23 +74,16 @@ async function getWork(slug: string) {
   return getWorkBySlug(slug);
 }
 
-export default async function WorkPage({
-  params
-}: {
-  params: Promise<{ type: string; slug: string }>;
-}) {
-  const { type, slug } = await params;
-  const work = await getWork(slug);
-  if (!work || work.type !== type) {
-    notFound();
-  }
-
+function buildGlossary(work: Awaited<ReturnType<typeof getWork>>): GlossaryMap {
   const glossary: GlossaryMap = {};
-  for (const entry of work.glossary) {
+  for (const entry of work?.glossary ?? []) {
     glossary[entry.term] = { meaning: entry.meaning, source: entry.source };
   }
+  return glossary;
+}
 
-  const byline: BylineCredit[] = work.credits
+function buildByline(work: Awaited<ReturnType<typeof getWork>>): BylineCredit[] {
+  return (work?.credits ?? [])
     .filter((credit) => credit.byline)
     .map((credit) => {
       const display = getContributorDisplay(credit.slug);
@@ -94,11 +93,12 @@ export default async function WorkPage({
         href: `/penulis/${credit.slug}`
       };
     });
+}
 
-  const typeLabel = TYPE_LABELS[type] ?? type;
-
-  const workMeta: WorkMetaRow[] = [
-    { label: "Bentuk", value: typeLabel },
+function buildMetaRows(work: Awaited<ReturnType<typeof getWork>>): WorkMetaRow[] {
+  if (!work) return [];
+  return [
+    { label: "Bentuk", value: TYPE_LABELS[work.type] ?? work.type },
     { label: "Genre", value: work.genre ?? "Keluarga" },
     { label: "Bacaan", value: work.readingMinutes ? `± ${work.readingMinutes} min` : "—" },
     {
@@ -112,10 +112,10 @@ export default async function WorkPage({
     { label: "ID", value: work.id },
     { label: "Versi", value: work.version }
   ];
+}
 
-  const characters: CharacterMeta[] = work.metadata?.characters ?? [];
-
-  const editorial: EditorialCredit[] = work.credits.map((credit) => {
+function buildEditorial(work: Awaited<ReturnType<typeof getWork>>): EditorialCredit[] {
+  return (work?.credits ?? []).map((credit) => {
     const display = getContributorDisplay(credit.slug);
     const label = credit.role === "initial_draft"
       ? "Penulis"
@@ -129,6 +129,119 @@ export default async function WorkPage({
       name: display.kind === "virtual" ? `${display.name} · Maya` : display.name
     };
   });
+}
+
+function SectionNav({
+  workSlug,
+  sections,
+  activeSlug
+}: {
+  workSlug: string;
+  sections: ReadingSection[];
+  activeSlug?: string;
+}) {
+  const currentIndex = activeSlug
+    ? sections.findIndex((s) => s.slug === activeSlug)
+    : 0;
+  const current = sections[currentIndex];
+  const prev = currentIndex > 0 ? sections[currentIndex - 1] : undefined;
+  const next = currentIndex < sections.length - 1 ? sections[currentIndex + 1] : undefined;
+
+  if (!current) return null;
+
+  return (
+    <nav className="site-shell section-nav" aria-label="Navigasi bahagian" style={{
+      maxWidth: "42rem",
+      margin: "0 auto 1.5rem",
+      padding: "0 1.25rem",
+      display: "flex",
+      flexWrap: "wrap",
+      gap: "0.75rem",
+      alignItems: "center",
+      justifyContent: "space-between",
+      fontSize: "0.9rem"
+    }}>
+      <span style={{ opacity: 0.75 }}>
+        Bahagian {currentIndex + 1} / {sections.length}
+        {current.title ? ` · ${current.title}` : ""}
+      </span>
+      <span style={{ display: "flex", gap: "0.75rem" }}>
+        {prev ? (
+          <a href={`/kategori/novela/${workSlug}/${prev.slug}`} rel="prev">
+            ← Sebelumnya
+          </a>
+        ) : (
+          <span style={{ opacity: 0.4 }} aria-disabled="true">← Sebelumnya</span>
+        )}
+        <a href={`/kategori/novela/${workSlug}`} aria-label="Indeks bahagian">
+          Indeks
+        </a>
+        {next ? (
+          <a href={`/kategori/novela/${workSlug}/${next.slug}`} rel="next">
+            Seterusnya →
+          </a>
+        ) : (
+          <span style={{ opacity: 0.4 }} aria-disabled="true">Seterusnya →</span>
+        )}
+      </span>
+    </nav>
+  );
+}
+
+function SectionIndex({
+  workSlug,
+  sections
+}: {
+  workSlug: string;
+  sections: ReadingSection[];
+}) {
+  if (sections.length === 0) return null;
+  return (
+    <nav className="site-shell section-index" aria-label="Indeks bahagian" style={{
+      maxWidth: "42rem",
+      margin: "0 auto 1.5rem",
+      padding: "0 1.25rem"
+    }}>
+      <p style={{ fontSize: "0.8rem", letterSpacing: "0.06em", textTransform: "uppercase", opacity: 0.7, marginBottom: "0.5rem" }}>
+        Bahagian ({sections.length})
+      </p>
+      <ol style={{ margin: 0, paddingLeft: "1.25rem" }}>
+        {sections.map((section) => (
+          <li key={section.slug} style={{ marginBottom: "0.25rem" }}>
+            <a href={`/kategori/novela/${workSlug}/${section.slug}`}>
+              {section.title || section.slug}
+            </a>
+          </li>
+        ))}
+      </ol>
+    </nav>
+  );
+}
+
+export default async function WorkPage({
+  params
+}: {
+  params: Promise<{ type: string; slug: string; sectionSlug?: string }>;
+}) {
+  const { type, slug, sectionSlug } = await params;
+
+  // Bersiri nested episodes live at /kategori/bersiri/[seriesSlug]/[episodeSlug].
+  // Flat /kategori/bersiri/[slug] is handled by the static series route (redirect).
+  if (type === "bersiri") {
+    notFound();
+  }
+
+  const work = await getWork(slug);
+  if (!work || work.type !== type) {
+    notFound();
+  }
+
+  const glossary = buildGlossary(work);
+  const byline = buildByline(work);
+  const typeLabel = TYPE_LABELS[type] ?? type;
+  const workMeta = buildMetaRows(work);
+  const characters: CharacterMeta[] = work.metadata?.characters ?? [];
+  const editorial = buildEditorial(work);
 
   const mobileInfo: StoryInfoData = {
     work: workMeta,
@@ -138,12 +251,26 @@ export default async function WorkPage({
   };
 
   const rights = `${work.title.toUpperCase()} · © ADJUNG ${(work.publishedAt ?? "2026").slice(0, 4)} · ILUSTRASI JALIN`;
-
   const hero = work.visuals.find((visual) => visual.role === "hero");
   const inlineVisuals = work.visuals.filter((visual) => visual.anchor);
 
-  let remaining = work.body;
+  const sections = work.sections && work.sections.length > 0 ? work.sections : [];
+  let activeSection: ReadingSection | undefined;
+  let bodyToRender = work.body;
+
+  if (sections.length > 0) {
+    if (sectionSlug) {
+      activeSection = sections.find((s) => s.slug === sectionSlug);
+      if (!activeSection) notFound();
+      bodyToRender = activeSection.body;
+    } else {
+      activeSection = sections[0];
+      bodyToRender = activeSection.body;
+    }
+  }
+
   const segmentNodes: (string | { visual: (typeof work.visuals)[number] })[] = [];
+  let remaining = bodyToRender;
   for (const visual of inlineVisuals) {
     const [before, after] = splitBody(remaining, visual.anchor ?? "", visual.place ?? "after");
     segmentNodes.push(before);
@@ -173,6 +300,18 @@ export default async function WorkPage({
           />
         </div>
 
+        {sections.length > 0 && !sectionSlug && (
+          <SectionIndex workSlug={work.slug} sections={sections} />
+        )}
+
+        {sections.length > 0 && (
+          <SectionNav
+            workSlug={work.slug}
+            sections={sections}
+            activeSlug={activeSection?.slug}
+          />
+        )}
+
         <div className="site-shell reading-grid">
           <LeftRail
             rows={workMeta}
@@ -180,6 +319,11 @@ export default async function WorkPage({
           />
 
           <article className="story-body">
+            {sectionSlug && activeSection?.title && (
+              <h2 style={{ fontSize: "1.25rem", marginBottom: "1rem" }}>
+                {activeSection.title}
+              </h2>
+            )}
             {segmentNodes.map((node, index) => {
               if (typeof node === "string") {
                 return (
@@ -204,6 +348,14 @@ export default async function WorkPage({
 
           <RightRail characters={characters} editorial={editorial} />
         </div>
+
+        {sections.length > 0 && (
+          <SectionNav
+            workSlug={work.slug}
+            sections={sections}
+            activeSlug={activeSection?.slug}
+          />
+        )}
 
         <StoryEnd title={work.title} />
 

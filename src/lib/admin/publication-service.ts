@@ -88,20 +88,30 @@ async function loadReadinessInput(
   const glossaryQ = db.selectFrom("glossary_terms").where("work_id", "=", workId).selectAll();
   const vrQ = db.selectFrom("visual_requests").where("work_id", "=", workId).selectAll();
   const srcQ = db.selectFrom("source_works").where("work_id", "=", workId).selectAll();
+  const sectionsQ = db.selectFrom("reading_sections").where("work_id", "=", workId).selectAll().orderBy("position", "asc");
+  const seriesEntryQ = db.selectFrom("series_entries").where("work_id", "=", workId).selectAll().orderBy("position", "asc");
   const slugQ = db
     .selectFrom("works")
     .where("slug", "=", work.slug)
     .where("id", "!=", workId)
     .select("id");
 
-  const [credits, visuals, glossary, visualRequests, sourceWork, slugDup] = await Promise.all([
+  const [credits, visuals, glossary, visualRequests, sourceWork, readingSections, seriesEntryRows, slugDup] = await Promise.all([
     (lock ? creditsQ.forUpdate() : creditsQ).execute(),
     (lock ? visualsQ.forUpdate() : visualsQ).execute(),
     (lock ? glossaryQ.forUpdate() : glossaryQ).execute(),
     (lock ? vrQ.forUpdate() : vrQ).execute(),
     (lock ? srcQ.forUpdate() : srcQ).executeTakeFirst(),
+    (lock ? sectionsQ.forUpdate() : sectionsQ).execute(),
+    (lock ? seriesEntryQ.forUpdate() : seriesEntryQ).execute(),
     (lock ? slugQ.forUpdate() : slugQ).executeTakeFirst(),
   ]);
+
+  const seriesEntry = seriesEntryRows.length > 0 ? seriesEntryRows[0] : null;
+  let series: Awaited<ReturnType<typeof loadSeriesRow>> = null;
+  if (seriesEntry) {
+    series = await loadSeriesRow(db, String(seriesEntry.series_id), lock);
+  }
 
   // Lock only contributors referenced by this Work's credits (FOR SHARE blocks delete).
   const referencedSlugs = [
@@ -165,8 +175,43 @@ async function loadReadinessInput(
           approved_material_hash: sourceWork.approved_material_hash,
         }
       : null,
+    readingSections: readingSections.map((s) => ({
+      id: s.id,
+      work_id: String(s.work_id),
+      slug: String(s.slug),
+      title: s.title,
+      position: s.position,
+      body: String(s.body ?? ""),
+      reading_minutes: s.reading_minutes,
+    })),
+    seriesEntry: seriesEntry
+      ? {
+          id: seriesEntry.id,
+          series_id: String(seriesEntry.series_id),
+          work_id: String(seriesEntry.work_id),
+          position: seriesEntry.position,
+        }
+      : null,
+    series,
     knownContributorSlugs: new Set(contributors.map((c) => String(c.slug))),
     slugTakenByOther: Boolean(slugDup),
+  };
+}
+
+async function loadSeriesRow(
+  db: Kysely<Database> | Transaction<Database>,
+  seriesId: string,
+  lock: boolean
+) {
+  const q = db.selectFrom("series").where("id", "=", seriesId).selectAll();
+  const row = await (lock ? q.forUpdate() : q).executeTakeFirst();
+  if (!row) return null;
+  return {
+    id: String(row.id),
+    slug: String(row.slug),
+    title: String(row.title),
+    mode: String(row.mode),
+    status: String(row.status),
   };
 }
 

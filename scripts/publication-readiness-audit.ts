@@ -20,10 +20,21 @@ async function main() {
   const glossary = await db.selectFrom("glossary_terms").selectAll().execute();
   const visualRequests = await db.selectFrom("visual_requests").selectAll().execute();
   const sources = await db.selectFrom("source_works").selectAll().execute();
+  const sections = await db.selectFrom("reading_sections").selectAll().execute();
+  const seriesEntries = await db.selectFrom("series_entries").selectAll().execute();
+  const seriesRows = await db.selectFrom("series").selectAll().execute();
   const contributors = await db.selectFrom("contributors").select("slug").execute();
   const known = new Set(contributors.map((c) => String(c.slug)));
 
   const sourcesByWork = new Map(sources.map((s) => [String(s.work_id), s]));
+  const sectionsByWork = new Map<string, typeof sections>();
+  for (const s of sections) {
+    const wid = String(s.work_id);
+    if (!sectionsByWork.has(wid)) sectionsByWork.set(wid, []);
+    sectionsByWork.get(wid)!.push(s);
+  }
+  const entryByWork = new Map(seriesEntries.map((e) => [String(e.work_id), e]));
+  const seriesById = new Map(seriesRows.map((s) => [String(s.id), s]));
 
   let publishedReady = 0;
   let publishedBlocked = 0;
@@ -73,6 +84,38 @@ async function main() {
             s.reviewed_at instanceof Date ? s.reviewed_at.toISOString() : s.reviewed_at,
           reviewed_by: s.reviewed_by,
           approved_material_hash: s.approved_material_hash,
+        };
+      })(),
+      readingSections: (sectionsByWork.get(String(work.id)) ?? []).map((s) => ({
+        id: Number(s.id),
+        work_id: String(s.work_id),
+        slug: String(s.slug),
+        title: s.title,
+        position: Number(s.position),
+        body: String(s.body ?? ""),
+        reading_minutes: s.reading_minutes,
+      })),
+      seriesEntry: (() => {
+        const e = entryByWork.get(String(work.id));
+        if (!e) return null;
+        return {
+          id: Number(e.id),
+          series_id: String(e.series_id),
+          work_id: String(e.work_id),
+          position: Number(e.position),
+        };
+      })(),
+      series: (() => {
+        const e = entryByWork.get(String(work.id));
+        if (!e) return null;
+        const s = seriesById.get(String(e.series_id));
+        if (!s) return null;
+        return {
+          id: String(s.id),
+          slug: String(s.slug),
+          title: String(s.title),
+          mode: String(s.mode),
+          status: String(s.status),
         };
       })(),
       knownContributorSlugs: known,

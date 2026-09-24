@@ -60,6 +60,37 @@ export interface ReaderMeta {
   note?: string;
 }
 
+/** Internal Novela reading section (structural unit of ONE Work). */
+export interface ReadingSection {
+  slug: string;
+  title?: string;
+  body: string;
+  position: number;
+  readingMinutes?: number;
+}
+
+/** Series container metadata (Bersiri). Series is NOT a Work. */
+export interface SeriesMeta {
+  id: string;
+  slug: string;
+  title: string;
+  dek?: string;
+  genre?: string;
+  audience?: string;
+  mode: "continuous" | "anthology";
+  status: "ongoing" | "completed";
+}
+
+/** Public series episode entry (only published episodes are exposed). */
+export interface SeriesEpisodeRef {
+  position: number;
+  slug: string;
+  title: string;
+  dek?: string;
+  publishedAt?: string;
+  readingMinutes?: number;
+}
+
 export interface Work {
   id: string;
   slug: string;
@@ -95,4 +126,10 @@ export interface Work {
   reader?: ReaderMeta;
 
   sourceWork?: SourceWorkRef;
+
+  /** Internal sections for Novela (canonical when non-empty). */
+  sections?: ReadingSection[];
+
+  /** Series membership for Bersiri episode Works. */
+  series?: SeriesMeta;
 }

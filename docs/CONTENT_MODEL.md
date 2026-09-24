@@ -37,39 +37,50 @@ Format: `JLN-{TYPE}-{NUMBER}` where:
 Example: `JLN-CER-0001`, `JLN-NOV-0001`
 
 ### Slug Format
-- Cerpen, Novela, Fragmen, Sinopsis: `/k/{slug}` (e.g. `/k/rumah`)
-- Bersiri episodes: `/k/{slug}` for each episode (e.g. `/k/cerita-hujan-ep1`)
+- Cerpen, Novela, Fragmen, Sinopsis: `/kategori/{type}/{slug}` (contoh: `/kategori/cerpen/rumah`)
+- Novela sections: `/kategori/novela/{workSlug}/{sectionSlug}` (canonical Work kekal `/kategori/novela/{workSlug}`)
+- Series landing: `/kategori/bersiri/{seriesSlug}`
+- Bersiri episod (canonical): `/kategori/bersiri/{seriesSlug}/{episodeSlug}`
+- Bersiri episod flat (backward-compat): `/kategori/bersiri/{episodeSlug}` → redirect ke nested
 
 ## Content body and pagination
 
 Cerpen, Novela, Sinopsis, Terjemahan dan Fragmen ialah **satu Work**, walaupun panjang.
 
-Body boleh dipecahkan secara teknikal kepada `ReadingSection` / `Page` untuk pagination dan progress.
+Body boleh dipecahkan secara teknikal kepada `ReadingSection` untuk pagination dan progress.
 
-### ReadingSection
+### ReadingSection (`reading_sections`)
 - id
 - work_id
-- sequence
+- slug (unik per Work; format lowercase-hyphen)
+- title: nullable
+- position (integer >= 1; unik per Work; contiguously 1..N)
 - body
-- page_label: nullable
-- estimated_read_minutes: nullable
+- reading_minutes: nullable
 
 Novela boleh mempunyai bab atau bahagian dalaman dalam ReadingSection, tetapi bab itu tidak menjadi Work berasingan.
+
+Jika sections kosong, `works.body` kekal struktur tunggal. Apabila sections wujud, ia menjadi struktur kanonik pembaca (sections take precedence).
 
 Pagination ialah presentation/read-state concern, bukan taxonomy kandungan.
 
 ## Bersiri
 
-### Series
+### Series (`series`)
 - id
-- slug
+- slug (unik)
 - title
-- synopsis
-- kind: continuous | anthology
+- dek / genre / audience: nullable
+- mode: continuous | anthology
 - status: ongoing | completed
-- hero_asset_id
 
-Setiap episod Bersiri direkodkan sebagai Work dengan `type: serial_episode` dan `series_id`.
+### SeriesEntry (`series_entries`)
+- id
+- series_id
+- work_id (unik — satu Work hanya dalam satu Series)
+- position (integer >= 1; unik per Series; contiguously 1..N)
+
+Setiap episod Bersiri direkodkan sebagai Work dengan `type: bersiri` dan keahlian melalui `series_entries`.
 
 Ini membolehkan setiap episod mempunyai:
 - URL sendiri;
@@ -77,6 +88,15 @@ Ini membolehkan setiap episod mempunyai:
 - glosari sendiri;
 - publish date sendiri;
 - progress sendiri.
+
+Penerbitan episod berlaku secara independen melalui Work status. Membership tidak pernah auto-publish.
+
+**Public eligibility:**
+- `continuous`: contiguous published prefix dari position 1 sahaja.
+- `anthology`: setiap episod published independently visible.
+- Zero eligible episodes → Series tidak discoverable.
+
+Lihat `docs/PHASE_4D_8_NOVELA_BERSIRI_STRUCTURE.md` untuk model penuh.
 
 ## EditorialRevision
 

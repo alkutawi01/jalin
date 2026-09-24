@@ -1,7 +1,7 @@
 import { SiteFooter, SiteHeader } from "../../../components/reader/StoryChrome";
 import { initContentRepository } from "../../../lib/content";
 import { getWorksByType } from "../../../lib/content/workLoader";
-import type { Work, WorkType } from "../../../lib/content/types";
+import type { SeriesMeta, Work, WorkType } from "../../../lib/content/types";
 import { notFound } from "next/navigation";
 
 const CATEGORY_META: Record<string, { title: string; intro: string; headerLabel: string }> = {
@@ -22,7 +22,7 @@ const CATEGORY_META: Record<string, { title: string; intro: string; headerLabel:
   },
   bersiri: {
     title: "Senarai Bersiri",
-    intro: "Karya bersiri berilustrasi untuk pembaca Jalin.",
+    intro: "Siri berilustrasi untuk pembaca Jalin — sambungan demi sambungan.",
     headerLabel: "Bersiri",
   },
   fragmen: {
@@ -37,9 +37,19 @@ const CATEGORY_META: Record<string, { title: string; intro: string; headerLabel:
   },
 };
 
+const MODE_LABELS: Record<string, string> = {
+  continuous: "Bersambung",
+  anthology: "Antologi",
+};
+
+const STATUS_LABELS: Record<string, string> = {
+  ongoing: "Berterusan",
+  completed: "Tamat",
+};
+
 function formatDate(date: string | undefined): string {
-  if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return "—";
-  const [year, month, day] = date.split("-").map(Number);
+  if (!date || !/^\d{4}-\d{2}-\d{2}/.test(date)) return "—";
+  const [year, month, day] = date.slice(0, 10).split("-").map(Number);
   const months = [
     "Januari", "Februari", "Mac", "April", "Mei", "Jun",
     "Julai", "Ogos", "September", "Oktober", "November", "Disember"
@@ -68,6 +78,25 @@ function WorkCard({ work, type }: { work: Work; type: string }) {
   );
 }
 
+function SeriesCard({ series, episodeCount }: { series: SeriesMeta; episodeCount: number }) {
+  return (
+    <article className="work-card">
+      <a href={`/kategori/bersiri/${series.slug}`}>
+        <div className="work-card-meta">
+          <span>
+            {MODE_LABELS[series.mode] ?? series.mode}
+            {series.genre ? ` · ${series.genre}` : ""}
+          </span>
+          <span>{STATUS_LABELS[series.status] ?? series.status}</span>
+          <span>{episodeCount} episod</span>
+        </div>
+        <h2 className="work-card-title">{series.title}</h2>
+        {series.dek ? <p className="work-card-dek">{series.dek}</p> : null}
+      </a>
+    </article>
+  );
+}
+
 async function getWorks(type: string): Promise<Work[]> {
   const repo = await initContentRepository();
   if (repo.constructor.name === "DatabaseContentRepository") {
@@ -80,6 +109,38 @@ export default async function CategoryPage({ params }: { params: Promise<{ type:
   const { type } = await params;
   const meta = CATEGORY_META[type];
   if (!meta) notFound();
+
+  const isDb =
+    (await initContentRepository()).constructor.name === "DatabaseContentRepository";
+
+  if (type === "bersiri" && isDb) {
+    const repo = await initContentRepository();
+    const seriesList = repo.getPublishedSeries();
+    return (
+      <>
+        <SiteHeader active="bersiri" />
+        <main>
+          <div className="site-shell">
+            <header className="category-head">
+              <p className="category-kicker">{meta.headerLabel}</p>
+              <h1>{meta.title}</h1>
+              <p className="category-intro">{meta.intro}</p>
+            </header>
+            <div className="work-list">
+              {seriesList.map((series) => (
+                <SeriesCard
+                  key={series.id}
+                  series={series}
+                  episodeCount={repo.getPublishedSeriesEpisodes(series.id).length}
+                />
+              ))}
+            </div>
+          </div>
+        </main>
+        <SiteFooter />
+      </>
+    );
+  }
 
   const works = (await getWorks(type)).sort((a, b) => {
     const aDate = a.updatedAt ?? a.publishedAt ?? "";

@@ -21,6 +21,7 @@ export default function AdminLayout({
           <nav className="admin-nav">
             <a href="/admin" className="admin-nav-link">Dashboard</a>
             <a href="/admin/works" className="admin-nav-link">Karya</a>
+            <a href="/admin/series" className="admin-nav-link">Siri</a>
             <a href="/admin/contributors" className="admin-nav-link">Penyumbang</a>
             <a href="/admin/submissions" className="admin-nav-link">Submissions</a>
             <a href="/admin/prompts" className="admin-nav-link">Prompt</a>

@@ -134,6 +134,32 @@ console.log("\n=== Readiness: missing body ===");
 }
 
 // ============================================================
+// 3b. Novela with sections + empty body → no body_missing
+// ============================================================
+console.log("\n=== Readiness: Novela sections replace body ===");
+{
+  const r = evaluatePublicationReadinessFromData(
+    validInput({
+      work: baseWork({ id: "JLN-NOV-0001", slug: "novela-uji", type: "novela", body: "" }),
+      glossary: [],
+      readingSections: [
+        {
+          id: 1,
+          work_id: "JLN-NOV-0001",
+          slug: "bab-satu",
+          title: "Bab Satu",
+          position: 1,
+          body: "Isi bab pertama.",
+          reading_minutes: 3,
+        },
+      ],
+    })
+  );
+  assert(!r.blockers.some((b) => b.code === "body_missing"), "body_missing not raised when sections present");
+  assert(r.gates.structure.pass, "structure gate passes with valid sections");
+}
+
+// ============================================================
 // 4. Invalid slug → blocker
 // ============================================================
 console.log("\n=== Readiness: invalid slug ===");
@@ -780,6 +806,267 @@ console.log("\n=== Source public serializer & URL validation (4D-7) ===");
   assert(!validateSourceUrl("file:///etc/passwd").ok, "file: rejected");
   assert(!validateSourceUrl("data:text/html,x").ok, "data: rejected");
   assert(!validateSourceUrl("not a url").ok, "invalid URL rejected");
+}
+
+// ============================================================
+// 20. Structure gate — Novela / Bersiri (Phase 4D-8)
+// ============================================================
+console.log("\n=== Structure gate (4D-8) ===");
+{
+  function section(overrides: Partial<NonNullable<EvaluatePublicationReadinessInput["readingSections"]>[number]> = {}) {
+    return {
+      id: 1,
+      work_id: "JLN-NOV-9991",
+      slug: "bab-satu",
+      title: "Bab Satu",
+      position: 1,
+      body: "Isi bab pertama yang panjang.",
+      reading_minutes: 3,
+      ...overrides,
+    };
+  }
+
+  // Cerpen with no structural expectation → structure passes
+  {
+    const r = evaluatePublicationReadinessFromData(validInput());
+    assert(r.gates.structure.pass, "Cerpen without sections: structure gate passes");
+  }
+
+  // Novela empty body + no sections → novela_no_structure
+  {
+    const r = evaluatePublicationReadinessFromData(
+      validInput({
+        work: baseWork({ id: "JLN-NOV-9991", slug: "novela-uji", type: "novela", body: "" }),
+        glossary: [],
+        readingSections: [],
+      })
+    );
+    assert(!r.gates.structure.pass, "Novela empty body + no sections fails structure");
+    assert(r.blockers.some((b) => b.code === "novela_no_structure"), "novela_no_structure blocker present");
+  }
+
+  // Novela with body only (no sections) → structure passes
+  {
+    const r = evaluatePublicationReadinessFromData(
+      validInput({
+        work: baseWork({ id: "JLN-NOV-9991", slug: "novela-uji", type: "novela" }),
+        glossary: [],
+        readingSections: [],
+      })
+    );
+    assert(r.gates.structure.pass, "Novela body-only: structure gate passes");
+  }
+
+  // Novela contiguous sections 1..3 + empty body → structure passes (warning expected)
+  {
+    const r = evaluatePublicationReadinessFromData(
+      validInput({
+        work: baseWork({ id: "JLN-NOV-9991", slug: "novela-uji", type: "novela", body: "" }),
+        glossary: [],
+        readingSections: [
+          section({ id: 1, position: 1, slug: "bab-satu" }),
+          section({ id: 2, position: 2, slug: "bab-dua" }),
+          section({ id: 3, position: 3, slug: "bab-tiga" }),
+        ],
+      })
+    );
+    assert(r.gates.structure.pass, "Novela contiguous 1..3 sections pass structure");
+    assert(
+      r.gates.structure.warnings.some((w) => w.code === "novela_sections_take_precedence"),
+      "empty body + sections produces novela_sections_take_precedence warning"
+    );
+  }
+
+  // Section position gap → section_position_gap
+  {
+    const r = evaluatePublicationReadinessFromData(
+      validInput({
+        work: baseWork({ id: "JLN-NOV-9991", slug: "novela-uji", type: "novela" }),
+        glossary: [],
+        readingSections: [
+          section({ id: 1, position: 1, slug: "bab-satu" }),
+          section({ id: 2, position: 3, slug: "bab-tiga" }),
+        ],
+      })
+    );
+    assert(!r.gates.structure.pass, "Position gap fails structure");
+    assert(r.blockers.some((b) => b.code === "section_position_gap"), "section_position_gap blocker present");
+  }
+
+  // Duplicate positions → section_position_duplicate
+  {
+    const r = evaluatePublicationReadinessFromData(
+      validInput({
+        work: baseWork({ id: "JLN-NOV-9991", slug: "novela-uji", type: "novela" }),
+        glossary: [],
+        readingSections: [
+          section({ id: 1, position: 1, slug: "bab-satu" }),
+          section({ id: 2, position: 1, slug: "bab-dua" }),
+        ],
+      })
+    );
+    assert(!r.gates.structure.pass, "Duplicate positions fail structure");
+    assert(r.blockers.some((b) => b.code === "section_position_duplicate"), "section_position_duplicate blocker present");
+  }
+
+  // Duplicate slugs → section_slug_duplicate
+  {
+    const r = evaluatePublicationReadinessFromData(
+      validInput({
+        work: baseWork({ id: "JLN-NOV-9991", slug: "novela-uji", type: "novela" }),
+        glossary: [],
+        readingSections: [
+          section({ id: 1, position: 1, slug: "bab" }),
+          section({ id: 2, position: 2, slug: "bab" }),
+        ],
+      })
+    );
+    assert(!r.gates.structure.pass, "Duplicate slugs fail structure");
+    assert(r.blockers.some((b) => b.code === "section_slug_duplicate"), "section_slug_duplicate blocker present");
+  }
+
+  // Invalid section slug → section_slug_invalid
+  {
+    const r = evaluatePublicationReadinessFromData(
+      validInput({
+        work: baseWork({ id: "JLN-NOV-9991", slug: "novela-uji", type: "novela" }),
+        glossary: [],
+        readingSections: [section({ id: 1, position: 1, slug: "Bab Satu!" })],
+      })
+    );
+    assert(!r.gates.structure.pass, "Invalid section slug fails structure");
+    assert(r.blockers.some((b) => b.code === "section_slug_invalid"), "section_slug_invalid blocker present");
+  }
+
+  // Empty section body → section_body_missing
+  {
+    const r = evaluatePublicationReadinessFromData(
+      validInput({
+        work: baseWork({ id: "JLN-NOV-9991", slug: "novela-uji", type: "novela" }),
+        glossary: [],
+        readingSections: [section({ id: 1, position: 1, slug: "bab-satu", body: "  " })],
+      })
+    );
+    assert(!r.gates.structure.pass, "Empty section body fails structure");
+    assert(r.blockers.some((b) => b.code === "section_body_missing"), "section_body_missing blocker present");
+  }
+
+  // Sections on non-novela → sections_only_novela
+  {
+    const r = evaluatePublicationReadinessFromData(
+      validInput({ readingSections: [section({ id: 1, position: 1, slug: "bab-satu" })] })
+    );
+    assert(!r.gates.structure.pass, "Sections on cerpen fail structure");
+    assert(r.blockers.some((b) => b.code === "sections_only_novela"), "sections_only_novela blocker present");
+  }
+
+  // Bersiri without series membership → series_membership_missing
+  {
+    const r = evaluatePublicationReadinessFromData(
+      validInput({
+        work: baseWork({ id: "JLN-BER-9991", slug: "ep-uji", type: "bersiri" }),
+        glossary: [],
+        seriesEntry: null,
+        series: null,
+      })
+    );
+    assert(!r.gates.structure.pass, "Bersiri without series membership fails structure");
+    assert(r.blockers.some((b) => b.code === "series_membership_missing"), "series_membership_missing blocker present");
+  }
+
+  // Bersiri with entry pointing at missing Series → series_missing
+  {
+    const r = evaluatePublicationReadinessFromData(
+      validInput({
+        work: baseWork({ id: "JLN-BER-9991", slug: "ep-uji", type: "bersiri" }),
+        glossary: [],
+        seriesEntry: { id: 1, series_id: "SER-missing", work_id: "JLN-BER-9991", position: 1 },
+        series: null,
+      })
+    );
+    assert(!r.gates.structure.pass, "Missing series container fails structure");
+    assert(r.blockers.some((b) => b.code === "series_missing"), "series_missing blocker present");
+  }
+
+  // Valid bersiri membership → structure passes
+  {
+    const r = evaluatePublicationReadinessFromData(
+      validInput({
+        work: baseWork({ id: "JLN-BER-9991", slug: "ep-uji", type: "bersiri" }),
+        glossary: [],
+        seriesEntry: { id: 1, series_id: "SER-1", work_id: "JLN-BER-9991", position: 1 },
+        series: { id: "SER-1", slug: "siri-uji", title: "Siri Uji", mode: "continuous", status: "ongoing" },
+      })
+    );
+    assert(r.gates.structure.pass, "Valid continuous membership passes structure");
+  }
+
+  // Invalid series mode → series_mode_invalid
+  {
+    const r = evaluatePublicationReadinessFromData(
+      validInput({
+        work: baseWork({ id: "JLN-BER-9991", slug: "ep-uji", type: "bersiri" }),
+        glossary: [],
+        seriesEntry: { id: 1, series_id: "SER-1", work_id: "JLN-BER-9991", position: 1 },
+        series: { id: "SER-1", slug: "siri-uji", title: "Siri Uji", mode: "bogus", status: "ongoing" },
+      })
+    );
+    assert(!r.gates.structure.pass, "Invalid series mode fails structure");
+    assert(r.blockers.some((b) => b.code === "series_mode_invalid"), "series_mode_invalid blocker present");
+  }
+
+  // Invalid series status → series_status_invalid
+  {
+    const r = evaluatePublicationReadinessFromData(
+      validInput({
+        work: baseWork({ id: "JLN-BER-9991", slug: "ep-uji", type: "bersiri" }),
+        glossary: [],
+        seriesEntry: { id: 1, series_id: "SER-1", work_id: "JLN-BER-9991", position: 1 },
+        series: { id: "SER-1", slug: "siri-uji", title: "Siri Uji", mode: "continuous", status: "bogus" },
+      })
+    );
+    assert(!r.gates.structure.pass, "Invalid series status fails structure");
+    assert(r.blockers.some((b) => b.code === "series_status_invalid"), "series_status_invalid blocker present");
+  }
+
+  // Episode position < 1 → series_position_invalid
+  {
+    const r = evaluatePublicationReadinessFromData(
+      validInput({
+        work: baseWork({ id: "JLN-BER-9991", slug: "ep-uji", type: "bersiri" }),
+        glossary: [],
+        seriesEntry: { id: 1, series_id: "SER-1", work_id: "JLN-BER-9991", position: 0 },
+        series: { id: "SER-1", slug: "siri-uji", title: "Siri Uji", mode: "continuous", status: "ongoing" },
+      })
+    );
+    assert(!r.gates.structure.pass, "Position 0 fails structure");
+    assert(r.blockers.some((b) => b.code === "series_position_invalid"), "series_position_invalid blocker present");
+  }
+
+  // Series entry on non-bersiri → series_entry_only_bersiri
+  {
+    const r = evaluatePublicationReadinessFromData(
+      validInput({
+        seriesEntry: { id: 1, series_id: "SER-1", work_id: "JLN-CER-0001", position: 1 },
+        series: { id: "SER-1", slug: "siri-uji", title: "Siri Uji", mode: "continuous", status: "ongoing" },
+      })
+    );
+    assert(!r.gates.structure.pass, "Series entry on cerpen fails structure");
+    assert(r.blockers.some((b) => b.code === "series_entry_only_bersiri"), "series_entry_only_bersiri blocker present");
+  }
+
+  // Anthology mode valid → structure passes
+  {
+    const r = evaluatePublicationReadinessFromData(
+      validInput({
+        work: baseWork({ id: "JLN-BER-9991", slug: "ep-uji", type: "bersiri" }),
+        glossary: [],
+        seriesEntry: { id: 1, series_id: "SER-1", work_id: "JLN-BER-9991", position: 2 },
+        series: { id: "SER-1", slug: "siri-uji", title: "Siri Uji", mode: "anthology", status: "completed" },
+      })
+    );
+    assert(r.gates.structure.pass, "Valid anthology membership passes structure");
+  }
 }
 
 console.log(`\n${passed} passed, ${failed} failed`);

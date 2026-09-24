@@ -1,4 +1,4 @@
-import type { Work, WorkType, ContributorRef, GlossaryEntry, VisualRef, EditorialRevision, SourceWorkRef } from "./types";
+import type { Work, WorkType, ContributorRef, GlossaryEntry, VisualRef, EditorialRevision, SourceWorkRef, ReadingSection, SeriesMeta, SeriesEpisodeRef } from "./types";
 import type { ContributorMeta } from "./contributors";
 import type { ContentRepository } from "./repository";
 import { getDb, hasDb } from "../db";
@@ -31,7 +31,9 @@ function mapWork(
   credits: ContributorRef[],
   visuals: VisualRef[],
   glossary: GlossaryEntry[],
-  sourceWork?: SourceWorkRef
+  sourceWork?: SourceWorkRef,
+  sections?: ReadingSection[],
+  series?: SeriesMeta
 ): Work {
   const editorialHistory: EditorialRevision[] = Array.isArray(row.editorial_history)
     ? row.editorial_history.map((h: any) => ({
@@ -63,13 +65,22 @@ function mapWork(
     metadata: undefined,
     reader: undefined,
     sourceWork,
+    sections: sections && sections.length > 0 ? sections : undefined,
+    series,
   };
 }
 
 export class DatabaseContentRepository implements ContentRepository {
   private enabled = false;
   private worksCache: Map<string, Work> = new Map();
+  private worksByIdCache: Map<string, Work> = new Map();
   private contributorsCache: Map<string, ContributorMeta> = new Map();
+  private sectionsByWorkId: Map<string, ReadingSection[]> = new Map();
+  private seriesCache: Map<string, SeriesMeta> = new Map();
+  private seriesBySlug: Map<string, SeriesMeta> = new Map();
+  private seriesEpisodes: Map<string, SeriesEpisodeRef[]> = new Map();
+  private workIdBySlug: Map<string, string> = new Map();
+  private seriesIdByWorkId: Map<string, string> = new Map();
   private loaded = false;
 
   constructor() {
@@ -91,6 +102,9 @@ export class DatabaseContentRepository implements ContentRepository {
     const dbGlossary = await db.selectFrom("glossary_terms").orderBy("sort_order", "asc").selectAll().execute();
     const dbContributors = await db.selectFrom("contributors").selectAll().execute();
     const dbSources = await db.selectFrom("source_works").selectAll().execute();
+    const dbSections = await db.selectFrom("reading_sections").orderBy("position", "asc").selectAll().execute();
+    const dbSeries = await db.selectFrom("series").selectAll().execute();
+    const dbEntries = await db.selectFrom("series_entries").orderBy("position", "asc").selectAll().execute();
 
     const sourcesByWork = new Map<string, SourceWorkRef>();
     for (const s of dbSources) {
@@ -141,18 +155,129 @@ export class DatabaseContentRepository implements ContentRepository {
       });
     }
 
+    for (const s of dbSections) {
+      const wid = String(s.work_id);
+      if (!this.sectionsByWorkId.has(wid)) this.sectionsByWorkId.set(wid, []);
+      this.sectionsByWorkId.get(wid)!.push({
+        slug: String(s.slug || ""),
+        title: s.title ? String(s.title) : undefined,
+        body: String(s.body || ""),
+        position: Number(s.position || 0),
+        readingMinutes: s.reading_minutes ? Number(s.reading_minutes) : undefined,
+      });
+    }
+
+    const worksById = new Map<string, any>();
+    for (const row of dbWorks) {
+      worksById.set(String(row.id), row);
+    }
+
+    for (const se of dbSeries) {
+      const meta: SeriesMeta = {
+        id: String(se.id),
+        slug: String(se.slug),
+        title: String(se.title),
+        dek: se.dek ? String(se.dek) : undefined,
+        genre: se.genre ? String(se.genre) : undefined,
+        audience: se.audience ? String(se.audience) : undefined,
+        mode: (String(se.mode) === "anthology" ? "anthology" : "continuous"),
+        status: (String(se.status) === "completed" ? "completed" : "ongoing"),
+      };
+      this.seriesCache.set(meta.id, meta);
+      this.seriesBySlug.set(meta.slug, meta);
+    }
+
+    const entriesBySeries = new Map<string, typeof dbEntries>();
+    for (const e of dbEntries) {
+      const sid = String(e.series_id);
+      if (!entriesBySeries.has(sid)) entriesBySeries.set(sid, []);
+      entriesBySeries.get(sid)!.push(e);
+      this.seriesIdByWorkId.set(String(e.work_id), sid);
+    }
+
     // Public repository: only published Works are discoverable.
     for (const row of dbWorks) {
       if (String(row.status || "") !== "published") continue;
       const wid = String(row.id);
+      const seriesMeta = this.seriesIdByWorkId.has(wid)
+        ? this.seriesCache.get(this.seriesIdByWorkId.get(wid)!)
+        : undefined;
       const work = mapWork(
         row,
         creditsByWork.get(wid) || [],
         visualsByWork.get(wid) || [],
         glossaryByWork.get(wid) || [],
         sourcesByWork.get(wid),
+        this.sectionsByWorkId.get(wid),
+        seriesMeta
       );
       this.worksCache.set(work.slug, work);
+      this.worksByIdCache.set(wid, work);
+      this.workIdBySlug.set(work.slug, wid);
+    }
+
+    // Build public series episode lists with eligibility rules.
+    for (const [seriesId, entries] of entriesBySeries) {
+      const seriesMeta = this.seriesCache.get(seriesId);
+      if (!seriesMeta) continue;
+      const episodes: SeriesEpisodeRef[] = [];
+      let publicEligible = false;
+
+      if (seriesMeta.mode === "continuous") {
+        // Contiguous published prefix from position 1 only.
+        for (const entry of entries) {
+          const row = worksById.get(String(entry.work_id));
+          if (!row || String(row.status) !== "published") break;
+          episodes.push({
+            position: entry.position,
+            slug: String(row.slug),
+            title: String(row.title),
+            dek: row.dek ? String(row.dek) : undefined,
+            publishedAt: row.published_at
+              ? new Date(row.published_at).toISOString()
+              : undefined,
+            readingMinutes: row.reading_minutes ? Number(row.reading_minutes) : undefined,
+          });
+          publicEligible = true;
+        }
+      } else {
+        // Anthology: all published episodes independently visible.
+        for (const entry of entries) {
+          const row = worksById.get(String(entry.work_id));
+          if (!row || String(row.status) !== "published") continue;
+          episodes.push({
+            position: entry.position,
+            slug: String(row.slug),
+            title: String(row.title),
+            dek: row.dek ? String(row.dek) : undefined,
+            publishedAt: row.published_at
+              ? new Date(row.published_at).toISOString()
+              : undefined,
+            readingMinutes: row.reading_minutes ? Number(row.reading_minutes) : undefined,
+          });
+          publicEligible = true;
+        }
+      }
+
+      if (publicEligible) {
+        this.seriesEpisodes.set(seriesId, episodes);
+      } else {
+        // Zero publicly eligible episodes → not discoverable.
+        this.seriesCache.delete(seriesId);
+        this.seriesBySlug.delete(seriesMeta.slug);
+      }
+    }
+
+    // Remove published episode Works that are not publicly eligible via their Series.
+    // (They remain reachable only if not type=bersiri; bersiri episodes require Series context.)
+    for (const [slug, work] of Array.from(this.worksCache.entries())) {
+      if (work.type !== "bersiri") continue;
+      const sid = this.seriesIdByWorkId.get(work.id);
+      if (!sid || !this.seriesCache.has(sid)) {
+        this.worksCache.delete(slug);
+        this.workIdBySlug.delete(slug);
+        this.worksByIdCache.delete(work.id);
+      }
     }
 
     for (const c of dbContributors) {
@@ -191,5 +316,35 @@ export class DatabaseContentRepository implements ContentRepository {
   getContributors(): ContributorMeta[] {
     if (!this.enabled) return [];
     return Array.from(this.contributorsCache.values());
+  }
+
+  getReadingSections(workId: string): ReadingSection[] {
+    if (!this.enabled) return [];
+    return this.sectionsByWorkId.get(workId) ?? [];
+  }
+
+  getPublishedSeries(): SeriesMeta[] {
+    if (!this.enabled) return [];
+    return Array.from(this.seriesCache.values());
+  }
+
+  getSeriesBySlug(slug: string): SeriesMeta | undefined {
+    if (!this.enabled) return undefined;
+    return this.seriesBySlug.get(slug);
+  }
+
+  getPublishedSeriesEpisodes(seriesId: string): SeriesEpisodeRef[] {
+    if (!this.enabled) return [];
+    return this.seriesEpisodes.get(seriesId) ?? [];
+  }
+
+  getEpisodeBySeriesAndSlug(seriesSlug: string, episodeSlug: string): Work | undefined {
+    if (!this.enabled) return undefined;
+    const series = this.seriesBySlug.get(seriesSlug);
+    if (!series) return undefined;
+    const episodes = this.seriesEpisodes.get(series.id) ?? [];
+    const match = episodes.find((e) => e.slug === episodeSlug);
+    if (!match) return undefined;
+    return this.worksCache.get(match.slug);
   }
 }

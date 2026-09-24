@@ -14,6 +14,7 @@ export type ReadinessGateName =
   | "visuals"
   | "privacy"
   | "rights"
+  | "structure"
   | "workflow";
 
 export interface ReadinessIssue {
@@ -107,6 +108,34 @@ export interface ReadinessSourceWorkInput {
   approved_material_hash: string | null;
 }
 
+/** reading_sections row shape for the structure gate. */
+export interface ReadinessSectionInput {
+  id: number;
+  work_id: string;
+  slug: string;
+  title: string | null;
+  position: number;
+  body: string;
+  reading_minutes: number | null;
+}
+
+/** series_entries membership row for the structure gate (Bersiri). */
+export interface ReadinessSeriesEntryInput {
+  id: number;
+  series_id: string;
+  work_id: string;
+  position: number;
+}
+
+/** series container row for the structure gate (null when Work has no Series). */
+export interface ReadinessSeriesInput {
+  id: string;
+  slug: string;
+  title: string;
+  mode: string;
+  status: string;
+}
+
 export interface EvaluatePublicationReadinessInput {
   work: ReadinessWorkInput;
   credits: ReadinessCreditInput[];
@@ -115,6 +144,12 @@ export interface EvaluatePublicationReadinessInput {
   visualRequests: ReadinessVisualRequestInput[];
   /** source_works row for this Work (derivative Works only need one). */
   sourceWork?: ReadinessSourceWorkInput | null;
+  /** reading_sections for this Work (Novela long-form structure). */
+  readingSections?: ReadinessSectionInput[];
+  /** series_entries membership for this Work (Bersiri episode). */
+  seriesEntry?: ReadinessSeriesEntryInput | null;
+  /** Series container for this Work's series_entry (null if none). */
+  series?: ReadinessSeriesInput | null;
   /** Contributor slugs that exist and are valid references. */
   knownContributorSlugs: Set<string>;
   /** True when another Work already owns this slug. */
@@ -297,6 +332,8 @@ export function evaluatePublicationReadinessFromData(
   const privacyWarnings: ReadinessIssue[] = [];
   const rightsBlockers: ReadinessIssue[] = [];
   const rightsWarnings: ReadinessIssue[] = [];
+  const structureBlockers: ReadinessIssue[] = [];
+  const structureWarnings: ReadinessIssue[] = [];
   const workflowBlockers: ReadinessIssue[] = [];
   const workflowWarnings: ReadinessIssue[] = [];
 
@@ -339,7 +376,10 @@ export function evaluatePublicationReadinessFromData(
       issue("type_invalid", `Jenis Work tidak sah: "${work.type}".`)
     );
   }
-  if (!work.body || !work.body.trim()) {
+  const bodyEmpty = !work.body || !work.body.trim();
+  const novelaWithSections =
+    String(work.type) === "novela" && (input.readingSections?.length ?? 0) > 0;
+  if (bodyEmpty && !novelaWithSections) {
     contentBlockers.push(issue("body_missing", "Manuskrip/body kosong."));
   }
   if (!work.dek || !work.dek.trim()) {
@@ -595,6 +635,139 @@ export function evaluatePublicationReadinessFromData(
     );
   }
 
+  // --- Structure (Novela sections / Bersiri Series membership) ---
+  const workType = String(work.type);
+  const readingSections = input.readingSections ?? [];
+  const seriesEntry = input.seriesEntry ?? null;
+  const series = input.series ?? null;
+
+  if (workType === "novela") {
+    // Novela may use works.body only OR reading_sections (sections take precedence).
+    const bodyEmpty = !work.body || !work.body.trim();
+    if (readingSections.length === 0) {
+      if (bodyEmpty) {
+        structureBlockers.push(
+          issue(
+            "novela_no_structure",
+            "Novela tiada reading_section dan body kosong — sediakan body atau sekurang-kurangnya satu bahagian."
+          )
+        );
+      }
+    } else {
+      const positions = readingSections.map((s) => s.position);
+      const uniquePositions = new Set(positions);
+      if (uniquePositions.size !== positions.length) {
+        structureBlockers.push(
+          issue("section_position_duplicate", "Reading section mempunyai position berulang.")
+        );
+      }
+      const sorted = [...positions].sort((a, b) => a - b);
+      for (let i = 0; i < sorted.length; i++) {
+        if (sorted[i] !== i + 1) {
+          structureBlockers.push(
+            issue(
+              "section_position_gap",
+              `Reading section position mesti bersebelahan 1..N (jumpa gap di ${sorted[i]}).`
+            )
+          );
+          break;
+        }
+      }
+      const slugs = readingSections.map((s) => s.slug);
+      const uniqueSlugs = new Set(slugs);
+      if (uniqueSlugs.size !== slugs.length) {
+        structureBlockers.push(
+          issue("section_slug_duplicate", "Reading section mempunyai slug berulang.")
+        );
+      }
+      for (const section of readingSections) {
+        if (!section.slug || !SLUG_RE.test(section.slug)) {
+          structureBlockers.push(
+            issue(
+              "section_slug_invalid",
+              `Reading section slug "${section.slug}" tidak sah.`
+            )
+          );
+        }
+        if (!section.body || !section.body.trim()) {
+          structureBlockers.push(
+            issue(
+              "section_body_missing",
+              `Reading section "${section.slug || section.id}" tiada body.`
+            )
+          );
+        }
+        if (section.position < 1) {
+          structureBlockers.push(
+            issue(
+              "section_position_invalid",
+              `Reading section "${section.slug || section.id}" position tidak sah.`
+            )
+          );
+        }
+      }
+      if (bodyEmpty) {
+        structureWarnings.push(
+          issue(
+            "novela_sections_take_precedence",
+            "Novela menggunakan reading_sections sebagai struktur kanonik (works.body kosong — dijangka)."
+          )
+        );
+      }
+    }
+  } else if (readingSections.length > 0 && workType !== "novela") {
+    structureBlockers.push(
+      issue(
+        "sections_only_novela",
+        `reading_sections hanya dibenarkan untuk Work type=novela (sekarang: "${workType}").`
+      )
+    );
+  }
+
+  if (workType === "bersiri") {
+    if (!seriesEntry) {
+      structureBlockers.push(
+        issue(
+          "series_membership_missing",
+          "Work type=bersiri mesti mempunyai keahlian series sebelum boleh diterbitkan."
+        )
+      );
+    } else if (!series) {
+      structureBlockers.push(
+        issue("series_missing", "series_entries merujuk Series yang tidak ditemui.")
+      );
+    } else {
+      if (seriesEntry.position < 1) {
+        structureBlockers.push(
+          issue("series_position_invalid", "Position episod dalam Series tidak sah (mesti >= 1).")
+        );
+      }
+      const mode = String(series.mode || "");
+      if (mode !== "continuous" && mode !== "anthology") {
+        structureBlockers.push(
+          issue("series_mode_invalid", `Mode Series tidak sah: "${mode}".`)
+        );
+      }
+      const seriesStatus = String(series.status || "");
+      if (seriesStatus !== "ongoing" && seriesStatus !== "completed") {
+        structureBlockers.push(
+          issue("series_status_invalid", `Status Series tidak sah: "${seriesStatus}".`)
+        );
+      }
+    }
+  } else if (seriesEntry && workType !== "bersiri") {
+    structureBlockers.push(
+      issue(
+        "series_entry_only_bersiri",
+        `Hanya Work type=bersiri boleh menjadi ahli Series (sekarang: "${workType}").`
+      )
+    );
+  }
+
+  if (workType !== "bersiri" && workType !== "novela" && readingSections.length === 0 && !seriesEntry) {
+    // No structural expectation for other types.
+  }
+
   // --- Workflow (visual request state relevant to publication) ---
   const attachedCreationIds = new Set(
     visuals.map((v) => v.creation_id).filter(Boolean) as string[]
@@ -665,6 +838,7 @@ export function evaluatePublicationReadinessFromData(
     visuals: finalizeGate(visualBlockers, visualWarnings),
     privacy: finalizeGate(privacyBlockers, privacyWarnings),
     rights: finalizeGate(rightsBlockers, rightsWarnings),
+    structure: finalizeGate(structureBlockers, structureWarnings),
     workflow: finalizeGate(workflowBlockers, workflowWarnings),
   };
 

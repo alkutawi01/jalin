@@ -295,6 +295,43 @@ export interface SourceWorks {
   updated_at: ColumnType<Date, string | Date, string | Date>;
 }
 
+export type SeriesMode = "continuous" | "anthology";
+export type SeriesStatus = "ongoing" | "completed";
+
+export interface ReadingSections {
+  id: Generated<number>;
+  work_id: string;
+  slug: string;
+  title: string | null;
+  position: number;
+  body: string;
+  reading_minutes: number | null;
+  created_at: ColumnType<Date, string | Date, string | Date>;
+  updated_at: ColumnType<Date, string | Date, string | Date>;
+}
+
+export interface Series {
+  id: string;
+  slug: string;
+  title: string;
+  dek: string | null;
+  genre: string | null;
+  audience: string | null;
+  mode: SeriesMode | string;
+  status: SeriesStatus | string;
+  created_at: ColumnType<Date, string | Date, string | Date>;
+  updated_at: ColumnType<Date, string | Date, string | Date>;
+}
+
+export interface SeriesEntries {
+  id: Generated<number>;
+  series_id: string;
+  work_id: string;
+  position: number;
+  created_at: ColumnType<Date, string | Date, string | Date>;
+  updated_at: ColumnType<Date, string | Date, string | Date>;
+}
+
 export interface Database {
   works: Works;
   contributors: Contributors;
@@ -307,4 +344,7 @@ export interface Database {
   visual_requests: VisualRequests;
   generation_requests: GenerationRequests;
   source_works: SourceWorks;
+  reading_sections: ReadingSections;
+  series: Series;
+  series_entries: SeriesEntries;
 }

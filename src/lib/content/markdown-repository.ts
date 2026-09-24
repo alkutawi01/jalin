@@ -1,4 +1,4 @@
-import type { Work, WorkType } from "./types";
+import type { Work, WorkType, ReadingSection, SeriesMeta, SeriesEpisodeRef } from "./types";
 import type { ContributorMeta } from "./contributors";
 import type { ContentRepository } from "./repository";
 import {
@@ -30,5 +30,25 @@ export class MarkdownContentRepository implements ContentRepository {
 
   getContributors(): ContributorMeta[] {
     return getContributors();
+  }
+
+  getReadingSections(_workId: string): ReadingSection[] {
+    return [];
+  }
+
+  getPublishedSeries(): SeriesMeta[] {
+    return [];
+  }
+
+  getSeriesBySlug(_slug: string): SeriesMeta | undefined {
+    return undefined;
+  }
+
+  getPublishedSeriesEpisodes(_seriesId: string): SeriesEpisodeRef[] {
+    return [];
+  }
+
+  getEpisodeBySeriesAndSlug(_seriesSlug: string, _episodeSlug: string): Work | undefined {
+    return undefined;
   }
 }

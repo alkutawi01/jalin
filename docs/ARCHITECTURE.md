@@ -38,7 +38,7 @@ Keperluan:
 
 Novela ialah stress-test utama pagination long-form. **Waktu Sebenar** ialah test corpus awal.
 
-Bersiri menggunakan satu Series dengan episod berasingan.
+Bersiri menggunakan satu Series dengan episod berasingan (setiap episod ialah Work type=bersiri). Lihat `docs/PHASE_4D_8_NOVELA_BERSIRI_STRUCTURE.md`.
 
 ## Credits & editorial history
 
