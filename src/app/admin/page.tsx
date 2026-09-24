@@ -116,7 +116,9 @@ export default async function AdminDashboard() {
       <section className="admin-section">
         <h2>Editorial Health</h2>
         {stats.editorialHealth ? (
-          <div className="admin-stats-grid">
+          <>
+            <p className="admin-section-meta">Last checked: {new Date().toLocaleString("ms-MY")}</p>
+            <div className="admin-stats-grid">
             <div className="admin-stat-card">
               <div className="admin-stat-label">Authors</div>
               <div className="admin-stat-value">{stats.editorialHealth.authors.status.toUpperCase()}</div>
@@ -162,6 +164,7 @@ export default async function AdminDashboard() {
               )}
             </div>
           </div>
+          </>
         ) : (
           <p>Editorial health data not available</p>
         )}

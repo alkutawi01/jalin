@@ -12,6 +12,17 @@ interface EditorialHealth {
   translations: HealthCategory;
 }
 
+interface EditorialReport {
+  generatedAt: string;
+  summary: {
+    authors: string;
+    revisions: string;
+    visuals: string;
+    translations: string;
+  };
+  issues: string[];
+}
+
 export async function getEditorialHealth(): Promise<EditorialHealth> {
   const db = getDb();
   
@@ -69,4 +80,26 @@ export async function getEditorialHealth(): Promise<EditorialHealth> {
   }
   
   return health;
+}
+
+export async function getEditorialReport(): Promise<EditorialReport> {
+  const health = await getEditorialHealth();
+  
+  const allIssues = [
+    ...health.authors.issues,
+    ...health.revisions.issues,
+    ...health.visuals.issues,
+    ...health.translations.issues,
+  ];
+  
+  return {
+    generatedAt: new Date().toISOString(),
+    summary: {
+      authors: health.authors.status,
+      revisions: health.revisions.status,
+      visuals: health.visuals.status,
+      translations: health.translations.status,
+    },
+    issues: allIssues,
+  };
 }
