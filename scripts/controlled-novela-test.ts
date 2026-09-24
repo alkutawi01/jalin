@@ -7,7 +7,9 @@
  * readiness → explicit publish → public multi-section data →
  * invalid concurrent section mutation → archive cleanup.
  *
- * Uses synthetic fixtures (Waktu Sebenar manuscript not present in repo).
+ * Uses synthetic fixtures. Waktu Sebenar structural test is in
+ * scripts/waktu-sebenar-structure-test.ts.
+ * Mid-publish race test is in scripts/controlled-novela-race-test.ts.
  * Never mutates existing production editorial Works.
  */
 import "dotenv/config";

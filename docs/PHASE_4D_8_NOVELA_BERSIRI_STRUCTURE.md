@@ -128,12 +128,16 @@ Admin preview (`/admin/works/[id]/preview`):
 
 ## Waktu Sebenar structural test approach
 
-Manuskrip Waktu Sebenar tidak ditemui dalam repo (`**/*waktu*` kosong).
-Fixture sintetik digunakan terlebih dahulu (`JLN-NOV-9998` etc.).
-Jika manuskrip dibekalkan kemudian: import ke dedicated non-public test Work,
-split mengikut struktur manuskrip eksplisit, preview/admin test, archive selepas verify.
-**Tidak boleh**: auto-public publish, rewrite prose, reka chapter structure AI
-sebagai canonical source structure.
+Manuskrip Waktu Sebenar tersedia di `content/manuscripts/Waktu_Sebenar_MASTER.txt`
+(sumber luaran, disalin daripada `C:\Users\manus\Downloads\Waktu_Sebenar_MASTER.txt`).
+Fail ini menamakan karya sebagai "novel penuh, versi Voice Pass" — Jalin
+menggunakannya hanya sebagai test corpus struktur panjang (structural corpus).
+
+Struktur sumber: 29 BAB eksplisit (BAB 1–29) + EPILOG. Tiada keputusan
+taksonomi/editorial dibuat dalam 4D-8. Teks tidak diubah. Tidak diterbitkan
+secara awam.
+
+Fixture sintetik juga digunakan untuk ujian terkawal (`JLN-NOV-9998` etc.).
 
 ## Verification
 
@@ -147,6 +151,10 @@ npm run audit:readiness
 npm run test:controlled-publish
 npm run test:source-rights
 npm run test:structure            # novela + continuous + anthology
+npm run test:novela-race          # 4D-8R: true mid-publish Novela race
+npm run test:bersiri-race         # 4D-8R: true mid-publish Bersiri race
+npm run test:waktu-sebenar        # 4D-8R: 29-BAB structural import
+npm run test:mobile-qa            # 4D-8R: viewport QA
 ```
 
 Magnific generations expected in 4D-8: **0**.

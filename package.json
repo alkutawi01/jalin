@@ -21,7 +21,12 @@
     "test:controlled-novela": "npx tsx scripts/controlled-novela-test.ts",
     "test:controlled-continuous": "npx tsx scripts/controlled-continuous-series-test.ts",
     "test:controlled-anthology": "npx tsx scripts/controlled-anthology-test.ts",
-    "test:structure": "npx tsx scripts/controlled-novela-test.ts && npx tsx scripts/controlled-continuous-series-test.ts && npx tsx scripts/controlled-anthology-test.ts"
+    "test:structure": "npx tsx scripts/controlled-novela-test.ts && npx tsx scripts/controlled-continuous-series-test.ts && npx tsx scripts/controlled-anthology-test.ts",
+    "test:novela-race": "npx tsx scripts/controlled-novela-race-test.ts",
+    "test:bersiri-race": "npx tsx scripts/controlled-bersiri-race-test.ts",
+    "test:waktu-sebenar": "npx tsx scripts/waktu-sebenar-structure-test.ts",
+    "test:mobile-qa": "npx tsx scripts/mobile-qa-test.ts",
+    "test:4d8r": "npx tsx scripts/controlled-novela-race-test.ts && npx tsx scripts/controlled-bersiri-race-test.ts && npx tsx scripts/waktu-sebenar-structure-test.ts && npx tsx scripts/mobile-qa-test.ts"
   },
   "dependencies": {
     "gray-matter": "^4.0.3",
@@ -38,6 +43,7 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "dotenv": "^18.0.3",
+    "playwright": "^1.63.0",
     "tsx": "^4.23.15",
     "typescript": "^5.7.0"
   }
