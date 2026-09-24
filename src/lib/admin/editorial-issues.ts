@@ -12,12 +12,13 @@ interface EditorialIssue {
   resolvedAt: string | null;
 }
 
-export async function syncEditorialIssues(): Promise<{ created: number; resolved: number }> {
+export async function syncEditorialIssues(): Promise<{ created: number; resolved: number; reopened: number }> {
   const db = getDb();
   const health = await getEditorialHealth();
   
   let created = 0;
   let resolved = 0;
+  let reopened = 0;
   
   // Process each category
   const categories = [
@@ -53,8 +54,8 @@ export async function syncEditorialIssues(): Promise<{ created: number; resolved
     } else {
       // Create issues for each problem
       for (const message of healthCategory.issues) {
-        // Check if issue already exists
-        const existing = await db
+        // Check if issue already exists (open OR resolved)
+        const existingOpen = await db
           .selectFrom("editorial_issues")
           .where("type", "=", category.name)
           .where("message", "=", message)
@@ -62,7 +63,33 @@ export async function syncEditorialIssues(): Promise<{ created: number; resolved
           .select("id")
           .executeTakeFirst();
         
-        if (!existing) {
+        if (existingOpen) {
+          // Issue already exists and is open - skip
+          continue;
+        }
+        
+        // Check if there's a resolved issue for the same problem
+        const existingResolved = await db
+          .selectFrom("editorial_issues")
+          .where("type", "=", category.name)
+          .where("message", "=", message)
+          .where("status", "=", "resolved")
+          .select("id")
+          .executeTakeFirst();
+        
+        if (existingResolved) {
+          // Reopen the resolved issue
+          await db
+            .updateTable("editorial_issues")
+            .where("id", "=", existingResolved.id)
+            .set({
+              status: "open",
+              resolved_at: null,
+            })
+            .execute();
+          reopened++;
+        } else {
+          // Create new issue
           const id = `issue_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
           await db
             .insertInto("editorial_issues")
@@ -82,7 +109,7 @@ export async function syncEditorialIssues(): Promise<{ created: number; resolved
     }
   }
   
-  return { created, resolved };
+  return { created, resolved, reopened };
 }
 
 export async function getEditorialIssues(status?: string): Promise<EditorialIssue[]> {
