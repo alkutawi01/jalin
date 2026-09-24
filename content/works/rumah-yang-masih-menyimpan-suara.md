@@ -11,7 +11,7 @@ updatedAt: '2026-09-25'
 dek: >-
   Sebuah kisah tentang seorang anak yang kembali ke rumah lama keluarganya dan
   menemukan bahawa sesetengah kenangan tidak pernah benar-benar pergi.
-readingMinutes: 12
+readingMinutes: 9
 metadata:
   characters:
     - name: "Aiman"
