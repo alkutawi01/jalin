@@ -6,6 +6,7 @@ import { getEditorialHealth } from "../../lib/admin/editorial-health";
 import { ExportReportButton } from "../../components/admin/ExportReportButton";
 import { EditorialAuditHistory } from "../../components/admin/EditorialAuditHistory";
 import { EditorialIssueQueue } from "../../components/admin/EditorialIssueQueue";
+import { EditorialWorkflowDashboard } from "../../components/admin/EditorialWorkflowDashboard";
 
 export const dynamic = "force-dynamic";
 
@@ -182,6 +183,11 @@ export default async function AdminDashboard() {
       <section className="admin-section">
         <h2>Editorial Issues</h2>
         <EditorialIssueQueue />
+      </section>
+
+      <section className="admin-section">
+        <h2>Editorial Workflow</h2>
+        <EditorialWorkflowDashboard />
       </section>
     </div>
   );
