@@ -5,6 +5,7 @@ import { getDb } from "../../lib/db";
 import { getEditorialHealth } from "../../lib/admin/editorial-health";
 import { ExportReportButton } from "../../components/admin/ExportReportButton";
 import { EditorialAuditHistory } from "../../components/admin/EditorialAuditHistory";
+import { EditorialIssueQueue } from "../../components/admin/EditorialIssueQueue";
 
 export const dynamic = "force-dynamic";
 
@@ -176,6 +177,11 @@ export default async function AdminDashboard() {
       <section className="admin-section">
         <h2>Audit History</h2>
         <EditorialAuditHistory />
+      </section>
+
+      <section className="admin-section">
+        <h2>Editorial Issues</h2>
+        <EditorialIssueQueue />
       </section>
     </div>
   );
