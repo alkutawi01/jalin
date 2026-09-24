@@ -6,7 +6,7 @@ type: cerpen
 status: review
 genre: Keluarga · Ingatan
 audience: 13-17
-version: v1.3
+version: v1.4
 updatedAt: '2026-09-24'
 dek: >-
   Sebuah kisah tentang seorang anak yang kembali ke rumah lama keluarganya dan
@@ -56,6 +56,13 @@ editorialHistory:
       Sesi editorial 2: menajamkan konflik jual rumah, merapikan garis masa,
       mengurangkan exposition dan monolog, serta membiarkan objek dan tindakan
       membawa payoff emosi dengan lebih tersirat.
+    date: '2026-09-24'
+  - version: v1.4
+    type: minor
+    summary: >-
+      Sesi editorial 3: membetulkan kesinambungan panggilan ejen, membuang
+      setup objek yang tidak berpayoff, dan mengurangkan penjelasan tematik
+      Mak Cik Salmah supaya resolusi kekal dipikul oleh tindakan watak utama.
     date: '2026-09-24'
 visuals:
   - role: hero
@@ -176,7 +183,7 @@ Di dalam sebuah kotak di dapur, Aiman menjumpai buku resipi Mak. Kulitnya sudah 
 
 “Dia kata nasi lemak ikut tangan orang yang memasak.”
 
-Aiman membuka halaman seterusnya. Di situ ada sekeping kertas kemerahan yang sudah lama tersepit, seperti nota kecil yang ditulis pada waktu malam. Dia tidak berani membukanya—bukan kerana takut, tetapi kerana kertas itu masih berbau sabun, seperti pernah disimpan dekat tempat Mak tidur.
+Aiman menutup buku itu dan meletakkannya ke dalam kotak barang simpanan.
 
 Mereka meninggalkan dapur dan berpindah ke bahagian belakang rumah untuk menyusun barang yang hendak dibuang. Di situ, berhampiran tempat Mak pernah menggantung kain langsir putih, Farid berhenti.
 
@@ -230,9 +237,9 @@ Ketika tengah hari, Mak Cik Salmah dari rumah sebelah datang meninjau sambil mem
 
 “Kami tengah susun barang,” kata Farid.
 
-Mak Cik Salmah mengangguk. Ketika hendak keluar, dia memandang sekejap ke arah bilik Mak. “Dulu lepas Subuh, mak kamu selalu duduk lama atas sejadah. Nama kamu berdua selalu dia sebut.”
+Mak Cik Salmah mengangguk. Ketika hendak keluar, dia memandang sekejap ke arah bilik Mak. “Dulu lepas Subuh, mak kamu selalu keluar siram bunga. Kalau nampak pasu mula layu, dia bising seorang diri.”
 
-Dia tidak menyambung. Aiman hanya mengangguk, dan Mak Cik Salmah menepuk lengannya sebelum pulang.
+Aiman tersenyum kecil, dan Mak Cik Salmah menepuk lengannya sebelum pulang.
 
 Mereka meneruskan kerja sepanjang petang, mengelap tingkap dan menutup bilik-bilik. Menjelang Asar, Farid duduk di beranda. Aiman duduk di sebelahnya.
 
@@ -270,7 +277,7 @@ Menjelang Maghrib, azan berkumandang dari masjid berdekatan. Bunyinya merentas k
 
 Mereka bersolat berjemaah di ruang tamu yang sama, dengan hembusan angin malam masuk melalui tingkap yang dibiarkan terbuka. Selepas selesai, Farid mencapai telefon di atas meja.
 
-“Esok aku telefon ejen,” katanya. “Aku minta dia tangguh seminggu.”
+“Sekarang aku telefon ejen,” katanya. “Aku minta dia tangguh seminggu.”
 
 Aiman mengangguk. Tidak ada lagi yang perlu diputuskan malam itu.
 
