@@ -115,14 +115,8 @@ glossary:
   - term: beranda
     meaning: Ruang terbuka atau beratap di hadapan rumah.
     source: Kamus Dewan Edisi Keempat
-  - term: kenangan
-    meaning: Sesuatu yang teringat atau tersimpan dalam ingatan.
-    source: Kamus Dewan Edisi Keempat
   - term: pusaka
     meaning: Harta atau peninggalan yang diwarisi daripada orang yang telah meninggal dunia.
-    source: Kamus Dewan Edisi Keempat
-  - term: reda
-    meaning: Menerima sesuatu dengan lapang hati dan tidak berasa keberatan.
     source: Kamus Dewan Edisi Keempat
 ---
 
