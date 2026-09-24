@@ -4,6 +4,7 @@ import { hasDb } from "../../lib/db";
 import { getDb } from "../../lib/db";
 import { getEditorialHealth } from "../../lib/admin/editorial-health";
 import { ExportReportButton } from "../../components/admin/ExportReportButton";
+import { EditorialAuditHistory } from "../../components/admin/EditorialAuditHistory";
 
 export const dynamic = "force-dynamic";
 
@@ -170,6 +171,11 @@ export default async function AdminDashboard() {
         ) : (
           <p>Editorial health data not available</p>
         )}
+      </section>
+
+      <section className="admin-section">
+        <h2>Audit History</h2>
+        <EditorialAuditHistory />
       </section>
     </div>
   );
