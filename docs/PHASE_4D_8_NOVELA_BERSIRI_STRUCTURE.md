@@ -128,12 +128,13 @@ Admin preview (`/admin/works/[id]/preview`):
 
 ## Waktu Sebenar structural test approach
 
-Manuskrip Waktu Sebenar tersedia di `content/manuscripts/Waktu_Sebenar_MASTER.txt`
-(sumber luaran, disalin daripada `C:\Users\manus\Downloads\Waktu_Sebenar_MASTER.txt`).
-Fail ini menamakan karya sebagai "novel penuh, versi Voice Pass" — Jalin
+Manuskrip Waktu Sebenar tersedia di `content/manuscripts/Waktu_Sebenar_Structural_Edit_v1.0.txt`
+(kanonik, Structural Edit v1.0).
+
+Fail ini menamakan karya sebagai "novel penuh, versi Structural Edit v1.0, disahkan bersama ChatGPT" — Jalin
 menggunakannya hanya sebagai test corpus struktur panjang (structural corpus).
 
-Struktur sumber: 29 BAB eksplisit (BAB 1–29) + EPILOG. Tiada keputusan
+Struktur sumber: 30 BAB eksplisit (BAB 1–30) + EPILOG = 31 total sections. Tiada keputusan
 taksonomi/editorial dibuat dalam 4D-8. Teks tidak diubah. Tidak diterbitkan
 secara awam.
 

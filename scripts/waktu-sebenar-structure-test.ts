@@ -1,11 +1,11 @@
 /**
  * Waktu Sebenar structural test (Phase 4D-8R).
  *
- * Import the Waktu Sebenar manuscript (29 BABs + EPILOG) into a dedicated
+ * Import the Waktu Sebenar manuscript (30 BABs + EPILOG = 31 sections) into a dedicated
  * NON-PUBLIC test Work. Verify structural integrity:
- * - exact reading_sections count
+ * - exact reading_sections count (31)
  * - positions 1..N contiguous
- * - slugs bab-1..bab-29 + epilog (no duplicates)
+ * - slugs bab-1..bab-30 + epilog (no duplicates)
  * - no empty section bodies
  * - section precedence over works.body
  * - ONE Work (not one Work per chapter)
@@ -13,8 +13,9 @@
  * - prev/next correct at boundaries
  * - no accidental publication
  *
- * Source: C:\Users\manus\Downloads\Waktu_Sebenar_MASTER.txt
- * Source self-label: "novel penuh, versi Voice Pass"
+ * Source: content/manuscripts/Waktu_Sebenar_Structural_Edit_v1.0.txt
+ * SHA-256: 676BB74284C8A1FF4B2D09FCC9494BE9505A4FCE7FD1C38009F4EC6EEE0F5E96
+ * Source self-label: "novel penuh, versi Structural Edit v1.0, disahkan bersama ChatGPT"
  * No taxonomy reclassification. No prose modification. No public publication.
  */
 import "dotenv/config";
