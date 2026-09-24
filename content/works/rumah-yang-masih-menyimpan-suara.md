@@ -6,7 +6,7 @@ type: cerpen
 status: review
 genre: Keluarga · Ingatan
 audience: 13-17
-version: v1.5
+version: v1.6
 updatedAt: '2026-09-24'
 dek: >-
   Sebuah kisah tentang seorang anak yang kembali ke rumah lama keluarganya dan
@@ -71,6 +71,12 @@ editorialHistory:
       seminggu, memadatkan vignette sentimental pertengahan, mengembalikan
       tekanan praktikal rumah, dan membuang penerangan tema serta dialog aforistik.
     date: '2026-09-24'
+  - version: v1.6
+    type: minor
+    summary: >-
+      Sesi editorial 5: menyelaraskan garis masa hari, memastikan penangguhan
+      ejen benar-benar berlaku dalam adegan, dan merapikan dialog awal yang janggal.
+    date: '2026-09-24'
 visuals:
   - role: hero
     src: /visuals/rumah-yang-masih-menyimpan-suara/hero.png
@@ -110,7 +116,7 @@ glossary:
 
 Aiman tidak pernah menyangka bahawa sebuah rumah boleh membuatkan seseorang berasa seperti sedang bertemu semula dengan manusia yang sudah tiada. Sudah berbulan-bulan dia tidak membuka pintu pagar rumah itu; bukan kerana dia membencinya, tetapi kerana terlalu banyak perkara masih tinggal di dalamnya. Ada rumah yang kosong kerana tidak berpenghuni. Ada juga rumah yang kosong kerana terlalu banyak perkara pernah hidup di dalamnya. Rumah lama keluarganya termasuk dalam jenis yang kedua.
 
-Petang itu, Aiman berdiri di hadapan pagar besi yang mula berkarat. Daun kering memenuhi halaman kecil yang dahulu disapu Mak setiap pagi. Sebelum matahari naik tinggi, Mak sudah berada di luar dengan penyapu di tangan. Aiman masih dapat membayangkan bunyi geserannya di atas simen—bunyi kecil yang dahulu tidak pernah dianggap penting, tetapi kini menjadi antara perkara yang paling dirinduinya.
+Pagi itu, Aiman berdiri di hadapan pagar besi yang mula berkarat. Daun kering memenuhi halaman kecil yang dahulu disapu Mak setiap pagi. Sebelum matahari naik tinggi, Mak sudah berada di luar dengan penyapu di tangan. Aiman masih dapat membayangkan bunyi geserannya di atas simen—bunyi kecil yang dahulu tidak pernah dianggap penting, tetapi kini menjadi antara perkara yang paling dirinduinya.
 
 Dia membuka pintu pagar perlahan-lahan. Rumah itu masih berdiri seperti dahulu: cat dindingnya sudah pudar, pasu bunga di hadapan tingkap tidak lagi dipenuhi warna, tetapi ruang tamu, beranda dan dapur kecil di belakang masih tersusun dalam bentuk yang dikenalnya. Semuanya seperti menunggu seseorang pulang.
 
@@ -154,7 +160,7 @@ Kerusi kayu di ruang tamu mengingatkannya kepada malam-malam ketika Mak menunggu
 
 Farid memandang jam itu. “Aku rasa kau yang selalu tak sempat tengok. Sebab tu kau lambat ke sekolah.”
 
-Aiman tersenyum pahit. “Kau pun sama. Kau tak pernah kira pinggan atas meja bila Mak suruh kemas.”
+Aiman tersenyum pahit. “Kau pun sama. Mak suruh angkat pinggan, kau selalu buat tak dengar.”
 
 Farid hampir ketawa. “Itu cerita lain.”
 
@@ -224,7 +230,7 @@ Aiman membuka laci meja, kemudian menutupnya semula. “Banyak benda yang aku ta
 
 Farid menjenguk ke arah lorong. “Jom. Lepas ni bumbung dapur.”
 
-Ketika tengah hari, Mak Cik Salmah dari rumah sebelah datang meninjau sambil membawa sepinggan kuih seri muka yang masih panas.
+Menjelang tengah hari, Mak Cik Salmah dari rumah sebelah datang meninjau sambil membawa sepinggan kuih seri muka yang masih panas.
 
 “Assalamualaikum, Aiman, Farid. Lama tak nampak muka.”
 
@@ -238,7 +244,7 @@ Mak Cik Salmah mengangguk. Ketika hendak keluar, dia memandang sekejap ke arah b
 
 Aiman tersenyum kecil, dan Mak Cik Salmah menepuk lengannya sebelum pulang.
 
-Mereka meneruskan kerja sepanjang petang, mengelap tingkap dan menutup bilik-bilik. Menjelang Asar, Farid duduk di beranda. Aiman duduk di sebelahnya.
+Selepas Mak Cik Salmah pulang, mereka meneruskan kerja hingga petang, mengelap tingkap dan menutup bilik-bilik. Menjelang Asar, Farid duduk di beranda. Aiman duduk di sebelahnya.
 
 “Aku ada satu benda nak tunjuk kau,” kata Aiman.
 
@@ -278,7 +284,9 @@ Mereka bersolat berjemaah di ruang tamu yang sama, dengan hembusan angin malam m
 
 Aiman mengangguk.
 
-Farid memasukkan telefon ke dalam poket. “Kau betul nak tidur sini malam ni?”
+Farid menekan nombor ejen dan berjalan ke hujung beranda. Panggilan itu singkat. “Ya, tangguh seminggu dulu. Saya hubungi semula hujung minggu depan.” Selepas menamatkan panggilan, dia memasukkan telefon ke dalam poket.
+
+“Kau betul nak tidur sini malam ni?”
 
 “Ya. Tilam bilik depan masih elok. Esok pagi aku mula dengan halaman.”
 
