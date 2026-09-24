@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { runEditorialAudit, syncEditorialIssuesAction } from "../../lib/admin/editorial-actions";
 
 interface DashboardData {
   health: {
@@ -23,20 +24,58 @@ interface DashboardData {
 export function EditorialWorkflowDashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [actionMessage, setActionMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
-  useEffect(() => {
+  const fetchData = () => {
+    setLoading(true);
     fetch("/api/admin/editorial-dashboard")
       .then(res => res.json())
       .then(setData)
       .catch(() => {})
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchData();
   }, []);
+
+  const handleRunAudit = async () => {
+    setActionMessage(null);
+    const result = await runEditorialAudit();
+    setActionMessage({ type: result.success ? "success" : "error", text: result.message });
+    if (result.success) fetchData();
+  };
+
+  const handleSyncIssues = async () => {
+    setActionMessage(null);
+    const result = await syncEditorialIssuesAction();
+    setActionMessage({ type: result.success ? "success" : "error", text: result.message });
+    if (result.success) fetchData();
+  };
 
   if (loading) return <p>Loading dashboard...</p>;
   if (!data) return <p>Dashboard data not available</p>;
 
   return (
     <div className="admin-workflow-dashboard">
+      <div className="admin-dashboard-actions">
+        <button onClick={handleRunAudit} className="admin-btn">
+          Run Audit
+        </button>
+        <button onClick={handleSyncIssues} className="admin-btn">
+          Sync Issues
+        </button>
+        <a href="/api/admin/editorial-report" target="_blank" className="admin-btn">
+          Export Report
+        </a>
+      </div>
+      
+      {actionMessage && (
+        <div className={`admin-action-message admin-${actionMessage.type}`}>
+          {actionMessage.text}
+        </div>
+      )}
+
       <div className="admin-dashboard-grid">
         <div className="admin-dashboard-section">
           <h3>Health</h3>
