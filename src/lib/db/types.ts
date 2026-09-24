@@ -373,6 +373,17 @@ export interface EditorialIssues {
   resolved_at: ColumnType<Date | null, string | Date | null, string | Date | null>;
 }
 
+export interface EditorialIssueEvents {
+  id: string;
+  issue_id: string;
+  action: string;
+  from_status: string | null;
+  to_status: string;
+  actor: string | null;
+  metadata_json: string | null;
+  created_at: ColumnType<Date, string | Date, string | Date>;
+}
+
 export interface Database {
   works: Works;
   contributors: Contributors;
@@ -391,4 +402,5 @@ export interface Database {
   work_revisions: WorkRevisions;
   editorial_audit_runs: EditorialAuditRuns;
   editorial_issues: EditorialIssues;
+  editorial_issue_events: EditorialIssueEvents;
 }

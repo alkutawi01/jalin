@@ -1,5 +1,6 @@
 import { getDb } from "../db";
 import { getEditorialHealth } from "./editorial-health";
+import { recordIssueEvent } from "./issue-events";
 
 interface EditorialIssue {
   id: string;
@@ -49,6 +50,7 @@ export async function syncEditorialIssues(): Promise<{ created: number; resolved
             resolved_at: new Date().toISOString(),
           })
           .execute();
+        await recordIssueEvent(issue.id, "resolve", "open", "resolved", "system");
         resolved++;
       }
     } else {
@@ -87,6 +89,7 @@ export async function syncEditorialIssues(): Promise<{ created: number; resolved
               resolved_at: null,
             })
             .execute();
+          await recordIssueEvent(existingResolved.id, "reopen", "resolved", "open", "system");
           reopened++;
         } else {
           // Create new issue
@@ -103,6 +106,7 @@ export async function syncEditorialIssues(): Promise<{ created: number; resolved
               created_at: new Date().toISOString(),
             })
             .execute();
+          await recordIssueEvent(id, "create", null, "open", "system");
           created++;
         }
       }
