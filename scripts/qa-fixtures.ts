@@ -1,15 +1,13 @@
 /**
- * Mobile QA setup: create temporary fixtures for 5 actual surfaces,
+ * Mobile QA setup: create published fixtures for actual public routes,
  * run viewport tests, then cleanup.
  *
- * Surfaces tested:
- * 1. Novela reader (via admin preview — same reader components)
- * 2. Bersiri landing (via admin series detail — same layout)
- * 3. Bersiri episode (via admin preview — same reader components)
- * 4. Admin Bahagian (works detail page)
- * 5. Admin Series detail (series detail page)
+ * Creates:
+ * 1. Published Novela with sections → /kategori/novela/[slug]
+ * 2. Published Series with episodes → /kategori/bersiri/[seriesSlug]
+ * 3. Published Bersiri episode → /kategori/bersiri/[seriesSlug]/[episodeSlug]
  *
- * Fixtures are cleaned up after test.
+ * Admin fixtures also created for Bahagian/Series detail tests.
  */
 import "dotenv/config";
 import { config } from "dotenv";
@@ -23,44 +21,64 @@ import {
 
 const NOV_ID = "JLN-NOV-9993";
 const NOV_SLUG = "uji-qa-novela";
-const SER_ID = "JLN-BER-9985";
 const SER_SLUG = "uji-qa-siri";
 const EP_ID = "JLN-BER-9986";
 const EP_SLUG = "uji-qa-ep1";
 
 export async function setupFixtures() {
-  if (!hasDb()) return;
+  if (!hasDb()) return null;
   const db = getDb();
   const now = new Date().toISOString();
 
-  // Cleanup first
   await cleanupFixtures();
 
-  // Create Novela with sections
+  // Create published Novela with sections
   await db.insertInto("works").values({
-    id: NOV_ID, slug: NOV_SLUG, title: "Uji QA Novela 4D-8R3",
-    type: "novela", status: "draft", body: "",
-    dek: "Fixture ujian QA.", genre: "Keluarga", audience: "remaja",
-    reading_minutes: 10, version: "v0.1",
+    id: NOV_ID, slug: NOV_SLUG, title: "Uji QA Novela 4D-8R4",
+    type: "novela", status: "published", body: "",
+    dek: "Fixture ujian QA — bukan untuk pembaca awam.", genre: "Keluarga",
+    audience: "remaja", reading_minutes: 10, version: "v0.1",
     editorial_history: JSON.stringify([]),
-    published_at: null, published_by: null,
+    published_at: now, published_by: "qa-test",
     updated_at: now, created_at: now,
   } as never).execute();
   await createSection({ workId: NOV_ID, slug: "bab-1", title: "Bab 1", body: "Isi bab pertama untuk ujian QA mobile." });
   await createSection({ workId: NOV_ID, slug: "bab-2", title: "Bab Dua", body: "Isi bab kedua untuk ujian QA mobile." });
 
-  // Create Bersiri episode
+  // Add credits + visual for publishability
+  await db.insertInto("credits").values({
+    work_id: NOV_ID, contributor_slug: null, guest_name: "Uji QA",
+    role_label: "Editor", byline: true, is_public: true, sort_order: 0,
+  } as never).execute();
+  await db.insertInto("visuals").values({
+    work_id: NOV_ID, role: "hero",
+    src: "https://br-nameless-boat-b3kp87fq.storage.c-4.ap-southeast-1.aws.neon.tech/jalin-visuals/assets/visuals/vr-999002-v1-3220fc78.png",
+    alt: "Ilustrasi ujian QA", provider: "magnific", creation_id: "smoke-qa",
+    place: "after", sort_order: 0, is_asset_finalized: true,
+  } as never).execute();
+
+  // Create published Bersiri episode
   await db.insertInto("works").values({
     id: EP_ID, slug: EP_SLUG, title: "Uji QA Episod 1",
-    type: "bersiri", status: "draft", body: "Isi episod ujian QA.",
+    type: "bersiri", status: "published", body: "Isi episod ujian QA mobile.",
     dek: null, genre: "Keluarga", audience: "remaja",
     reading_minutes: 5, version: "v0.1",
     editorial_history: JSON.stringify([]),
-    published_at: null, published_by: null,
+    published_at: now, published_by: "qa-test",
     updated_at: now, created_at: now,
   } as never).execute();
+  await db.insertInto("credits").values({
+    work_id: EP_ID, contributor_slug: null, guest_name: "Uji QA",
+    role_label: "Editor", byline: true, is_public: true, sort_order: 0,
+  } as never).execute();
+  await db.insertInto("visuals").values({
+    work_id: EP_ID, role: "hero",
+    src: "https://br-nameless-boat-b3kp87fq.storage.c-4.ap-southeast-1.aws.neon.tech/jalin-visuals/assets/visuals/vr-999002-v1-3220fc78.png",
+    alt: "Ilustrasi episod ujian QA", provider: "magnific", creation_id: "smoke-qa-ep",
+    place: "after", sort_order: 0, is_asset_finalized: true,
+  } as never).execute();
 
-  // Create Series and attach episode
+  // Create Series and attach published episode
   const series = await createSeries({ slug: SER_SLUG, title: "Siri Uji QA", mode: "continuous", status: "ongoing" });
   await attachEpisode(series.id, EP_ID);
 
@@ -70,14 +88,11 @@ export async function setupFixtures() {
 export async function cleanupFixtures() {
   if (!hasDb()) return;
   const db = getDb();
-
-  // Cleanup series
   const series = await db.selectFrom("series").where("slug", "=", SER_SLUG).select("id").executeTakeFirst();
   if (series) {
     await db.deleteFrom("series_entries").where("series_id", "=", series.id).execute();
     await db.deleteFrom("series").where("id", "=", series.id).execute();
   }
-  // Cleanup works
   for (const id of [NOV_ID, EP_ID]) {
     await db.deleteFrom("reading_sections").where("work_id", "=", id).execute();
     await db.deleteFrom("series_entries").where("work_id", "=", id).execute();
@@ -92,7 +107,6 @@ export async function cleanupFixtures() {
   await db.deleteFrom("works").where("slug", "=", EP_SLUG).execute();
 }
 
-// CLI entry point
 async function main() {
   const fixtures = await setupFixtures();
   console.log(JSON.stringify(fixtures));

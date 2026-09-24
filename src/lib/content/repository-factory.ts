@@ -11,7 +11,8 @@ let repositoryInstance: ContentRepository | null = null;
 let initPromise: Promise<ContentRepository> | null = null;
 
 function createRepository(): ContentRepository {
-  switch (CONTENT_SOURCE) {
+  const source = (process.env.CONTENT_SOURCE as ContentSource) || "markdown";
+  switch (source) {
     case "database": {
       const dbRepo = new DatabaseContentRepository();
       if (dbRepo.isEnabled()) {
