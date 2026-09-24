@@ -24,6 +24,7 @@ const TYPE_LABELS: Record<string, string> = {
 
 const TYPE_DESCS: Record<string, string> = {
   cerpen: "Cerita pendek berilustrasi untuk jiwa muda",
+  novela: "Novela pendek berilustrasi untuk pembaca Jalin",
   bersiri: "Karya bersiri berilustrasi — sambungan demi sambungan",
   terjemahan: "Karya terjemahan berilustrasi dari seluruh dunia",
   fragmen: "Sedutan bermakna daripada karya agung",
@@ -32,6 +33,7 @@ const TYPE_DESCS: Record<string, string> = {
 
 const CATEGORIES: { type: string; label: string }[] = [
   { type: "cerpen", label: "Cerpen" },
+  { type: "novela", label: "Novela" },
   { type: "bersiri", label: "Bersiri" },
   { type: "terjemahan", label: "Terjemahan" },
   { type: "fragmen", label: "Fragmen" },

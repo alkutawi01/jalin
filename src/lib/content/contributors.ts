@@ -1,6 +1,7 @@
 const CONTRIBUTOR_MAP: Record<string, { name: string; kind: "human" | "virtual" }> = {
   chatgpt: { name: "Rafiq Naim", kind: "virtual" },
   mimo: { name: "Amir Syafiq", kind: "virtual" },
+  "nara-zahin": { name: "Nara Zahin", kind: "virtual" },
   "izzat-anas": { name: "Izzat Anas", kind: "human" },
 };
 
