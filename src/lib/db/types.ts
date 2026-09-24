@@ -42,9 +42,13 @@ export interface Works {
   body: string | null;
   reading_minutes: number | null;
   version: string;
+  version_label: string | null;
+  revision_count: number;
   editorial_history: ColumnType<Record<string, unknown>, string | Record<string, unknown>, string | Record<string, unknown>>;
   published_at: ColumnType<Date | null, string | Date | null, string | Date | null>;
   published_by: string | null;
+  first_published_at: ColumnType<Date | null, string | Date | null, string | Date | null>;
+  published_revision_id: string | null;
   updated_at: ColumnType<Date, string | Date, string | Date>;
   created_at: ColumnType<Date, string | Date, string | Date>;
 }
@@ -295,6 +299,23 @@ export interface SourceWorks {
   updated_at: ColumnType<Date, string | Date, string | Date>;
 }
 
+export type ChangeType = "major" | "minor" | "patch";
+
+export interface WorkRevisions {
+  id: string;
+  work_id: string;
+  revision_no: number;
+  version_label: string | null;
+  change_type: ChangeType;
+  revision_summary: string | null;
+  snapshot: ColumnType<Record<string, unknown>, string | Record<string, unknown>, string | Record<string, unknown>>;
+  content_hash: string;
+  published_by: string;
+  published_at: ColumnType<Date, string | Date, string | Date>;
+  first_published_at: ColumnType<Date | null, string | Date | null, string | Date | null>;
+  created_at: ColumnType<Date, string | Date, string | Date>;
+}
+
 export type SeriesMode = "continuous" | "anthology";
 export type SeriesStatus = "ongoing" | "completed";
 
@@ -332,6 +353,15 @@ export interface SeriesEntries {
   updated_at: ColumnType<Date, string | Date, string | Date>;
 }
 
+export interface EditorialAuditRuns {
+  id: string;
+  generated_at: ColumnType<Date, string | Date, string | Date>;
+  summary_json: string;
+  issues_json: string;
+  created_by: string | null;
+  created_at: ColumnType<Date, string | Date, string | Date>;
+}
+
 export interface Database {
   works: Works;
   contributors: Contributors;
@@ -347,4 +377,6 @@ export interface Database {
   reading_sections: ReadingSections;
   series: Series;
   series_entries: SeriesEntries;
+  work_revisions: WorkRevisions;
+  editorial_audit_runs: EditorialAuditRuns;
 }

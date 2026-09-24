@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getEditorialReport } from "../../../../lib/admin/editorial-health";
 import { getCurrentAdmin } from "../../../../lib/admin/auth";
+import { saveAuditRun } from "../../../../lib/admin/audit-history";
 
 export async function GET(_request: NextRequest) {
   try {
@@ -10,6 +11,14 @@ export async function GET(_request: NextRequest) {
     }
     
     const report = await getEditorialReport();
+    
+    // Save audit run
+    try {
+      await saveAuditRun();
+    } catch (e) {
+      // Ignore save errors
+    }
+    
     return NextResponse.json(report);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Ralat tidak diketahui.";
