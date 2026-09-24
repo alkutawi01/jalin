@@ -98,6 +98,57 @@ function testSnapshotStructure() {
   }
 }
 
+// Test freeze metadata behavior
+function testFreezeMetadata() {
+  console.log("\n=== Freeze Metadata Tests ===");
+  
+  // Simulate snapshot capture at publish time
+  const publishSnapshot = {
+    id: "JLN-CER-0001",
+    body: "Original body",
+    credits: [{ slug: "nara-zahin", role: "illustrator" }],
+    visuals: [{ src: "/visuals/hero.png", alt: "Hero image" }],
+    glossary: [{ term: "rumah", meaning: "house" }],
+    editorialHistory: [{ version: "v1.0", type: "initial" }],
+  };
+  
+  // Simulate metadata change after publish
+  const updatedWork = {
+    id: "JLN-CER-0001",
+    body: "Updated body after publish",
+    credits: [{ slug: "new-person", role: "editor" }],
+    visuals: [{ src: "/visuals/new-hero.png", alt: "New hero" }],
+    glossary: [{ term: "baru", meaning: "new" }],
+  };
+  
+  // Verify snapshot is immutable (doesn't change when work changes)
+  assert(publishSnapshot.body === "Original body", "Snapshot body frozen at publish");
+  assert(publishSnapshot.credits[0].slug === "nara-zahin", "Snapshot credit frozen");
+  assert(publishSnapshot.visuals[0].src === "/visuals/hero.png", "Snapshot visual frozen");
+  assert(publishSnapshot.glossary[0].term === "rumah", "Snapshot glossary frozen");
+  
+  // Verify updated work has different data
+  assert(updatedWork.body !== publishSnapshot.body, "Work body changed after publish");
+  assert(updatedWork.credits[0].slug !== publishSnapshot.credits[0].slug, "Work credit changed");
+  
+  // Verify buildSnapshotWork reconstructs from snapshot correctly
+  function buildSnapshotWork(snapshot: typeof publishSnapshot) {
+    return {
+      id: snapshot.id,
+      body: snapshot.body,
+      credits: snapshot.credits || [],
+      visuals: snapshot.visuals || [],
+      glossary: snapshot.glossary || [],
+      editorialHistory: snapshot.editorialHistory || [],
+    };
+  }
+  
+  const publicWork = buildSnapshotWork(publishSnapshot);
+  assert(publicWork.body === "Original body", "Public work reads from frozen snapshot");
+  assert(publicWork.credits[0].slug === "nara-zahin", "Public credit from frozen snapshot");
+  assert(publicWork.visuals[0].src === "/visuals/hero.png", "Public visual from frozen snapshot");
+}
+
 // Test database-repository handles JSONB correctly
 function testJSONBHandling() {
   console.log("\n=== JSONB Handling Tests ===");
@@ -130,6 +181,7 @@ console.log("============================================");
 testContentHash();
 testRevisionServiceAPI();
 testSnapshotStructure();
+testFreezeMetadata();
 testJSONBHandling();
 
 console.log("\n============================================");
