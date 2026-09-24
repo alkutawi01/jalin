@@ -101,7 +101,14 @@ export default async function WorkPage({
     { label: "Bentuk", value: typeLabel },
     { label: "Genre", value: work.genre ?? "Keluarga" },
     { label: "Bacaan", value: work.readingMinutes ? `± ${work.readingMinutes} min` : "—" },
-    { label: "Status", value: "Karya asli Jalin" },
+    {
+      label: "Status",
+      value: work.sourceWork
+        ? work.sourceWork.rightsStatus
+          ? `Sumber: ${work.sourceWork.rightsStatus}`
+          : "Karya berasaskan sumber"
+        : "Karya asli Jalin"
+    },
     { label: "ID", value: work.id },
     { label: "Versi", value: work.version }
   ];
@@ -199,6 +206,41 @@ export default async function WorkPage({
         </div>
 
         <StoryEnd title={work.title} />
+
+        {work.sourceWork && (
+          <section className="site-shell source-provenance" aria-label="Provenance sumber" style={{ maxWidth: "42rem", margin: "0 auto 3rem", padding: "0 1.25rem" }}>
+            <h2 style={{ fontSize: "1rem", letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "0.75rem" }}>
+              Sumber &amp; provenance
+            </h2>
+            <dl style={{ display: "grid", gridTemplateColumns: "max-content 1fr", gap: "0.35rem 1rem", margin: 0, fontSize: "0.95rem" }}>
+              {work.sourceWork.title && (
+                <>
+                  <dt style={{ opacity: 0.7 }}>Tajuk asal</dt>
+                  <dd style={{ margin: 0 }}>{work.sourceWork.title}</dd>
+                </>
+              )}
+              {work.sourceWork.author && (
+                <>
+                  <dt style={{ opacity: 0.7 }}>Penulis asal</dt>
+                  <dd style={{ margin: 0 }}>{work.sourceWork.author}</dd>
+                </>
+              )}
+              {work.sourceWork.language && (
+                <>
+                  <dt style={{ opacity: 0.7 }}>Bahasa asal</dt>
+                  <dd style={{ margin: 0 }}>{work.sourceWork.language}</dd>
+                </>
+              )}
+              {work.sourceWork.rightsStatus && (
+                <>
+                  <dt style={{ opacity: 0.7 }}>Hak penggunaan</dt>
+                  <dd style={{ margin: 0 }}>{work.sourceWork.rightsStatus}</dd>
+                </>
+              )}
+            </dl>
+          </section>
+        )}
+
         <MobileStoryInfo data={mobileInfo} />
       </main>
 

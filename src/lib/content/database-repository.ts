@@ -1,9 +1,38 @@
-import type { Work, WorkType, ContributorRef, GlossaryEntry, VisualRef, EditorialRevision } from "./types";
+import type { Work, WorkType, ContributorRef, GlossaryEntry, VisualRef, EditorialRevision, SourceWorkRef } from "./types";
 import type { ContributorMeta } from "./contributors";
 import type { ContentRepository } from "./repository";
 import { getDb, hasDb } from "../db";
 
-function mapWork(row: any, credits: ContributorRef[], visuals: VisualRef[], glossary: GlossaryEntry[]): Work {
+/** Reader-safe public source provenance — never includes rights_notes/evidence/history/reviewed_by/reviewed_at/source_url. */
+function mapPublicSourceWork(row: any): SourceWorkRef | undefined {
+  if (!row) return undefined;
+  const title = row.original_title ? String(row.original_title) : "";
+  const author = row.author ? String(row.author) : "";
+  if (!title && !author) return undefined;
+  const status = String(row.rights_status || "");
+  const rightsLabel =
+    status === "public_domain"
+      ? "Domain awam"
+      : status === "licensed"
+        ? "Berlesen"
+        : status === "permission_obtained"
+          ? "Kebenaran diperoleh"
+          : undefined;
+  return {
+    title,
+    author: author || undefined,
+    language: row.original_language ? String(row.original_language) : undefined,
+    rightsStatus: rightsLabel,
+  };
+}
+
+function mapWork(
+  row: any,
+  credits: ContributorRef[],
+  visuals: VisualRef[],
+  glossary: GlossaryEntry[],
+  sourceWork?: SourceWorkRef
+): Work {
   const editorialHistory: EditorialRevision[] = Array.isArray(row.editorial_history)
     ? row.editorial_history.map((h: any) => ({
         version: String(h.version || ""),
@@ -33,7 +62,7 @@ function mapWork(row: any, credits: ContributorRef[], visuals: VisualRef[], glos
     editorialHistory,
     metadata: undefined,
     reader: undefined,
-    sourceWork: undefined,
+    sourceWork,
   };
 }
 
@@ -61,6 +90,13 @@ export class DatabaseContentRepository implements ContentRepository {
     const dbVisuals = await db.selectFrom("visuals").orderBy("sort_order", "asc").selectAll().execute();
     const dbGlossary = await db.selectFrom("glossary_terms").orderBy("sort_order", "asc").selectAll().execute();
     const dbContributors = await db.selectFrom("contributors").selectAll().execute();
+    const dbSources = await db.selectFrom("source_works").selectAll().execute();
+
+    const sourcesByWork = new Map<string, SourceWorkRef>();
+    for (const s of dbSources) {
+      const mapped = mapPublicSourceWork(s);
+      if (mapped) sourcesByWork.set(String(s.work_id), mapped);
+    }
 
     const creditsByWork = new Map<string, ContributorRef[]>();
     for (const c of dbCredits) {
@@ -114,6 +150,7 @@ export class DatabaseContentRepository implements ContentRepository {
         creditsByWork.get(wid) || [],
         visualsByWork.get(wid) || [],
         glossaryByWork.get(wid) || [],
+        sourcesByWork.get(wid),
       );
       this.worksCache.set(work.slug, work);
     }

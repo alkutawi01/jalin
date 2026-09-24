@@ -19,8 +19,11 @@ async function main() {
   const visuals = await db.selectFrom("visuals").selectAll().execute();
   const glossary = await db.selectFrom("glossary_terms").selectAll().execute();
   const visualRequests = await db.selectFrom("visual_requests").selectAll().execute();
+  const sources = await db.selectFrom("source_works").selectAll().execute();
   const contributors = await db.selectFrom("contributors").select("slug").execute();
   const known = new Set(contributors.map((c) => String(c.slug)));
+
+  const sourcesByWork = new Map(sources.map((s) => [String(s.work_id), s]));
 
   let publishedReady = 0;
   let publishedBlocked = 0;
@@ -53,6 +56,25 @@ async function main() {
       visuals: visuals.filter((v) => v.work_id === work.id),
       glossary: glossary.filter((g) => g.work_id === work.id),
       visualRequests: visualRequests.filter((v) => v.work_id === work.id),
+      sourceWork: (() => {
+        const s = sourcesByWork.get(String(work.id));
+        if (!s) return null;
+        return {
+          original_title: s.original_title,
+          author: s.author,
+          original_language: s.original_language,
+          source_edition: s.source_edition,
+          source_url: s.source_url,
+          source_locator: s.source_locator,
+          source_text_basis: s.source_text_basis,
+          rights_status: String(s.rights_status),
+          rights_notes: s.rights_notes,
+          reviewed_at:
+            s.reviewed_at instanceof Date ? s.reviewed_at.toISOString() : s.reviewed_at,
+          reviewed_by: s.reviewed_by,
+          approved_material_hash: s.approved_material_hash,
+        };
+      })(),
       knownContributorSlugs: known,
       slugTakenByOther: false,
     };

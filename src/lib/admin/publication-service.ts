@@ -87,17 +87,19 @@ async function loadReadinessInput(
   const visualsQ = db.selectFrom("visuals").where("work_id", "=", workId).selectAll();
   const glossaryQ = db.selectFrom("glossary_terms").where("work_id", "=", workId).selectAll();
   const vrQ = db.selectFrom("visual_requests").where("work_id", "=", workId).selectAll();
+  const srcQ = db.selectFrom("source_works").where("work_id", "=", workId).selectAll();
   const slugQ = db
     .selectFrom("works")
     .where("slug", "=", work.slug)
     .where("id", "!=", workId)
     .select("id");
 
-  const [credits, visuals, glossary, visualRequests, slugDup] = await Promise.all([
+  const [credits, visuals, glossary, visualRequests, sourceWork, slugDup] = await Promise.all([
     (lock ? creditsQ.forUpdate() : creditsQ).execute(),
     (lock ? visualsQ.forUpdate() : visualsQ).execute(),
     (lock ? glossaryQ.forUpdate() : glossaryQ).execute(),
     (lock ? vrQ.forUpdate() : vrQ).execute(),
+    (lock ? srcQ.forUpdate() : srcQ).executeTakeFirst(),
     (lock ? slugQ.forUpdate() : slugQ).executeTakeFirst(),
   ]);
 
@@ -144,6 +146,25 @@ async function loadReadinessInput(
     visuals,
     glossary,
     visualRequests,
+    sourceWork: sourceWork
+      ? {
+          original_title: sourceWork.original_title,
+          author: sourceWork.author,
+          original_language: sourceWork.original_language,
+          source_edition: sourceWork.source_edition,
+          source_url: sourceWork.source_url,
+          source_locator: sourceWork.source_locator,
+          source_text_basis: sourceWork.source_text_basis,
+          rights_status: String(sourceWork.rights_status),
+          rights_notes: sourceWork.rights_notes,
+          reviewed_at:
+            sourceWork.reviewed_at instanceof Date
+              ? sourceWork.reviewed_at.toISOString()
+              : sourceWork.reviewed_at,
+          reviewed_by: sourceWork.reviewed_by,
+          approved_material_hash: sourceWork.approved_material_hash,
+        }
+      : null,
     knownContributorSlugs: new Set(contributors.map((c) => String(c.slug))),
     slugTakenByOther: Boolean(slugDup),
   };

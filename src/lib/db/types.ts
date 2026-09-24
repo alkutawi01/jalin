@@ -15,6 +15,15 @@ export type WorkStatus =
   | "published"
   | "archived";
 
+export type RightsStatus =
+  | "unknown"
+  | "needs_review"
+  | "public_domain"
+  | "licensed"
+  | "permission_obtained"
+  | "restricted"
+  | "rejected";
+
 export type ContributorKind = "human" | "virtual" | "organization";
 
 export type VisualRole = "hero" | "inline" | "section" | "decorative";
@@ -264,6 +273,28 @@ export interface GenerationRequests {
   created_at: ColumnType<Date, string | Date, string | Date>;
 }
 
+export interface SourceWorks {
+  id: Generated<number>;
+  work_id: string;
+  original_title: string | null;
+  author: string | null;
+  original_language: string | null;
+  publication_year: number | null;
+  source_edition: string | null;
+  source_url: string | null;
+  source_locator: string | null;
+  source_text_basis: string | null;
+  rights_status: RightsStatus | string;
+  rights_notes: string | null;
+  rights_evidence: string | null;
+  rights_history: string | null;
+  approved_material_hash: string | null;
+  reviewed_at: ColumnType<Date | null, string | Date | null, string | Date | null>;
+  reviewed_by: string | null;
+  created_at: ColumnType<Date, string | Date, string | Date>;
+  updated_at: ColumnType<Date, string | Date, string | Date>;
+}
+
 export interface Database {
   works: Works;
   contributors: Contributors;
@@ -275,4 +306,5 @@ export interface Database {
   prompt_templates: PromptTemplates;
   visual_requests: VisualRequests;
   generation_requests: GenerationRequests;
+  source_works: SourceWorks;
 }

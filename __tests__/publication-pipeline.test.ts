@@ -6,6 +6,7 @@
  */
 
 import {
+  computeMaterialHash,
   evaluatePublicationReadinessFromData,
   VISUAL_POLICY,
   type EvaluatePublicationReadinessInput,
@@ -15,6 +16,10 @@ import {
   PUBLISH_SERIALIZABLE_RETRY_MAX,
   isPublicationSerializationFailure,
 } from "../src/lib/admin/publication-service";
+import {
+  toPublicSourceProvenance,
+  validateSourceUrl,
+} from "../src/lib/admin/source-rights";
 
 let passed = 0;
 let failed = 0;
@@ -257,10 +262,28 @@ console.log("\n=== Readiness: visuals ===");
   assert(noHero.ready === false, "cerpen without hero is not ready (required policy)");
   assert(noHero.blockers.some((b) => b.code === "hero_role_missing"), "hero_role_missing blocker");
 
+  const approvedSourceForVisualPolicy = {
+    original_title: "Hikayat Visual",
+    author: "Siti Aminah",
+    original_language: "Melayu Klasik",
+    source_edition: "Cetakan 1957",
+    source_url: "https://example.org/hikayat",
+    source_locator: "ms. 1",
+    source_text_basis: "Teks asal 1957 (domain awam)",
+    rights_status: "public_domain",
+    rights_notes: "Domain awam disahkan",
+    reviewed_at: "2026-01-01T00:00:00.000Z",
+    reviewed_by: "editor@jalin.local",
+    approved_material_hash: null as string | null,
+  };
+  approvedSourceForVisualPolicy.approved_material_hash =
+    computeMaterialHash(approvedSourceForVisualPolicy);
+
   const fragmenNoHero = evaluatePublicationReadinessFromData(
     validInput({
       work: baseWork({ type: "fragmen" }),
       visuals: [],
+      sourceWork: approvedSourceForVisualPolicy,
     })
   );
   assert(fragmenNoHero.ready === true, "fragmen without hero still ready (recommended only)");
@@ -405,20 +428,197 @@ console.log("\n=== Readiness: workflow visual requests ===");
 }
 
 // ============================================================
-// 13. Derivative type provenance warning
+// 13. Derivative type: rights gate (4D-7)
 // ============================================================
-console.log("\n=== Readiness: derivative types ===");
+console.log("\n=== Readiness: derivative rights gate (4D-7) ===");
 {
-  const terj = evaluatePublicationReadinessFromData(
+  // Original cerpen: rights gate inactive (N/A).
+  const cerpen = evaluatePublicationReadinessFromData(validInput());
+  assert(cerpen.gates.rights.pass === true, "original cerpen: rights gate N/A (pass)");
+  assert(
+    !cerpen.blockers.some((b) => b.code === "source_missing"),
+    "original cerpen: no source_missing blocker"
+  );
+
+  // Derivative without source record → BLOCK.
+  const noSource = evaluatePublicationReadinessFromData(
     validInput({
-      work: baseWork({ type: "terjemahan" }),
+      work: baseWork({ type: "terjemahan", id: "JLN-TER-0001" }),
       visuals: [baseVisual({ role: "section" })],
+      sourceWork: null,
+    })
+  );
+  assert(noSource.ready === false, "terjemahan without source_works is not ready");
+  assert(
+    noSource.blockers.some((b) => b.code === "source_missing"),
+    "source_missing blocker for derivative without provenance"
+  );
+  assert(noSource.gates.rights.pass === false, "rights gate blocks missing source");
+
+  const baseSource = {
+    original_title: "Hikayat Pulau",
+    author: "Siti Aminah",
+    original_language: "Melayu Klasik",
+    source_edition: "Cetakan 1957",
+    source_url: "https://example.org/hikayat",
+    source_locator: "ms. 12",
+    source_text_basis: "Teks asal 1957 (domain awam)",
+    rights_status: "public_domain",
+    rights_notes: "Domain awam disahkan",
+    reviewed_at: "2026-01-01T00:00:00.000Z",
+    reviewed_by: "editor@jalin.local",
+    approved_material_hash: null as string | null,
+  };
+
+  // Incomplete provenance → BLOCK.
+  const incomplete = evaluatePublicationReadinessFromData(
+    validInput({
+      work: baseWork({ type: "terjemahan", id: "JLN-TER-0001" }),
+      visuals: [baseVisual({ role: "section" })],
+      sourceWork: { ...baseSource, original_title: "", author: "", original_language: "" },
     })
   );
   assert(
-    terj.warnings.some((w) => w.code === "provenance_manual"),
-    "terjemahan gets provenance_manual warning"
+    incomplete.blockers.some((b) => b.code === "source_incomplete"),
+    "source_incomplete when core fields empty"
   );
+
+  // Missing review stamps with PASS status → BLOCK.
+  const noReview = evaluatePublicationReadinessFromData(
+    validInput({
+      work: baseWork({ type: "terjemahan", id: "JLN-TER-0001" }),
+      visuals: [baseVisual({ role: "section" })],
+      sourceWork: { ...baseSource, reviewed_at: null, reviewed_by: null },
+    })
+  );
+  assert(
+    noReview.blockers.some((b) => b.code === "rights_not_reviewed"),
+    "rights_not_reviewed when PASS without server review stamps"
+  );
+
+  // BLOCK status → BLOCK.
+  const restricted = evaluatePublicationReadinessFromData(
+    validInput({
+      work: baseWork({ type: "terjemahan", id: "JLN-TER-0001" }),
+      visuals: [baseVisual({ role: "section" })],
+      sourceWork: { ...baseSource, rights_status: "restricted" },
+    })
+  );
+  assert(
+    restricted.blockers.some((b) => b.code === "rights_not_approved"),
+    "rights_not_approved for restricted"
+  );
+  assert(
+    restricted.blockers.some((b) => b.code === "rights_notes_required") === false ||
+      restricted.blockers.some((b) => b.code === "rights_not_approved"),
+    "restricted reported via rights_not_approved"
+  );
+
+  // restricted without notes also blocked for notes.
+  const restrictedNoNotes = evaluatePublicationReadinessFromData(
+    validInput({
+      work: baseWork({ type: "terjemahan", id: "JLN-TER-0001" }),
+      visuals: [baseVisual({ role: "section" })],
+      sourceWork: { ...baseSource, rights_status: "restricted", rights_notes: "" },
+    })
+  );
+  assert(
+    restrictedNoNotes.blockers.some((b) => b.code === "rights_notes_required"),
+    "rights_notes_required for restricted without notes"
+  );
+
+  // Valid PASS + fresh approval → rights pass (may still warn on PD notice).
+  const hash = computeMaterialHash(baseSource);
+  const passReady = evaluatePublicationReadinessFromData(
+    validInput({
+      work: baseWork({ type: "terjemahan", id: "JLN-TER-0001" }),
+      visuals: [baseVisual({ role: "section" })],
+      sourceWork: { ...baseSource, approved_material_hash: hash },
+    })
+  );
+  assert(passReady.gates.rights.pass === true, "valid PASS source → rights gate pass");
+  assert(
+    passReady.warnings.some((w) => w.code === "rights_public_domain_notice"),
+    "public_domain translation notice warning"
+  );
+  assert(
+    !passReady.warnings.some((w) => w.code === "provenance_manual"),
+    "old provenance_manual warning removed"
+  );
+
+  // Stale approval: material hash mismatch after edit → BLOCK.
+  const stale = evaluatePublicationReadinessFromData(
+    validInput({
+      work: baseWork({ type: "terjemahan", id: "JLN-TER-0001" }),
+      visuals: [baseVisual({ role: "section" })],
+      sourceWork: {
+        ...baseSource,
+        original_title: "Hikayat Pulau (edisi baharu)",
+        approved_material_hash: hash,
+      },
+    })
+  );
+  assert(
+    stale.blockers.some((b) => b.code === "rights_stale_approval"),
+    "rights_stale_approval when material fields change after approval"
+  );
+
+  // Invalid source_url scheme → BLOCK (no SSRF fetch; validate only).
+  const badUrl = evaluatePublicationReadinessFromData(
+    validInput({
+      work: baseWork({ type: "terjemahan", id: "JLN-TER-0001" }),
+      visuals: [baseVisual({ role: "section" })],
+      sourceWork: {
+        ...baseSource,
+        source_url: "javascript:alert(1)",
+        approved_material_hash: computeMaterialHash({
+          ...baseSource,
+          source_url: "javascript:alert(1)",
+        }),
+      },
+    })
+  );
+  assert(
+    badUrl.blockers.some((b) => b.code === "source_url_invalid"),
+    "source_url_invalid blocks javascript: scheme"
+  );
+
+  // Translation distinction: source_text_basis preserved for modern PD translation case.
+  const modernTranslation = evaluatePublicationReadinessFromData(
+    validInput({
+      work: baseWork({ type: "terjemahan", id: "JLN-TER-0001" }),
+      visuals: [baseVisual({ role: "section" })],
+      sourceWork: {
+        ...baseSource,
+        source_text_basis: "Terjemahan moden 2020 daripada teks asal domain awam — hak cipta terjemahan milik Jalin",
+        rights_status: "permission_obtained",
+        approved_material_hash: computeMaterialHash({
+          original_title: baseSource.original_title,
+          author: baseSource.author,
+          original_language: baseSource.original_language,
+          source_edition: baseSource.source_edition,
+          source_url: baseSource.source_url,
+          source_locator: baseSource.source_locator,
+          source_text_basis:
+            "Terjemahan moden 2020 daripada teks asal domain awam — hak cipta terjemahan milik Jalin",
+        }),
+      },
+    })
+  );
+  assert(
+    modernTranslation.gates.rights.pass === true,
+    "modern translation with source_text_basis can pass rights"
+  );
+
+  // Fragmen/sinopsis also gated.
+  const fragmen = evaluatePublicationReadinessFromData(
+    validInput({
+      work: baseWork({ type: "fragmen", id: "JLN-FRA-0001" }),
+      visuals: [baseVisual({ role: "section" })],
+      sourceWork: null,
+    })
+  );
+  assert(fragmen.blockers.some((b) => b.code === "source_missing"), "fragmen without source blocked");
 }
 
 // ============================================================
@@ -544,6 +744,42 @@ console.log("\n=== Serialization failure detection (4D-6R2) ===");
     "Readiness failure is NOT retried"
   );
   assert(!isPublicationSerializationFailure(null), "null is not serialization failure");
+}
+
+// ============================================================
+// 19. Source public serializer + URL validation (4D-7)
+// ============================================================
+console.log("\n=== Source public serializer & URL validation (4D-7) ===");
+{
+  const safe = toPublicSourceProvenance({
+    original_title: "Hikayat Pulau",
+    author: "Siti Aminah",
+    original_language: "Melayu",
+    publication_year: 1957,
+    source_edition: "Cetakan 1957",
+    source_locator: "ms. 12",
+    rights_status: "public_domain",
+  });
+  assert(Boolean(safe), "public provenance present for reader");
+  const safeJson = JSON.stringify(safe);
+  assert(!safeJson.includes("rights_notes"), "public serializer strips rights_notes");
+  assert(!safeJson.includes("rights_evidence"), "public serializer strips rights_evidence");
+  assert(!safeJson.includes("rights_history"), "public serializer strips rights_history");
+  assert(!safeJson.includes("reviewed_by"), "public serializer strips reviewed_by");
+  assert(!safeJson.includes("reviewed_at"), "public serializer strips reviewed_at");
+  assert(!safeJson.includes("source_url"), "public serializer strips source_url");
+  assert(safe?.rightsLabel === "Domain awam", "rightsLabel domain awam");
+
+  const nullSafe = toPublicSourceProvenance(null);
+  assert(nullSafe === undefined, "null source → undefined public projection");
+
+  assert(validateSourceUrl("https://example.org/a").ok, "https URL ok");
+  assert(validateSourceUrl("http://example.org").ok, "http URL ok");
+  assert(validateSourceUrl(null).ok, "null URL ok");
+  assert(!validateSourceUrl("javascript:alert(1)").ok, "javascript: rejected");
+  assert(!validateSourceUrl("file:///etc/passwd").ok, "file: rejected");
+  assert(!validateSourceUrl("data:text/html,x").ok, "data: rejected");
+  assert(!validateSourceUrl("not a url").ok, "invalid URL rejected");
 }
 
 console.log(`\n${passed} passed, ${failed} failed`);

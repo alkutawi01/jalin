@@ -91,6 +91,13 @@ async function verify(): Promise<VerificationResult> {
       detail: `${generationRequestCount?.count} generation requests found`,
     });
 
+    const sourceWorkCount = await db.selectFrom("source_works").select(db.fn.count("id").as("count")).executeTakeFirst();
+    checks.push({
+      name: "source_work_count",
+      passed: true,
+      detail: `${sourceWorkCount?.count} source works found`,
+    });
+
     // Verify schema hardening using raw SQL via Pool
     const pool = new Pool({
       connectionString: process.env.DATABASE_URL_UNPOOLED || process.env.DATABASE_URL,
@@ -128,6 +135,31 @@ async function verify(): Promise<VerificationResult> {
       name: "publication_audit",
       passed: pubCols.includes("published_at") && pubCols.includes("published_by"),
       detail: `works publication columns: ${pubCols.join(", ") || "none"}`,
+    });
+
+    // Verify Phase 4D-7 source_works table + columns + indexes
+    const srcTableRes = await pool.query(
+      "SELECT column_name FROM information_schema.columns WHERE table_name = 'source_works'"
+    );
+    const srcCols = srcTableRes.rows.map((r: { column_name: string }) => r.column_name);
+    const srcExpected = [
+      "work_id", "original_title", "author", "original_language", "publication_year",
+      "source_edition", "source_url", "source_locator", "source_text_basis",
+      "rights_status", "rights_notes", "rights_evidence", "rights_history",
+      "approved_material_hash", "reviewed_at", "reviewed_by",
+    ];
+    checks.push({
+      name: "source_works_schema",
+      passed: srcExpected.every((c) => srcCols.includes(c)),
+      detail: `source_works columns: ${srcExpected.filter((c) => srcCols.includes(c)).length}/${srcExpected.length} present`,
+    });
+    const srcIdxRes = await pool.query(
+      "SELECT indexname FROM pg_indexes WHERE schemaname = 'public' AND tablename = 'source_works' AND indexname IN ('source_works_work_id_idx', 'source_works_rights_status_idx')"
+    );
+    checks.push({
+      name: "source_works_indexes",
+      passed: srcIdxRes.rows.length >= 2,
+      detail: `Found ${srcIdxRes.rows.length}/2 source_works indexes`,
     });
 
     // Verify visuals.is_asset_finalized exists
@@ -184,7 +216,7 @@ async function verify(): Promise<VerificationResult> {
 
     // Check indexes exist
     const idxRes = await pool.query(
-      "SELECT indexname FROM pg_indexes WHERE schemaname = 'public' AND tablename IN ('works', 'contributors', 'credits', 'visuals', 'glossary_terms', 'work_submissions', 'submission_contributions', 'prompt_templates', 'visual_requests', 'generation_requests')"
+      "SELECT indexname FROM pg_indexes WHERE schemaname = 'public' AND tablename IN ('works', 'contributors', 'credits', 'visuals', 'glossary_terms', 'work_submissions', 'submission_contributions', 'prompt_templates', 'visual_requests', 'generation_requests', 'source_works')"
     );
     checks.push({
       name: "indexes",

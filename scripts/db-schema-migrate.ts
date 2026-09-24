@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { config } from "dotenv";
 config({ path: ".env.local", override: true });
-import { Kysely, PostgresDialect } from "kysely";
+import { Kysely, PostgresDialect, sql } from "kysely";
 import { Migrator } from "kysely/migration";
 import { Pool } from "pg";
 import {
@@ -410,6 +410,55 @@ const migrations = {
     async down(db: Kysely<unknown>) {
       await db.schema.dropIndex("works_published_at_idx").execute();
       await db.schema.alterTable("works").dropColumn("published_by").execute();
+    },
+  },
+  "011_source_works": {
+    async up(db: Kysely<unknown>) {
+      await db.schema
+        .createTable("source_works")
+        .addColumn("id", "serial", (col) => col.primaryKey())
+        .addColumn("work_id", "text", (col) =>
+          col.notNull().unique().references("works.id").onDelete("cascade")
+        )
+        .addColumn("original_title", "text")
+        .addColumn("author", "text")
+        .addColumn("original_language", "text")
+        .addColumn("publication_year", "integer")
+        .addColumn("source_edition", "text")
+        .addColumn("source_url", "text")
+        .addColumn("source_locator", "text")
+        .addColumn("source_text_basis", "text")
+        .addColumn("rights_status", "text", (col) =>
+          col.notNull().defaultTo("unknown")
+        )
+        .addColumn("rights_notes", "text")
+        .addColumn("rights_evidence", "text")
+        .addColumn("rights_history", "text")
+        .addColumn("approved_material_hash", "text")
+        .addColumn("reviewed_at", "timestamptz")
+        .addColumn("reviewed_by", "text")
+        .addColumn("created_at", "timestamptz", (col) =>
+          col.notNull().defaultTo(sql`now()`)
+        )
+        .addColumn("updated_at", "timestamptz", (col) =>
+          col.notNull().defaultTo(sql`now()`)
+        )
+        .execute();
+      await db.schema
+        .createIndex("source_works_work_id_idx")
+        .on("source_works")
+        .column("work_id")
+        .execute();
+      await db.schema
+        .createIndex("source_works_rights_status_idx")
+        .on("source_works")
+        .column("rights_status")
+        .execute();
+    },
+    async down(db: Kysely<unknown>) {
+      await db.schema.dropIndex("source_works_rights_status_idx").execute();
+      await db.schema.dropIndex("source_works_work_id_idx").execute();
+      await db.schema.dropTable("source_works").execute();
     },
   },
 };

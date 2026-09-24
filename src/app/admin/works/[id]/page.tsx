@@ -55,7 +55,7 @@ interface ReadinessData {
   ready: boolean;
   blockers: ReadinessIssue[];
   warnings: ReadinessIssue[];
-  gates: Record<"content" | "credits" | "visuals" | "privacy" | "workflow", ReadinessGate>;
+  gates: Record<"content" | "credits" | "visuals" | "privacy" | "rights" | "workflow", ReadinessGate>;
   checkedAt: string;
 }
 
@@ -97,7 +97,50 @@ interface GlossaryData {
   sort_order: number;
 }
 
-type Tab = "content" | "metadata" | "credits" | "visuals" | "glossary";
+type Tab = "content" | "metadata" | "credits" | "visuals" | "glossary" | "source";
+
+const DERIVATIVE_TYPES = new Set(["terjemahan", "fragmen", "sinopsis"]);
+
+const RIGHTS_STATUS_OPTIONS = [
+  { value: "unknown", label: "Belum diketahui" },
+  { value: "needs_review", label: "Perlu semakan" },
+  { value: "public_domain", label: "Domain awam" },
+  { value: "licensed", label: "Berlesen" },
+  { value: "permission_obtained", label: "Kebenaran diperoleh" },
+  { value: "restricted", label: "Disekat" },
+  { value: "rejected", label: "Ditolak" },
+];
+
+interface SourceRightsData {
+  workId: string;
+  isDerivative: boolean;
+  sourceWork: {
+    id: number;
+    originalTitle: string | null;
+    author: string | null;
+    originalLanguage: string | null;
+    publicationYear: number | null;
+    sourceEdition: string | null;
+    sourceUrl: string | null;
+    sourceLocator: string | null;
+    sourceTextBasis: string | null;
+    rightsStatus: string;
+    rightsNotes: string | null;
+    rightsEvidence: string | null;
+    reviewedAt: string | null;
+    reviewedBy: string | null;
+    updatedAt: string;
+  } | null;
+  rightsHistory: {
+    at: string;
+    actor: string;
+    action: string;
+    rights_status: string;
+    note?: string;
+  }[];
+  rightsReady: boolean;
+  rightsBlockers: ReadinessIssue[];
+}
 
 export default function EditWorkPage() {
   const router = useRouter();
@@ -151,6 +194,25 @@ export default function EditWorkPage() {
   const [readinessLoading, setReadinessLoading] = useState(false);
   const [readinessError, setReadinessError] = useState<string | null>(null);
 
+  const [sourceRights, setSourceRights] = useState<SourceRightsData | null>(null);
+  const [sourceLoading, setSourceLoading] = useState(false);
+  const [sourceError, setSourceError] = useState<string | null>(null);
+  const [sourceSuccess, setSourceSuccess] = useState<string | null>(null);
+  const [sourceSaving, setSourceSaving] = useState(false);
+  const [sourceForm, setSourceForm] = useState({
+    originalTitle: "",
+    author: "",
+    originalLanguage: "",
+    publicationYear: "",
+    sourceEdition: "",
+    sourceUrl: "",
+    sourceLocator: "",
+    sourceTextBasis: "",
+    rightsNotes: "",
+    rightsEvidence: "",
+    rightsStatus: "needs_review",
+  });
+
   useEffect(() => {
     async function loadWork() {
       try {
@@ -184,7 +246,116 @@ export default function EditWorkPage() {
     loadVisuals();
     loadGlossary();
     loadReadiness();
+    loadSourceRights();
   }, [workId]);
+
+  async function loadSourceRights() {
+    setSourceLoading(true);
+    setSourceError(null);
+    try {
+      const res = await fetch(`/api/admin/works/${workId}/source-rights`);
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Gagal memuatkan provenance sumber.");
+      }
+      const data: SourceRightsData = await res.json();
+      setSourceRights(data);
+      if (data.sourceWork) {
+        setSourceForm({
+          originalTitle: data.sourceWork.originalTitle || "",
+          author: data.sourceWork.author || "",
+          originalLanguage: data.sourceWork.originalLanguage || "",
+          publicationYear: data.sourceWork.publicationYear?.toString() || "",
+          sourceEdition: data.sourceWork.sourceEdition || "",
+          sourceUrl: data.sourceWork.sourceUrl || "",
+          sourceLocator: data.sourceWork.sourceLocator || "",
+          sourceTextBasis: data.sourceWork.sourceTextBasis || "",
+          rightsNotes: data.sourceWork.rightsNotes || "",
+          rightsEvidence: data.sourceWork.rightsEvidence || "",
+          rightsStatus: data.sourceWork.rightsStatus || "needs_review",
+        });
+      }
+    } catch (err) {
+      setSourceError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+    } finally {
+      setSourceLoading(false);
+    }
+  }
+
+  async function handleSaveProvenance() {
+    setSourceSaving(true);
+    setSourceError(null);
+    setSourceSuccess(null);
+    try {
+      const res = await fetch(`/api/admin/works/${workId}/source-rights`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          originalTitle: sourceForm.originalTitle || null,
+          author: sourceForm.author || null,
+          originalLanguage: sourceForm.originalLanguage || null,
+          publicationYear: sourceForm.publicationYear ? Number(sourceForm.publicationYear) : null,
+          sourceEdition: sourceForm.sourceEdition || null,
+          sourceUrl: sourceForm.sourceUrl || null,
+          sourceLocator: sourceForm.sourceLocator || null,
+          sourceTextBasis: sourceForm.sourceTextBasis || null,
+          rightsNotes: sourceForm.rightsNotes || null,
+          rightsEvidence: sourceForm.rightsEvidence || null,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Gagal menyimpan provenance.");
+      setSourceSuccess(
+        data.invalidatedApproval
+          ? "Provenance disimpan — kelulusan hak direset ke needs_review kerana material berubah."
+          : "Provenance disimpan."
+      );
+      await loadSourceRights();
+      await loadReadiness();
+      setTimeout(() => setSourceSuccess(null), 5000);
+    } catch (err) {
+      setSourceError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+    } finally {
+      setSourceSaving(false);
+    }
+  }
+
+  async function handleRightsReview() {
+    setSourceSaving(true);
+    setSourceError(null);
+    setSourceSuccess(null);
+    try {
+      const res = await fetch(`/api/admin/works/${workId}/source-rights/rights-review`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          rights_status: sourceForm.rightsStatus,
+          rights_notes: sourceForm.rightsNotes || null,
+          rights_evidence: sourceForm.rightsEvidence || null,
+          originalTitle: sourceForm.originalTitle || null,
+          author: sourceForm.author || null,
+          originalLanguage: sourceForm.originalLanguage || null,
+          publicationYear: sourceForm.publicationYear ? Number(sourceForm.publicationYear) : null,
+          sourceEdition: sourceForm.sourceEdition || null,
+          sourceUrl: sourceForm.sourceUrl || null,
+          sourceLocator: sourceForm.sourceLocator || null,
+          sourceTextBasis: sourceForm.sourceTextBasis || null,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Gagal menyemak hak.");
+      setSourceSuccess(
+        `Semakan hak direkod (oleh ${data.sourceWork?.reviewedBy ?? "admin"}).`
+      );
+      await loadSourceRights();
+      await loadReadiness();
+      setTimeout(() => setSourceSuccess(null), 5000);
+    } catch (err) {
+      setSourceError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+    } finally {
+      setSourceSaving(false);
+    }
+  }
 
   async function loadReadiness() {
     setReadinessLoading(true);
@@ -660,13 +831,14 @@ export default function EditWorkPage() {
               </span>
             </p>
             <div className="admin-form-row">
-              {(["content", "credits", "visuals", "privacy", "workflow"] as const).map((name) => {
+              {(["content", "credits", "visuals", "privacy", "rights", "workflow"] as const).map((name) => {
                 const gate = readiness.gates[name];
                 const labels: Record<string, string> = {
                   content: "Kandungan",
                   credits: "Kredit",
                   visuals: "Visual",
                   privacy: "Privasi",
+                  rights: "Hak",
                   workflow: "Aliran kerja",
                 };
                 return (
@@ -764,6 +936,14 @@ export default function EditWorkPage() {
         >
           Glosari ({glossaryTerms.length})
         </button>
+        {DERIVATIVE_TYPES.has(form.type) && (
+          <button
+            className={`admin-tab ${activeTab === "source" ? "admin-tab-active" : ""}`}
+            onClick={() => setActiveTab("source")}
+          >
+            Sumber &amp; Hak
+          </button>
+        )}
       </div>
 
       {activeTab === "content" && (
@@ -1416,6 +1596,217 @@ export default function EditWorkPage() {
                 </tbody>
               </table>
             </div>
+          )}
+        </div>
+      )}
+      {activeTab === "source" && DERIVATIVE_TYPES.has(form.type) && (
+        <div className="admin-source-rights">
+          <div className="admin-credits-header">
+            <h3>Provenance Sumber &amp; Semakan Hak</h3>
+            {sourceRights?.sourceWork?.reviewedAt && (
+              <span className="admin-status admin-status-ready">
+                Direviu {sourceRights.sourceWork.reviewedBy} · {new Date(sourceRights.sourceWork.reviewedAt).toLocaleString("ms-MY")}
+              </span>
+            )}
+          </div>
+
+          {sourceError && <div className="admin-alert admin-alert-error">{sourceError}</div>}
+          {sourceSuccess && <div className="admin-alert admin-alert-success">{sourceSuccess}</div>}
+          {sourceLoading && <p>Memuatkan provenance...</p>}
+
+          {sourceRights && !sourceLoading && (
+            <>
+              {!sourceRights.isDerivative && (
+                <p className="admin-form-hint">
+                  Gate rights hanya aktif untuk terjemahan/fragmen/sinopsis.
+                </p>
+              )}
+              {sourceRights.rightsBlockers.length > 0 && (
+                <ul className="admin-alert admin-alert-error" style={{ marginBottom: "0.75rem" }}>
+                  {sourceRights.rightsBlockers.map((b) => (
+                    <li key={b.code + b.message}>[HAK] {b.message}</li>
+                  ))}
+                </ul>
+              )}
+
+              <div className="admin-form">
+                <div className="admin-form-row">
+                  <div className="admin-form-group">
+                    <label htmlFor="src-title">Tajuk asal *</label>
+                    <input
+                      id="src-title"
+                      type="text"
+                      value={sourceForm.originalTitle}
+                      onChange={(e) => setSourceForm((p) => ({ ...p, originalTitle: e.target.value }))}
+                    />
+                  </div>
+                  <div className="admin-form-group">
+                    <label htmlFor="src-author">Penulis asal *</label>
+                    <input
+                      id="src-author"
+                      type="text"
+                      value={sourceForm.author}
+                      onChange={(e) => setSourceForm((p) => ({ ...p, author: e.target.value }))}
+                    />
+                  </div>
+                </div>
+                <div className="admin-form-row">
+                  <div className="admin-form-group">
+                    <label htmlFor="src-lang">Bahasa asal *</label>
+                    <input
+                      id="src-lang"
+                      type="text"
+                      value={sourceForm.originalLanguage}
+                      onChange={(e) => setSourceForm((p) => ({ ...p, originalLanguage: e.target.value }))}
+                      placeholder="Contoh: Melayu Klasik"
+                    />
+                  </div>
+                  <div className="admin-form-group">
+                    <label htmlFor="src-year">Tahun terbit</label>
+                    <input
+                      id="src-year"
+                      type="number"
+                      value={sourceForm.publicationYear}
+                      onChange={(e) => setSourceForm((p) => ({ ...p, publicationYear: e.target.value }))}
+                    />
+                  </div>
+                </div>
+                <div className="admin-form-row">
+                  <div className="admin-form-group">
+                    <label htmlFor="src-edition">Edisi/cetakan sumber</label>
+                    <input
+                      id="src-edition"
+                      type="text"
+                      value={sourceForm.sourceEdition}
+                      onChange={(e) => setSourceForm((p) => ({ ...p, sourceEdition: e.target.value }))}
+                    />
+                  </div>
+                  <div className="admin-form-group">
+                    <label htmlFor="src-url">URL sumber (http/https)</label>
+                    <input
+                      id="src-url"
+                      type="url"
+                      value={sourceForm.sourceUrl}
+                      onChange={(e) => setSourceForm((p) => ({ ...p, sourceUrl: e.target.value }))}
+                      placeholder="https://..."
+                    />
+                  </div>
+                </div>
+                <div className="admin-form-row">
+                  <div className="admin-form-group">
+                    <label htmlFor="src-locator">Locator (muka surat/bab)</label>
+                    <input
+                      id="src-locator"
+                      type="text"
+                      value={sourceForm.sourceLocator}
+                      onChange={(e) => setSourceForm((p) => ({ ...p, sourceLocator: e.target.value }))}
+                    />
+                  </div>
+                  <div className="admin-form-group">
+                    <label htmlFor="src-basis">Asas teks (source_text_basis)</label>
+                    <input
+                      id="src-basis"
+                      type="text"
+                      value={sourceForm.sourceTextBasis}
+                      onChange={(e) => setSourceForm((p) => ({ ...p, sourceTextBasis: e.target.value }))}
+                      placeholder="Contoh: teks asal Melayu 1957 (domain awam)"
+                    />
+                    <span className="admin-form-hint">
+                      Bezakan: domain awam asal + terjemahan moden berhak cipta vs terjemahan Jalin daripada sumber asal yang sah.
+                    </span>
+                  </div>
+                </div>
+                <div className="admin-form-group">
+                  <label htmlFor="src-notes">Nota hak (rights_notes)</label>
+                  <textarea
+                    id="src-notes"
+                    rows={3}
+                    value={sourceForm.rightsNotes}
+                    onChange={(e) => setSourceForm((p) => ({ ...p, rightsNotes: e.target.value }))}
+                  />
+                </div>
+                <div className="admin-form-group">
+                  <label htmlFor="src-evidence">Bukti/rujukan (rights_evidence — teks)</label>
+                  <textarea
+                    id="src-evidence"
+                    rows={2}
+                    value={sourceForm.rightsEvidence}
+                    onChange={(e) => setSourceForm((p) => ({ ...p, rightsEvidence: e.target.value }))}
+                    placeholder="Petikan katalog, DOI, nota arkib, dsb."
+                  />
+                </div>
+
+                <div className="admin-form-actions">
+                  <button
+                    type="button"
+                    className="admin-btn admin-btn-outline"
+                    onClick={handleSaveProvenance}
+                    disabled={sourceSaving}
+                  >
+                    {sourceSaving ? "Menyimpan..." : "Simpan Provenance"}
+                  </button>
+                </div>
+
+                <hr style={{ margin: "1.25rem 0", opacity: 0.3 }} />
+
+                <div className="admin-form-group">
+                  <label htmlFor="src-status">Status hak (semakan manusia) *</label>
+                  <select
+                    id="src-status"
+                    value={sourceForm.rightsStatus}
+                    onChange={(e) => setSourceForm((p) => ({ ...p, rightsStatus: e.target.value }))}
+                  >
+                    {RIGHTS_STATUS_OPTIONS.map((o) => (
+                      <option key={o.value} value={o.value}>{o.label}</option>
+                    ))}
+                  </select>
+                  <span className="admin-form-hint">
+                    reviewed_by dan reviewed_at ditetapkan di server daripada sesi admin — bukan daripada klien.
+                  </span>
+                </div>
+
+                <div className="admin-form-actions">
+                  <button
+                    type="button"
+                    className="admin-btn admin-btn-primary"
+                    onClick={handleRightsReview}
+                    disabled={sourceSaving}
+                  >
+                    {sourceSaving ? "Merekod..." : "Rekod Semakan Hak"}
+                  </button>
+                </div>
+              </div>
+
+              {sourceRights.rightsHistory.length > 0 && (
+                <div style={{ marginTop: "1.25rem" }}>
+                  <h4>Sejarah hak</h4>
+                  <div className="admin-table-wrap">
+                    <table className="admin-table">
+                      <thead>
+                        <tr>
+                          <th>Masa</th>
+                          <th>Aktor</th>
+                          <th>Tindakan</th>
+                          <th>Status</th>
+                          <th>Nota</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {sourceRights.rightsHistory.map((h, i) => (
+                          <tr key={`${h.at}-${i}`}>
+                            <td>{new Date(h.at).toLocaleString("ms-MY")}</td>
+                            <td>{h.actor}</td>
+                            <td>{h.action}</td>
+                            <td>{h.rights_status}</td>
+                            <td>{h.note || "—"}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
       )}

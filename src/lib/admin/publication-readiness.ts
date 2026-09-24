@@ -13,6 +13,7 @@ export type ReadinessGateName =
   | "credits"
   | "visuals"
   | "privacy"
+  | "rights"
   | "workflow";
 
 export interface ReadinessIssue {
@@ -90,12 +91,30 @@ export interface ReadinessVisualRequestInput {
   provider_creation_id: string | null;
 }
 
+/** source_works row shape for the rights gate (null when no provenance record). */
+export interface ReadinessSourceWorkInput {
+  original_title: string | null;
+  author: string | null;
+  original_language: string | null;
+  source_edition: string | null;
+  source_url: string | null;
+  source_locator: string | null;
+  source_text_basis: string | null;
+  rights_status: string;
+  rights_notes: string | null;
+  reviewed_at: Date | string | null;
+  reviewed_by: string | null;
+  approved_material_hash: string | null;
+}
+
 export interface EvaluatePublicationReadinessInput {
   work: ReadinessWorkInput;
   credits: ReadinessCreditInput[];
   visuals: ReadinessVisualInput[];
   glossary: ReadinessGlossaryInput[];
   visualRequests: ReadinessVisualRequestInput[];
+  /** source_works row for this Work (derivative Works only need one). */
+  sourceWork?: ReadinessSourceWorkInput | null;
   /** Contributor slugs that exist and are valid references. */
   knownContributorSlugs: Set<string>;
   /** True when another Work already owns this slug. */
@@ -147,6 +166,25 @@ export const VISUAL_POLICY: Record<
 };
 
 const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+/** Rights states that permit publication (PASS). */
+export const RIGHTS_PASS_STATUSES: ReadonlySet<string> = new Set([
+  "public_domain",
+  "licensed",
+  "permission_obtained",
+]);
+
+/** Rights states that block publication (BLOCK). */
+export const RIGHTS_BLOCK_STATUSES: ReadonlySet<string> = new Set([
+  "unknown",
+  "needs_review",
+  "restricted",
+  "rejected",
+]);
+
+export function isPassRightsStatus(status: string): boolean {
+  return RIGHTS_PASS_STATUSES.has(String(status));
+}
 
 /** Transient / non-durable image sources that must never be canonical public src. */
 const TRANSIENT_SRC_PATTERNS: RegExp[] = [
@@ -201,6 +239,43 @@ function serializeEditorialHistory(history: unknown): string {
   }
 }
 
+/** Stable hash of material provenance fields (shared with source-rights.ts). */
+export function computeMaterialHash(row: {
+  original_title: string | null;
+  author: string | null;
+  original_language: string | null;
+  source_edition: string | null;
+  source_url: string | null;
+  source_locator: string | null;
+  source_text_basis: string | null;
+}): string {
+  const payload = [
+    (row.original_title ?? "").trim(),
+    (row.author ?? "").trim(),
+    (row.original_language ?? "").trim(),
+    (row.source_edition ?? "").trim(),
+    (row.source_url ?? "").trim(),
+    (row.source_locator ?? "").trim(),
+    (row.source_text_basis ?? "").trim(),
+  ].join("\n");
+  // djb2 (stable, dependency-free) — equality checks only, not crypto.
+  let h = 5381;
+  for (let i = 0; i < payload.length; i++) {
+    h = ((h << 5) + h + payload.charCodeAt(i)) | 0;
+  }
+  return `djb2:${(h >>> 0).toString(16)}`;
+}
+
+function isValidSourceUrl(url: string | null | undefined): boolean {
+  if (url === null || url === undefined || !String(url).trim()) return true;
+  try {
+    const u = new URL(String(url).trim());
+    return u.protocol === "http:" || u.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Pure readiness evaluation. No I/O, no side effects, never mutates the Work.
  */
@@ -220,6 +295,8 @@ export function evaluatePublicationReadinessFromData(
   const visualWarnings: ReadinessIssue[] = [];
   const privacyBlockers: ReadinessIssue[] = [];
   const privacyWarnings: ReadinessIssue[] = [];
+  const rightsBlockers: ReadinessIssue[] = [];
+  const rightsWarnings: ReadinessIssue[] = [];
   const workflowBlockers: ReadinessIssue[] = [];
   const workflowWarnings: ReadinessIssue[] = [];
 
@@ -273,8 +350,8 @@ export function evaluatePublicationReadinessFromData(
   if (DERIVATIVE_TYPES.has(String(work.type))) {
     contentWarnings.push(
       issue(
-        "provenance_manual",
-        "Karya derivative (Sinopsis/Terjemahan/Fragmen): pastikan provenance/hak telah disemak manual sebelum terbit."
+        "provenance_expected",
+        "Karya derivative (Sinopsis/Terjemahan/Fragmen): butiran provenance sumber disemak melalui gate rights."
       )
     );
   }
@@ -434,6 +511,90 @@ export function evaluatePublicationReadinessFromData(
     }
   }
 
+  // --- Rights (source provenance gate) ---
+  if (DERIVATIVE_TYPES.has(String(work.type))) {
+    const src = input.sourceWork ?? null;
+    if (!src) {
+      rightsBlockers.push(
+        issue(
+          "source_missing",
+          "Karya derivative memerlukan rekod source_works (provenance sumber) sebelum terbit."
+        )
+      );
+    } else {
+      const missing: string[] = [];
+      if (!src.original_title || !src.original_title.trim()) missing.push("original_title");
+      if (!src.author || !src.author.trim()) missing.push("author");
+      if (!src.original_language || !src.original_language.trim()) missing.push("original_language");
+      if (missing.length > 0) {
+        rightsBlockers.push(
+          issue(
+            "source_incomplete",
+            `Provenance sumber belum lengkap — medan kosong: ${missing.join(", ")}.`
+          )
+        );
+      }
+      if (!isValidSourceUrl(src.source_url)) {
+        rightsBlockers.push(
+          issue(
+            "source_url_invalid",
+            "source_url mesti http:// atau https:// (javascript:/file:/data: tidak dibenarkan)."
+          )
+        );
+      }
+
+      const status = String(src.rights_status || "unknown");
+      const reviewed = Boolean(src.reviewed_at && src.reviewed_by);
+      const currentHash = computeMaterialHash(src);
+      const approvedHash = src.approved_material_hash;
+      const stale = reviewed && approvedHash !== null && approvedHash !== currentHash;
+
+      if (!RIGHTS_PASS_STATUSES.has(status)) {
+        rightsBlockers.push(
+          issue(
+            "rights_not_approved",
+            `Status hak "${status}" tidak membenarkan penerbitan. Perlu public_domain, licensed, atau permission_obtained.`
+          )
+        );
+      } else if (!reviewed) {
+        rightsBlockers.push(
+          issue("rights_not_reviewed", "Status hak PASS tetapi tiada reviewed_by/reviewed_at (semakan manusia belum direkod).")
+        );
+      } else if (stale) {
+        rightsBlockers.push(
+          issue(
+            "rights_stale_approval",
+            "Kelulusan hak lapuk — provenance material berubah selepas semakan terakhir."
+          )
+        );
+      } else if (status === "public_domain") {
+        rightsWarnings.push(
+          issue(
+            "rights_public_domain_notice",
+            "Domain awam pada asal tidak semestinya melindungi terjemahan moden — pastikan teks terjemahan berdasarkan sumber yang sah (lihat source_text_basis)."
+          )
+        );
+      }
+      if (status === "restricted" || status === "rejected") {
+        if (!src.rights_notes || !src.rights_notes.trim()) {
+          rightsBlockers.push(
+            issue(
+              "rights_notes_required",
+              `rights_notes wajib untuk status "${status}".`
+            )
+          );
+        }
+      }
+    }
+  } else if (input.sourceWork) {
+    rightsWarnings.push(
+      issue(
+        "source_work_non_derivative",
+        "Rekod source_works wujud tetapi Work bukan jenis derivative — gate rights tidak aktif."
+      )
+    );
+  }
+
   // --- Workflow (visual request state relevant to publication) ---
   const attachedCreationIds = new Set(
     visuals.map((v) => v.creation_id).filter(Boolean) as string[]
@@ -503,6 +664,7 @@ export function evaluatePublicationReadinessFromData(
     credits: finalizeGate(creditBlockers, creditWarnings),
     visuals: finalizeGate(visualBlockers, visualWarnings),
     privacy: finalizeGate(privacyBlockers, privacyWarnings),
+    rights: finalizeGate(rightsBlockers, rightsWarnings),
     workflow: finalizeGate(workflowBlockers, workflowWarnings),
   };
 
