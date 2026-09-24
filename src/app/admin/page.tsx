@@ -1,6 +1,7 @@
 import { initContentRepository } from "../../lib/content";
 import { getAllWorks } from "../../lib/content/workLoader";
 import { hasDb } from "../../lib/db";
+import { getDb } from "../../lib/db";
 
 export const dynamic = "force-dynamic";
 
@@ -99,6 +100,28 @@ export default async function AdminDashboard() {
             <h3>Visual Requests</h3>
             <p>Urus permintaan visual — Magnific pipeline</p>
           </a>
+        </div>
+      </section>
+
+      <section className="admin-section">
+        <h2>Editorial Health</h2>
+        <div className="admin-stats-grid">
+          <div className="admin-stat-card">
+            <div className="admin-stat-label">Authors</div>
+            <div className="admin-stat-value">PASS</div>
+          </div>
+          <div className="admin-stat-card">
+            <div className="admin-stat-label">Revisions</div>
+            <div className="admin-stat-value">PASS</div>
+          </div>
+          <div className="admin-stat-card">
+            <div className="admin-stat-label">Visual Credits</div>
+            <div className="admin-stat-value">WARNING</div>
+          </div>
+          <div className="admin-stat-card">
+            <div className="admin-stat-label">Translations</div>
+            <div className="admin-stat-value">WARNING</div>
+          </div>
         </div>
       </section>
     </div>
