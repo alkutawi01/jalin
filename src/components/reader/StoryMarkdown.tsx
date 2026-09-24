@@ -6,31 +6,11 @@ function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^$()|[\]\\{}]/g, "\\$&");
 }
 
-function mergeLines(markdown: string): string {
-  const normalized = markdown.replace(/\r\n/g, "\n");
-  const sections = normalized.split("\n***\n");
-  return sections.map((section) => {
-    const lines = section.split("\n");
-    const result: string[] = [];
-    let paragraph: string[] = [];
-
-    for (const line of lines) {
-      if (line.trim() === "") {
-        if (paragraph.length > 0) {
-          result.push(paragraph.join(" "));
-          paragraph = [];
-        }
-      } else {
-        paragraph.push(line);
-      }
-    }
-
-    if (paragraph.length > 0) {
-      result.push(paragraph.join(" "));
-    }
-
-    return result.join("\n");
-  }).join("\n\n***\n\n");
+function normalizeMarkdown(markdown: string): string {
+  // Preserve editorial paragraph boundaries exactly as authored.
+  // Markdown uses blank lines (\n\n) to delimit paragraphs; collapsing them
+  // here would turn an entire scene into a single paragraph.
+  return markdown.replace(/\r\n/g, "\n");
 }
 
 function GlossaryTerm({
@@ -100,7 +80,7 @@ export default function StoryMarkdown({
         )
       }}
     >
-      {mergeLines(children)}
+      {normalizeMarkdown(children)}
     </ReactMarkdown>
   );
 }
