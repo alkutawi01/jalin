@@ -3,7 +3,8 @@
  *
  * Publication is a separate, human-controlled, admin-only action.
  * - Never auto-generates, auto-approves, auto-attaches, or auto-edits content.
- * - Atomic: status/published_at/published_by/history update in one transaction.
+ * - Atomic: readiness recheck + status/published_at/published_by/history in ONE transaction.
+ * - Authoritative readiness comes from the transactional recheck (preflight is advisory only).
  * - Idempotent: publishing an already-published Work is a safe no-op.
  */
 
@@ -20,6 +21,14 @@ export interface PublishActor {
   email?: string;
 }
 
+export interface PublishWorkOptions {
+  /**
+   * Test-only hook: runs after preflight PASS and before the publish transaction
+   * begins. Used by race-condition regression tests to invalidate a relation.
+   */
+  beforeTransaction?: () => Promise<void> | void;
+}
+
 export interface PublishWorkResult {
   /** True when Work was already published (idempotent short-circuit). */
   alreadyPublished: boolean;
@@ -28,6 +37,7 @@ export interface PublishWorkResult {
   status: string;
   publishedAt: string | null;
   publishedBy: string | null;
+  /** Authoritative readiness from the successful transaction (or read-only idempotent path). */
   readiness: PublicationReadiness;
 }
 
@@ -103,11 +113,15 @@ export async function evaluatePublicationReadiness(
 
 /**
  * Explicit publish. Admin-only is enforced by /api/admin route middleware.
- * Throws if readiness has blockers or status is not publishable.
+ *
+ * Preflight readiness is advisory (fast fail / API feedback).
+ * Transactional readiness recheck (all relations via trx) is AUTHORITATIVE.
+ * Throws if either evaluation has blockers or status is not publishable.
  */
 export async function publishWorkExplicit(
   workId: string,
-  actor: PublishActor
+  actor: PublishActor,
+  options: PublishWorkOptions = {}
 ): Promise<PublishWorkResult> {
   const db = getDbOrThrow();
 
@@ -120,7 +134,7 @@ export async function publishWorkExplicit(
     throw new Error("Work tidak ditemui.");
   }
 
-  // Idempotent path: already published → no state change.
+  // Idempotent path: already published → no state change (read-only readiness).
   if (existing.status === "published") {
     const readiness = await evaluatePublicationReadiness(workId);
     if (!readiness) throw new Error("Work tidak ditemui.");
@@ -139,38 +153,68 @@ export async function publishWorkExplicit(
     };
   }
 
-  const input = await loadReadinessInput(db, workId);
-  if (!input) throw new Error("Work tidak ditemui.");
-  const readiness = evaluatePublicationReadinessFromData(input);
-  if (!readiness.ready) {
-    const summary = readiness.blockers.map((b) => b.message).join(" | ");
+  // Preflight (advisory): fast failure before opening a transaction.
+  const preflightInput = await loadReadinessInput(db, workId);
+  if (!preflightInput) throw new Error("Work tidak ditemui.");
+  const preflight = evaluatePublicationReadinessFromData(preflightInput);
+  if (!preflight.ready) {
+    const summary = preflight.blockers.map((b) => b.message).join(" | ");
     throw new Error(`Publication readiness gagal: ${summary}`);
   }
-  if (existing.status !== "ready") {
+  if (preflightInput.work.status !== "ready") {
     throw new Error(
-      `Status mestilah "ready" untuk menerbitkan (sekarang: "${existing.status}").`
+      `Status mestilah "ready" untuk menerbitkan (sekarang: "${preflightInput.work.status}").`
     );
+  }
+
+  if (options.beforeTransaction) {
+    await options.beforeTransaction();
   }
 
   const publishedBy = actor.email || actor.id;
   const nowIso = new Date().toISOString();
 
   const result = await db.transaction().execute(async (trx) => {
-    // Re-check status inside the transaction (concurrency guard).
+    // Load fresh Work + ALL publication relations via the SAME transaction.
+    const input = await loadReadinessInput(trx, workId);
+    if (!input) throw new Error("Work tidak ditemui semasa transaksi.");
+
+    if (input.work.status === "published") {
+      // Concurrent publish won the race — idempotent success without rewrite.
+      const readiness = evaluatePublicationReadinessFromData(input);
+      return {
+        alreadyPublished: true as const,
+        readiness,
+        slug: input.work.slug,
+        publishedAt: input.work.published_at ?? null,
+        publishedBy:
+          (
+            await trx
+              .selectFrom("works")
+              .where("id", "=", workId)
+              .select("published_by")
+              .executeTakeFirstOrThrow()
+          ).published_by ?? null,
+      };
+    }
+
+    // AUTHORITATIVE transactional readiness recheck (all relations via trx).
+    const readiness = evaluatePublicationReadinessFromData(input);
+    if (!readiness.ready) {
+      const summary = readiness.blockers.map((b) => b.message).join(" | ");
+      throw new Error(`Publication readiness (transaksi) gagal: ${summary}`);
+    }
+    if (input.work.status !== "ready") {
+      throw new Error(
+        `Status berubah semasa transaksi (sekarang: "${input.work.status}").`
+      );
+    }
+
     const fresh = await trx
       .selectFrom("works")
       .where("id", "=", workId)
-      .select(["id", "slug", "status", "published_at", "editorial_history"])
-      .executeTakeFirst();
-    if (!fresh) throw new Error("Work tidak ditemui semasa transaksi.");
-    if (fresh.status === "published") {
-      return { alreadyPublished: true as const, fresh };
-    }
-    if (fresh.status !== "ready") {
-      throw new Error(
-        `Status berubah semasa transaksi (sekarang: "${fresh.status}").`
-      );
-    }
+      .select(["editorial_history"])
+      .executeTakeFirstOrThrow();
 
     let history: unknown[] = [];
     try {
@@ -205,27 +249,23 @@ export async function publishWorkExplicit(
       })
       .execute();
 
-    return { alreadyPublished: false as const, fresh };
+    return {
+      alreadyPublished: false as const,
+      readiness,
+      slug: input.work.slug,
+      publishedAt: nowIso,
+      publishedBy,
+    };
   });
-
-  const finalRow = await db
-    .selectFrom("works")
-    .where("id", "=", workId)
-    .selectAll()
-    .executeTakeFirstOrThrow();
-
-  const publishedAt =
-    finalRow.published_at instanceof Date
-      ? finalRow.published_at.toISOString()
-      : finalRow.published_at;
 
   return {
     alreadyPublished: result.alreadyPublished,
-    workId: String(finalRow.id),
-    slug: String(finalRow.slug),
-    status: String(finalRow.status),
-    publishedAt: publishedAt ?? null,
-    publishedBy: finalRow.published_by ?? null,
-    readiness,
+    workId,
+    slug: result.slug,
+    status: "published",
+    publishedAt: result.publishedAt ?? null,
+    publishedBy: result.publishedBy,
+    // Authoritative readiness from the successful transactional evaluation.
+    readiness: result.readiness,
   };
 }

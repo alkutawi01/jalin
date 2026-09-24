@@ -470,5 +470,46 @@ console.log("\n=== Purity: evaluator has no side effects ===");
   assert(snapshot === after, "Input Work/credits/visuals unchanged by evaluation");
 }
 
+// ============================================================
+// 17. Race: relation invalidated after preflight fails transactional recheck
+// ============================================================
+console.log("\n=== Race: post-preflight relation invalidation ===");
+{
+  const preflight = evaluatePublicationReadinessFromData(validInput());
+  assert(preflight.ready === true, "Preflight readiness PASS (advisory)");
+
+  // Simulate concurrent mutation after preflight: visual unfinalized + byline removed.
+  const afterMutation = evaluatePublicationReadinessFromData(
+    validInput({
+      visuals: [baseVisual({ is_asset_finalized: false })],
+      credits: [baseCredit({ byline: false })],
+    })
+  );
+  assert(afterMutation.ready === false, "Transactional recheck FAIL after relation mutation");
+  assert(
+    afterMutation.blockers.some((b) => b.code === "visual_unfinalized"),
+    "visual_unfinalized blocks publication"
+  );
+  assert(
+    afterMutation.blockers.some((b) => b.code === "byline_missing"),
+    "byline_missing blocks publication"
+  );
+
+  // Failed recheck never implies published status (pure evaluator leaves input unchanged).
+  const mutatedInput = validInput({
+    visuals: [baseVisual({ is_asset_finalized: false })],
+    credits: [baseCredit({ byline: false })],
+  });
+  evaluatePublicationReadinessFromData(mutatedInput);
+  assert(mutatedInput.work.status === "ready", "Work remains ready after failed recheck (pure)");
+  assert(mutatedInput.work.published_at === null, "published_at unchanged/null after failed recheck");
+
+  const slugRace = evaluatePublicationReadinessFromData(
+    validInput({ slugTakenByOther: true })
+  );
+  assert(slugRace.ready === false, "Duplicate slug after preflight fails transactional recheck");
+  assert(slugRace.blockers.some((b) => b.code === "slug_duplicate"), "slug_duplicate blocker");
+}
+
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed > 0) process.exit(1);

@@ -1,6 +1,6 @@
 # Phase 4D-6 — Editorial Publication Pipeline
 
-Status: implemented (pending Director gate).
+Status: implemented + 4D-6R atomic recheck (pending Director gate).
 Depends on: 4D-1..4D-5R2 (submissions, generation, promotion, Magnific, Neon Object Storage).
 
 ## Objective
@@ -118,11 +118,18 @@ production Works remain valid. Integrity blockers (title/slug/body/privacy) stil
 
 1. Auth via middleware + `getCurrentAdmin()`
 2. Load Work; if already `published` → idempotent `{ alreadyPublished: true, ... }`
-3. Evaluate readiness; blockers → HTTP 422
+3. **Preflight** readiness (advisory/fast fail); blockers → HTTP 422
 4. Status must be `ready` → 422 otherwise
-5. Single transaction: `status=published`, `published_at`, `published_by`,
+5. **Transaction begins** — `beforeTransaction` test hook may run (race tests only)
+6. Inside the **same transaction**, reload Work + credits + visuals + glossary +
+   visual_requests + contributors + duplicate-slug via `loadReadinessInput(trx, …)`
+7. **Authoritative transactional readiness recheck** — must return `ready === true`
+   or the transaction rolls back (Work stays `ready`, audit fields unchanged)
+8. Single transaction commits: `status=published`, `published_at`, `published_by`,
    append `editorial_history` publish entry, `updated_at`
-6. Return published Work state
+9. Response returns the **transactional** readiness object (not the preflight snapshot)
+
+Preflight is advisory only; the transactional recheck is the publication gate.
 
 Does **not** auto-fix blockers, generate/approve/attach visuals, or edit content.
 
@@ -171,10 +178,11 @@ near-public rendering (body, glossary, hero, public byline) without mutating sta
 
 ## Tests
 
-- `__tests__/publication-pipeline.test.ts` — pure readiness/publish-rule/visibility matrix
+- `__tests__/publication-pipeline.test.ts` — pure readiness/publish-rule/visibility/race matrix
 - `scripts/publication-readiness-audit.ts` (`npm run audit:readiness`) — read-only audit of live Works
 - `scripts/controlled-publication-test.ts` (`npm run test:controlled-publish`) —
-  dedicated test Work draft→ready→publish→archive (never touches production editorial Works)
+  dedicated test Work draft→ready→**race invalidation**→publish→idempotent→archive
+  (never touches production editorial Works)
 
 ## Verification checklist
 
@@ -182,9 +190,12 @@ near-public rendering (body, glossary, hero, public byline) without mutating sta
 - [x] Blockers vs warnings separated
 - [x] Explicit admin publish endpoint
 - [x] Atomic + idempotent publish
+- [x] **Transactional readiness recheck (authoritative)** — 4D-6R
+- [x] All readiness relations loaded via trx (credits/visuals/glossary/visual_requests/slug)
 - [x] published_at / published_by audit
 - [x] Public routes: published only
 - [x] Admin preview private + non-mutating
 - [x] Visual finalized + transient URL gates
 - [x] Grandfather existing published Works
 - [x] No auto generate/approve/attach/publish
+- [x] Race regression: relation invalidated after preflight → publish blocked, status stays ready

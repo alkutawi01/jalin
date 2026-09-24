@@ -149,12 +149,65 @@ async function main() {
   }
   ok("Readiness becomes true only after fixes");
 
-  // 6. Explicit publish
+  // 5b. Race regression (4D-6R): preflight PASS, then invalidate relation
+  //     before the publish transaction begins → transactional recheck must fail.
+  const visualRow = await db
+    .selectFrom("visuals")
+    .where("work_id", "=", TEST_ID)
+    .selectAll()
+    .executeTakeFirst();
+  if (!visualRow) fail("test visual missing for race test");
+
+  let raceError: string | null = null;
+  try {
+    await publishWorkExplicit(
+      TEST_ID,
+      { id: "race-test", email: "race@jalin.local" },
+      {
+        beforeTransaction: async () => {
+          await db
+            .updateTable("visuals")
+            .where("id", "=", visualRow.id)
+            .set({ is_asset_finalized: false })
+            .execute();
+        },
+      }
+    );
+  } catch (err) {
+    raceError = err instanceof Error ? err.message : String(err);
+  }
+  if (!raceError) fail("race: publish should fail when relation invalidates after preflight");
+  if (!raceError.includes("transaksi") && !raceError.includes("finalized")) {
+    fail(`race: expected transactional readiness failure, got: ${raceError}`);
+  }
+  const afterRace = await db
+    .selectFrom("works")
+    .where("id", "=", TEST_ID)
+    .selectAll()
+    .executeTakeFirst();
+  if (!afterRace || afterRace.status !== "ready") {
+    fail(`race: Work must remain status=ready (got ${afterRace?.status})`);
+  }
+  if (afterRace.published_at) fail("race: published_at must remain null after failed trx check");
+  if (afterRace.published_by) fail("race: published_by must remain null after failed trx check");
+  ok("Race: invalid relation after preflight prevents publish; Work stays ready; audit fields null");
+
+  // Restore relation for normal publish path
+  await db
+    .updateTable("visuals")
+    .where("id", "=", visualRow.id)
+    .set({ is_asset_finalized: true })
+    .execute();
+  r = await evaluatePublicationReadiness(TEST_ID);
+  if (!r?.ready) fail("restored Work should be ready again");
+
+  // 6. Explicit publish (authoritative readiness from transaction)
   const result = await publishWorkExplicit(TEST_ID, { id: "controlled-test", email: "editor@jalin.local" });
   if (result.alreadyPublished) fail("first publish should not be alreadyPublished");
   if (result.status !== "published") fail("status should be published");
   if (!result.publishedAt) fail("publishedAt should be set");
   if (result.publishedBy !== "editor@jalin.local") fail("publishedBy should be stored");
+  if (!result.readiness?.ready) fail("response must return authoritative transactional readiness");
   ok(`Explicit publish succeeded (published_at=${result.publishedAt}, published_by=${result.publishedBy})`);
 
   // 7. Idempotent republish
