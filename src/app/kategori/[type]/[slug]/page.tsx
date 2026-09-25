@@ -26,7 +26,7 @@ import type { ReadingSection, WorkType } from "../../../../lib/content/types";
 export const dynamicParams = false;
 
 export async function generateStaticParams() {
-  const types: WorkType[] = ["cerpen", "novela", "terjemahan", "bersiri", "fragmen", "sinopsis"];
+  const types: WorkType[] = ["cerpen", "novela", "bersiri", "fragmen", "sinopsis"];
   const params: { type: string; slug: string; sectionSlug?: string }[] = [];
 
   const repo = await initContentRepository();
@@ -50,7 +50,6 @@ export async function generateStaticParams() {
 const TYPE_LABELS: Record<string, string> = {
   cerpen: "Cerpen",
   novela: "Novela",
-  terjemahan: "Terjemahan",
   bersiri: "Bersiri",
   fragmen: "Fragmen",
   sinopsis: "Sinopsis"
