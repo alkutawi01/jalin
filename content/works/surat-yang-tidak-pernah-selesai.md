@@ -10,7 +10,7 @@ version: v1.0
 updatedAt: '2026-09-25'
 dek: >-
   Seorang guru yang sedang menunggu di wad hospital menulis surat kepada guru lamanya, mengenang kembali rahsia yang dia simpan selama tujuh tahun — tentang seorang kawan yang meminta dia menyimpan surat cinta, dan bagaimana satu hari yang salah boleh mengubah segalanya.
-readingMinutes: 15
+readingMinutes: 8
 credits:
   - contributor: mimo
     role: initial_draft
