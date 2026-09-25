@@ -2,7 +2,6 @@ export type WorkType =
   | "cerpen"
   | "novela"
   | "bersiri"
-  | "terjemahan"
   | "fragmen"
   | "sinopsis";
 
