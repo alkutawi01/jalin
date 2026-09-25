@@ -6,7 +6,7 @@ import { getContributorDisplay } from "../src/lib/content/contributors";
 
 const root = process.cwd();
 const worksDir = path.join(root, "content", "works");
-const categories = ["cerpen", "novela", "bersiri", "terjemahan", "fragmen", "sinopsis"];
+const categories = ["cerpen", "novela", "bersiri", "fragmen", "sinopsis"];
 
 for (const file of fs.readdirSync(worksDir).filter((name) => name.endsWith(".md"))) {
   const { data } = matter(fs.readFileSync(path.join(worksDir, file), "utf8"));
