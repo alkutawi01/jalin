@@ -134,3 +134,19 @@ Support-pass base head: `ef768732d7c77f248fc613e115b4d397cec3d7f5`.
 Status remains `VISUAL_PENDING`.
 
 Production touched = NO.
+
+
+## Recovery revalidation — 2026-09-26
+
+- PR #3 exact head remains `d28950b12f8d02ef3a94a0535902b0e956a35d0e`; `JALIN_TEXT_REVIEW_COMPLETE` is still absent, so the final visual gate remains closed.
+- Oldest pending PR Conversation handoff was retried first and remained blocked by the connector safety layer.
+- Current Work file was rechecked: manuscript remains v1.8; hero alt still says `petang`, veranda alt still says `petang`, and no mapping/alt change is authorized before independent visual approval.
+- Final veranda canon was rechecked directly: Aiman descends three steps with the old broom, sweeps one small strip in front of the steps, and Farid is already at the gate.
+- Magnific history for this Work still contains exactly the two early-morning hero correction candidates and one corrected post-Maghrib veranda candidate; no new competing duplicate was found.
+- Corrected veranda candidate `ksis6r616B` remains completed and provenance-aligned, but unapproved because actual pixel-level inspection is still unavailable in this runtime.
+- A private curator assist-comment write on that candidate was retried and blocked by the safety layer.
+- No new candidate was generated, no prose/session numbering changed, and no merge/publish/deploy/production action was taken.
+
+Status remains `VISUAL_PENDING`.
+
+Production touched = NO.
