@@ -3,7 +3,7 @@
 Status: `JALIN_VISUAL_REQUIRED`
 Work: `Rumah yang Masih Menyimpan Suara`
 Session baseline: 7
-Support-pass base head before this brief refresh: `6191f5c6264dbc012e64a9be364520b97b640cbd`
+Support-pass base head before this brief refresh: `78865254a5957fce8bcc46ba24d58f94dbf24135`
 
 This is an internal commissioning/review brief only. It does not approve or publish any visual.
 
@@ -39,9 +39,9 @@ If a candidate passes, update the Work visual mapping/alt text in a separate rev
 ## Persistence / review status
 
 - Magnific provenance for all three mapped assets and both correction candidates was revalidated against the current v1.8 manuscript.
-- The oldest hero candidate `1liHRa4r4r` now has **one private Magnific Visual Curator assist comment** (comment `64310`, persisted 2026-09-25T11:40:10Z). It records that this remains the oldest bounded hero correction candidate and that final approval is withheld until `JALIN_TEXT_REVIEW_COMPLETE`; this assist note is not approval.
+- The oldest hero candidate `1liHRa4r4r` has **one private Magnific Visual Curator assist comment** (comment `64310`, persisted 2026-09-25T11:40:10Z; revalidated in this support pass). It records that this remains the oldest bounded hero correction candidate and that final approval is withheld until `JALIN_TEXT_REVIEW_COMPLETE`; this assist note is not approval.
 - Prior actual pixel-level inspection evidence for candidate `1liHRa4r4r` remains applicable because the manuscript/head basis is unchanged; final revalidation against the completed manuscript is still required before any pass marker.
-- The oldest GitHub PR handoff was retried first at exact head `2e291040fcae70a8d2b56d710306637f3155ac6d`, but the PR-comment write is still blocked by the connector safety layer. Treat the GitHub handoff as `PENDING_HANDOFF` until it is auditable on the PR.
+- The earlier pending GitHub PR handoff at head `2e291040fcae70a8d2b56d710306637f3155ac6d` became stale after two docs-only support commits. The changed range was revalidated: only this visual-review brief changed; Session 7 prose did not. The handoff was retried first against exact head `78865254a5957fce8bcc46ba24d58f94dbf24135`, but the PR-comment write was again blocked by the connector safety layer. Treat the GitHub visual handoff as `PENDING_HANDOFF` until it is auditable on the PR.
 - No additional visual candidate was generated in this support pass.
 - Before attempting any veranda replacement, Magnific history was searched for this Work and confirmed there is no existing corrected post-Maghrib candidate, so duplicate generation was avoided.
 - One bounded generation attempt for a corrected post-Maghrib veranda candidate was then made from the existing `mEjYiz2hJQ` reference using the documented stable scene constraints. The Magnific write was blocked by the connector safety layer before a creation was produced. No creation ID exists from that attempt; treat it as a generation blocker, not as a failed visual.
