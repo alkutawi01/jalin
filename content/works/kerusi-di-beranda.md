@@ -38,19 +38,19 @@ editorialHistory:
     date: "2026-09-22"
 visuals:
   - role: hero
-    src: "/visuals/kerusi-di-beranda/hero.png"
+    src: "https://pikaso.cdnpk.net/private/production/5508922841/render.png?token=exp=1790294400~hmac=bb311f6892fa9d26a4927581da7848dcd9d8b15a4eeb5bd12f92964ca0f18931"
     alt: "Kerusi rotan lama di beranda rumah kampung dengan kain lusuh pada tiang kayu."
     provider: Magnific
     creationId: TdExepDVNR
   - role: inline-rubber-estate
-    src: "/visuals/kerusi-di-beranda/inline-1.png"
+    src: "https://pikaso.cdnpk.net/private/production/5508937214/render.png?token=exp=1790294400~hmac=cc4eba50b39aa20a5d58e7e8762e9a447d363c56a8b6dc8e82ab217a4ce748d3"
     alt: "Barisan pokok getah lama yang tidak ditoreh, dengan semak mula memenuhi lantai kebun."
     provider: Magnific
     creationId: LwZMwrgswO
     anchor: "Di hadapan mereka, jalan tanah merah membelah kampung kepada dua. Di sebelah kiri berdiri rumah-rumah baharu berbumbung genting oren; di sebelah kanan terbentang kebun getah yang sudah tiga tahun tidak ditoreh, pokok-pokoknya masih tegak dalam barisan yang semakin dilupakan."
     place: after
   - role: inline-notebook
-    src: "/visuals/kerusi-di-beranda/inline-2.png"
+    src: "https://pikaso.cdnpk.net/private/production/5508950473/render.png?token=exp=1790294400~hmac=eef4dc2e33c283283eac84dfccbccb77352aa3aac20fed7240527cfb749c85b9"
     alt: "Tangan tua Pak Long memegang pen di atas buku nota di meja beranda."
     provider: Magnific
     creationId: xS3TwzajfW
