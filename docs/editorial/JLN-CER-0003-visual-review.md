@@ -56,3 +56,24 @@ If a candidate passes, update the Work visual mapping/alt text in a separate rev
 Candidate #1 remains the next bounded visual item for an **Independent Visual Curator**. Do not update the Work mapping or public alt text until that independent gate is recorded.
 
 Production touched = NO.
+
+
+## Assist concept — post-Maghrib veranda scene
+
+Status: `VISUAL_PENDING` — concept refinement only; no generation or approval in this step.
+
+Stable manuscript anchor:
+
+> Sebelum Farid pulang, Aiman berdiri sekali lagi di beranda.
+
+Scene truth to preserve if a replacement candidate is generated later:
+
+- Time is **after Maghrib**, after Aiman and Farid have prayed together and after Farid has completed the call asking the agent to postpone for one week.
+- Aiman is at the veranda / three front steps with the **old broom**; the yard still has dry leaves and only a **small freshly swept strip** should be visible in front of the steps.
+- Farid is already near the **gate**, secondary in composition, waiting quietly before leaving.
+- Lighting must read as **post-Maghrib / early night**, not daylight, sunset, golden hour, or late afternoon. A restrained porch/interior practical light is acceptable if it does not overpower the dusk/night ambience.
+- Keep the established house architecture, veranda, yard and gate continuity. No new signboard, caption, lettering or other readable text.
+- Faces remain unclear/obscured; avoid expressive close-ups. The emotional focus is the first small act of caring for the house, not portrait drama.
+- Preserve the restrained painterly Jalin House Style and the symbolic continuity of the broom/yard without adding new story objects.
+
+This concept does **not** authorize another competing generation yet. Reuse the same persistent branch/PR and revalidate against the final manuscript after `JALIN_TEXT_REVIEW_COMPLETE` before any visual pass.
