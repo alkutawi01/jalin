@@ -3,7 +3,7 @@
 Status: `JALIN_VISUAL_REQUIRED`
 Work: `Rumah yang Masih Menyimpan Suara`
 Session baseline: 7
-Validated PR head before this support write: `7bf0cc2bb64805c601aff11c42643b1d4b451c7b`
+Current validated PR head at start of this support pass: `070137d04157a689b6c094d87e99bb9d0d7fbe14`
 
 This is an internal commissioning/review brief only. It does not approve or publish any visual.
 
@@ -40,7 +40,7 @@ If a candidate passes, update the Work visual mapping/alt text in a separate rev
 
 - Magnific provenance for all three mapped assets and both correction candidates was revalidated against the current v1.8 manuscript.
 - The oldest hero candidate `1liHRa4r4r` currently has **zero Magnific review comments**. It therefore remains unreviewed; absence of comments is not approval.
-- A bounded Independent Visual Curator review-request comment was attempted for `1liHRa4r4r`, but the write was blocked by the connector safety layer. Treat that request as `PENDING_HANDOFF` until it is actually persisted.
+- A bounded Independent Visual Curator review-request comment was retried for `1liHRa4r4r` at PR head `070137d04157a689b6c094d87e99bb9d0d7fbe14`, but the Magnific write was again blocked by the connector safety layer. A fallback attempt to persist the pending visual handoff in PR metadata was also blocked. Treat the request as `PENDING_HANDOFF` until an auditable review request is actually persisted.
 - No additional visual candidate was generated in this support pass.
 
 ## Provenance snapshot (revalidated)
