@@ -164,3 +164,17 @@ Production touched = NO.
 Status remains `VISUAL_PENDING`.
 
 Production touched = NO.
+
+## Recovery transport + duplicate check — 2026-09-26
+
+- Exact PR head at retry start: `a53ee0e1e3ad339988c4c1c5a6149ae84ef29382`; fresh PR conversation/review scan still finds no `JALIN_TEXT_REVIEW_COMPLETE`, so the final visual gate remains closed.
+- Oldest pending PR-level handoff was retried first by updating the existing visual support comment rather than creating a duplicate; the GitHub write was blocked by the connector safety layer. Treat that PR-level refresh as `PENDING_HANDOFF` on the exact head above.
+- Magnific history was rechecked from 2026-09-25 onward and still contains exactly three bounded candidates for this Work: two early-morning hero corrections and one corrected post-Maghrib veranda candidate. No competing duplicate was found or generated.
+- Corrected veranda candidate `ksis6r616B` remains `completed` (Seedream 5 Pro, 2304×1728). A ready 16-bit PNG delivery render still exists, but delivery readiness is not a visual pass.
+- Actual rendered-pixel inspection was retried for both the corrected veranda candidate and the oldest hero candidate through Magnific inline-image transport; both attempts failed transiently with `AioRpcError`. No pixel-level approval is claimed.
+- A private curator assist-comment write on `ksis6r616B` was retried and blocked by the connector safety layer. The candidate remains unapproved pending actual pixel inspection and post-`JALIN_TEXT_REVIEW_COMPLETE` revalidation.
+- No cerpen prose, session numbering, Work visual mapping, public alt text, merge, publish, deploy, production or tooling state was changed.
+
+Status remains `VISUAL_PENDING`.
+
+Production touched = NO.
