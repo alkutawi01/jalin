@@ -19,7 +19,6 @@ async function getStats() {
         cerpen: getAllWorks().filter((w) => w.type === "cerpen").length,
         novela: getAllWorks().filter((w) => w.type === "novela").length,
         bersiri: getAllWorks().filter((w) => w.type === "bersiri").length,
-        terjemahan: getAllWorks().filter((w) => w.type === "terjemahan").length,
         fragmen: getAllWorks().filter((w) => w.type === "fragmen").length,
         sinopsis: getAllWorks().filter((w) => w.type === "sinopsis").length,
       },
@@ -46,7 +45,6 @@ async function getStats() {
       cerpen: works.filter((w) => w.type === "cerpen").length,
       novela: works.filter((w) => w.type === "novela").length,
       bersiri: works.filter((w) => w.type === "bersiri").length,
-      terjemahan: works.filter((w) => w.type === "terjemahan").length,
       fragmen: works.filter((w) => w.type === "fragmen").length,
       sinopsis: works.filter((w) => w.type === "sinopsis").length,
     },
@@ -84,10 +82,6 @@ export default async function AdminDashboard() {
         <div className="admin-stat-card">
           <div className="admin-stat-label">Bersiri</div>
           <div className="admin-stat-value">{stats.worksByType.bersiri}</div>
-        </div>
-        <div className="admin-stat-card">
-          <div className="admin-stat-label">Terjemahan</div>
-          <div className="admin-stat-value">{stats.worksByType.terjemahan}</div>
         </div>
       </div>
 

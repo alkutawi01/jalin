@@ -45,16 +45,14 @@ editorialHistory:
     date: '2026-09-22'
 visuals:
   - role: hero
-    src: >-
-      https://pikaso.cdnpk.net/private/production/5508775655/render.png?token=exp=1790294400~hmac=edf32d50f9b9bd85575d5cdcab4f16e2550c5134cac333d5302fb1857b58149c
+    src: /visuals/nombor-giliran-117/hero.png
     alt: >-
       Seorang wanita Melayu berusia duduk di kerusi menunggu hospital sambil
       memegang nombor giliran; wajahnya tidak kelihatan jelas.
     provider: Magnific
     creationId: mEjyWoyhJQ
   - role: inline-nasi-lemak
-    src: >-
-      https://pikaso.cdnpk.net/private/production/5510701304/render.png?token=exp=1790294400~hmac=b257ac0ac3e377e1484afed0a34b05b42f3db2b4a9b4a9523bd14bd42d7815c0
+    src: /visuals/nombor-giliran-117/inline-1.png
     alt: >-
       Bakul plastik biru berisi bungkusan nasi lemak di dapur rumah sederhana
       sebelum Subuh.
@@ -63,8 +61,7 @@ visuals:
     anchor: Begitulah hampir setiap pagi.
     place: after
   - role: inline-hearing-aids
-    src: >-
-      https://pikaso.cdnpk.net/private/production/5510702867/render.png?token=exp=1790294400~hmac=92c9ca336fd3b24125157ad78fc15e7b08b4aedb9dd43afaf8271bb334d70520
+    src: /visuals/nombor-giliran-117/inline-2.png
     alt: >-
       Sepasang alat bantu dengar di atas meja kecil bersama beg sekolah dan buku
       latihan pada lewat petang.
