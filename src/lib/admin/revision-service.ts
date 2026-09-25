@@ -187,86 +187,88 @@ export async function createRevision(
 ): Promise<RevisionResult> {
   const db = getDbOrThrow();
 
-  const work = await db.selectFrom("works").where("id", "=", workId).selectAll().executeTakeFirst();
-  if (!work) throw new Error("Work tidak ditemui.");
-  if (work.status !== "published" && work.status !== "ready") {
-    throw new Error(`Work status "${work.status}" tidak boleh dipublikasikan.`);
-  }
+  return await db.transaction().execute(async (trx) => {
+    const work = await trx.selectFrom("works").where("id", "=", workId).selectAll().executeTakeFirst();
+    if (!work) throw new Error("Work tidak ditemui.");
+    if (work.status !== "published" && work.status !== "ready") {
+      throw new Error(`Work status "${work.status}" tidak boleh dipublikasikan.`);
+    }
 
-  const input = await loadWorkForRevision(db, workId);
-  const snapshot = buildSnapshot(input);
-  if (!snapshot) throw new Error("Gagal membina snapshot.");
+    const input = await loadWorkForRevision(trx, workId);
+    const snapshot = buildSnapshot(input);
+    if (!snapshot) throw new Error("Gagal membina snapshot.");
 
-  const contentHash = computeContentHash(snapshot);
+    const contentHash = computeContentHash(snapshot);
 
-  // Check if content hash already exists for this work (idempotent)
-  const existing = await db
-    .selectFrom("work_revisions")
-    .where("work_id", "=", workId)
-    .where("content_hash", "=", contentHash)
-    .select(["id", "revision_no"])
-    .executeTakeFirst();
-  if (existing) {
-    return {
-      revisionId: existing.id,
-      revisionNo: existing.revision_no,
-      publishedAt: new Date().toISOString(),
-      publishedBy: actor.email || actor.id,
+    // Check if content hash already exists for this work (idempotent)
+    const existing = await trx
+      .selectFrom("work_revisions")
+      .where("work_id", "=", workId)
+      .where("content_hash", "=", contentHash)
+      .select(["id", "revision_no"])
+      .executeTakeFirst();
+    if (existing) {
+      return {
+        revisionId: existing.id,
+        revisionNo: existing.revision_no,
+        publishedAt: new Date().toISOString(),
+        publishedBy: actor.email || actor.id,
+      };
+    }
+
+    const revisionNo = (work.revision_count ?? 0) + 1;
+    const nowIso = new Date().toISOString();
+    const publishedBy = actor.email || actor.id;
+    const revisionId = `rev_${workId}_${revisionNo}_${Date.now()}`;
+
+    const snapshotWithMeta = {
+      ...snapshot,
+      version: snapshot.version,
+      versionLabel: snapshot.versionLabel,
+      revisionCount: snapshot.revisionCount,
+      publishedRevisionId: snapshot.publishedRevisionId,
     };
-  }
 
-  const revisionNo = (work.revision_count ?? 0) + 1;
-  const nowIso = new Date().toISOString();
-  const publishedBy = actor.email || actor.id;
-  const revisionId = `rev_${workId}_${revisionNo}_${Date.now()}`;
+    await trx
+      .insertInto("work_revisions")
+      .values({
+        id: revisionId,
+        work_id: workId,
+        revision_no: revisionNo,
+        version_label: options.versionLabel ?? snapshot.versionLabel ?? `v${revisionNo}`,
+        change_type: options.changeType ?? "minor",
+        revision_summary: options.revisionSummary ?? null,
+        snapshot: JSON.stringify(snapshotWithMeta) as any,
+        content_hash: contentHash,
+        published_by: publishedBy,
+        published_at: nowIso,
+        first_published_at: work.first_published_at ?? nowIso,
+        created_at: nowIso,
+      })
+      .execute();
 
-  const snapshotWithMeta = {
-    ...snapshot,
-    version: snapshot.version,
-    versionLabel: snapshot.versionLabel,
-    revisionCount: snapshot.revisionCount,
-    publishedRevisionId: snapshot.publishedRevisionId,
-  };
+    // Update works table
+    await trx
+      .updateTable("works")
+      .where("id", "=", workId)
+      .set({
+        published_revision_id: revisionId,
+        revision_count: revisionNo,
+        version_label: options.versionLabel ?? `v${revisionNo}`,
+        published_at: nowIso,
+        published_by: publishedBy,
+        first_published_at: work.first_published_at ?? nowIso,
+        updated_at: nowIso,
+      })
+      .execute();
 
-  await db
-    .insertInto("work_revisions")
-    .values({
-      id: revisionId,
-      work_id: workId,
-      revision_no: revisionNo,
-      version_label: options.versionLabel ?? snapshot.versionLabel ?? `v${revisionNo}`,
-      change_type: options.changeType ?? "minor",
-      revision_summary: options.revisionSummary ?? null,
-      snapshot: JSON.stringify(snapshotWithMeta) as any,
-      content_hash: contentHash,
-      published_by: publishedBy,
-      published_at: nowIso,
-      first_published_at: work.first_published_at ?? nowIso,
-      created_at: nowIso,
-    })
-    .execute();
-
-  // Update works table
-  await db
-    .updateTable("works")
-    .where("id", "=", workId)
-    .set({
-      published_revision_id: revisionId,
-      revision_count: revisionNo,
-      version_label: options.versionLabel ?? `v${revisionNo}`,
-      published_at: nowIso,
-      published_by: publishedBy,
-      first_published_at: work.first_published_at ?? nowIso,
-      updated_at: nowIso,
-    })
-    .execute();
-
-  return {
-    revisionId,
-    revisionNo,
-    publishedAt: nowIso,
-    publishedBy,
-  };
+    return {
+      revisionId,
+      revisionNo,
+      publishedAt: nowIso,
+      publishedBy,
+    };
+  });
 }
 
 export async function getRevisions(workId: string) {
@@ -287,62 +289,64 @@ export async function getRevision(revisionId: string) {
 export async function revertRevision(workId: string, revisionId: string, actor: RevisionActor) {
   const db = getDbOrThrow();
 
-  const revision = await db
-    .selectFrom("work_revisions")
-    .where("id", "=", revisionId)
-    .where("work_id", "=", workId)
-    .selectAll()
-    .executeTakeFirst();
-  if (!revision) throw new Error("Revision tidak ditemui.");
+  return await db.transaction().execute(async (trx) => {
+    const revision = await trx
+      .selectFrom("work_revisions")
+      .where("id", "=", revisionId)
+      .where("work_id", "=", workId)
+      .selectAll()
+      .executeTakeFirst();
+    if (!revision) throw new Error("Revision tidak ditemui.");
 
-  const snapshot = typeof revision.snapshot === "string" ? JSON.parse(revision.snapshot) : revision.snapshot;
-  const nowIso = new Date().toISOString();
-  const publishedBy = actor.email || actor.id;
+    const snapshot = typeof revision.snapshot === "string" ? JSON.parse(revision.snapshot) : revision.snapshot;
+    const nowIso = new Date().toISOString();
+    const publishedBy = actor.email || actor.id;
 
-  // Create new revision as revert (NOT overwrite history)
-  const revertRevisionNo = (await getDbOrThrow().selectFrom("works").where("id", "=", workId).select("revision_count").executeTakeFirst())!.revision_count + 1;
-  const revertRevisionId = `rev_${workId}_${revertRevisionNo}_${Date.now()}`;
+    // Create new revision as revert (NOT overwrite history)
+    const revertRevisionNo = (await trx.selectFrom("works").where("id", "=", workId).select("revision_count").executeTakeFirst())!.revision_count + 1;
+    const revertRevisionId = `rev_${workId}_${revertRevisionNo}_${Date.now()}`;
 
-  // Revert creates a new revision from the old snapshot and becomes the current published revision
-  await getDbOrThrow()
-    .insertInto("work_revisions")
-    .values({
-      id: revertRevisionId,
-      work_id: workId,
-      revision_no: revertRevisionNo,
-      version_label: `revert-v${revertRevisionNo}`,
-      change_type: "patch",
-      revision_summary: `Reverted to revision ${revision.revision_no}`,
-      snapshot: revision.snapshot,
-      content_hash: revision.content_hash,
-      published_by: publishedBy,
-      published_at: nowIso,
-      first_published_at: revision.first_published_at,
-      created_at: nowIso,
-    })
-    .execute();
+    // Revert creates a new revision from the old snapshot and becomes the current published revision
+    await trx
+      .insertInto("work_revisions")
+      .values({
+        id: revertRevisionId,
+        work_id: workId,
+        revision_no: revertRevisionNo,
+        version_label: `revert-v${revertRevisionNo}`,
+        change_type: "patch",
+        revision_summary: `Reverted to revision ${revision.revision_no}`,
+        snapshot: revision.snapshot,
+        content_hash: revision.content_hash,
+        published_by: publishedBy,
+        published_at: nowIso,
+        first_published_at: revision.first_published_at,
+        created_at: nowIso,
+      })
+      .execute();
 
-  // Update works table - revert becomes the current state
-  await getDbOrThrow()
-    .updateTable("works")
-    .where("id", "=", workId)
-    .set({
-      version: snapshot.version,
-      version_label: `revert-v${revertRevisionNo}`,
-      revision_count: revertRevisionNo,
-      body: snapshot.body,
-      dek: snapshot.dek,
-      genre: snapshot.genre,
-      audience: snapshot.audience,
-      reading_minutes: snapshot.readingMinutes,
-      published_revision_id: revertRevisionId,
-      published_at: nowIso,
-      published_by: publishedBy,
-      updated_at: nowIso,
-    })
-    .execute();
+    // Update works table - revert becomes the current state
+    await trx
+      .updateTable("works")
+      .where("id", "=", workId)
+      .set({
+        version: snapshot.version,
+        version_label: `revert-v${revertRevisionNo}`,
+        revision_count: revertRevisionNo,
+        body: snapshot.body,
+        dek: snapshot.dek,
+        genre: snapshot.genre,
+        audience: snapshot.audience,
+        reading_minutes: snapshot.readingMinutes,
+        published_revision_id: revertRevisionId,
+        published_at: nowIso,
+        published_by: publishedBy,
+        updated_at: nowIso,
+      })
+      .execute();
 
-  return { revisionId: revertRevisionId, revisionNo: revertRevisionNo };
+    return { revisionId: revertRevisionId, revisionNo: revertRevisionNo };
+  });
 }
 
 export async function restoreRevision(workId: string, revisionId: string, actor: RevisionActor) {
