@@ -108,14 +108,22 @@ export class DatabaseContentRepository implements ContentRepository {
     const dbSections = await db.selectFrom("reading_sections").orderBy("position", "asc").selectAll().execute();
     const dbSeries = await db.selectFrom("series").selectAll().execute();
     const dbEntries = await db.selectFrom("series_entries").orderBy("position", "asc").selectAll().execute();
+    const dbRevisions = await db.selectFrom("work_revisions").selectAll().execute();
 
     // Load published revision snapshots for published works
-    const dbRevisions = await db.selectFrom("work_revisions").orderBy("revision_no", "desc").selectAll().execute();
-    for (const rev of dbRevisions) {
-      const workId = String(rev.work_id);
-      if (!this.revisionSnapshots.has(workId)) {
-        const snapshot = typeof rev.snapshot === "string" ? JSON.parse(rev.snapshot) : rev.snapshot;
-        this.revisionSnapshots.set(workId, snapshot);
+    // Only load revisions that match published_revision_id, not just the latest
+    for (const row of dbWorks) {
+      if (String(row.status || "") !== "published") continue;
+      const wid = String(row.id);
+      const publishedRevId = row.published_revision_id ? String(row.published_revision_id) : null;
+      
+      if (publishedRevId) {
+        // Load the specific published revision
+        const publishedRev = dbRevisions.find(r => String(r.id) === publishedRevId);
+        if (publishedRev) {
+          const snapshot = typeof publishedRev.snapshot === "string" ? JSON.parse(publishedRev.snapshot) : publishedRev.snapshot;
+          this.revisionSnapshots.set(wid, snapshot);
+        }
       }
     }
 
