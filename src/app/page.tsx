@@ -113,7 +113,7 @@ function EditorialSelection({ works }: { works: Work[] }) {
             <p className="section-sub">Karya-karya yang diketengahkan oleh pasukan editorial</p>
           </header>
           <div className="editorial-empty">
-            <p>Karya pilihan akan muncul di sini apabila pasukan editorial memilihnya.</p>
+            <p>Belum ada pilihan editor untuk edisi semasa.</p>
           </div>
         </div>
       </section>
