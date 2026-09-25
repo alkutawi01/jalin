@@ -3,7 +3,7 @@
 Status: `JALIN_VISUAL_REQUIRED`
 Work: `Rumah yang Masih Menyimpan Suara`
 Session baseline: 7
-Current validated PR head at start of this support pass: `070137d04157a689b6c094d87e99bb9d0d7fbe14`
+Current validated PR head at start of this support pass: `2e291040fcae70a8d2b56d710306637f3155ac6d`
 
 This is an internal commissioning/review brief only. It does not approve or publish any visual.
 
@@ -39,8 +39,9 @@ If a candidate passes, update the Work visual mapping/alt text in a separate rev
 ## Persistence / review status
 
 - Magnific provenance for all three mapped assets and both correction candidates was revalidated against the current v1.8 manuscript.
-- The oldest hero candidate `1liHRa4r4r` currently has **zero Magnific review comments**. It therefore remains unreviewed; absence of comments is not approval.
-- A bounded Independent Visual Curator review-request comment was retried for `1liHRa4r4r` at PR head `070137d04157a689b6c094d87e99bb9d0d7fbe14`, but the Magnific write was again blocked by the connector safety layer. A fallback attempt to persist the pending visual handoff in PR metadata was also blocked. Treat the request as `PENDING_HANDOFF` until an auditable review request is actually persisted.
+- The oldest hero candidate `1liHRa4r4r` now has **one private Magnific Visual Curator assist comment** (comment `64310`, persisted 2026-09-25T11:40:10Z). It records that this remains the oldest bounded hero correction candidate and that final approval is withheld until `JALIN_TEXT_REVIEW_COMPLETE`; this assist note is not approval.
+- Prior actual pixel-level inspection evidence for candidate `1liHRa4r4r` remains applicable because the manuscript/head basis is unchanged; final revalidation against the completed manuscript is still required before any pass marker.
+- The oldest GitHub PR handoff was retried first at exact head `2e291040fcae70a8d2b56d710306637f3155ac6d`, but the PR-comment write is still blocked by the connector safety layer. Treat the GitHub handoff as `PENDING_HANDOFF` until it is auditable on the PR.
 - No additional visual candidate was generated in this support pass.
 
 ## Provenance snapshot (revalidated)
@@ -50,7 +51,7 @@ If a candidate passes, update the Work visual mapping/alt text in a separate rev
 | `Xm5ZOkMBfo` | mapped hero | Seedream 5 Pro | 2560×1440 | source prompt explicitly says `golden hour` | mapped; needs independent correction review |
 | `WDaOL1OcXe` | mapped inline note | Seedream 5 Pro | 2304×1728 | interior/natural light; note explicitly unreadable | mapped; no new defect identified |
 | `mEjYiz2hJQ` | mapped veranda | Seedream 5 Pro | 2304×1728 | source prompt says `evening` | mapped; review against post-Maghrib canon |
-| `1liHRa4r4r` | hero candidate #1 | Seedream 5 Pro | 2560×1440 | prompt explicitly requires `early morning`, no sunset/golden-hour | **0 review comments**; oldest candidate; unapproved |
+| `1liHRa4r4r` | hero candidate #1 | Seedream 5 Pro | 2560×1440 | prompt explicitly requires `early morning`, no sunset/golden-hour | **1 private curator assist comment**; oldest candidate; unapproved |
 | `lJG1FGdgv9` | hero candidate #2 | Seedream 5 Pro | 2560×1440 | prompt explicitly requires `early morning`, no sunset/golden-hour | unapproved; do not prefer over #1 without review reason |
 
 Candidate #1 remains the next bounded visual item for an **Independent Visual Curator**. Do not update the Work mapping or public alt text until that independent gate is recorded.
