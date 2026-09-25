@@ -3,7 +3,7 @@
 Status: `JALIN_VISUAL_REQUIRED`
 Work: `Rumah yang Masih Menyimpan Suara`
 Session baseline: 7
-Current validated PR head at start of this support pass: `2e291040fcae70a8d2b56d710306637f3155ac6d`
+Support-pass base head before this brief refresh: `6191f5c6264dbc012e64a9be364520b97b640cbd`
 
 This is an internal commissioning/review brief only. It does not approve or publish any visual.
 
@@ -43,6 +43,9 @@ If a candidate passes, update the Work visual mapping/alt text in a separate rev
 - Prior actual pixel-level inspection evidence for candidate `1liHRa4r4r` remains applicable because the manuscript/head basis is unchanged; final revalidation against the completed manuscript is still required before any pass marker.
 - The oldest GitHub PR handoff was retried first at exact head `2e291040fcae70a8d2b56d710306637f3155ac6d`, but the PR-comment write is still blocked by the connector safety layer. Treat the GitHub handoff as `PENDING_HANDOFF` until it is auditable on the PR.
 - No additional visual candidate was generated in this support pass.
+- Before attempting any veranda replacement, Magnific history was searched for this Work and confirmed there is no existing corrected post-Maghrib candidate, so duplicate generation was avoided.
+- One bounded generation attempt for a corrected post-Maghrib veranda candidate was then made from the existing `mEjYiz2hJQ` reference using the documented stable scene constraints. The Magnific write was blocked by the connector safety layer before a creation was produced. No creation ID exists from that attempt; treat it as a generation blocker, not as a failed visual.
+- A follow-up attempt to persist the concrete rejection reason as a private Magnific comment on `mEjYiz2hJQ` was also blocked. The rejection reason remains auditable in this repo brief.
 
 ## Provenance snapshot (revalidated)
 
