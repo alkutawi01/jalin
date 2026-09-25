@@ -88,3 +88,16 @@ This concept does **not** authorize another competing generation yet. Reuse the 
 - Do **not** change the Work hero alt text from `petang` to `pagi` while the mapped hero still points to `Xm5ZOkMBfo`; that would make the accessibility text claim a scene state the mapped image does not show.
 - Do **not** change the veranda alt text to `selepas Maghrib` until the mapped veranda visual has independently passed against that canon beat. Metadata and asset mapping must move together in the reviewed visual step.
 - A candidate-selection decision, visual mapping change, or public alt-text correction is therefore downstream of Independent Visual Curator evidence; this Writer support pass may only preserve the brief/provenance state.
+
+
+## Current support revalidation
+
+Revalidated against PR #3 head `be626b8486d7dc4fcf646d5950311371c614c0b5` while Session 7 remains at the Writer→Critic gate.
+
+- The oldest pending GitHub visual handoff was retried first on this unchanged head. The PR Conversation write was blocked again by the connector safety layer, so the handoff remains `PENDING_HANDOFF`.
+- Work metadata is still internally consistent for editorial versioning: front-matter `version: v1.8` matches the latest `editorialHistory` entry for Session 7.
+- Public editorial-history attribution remains canonical (`Rafiq Naim` / `Amir Syafiq`); no provenance repair is required.
+- Visual mappings remain unchanged: hero `Xm5ZOkMBfo`, note `WDaOL1OcXe`, veranda `mEjYiz2hJQ`. Because the mapped hero still describes `petang` while manuscript canon opens `Pagi itu`, and the veranda alt still says `petang` while its anchor is post-Maghrib, mapping/alt correction remains downstream of independent visual approval.
+- No prose was edited, no candidate was approved, and no new visual was generated in this support pass.
+
+Production touched = NO.
