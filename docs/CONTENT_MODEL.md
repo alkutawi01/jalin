@@ -10,7 +10,6 @@ Cadangan field:
 - id
 - slug
 - title
-- type: cerpen | novela | bersiri | terjemahan | fragmen | sinopsis
 - kind: cerpen | novela | bersiri (Novela and cerpen are single works; bersiri has multiple episodes)
 - series_id: nullable
 - genre
@@ -30,7 +29,6 @@ Format: `JLN-{TYPE}-{NUMBER}` where:
 - `CER` = Cerpen
 - `NOV` = Novela
 - `BER` = Bersiri
-- `TER` = Terjemahan
 - `FRA` = Fragmen
 - `SIN` = Sinopsis
 
@@ -45,7 +43,6 @@ Example: `JLN-CER-0001`, `JLN-NOV-0001`
 
 ## Content body and pagination
 
-Cerpen, Novela, Sinopsis, Terjemahan dan Fragmen ialah **satu Work**, walaupun panjang.
 
 Body boleh dipecahkan secara teknikal kepada `ReadingSection` untuk pagination dan progress.
 
@@ -121,7 +118,6 @@ Prinsip:
 
 ## SourceWork
 
-Digunakan untuk Sinopsis, Terjemahan dan Fragmen.
 
 Cadangan field:
 - id
