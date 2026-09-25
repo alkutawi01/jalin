@@ -284,6 +284,67 @@ export async function getRevision(revisionId: string) {
   return db.selectFrom("work_revisions").where("id", "=", revisionId).selectAll().executeTakeFirst();
 }
 
+export async function revertRevision(workId: string, revisionId: string, actor: RevisionActor) {
+  const db = getDbOrThrow();
+
+  const revision = await db
+    .selectFrom("work_revisions")
+    .where("id", "=", revisionId)
+    .where("work_id", "=", workId)
+    .selectAll()
+    .executeTakeFirst();
+  if (!revision) throw new Error("Revision tidak ditemui.");
+
+  const snapshot = typeof revision.snapshot === "string" ? JSON.parse(revision.snapshot) : revision.snapshot;
+  const nowIso = new Date().toISOString();
+  const publishedBy = actor.email || actor.id;
+
+  // Create new revision as revert (NOT overwrite history)
+  const revertRevisionNo = (await getDbOrThrow().selectFrom("works").where("id", "=", workId).select("revision_count").executeTakeFirst())!.revision_count + 1;
+  const revertRevisionId = `rev_${workId}_${revertRevisionNo}_${Date.now()}`;
+
+  // Revert creates a new revision from the old snapshot and becomes the current published revision
+  await getDbOrThrow()
+    .insertInto("work_revisions")
+    .values({
+      id: revertRevisionId,
+      work_id: workId,
+      revision_no: revertRevisionNo,
+      version_label: `revert-v${revertRevisionNo}`,
+      change_type: "patch",
+      revision_summary: `Reverted to revision ${revision.revision_no}`,
+      snapshot: revision.snapshot,
+      content_hash: revision.content_hash,
+      published_by: publishedBy,
+      published_at: nowIso,
+      first_published_at: revision.first_published_at,
+      created_at: nowIso,
+    })
+    .execute();
+
+  // Update works table - revert becomes the current state
+  await getDbOrThrow()
+    .updateTable("works")
+    .where("id", "=", workId)
+    .set({
+      version: snapshot.version,
+      version_label: `revert-v${revertRevisionNo}`,
+      revision_count: revertRevisionNo,
+      body: snapshot.body,
+      dek: snapshot.dek,
+      genre: snapshot.genre,
+      audience: snapshot.audience,
+      reading_minutes: snapshot.readingMinutes,
+      published_revision_id: revertRevisionId,
+      published_at: nowIso,
+      published_by: publishedBy,
+      updated_at: nowIso,
+    })
+    .execute();
+
+  return { revisionId: revertRevisionId, revisionNo: revertRevisionNo };
+}
+
 export async function restoreRevision(workId: string, revisionId: string, actor: RevisionActor) {
   const db = getDbOrThrow();
 
