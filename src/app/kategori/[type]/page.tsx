@@ -15,11 +15,6 @@ const CATEGORY_META: Record<string, { title: string; intro: string; headerLabel:
     intro: "Novela pendek berilustrasi untuk pembaca Jalin.",
     headerLabel: "Novela",
   },
-  terjemahan: {
-    title: "Senarai Terjemahan",
-    intro: "Karya terjemahan berilustrasi untuk pembaca Jalin.",
-    headerLabel: "Terjemahan",
-  },
   bersiri: {
     title: "Senarai Bersiri",
     intro: "Siri berilustrasi untuk pembaca Jalin — sambungan demi sambungan.",
