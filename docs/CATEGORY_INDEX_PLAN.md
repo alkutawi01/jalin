@@ -58,7 +58,6 @@ Struktur ini direka untuk menyokong kategori lain pada masa hadapan:
 /cerpen
 /novela
 /bersiri
-/terjemahan
 /fragmen
 /sinopsis
 ```
