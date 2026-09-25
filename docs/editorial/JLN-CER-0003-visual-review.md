@@ -101,3 +101,19 @@ Revalidated against PR #3 head `be626b8486d7dc4fcf646d5950311371c614c0b5` while 
 - No prose was edited, no candidate was approved, and no new visual was generated in this support pass.
 
 Production touched = NO.
+
+
+## Recovery update — corrected veranda candidate
+
+Revalidated on PR #3 head `d32debf43076943008d4467fc66771d8f0c7aa47`.
+
+- Oldest pending GitHub visual handoff was retried first on this unchanged head; the PR Conversation write remains blocked by the connector safety layer, so GitHub persistence is still `PENDING_HANDOFF`.
+- Magnific history for 2026-09-25 shows only the two existing hero-correction candidates and one corrected veranda candidate; no additional competing veranda duplicate exists.
+- Corrected veranda candidate `ksis6r616B` exists and is `completed` (Seedream 5 Pro, 2304×1728). Its source prompt explicitly targets the stable post-Maghrib / early-night beat, Aiman with the old broom at the veranda/front steps, a single small swept strip, Farid secondary near the gate, no daylight/golden hour, no readable text, unclear faces, and preserved house/veranda/yard/gate continuity.
+- This candidate remains **unapproved**. Metadata/provenance alignment is not a pixel-level pass. Actual rendered-image inspection and revalidation against the final manuscript remain mandatory after `JALIN_TEXT_REVIEW_COMPLETE`.
+- An assist-comment write to the Magnific candidate was attempted but blocked by the connector safety layer. Do not infer approval from the absence of that comment.
+- No new visual was generated in this recovery update, no Work visual mapping or public alt text changed, and no cerpen prose/session numbering was touched.
+
+Status remains `VISUAL_PENDING`.
+
+Production touched = NO.
