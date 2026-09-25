@@ -82,15 +82,21 @@ function buildGlossary(work: Awaited<ReturnType<typeof getWork>>): GlossaryMap {
   return glossary;
 }
 
+function resolvePublicContributor(slug: string) {
+  if (slug.startsWith("guest:")) return { name: slug.slice(6), kind: "human" as const, href: undefined };
+  const display = getContributorDisplay(slug);
+  return { ...display, href: display.name === "Penyumbang Jalin" ? undefined : `/penulis/${slug}` };
+}
+
 function buildByline(work: Awaited<ReturnType<typeof getWork>>): BylineCredit[] {
   return (work?.credits ?? [])
     .filter((credit) => credit.byline)
     .map((credit) => {
-      const display = getContributorDisplay(credit.slug);
+      const display = resolvePublicContributor(credit.slug);
       return {
         name: display.name,
         maya: display.kind === "virtual",
-        href: `/penulis/${credit.slug}`
+        href: display.href
       };
     });
 }
@@ -109,14 +115,13 @@ function buildMetaRows(work: Awaited<ReturnType<typeof getWork>>): WorkMetaRow[]
           : "Karya berasaskan sumber"
         : "Karya asli Jalin"
     },
-    { label: "ID", value: work.id },
     { label: "Versi", value: work.version }
   ];
 }
 
 function buildEditorial(work: Awaited<ReturnType<typeof getWork>>): EditorialCredit[] {
   return (work?.credits ?? []).map((credit) => {
-    const display = getContributorDisplay(credit.slug);
+    const display = resolvePublicContributor(credit.slug);
     const label = credit.role === "initial_draft"
       ? "Penulis"
       : credit.role === "story_editor"
