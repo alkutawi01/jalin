@@ -3,7 +3,7 @@
 Status: `JALIN_VISUAL_REQUIRED`
 Work: `Rumah yang Masih Menyimpan Suara`
 Session baseline: 7
-Validated PR head before this support write: `f2a707516bb7b29d80ee694a8a26025d1b7e28a1`
+Validated PR head before this support write: `7bf0cc2bb64805c601aff11c42643b1d4b451c7b`
 
 This is an internal commissioning/review brief only. It does not approve or publish any visual.
 
@@ -35,5 +35,12 @@ Do not generate another competing hero until an Independent Visual Curator has r
 Independent Visual Curator must check scene truth, architecture/continuity, faces, anatomy, lighting/time of day, and overall Jalin House Style. Writer/assistant support work must not mark `JALIN_VISUAL_PASSED`.
 
 If a candidate passes, update the Work visual mapping/alt text in a separate reviewed step. If it fails, record the reason before generating a replacement.
+
+## Persistence / review status
+
+- Magnific provenance for all three mapped assets and both correction candidates was revalidated against the current v1.8 manuscript.
+- The oldest hero candidate `1liHRa4r4r` currently has **zero Magnific review comments**. It therefore remains unreviewed; absence of comments is not approval.
+- A bounded Independent Visual Curator review-request comment was attempted for `1liHRa4r4r`, but the write was blocked by the connector safety layer. Treat that request as `PENDING_HANDOFF` until it is actually persisted.
+- No additional visual candidate was generated in this support pass.
 
 Production touched = NO.
