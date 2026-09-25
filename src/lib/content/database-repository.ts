@@ -110,7 +110,7 @@ export class DatabaseContentRepository implements ContentRepository {
     const dbEntries = await db.selectFrom("series_entries").orderBy("position", "asc").selectAll().execute();
 
     // Load published revision snapshots for published works
-    const dbRevisions = await db.selectFrom("work_revisions").selectAll().execute();
+    const dbRevisions = await db.selectFrom("work_revisions").orderBy("revision_no", "desc").selectAll().execute();
     for (const rev of dbRevisions) {
       const workId = String(rev.work_id);
       if (!this.revisionSnapshots.has(workId)) {
@@ -398,9 +398,21 @@ export class DatabaseContentRepository implements ContentRepository {
         firstPublishedAt: snapshot.firstPublishedAt,
         publishedRevisionId: snapshot.publishedRevisionId,
         body: snapshot.body,
-        credits: snapshot.credits || [],
-        visuals: snapshot.visuals || [],
-        glossary: snapshot.glossary || [],
+        credits: (snapshot.credits || []).filter((c: any) => c.is_public !== false).map((c: any) => ({
+          slug: String(c.contributor_slug || (c.guest_name ? `guest:${c.guest_name}` : c.slug || "")),
+          role: String(c.role_label || c.role || ""),
+          byline: Boolean(c.byline),
+        })),
+        visuals: (snapshot.visuals || []).map((v: any) => ({
+          role: String(v.role || "inline"),
+          src: String(v.src || ""),
+          alt: String(v.alt || ""),
+          provider: v.provider ? String(v.provider) : undefined,
+          creationId: v.creation_id ? String(v.creation_id) : v.creationId ? String(v.creationId) : undefined,
+          anchor: v.anchor ? String(v.anchor) : undefined,
+          place: v.place === "before" ? "before" : "after",
+        })),
+        glossary: (snapshot.glossary || []).map((g: any) => ({ term: String(g.term || ""), meaning: String(g.meaning || ""), source: String(g.source || "") })),
         editorialHistory: snapshot.editorialHistory || [],
         metadata: snapshot.metadata,
         reader: snapshot.reader,
