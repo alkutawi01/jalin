@@ -83,4 +83,4 @@ Setiap satu menggunakan corak yang sama: satu route statik yang membaca `getWork
 2. Senarai menampilkan kedua-dua karya cerpen semasa (Kerusi di Beranda, Nombor Giliran 117) dengan semua field kad yang disenaraikan di bahagian Target.
 3. Setiap kad memaut ke `/cerpen/<slug>` yang berfungsi.
 4. `npm run build` lulus; tiada repo dependency baharu.
-5. Tiada `/novela`, `/bersiri`, `/terjemahan`, `/fragmen`, `/sinopsis` dibina dalam fasa ini.
+5. Tiada `/novela`, `/bersiri`, `/fragmen`, `/sinopsis` dibina dalam fasa ini.
