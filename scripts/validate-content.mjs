@@ -4,7 +4,7 @@ import matter from "gray-matter";
 
 const CONTENT_DIR = path.join(process.cwd(), "content");
 const WORKS_DIR = path.join(CONTENT_DIR, "works");
-const VALID_TYPES = ["cerpen", "novela", "terjemahan", "bersiri", "fragmen", "sinopsis"];
+const VALID_TYPES = ["cerpen", "novela", "bersiri", "fragmen", "sinopsis"];
 
 const errors = [];
 const slugs = new Set();
