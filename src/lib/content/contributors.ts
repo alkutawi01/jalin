@@ -3,6 +3,7 @@ const CONTRIBUTOR_MAP: Record<string, { name: string; kind: "human" | "virtual" 
   mimo: { name: "Amir Syafiq", kind: "virtual" },
   "nara-zahin": { name: "Nara Zahin", kind: "virtual" },
   "izzat-anas": { name: "Izzat Anas", kind: "human" },
+  "rafiq-naim": { name: "Rafiq Naim", kind: "virtual" },
 };
 
 export interface ContributorMeta {
@@ -26,5 +27,5 @@ export function getContributors(): ContributorMeta[] {
 export function getContributorDisplay(slug: string): { name: string; kind: "human" | "virtual" } {
   const mapped = CONTRIBUTOR_MAP[slug];
   if (mapped) return mapped;
-  return { name: slug, kind: "human" };
+  return { name: "Penyumbang Jalin", kind: "human" };
 }
