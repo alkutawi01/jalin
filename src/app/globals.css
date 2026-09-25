@@ -1553,3 +1553,11 @@ dd { margin: 0; color: var(--ink); }
 .admin-nav-logout:hover {
   color: var(--white);
 }
+
+
+/* Production regression hardening */
+.category-empty { padding: 36px 24px; border: 1px dashed var(--line); color: var(--ink-soft); text-align: center; }
+.category-empty p { margin: 0; }
+.story-head h1, .category-head h1, .hero-featured-title, .work-card-title { overflow-wrap: anywhere; }
+.hero-figure img, .inline-figure img, .hero-featured-visual img { width: 100%; height: auto; object-fit: cover; }
+@media (max-width: 680px) { .category-head h1 { font-size: clamp(34px, 11vw, 44px); } .story-head h1 { font-size: clamp(38px, 12vw, 52px); } .category-explorer-card { min-width: 0; padding: 22px 16px; } }
