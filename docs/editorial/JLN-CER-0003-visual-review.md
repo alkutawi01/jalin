@@ -117,3 +117,20 @@ Revalidated on PR #3 head `d32debf43076943008d4467fc66771d8f0c7aa47`.
 Status remains `VISUAL_PENDING`.
 
 Production touched = NO.
+
+
+## Recovery transport check — 2026-09-26
+
+Support-pass base head: `ef768732d7c77f248fc613e115b4d397cec3d7f5`.
+
+- PR timeline/reviews were rechecked first: `JALIN_TEXT_REVIEW_COMPLETE` is still absent, so the final visual gate remains closed.
+- Corrected veranda candidate `ksis6r616B` remains `completed` (Seedream 5 Pro, 2304×1728); its provenance still matches the stable final veranda beat in manuscript v1.8.
+- A 16-bit PNG delivery render for the same candidate is available and ready. This is a delivery artifact only, not a visual pass.
+- Actual pixel inspection was retried via Magnific inline-image transport and failed again with a transient `AioRpcError`. No pixel-level approval is claimed.
+- The manuscript anchor was rechecked directly: Aiman descends three steps with the old broom, sweeps one small strip in front of the steps, and Farid is already at the gate. No prose or session numbering was changed.
+- GitHub PR Conversation handoff retry and a private Magnific curator-comment write were both blocked by safety checks. The PR handoff therefore remains `PENDING_HANDOFF`.
+- No new candidate was generated, no Work mapping/alt text changed, and no merge/publish/deploy/production action was taken.
+
+Status remains `VISUAL_PENDING`.
+
+Production touched = NO.
