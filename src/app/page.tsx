@@ -16,7 +16,6 @@ function formatDate(date: string | undefined): string {
 const TYPE_LABELS: Record<string, string> = {
   cerpen: "Cerpen",
   novela: "Novela",
-  terjemahan: "Terjemahan",
   bersiri: "Bersiri",
   fragmen: "Fragmen",
   sinopsis: "Sinopsis"
@@ -26,7 +25,6 @@ const TYPE_DESCS: Record<string, string> = {
   cerpen: "Cerita pendek berilustrasi untuk jiwa muda",
   novela: "Novela pendek berilustrasi untuk pembaca Jalin",
   bersiri: "Karya bersiri berilustrasi — sambungan demi sambungan",
-  terjemahan: "Karya terjemahan berilustrasi dari seluruh dunia",
   fragmen: "Sedutan bermakna daripada karya agung",
   sinopsis: "Penceritaan semula editorial karya lain"
 };
@@ -35,7 +33,6 @@ const CATEGORIES: { type: string; label: string }[] = [
   { type: "cerpen", label: "Cerpen" },
   { type: "novela", label: "Novela" },
   { type: "bersiri", label: "Bersiri" },
-  { type: "terjemahan", label: "Terjemahan" },
   { type: "fragmen", label: "Fragmen" },
   { type: "sinopsis", label: "Sinopsis" },
 ];
