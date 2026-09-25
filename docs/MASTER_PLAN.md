@@ -39,12 +39,8 @@ Karya fiksyen lengkap yang lebih panjang daripada cerpen tetapi tidak dibangunka
 - panjang perkataan bukan hukum keras; keputusan berdasarkan struktur dan pengalaman membaca;
 - Waktu Sebenar digunakan sebagai test corpus awal untuk pagination long-form.
 
-### Terjemahan
-Terjemahan Jalin bagi cerpen atau karya pendek daripada bahasa asing.
 
 - teks sumber mesti sah digunakan;
-- untuk domain awam, terjemahan Jalin hendaklah dibuat daripada teks asal / sumber yang sah, bukan menyalin terjemahan moden pihak lain;
-- nama pengarang asal, bahasa asal, sumber dan nota terjemahan perlu direkodkan.
 
 ### Fragmen
 Sedutan terpilih daripada novel atau karya panjang domain awam.
@@ -82,7 +78,6 @@ Karya panjang, terutama Novela, boleh menggunakan **pagination dalaman** tanpa m
 Contoh:
 - /cerpen/kerusi-di-beranda
 - /novela/waktu-sebenar
-- /terjemahan/the-bet
 - /fragmen/les-miserables-jean-valjean
 - /sinopsis/frankenstein
 - /bersiri/nama-siri/episod-01
@@ -96,7 +91,6 @@ Prinsip pagination:
 
 ## 5. Navigation MVP
 
-**Utama · Cerpen · Novela · Bersiri · Terjemahan · Fragmen · Sinopsis**
 
 “Koleksi” boleh diperkenalkan kemudian untuk kurasi tematik, tetapi bukan navigation pillar wajib pada MVP.
 
@@ -141,7 +135,6 @@ Rail pembaca memaparkan kredit utama sahaja. Kredit penuh boleh mengandungi, apa
 - Editor / Editor penerbitan
 - Penyelidikan
 - Penterjemah
-- Penyunting terjemahan
 - Adaptasi / Penceritaan semula
 - Pengarah seni
 - Ilustrator
@@ -168,11 +161,9 @@ Mapping awal:
 
 “Lama” tidak bermaksud automatik bebas hak cipta.
 
-Sebelum Sinopsis, Terjemahan atau Fragmen diterbitkan:
 1. kenal pasti karya, pengarang, tahun dan teks sumber;
 2. sahkan status hak cipta/domain awam yang relevan;
 3. simpan provenance;
-4. bezakan hak cipta karya asal daripada hak cipta terjemahan/edisi moden;
 5. hentikan penerbitan jika status tidak cukup pasti.
 
 ## 11. MVP priority
