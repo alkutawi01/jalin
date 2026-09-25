@@ -163,6 +163,14 @@ function buildSnapshot(input: Awaited<ReturnType<typeof loadWorkForRevision>>) {
       position: s.position,
       readingMinutes: s.reading_minutes,
     })),
+    // Also store as 'sections' for buildSnapshotWork compatibility
+    sections: input.readingSections.map((s) => ({
+      slug: s.slug,
+      title: s.title,
+      body: s.body,
+      position: s.position,
+      readingMinutes: s.reading_minutes,
+    })),
     series: input.series
       ? {
           id: input.series.id,
