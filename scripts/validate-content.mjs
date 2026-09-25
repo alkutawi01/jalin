@@ -41,6 +41,9 @@ function validateWork(filePath) {
 
   if (Array.isArray(data.visuals)) {
     for (const visual of data.visuals) {
+      if (!visual.src || typeof visual.src !== "string") {
+        errors.push({ file: fileName, field: "visuals", message: `Visual "${visual.role ?? "unknown"}" tiada src` });
+      }
       const provider = String(visual.provider || "");
       if (provider.toLowerCase() === "magnific" && !visual.creationId) {
         errors.push({
