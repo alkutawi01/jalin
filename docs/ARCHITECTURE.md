@@ -22,7 +22,7 @@ Semua kategori menggunakan pola asas yang sama:
 - editorial history
 - reading progress
 
-Cerpen, Novela, Sinopsis, Terjemahan dan Fragmen kekal sebagai satu Work walaupun panjang.
+Cerpen, Novela, Sinopsis dan Fragmen kekal sebagai satu Work walaupun panjang.
 
 ### Pagination
 

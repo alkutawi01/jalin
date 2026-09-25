@@ -58,7 +58,7 @@
 |--------|-------------|
 | ID | Work ID (e.g., JLN-CER-0003) |
 | Title | Work title |
-| Type | cerpen / novela / bersiri / terjemahan / fragmen / sinopsis |
+| Type | cerpen / novela / bersiri / fragmen / sinopsis |
 | Status | draft / review / ready / published / archived |
 | Version | Current version (e.g., v1.1) |
 | Updated | Last updated timestamp |
@@ -86,7 +86,7 @@
 |-------|------|-------|
 | title | text | Required |
 | slug | text | Auto-generated from title, editable |
-| type | select | cerpen / novela / bersiri / terjemahan / fragmen / sinopsis |
+| type | select | cerpen / novela / bersiri / fragmen / sinopsis |
 | status | select | draft / review / ready / published / archived |
 | genre | text | Free-form |
 | audience | text | e.g., "13-17 tahun" |
@@ -123,7 +123,6 @@
 - Penyunting akhir
 - Penterjemah
 - Pengarang asal
-- Penyunting terjemahan
 
 #### Tab 3: Visuals
 
@@ -159,7 +158,7 @@
 
 #### Tab 6: Source (Conditional)
 
-**Purpose**: Manage source work metadata (only for terjemahan, fragmen, sinopsis).
+**Purpose**: Manage source work metadata (only for fragmen, sinopsis).
 
 **Fields**: originalTitle, author, originalLanguage, publicationYear, sourceEdition, sourceUrl, rightsStatus (public_domain / licensed / unknown_need_review), rightsNotes, verifiedAt, verifiedBy
 
@@ -220,7 +219,7 @@ CREATE TABLE works (
   id              TEXT PRIMARY KEY,           -- JLN-CER-0003
   slug            TEXT UNIQUE NOT NULL,
   title           TEXT NOT NULL,
-  type            TEXT NOT NULL,              -- cerpen|novela|bersiri|terjemahan|fragmen|sinopsis
+  type            TEXT NOT NULL,              -- cerpen|novela|bersiri|fragmen|sinopsis
   status          TEXT NOT NULL DEFAULT 'draft',
   genre           TEXT,
   audience        TEXT,
@@ -233,7 +232,7 @@ CREATE TABLE works (
   updated_at      TIMESTAMPTZ DEFAULT NOW(),
   created_at      TIMESTAMPTZ DEFAULT NOW(),
 
-  CONSTRAINT valid_type CHECK (type IN ('cerpen','novela','bersiri','terjemahan','fragmen','sinopsis')),
+  CONSTRAINT valid_type CHECK (type IN ('cerpen','novela','bersiri','fragmen','sinopsis')),
   CONSTRAINT valid_status CHECK (status IN ('draft','review','ready','published','archived'))
 );
 

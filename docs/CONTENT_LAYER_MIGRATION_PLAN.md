@@ -91,7 +91,7 @@ Sumber kebenaran tunggal: **content/**. Kod hanya menganjak data melalui `WorkLo
 3. Kredit dirujuk melalui contributor key, bukan string nama yang diulang.
 4. Visual dirujuk secara longgar: peranan (hero/inline-*) + provenance; URL production datang dari `visuals/` (durable), bukan hard-code.
 5. Sejarah editorial disimpan dalam `content/revisions/` sebagai senarai rekod EditorialRevision.
-6. Satu `WorkLoader` (TS utility) menyediakan data kepada semua halaman — `cerpen`, `novela`, `terjemahan`, `fragmen`, `sinopsis`, `bersiri`.
+6. Satu `WorkLoader` (TS utility) menyediakan data kepada semua halaman — `cerpen`, `novela`, `fragmen`, `sinopsis`, `bersiri`.
 
 ---
 
@@ -103,7 +103,7 @@ Setiap Work wajib menyokong field berikut (cadangan frontmatter/struktur):
 id: "JLN-CER-0002"
 slug: "nombor-giliran-117"
 title: "Nombor Giliran 117"
-type: "cerpen"            # cerpen | novela | bersiri | terjemahan | fragmen | sinopsis
+type: "cerpen"            # cerpen | novela | bersiri | fragmen | sinopsis
 genre: "keluarga"
 status: "published"       # draft | review | ready | published | archived
 

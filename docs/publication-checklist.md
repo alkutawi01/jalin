@@ -74,5 +74,4 @@ When publish is blocked, the API returns:
 These items require editorial decisions:
 
 1. **Visual credit format**: What format should visual credits use?
-2. **Translation taxonomy**: Should `type=terjemahan` be migrated to metadata?
-3. **Mimo display name**: Should it be "Mimo" or "Amir Syafiq"?
+2. **Mimo display name**: Should it be "Mimo" or "Amir Syafiq"?

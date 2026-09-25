@@ -58,7 +58,7 @@ Setiap `content/works/<slug>.md` MESTI mengandungi field berikut:
 | `id` | string | `JLN-CER-0003` | ID unik merentas semua Work. Corak: `JLN-<TYPE><BERURUT>`. |
 | `slug` | string | `karya-baharu` | Sepadan dengan nama fail; untuk URL `/cerpen/<slug>`. |
 | `title` | string | `Karya Baharu` | Tajuk paparan. |
-| `type` | enum | `cerpen` | Sedia: `cerpen, novela, bersiri, terjemahan, fragmen, sinopsis`. |
+| `type` | enum | `cerpen` | Sedia: `cerpen, novela, bersiri, fragmen, sinopsis`. |
 | `status` | enum | `published` | Sedia: `draft, review, ready, published, archived`. |
 | `version` | string | `"v0.1"` | Versi kandungan semasa. |
 | `credits` | array | lihat §4 | Rujukan kepada `content/contributors/`. |
@@ -72,7 +72,7 @@ Field sokongan (pilihan tetapi digalakkan):
 - `publishedAt`, `updatedAt` (dipakai untuk sorting kategori: `updatedAt` DESC, fallback `publishedAt` DESC);
 - `metadata.characters` — senarai watak;
 - `reader.note` — nota panel bacaan AI;
-- `sourceWork` — pustaka provenance asal (untuk `terjemahan`/`fragmen`/`sinopsis`).
+- `sourceWork` — pustaka provenance asal (untuk `fragmen`/`sinopsis`).
 
 Rujukan schema penuh: `src/lib/content/types.ts`.
 

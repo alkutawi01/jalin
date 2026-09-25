@@ -89,11 +89,11 @@ UI/routes must not duplicate gate logic.
 ### Warning rules (never block)
 
 - missing `dek`, empty glossary
-- derivative provenance reminder (sinopsis/terjemahan/fragmen)
+- derivative provenance reminder (sinopsis/fragmen)
 - private credits excluded from public byline (expected)
 - credit sort order irregularity
 - magnific visual without `creation_id`
-- recommended-hero missing (fragmen/sinopsis/terjemahan)
+- recommended-hero missing (fragmen/sinopsis)
 - pending/failed visual requests not yet attached
 - grandfathered visual gaps on already-published Works
 
@@ -102,7 +102,7 @@ UI/routes must not duplicate gate logic.
 | Type | Hero |
 |---|---|
 | cerpen, novela, bersiri | **required** (blocker if missing, non-published) |
-| terjemahan, fragmen, sinopsis | recommended (warning) |
+| fragmen, sinopsis | recommended (warning) |
 
 **Grandfather:** Works with `status=published` downgrade visual policy failures
 (unfinalized, transient src, missing alt, missing hero) to warnings so existing

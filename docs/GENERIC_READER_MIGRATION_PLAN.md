@@ -181,7 +181,7 @@ Selepas kedua-dua route baharu lulus dan output di-sahkan sama:
 - Commit terpisah supaya rollback mudah.
 
 ### Step 5 — Tambah kategori lain kemudian
-`type` lain (novela, terjemahan, fragmen, sinopsis, bersiri) boleh dibuka pada fasa akan datang melalui `generateStaticParams` mengikut type; bukan dalam skop 2C.
+`type` lain (novela, fragmen, sinopsis, bersiri) boleh dibuka pada fasa akan datang melalui `generateStaticParams` mengikut type; bukan dalam skop 2C.
 
 ---
 

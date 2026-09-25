@@ -18,7 +18,7 @@
 | id | TEXT PK | Work ID (JLN-CER-0003) |
 | slug | TEXT UNIQUE | URL-safe identifier |
 | title | TEXT | Display title |
-| type | TEXT | cerpen / novela / bersiri / terjemahan / fragmen / sinopsis |
+| type | TEXT | cerpen / novela / bersiri / fragmen / sinopsis |
 | kind | TEXT | cerpen / novela / bersiri (structural kind) |
 | status | TEXT | draft / review / ready / published / archived |
 | genre | TEXT | Free-form genre tags |
@@ -214,7 +214,7 @@
 
 ### source_works
 
-**Purpose**: Provenance metadata for derivative works (terjemahan, fragmen, sinopsis).
+**Purpose**: Provenance metadata for derivative works (fragmen, sinopsis).
 
 **Key fields**:
 | Field | Type | Description |
@@ -351,7 +351,7 @@ CREATE TABLE works (
   updated_at      TIMESTAMPTZ DEFAULT NOW(),
   created_at      TIMESTAMPTZ DEFAULT NOW(),
 
-  CONSTRAINT valid_type CHECK (type IN ('cerpen','novela','bersiri','terjemahan','fragmen','sinopsis')),
+  CONSTRAINT valid_type CHECK (type IN ('cerpen','novela','bersiri','fragmen','sinopsis')),
   CONSTRAINT valid_kind CHECK (kind IN ('cerpen','novela','bersiri')),
   CONSTRAINT valid_status CHECK (status IN ('draft','review','ready','published','archived'))
 );

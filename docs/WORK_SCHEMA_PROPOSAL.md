@@ -17,13 +17,12 @@ Setiap Work tergolong dalam satu jenis yang mengenal pasti bentuk, struktur dan 
 | `cerpen` | Karya asli lengkap pendek-sederhana | satu Work | pilihan |
 | `novela` | Karya asli long-form lengkap, satu Work | bab/bahagian dalaman | ya (Waktu Sebenar) |
 | `bersiri` | Karya asli episodik; setiap episod adalah Work dengan `series_id` | episod canonical | tidak (per episod) |
-| `terjemahan` | Karya pendek asing diterjemah Jalin | satu Work + provenance source | pilihan |
 | `fragmen` | Sedutan bermakna karya domain awam | satu Work + provenance | tidak |
 | `sinopsis` | Penceritaan semula editorial karya lain | satu Work + provenance | pilihan |
 
 Peraturan asas:
 
-- `cerpen`, `novela`, `terjemahan`, `fragmen`, `sinopsis` ialah satu Work walaupun panjang.
+- `cerpen`, `novela`, `fragmen`, `sinopsis` ialah satu Work walaupun panjang.
 - `bersiri` terdiri daripada episod; setiap episod adalah Work berasingan dengan `series_id`.
 - `novela` bukan `bersiri` dan bukan novel penuh.
 - Novel dan Novel Pendek **tidak** berada dalam taxonomy Jalin.
@@ -33,7 +32,6 @@ export type WorkType =
   | "cerpen"
   | "novela"
   | "bersiri"
-  | "terjemahan"
   | "fragmen"
   | "sinopsis";
 
@@ -89,7 +87,7 @@ Nota:
 
 - Sumber kebenaran metadata = frontmatter; bidang tidak digunakan boleh diabaikan.
 - `audience`, `dek`, `readingMinutes` ialah metadata awam (bukan dalaman).
-- `sourceWork` hanya perlu untuk `terjemahan`, `fragmen`, `sinopsis`.
+- `sourceWork` hanya perlu untuk `fragmen`, `sinopsis`.
 
 ---
 
@@ -123,7 +121,6 @@ export type CreditRole =
   | "publication_editor" // Editor penerbitan
   | "research"           // Penyelidikan
   | "translator"         // Penterjemah
-  | "translation_editor" // Penyunting terjemahan
   | "adapted_by"         // Adaptasi
   | "retold_by"          // Penceritaan semula
   | "art_direction"      // Pengarah seni
@@ -209,7 +206,7 @@ Peraturan:
 
 ## 7. Source work (derivative)
 
-Untuk `terjemahan`, `fragmen`, `sinopsis`. Wajib untuk status selain draft.
+Untuk `fragmen`, `sinopsis`. Wajib untuk status selain draft.
 
 ```ts
 export interface SourceWorkRef {

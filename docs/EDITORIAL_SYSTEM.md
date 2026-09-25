@@ -16,7 +16,7 @@ Optional end states: `ARCHIVED` (karya yang pernah terbit tetapi ditarik), `REJE
 ### Future Editorial Gates (not yet implemented)
 Apabila sistem berkembang, state machine akan bertambah:
 
-- `RIGHTS_CHECK` — wajib untuk Sinopsis, Terjemahan dan Fragmen yang berasaskan karya pihak lain. Untuk Cerpen/Novela/Bersiri asli, gate ini boleh ditanda `N/A`.
+- `RIGHTS_CHECK` — wajib untuk Sinopsis dan Fragmen yang berasaskan karya pihak lain. Untuk Cerpen/Novela/Bersiri asli, gate ini boleh ditanda `N/A`.
 - `VISUAL_REVIEW` — semakan visual sebelum terbit, terutama untuk karya yang mempunyai ilustrasi.
 
 Untuk MVP, dua gate ini dilakukan secara manual di luar state machine.
@@ -40,7 +40,7 @@ Sebelum terbit:
 
 ## Metadata awam MVP
 
-- jenis karya: Cerpen / Novela / Bersiri / Terjemahan / Fragmen / Sinopsis
+- jenis karya: Cerpen / Novela / Bersiri / Fragmen / Sinopsis
 - genre
 - contributor/byline
 - badge `Maya` untuk contributor maya
@@ -85,7 +85,6 @@ Kredit hendaklah berdasarkan sumbangan sebenar. Antara istilah yang boleh diguna
 - Editor / Editor penerbitan
 - Penyelidikan
 - Penterjemah
-- Penyunting terjemahan
 - Adaptasi
 - Penceritaan semula
 - Pengarah seni
@@ -107,21 +106,11 @@ Ia perlu:
 - menyatakan karya dan pengarang asal;
 - mempunyai provenance.
 
-## Terjemahan
-
-Sebelum menerbitkan terjemahan:
-1. sahkan hak penggunaan teks sumber;
-2. jika karya domain awam, pastikan teks/edisi sumber juga sesuai digunakan;
-3. hasilkan terjemahan Jalin sendiri;
-4. jangan menyalin terjemahan moden yang masih dilindungi;
-5. rekod bahasa asal dan sumber.
-
 ## Fragmen
 
 Fragmen perlu:
 - cukup konteks untuk pembaca memahami adegan;
 - tidak dipotong secara mengelirukan;
-- mengekalkan teks asal/terjemahan dengan integriti;
 - menyatakan karya asal, pengarang dan provenance.
 
 ## Cerpen, Novela & Bersiri asli

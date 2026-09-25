@@ -5,7 +5,7 @@ Depends on: 4D-6 / 4D-6R / 4D-6R2 (publication pipeline closed).
 
 ## Objective
 
-Additive rights gate for derivative Works (terjemahan / fragmen / sinopsis).
+Additive rights gate for derivative Works (fragmen / sinopsis).
 No auto-approve, no auto-unpublish, no SSRF fetch of `source_url` during publication.
 Human editorial review is final.
 
@@ -44,7 +44,7 @@ New gate name: `rights` in `ReadinessGateName`.
 | Type | Behaviour |
 |---|---|
 | cerpen / novela / bersiri (original) | rights gate **N/A → pass** (no source record required) |
-| terjemahan / fragmen / sinopsis | **must** pass rights gate |
+| fragmen / sinopsis | **must** pass rights gate |
 
 **PASS statuses:** `public_domain`, `licensed`, `permission_obtained` (with complete review stamps + fresh `approved_material_hash`).
 

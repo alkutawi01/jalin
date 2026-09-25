@@ -7,14 +7,13 @@
 
 ## A. Product Content Types
 
-Six forms, each a single Work. Excludes Novel and Novel Pendek.
+Five forms, each a single Work. Excludes Novel and Novel Pendek.
 
 | Type | Key | Authority |
 |------|-----|-----------|
 | Cerpen | `cerpen` | MASTER_PLAN.md s2 |
 | Novela | `novela` | MASTER_PLAN.md s2 |
 | Bersiri | `bersiri` | MASTER_PLAN.md s2 |
-| Terjemahan | `terjemahan` | MASTER_PLAN.md s2 |
 | Fragmen | `fragmen` | MASTER_PLAN.md s2 |
 | Sinopsis | `sinopsis` | MASTER_PLAN.md s2 |
 

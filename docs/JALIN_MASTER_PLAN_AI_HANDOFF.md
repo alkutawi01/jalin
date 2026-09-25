@@ -66,10 +66,6 @@ Karya asli yang diterbitkan secara episod.
 
 Setiap episod mempunyai kesinambungan canonical.
 
-## Terjemahan
-
-Karya asing yang diterjemahkan ke Bahasa Melayu berdasarkan sumber yang sah.
-
 ## Fragmen
 
 Sedutan bermakna daripada karya panjang, terutama karya domain awam.
@@ -156,7 +152,6 @@ Peranan yang disokong:
 - Editor akhir
 - Editor penerbitan
 - Penterjemah
-- Penyunting terjemahan
 - Adaptasi
 - Penceritaan semula
 - Pengarah seni

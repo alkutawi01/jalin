@@ -189,7 +189,7 @@ The MVP backend handles **3 works** and **5 contributors**. Every reader-facing 
 
 ### source_works
 
-**Why deferred**: No terjemahan, fragmen, or sinopsis content exists.
+**Why deferred**: No fragmen or sinopsis content exists.
 
 **When needed**: First derivative work is published.
 
@@ -481,7 +481,7 @@ ALTER TABLE works ADD COLUMN editorial_history JSONB DEFAULT '[]';
 
 **Current**: Separate table for derivative work provenance.
 
-**Problem**: No terjemahan, fragmen, or sinopsis content exists.
+**Problem**: No fragmen or sinopsis content exists.
 
 **Simplification**: Remove source_works table from MVP. Add when derivative content is published.
 
@@ -536,7 +536,7 @@ CREATE TABLE works (
   updated_at      TIMESTAMPTZ DEFAULT NOW(),
   created_at      TIMESTAMPTZ DEFAULT NOW(),
 
-  CONSTRAINT valid_type CHECK (type IN ('cerpen','novela','bersiri','terjemahan','fragmen','sinopsis')),
+  CONSTRAINT valid_type CHECK (type IN ('cerpen','novela','bersiri','fragmen','sinopsis')),
   CONSTRAINT valid_status CHECK (status IN ('draft','review','ready','published','archived'))
 );
 

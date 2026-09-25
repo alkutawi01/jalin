@@ -30,7 +30,7 @@ CREATE TABLE works (
   updated_at        TIMESTAMPTZ DEFAULT NOW(),
   created_at        TIMESTAMPTZ DEFAULT NOW(),
 
-  CONSTRAINT valid_type CHECK (type IN ('cerpen','novela','bersiri','terjemahan','fragmen','sinopsis')),
+  CONSTRAINT valid_type CHECK (type IN ('cerpen','novela','bersiri','fragmen','sinopsis')),
   CONSTRAINT valid_status CHECK (status IN ('draft','review','ready','published','archived'))
 );
 

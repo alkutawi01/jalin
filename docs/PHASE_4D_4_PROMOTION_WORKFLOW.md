@@ -49,7 +49,6 @@ Errors returned with actionable admin messages.
 | cerpen | CER | JLN-CER-0004 |
 | novela | NOV | JLN-NOV-0001 |
 | bersiri | BER | JLN-BER-0001 |
-| terjemahan | TER | JLN-TER-0001 |
 | fragmen | FRA | JLN-FRA-0001 |
 | sinopsis | SIN | JLN-SIN-0001 |
 

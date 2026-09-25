@@ -33,8 +33,7 @@ npm run audit:editorial -- --json
 
 ### Translations
 - **PASS**: No legacy translation type works
-- **WARNING**: Works with `type=terjemahan` exist
-- **Action**: Requires taxonomy decision (KIV-S31)
+- **Note**: Terjemahan category has been cancelled. Translation metadata is now handled as source work provenance.
 
 ## Exit Codes
 
@@ -55,4 +54,3 @@ These items require editorial decisions before resolution:
 
 1. **Mimo display name**: Should it be "Mimo" or "Amir Syafiq"?
 2. **Visual credit format**: What format should visual credits use?
-3. **Translation taxonomy**: Should `type=terjemahan` be migrated to metadata?
