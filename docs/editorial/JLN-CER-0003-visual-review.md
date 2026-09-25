@@ -43,4 +43,16 @@ If a candidate passes, update the Work visual mapping/alt text in a separate rev
 - A bounded Independent Visual Curator review-request comment was attempted for `1liHRa4r4r`, but the write was blocked by the connector safety layer. Treat that request as `PENDING_HANDOFF` until it is actually persisted.
 - No additional visual candidate was generated in this support pass.
 
+## Provenance snapshot (revalidated)
+
+| Asset | Role/state | Model | Size | Time-of-day evidence | Review state |
+| --- | --- | --- | --- | --- | --- |
+| `Xm5ZOkMBfo` | mapped hero | Seedream 5 Pro | 2560×1440 | source prompt explicitly says `golden hour` | mapped; needs independent correction review |
+| `WDaOL1OcXe` | mapped inline note | Seedream 5 Pro | 2304×1728 | interior/natural light; note explicitly unreadable | mapped; no new defect identified |
+| `mEjYiz2hJQ` | mapped veranda | Seedream 5 Pro | 2304×1728 | source prompt says `evening` | mapped; review against post-Maghrib canon |
+| `1liHRa4r4r` | hero candidate #1 | Seedream 5 Pro | 2560×1440 | prompt explicitly requires `early morning`, no sunset/golden-hour | **0 review comments**; oldest candidate; unapproved |
+| `lJG1FGdgv9` | hero candidate #2 | Seedream 5 Pro | 2560×1440 | prompt explicitly requires `early morning`, no sunset/golden-hour | unapproved; do not prefer over #1 without review reason |
+
+Candidate #1 remains the next bounded visual item for an **Independent Visual Curator**. Do not update the Work mapping or public alt text until that independent gate is recorded.
+
 Production touched = NO.
