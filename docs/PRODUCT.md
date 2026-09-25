@@ -28,7 +28,6 @@ Enam kategori utama:
 - **Cerpen** — cerpen asli Jalin.
 - **Novela** — karya fiksyen lengkap long-form yang berada antara cerpen dan novel penuh.
 - **Bersiri** — fiksyen asli Jalin yang berkembang secara episod dan mempunyai canon sendiri.
-- **Terjemahan** — terjemahan Jalin bagi karya pendek asing yang sah digunakan.
 - **Fragmen** — sedutan terpilih daripada karya panjang domain awam.
 - **Sinopsis** — penceritaan semula / ringkasan editorial karya domain awam.
 
@@ -46,7 +45,6 @@ Progress boleh disimpan mengikut halaman/posisi.
 
 ## Navigation MVP
 
-**Utama · Cerpen · Novela · Bersiri · Terjemahan · Fragmen · Sinopsis**
 
 ## Living text
 
@@ -99,10 +97,8 @@ Versi awal menggunakan **kurasi dalaman sahaja**. Tiada self-publishing terbuka.
 
 ## Public-domain rule
 
-Sebelum menerbitkan Sinopsis, Terjemahan atau Fragmen berasaskan karya lama:
 - status domain awam / hak penggunaan mesti disahkan;
 - teks sumber dan provenance mesti direkodkan;
-- terjemahan moden pihak lain tidak boleh dianggap bebas hanya kerana karya asal sudah domain awam.
 
 ## AI disclosure
 
