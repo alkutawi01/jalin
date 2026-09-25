@@ -77,3 +77,10 @@ Scene truth to preserve if a replacement candidate is generated later:
 - Preserve the restrained painterly Jalin House Style and the symbolic continuity of the broom/yard without adding new story objects.
 
 This concept does **not** authorize another competing generation yet. Reuse the same persistent branch/PR and revalidate against the final manuscript after `JALIN_TEXT_REVIEW_COMPLETE` before any visual pass.
+
+
+## Metadata sequencing guard
+
+- Do **not** change the Work hero alt text from `petang` to `pagi` while the mapped hero still points to `Xm5ZOkMBfo`; that would make the accessibility text claim a scene state the mapped image does not show.
+- Do **not** change the veranda alt text to `selepas Maghrib` until the mapped veranda visual has independently passed against that canon beat. Metadata and asset mapping must move together in the reviewed visual step.
+- A candidate-selection decision, visual mapping change, or public alt-text correction is therefore downstream of Independent Visual Curator evidence; this Writer support pass may only preserve the brief/provenance state.
