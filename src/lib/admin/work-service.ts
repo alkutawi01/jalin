@@ -142,9 +142,13 @@ export async function createWork(input: WorkInput): Promise<WorkRecord> {
       dek: input.dek || null,
       reading_minutes: input.readingMinutes || null,
       version: input.version || "v0.1",
+      version_label: null,
+      revision_count: 0,
       editorial_history: JSON.stringify(editorialHistory),
       published_at: input.publishedAt || null,
       published_by: null,
+      first_published_at: input.publishedAt || null,
+      published_revision_id: null,
       updated_at: now,
       created_at: now,
     })

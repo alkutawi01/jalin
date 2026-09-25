@@ -64,8 +64,13 @@ async function migrate() {
             body: work.body,
             reading_minutes: work.readingMinutes,
             version: work.version,
+            version_label: null,
+            revision_count: 0,
             editorial_history: JSON.stringify(work.editorialHistory),
             published_at: work.publishedAt || null,
+            published_by: null,
+            first_published_at: work.publishedAt || null,
+            published_revision_id: null,
             updated_at: work.updatedAt || new Date().toISOString(),
             created_at: new Date(),
           })

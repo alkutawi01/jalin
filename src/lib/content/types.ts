@@ -108,6 +108,12 @@ export interface Work {
   updatedAt?: string;
 
   version: string;
+  versionLabel?: string | null;
+  revisionCount?: number;
+  publishedBy?: string | null;
+  firstPublishedAt?: string | null;
+  publishedRevisionId?: string | null;
+  publishedRevision?: unknown;
 
   body: string;
 
