@@ -12,7 +12,6 @@ export function SiteHeader({ active }: { active?: string }) {
           <a className={active === "cerpen" ? "active" : undefined} href="/kategori/cerpen">Cerpen</a>
           <a className={active === "novela" ? "active" : undefined} href="/kategori/novela">Novela</a>
           <a className={active === "bersiri" ? "active" : undefined} href="/kategori/bersiri">Bersiri</a>
-          <a className={active === "terjemahan" ? "active" : undefined} href="/kategori/terjemahan">Terjemahan</a>
           <a className={active === "fragmen" ? "active" : undefined} href="/kategori/fragmen">Fragmen</a>
           <a className={active === "sinopsis" ? "active" : undefined} href="/kategori/sinopsis">Sinopsis</a>
         </nav>
