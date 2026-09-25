@@ -150,3 +150,17 @@ Production touched = NO.
 Status remains `VISUAL_PENDING`.
 
 Production touched = NO.
+
+
+## Recovery handoff checkpoint — 2026-09-26
+
+- Exact PR head at checkpoint start: `f1e3f3ecab40517e9a476dc76b3d2b97affe0adb`.
+- The previously pending PR-level visual support handoff is now auditable as PR #3 issue comment `5840039693`; it records `VISUAL_PENDING`, candidate `ksis6r616B`, and the requirement for actual rendered-pixel inspection plus post-`JALIN_TEXT_REVIEW_COMPLETE` revalidation.
+- Fresh PR conversation/review scan still finds no `JALIN_TEXT_REVIEW_COMPLETE`; the final visual recovery gate remains closed.
+- Corrected veranda candidate `ksis6r616B` remains `completed` with the same Seedream 5 Pro provenance and stable post-Maghrib scene constraints. No competing replacement was generated.
+- Actual pixel inspection was retried. Magnific inline-image transport still failed transiently with `AioRpcError`; a direct preview retrieval path also could not materialize pixels in this runtime. Therefore no pixel-level pass is claimed.
+- No prose, session numbering, Work visual mapping, public alt text, merge, publish, deploy, or production state was changed.
+
+Status remains `VISUAL_PENDING`.
+
+Production touched = NO.
