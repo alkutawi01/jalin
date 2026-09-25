@@ -127,6 +127,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ type:
               <p className="category-intro">{meta.intro}</p>
             </header>
             <div className="work-list">
+              {seriesList.length === 0 ? <div className="category-empty"><p>Belum ada karya diterbitkan dalam kategori ini.</p></div> : null}
               {seriesList.map((series) => (
                 <SeriesCard
                   key={series.id}
@@ -161,6 +162,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ type:
           </header>
 
           <div className="work-list">
+            {works.length === 0 ? <div className="category-empty"><p>Belum ada karya diterbitkan dalam kategori ini.</p></div> : null}
             {works.map((work) => (
               <WorkCard key={work.slug} work={work} type={type} />
             ))}
