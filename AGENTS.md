@@ -7,7 +7,6 @@ Dokumen ini ialah arahan kerja bersama untuk semua AI/agent yang menyentuh repos
 Jalin — oleh Adjung ialah platform bacaan sastera berilustrasi untuk remaja 13–17 tahun.
 
 Kategori utama:
-**Cerpen · Novela · Bersiri · Terjemahan · Fragmen · Sinopsis**
 
 Jalin bukan platform novel penuh. Novel dan Novel Pendek tidak berada dalam taxonomy.
 
@@ -20,11 +19,8 @@ Jalin bukan platform novel penuh. Novel dan Novel Pendek tidak berada dalam taxo
 5. Penulis/penyemak maya boleh menggunakan persona bernama, tetapi mesti mempunyai disclosure awam yang jelas; byline menggunakan penanda halus seperti `Maya`.
 6. Semua ilustrasi mesti mematuhi Jalin House Style.
 7. Untuk watak/lokasi berulang, guna canonical visual reference apabila tersedia; jangan reka semula daripada prompt teks sahaja.
-8. Cerpen, Novela, Sinopsis, Terjemahan dan Fragmen ialah satu `Work`; jika panjang, gunakan pagination dalaman.
 9. Bersiri terdiri daripada episod canonical yang mempunyai kesinambungan.
 10. Semua karya perlu menyokong glosari ringkas pada perkataan terpilih.
-11. Sinopsis, Terjemahan dan Fragmen berasaskan karya lama tidak boleh READY tanpa provenance dan semakan hak penggunaan/domain awam.
-12. Jangan anggap terjemahan moden bebas hak cipta hanya kerana karya asal sudah domain awam.
 13. Jangan overengineer MVP.
 14. Perubahan besar pada schema, auth, publishing flow atau deployment perlu didokumenkan dahulu.
 15. **Semua imej yang dijana atau diedit untuk digunakan dalam Jalin WAJIB melalui Magnific.** Jangan silently substitute generator/editor lain. Rekod provenance Magnific untuk aset produksi atau staging yang dipilih.
