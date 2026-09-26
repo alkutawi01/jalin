@@ -4,12 +4,13 @@ Status: `JALIN_VISUAL_REQUIRED`
 Work: `Rumah yang Masih Menyimpan Suara` (`JLN-CER-0003`)
 Session baseline: 7
 Manuscript baseline: `v1.8`
-Writer/Critic gate: `JALIN_SESSION_7_DRAFT` awaiting Independent Critic
+Writer/Critic gate: Session 7 committed at `bcf7c2711f72963dfa9c9d1efadc9b4d0eaee415`; PR handoff marker `JALIN_SESSION_7_DRAFT` is pending persistence; awaiting Independent Critic
 
 This is an internal commissioning/review brief only. It does not approve, publish, or map any visual.
 
 ## Gate state
 
+- Session 7 prose is committed as v1.8 at `bcf7c2711f72963dfa9c9d1efadc9b4d0eaee415`, but a top-level `JALIN_SESSION_7_DRAFT` PR handoff marker is not yet persisted.
 - `JALIN_SESSION_7_CRITIQUE` is not yet persisted on PR #3.
 - `JALIN_TEXT_REVIEW_COMPLETE` is not yet persisted on PR #3.
 - Therefore Session 8 must not start and no visual candidate may receive `JALIN_VISUAL_PASSED`.
@@ -72,6 +73,7 @@ Only an independent reviewer may mark `JALIN_VISUAL_PASSED`.
 ## Persistence state
 
 - PR #3 already contains `JALIN_VISUAL_SUPPORT_HANDOFF` as issue comment `5840039693`, but its recorded exact head is stale after later bounded support-document commits.
+- A dedicated top-level `JALIN_SESSION_7_DRAFT` handoff comment is also `PENDING_HANDOFF`; Session 7 itself is auditable from commit `bcf7c2711f72963dfa9c9d1efadc9b4d0eaee415`, but downstream PR-discussion persistence is still missing.
 - Exact-head refresh attempts have repeatedly been blocked by connector safety checks; treat the refresh as `PENDING_HANDOFF` until a current-head PR write succeeds.
 - On the next run, retry the existing handoff first rather than creating a duplicate comment.
 - If the branch head changes, revalidate only the changed files before retrying persistence; do not redo completed Writer or visual-support work.
