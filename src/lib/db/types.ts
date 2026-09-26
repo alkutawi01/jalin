@@ -45,6 +45,8 @@ export interface Works {
   version_label: string | null;
   revision_count: number;
   editorial_history: ColumnType<Record<string, unknown>, string | Record<string, unknown>, string | Record<string, unknown>>;
+  metadata: ColumnType<Record<string, unknown> | null, string | null | Record<string, unknown>, string | null | Record<string, unknown>>;
+  reader: ColumnType<Record<string, unknown> | null, string | null | Record<string, unknown>, string | null | Record<string, unknown>>;
   published_at: ColumnType<Date | null, string | Date | null, string | Date | null>;
   published_by: string | null;
   first_published_at: ColumnType<Date | null, string | Date | null, string | Date | null>;
