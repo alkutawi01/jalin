@@ -11,6 +11,9 @@ const SLUGS = [
   "kerusi-di-beranda",
   "nombor-giliran-117",
   "rumah-yang-masih-menyimpan-suara",
+  "di-hadapan-singgahsana",
+  "gatsby-agung",
+  "gatsby-kapal-melawan-arus",
 ];
 
 interface ComparisonResult {
@@ -103,6 +106,25 @@ function compareGlossary(markdown: GlossaryEntry[], database: GlossaryEntry[], s
   return diffs;
 }
 
+function canonicalJson(value: unknown): string {
+  if (value === undefined) return "undefined";
+  if (value === null || typeof value !== "object") return JSON.stringify(value);
+  if (Array.isArray(value)) return `[${value.map(canonicalJson).join(",")}]`;
+  const obj = value as Record<string, unknown>;
+  const keys = Object.keys(obj)
+    .filter((key) => obj[key] !== undefined)
+    .sort();
+  return `{${keys.map((key) => `${JSON.stringify(key)}:${canonicalJson(obj[key])}`).join(",")}}`;
+}
+
+function compareField(slug: string, field: string, markdown: unknown, database: unknown): string[] {
+  const md = canonicalJson(markdown);
+  const db = canonicalJson(database);
+  if (md === db) return [];
+  const clip = (s: string) => (s.length > 120 ? `${s.slice(0, 120)}…` : s);
+  return [`${slug}.${field}: markdown=${clip(md)}, database=${clip(db)}`];
+}
+
 function compareWork(markdown: Work, database: Work, slug: string): string[] {
   const diffs: string[] = [];
 
@@ -144,6 +166,13 @@ function compareWork(markdown: Work, database: Work, slug: string): string[] {
   diffs.push(...compareCredits(markdown.credits, database.credits, slug));
   diffs.push(...compareVisuals(markdown.visuals, database.visuals, slug));
   diffs.push(...compareGlossary(markdown.glossary, database.glossary, slug));
+
+  // Content projection parity fields (Phase 4D-1C): provenance, metadata,
+  // reader note and editorial history must round-trip Markdown → DB exactly.
+  diffs.push(...compareField(slug, "sourceWork", markdown.sourceWork, database.sourceWork));
+  diffs.push(...compareField(slug, "metadata", markdown.metadata, database.metadata));
+  diffs.push(...compareField(slug, "reader", markdown.reader, database.reader));
+  diffs.push(...compareField(slug, "editorialHistory", markdown.editorialHistory, database.editorialHistory));
 
   return diffs;
 }
