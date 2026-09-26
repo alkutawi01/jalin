@@ -6,6 +6,8 @@
  * values or placeholder fallback names.
  */
 
+import fs from "node:fs";
+import path from "node:path";
 import { projectBylineCredits, projectEditorialCredits } from "../src/lib/reader/credit-projection";
 import { getWorkBySlug } from "../src/lib/content/workLoader";
 import type { ContributorRef } from "../src/lib/content/types";
@@ -60,6 +62,22 @@ console.log("reader credit projection tests\n");
   const editorial = projectEditorialCredits(gatsby?.credits ?? []);
   assert(editorial.length === 1 && editorial[0]?.role === "Pengarang asal", "Second real derivative source author labelled Pengarang asal");
   assert(editorial[0]?.name === "F. Scott Fitzgerald", "Second real derivative source author name preserved");
+}
+
+{
+  const fragmen = getWorkBySlug("gatsby-kapal-melawan-arus");
+  const byline = projectBylineCredits(fragmen?.credits ?? []);
+  assert(byline.length === 1, "Fragmen source author reaches the byline");
+  assert(byline[0]?.name === "F. Scott Fitzgerald", "Fragmen byline shows the source author name");
+  assert(byline[0]?.href === undefined, "Guest source author byline carries no contributor link");
+  assert(byline[0]?.maya === false, "Guest source author is never marked Maya");
+
+  const chromeSource = fs.readFileSync(
+    path.join(process.cwd(), "src/components/reader/StoryChrome.tsx"),
+    "utf8"
+  );
+  assert(!chromeSource.includes('href ?? "#"'), "Byline never falls back to a hash link");
+  assert(chromeSource.includes("credit.href ? ("), "Byline renders a link only when the contributor has a Jalin profile");
 }
 
 {

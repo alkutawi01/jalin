@@ -20,6 +20,12 @@ sourceWork:
   author: "F. Scott Fitzgerald"
   language: "Inggeris"
   rightsStatus: "public_domain"
+visuals:
+  - role: hero
+    src: "/visuals/gatsby-kapal-melawan-arus/hero.png"
+    alt: "Dermaga kayu gelap pada waktu malam dengan satu cahaya hijau di hujung dermaga jauh, memantul di atas air teluk yang tenang di bawah cahaya bulan."
+    provider: Magnific
+    creationId: 907f5358-6c35-4c3e-8ad8-2a99f88c5f11
 editorialHistory:
   - version: "v1.0"
     type: "initial"
@@ -28,10 +34,6 @@ editorialHistory:
 ---
 
 # The Great Gatsby: Kapal Melawan Arus
-
-*Fragmen — petikan asal daripada* **The Great Gatsby** *(F. Scott Fitzgerald, 1925), bab penutup.*
-
----
 
 Most of the big shore places were closed now and there were hardly any lights except the shadowy, moving glow of a ferryboat across the Sound. And as the moon rose higher the inessential houses began to melt away until gradually I became aware of the old island here that flowered once for Dutch sailors’ eyes—a fresh, green breast of the new world. Its vanished trees, the trees that had made way for Gatsby’s house, had once pandered in whispers to the last and greatest of all human dreams; for a transitory enchanted moment man must have held his breath in the presence of this continent, compelled into an aesthetic contemplation he neither understood nor desired, face to face for the last time in history with something commensurate to his capacity for wonder.
 

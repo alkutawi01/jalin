@@ -41,10 +41,17 @@ export function StoryHead({
           <span>Oleh</span>
           {byline.map((credit, index) => (
             <span key={credit.name} className="byline-credit">
-              <a href={credit.href ?? "#"}>
-                {credit.name}
-                {credit.maya ? <span className="maya-label"> · Maya</span> : null}
-              </a>
+              {credit.href ? (
+                <a href={credit.href}>
+                  {credit.name}
+                  {credit.maya ? <span className="maya-label"> · Maya</span> : null}
+                </a>
+              ) : (
+                <span className="byline-name">
+                  {credit.name}
+                  {credit.maya ? <span className="maya-label"> · Maya</span> : null}
+                </span>
+              )}
               {index < byline.length - 1 ? <span className="byline-separator">&amp;</span> : null}
             </span>
           ))}
