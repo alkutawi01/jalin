@@ -1,6 +1,6 @@
 # Derivative Credit Policy
 
-Status: dicadangkan — menunggu kelulusan editorial akhir (Adjung).
+Status: disemak pada checkpoint 4D-0 (fragmen reader) — peraturan dalam dokumen ini aktif; kelulusan editorial akhir: Adjung.
 Skop: fragmen, sinopsis dan mana-mana karya derivative; karya asli dirujuk di mana berkaitan.
 Dokumen ini ringkas. Ia tidak menggantikan `EDITORIAL_SYSTEM.md`; ia menetapkan peraturan kredit untuk karya derivative.
 
@@ -10,6 +10,13 @@ Dokumen ini ringkas. Ia tidak menggantikan `EDITORIAL_SYSTEM.md`; ia menetapkan 
 2. Pengarang asal, editor Jalin dan penyumbang dalaman ialah tiga kategori berbeza; jangan dicampurkan.
 3. AI tidak menerbitkan karya secara autonomi; manusia mempunyai kuasa akhir publish/unpublish.
 4. Tiada halaman contributor dicipta untuk pengarang sejarah/klasik.
+
+## Pengarang asal, AI dan editor manusia
+
+- Pengarang asal karya lama sentiasa identity `guest:` / source — bukan kontributor Jalin. Tiada rekod contributor Jalin dan tiada halaman `/penulis/` dicipta untuk mereka.
+- Persona AI (Rafiq Naim, Amir Syafiq) **tidak boleh memegang kredit `role: author`** dan tidak boleh muncul sebagai pengarang asal mana-mana karya. Sumbangan AI hanya melalui peranan sumbangan sebenar (`initial_draft`, `story_editor`, `co_writer`) dengan penanda Maya dan disclosure awam.
+- Penyusun sinopsis/fragmen Jalin muncul sebagai kredit hanya jika editorial meluluskannya (lihat "Keputusan yang ditahan") — dan digunakan konsisten untuk semua karya sejenis.
+- Karya asli Jalin (cerpen/novela/bersiri) **wajib mempunyai editor manusia (`final_editor`)** untuk status `ready`/`published`. Validator menguatkuasakan ini; gate tidak dilonggarkan.
 
 ## Siapa boleh muncul sebagai byline (`Oleh …`)
 
