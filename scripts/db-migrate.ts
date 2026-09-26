@@ -67,24 +67,73 @@ async function migrate() {
             version_label: null,
             revision_count: 0,
             editorial_history: JSON.stringify(work.editorialHistory),
+            metadata: work.metadata ? JSON.stringify(work.metadata) : null,
+            reader: work.reader ? JSON.stringify(work.reader) : null,
             published_at: work.publishedAt || null,
             published_by: null,
             first_published_at: work.publishedAt || null,
             published_revision_id: null,
+            // Dokumentasi polisi 4D-1C: first_published_at kini disemai =
+            // publishedAt. Konsep sebenar — "tarikh pertama kali karya masuk
+            // production" (berbeza daripada published_at) — menunggu keputusan
+            // sejarah editorial Adjung/Director; pelaksanaannya menyertai kerja
+            // living-text yang di-hold (held/living-text-seed).
             updated_at: work.updatedAt || new Date().toISOString(),
             created_at: new Date(),
           })
           .onConflict((oc) => oc.column("id").doNothing())
           .execute();
 
+        // Provenance derivatif: salin enum mentah dari frontmatter sahaja.
+        const sourceWork = work.sourceWork as Record<string, unknown> | undefined;
+        if (sourceWork) {
+          if (!sourceWork.rightsStatus) {
+            console.warn(
+              `WARNING EDITORIAL — Work ${work.slug}: sourceWork.rightsStatus HILANG dalam Markdown. ` +
+                `Disimpan sebagai "unknown" kerana kolom NOT NULL, tetapi "unknown" ialah maklumat hilang, ` +
+                `bukan nilai sebenar. Menunggu semakan editorial (lihat guard dalam content-source-compare).`
+            );
+          }
+          await trx
+            .insertInto("source_works")
+            .values({
+              work_id: work.id,
+              original_title: sourceWork.title ? String(sourceWork.title) : null,
+              author: sourceWork.author ? String(sourceWork.author) : null,
+              original_language: sourceWork.language ? String(sourceWork.language) : null,
+              rights_status: String(sourceWork.rightsStatus || "unknown"),
+              created_at: new Date(),
+              updated_at: new Date(),
+            })
+            .onConflict((oc) => oc.column("work_id").doNothing())
+            .execute();
+        }
+
         for (let i = 0; i < work.credits.length; i++) {
           const credit = work.credits[i] as Record<string, unknown>;
+          const identity = String(credit.contributor || credit.slug || "").trim();
+          let contributorSlug: string | null = null;
+          let guestName: string | null = null;
+
+          if (identity.startsWith("guest:")) {
+            guestName = identity.slice("guest:".length).trim();
+            if (!guestName) {
+              throw new Error(`Work ${work.slug}: kredit ${i} mempunyai "guest:" tanpa nama.`);
+            }
+          } else if (identity) {
+            contributorSlug = identity;
+          } else {
+            throw new Error(
+              `Work ${work.slug}: kredit ${i} tiada contributor/slug yang sah (identiti tidak dikenali).`
+            );
+          }
+
           await trx
             .insertInto("credits")
             .values({
               work_id: work.id,
-              contributor_slug: String(credit.contributor || credit.slug || ""),
-              guest_name: null,
+              contributor_slug: contributorSlug,
+              guest_name: guestName,
               role_label: String(credit.role || ""),
               byline: Boolean(credit.byline),
               is_public: true,

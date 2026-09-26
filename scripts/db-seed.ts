@@ -27,6 +27,9 @@ interface WorkData {
   credits: unknown[];
   visuals: unknown[];
   glossary: unknown[];
+  metadata?: unknown;
+  reader?: unknown;
+  sourceWork?: unknown;
 }
 
 interface ContributorData {
@@ -61,6 +64,9 @@ function parseWorkFile(filePath: string): WorkData | null {
       credits: data.credits || [],
       visuals: data.visuals || [],
       glossary: data.glossary || [],
+      metadata: data.metadata && typeof data.metadata === "object" ? data.metadata : undefined,
+      reader: data.reader && typeof data.reader === "object" ? data.reader : undefined,
+      sourceWork: data.sourceWork && typeof data.sourceWork === "object" ? data.sourceWork : undefined,
     };
   } catch (error) {
     console.error(`Error parsing work file: ${filePath}`, error);
