@@ -38,7 +38,7 @@ img { display: block; max-width: 100%; }
 .header-inner {
   min-height: 88px;
   display: grid;
-  grid-template-columns: 220px 1fr 120px;
+  grid-template-columns: 220px 1fr;
   align-items: center;
   gap: 32px;
 }
@@ -66,16 +66,6 @@ nav {
 }
 nav a { color: #5d696b; }
 nav a.active { color: var(--ink); border-bottom: 1px solid var(--clay); padding-bottom: 5px; }
-.save-button {
-  justify-self: end;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  padding: 9px 15px;
-  background: transparent;
-  color: var(--ink);
-  font: inherit;
-  font-size: 13px;
-}
 
 .story-head {
   max-width: 860px;
@@ -163,9 +153,9 @@ nav a.active { color: var(--ink); border-bottom: 1px solid var(--clay); padding-
   font-size: 11px;
 }
 dl { margin: 0; }
-dl > div { display: flex; justify-content: space-between; gap: 10px; padding: 8px 0; border-bottom: 1px solid rgba(24,52,60,.08); }
+dl > div { display: grid; grid-template-columns: max-content minmax(0, 1fr); column-gap: 16px; row-gap: 2px; padding: 8px 0; border-bottom: 1px solid rgba(24,52,60,.08); align-items: start; }
 dt { color: #8a9597; }
-dd { margin: 0; color: var(--ink); }
+dd { margin: 0; color: var(--ink); text-align: left; }
 .rail-rule { height: 1px; background: var(--line); margin: 24px 0; }
 .maya-note { line-height: 1.55; margin: 0; }
 .rail-person,
@@ -548,7 +538,7 @@ dd { margin: 0; color: var(--ink); }
 @media (max-width: 1050px) {
   .reading-grid { grid-template-columns: minmax(0, 700px) 190px; justify-content: center; }
   .left-rail { display: none; }
-  .header-inner { grid-template-columns: 190px 1fr auto; }
+  .header-inner { grid-template-columns: 190px 1fr; }
   .header-wordmark img { width: 112px; }
   nav { gap: 22px; font-size: 16px; }
 }

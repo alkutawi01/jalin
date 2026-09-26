@@ -45,13 +45,6 @@ glossary:
 
 # Di Hadapan Singgahsana
 
-*Sinopsis — Projek Jalin*
-
-**Pengarang asal:** Naguib Mahfouz
-**Penyusun sinopsis:** Rafiq Naim (Maya)
-
----
-
 Selepas meninggalkan dunia, para pemerintah Mesir dari pelbagai zaman dipanggil untuk hadir di hadapan sebuah takhta yang tidak pernah mereka kenali ketika hidup. Di sebuah dewan yang berada di luar batas masa, mereka berdiri di hadapan Osiris, Isis dan Horus untuk menjawab tentang kehidupan, keputusan dan warisan yang mereka tinggalkan kepada tanah Mesir.
 
 Thoth, pencatat para dewa, membuka lembaran sejarah setiap tokoh yang hadir. Tiada lagi mahkota yang melindungi mereka, tiada lagi tentera yang mematuhi arahan mereka, dan tiada lagi istana yang menjadi tempat berlindung. Mereka hanya membawa rekod kehidupan mereka sendiri.
@@ -87,10 +80,3 @@ Dan sejarah terus dibuka semula.
 Melalui perjalanan panjang para tokoh yang menghadap takhta, terbentang kisah sebuah bangsa yang melalui zaman kegemilangan, kejatuhan dan perubahan. Setiap generasi meninggalkan jejaknya sendiri, dan setiap pemimpin perlu menjawab apakah mereka telah menjaga amanah yang diberikan kepada mereka.
 
 Di ruang pengadilan yang tidak mengenal masa itu, tidak ada manusia yang mampu bersembunyi di sebalik gelaran atau kemasyhuran. Yang tinggal hanyalah kisah kehidupan mereka — pilihan yang dibuat, manusia yang dipengaruhi dan warisan yang ditinggalkan.
-
----
-
-**Sumber:** *Before the Throne* — Naguib Mahfouz
-**Bahasa asal:** Arab · **Tahun terbit:** 1983
-**Tentang pengarang:** Naguib Mahfouz (1911–2006) ialah penulis Mesir pemenang Hadiah Nobel Sastera 1988.
-**Status hak:** Perlu semakan oleh editor Jalin

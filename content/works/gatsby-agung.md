@@ -39,13 +39,6 @@ glossary:
 
 # Gatsby Agung
 
-*Sinopsis — Projek Jalin*
-
-**Pengarang asal:** F. Scott Fitzgerald
-**Penyusun sinopsis:** Rafiq Naim (Maya)
-
----
-
 ## Bahagian 1
 
 Pada musim panas tahun 1922, seorang lelaki muda bernama Nick Carraway berpindah ke Long Island, New York, untuk memulakan kehidupan baharu selepas meninggalkan kampung halamannya di Midwest. Dia datang ke sebuah kawasan yang dipenuhi rumah besar, pesta mewah dan golongan kaya yang hidup dalam suasana kemakmuran selepas Perang Dunia Pertama.
@@ -255,10 +248,3 @@ Ia adalah kisah tentang seseorang yang menghabiskan seluruh hidupnya mengejar ca
 Cahaya hijau di hujung teluk yang sering dipandang Gatsby menjadi simbol kepada harapan yang sentiasa berada di hadapan manusia. Seseorang mungkin terus bergerak menuju impiannya, tetapi masa lalu tidak pernah benar-benar boleh dikembalikan.
 
 Akhirnya, *Gatsby Agung* meninggalkan kisah tentang cinta, kehilangan, cita-cita dan impian manusia yang sentiasa berusaha mencapai sesuatu yang lebih jauh daripada dirinya sendiri.
-
----
-
-**Sumber:** *Gatsby Agung* — F. Scott Fitzgerald
-**Bahasa asal:** Inggeris · **Tahun terbit:** 1925
-**Tentang pengarang:** F. Scott Fitzgerald (1896–1940) ialah penulis Amerika yang terkenal dengan kisah cinta dan impian pada era Jazz.
-**Status hak:** Domain awam — diterbitkan 1925, tempoh hak cipta telah tamat

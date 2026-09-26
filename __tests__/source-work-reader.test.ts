@@ -49,21 +49,19 @@ console.log("sourceWork reader tests (Phase 4D-0.5)\n");
     display.sumberAsal === "The Great Gatsby · F. Scott Fitzgerald",
     "Sinopsis displays original source"
   );
-  assert(display.status === "public_domain", "Sinopsis displays source status");
+  assert(display.status === "Domain awam", "Source status displays reader label, not raw enum");
 }
 
 {
-  const fragmen = getWorkBySlug("nadi-kota-tua-bilik-kiri");
-  assert(Boolean(fragmen), "Fragmen loads from markdown");
-  assert(
-    fragmen?.sourceWork?.title === "Nadi Kota Tua" &&
-      fragmen?.sourceWork?.author === "Aminah Rahim" &&
-      fragmen?.sourceWork?.rightsStatus === "needs_review",
-    "Fragmen with sourceWork parses original title, author, and status"
-  );
-  const display = buildSourceAttribution(fragmen ?? {});
-  assert(display.sumberAsal === "Nadi Kota Tua · Aminah Rahim", "Fragmen displays original source");
-  assert(display.status === "needs_review", "Fragmen displays source status");
+  const display = buildSourceAttribution({
+    sourceWork: {
+      title: "Karya Sumber",
+      author: "Penulis Sumber",
+      rightsStatus: "needs_review"
+    }
+  });
+  assert(display.sumberAsal === "Karya Sumber · Penulis Sumber", "Derivative entry displays original source and author");
+  assert(display.status === "Perlu semakan", "Needs-review status displays reader label");
 }
 
 {

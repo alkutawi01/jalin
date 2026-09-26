@@ -12,13 +12,14 @@ import StoryMarkdown from "../../../../components/reader/StoryMarkdown";
 import MobileStoryInfo from "../../../../components/reader/MobileStoryInfo";
 import { initContentRepository } from "../../../../lib/content";
 import { getWorkBySlug, getWorksByType } from "../../../../lib/content/workLoader";
-import { getContributorDisplay } from "../../../../lib/content/contributors";
 import { buildSourceAttribution } from "../../../../lib/content/source-attribution";
+import {
+  projectBylineCredits,
+  projectEditorialCredits
+} from "../../../../lib/reader/credit-projection";
+import { buildVerifiedGlossary } from "../../../../lib/reader/verified-glossary";
 import type {
-  BylineCredit,
   CharacterMeta,
-  EditorialCredit,
-  GlossaryMap,
   StoryInfoData,
   WorkMetaRow
 } from "../../../../components/reader/types";
@@ -74,33 +75,6 @@ async function getWork(slug: string) {
   return getWorkBySlug(slug);
 }
 
-function buildGlossary(work: Awaited<ReturnType<typeof getWork>>): GlossaryMap {
-  const glossary: GlossaryMap = {};
-  for (const entry of work?.glossary ?? []) {
-    glossary[entry.term] = { meaning: entry.meaning, source: entry.source };
-  }
-  return glossary;
-}
-
-function resolvePublicContributor(slug: string) {
-  if (slug.startsWith("guest:")) return { name: slug.slice(6), kind: "human" as const, href: undefined };
-  const display = getContributorDisplay(slug);
-  return { ...display, href: display.name === "Penyumbang Jalin" ? undefined : `/penulis/${slug}` };
-}
-
-function buildByline(work: Awaited<ReturnType<typeof getWork>>): BylineCredit[] {
-  return (work?.credits ?? [])
-    .filter((credit) => credit.byline)
-    .map((credit) => {
-      const display = resolvePublicContributor(credit.slug);
-      return {
-        name: display.name,
-        maya: display.kind === "virtual",
-        href: display.href
-      };
-    });
-}
-
 function buildMetaRows(work: Awaited<ReturnType<typeof getWork>>): WorkMetaRow[] {
   if (!work) return [];
   const attribution = buildSourceAttribution(work);
@@ -111,26 +85,12 @@ function buildMetaRows(work: Awaited<ReturnType<typeof getWork>>): WorkMetaRow[]
     ...(attribution.sumberAsal
       ? [{ label: "Sumber asal", value: attribution.sumberAsal }]
       : []),
+    ...(work.sourceWork?.language
+      ? [{ label: "Bahasa asal", value: work.sourceWork.language }]
+      : []),
     { label: "Status", value: attribution.status },
-    { label: "Versi", value: work.version }
+    ...(work.version ? [{ label: "Versi", value: work.version }] : [])
   ];
-}
-
-function buildEditorial(work: Awaited<ReturnType<typeof getWork>>): EditorialCredit[] {
-  return (work?.credits ?? []).map((credit) => {
-    const display = resolvePublicContributor(credit.slug);
-    const label = credit.role === "initial_draft"
-      ? "Penulis"
-      : credit.role === "story_editor"
-        ? "Penulis & penyemak"
-        : credit.role === "final_editor"
-          ? "Editor"
-          : credit.role;
-    return {
-      role: label,
-      name: display.kind === "virtual" ? `${display.name} · Maya` : display.name
-    };
-  });
 }
 
 function SectionNav({
@@ -238,12 +198,12 @@ export default async function WorkPage({
     notFound();
   }
 
-  const glossary = buildGlossary(work);
-  const byline = buildByline(work);
+  const glossary = buildVerifiedGlossary(work);
+  const byline = projectBylineCredits(work.credits);
   const typeLabel = TYPE_LABELS[type] ?? type;
   const workMeta = buildMetaRows(work);
   const characters: CharacterMeta[] = work.metadata?.characters ?? [];
-  const editorial = buildEditorial(work);
+  const editorial = projectEditorialCredits(work.credits);
 
   const mobileInfo: StoryInfoData = {
     work: workMeta,
@@ -360,40 +320,6 @@ export default async function WorkPage({
         )}
 
         <StoryEnd title={work.title} />
-
-        {work.sourceWork && (
-          <section className="site-shell source-provenance" aria-label="Provenance sumber" style={{ maxWidth: "42rem", margin: "0 auto 3rem", padding: "0 1.25rem" }}>
-            <h2 style={{ fontSize: "1rem", letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "0.75rem" }}>
-              Sumber &amp; provenance
-            </h2>
-            <dl style={{ display: "grid", gridTemplateColumns: "max-content 1fr", gap: "0.35rem 1rem", margin: 0, fontSize: "0.95rem" }}>
-              {work.sourceWork.title && (
-                <>
-                  <dt style={{ opacity: 0.7 }}>Tajuk asal</dt>
-                  <dd style={{ margin: 0 }}>{work.sourceWork.title}</dd>
-                </>
-              )}
-              {work.sourceWork.author && (
-                <>
-                  <dt style={{ opacity: 0.7 }}>Penulis asal</dt>
-                  <dd style={{ margin: 0 }}>{work.sourceWork.author}</dd>
-                </>
-              )}
-              {work.sourceWork.language && (
-                <>
-                  <dt style={{ opacity: 0.7 }}>Bahasa asal</dt>
-                  <dd style={{ margin: 0 }}>{work.sourceWork.language}</dd>
-                </>
-              )}
-              {work.sourceWork.rightsStatus && (
-                <>
-                  <dt style={{ opacity: 0.7 }}>Hak penggunaan</dt>
-                  <dd style={{ margin: 0 }}>{work.sourceWork.rightsStatus}</dd>
-                </>
-              )}
-            </dl>
-          </section>
-        )}
 
         <MobileStoryInfo data={mobileInfo} />
       </main>

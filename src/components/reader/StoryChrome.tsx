@@ -15,7 +15,6 @@ export function SiteHeader({ active }: { active?: string }) {
           <a className={active === "fragmen" ? "active" : undefined} href="/kategori/fragmen">Fragmen</a>
           <a className={active === "sinopsis" ? "active" : undefined} href="/kategori/sinopsis">Sinopsis</a>
         </nav>
-        <button className="save-button" type="button">♡ Simpan</button>
       </div>
     </header>
   );
@@ -37,18 +36,20 @@ export function StoryHead({
       <div className="story-kicker">{kicker}</div>
       <h1>{title}</h1>
       <p className="dek">{dek}</p>
-      <div className="byline">
-        <span>Oleh</span>
-        {byline.map((credit, index) => (
-          <span key={credit.name} className="byline-credit">
-            <a href={credit.href ?? "#"}>
-              {credit.name}
-              {credit.maya ? <span className="maya-label"> · Maya</span> : null}
-            </a>
-            {index < byline.length - 1 ? <span className="byline-separator">&amp;</span> : null}
-          </span>
-        ))}
-      </div>
+      {byline.length > 0 && (
+        <div className="byline">
+          <span>Oleh</span>
+          {byline.map((credit, index) => (
+            <span key={credit.name} className="byline-credit">
+              <a href={credit.href ?? "#"}>
+                {credit.name}
+                {credit.maya ? <span className="maya-label"> · Maya</span> : null}
+              </a>
+              {index < byline.length - 1 ? <span className="byline-separator">&amp;</span> : null}
+            </span>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -94,22 +95,31 @@ export function LeftRail({ rows, note }: { rows: WorkMetaRow[]; note?: string })
 }
 
 export function RightRail({ characters, editorial }: { characters: CharacterMeta[]; editorial: EditorialCredit[] }) {
+  if (characters.length === 0 && editorial.length === 0) return null;
   return (
     <aside className="right-rail">
       <div className="rail-card sticky">
-        <div className="rail-label">Watak</div>
-        {characters.map((character) => (
-          <div className="rail-person" key={character.name}>
-            <b>{character.name}</b><span>{character.role}</span>
-          </div>
-        ))}
-        <div className="rail-rule" />
-        <div className="rail-label">Editorial</div>
-        {editorial.map((credit) => (
-          <div className="editorial-meta" key={credit.role + "-" + credit.name}>
-            <span>{credit.role}</span><b>{credit.name}</b>
-          </div>
-        ))}
+        {characters.length > 0 && (
+          <>
+            <div className="rail-label">Watak</div>
+            {characters.map((character) => (
+              <div className="rail-person" key={character.name}>
+                <b>{character.name}</b><span>{character.role}</span>
+              </div>
+            ))}
+          </>
+        )}
+        {characters.length > 0 && editorial.length > 0 && <div className="rail-rule" />}
+        {editorial.length > 0 && (
+          <>
+            <div className="rail-label">Editorial</div>
+            {editorial.map((credit) => (
+              <div className="editorial-meta" key={credit.role + "-" + credit.name}>
+                <span>{credit.role}</span><b>{credit.name}</b>
+              </div>
+            ))}
+          </>
+        )}
       </div>
     </aside>
   );

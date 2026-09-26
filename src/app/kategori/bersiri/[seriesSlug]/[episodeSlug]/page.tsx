@@ -12,12 +12,13 @@ import StoryMarkdown from "../../../../../components/reader/StoryMarkdown";
 import MobileStoryInfo from "../../../../../components/reader/MobileStoryInfo";
 import { initContentRepository } from "../../../../../lib/content";
 import { getWorkBySlug, getWorksByType } from "../../../../../lib/content/workLoader";
-import { getContributorDisplay } from "../../../../../lib/content/contributors";
+import {
+  projectBylineCredits,
+  projectEditorialCredits
+} from "../../../../../lib/reader/credit-projection";
+import { buildVerifiedGlossary } from "../../../../../lib/reader/verified-glossary";
 import type {
-  BylineCredit,
   CharacterMeta,
-  EditorialCredit,
-  GlossaryMap,
   StoryInfoData,
   WorkMetaRow
 } from "../../../../../components/reader/types";
@@ -149,21 +150,9 @@ export default async function EpisodePage({
     ? repo.getPublishedSeriesEpisodes(series.id)
     : [];
 
-  const glossary: GlossaryMap = {};
-  for (const entry of work.glossary) {
-    glossary[entry.term] = { meaning: entry.meaning, source: entry.source };
-  }
+  const glossary = buildVerifiedGlossary(work);
 
-  const byline: BylineCredit[] = work.credits
-    .filter((credit) => credit.byline)
-    .map((credit) => {
-      const display = getContributorDisplay(credit.slug);
-      return {
-        name: display.name,
-        maya: display.kind === "virtual",
-        href: `/penulis/${credit.slug}`
-      };
-    });
+  const byline = projectBylineCredits(work.credits);
 
   const episodeIndex = episodes.findIndex((e) => e.slug === work.slug);
   const typeLabel = TYPE_LABELS["bersiri"];
@@ -183,20 +172,7 @@ export default async function EpisodePage({
 
   const characters: CharacterMeta[] = work.metadata?.characters ?? [];
 
-  const editorial: EditorialCredit[] = work.credits.map((credit) => {
-    const display = getContributorDisplay(credit.slug);
-    const label = credit.role === "initial_draft"
-      ? "Penulis"
-      : credit.role === "story_editor"
-        ? "Penulis & penyemak"
-        : credit.role === "final_editor"
-          ? "Editor"
-          : credit.role;
-    return {
-      role: label,
-      name: display.kind === "virtual" ? `${display.name} · Maya` : display.name
-    };
-  });
+  const editorial = projectEditorialCredits(work.credits);
 
   const mobileInfo: StoryInfoData = {
     work: workMeta,

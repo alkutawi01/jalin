@@ -5,6 +5,13 @@ export interface SourceAttributionDisplay {
   status: string;
 }
 
+const RIGHTS_LABELS: Record<string, string> = {
+  public_domain: "Domain awam",
+  needs_review: "Perlu semakan",
+  licensed: "Lesen diperoleh",
+  permission: "Kebenaran diperoleh"
+};
+
 export function buildSourceAttribution(
   work: Pick<Work, "sourceWork">
 ): SourceAttributionDisplay {
@@ -17,6 +24,6 @@ export function buildSourceAttribution(
   );
   return {
     sumberAsal: parts.join(" · "),
-    status: source.rightsStatus ?? "Karya berasaskan sumber"
+    status: (source.rightsStatus && RIGHTS_LABELS[source.rightsStatus]) || "Karya berasaskan sumber"
   };
 }
