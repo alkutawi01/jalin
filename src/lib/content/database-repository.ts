@@ -1,4 +1,4 @@
-import type { Work, WorkType, ContributorRef, GlossaryEntry, VisualRef, EditorialRevision, SourceWorkRef, ReadingSection, SeriesMeta, SeriesEpisodeRef } from "./types";
+import type { Work, WorkType, ContributorRef, GlossaryEntry, VisualRef, EditorialRevision, SourceWorkRef, ReadingSection, SeriesMeta, SeriesEpisodeRef, CharacterMeta } from "./types";
 import type { ContributorMeta } from "./contributors";
 import type { ContentRepository } from "./repository";
 import { getDb, hasDb } from "../db";
@@ -9,21 +9,27 @@ function mapPublicSourceWork(row: any): SourceWorkRef | undefined {
   const title = row.original_title ? String(row.original_title) : "";
   const author = row.author ? String(row.author) : "";
   if (!title && !author) return undefined;
-  const status = String(row.rights_status || "");
-  const rightsLabel =
-    status === "public_domain"
-      ? "Domain awam"
-      : status === "licensed"
-        ? "Berlesen"
-        : status === "permission_obtained"
-          ? "Kebenaran diperoleh"
-          : undefined;
+  // Return the raw rights enum — label conversion belongs solely to
+  // source-attribution.ts so the DB path matches the Markdown path (GAP-4).
+  const status = row.rights_status ? String(row.rights_status) : undefined;
   return {
     title,
     author: author || undefined,
     language: row.original_language ? String(row.original_language) : undefined,
-    rightsStatus: rightsLabel,
+    rightsStatus: status,
   };
+}
+
+function parseJsonbField<T>(value: unknown): T | undefined {
+  if (value === null || value === undefined) return undefined;
+  if (typeof value === "string") {
+    try {
+      return JSON.parse(value) as T;
+    } catch {
+      return undefined;
+    }
+  }
+  return value as T;
 }
 
 function mapWork(
@@ -64,8 +70,8 @@ function mapWork(
     visuals,
     glossary,
     editorialHistory,
-    metadata: undefined,
-    reader: undefined,
+    metadata: parseJsonbField<{ characters?: CharacterMeta[] }>(row.metadata),
+    reader: parseJsonbField<{ note?: string }>(row.reader),
     sourceWork,
     sections: sections && sections.length > 0 ? sections : undefined,
     series,
