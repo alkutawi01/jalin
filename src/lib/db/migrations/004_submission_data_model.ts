@@ -62,7 +62,7 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     .addColumn("provider", "text", (col) => col.notNull().defaultTo("magnific"))
     .addColumn("provider_request_id", "text")
     .addColumn("provider_creation_id", "text")
-    .addColumn("status", "text", (col) => col.notNull().defaultTo("pending"))
+    .addColumn("status", "text", (col) => col.notNull().defaultTo("draft"))
     .addColumn("source_asset_url", "text")
     .addColumn("source_asset_path", "text")
     .addColumn("alt_text", "text")
