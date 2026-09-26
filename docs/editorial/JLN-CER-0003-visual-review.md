@@ -178,3 +178,19 @@ Production touched = NO.
 Status remains `VISUAL_PENDING`.
 
 Production touched = NO.
+
+
+## Recovery checkpoint — handoff retry + duplicate revalidation
+
+- Exact PR head at checkpoint start: `26882525a84d0c55af3b9f1dbddc0fb498ca1e37`.
+- `JALIN_TEXT_REVIEW_COMPLETE` is still absent; final visual gate remains closed.
+- Existing PR visual-support comment was retried first and the update was blocked by connector safety checks, so its refresh remains `PENDING_HANDOFF`.
+- Current manuscript v1.8 still anchors the final scene after Maghrib: Aiman descends the three front steps with the old broom, sweeps one small strip, and Farid is already at the gate.
+- Magnific history still contains exactly three bounded correction candidates for this Work; no duplicate was generated.
+- Corrected veranda candidate `ksis6r616B` remains completed and provenance-aligned, with a ready 16-bit PNG delivery render, but actual pixel inspection is still unavailable in this runtime. No visual pass is claimed.
+- Magnific assist-comment retry was also blocked by safety checks.
+- No prose, session numbering, visual mapping, public alt text, merge, publish, deploy, production, or tooling state changed.
+
+Status remains `VISUAL_PENDING`.
+
+Production touched = NO.
