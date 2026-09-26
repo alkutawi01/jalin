@@ -55,7 +55,7 @@ Step 2: Jalankan db:schema:migrate pada production
         (001-018, semua additive — tiada DROP COLUMN)
         ↓
 Step 3: Sahkan migration berjaya
-        (SELECT COUNT(*) FROM _kysely_migrations)
+        (SELECT COUNT(*) FROM kysely_migration)
         ↓
 Step 4: Jalankan db:migrate (seed) pada production
         (5 karya published, 5 contributors)
@@ -88,7 +88,7 @@ DATABASE_URL="<production-pooled-url>" \
     require('dotenv').config();
     const { Pool } = require('pg');
     const pool = new Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
-    pool.query('SELECT COUNT(*) FROM _kysely_migrations')
+    pool.query('SELECT COUNT(*) FROM kysely_migration')
       .then(r => { console.log('Migrations applied:', r.rows[0].count); pool.end(); })
       .catch(e => { console.error(e.message); process.exit(1); });
   "

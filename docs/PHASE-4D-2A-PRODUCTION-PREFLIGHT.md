@@ -110,7 +110,7 @@ DATABASE_URL="<production-pooled-url>" \
         { name: 'visuals', sql: 'SELECT COUNT(*) as c FROM visuals' },
         { name: 'glossary_terms', sql: 'SELECT COUNT(*) as c FROM glossary_terms' },
         { name: 'source_works', sql: 'SELECT COUNT(*) as c FROM source_works' },
-        { name: '_kysely_migrations', sql: 'SELECT COUNT(*) as c FROM _kysely_migrations' },
+        { name: 'kysely_migration', sql: 'SELECT COUNT(*) as c FROM kysely_migration' },
       ];
       console.log('=== STATE SEBELUM MIGRATION ===');
       for (const check of checks) {
@@ -136,7 +136,7 @@ credits: 0
 visuals: 0
 glossary_terms: 0
 source_works: 0
-_kysely_migrations: 0
+kysely_migration: 0
 ```
 
 **Jika production sudah ada data:** Catatkan counts sebagai baseline. Jangan padam — migration akan add-on.
@@ -195,7 +195,7 @@ DATABASE_URL="<production-pooled-url>" \
       ssl: { rejectUnauthorized: false }
     });
     async function verify() {
-      const r = await pool.query('SELECT COUNT(*) as c FROM _kysely_migrations');
+      const r = await pool.query('SELECT COUNT(*) as c FROM kysely_migration');
       console.log('Migrations applied:', r.rows[0].c);
       console.log('Expected: 18');
       console.log('Status:', r.rows[0].c == 18 ? 'PASS' : 'FAIL');
