@@ -169,6 +169,16 @@ function compareWork(markdown: Work, database: Work, slug: string): string[] {
 
   // Content projection parity fields (Phase 4D-1C): provenance, metadata,
   // reader note and editorial history must round-trip Markdown → DB exactly.
+  // Guard kelulusan 4D-1C: rightsStatus hilang = maklumat hilang, bukan nilai
+  // "unknown". Lapor secara eksplisit dalam laporan pariti — jangan normalisasi
+  // senyap (seeder hanya memindahkan provenance, bukan mentafsir).
+  if (markdown.sourceWork && !markdown.sourceWork.rightsStatus) {
+    diffs.push(
+      `${slug}.sourceWork.rightsStatus: HILANG dalam Markdown (DB="${
+        database.sourceWork?.rightsStatus ?? "(tiada)"
+      }") — maklumat hilang, bukan nilai sebenar; menunggu semakan editorial.`
+    );
+  }
   diffs.push(...compareField(slug, "sourceWork", markdown.sourceWork, database.sourceWork));
   diffs.push(...compareField(slug, "metadata", markdown.metadata, database.metadata));
   diffs.push(...compareField(slug, "reader", markdown.reader, database.reader));
