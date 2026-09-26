@@ -6,9 +6,9 @@
  * _kysely_migrations ledger. There must be no inline duplicate definitions
  * and no second migration runner anywhere in the repository.
  *
- * D5: 013_living_text_revisions.ts is still untracked (owner's pending work),
- * so it is the only tolerated gap in the numeric sequence until it lands in
- * HEAD. Any other missing number is a hard failure.
+ * Every migration file must be tracked in HEAD — production and staging
+ * databases must never depend on untracked files. A missing number in the
+ * sequence is a hard failure.
  */
 
 import fs from "node:fs";
@@ -45,13 +45,12 @@ const REQUIRED_MIGRATIONS = [
   "010_add_published_by",
   "011_source_works",
   "012_novela_bersiri_structure",
+  "013_living_text_revisions",
   "014_editorial_audit_history",
   "015_editorial_issues",
   "016_editorial_issue_events",
   "017_editorial_roles",
 ];
-
-const PENDING_UNTRACKED_GAP = 13;
 
 function walkTypeScriptFiles(dir: string): string[] {
   const files: string[] = [];
@@ -97,16 +96,10 @@ const migrationFiles = fs
   for (let n = 1; n <= max; n++) {
     if (!numbers.includes(n)) missing.push(n);
   }
-  const tolerated = missing.filter(
-    (n) => n === PENDING_UNTRACKED_GAP && !names.some((name) => name.startsWith("013_"))
-  );
   assert(
-    missing.length === tolerated.length,
+    missing.length === 0,
     `no missing migration numbers${missing.length ? ` (missing: ${missing.join(", ")})` : ""}`
   );
-  if (names.some((name) => name.startsWith("013_"))) {
-    console.log("  · 013_living_text_revisions present locally (untracked, D5 pending)");
-  }
 
   let allUp = true;
   for (const file of migrationFiles) {
