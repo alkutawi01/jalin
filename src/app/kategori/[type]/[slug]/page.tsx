@@ -13,6 +13,7 @@ import MobileStoryInfo from "../../../../components/reader/MobileStoryInfo";
 import { initContentRepository } from "../../../../lib/content";
 import { getWorkBySlug, getWorksByType } from "../../../../lib/content/workLoader";
 import { getContributorDisplay } from "../../../../lib/content/contributors";
+import { buildSourceAttribution } from "../../../../lib/content/source-attribution";
 import type {
   BylineCredit,
   CharacterMeta,
@@ -102,18 +103,15 @@ function buildByline(work: Awaited<ReturnType<typeof getWork>>): BylineCredit[] 
 
 function buildMetaRows(work: Awaited<ReturnType<typeof getWork>>): WorkMetaRow[] {
   if (!work) return [];
+  const attribution = buildSourceAttribution(work);
   return [
     { label: "Bentuk", value: TYPE_LABELS[work.type] ?? work.type },
     { label: "Genre", value: work.genre ?? "Keluarga" },
     { label: "Bacaan", value: work.readingMinutes ? `± ${work.readingMinutes} min` : "—" },
-    {
-      label: "Status",
-      value: work.sourceWork
-        ? work.sourceWork.rightsStatus
-          ? `Sumber: ${work.sourceWork.rightsStatus}`
-          : "Karya berasaskan sumber"
-        : "Karya asli Jalin"
-    },
+    ...(attribution.sumberAsal
+      ? [{ label: "Sumber asal", value: attribution.sumberAsal }]
+      : []),
+    { label: "Status", value: attribution.status },
     { label: "Versi", value: work.version }
   ];
 }

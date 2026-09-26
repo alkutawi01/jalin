@@ -5,6 +5,7 @@ import type {
   ContributorRef,
   EditorialRevision,
   GlossaryEntry,
+  SourceWorkRef,
   VisualRef,
   Work,
   WorkType
@@ -66,6 +67,19 @@ function normalizeVisuals(visuals: unknown): VisualRef[] {
   });
 }
 
+function normalizeSourceWork(sourceWork: unknown): SourceWorkRef | undefined {
+  if (typeof sourceWork !== "object" || sourceWork === null) return undefined;
+  const entry = sourceWork as Record<string, unknown>;
+  const title = entry.title ? String(entry.title).trim() : "";
+  if (!title) return undefined;
+  return {
+    title,
+    author: entry.author ? String(entry.author) : undefined,
+    language: entry.language ? String(entry.language) : undefined,
+    rightsStatus: entry.rightsStatus ? String(entry.rightsStatus) : undefined
+  };
+}
+
 function normalizeEditorialHistory(history: unknown): EditorialRevision[] {
   if (!Array.isArray(history)) return [];
   return history.map((item) => {
@@ -114,11 +128,14 @@ function parseWorkSlug(slug: string): Work | undefined {
     publishedAt: data.publishedAt ? String(data.publishedAt) : undefined,
     updatedAt: data.updatedAt ? String(data.updatedAt) : undefined,
     version: String(data.version ?? "v0.1"),
+    versionLabel: data.versionLabel ? String(data.versionLabel) : null,
+    revisionCount: typeof data.revisionCount === "number" ? data.revisionCount : 0,
     body,
     credits: normalizeCredits(data.credits),
     visuals: normalizeVisuals(data.visuals),
     glossary: normalizeGlossary(data.glossary),
     editorialHistory: normalizeEditorialHistory(data.editorialHistory),
+    sourceWork: normalizeSourceWork(data.sourceWork),
     metadata,
     reader
   };
