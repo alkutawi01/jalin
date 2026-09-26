@@ -10,7 +10,6 @@ import type { Work, ContributorRef, VisualRef, GlossaryEntry } from "../src/lib/
 const SLUGS = [
   "kerusi-di-beranda",
   "nombor-giliran-117",
-  "rumah-yang-masih-menyimpan-suara",
   "di-hadapan-singgahsana",
   "gatsby-agung",
   "gatsby-kapal-melawan-arus",

@@ -152,7 +152,7 @@ export function getContributorData(slug: string): ContributorData | null {
 export function getAllWorks(): WorkData[] {
   return getAllWorkFiles()
     .map(f => parseWorkFile(path.join(WORKS_DIR, f)))
-    .filter((w): w is WorkData => w !== null);
+    .filter((w): w is WorkData => w !== null && w.status === "published");
 }
 
 export function getAllContributors(): ContributorData[] {
