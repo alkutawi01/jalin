@@ -43,6 +43,15 @@ One-item review discipline applies; do not create duplicates without a recorded 
 
 All three candidates remain **unapproved**.
 
+## Archival precursors
+
+Two older hero attempts are retained only as provenance/history and are **not active correction candidates**:
+
+1. `VXu9WyJMMU` — older hero attempt — golden-hour prompt; superseded for current **pagi** canon.
+2. `SyzQ4s5Ub8` — older hero attempt — golden-hour prompt; superseded for current **pagi** canon.
+
+Exact-title Magnific sweep therefore resolves to 8 creations total: 3 mapped production assets, 3 bounded correction candidates, and these 2 archival precursors. Do not generate a replacement merely because these historical attempts exist.
+
 ## Provenance / review evidence
 
 - Hero candidate `1liHRa4r4r` has one private assist comment (`64310`) recording that it remains the oldest bounded hero candidate and that final approval is withheld pending text-review completion. That note is not approval.
