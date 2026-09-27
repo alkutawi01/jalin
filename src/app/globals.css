@@ -623,6 +623,38 @@ dd { margin: 0; color: var(--ink); text-align: left; }
   transform: translateX(-50%) translateY(0);
 }
 
+/* Mobile: tooltip expands in flow directly under the term.
+   A centred absolute box would extend past the viewport edge on
+   narrow screens, growing the document width. An in-flow block can
+   never leave the reading column, so nothing is clipped and no
+   horizontal scrolling is possible. */
+@media (max-width: 820px) {
+  .glossary-tooltip {
+    position: static;
+    left: auto;
+    bottom: auto;
+    display: none;
+    width: auto;
+    max-width: none;
+    margin: 10px 0 4px;
+    transform: none;
+    transition: none;
+    opacity: 1;
+    visibility: visible;
+    background: #fffdf8;
+    box-shadow: none;
+    border-left: 2px solid rgba(167, 100, 80, .55);
+    border-radius: 0 8px 8px 0;
+  }
+  .glossary-term:hover .glossary-tooltip,
+  .glossary-term:focus .glossary-tooltip {
+    display: block;
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+  }
+}
+
 
 .editorial-image {
   position: relative;
