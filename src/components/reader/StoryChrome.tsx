@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type { BylineCredit, CharacterMeta, EditorialCredit, WorkMetaRow } from "./types";
 
 const NAV_LINKS: { label: string; href: string; match?: string }[] = [
@@ -104,7 +105,7 @@ export function EditorialImage({
   );
 }
 
-export function LeftRail({ rows, note }: { rows: WorkMetaRow[]; note?: string }) {
+export function LeftRail({ rows, note, children }: { rows: WorkMetaRow[]; note?: string; children?: ReactNode }) {
   return (
     <aside className="left-rail">
       <div className="rail-card sticky">
@@ -119,6 +120,7 @@ export function LeftRail({ rows, note }: { rows: WorkMetaRow[]; note?: string })
           <p className="maya-note">{note}</p>
         </> : null}
       </div>
+      {children ? <div className="rail-card sticky">{children}</div> : null}
     </aside>
   );
 }

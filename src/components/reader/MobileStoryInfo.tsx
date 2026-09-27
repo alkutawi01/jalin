@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { StoryInfoData } from "./types";
 
-type Tab = "karya" | "watak" | "editorial";
+type Tab = "karya" | "watak" | "editorial" | "bab";
 
 export default function MobileStoryInfo({ data }: { data: StoryInfoData }) {
   const [open, setOpen] = useState(false);
@@ -63,6 +63,9 @@ export default function MobileStoryInfo({ data }: { data: StoryInfoData }) {
           <button type="button" className={tab === "karya" ? "active" : ""} onClick={() => setTab("karya")}>Karya</button>
           <button type="button" className={tab === "watak" ? "active" : ""} onClick={() => setTab("watak")}>Watak</button>
           <button type="button" className={tab === "editorial" ? "active" : ""} onClick={() => setTab("editorial")}>Editorial</button>
+          {data.bab && data.bab.length > 0 ? (
+            <button type="button" className={tab === "bab" ? "active" : ""} onClick={() => setTab("bab")}>Bab</button>
+          ) : null}
         </div>
         <div className="sheet-content">
           {tab === "karya" && <dl className="sheet-list">{data.work.map((row) => <div key={row.label}><dt>{row.label}</dt><dd>{row.value}</dd></div>)}</dl>}
@@ -71,6 +74,15 @@ export default function MobileStoryInfo({ data }: { data: StoryInfoData }) {
             {data.editorial.map((credit) => <div key={credit.role + "-" + credit.name}><span>{credit.role}</span><b>{credit.name}</b></div>)}
             {data.note ? <p className="sheet-note">{data.note}</p> : null}
           </div>}
+          {tab === "bab" && data.bab && (
+            <div className="sheet-stack">
+              {data.bab.map((item) => (
+                <div key={item.href}>
+                  <a href={item.href}>{item.label}</a>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
     </div>}

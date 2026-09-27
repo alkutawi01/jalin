@@ -30,4 +30,6 @@ export type StoryInfoData = {
   characters: CharacterMeta[];
   editorial: EditorialCredit[];
   note?: string;
+  /** Daftar bab untuk drawer mobile (novela sahaja). */
+  bab?: { label: string; href: string }[];
 };
