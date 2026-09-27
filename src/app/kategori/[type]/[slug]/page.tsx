@@ -18,6 +18,10 @@ import {
   projectEditorialCredits
 } from "../../../../lib/reader/credit-projection";
 import { buildVerifiedGlossary } from "../../../../lib/reader/verified-glossary";
+import {
+  projectPublicSections,
+  type PublicSectionRef
+} from "../../../../lib/reader/public-projection";
 import type {
   CharacterMeta,
   StoryInfoData,
@@ -99,7 +103,7 @@ function SectionNav({
   activeSlug
 }: {
   workSlug: string;
-  sections: ReadingSection[];
+  sections: PublicSectionRef[];
   activeSlug?: string;
 }) {
   const currentIndex = activeSlug
@@ -155,7 +159,7 @@ function SectionIndex({
   sections
 }: {
   workSlug: string;
-  sections: ReadingSection[];
+  sections: PublicSectionRef[];
 }) {
   if (sections.length === 0) return null;
   return (
@@ -263,13 +267,16 @@ export default async function WorkPage({
         </div>
 
         {sections.length > 0 && !sectionSlug && (
-          <SectionIndex workSlug={work.slug} sections={sections} />
+          <SectionIndex
+            workSlug={work.slug}
+            sections={projectPublicSections(sections)}
+          />
         )}
 
         {sections.length > 0 && (
           <SectionNav
             workSlug={work.slug}
-            sections={sections}
+            sections={projectPublicSections(sections)}
             activeSlug={activeSection?.slug}
           />
         )}
@@ -314,7 +321,7 @@ export default async function WorkPage({
         {sections.length > 0 && (
           <SectionNav
             workSlug={work.slug}
-            sections={sections}
+            sections={projectPublicSections(sections)}
             activeSlug={activeSection?.slug}
           />
         )}
