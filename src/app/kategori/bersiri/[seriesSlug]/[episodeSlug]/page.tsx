@@ -30,7 +30,7 @@ export async function generateStaticParams() {
   const params: { seriesSlug: string; episodeSlug: string }[] = [];
   try {
     const repo = await initContentRepository();
-    if (repo.constructor.name === "DatabaseContentRepository") {
+    if (repo.source === "database") {
       const seriesList = repo.getPublishedSeries();
       for (const series of seriesList) {
         const episodes = repo.getPublishedSeriesEpisodes(series.id);
@@ -124,7 +124,7 @@ export default async function EpisodePage({
   const { seriesSlug, episodeSlug } = await params;
 
   const repo = await initContentRepository();
-  const isDb = repo.constructor.name === "DatabaseContentRepository";
+  const isDb = repo.source === "database";
 
   let work;
   if (isDb) {

@@ -146,7 +146,7 @@ function EditorialSelection({ works }: { works: PublicWorkSummary[] }) {
 
 async function getWorks() {
   const repo = await initContentRepository();
-  if (repo.constructor.name === "DatabaseContentRepository") {
+  if (repo.source === "database") {
     return repo.getWorks();
   }
   return getAllWorks();

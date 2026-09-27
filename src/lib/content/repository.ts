@@ -2,6 +2,13 @@ import type { Work, WorkType, ReadingSection, SeriesMeta, SeriesEpisodeRef } fro
 import type { ContributorMeta } from "./contributors";
 
 export interface ContentRepository {
+  /**
+   * Stable content source discriminator ("markdown" | "database").
+   * Must NOT be derived from class identity — production minification
+   * renames classes, which broke name-string-based detection.
+   */
+  readonly source: "markdown" | "database";
+
   getWork(slug: string): Work | undefined;
   getWorks(): Work[];
   getWorksByType(type: WorkType): Work[];

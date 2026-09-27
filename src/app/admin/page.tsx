@@ -27,7 +27,7 @@ async function getStats() {
   }
 
   const repo = await initContentRepository();
-  const useDb = repo.constructor.name === "DatabaseContentRepository";
+  const useDb = repo.source === "database";
 
   const works = useDb ? repo.getWorks() : getAllWorks();
   

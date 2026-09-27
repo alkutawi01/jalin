@@ -9,7 +9,7 @@ export async function generateStaticParams() {
   const params: { type: string; slug: string; sectionSlug: string }[] = [];
 
   const repo = await initContentRepository();
-  const useRepo = repo.constructor.name === "DatabaseContentRepository";
+  const useRepo = repo.source === "database";
   const works = useRepo ? repo.getWorksByType("novela") : getWorksByType("novela");
 
   for (const work of works) {

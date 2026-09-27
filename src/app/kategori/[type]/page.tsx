@@ -100,7 +100,7 @@ function SeriesCard({ series, episodeCount }: { series: PublicSeriesSummary; epi
 
 async function getWorks(type: string): Promise<Work[]> {
   const repo = await initContentRepository();
-  if (repo.constructor.name === "DatabaseContentRepository") {
+  if (repo.source === "database") {
     return repo.getWorksByType(type as WorkType);
   }
   return getWorksByType(type as WorkType);
@@ -112,7 +112,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ type:
   if (!meta) notFound();
 
   const isDb =
-    (await initContentRepository()).constructor.name === "DatabaseContentRepository";
+    (await initContentRepository()).source === "database";
 
   if (type === "bersiri" && isDb) {
     const repo = await initContentRepository();

@@ -36,7 +36,7 @@ export async function generateStaticParams() {
   const params: { type: string; slug: string; sectionSlug?: string }[] = [];
 
   const repo = await initContentRepository();
-  const useRepo = repo.constructor.name === "DatabaseContentRepository";
+  const useRepo = repo.source === "database";
 
   for (const type of types) {
     if (type === "bersiri") continue; // nested/series routes own bersiri URLs
@@ -73,7 +73,7 @@ function splitBody(body: string, anchor: string, place: "before" | "after"): [st
 
 async function getWork(slug: string) {
   const repo = await initContentRepository();
-  if (repo.constructor.name === "DatabaseContentRepository") {
+  if (repo.source === "database") {
     return repo.getWork(slug);
   }
   return getWorkBySlug(slug);

@@ -79,6 +79,7 @@ function mapWork(
 }
 
 export class DatabaseContentRepository implements ContentRepository {
+  readonly source = "database" as const;
   private enabled = false;
   private worksCache: Map<string, Work> = new Map();
   private worksByIdCache: Map<string, Work> = new Map();

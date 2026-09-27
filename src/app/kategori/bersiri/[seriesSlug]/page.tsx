@@ -8,7 +8,7 @@ export async function generateStaticParams() {
   const params: { seriesSlug: string }[] = [];
   try {
     const repo = await initContentRepository();
-    if (repo.constructor.name === "DatabaseContentRepository") {
+    if (repo.source === "database") {
       for (const series of repo.getPublishedSeries()) {
         params.push({ seriesSlug: series.slug });
       }
@@ -56,7 +56,7 @@ export default async function SeriesLandingPage({
 
   // Flat Work route backward compatibility: /kategori/bersiri/[episodeSlug]
   // If slug matches a published episode Work (not a Series), redirect to nested URL.
-  if (repo.constructor.name === "DatabaseContentRepository") {
+  if (repo.source === "database") {
     const series = repo.getSeriesBySlug(seriesSlug);
     if (!series) {
       const work = repo.getWork(seriesSlug);

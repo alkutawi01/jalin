@@ -179,8 +179,8 @@ async function installProjectionFixtures() {
     }
   };
 
-  Object.defineProperty(repo, "constructor", {
-    value: class DatabaseContentRepository {},
+  Object.defineProperty(repo, "source", {
+    value: "database",
     configurable: true
   });
   Object.defineProperty(repo, "getWork", {

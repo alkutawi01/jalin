@@ -12,6 +12,8 @@ import {
 } from "./contributors";
 
 export class MarkdownContentRepository implements ContentRepository {
+  readonly source = "markdown" as const;
+
   getWork(slug: string): Work | undefined {
     return getWorkBySlug(slug);
   }
