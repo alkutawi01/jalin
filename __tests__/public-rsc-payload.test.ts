@@ -14,6 +14,8 @@
  *   - raw body/section/metadata objects (`body`, `sections`, `metadata`)
  *   - legacy glossary `source`
  *   - raw editorial role keys (`final_editor`, …)
+ *   - hostile extra fields (`internalSecret`) on metadata.characters
+ *   - internal identifiers (`work.id`) on the Bersiri episode route
  *
  * The scan mirrors the flight serialization boundary: it walks the props of
  * every element on the page, including elements produced inside child
@@ -25,8 +27,10 @@ import type { ReactElement, ReactNode } from "react";
 import Home from "../src/app/page";
 import CategoryPage from "../src/app/kategori/[type]/page";
 import WorkPage from "../src/app/kategori/[type]/[slug]/page";
+import EpisodePage from "../src/app/kategori/bersiri/[seriesSlug]/[episodeSlug]/page";
 import PenulisPage from "../src/app/penulis/[slug]/page";
 import MobileStoryInfo from "../src/components/reader/MobileStoryInfo";
+import { initContentRepository } from "../src/lib/content";
 
 let passed = 0;
 let failed = 0;
@@ -57,10 +61,17 @@ const FORBIDDEN_KEYS = new Set([
   "metadata",
   "reader",
   "sections",
-  "source"
+  "source",
+  "internalSecret"
 ]);
 
-const FORBIDDEN_STRINGS = ["guest:", "final_editor", "initial_draft", "story_editor"];
+const FORBIDDEN_STRINGS = [
+  "guest:",
+  "final_editor",
+  "initial_draft",
+  "story_editor",
+  "SHOULD_NOT_BE_SERIALIZED"
+];
 
 /** Client components receive their data as props; do not execute them. */
 const CLIENT_COMPONENTS = new Set<unknown>([MobileStoryInfo]);
@@ -119,6 +130,84 @@ async function scanPage(name: string, page: ReactElement | Promise<ReactElement>
   assert(hits.length === 0, `${name} props clean${hits.length > 0 ? ` — leaks: ${[...new Set(hits)].join(", ")}` : ""}`);
 }
 
+/**
+ * Inject in-memory fixture works through the content repository singleton so
+ * the public projection boundary can be proven against hostile data:
+ *
+ *   - a cerpen whose metadata.characters carries an extra field
+ *     (`internalSecret: "SHOULD_NOT_BE_SERIALIZED"`) — must be stripped by the
+ *     server-side runtime projection before props reach the client;
+ *   - a Bersiri episode whose `work.id` carries a sentinel value — the ID
+ *     metadata row must not be serialized into the public payload.
+ *
+ * Only the test process's repository instance is patched; content files,
+ * database, schema and production data are untouched.
+ */
+async function installProjectionFixtures() {
+  const repo = await initContentRepository();
+  const realGetWork = repo.getWork.bind(repo);
+
+  const baseWork = realGetWork("kerusi-di-beranda");
+  if (!baseWork) throw new Error("fixture base work missing");
+
+  const secretWork = {
+    ...baseWork,
+    slug: "karya-ujian-rahsia",
+    title: "Karya Ujian Rahsia",
+    metadata: {
+      characters: [
+        { name: "Amin", role: "tokoh utama", internalSecret: "SHOULD_NOT_BE_SERIALIZED" }
+      ]
+    }
+  };
+
+  const episodeWork = {
+    ...baseWork,
+    id: "WORK_ID_SHOULD_NOT_BE_SERIALIZED",
+    slug: "episod-ujian-qa",
+    title: "Episod Ujian QA",
+    type: "bersiri" as const,
+    series: {
+      id: "SER-UJI-QA",
+      slug: "siri-ujian-qa",
+      title: "Siri Ujian QA",
+      mode: "continuous" as const,
+      status: "ongoing" as const
+    },
+    metadata: {
+      characters: [{ name: "Amin", role: "tokoh utama" }]
+    }
+  };
+
+  Object.defineProperty(repo, "constructor", {
+    value: class DatabaseContentRepository {},
+    configurable: true
+  });
+  Object.defineProperty(repo, "getWork", {
+    value: (slug: string) => (slug === secretWork.slug ? secretWork : realGetWork(slug)),
+    configurable: true,
+    writable: true
+  });
+  Object.defineProperty(repo, "getEpisodeBySeriesAndSlug", {
+    value: (seriesSlug: string, episodeSlug: string) =>
+      seriesSlug === episodeWork.series.slug && episodeSlug === episodeWork.slug
+        ? episodeWork
+        : undefined,
+    configurable: true,
+    writable: true
+  });
+  Object.defineProperty(repo, "getPublishedSeriesEpisodes", {
+    value: (seriesId: string) =>
+      seriesId === episodeWork.series.id
+        ? [{ position: 1, slug: episodeWork.slug, title: episodeWork.title }]
+        : [],
+    configurable: true,
+    writable: true
+  });
+
+  return { secretWork, episodeWork, episodeSeriesSlug: episodeWork.series.slug };
+}
+
 async function main() {
   await scanPage("homepage (/)", Home());
 
@@ -150,6 +239,26 @@ async function main() {
   await scanPage(
     "author /penulis/nara-zahin",
     PenulisPage({ params: Promise.resolve({ slug: "nara-zahin" }) })
+  );
+
+  // Fixture renders: inject fake works through the content repository singleton
+  // so serialization of internal fields can be proven directly. No content,
+  // schema or production data is touched — only in-memory test fixtures.
+  const fixtures = await installProjectionFixtures();
+
+  await scanPage(
+    `reader projection fixture /kategori/cerpen/${fixtures.secretWork.slug} (extra character fields must not serialize)`,
+    WorkPage({ params: Promise.resolve({ type: "cerpen", slug: fixtures.secretWork.slug }) })
+  );
+
+  await scanPage(
+    `bersiri episode /kategori/bersiri/${fixtures.episodeSeriesSlug}/${fixtures.episodeWork.slug} (work.id must not serialize)`,
+    EpisodePage({
+      params: Promise.resolve({
+        seriesSlug: fixtures.episodeSeriesSlug,
+        episodeSlug: fixtures.episodeWork.slug
+      })
+    })
   );
 
   console.log(`\n${passed} passed, ${failed} failed`);

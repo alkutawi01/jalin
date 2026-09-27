@@ -206,7 +206,10 @@ export default async function WorkPage({
   const byline = projectBylineCredits(work.credits);
   const typeLabel = TYPE_LABELS[type] ?? type;
   const workMeta = buildMetaRows(work);
-  const characters: CharacterMeta[] = work.metadata?.characters ?? [];
+  const characters: CharacterMeta[] = (work.metadata?.characters ?? []).map(({ name, role }) => ({
+    name,
+    role
+  }));
   const editorial = projectEditorialCredits(work.credits);
 
   const mobileInfo: StoryInfoData = {
