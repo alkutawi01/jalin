@@ -7,7 +7,6 @@ const WORK_TYPES = [
   { value: "cerpen", label: "Cerpen" },
   { value: "novela", label: "Novela" },
   { value: "bersiri", label: "Bersiri" },
-  { value: "terjemahan", label: "Terjemahan" },
   { value: "fragmen", label: "Fragmen" },
   { value: "sinopsis", label: "Sinopsis" },
 ];

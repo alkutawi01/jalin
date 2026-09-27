@@ -7,7 +7,6 @@ const TYPE_LABELS: Record<string, string> = {
   cerpen: "Cerpen",
   novela: "Novela",
   bersiri: "Bersiri",
-  terjemahan: "Terjemahan",
   fragmen: "Fragmen",
   sinopsis: "Sinopsis",
 };

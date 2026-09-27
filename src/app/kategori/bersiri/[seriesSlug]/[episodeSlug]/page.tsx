@@ -48,7 +48,6 @@ export async function generateStaticParams() {
 const TYPE_LABELS: Record<string, string> = {
   cerpen: "Cerpen",
   novela: "Novela",
-  terjemahan: "Terjemahan",
   bersiri: "Bersiri",
   fragmen: "Fragmen",
   sinopsis: "Sinopsis"

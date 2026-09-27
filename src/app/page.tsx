@@ -45,7 +45,7 @@ function FeaturedHero({ work }: { work: Work }) {
   return (
     <section className="hero-featured">
       <div className="site-shell">
-        <div className="hero-featured-inner">
+        <div className={`hero-featured-inner${hero?.src ? "" : " hero-featured-text-only"}`}>
           <div className="hero-featured-text">
             <p className="hero-featured-kicker">{label} · {work.genre ?? "Keluarga"}</p>
             <h1 className="hero-featured-title">{work.title}</h1>
