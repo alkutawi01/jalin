@@ -186,7 +186,9 @@ export default async function EpisodePage({
   let remaining = work.body;
   const segmentNodes: (string | { visual: (typeof work.visuals)[number] })[] = [];
   for (const visual of inlineVisuals) {
-    const [before, after] = splitBody(remaining, visual.anchor ?? "", visual.place ?? "after");
+    const anchor = visual.anchor ?? "";
+    if (!anchor || remaining.indexOf(anchor) < 0) continue;
+    const [before, after] = splitBody(remaining, anchor, visual.place ?? "after");
     segmentNodes.push(before);
     segmentNodes.push({ visual });
     remaining = after;

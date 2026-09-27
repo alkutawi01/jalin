@@ -127,6 +127,7 @@ function buildSnapshot(input: Awaited<ReturnType<typeof loadWorkForRevision>>) {
       alt: v.alt,
       provider: v.provider,
       creation_id: v.creation_id,
+      anchor: v.anchor,
       place: v.place,
       sort_order: v.sort_order,
       is_asset_finalized: v.is_asset_finalized,
