@@ -1,23 +1,27 @@
 /**
- * Fragmen Validator (Phase 4F)
+ * Fragmen Validator (Phase 4F — Patched)
  *
  * Validates fragmen markdown files against Jalin's structural/metadata contract.
- * Does NOT verify text fidelity to source novel — that requires editorial review.
+ *
+ * POLICY: Fragmen ialah petikan daripada novel dan terus bermula dengan teks karya.
+ * Fragmen TIDAK mempunyai mukadimah.
  *
  * Rules enforced:
- * 1. Source must be "novel" (not cerpen, autobiografi, etc.)
- * 2. One source work cannot be used more than once (across all fragmen)
- * 3. Fragmen body must be at least 2,000 words (excluding introduction)
- * 4. Introduction (mukadimah) must be 150-300 words
- * 5. Metadata/provenance must not leak into body
+ * 1. Fragmen must not have mukadimah/introduction in body
+ * 2. Source must be novel (sourceWork.type must be "novel")
+ * 3. One source novel cannot be used more than once across all Jalin fragmen
+ * 4. Fragmen body minimum 2,000 words
+ * 5. Body must be pure source text (no metadata, provenance, handoff, notes)
  * 6. Status cannot exceed "review" through import workflow
  * 7. AI cannot be recorded as author
- * 8. Glossary must have valid source
- * 9. Visuals: no fabricated creationId/src/assets
+ * 8. Glossary with unverifiable source = warning/review
+ * 9. Visuals: no fabricated creationId/src/assets, no remote URLs
+ * 10. Source cannot be Jalin cerpen/novela/fragmen/sinopsis
+ *
+ * Does NOT verify text fidelity to source novel (requires editorial review).
  *
  * Usage:
  *   npx tsx scripts/validate-fragmen.ts <path-to-fragmen.md>
- *   npx tsx scripts/validate-fragmen.ts content/works/*.md (fragmen only)
  */
 import * as fs from "fs";
 import * as path from "path";
@@ -35,6 +39,7 @@ interface FragmenFile {
     author?: string;
     language?: string;
     rightsStatus?: string;
+    type?: string;
   };
   credits: Array<{
     contributor?: string;
@@ -89,51 +94,104 @@ function countWords(text: string): number {
   return text.split(/\s+/).filter((w) => w.length > 0).length;
 }
 
-function findMukadimah(body: string): { mukadimah: string; rest: string } | null {
-  // Look for mukadimah section marker
-  const markers = ["## Mukadimah", "# Mukadimah", "**Mukadimah**", "Mukadimah:"];
-  for (const marker of markers) {
-    const idx = body.indexOf(marker);
-    if (idx >= 0) {
-      const afterMarker = body.slice(idx + marker.length).trim();
-      // Find next section marker, separator, or end
-      const nextSection = afterMarker.search(/\n##\s|\n#\s|\n\*\*|\n---\s*\n/);
-      if (nextSection > 0) {
-        return { mukadimah: afterMarker.slice(0, nextSection).trim(), rest: afterMarker.slice(nextSection).trim() };
-      }
-      return { mukadimah: afterMarker, rest: "" };
+function checkMukadimah(body: string): string[] {
+  const errors: string[] = [];
+  // Only check for explicit section markers at the start of the body
+  const lines = body.split("\n");
+  for (let i = 0; i < Math.min(lines.length, 5); i++) {
+    const line = lines[i].trim();
+    if (/^##\s+(Mukadimah|Pengenalan|Introduction|Foreword)/i.test(line)) {
+      errors.push(`Body starts with introduction section: "${line}" — fragmen must start directly with source text`);
+      break;
+    }
+    if (/^#\s+(Mukadimah|Pengenalan|Introduction|Foreword)/i.test(line)) {
+      errors.push(`Body starts with introduction section: "${line}" — fragmen must start directly with source text`);
+      break;
     }
   }
-  // No explicit mukadimah marker — treat first paragraph as mukadimah
-  const firstParagraphEnd = body.indexOf("\n\n");
-  if (firstParagraphEnd > 0) {
-    return { mukadimah: body.slice(0, firstParagraphEnd).trim(), rest: body.slice(firstParagraphEnd).trim() };
+  return errors;
+}
+
+function checkBodyPurity(body: string): string[] {
+  const errors: string[] = [];
+  const patterns = [
+    { pattern: /^---\s*$/m, name: "frontmatter separator" },
+    { pattern: /sourceWork:/i, name: "sourceWork metadata" },
+    { pattern: /credits:/i, name: "credits metadata" },
+    { pattern: /editorialHistory:/i, name: "editorialHistory metadata" },
+    { pattern: /JALIN VISUAL HANDOFF/i, name: "JALIN VISUAL HANDOFF" },
+    { pattern: /MAGNIFIC PROMPT/i, name: "MAGNIFIC PROMPT" },
+    { pattern: /rightsStatus/i, name: "rightsStatus metadata" },
+    { pattern: /source\.text\.basis/i, name: "source_text_basis" },
+    { pattern: /nota editor/gi, name: "nota editor" },
+    { pattern: /editorial note/gi, name: "editorial note" },
+    { pattern: /Sumber asal:/i, name: "Sumber asal" },
+    { pattern: /Original title:/i, name: "Original title" },
+    { pattern: /Source:/i, name: "Source metadata" },
+  ];
+  for (const { pattern, name } of patterns) {
+    if (pattern.test(body)) {
+      errors.push(`Body contains non-source content: ${name}`);
+    }
   }
-  return null;
+  return errors;
 }
 
 function checkProvenanceLeak(body: string): string[] {
-  const leaks: string[] = [];
+  const errors: string[] = [];
   const patterns = [
-    /Sumber asal:/i,
-    /Source:/i,
-    /Original title:/i,
-    /rightsStatus/i,
+    /sourceWork/i,
     /public_domain/i,
     /needs_review/i,
-    /sourceWork/i,
     /author:\s/i,
     /language:\s/i,
+    /rights_status/i,
+    /source_locator/i,
+    /source_edition/i,
+    /source_url/i,
   ];
   for (const pattern of patterns) {
     if (pattern.test(body)) {
-      leaks.push(`Body contains metadata pattern: ${pattern.source}`);
+      errors.push(`Body contains provenance pattern: ${pattern.source}`);
     }
   }
-  return leaks;
+  return errors;
 }
 
-function validateFragmen(file: FragmenFile, allSlugs: Set<string>, usedSources: Map<string, string>): ValidationResult {
+const AI_PATTERNS = [
+  /\bgemini\b/i,
+  /\bchatgpt\b/i,
+  /\bgpt[\s-]?[0-9]/i,
+  /\bclaude\b/i,
+  /\bllm\b/i,
+  /\bartificial intelligence\b/i,
+  /\bmodel\b.*\bAI\b/i,
+  /\bAI\b.*\bmodel\b/i,
+  /\bbot\b/i,
+  /\bmimo\b/i,
+  /\bcodex\b/i,
+  /\banthropic\b/i,
+  /\bopenai\b/i,
+  /\bgoogle\b.*\bai\b/i,
+];
+
+function checkAIAuthor(credits: Array<{ contributor?: string; role?: string }>): string[] {
+  const errors: string[] = [];
+  for (const credit of credits) {
+    if (credit.role === "author") {
+      const identity = credit.contributor || "";
+      for (const pattern of AI_PATTERNS) {
+        if (pattern.test(identity)) {
+          errors.push(`AI detected in author credit: "${identity}" — AI cannot be recorded as author`);
+          break;
+        }
+      }
+    }
+  }
+  return errors;
+}
+
+function validateFragmen(file: FragmenFile, allFragmenSlugs: Set<string>, usedSources: Map<string, string>): ValidationResult {
   const errors: string[] = [];
   const warnings: string[] = [];
 
@@ -142,7 +200,11 @@ function validateFragmen(file: FragmenFile, allSlugs: Set<string>, usedSources: 
     errors.push(`type must be "fragmen", got "${file.type}"`);
   }
 
-  // 2. Source must be "novel"
+  // 2. Fragmen must NOT have mukadimah
+  const mukadimahErrors = checkMukadimah(file.body);
+  errors.push(...mukadimahErrors);
+
+  // 3. Source must be novel
   if (!file.sourceWork) {
     errors.push("sourceWork is required for fragmen");
   } else {
@@ -155,16 +217,13 @@ function validateFragmen(file: FragmenFile, allSlugs: Set<string>, usedSources: 
     if (!file.sourceWork.language) {
       errors.push("sourceWork.language is required");
     }
-    // Source type check — we infer from sourceWork presence and context
-    // The source type is not stored in sourceWork, so we check if the source
-    // is a novel by looking at the source title/author patterns
-    // For now, we flag if sourceWork exists but title is too short (likely not a novel)
-    if (file.sourceWork.title && file.sourceWork.title.split(/\s+/).length < 2) {
-      warnings.push("sourceWork.title seems too short for a novel — verify source type");
+    // Source type check — must be explicitly "novel"
+    if (file.sourceWork.type && file.sourceWork.type !== "novel") {
+      errors.push(`sourceWork.type must be "novel", got "${file.sourceWork.type}" — fragmen only from novels`);
     }
   }
 
-  // 3. Source uniqueness — one source work cannot be used more than once
+  // 4. Source uniqueness — one source novel cannot be used more than once
   if (file.sourceWork?.title) {
     const sourceKey = `${file.sourceWork.title}|${file.sourceWork.author}`;
     if (usedSources.has(sourceKey)) {
@@ -175,49 +234,42 @@ function validateFragmen(file: FragmenFile, allSlugs: Set<string>, usedSources: 
     }
   }
 
-  // 4. Word count — at least 2,000 words (excluding introduction)
+  // 5. Word count — at least 2,000 words
   const wordCount = countWords(file.body);
   if (wordCount < 2000) {
     errors.push(`Body has ${wordCount} words, minimum is 2,000`);
   }
 
-  // 5. Introduction (mukadimah) — 150-300 words
-  const mukadimahResult = findMukadimah(file.body);
-  if (mukadimahResult) {
-    const mukadimahWords = countWords(mukadimahResult.mukadimah);
-    if (mukadimahWords < 150) {
-      errors.push(`Mukadimah has ${mukadimahWords} words, minimum is 150`);
-    } else if (mukadimahWords > 300) {
-      errors.push(`Mukadimah has ${mukadimahWords} words, maximum is 300`);
-    }
-  } else {
-    warnings.push("No mukadimah section detected — expected 150-300 word introduction");
-  }
+  // 6. Body purity — no metadata, provenance, handoff, notes
+  const purityErrors = checkBodyPurity(file.body);
+  errors.push(...purityErrors);
 
-  // 6. Metadata/provenance must not leak into body
-  const leaks = checkProvenanceLeak(file.body);
-  errors.push(...leaks);
+  // 7. Provenance leak check
+  const provenanceErrors = checkProvenanceLeak(file.body);
+  errors.push(...provenanceErrors);
 
-  // 7. Status cannot exceed "review" through import workflow
-  const reviewStatuses = ["draft", "review"];
-  if (!reviewStatuses.includes(file.status)) {
+  // 8. Status cannot exceed "review" through import workflow
+  const allowedStatuses = ["draft", "review"];
+  if (!allowedStatuses.includes(file.status)) {
     errors.push(`Status "${file.status}" not allowed through import workflow — must be draft or review`);
   }
 
-  // 8. AI cannot be recorded as author
-  for (const credit of file.credits) {
-    if (credit.role === "author") {
-      const identity = credit.contributor || "";
-      const aiPatterns = [/ai/i, /gpt/i, /gemini/i, /claude/i, /bot/i, /model/i, /llm/i];
-      for (const pattern of aiPatterns) {
-        if (pattern.test(identity)) {
-          errors.push(`AI detected in author credit: "${identity}" — AI cannot be recorded as author`);
-        }
-      }
-    }
+  // 9. AI cannot be recorded as author
+  const aiErrors = checkAIAuthor(file.credits);
+  errors.push(...aiErrors);
+
+  // 10. At least one credit required
+  if (file.credits.length === 0) {
+    errors.push("At least one credit is required");
   }
 
-  // 9. Glossary must have valid source
+  // 11. At least one public byline required
+  const hasByline = file.credits.some((c) => c.byline === true);
+  if (!hasByline) {
+    errors.push("At least one public byline credit is required");
+  }
+
+  // 12. Glossary — unverifiable source = warning/review
   for (const entry of file.glossary) {
     if (!entry.term) {
       errors.push("Glossary entry missing term");
@@ -230,7 +282,7 @@ function validateFragmen(file: FragmenFile, allSlugs: Set<string>, usedSources: 
     }
   }
 
-  // 10. Visuals: no fabricated creationId/src/assets
+  // 13. Visuals — no fabricated creationId/src/assets, no remote URLs
   for (const visual of file.visuals) {
     if (!visual.src) {
       errors.push(`Visual "${visual.role}" missing src`);
@@ -243,12 +295,12 @@ function validateFragmen(file: FragmenFile, allSlugs: Set<string>, usedSources: 
     }
   }
 
-  // 11. Body must be non-empty
+  // 14. Body must be non-empty
   if (!file.body || file.body.trim().length === 0) {
     errors.push("Body is empty");
   }
 
-  // 12. Required fields
+  // 15. Required fields
   if (!file.title) errors.push("Title is missing");
   if (!file.slug) errors.push("Slug is missing");
 
@@ -264,22 +316,38 @@ async function main() {
   const args = process.argv.slice(2);
   if (args.length === 0) {
     console.error("Usage: npx tsx scripts/validate-fragmen.ts <path-to-fragmen.md>");
-    console.error("       npx tsx scripts/validate-fragmen.ts content/works/*.md");
     process.exit(1);
   }
 
-  // Collect all fragmen files
   const files: FragmenFile[] = [];
-  const allSlugs = new Set<string>();
+  const allFragmenSlugs = new Set<string>();
   const usedSources = new Map<string, string>();
 
+  // Load existing fragmen from content directory for cross-Jalin uniqueness check
+  const contentDir = path.resolve(__dirname, "../content/works");
+  if (fs.existsSync(contentDir)) {
+    const contentFiles = fs.readdirSync(contentDir).filter((f) => f.endsWith(".md"));
+    for (const cf of contentFiles) {
+      const filePath = path.join(contentDir, cf);
+      const file = parseFragmenFile(filePath);
+      if (file && file.type === "fragmen") {
+        allFragmenSlugs.add(file.slug);
+        if (file.sourceWork?.title) {
+          const sourceKey = `${file.sourceWork.title}|${file.sourceWork.author}`;
+          usedSources.set(sourceKey, file.slug);
+        }
+      }
+    }
+  }
+
+  // Load input files
   for (const arg of args) {
     const resolved = path.resolve(arg);
     if (fs.existsSync(resolved) && fs.statSync(resolved).isFile()) {
       const file = parseFragmenFile(resolved);
       if (file && file.type === "fragmen") {
         files.push(file);
-        allSlugs.add(file.slug);
+        allFragmenSlugs.add(file.slug);
       }
     }
   }
@@ -289,12 +357,12 @@ async function main() {
     process.exit(1);
   }
 
-  console.log(`\n=== FRAGMEN VALIDATOR (Phase 4F) ===`);
+  console.log(`\n=== FRAGMEN VALIDATOR (Phase 4F — Patched) ===`);
   console.log(`Files: ${files.length}\n`);
 
   let allPassed = true;
   for (const file of files) {
-    const result = validateFragmen(file, allSlugs, usedSources);
+    const result = validateFragmen(file, allFragmenSlugs, usedSources);
     const icon = result.passed ? "✓" : "✗";
     console.log(`${icon} ${file.slug} (${file.title})`);
 
