@@ -1,5 +1,30 @@
 import type { BylineCredit, CharacterMeta, EditorialCredit, WorkMetaRow } from "./types";
 
+const NAV_LINKS: { label: string; href: string; match?: string }[] = [
+  { label: "Utama", href: "/" },
+  { label: "Cerpen", href: "/kategori/cerpen", match: "cerpen" },
+  { label: "Novela", href: "/kategori/novela", match: "novela" },
+  { label: "Bersiri", href: "/kategori/bersiri", match: "bersiri" },
+  { label: "Fragmen", href: "/kategori/fragmen", match: "fragmen" },
+  { label: "Sinopsis", href: "/kategori/sinopsis", match: "sinopsis" }
+];
+
+function SiteNav({ active, className }: { active?: string; className: string }) {
+  return (
+    <nav className={className} aria-label="Navigasi utama">
+      {NAV_LINKS.map((link) => (
+        <a
+          key={link.href}
+          className={active && link.match === active ? "active" : undefined}
+          href={link.href}
+        >
+          {link.label}
+        </a>
+      ))}
+    </nav>
+  );
+}
+
 export function SiteHeader({ active }: { active?: string }) {
   return (
     <header className="site-header">
@@ -7,14 +32,11 @@ export function SiteHeader({ active }: { active?: string }) {
         <a className="header-wordmark" href="/" aria-label="Jalin utama">
           <img src="/brand/jalin-wordmark.svg" alt="Jalin" />
         </a>
-        <nav aria-label="Navigasi utama">
-          <a href="/">Utama</a>
-          <a className={active === "cerpen" ? "active" : undefined} href="/kategori/cerpen">Cerpen</a>
-          <a className={active === "novela" ? "active" : undefined} href="/kategori/novela">Novela</a>
-          <a className={active === "bersiri" ? "active" : undefined} href="/kategori/bersiri">Bersiri</a>
-          <a className={active === "fragmen" ? "active" : undefined} href="/kategori/fragmen">Fragmen</a>
-          <a className={active === "sinopsis" ? "active" : undefined} href="/kategori/sinopsis">Sinopsis</a>
-        </nav>
+        <SiteNav active={active} className="header-nav" />
+        <details className="header-mobile-nav">
+          <summary>Menu</summary>
+          <SiteNav active={active} className="header-mobile-nav-links" />
+        </details>
       </div>
     </header>
   );
