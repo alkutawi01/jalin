@@ -262,7 +262,7 @@ export default function PreviewWorkPage() {
                     ) : null}
                     <StoryMarkdown
                       glossary={Object.fromEntries(
-                        glossary.map((g) => [g.term, { meaning: g.meaning, source: g.source }])
+                        glossary.map((g) => [g.term, { meaning: g.meaning }])
                       )}
                     >
                       {active.body || ""}
@@ -274,7 +274,7 @@ export default function PreviewWorkPage() {
           ) : (
             <StoryMarkdown
               glossary={Object.fromEntries(
-                glossary.map((g) => [g.term, { meaning: g.meaning, source: g.source }])
+                glossary.map((g) => [g.term, { meaning: g.meaning }])
               )}
             >
               {work.body || ""}

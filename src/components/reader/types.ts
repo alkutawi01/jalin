@@ -1,6 +1,5 @@
 export type GlossaryEntry = {
   meaning: string;
-  source: string;
 };
 
 export type GlossaryMap = Record<string, GlossaryEntry>;
