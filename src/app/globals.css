@@ -329,6 +329,13 @@ dd { margin: 0; color: var(--ink); text-align: left; }
   aspect-ratio: 15 / 8;
   object-fit: cover;
 }
+.hero-featured-text-only {
+  grid-template-columns: 1fr;
+}
+.hero-featured-text-only .hero-featured-text {
+  max-width: 680px;
+  margin: 0 auto;
+}
 
 /* ── Homepage: Latest Works ── */
 .latest-works {
