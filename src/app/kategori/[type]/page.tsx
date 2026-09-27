@@ -1,7 +1,13 @@
 import { SiteFooter, SiteHeader } from "../../../components/reader/StoryChrome";
 import { initContentRepository } from "../../../lib/content";
 import { getWorksByType } from "../../../lib/content/workLoader";
-import type { SeriesMeta, Work, WorkType } from "../../../lib/content/types";
+import type { Work, WorkType } from "../../../lib/content/types";
+import {
+  projectPublicSeries,
+  projectPublicWorkSummary,
+  type PublicSeriesSummary,
+  type PublicWorkSummary
+} from "../../../lib/reader/public-projection";
 import { notFound } from "next/navigation";
 
 const CATEGORY_META: Record<string, { title: string; intro: string; headerLabel: string }> = {
@@ -52,7 +58,7 @@ function formatDate(date: string | undefined): string {
   return `${day} ${months[(month ?? 1) - 1]} ${year}`;
 }
 
-function WorkCard({ work, type }: { work: Work; type: string }) {
+function WorkCard({ work, type }: { work: PublicWorkSummary; type: string }) {
   const genre = work.genre ?? "Keluarga";
   const reading = work.readingMinutes ? `± ${work.readingMinutes} min` : null;
   const updated = work.updatedAt ?? work.publishedAt;
@@ -73,7 +79,7 @@ function WorkCard({ work, type }: { work: Work; type: string }) {
   );
 }
 
-function SeriesCard({ series, episodeCount }: { series: SeriesMeta; episodeCount: number }) {
+function SeriesCard({ series, episodeCount }: { series: PublicSeriesSummary; episodeCount: number }) {
   return (
     <article className="work-card">
       <a href={`/kategori/bersiri/${series.slug}`}>
@@ -126,7 +132,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ type:
               {seriesList.map((series) => (
                 <SeriesCard
                   key={series.id}
-                  series={series}
+                  series={projectPublicSeries(series)}
                   episodeCount={repo.getPublishedSeriesEpisodes(series.id).length}
                 />
               ))}
@@ -159,7 +165,11 @@ export default async function CategoryPage({ params }: { params: Promise<{ type:
           <div className="work-list">
             {works.length === 0 ? <div className="category-empty"><p>Belum ada karya diterbitkan dalam kategori ini.</p></div> : null}
             {works.map((work) => (
-              <WorkCard key={work.slug} work={work} type={type} />
+              <WorkCard
+                key={work.slug}
+                work={projectPublicWorkSummary(work)}
+                type={type}
+              />
             ))}
           </div>
         </div>

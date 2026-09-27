@@ -2,6 +2,12 @@ import { SiteFooter, SiteHeader } from "../components/reader/StoryChrome";
 import { initContentRepository } from "../lib/content";
 import { getAllWorks, getWorksByType } from "../lib/content/workLoader";
 import type { Work, WorkType } from "../lib/content/types";
+import {
+  projectPublicFeaturedSummary,
+  projectPublicWorkSummary,
+  type PublicFeaturedSummary,
+  type PublicWorkSummary
+} from "../lib/reader/public-projection";
 
 function formatDate(date: string | undefined): string {
   if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return "—";
@@ -37,8 +43,8 @@ const CATEGORIES: { type: string; label: string }[] = [
   { type: "sinopsis", label: "Sinopsis" },
 ];
 
-function FeaturedHero({ work }: { work: Work }) {
-  const hero = work.visuals.find((v) => v.role === "hero");
+function FeaturedHero({ work }: { work: PublicFeaturedSummary }) {
+  const hero = work.hero;
   const label = TYPE_LABELS[work.type] ?? work.type;
   const reading = work.readingMinutes ? `± ${work.readingMinutes} min membaca` : null;
 
@@ -69,7 +75,7 @@ function FeaturedHero({ work }: { work: Work }) {
   );
 }
 
-function LatestWorkCard({ work }: { work: Work }) {
+function LatestWorkCard({ work }: { work: PublicWorkSummary }) {
   const label = TYPE_LABELS[work.type] ?? work.type;
   const reading = work.readingMinutes ? `± ${work.readingMinutes} min` : null;
   return (
@@ -100,7 +106,7 @@ function CategoryCard({ type, label }: { type: string; label: string }) {
   );
 }
 
-function EditorialSelection({ works }: { works: Work[] }) {
+function EditorialSelection({ works }: { works: PublicWorkSummary[] }) {
   if (works.length === 0) {
     return (
       <section className="editorial-selection">
@@ -164,7 +170,9 @@ export default async function Home() {
       <SiteHeader />
 
       <main>
-        {featured ? <FeaturedHero work={featured} /> : null}
+        {featured ? (
+          <FeaturedHero work={projectPublicFeaturedSummary(featured)} />
+        ) : null}
 
         <section className="latest-works">
           <div className="site-shell">
@@ -173,7 +181,10 @@ export default async function Home() {
             </header>
             <div className="latest-grid">
               {latest.map((work) => (
-                <LatestWorkCard key={work.slug} work={work} />
+                <LatestWorkCard
+                  key={work.slug}
+                  work={projectPublicWorkSummary(work)}
+                />
               ))}
             </div>
           </div>
@@ -192,7 +203,9 @@ export default async function Home() {
           </div>
         </section>
 
-        <EditorialSelection works={editorialPicks} />
+        <EditorialSelection
+          works={editorialPicks.map(projectPublicWorkSummary)}
+        />
       </main>
 
       <SiteFooter />

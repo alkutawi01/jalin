@@ -30,7 +30,6 @@ function GlossaryTerm({
       <span className="glossary-tooltip" role="tooltip">
         <strong>{term}</strong>
         <span>{item.meaning}</span>
-        <small>{item.source}</small>
       </span>
     </span>
   );

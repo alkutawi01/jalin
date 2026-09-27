@@ -21,7 +21,8 @@ export interface ContributorRef {
 export interface GlossaryEntry {
   term: string;
   meaning: string;
-  source: string;
+  /** Legacy only — not part of the output contract; never shown to readers. */
+  source?: string;
 }
 
 export interface VisualRef {
