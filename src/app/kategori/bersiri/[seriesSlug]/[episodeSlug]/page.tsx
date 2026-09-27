@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { displayableGenre } from "../../../../../lib/reader/genre-display";
 import {
   EditorialImage,
   LeftRail,
@@ -155,11 +156,12 @@ export default async function EpisodePage({
 
   const episodeIndex = episodes.findIndex((e) => e.slug === work.slug);
   const typeLabel = TYPE_LABELS["bersiri"];
+  const genre = displayableGenre(work.genre) ?? displayableGenre(series.genre);
 
   const workMeta: WorkMetaRow[] = [
     { label: "Bentuk", value: `${typeLabel} · Episod ${episodeIndex >= 0 ? episodeIndex + 1 : "—"}` },
     { label: "Siri", value: series.title },
-    { label: "Genre", value: work.genre ?? series.genre ?? "Keluarga" },
+    ...(genre ? [{ label: "Genre", value: genre }] : []),
     { label: "Bacaan", value: work.readingMinutes ? `± ${work.readingMinutes} min` : "—" },
     {
       label: "Status",

@@ -1,5 +1,6 @@
 import { SiteFooter, SiteHeader } from "../../../components/reader/StoryChrome";
 import { initContentRepository } from "../../../lib/content";
+import { displayableGenre } from "../../../lib/reader/genre-display";
 import { getWorksByType } from "../../../lib/content/workLoader";
 import type { Work, WorkType } from "../../../lib/content/types";
 import {
@@ -59,14 +60,17 @@ function formatDate(date: string | undefined): string {
 }
 
 function WorkCard({ work, type }: { work: PublicWorkSummary; type: string }) {
-  const genre = work.genre ?? "Keluarga";
+  const genre = displayableGenre(work.genre);
   const reading = work.readingMinutes ? `± ${work.readingMinutes} min` : null;
   const updated = work.updatedAt ?? work.publishedAt;
   return (
     <article className="work-card">
       <a href={`/kategori/${type}/${work.slug}`}>
         <div className="work-card-meta">
-          <span>{CATEGORY_META[type]?.headerLabel ?? type} · {genre}</span>
+          <span>
+            {CATEGORY_META[type]?.headerLabel ?? type}
+            {genre ? ` · ${genre}` : ""}
+          </span>
           {reading ? <span>{reading} membaca</span> : null}
         </div>
         <h2 className="work-card-title">{work.title}</h2>
@@ -80,13 +84,14 @@ function WorkCard({ work, type }: { work: PublicWorkSummary; type: string }) {
 }
 
 function SeriesCard({ series, episodeCount }: { series: PublicSeriesSummary; episodeCount: number }) {
+  const genre = displayableGenre(series.genre);
   return (
     <article className="work-card">
       <a href={`/kategori/bersiri/${series.slug}`}>
         <div className="work-card-meta">
           <span>
             {MODE_LABELS[series.mode] ?? series.mode}
-            {series.genre ? ` · ${series.genre}` : ""}
+            {genre ? ` · ${genre}` : ""}
           </span>
           <span>{STATUS_LABELS[series.status] ?? series.status}</span>
           <span>{episodeCount} episod</span>

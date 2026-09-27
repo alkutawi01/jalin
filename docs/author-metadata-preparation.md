@@ -37,7 +37,7 @@
 - Masa
 
 ### Synopsis Candidate
-"Sebuah kisah tentang Wardah yang pulang ke kedai jam arwah abahnya, menemui bahawa masa bukan sekadar angka pada dinding. Di sudut kaunter yang masih menyimpan kesan tangan abah, Wardah menemui semula hubungan yang terputus antara dia dan lelaki yang tidak pernah berhenti menunggunya."
+"Sebuah kisah tentang Wardah yang pulang ke kedai jam ayahnya, menemui bahawa masa bukan sekadar angka pada dinding. Di sudut kaunter yang masih menyimpan kesan tangan abah, Wardah menemui semula hubungan yang terputus antara dia dan lelaki yang tidak pernah berhenti menunggunya."
 
 ## Author Bio Slot
 

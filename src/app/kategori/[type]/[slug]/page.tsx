@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { displayableGenre } from "../../../../lib/reader/genre-display";
 import {
   EditorialImage,
   LeftRail,
@@ -82,9 +83,10 @@ async function getWork(slug: string) {
 function buildMetaRows(work: Awaited<ReturnType<typeof getWork>>): WorkMetaRow[] {
   if (!work) return [];
   const attribution = buildSourceAttribution(work);
+  const genre = displayableGenre(work.genre);
   return [
     { label: "Bentuk", value: TYPE_LABELS[work.type] ?? work.type },
-    { label: "Genre", value: work.genre ?? "Keluarga" },
+    ...(genre ? [{ label: "Genre", value: genre }] : []),
     { label: "Bacaan", value: work.readingMinutes ? `± ${work.readingMinutes} min` : "—" },
     ...(attribution.sumberAsal
       ? [{ label: "Sumber asal", value: attribution.sumberAsal }]
@@ -256,7 +258,11 @@ export default async function WorkPage({
 
       <main>
         <StoryHead
-          kicker={`${typeLabel} · ${work.genre ?? "Keluarga"}`}
+          kicker={
+            displayableGenre(work.genre)
+              ? `${typeLabel} · ${displayableGenre(work.genre)}`
+              : typeLabel
+          }
           title={work.title}
           dek={work.dek ?? ""}
           byline={byline}

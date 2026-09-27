@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { SiteFooter, SiteHeader } from "../../../../components/reader/StoryChrome";
 import { initContentRepository } from "../../../../lib/content";
+import { displayableGenre } from "../../../../lib/reader/genre-display";
 
 export const dynamicParams = false;
 
@@ -85,7 +86,7 @@ export default async function SeriesLandingPage({
               {series.dek ? <p className="category-intro">{series.dek}</p> : null}
               <p style={{ marginTop: "0.5rem", fontSize: "0.9rem", opacity: 0.75 }}>
                 {STATUS_LABELS[series.status] ?? series.status}
-                {series.genre ? ` · ${series.genre}` : ""}
+                {displayableGenre(series.genre) ? ` · ${displayableGenre(series.genre)}` : ""}
                 {latest?.publishedAt ? ` · Dikemas kini ${formatDate(latest.publishedAt)}` : ""}
               </p>
             </header>

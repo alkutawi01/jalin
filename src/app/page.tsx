@@ -1,5 +1,6 @@
 import { SiteFooter, SiteHeader } from "../components/reader/StoryChrome";
 import { initContentRepository } from "../lib/content";
+import { displayableGenre } from "../lib/reader/genre-display";
 import { getAllWorks, getWorksByType } from "../lib/content/workLoader";
 import type { Work, WorkType } from "../lib/content/types";
 import {
@@ -46,6 +47,7 @@ const CATEGORIES: { type: string; label: string }[] = [
 function FeaturedHero({ work }: { work: PublicFeaturedSummary }) {
   const hero = work.hero;
   const label = TYPE_LABELS[work.type] ?? work.type;
+  const genre = displayableGenre(work.genre);
   const reading = work.readingMinutes ? `± ${work.readingMinutes} min membaca` : null;
 
   return (
@@ -53,7 +55,7 @@ function FeaturedHero({ work }: { work: PublicFeaturedSummary }) {
       <div className="site-shell">
         <div className={`hero-featured-inner${hero?.src ? "" : " hero-featured-text-only"}`}>
           <div className="hero-featured-text">
-            <p className="hero-featured-kicker">{label} · {work.genre ?? "Keluarga"}</p>
+            <p className="hero-featured-kicker">{genre ? `${label} · ${genre}` : label}</p>
             <h1 className="hero-featured-title">{work.title}</h1>
             {work.dek ? <p className="hero-featured-dek">{work.dek}</p> : null}
             <div className="hero-featured-meta">
