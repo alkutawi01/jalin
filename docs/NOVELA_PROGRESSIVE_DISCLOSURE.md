@@ -31,6 +31,10 @@ yang menjadi asas produk Jalin (lihat `docs/PRODUCT.md`,
 4. Tema/dakwaan editorial yang berpotensi spoiler (nasib akhir watak,
    hubungan rahsia, konflik masa depan) kekal sebagai metadata dalaman
    editor sahaja — tidak pernah dihantar ke paparan awam, tidak kira bab.
+5. Progressive disclosure terpakai kepada elemen yang berpotensi menjadi
+   spoiler: watak, lokasi penting, hubungan watak, istilah cerita dan
+   maklumat naratif. Metadata editorial penuh kekal tersedia untuk
+   editor.
 
 ## Medan metadata yang diperlukan (untuk pelaksanaan akan datang)
 
