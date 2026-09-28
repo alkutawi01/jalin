@@ -31,6 +31,23 @@ editorialHistory:
     type: "initial"
     summary: "Petikan penutup The Great Gatsby (domain awam) disediakan untuk Jalin."
     date: "2026-09-26"
+glossary:
+  - term: "shore"
+    meaning: "Tepi laut; kawasan pantai."
+  - term: "ferryboat"
+    meaning: "Bot penumpang yang membawa orang merentasi sungai atau teluk."
+  - term: "Sound"
+    meaning: "Selat yang luas antara dua pulau; di sini merujuk Long Island Sound."
+  - term: "inessential"
+    meaning: "Yang bukan keperluan; kelihatan tidak penting."
+  - term: "pandered"
+    meaning: "Melayani atau memujuk demi memuaskan keinginan orang lain."
+  - term: "commensurate"
+    meaning: "Setanding; sepadan pada ukuran atau tarafnya."
+  - term: "eluded"
+    meaning: "Terlepas daripada genggaman; gagal dicapai atau dikejar."
+  - term: "borne"
+    meaning: "Dibawa oleh arus atau daya; bentuk lampau bagi perkataan bear."
 ---
 
 # The Great Gatsby: Kapal Melawan Arus
