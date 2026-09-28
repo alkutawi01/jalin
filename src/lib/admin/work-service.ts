@@ -30,6 +30,9 @@ export interface WorkInput {
   version?: string;
   publishedAt?: string;
   updatedAt?: string;
+  editorPick?: boolean;
+  editorPickRank?: number | null;
+  editorPickReason?: string | null;
 }
 
 export interface WorkRecord {
@@ -45,6 +48,9 @@ export interface WorkRecord {
   reading_minutes: number | null;
   version: string;
   editorial_history: unknown;
+  editor_pick: boolean | null;
+  editor_pick_rank: number | null;
+  editor_pick_reason: string | null;
   published_at: Date | null;
   published_by: string | null;
   updated_at: Date;
@@ -195,6 +201,14 @@ export async function updateWork(
   if (input.readingMinutes !== undefined) updateData.reading_minutes = input.readingMinutes || null;
   if (input.version !== undefined) updateData.version = input.version;
   if (input.publishedAt !== undefined) updateData.published_at = input.publishedAt || null;
+  if (input.editorPick !== undefined) updateData.editor_pick = Boolean(input.editorPick);
+  if (input.editorPickRank !== undefined) {
+    updateData.editor_pick_rank =
+      input.editorPickRank === null ? null : Number(input.editorPickRank) || null;
+  }
+  if (input.editorPickReason !== undefined) {
+    updateData.editor_pick_reason = input.editorPickReason ? String(input.editorPickReason) : null;
+  }
 
   await db
     .updateTable("works")

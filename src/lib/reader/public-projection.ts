@@ -25,11 +25,10 @@ export interface PublicWorkSummary {
   readingMinutes?: number;
   publishedAt?: string;
   updatedAt?: string;
-}
-
-export interface PublicFeaturedSummary extends PublicWorkSummary {
   hero?: { src: string; alt: string };
 }
+
+export type PublicFeaturedSummary = PublicWorkSummary;
 
 export interface PublicSeriesSummary {
   slug: string;
@@ -46,6 +45,7 @@ export interface PublicSectionRef {
 }
 
 export function projectPublicWorkSummary(work: Work): PublicWorkSummary {
+  const hero = work.visuals.find((visual) => visual.role === "hero");
   return {
     type: work.type,
     slug: work.slug,
@@ -54,18 +54,15 @@ export function projectPublicWorkSummary(work: Work): PublicWorkSummary {
     ...(work.dek ? { dek: work.dek } : {}),
     ...(work.readingMinutes ? { readingMinutes: work.readingMinutes } : {}),
     ...(work.publishedAt ? { publishedAt: work.publishedAt } : {}),
-    ...(work.updatedAt ? { updatedAt: work.updatedAt } : {})
+    ...(work.updatedAt ? { updatedAt: work.updatedAt } : {}),
+    ...(hero ? { hero: { src: hero.src, alt: hero.alt } } : {})
   };
 }
 
 export function projectPublicFeaturedSummary(
   work: Work
 ): PublicFeaturedSummary {
-  const hero = work.visuals.find((visual) => visual.role === "hero");
-  return {
-    ...projectPublicWorkSummary(work),
-    ...(hero ? { hero: { src: hero.src, alt: hero.alt } } : {})
-  };
+  return projectPublicWorkSummary(work);
 }
 
 export function projectPublicSeries(series: SeriesMeta): PublicSeriesSummary {

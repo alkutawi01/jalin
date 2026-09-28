@@ -32,7 +32,7 @@ console.log("glossary reader projection tests\n");
 
 {
   const kerusi = getWorkBySlug("kerusi-di-beranda");
-  const glossary = buildVerifiedGlossary(kerusi ?? {});
+  const glossary = buildVerifiedGlossary(kerusi ?? { glossary: [] });
   const terms = Object.keys(glossary);
   assert(
     terms.length === (kerusi?.glossary.length ?? -1),
@@ -43,13 +43,13 @@ console.log("glossary reader projection tests\n");
 
 {
   const gatsby = getWorkBySlug("gatsby-agung");
-  const glossary = buildVerifiedGlossary(gatsby ?? {});
+  const glossary = buildVerifiedGlossary(gatsby ?? { glossary: [] });
   assert(Object.keys(glossary).length === 3, "Sinopsis glossary terms remain visible");
 }
 
 {
   const sinopsis = getWorkBySlug("di-hadapan-singgahsana");
-  const glossary = buildVerifiedGlossary(sinopsis ?? {});
+  const glossary = buildVerifiedGlossary(sinopsis ?? { glossary: [] });
   assert(
     (sinopsis?.glossary.length ?? 0) > 0 &&
       Object.keys(glossary).length === (sinopsis?.glossary.length ?? -1),

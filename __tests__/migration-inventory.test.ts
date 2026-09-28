@@ -51,6 +51,7 @@ const REQUIRED_MIGRATIONS = [
   "016_editorial_issue_events",
   "017_editorial_roles",
   "018_work_metadata_reader",
+  "019_editor_pick",
 ];
 
 function walkTypeScriptFiles(dir: string): string[] {

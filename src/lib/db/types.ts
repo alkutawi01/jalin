@@ -44,6 +44,9 @@ export interface Works {
   version: string;
   version_label: string | null;
   revision_count: number;
+  editor_pick: boolean | null;
+  editor_pick_rank: number | null;
+  editor_pick_reason: string | null;
   editorial_history: ColumnType<Record<string, unknown>, string | Record<string, unknown>, string | Record<string, unknown>>;
   metadata: ColumnType<Record<string, unknown> | null, string | null | Record<string, unknown>, string | null | Record<string, unknown>>;
   reader: ColumnType<Record<string, unknown> | null, string | null | Record<string, unknown>, string | null | Record<string, unknown>>;

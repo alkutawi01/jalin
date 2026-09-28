@@ -1,4 +1,5 @@
 import { SiteFooter, SiteHeader } from "../../../components/reader/StoryChrome";
+import { WorkCover } from "../../../components/reader/WorkCover";
 import { initContentRepository } from "../../../lib/content";
 import { displayableGenre } from "../../../lib/reader/genre-display";
 import { getWorksByType } from "../../../lib/content/workLoader";
@@ -66,6 +67,7 @@ function WorkCard({ work, type }: { work: PublicWorkSummary; type: string }) {
   return (
     <article className="work-card">
       <a href={`/kategori/${type}/${work.slug}`}>
+        <WorkCover type={work.type} title={work.title} hero={work.hero} />
         <div className="work-card-meta">
           <span>
             {CATEGORY_META[type]?.headerLabel ?? type}

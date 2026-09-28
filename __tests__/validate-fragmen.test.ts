@@ -130,7 +130,17 @@ console.log("glossary contract (term + meaning only)");
   assert(!r.passed, "empty term FAILS");
   const r2 = run(makeFile({ glossary: [{ term: "Mamak", meaning: "  " }] }));
   assert(!r2.passed, "empty meaning FAILS");
-  const r3 = run(makeFile({ glossary: ["bukan-objek" as unknown as object] }));
+  const r3 = run(
+    makeFile({
+      glossary: [
+        "bukan-objek" as unknown as {
+          [key: string]: unknown;
+          term?: string;
+          meaning?: string;
+        },
+      ],
+    })
+  );
   assert(!r3.passed, "malformed glossary entry FAILS");
   assert(checkGlossary("bukan-array").length > 0, "glossary not an array FAILS");
 }

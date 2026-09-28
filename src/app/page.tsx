@@ -1,8 +1,9 @@
 import { SiteFooter, SiteHeader } from "../components/reader/StoryChrome";
+import { WorkCover } from "../components/reader/WorkCover";
 import { initContentRepository } from "../lib/content";
 import { displayableGenre } from "../lib/reader/genre-display";
-import { getAllWorks, getWorksByType } from "../lib/content/workLoader";
-import type { Work, WorkType } from "../lib/content/types";
+import { getAllWorks } from "../lib/content/workLoader";
+import { getEditorPickSummaries } from "../lib/reader/editor-picks";
 import {
   projectPublicFeaturedSummary,
   projectPublicWorkSummary,
@@ -10,14 +11,18 @@ import {
   type PublicWorkSummary
 } from "../lib/reader/public-projection";
 
+export const dynamic = "force-dynamic";
+
 function formatDate(date: string | undefined): string {
-  if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return "—";
-  const [year, month, day] = date.split("-").map(Number);
+  if (!date) return "—";
+  const day = /^\d{4}-\d{2}-\d{2}/.test(date) ? date.slice(0, 10) : date;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) return "—";
+  const [year, month, dayNum] = day.split("-").map(Number);
   const months = [
     "Januari", "Februari", "Mac", "April", "Mei", "Jun",
     "Julai", "Ogos", "September", "Oktober", "November", "Disember"
   ];
-  return `${day} ${months[(month ?? 1) - 1]} ${year}`;
+  return `${dayNum} ${months[(month ?? 1) - 1]} ${year}`;
 }
 
 const TYPE_LABELS: Record<string, string> = {
@@ -83,6 +88,7 @@ function LatestWorkCard({ work }: { work: PublicWorkSummary }) {
   return (
     <article className="latest-card">
       <a href={`/kategori/${work.type}/${work.slug}`}>
+        <WorkCover type={work.type} title={work.title} hero={work.hero} />
         <div className="latest-card-meta">
           <span className="latest-card-type">{label}</span>
           {reading ? <span className="latest-card-reading">{reading}</span> : null}
@@ -101,7 +107,7 @@ function LatestWorkCard({ work }: { work: PublicWorkSummary }) {
 
 function CategoryCard({ type, label }: { type: string; label: string }) {
   return (
-    <a href={`/kategori/${type}`} className="category-explorer-card">
+    <a href={`/kategori/${type}`} className={`category-explorer-card category-explorer-card--${type}`}>
       <h3>{label}</h3>
       <p>{TYPE_DESCS[type] ?? ""}</p>
     </a>
@@ -109,21 +115,7 @@ function CategoryCard({ type, label }: { type: string; label: string }) {
 }
 
 function EditorialSelection({ works }: { works: PublicWorkSummary[] }) {
-  if (works.length === 0) {
-    return (
-      <section className="editorial-selection">
-        <div className="site-shell">
-          <header className="section-head">
-            <h2>Pilihan Editor</h2>
-            <p className="section-sub">Karya-karya yang diketengahkan oleh pasukan editorial</p>
-          </header>
-          <div className="editorial-empty">
-            <p>Belum ada pilihan editor untuk edisi semasa.</p>
-          </div>
-        </div>
-      </section>
-    );
-  }
+  if (works.length === 0) return null;
 
   return (
     <section className="editorial-selection">
@@ -135,9 +127,16 @@ function EditorialSelection({ works }: { works: PublicWorkSummary[] }) {
         <div className="editorial-grid">
           {works.map((work) => (
             <a key={work.slug} href={`/kategori/${work.type}/${work.slug}`} className="editorial-pick">
-              <span className="editorial-pick-type">{TYPE_LABELS[work.type] ?? work.type}</span>
-              <h3>{work.title}</h3>
-              {work.dek ? <p>{work.dek}</p> : null}
+              <WorkCover type={work.type} title={work.title} hero={work.hero} />
+              <div className="editorial-pick-body">
+                <span className="editorial-pick-type">
+                  {TYPE_LABELS[work.type] ?? work.type}
+                  {work.readingMinutes ? ` · ± ${work.readingMinutes} min` : ""}
+                </span>
+                <h3>{work.title}</h3>
+                {work.dek ? <p>{work.dek}</p> : null}
+                <span className="editorial-pick-cta">Baca</span>
+              </div>
             </a>
           ))}
         </div>
@@ -155,7 +154,7 @@ async function getWorks() {
 }
 
 export default async function Home() {
-  const allWorks = await getWorks();
+  const [allWorks, editorialPicks] = await Promise.all([getWorks(), getEditorPickSummaries()]);
 
   const sorted = [...allWorks].sort((a, b) => {
     const aDate = a.updatedAt ?? a.publishedAt ?? "";
@@ -165,7 +164,6 @@ export default async function Home() {
 
   const featured = sorted[0] ?? null;
   const latest = sorted.slice(0, 6);
-  const editorialPicks: Work[] = [];
 
   return (
     <>
@@ -175,6 +173,8 @@ export default async function Home() {
         {featured ? (
           <FeaturedHero work={projectPublicFeaturedSummary(featured)} />
         ) : null}
+
+        <EditorialSelection works={editorialPicks} />
 
         <section className="latest-works">
           <div className="site-shell">
@@ -204,10 +204,6 @@ export default async function Home() {
             </div>
           </div>
         </section>
-
-        <EditorialSelection
-          works={editorialPicks.map(projectPublicWorkSummary)}
-        />
       </main>
 
       <SiteFooter />
