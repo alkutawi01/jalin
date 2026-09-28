@@ -30,6 +30,7 @@
 | EDITORIAL_SYSTEM.md | Workflow, credits, prose guidelines, typography | **LOCKED** -- editorial authority |
 | AI_WRITERS_ROOM.md | AI collaboration rules for story creation | Medium -- AI workflow |
 | JALIN_MASTER_CONTENT_PARSER_PROMPT.md | Single master prompt: manuscript -> structured Jalin metadata (all types) | High -- AI data-preparation contract |
+| JALIN_MASTER_PARSER_VALIDATION.md | Manual validation report: 3 test runs + field audit before v2 | High -- gate for prompt v2 changes |
 | JALIN_MASTER_PLAN_AI_HANDOFF.md | AI-facing consolidated decisions | Medium -- AI reference |
 | RUMAH_MENYIMPAN_SUARA_EDITORIAL_REVIEW.md | Editorial review for specific work | Low -- per-work artifact |
 
