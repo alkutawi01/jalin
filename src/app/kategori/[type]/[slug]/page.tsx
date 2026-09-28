@@ -1,5 +1,7 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import type { Metadata } from "next";
 import { displayableGenre } from "../../../../lib/reader/genre-display";
+import { absoluteUrl } from "../../../../lib/seo";
 import {
   EditorialImage,
   LeftRail,
@@ -62,6 +64,48 @@ const TYPE_LABELS: Record<string, string> = {
   sinopsis: "Sinopsis"
 };
 
+export async function generateMetadata({
+  params
+}: {
+  params: Promise<{ type: string; slug: string; sectionSlug?: string }>;
+}): Promise<Metadata> {
+  const { type, slug, sectionSlug } = await params;
+  if (type === "bersiri") return {};
+
+  const work = await getWork(slug);
+  if (!work || work.type !== type) return {};
+
+  const typeLabel = TYPE_LABELS[type] ?? type;
+  const description = work.dek ?? `${typeLabel} Jalin — ${work.title}.`;
+  const hero = work.visuals.find((visual) => visual.role === "hero");
+
+  const sections = work.sections && work.sections.length > 0 ? work.sections : [];
+  const primarySlug = sections.length > 0 ? sectionSlug ?? sections[0]!.slug : undefined;
+  const canonicalPath =
+    type === "novela" && primarySlug
+      ? `/kategori/${type}/${slug}/${primarySlug}`
+      : `/kategori/${type}/${slug}`;
+
+  return {
+    title: work.title,
+    description,
+    alternates: { canonical: canonicalPath },
+    openGraph: {
+      type: "article",
+      title: work.title,
+      description,
+      url: canonicalPath,
+      images: hero?.src ? [{ url: absoluteUrl(hero.src) }] : undefined
+    },
+    twitter: {
+      card: hero?.src ? "summary_large_image" : "summary",
+      title: work.title,
+      description,
+      images: hero?.src ? [absoluteUrl(hero.src)] : undefined
+    }
+  };
+}
+
 function splitBody(body: string, anchor: string, place: "before" | "after"): [string, string] {
   const index = body.indexOf(anchor);
   if (index < 0) return [body, ""];
@@ -78,6 +122,14 @@ async function getWork(slug: string) {
     return repo.getWork(slug);
   }
   return getWorkBySlug(slug);
+}
+
+async function getWorksByTypeUnified(type: WorkType) {
+  const repo = await initContentRepository();
+  if (repo.source === "database") {
+    return repo.getWorksByType(type);
+  }
+  return getWorksByType(type);
 }
 
 function buildMetaRows(work: Awaited<ReturnType<typeof getWork>>): WorkMetaRow[] {
@@ -179,6 +231,48 @@ function SectionIndexDetails({
   );
 }
 
+function SourceAttributionStrip({ sourceLine, status }: { sourceLine: string; status: string }) {
+  return (
+    <div className="site-shell source-attribution-strip">
+      <span>Sumber: {sourceLine}</span>
+      <span className="source-attribution-status">{status}</span>
+    </div>
+  );
+}
+
+function RelatedWorks({
+  works,
+  typeLabel
+}: {
+  works: { slug: string; type: string; title: string; dek?: string; readingMinutes?: number }[];
+  typeLabel: string;
+}) {
+  if (works.length === 0) return null;
+  return (
+    <section className="related-works">
+      <div className="site-shell">
+        <header className="section-head">
+          <h2>Selepas ini</h2>
+          <p className="section-sub">Karya {typeLabel.toLowerCase()} lain daripada Jalin</p>
+        </header>
+        <div className="related-works-grid">
+          {works.map((related) => (
+            <a
+              key={related.slug}
+              className="related-work-card"
+              href={`/kategori/${related.type}/${related.slug}`}
+            >
+              <h3>{related.title}</h3>
+              {related.dek ? <p>{related.dek}</p> : null}
+              {related.readingMinutes ? <span>± {related.readingMinutes} min</span> : null}
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default async function WorkPage({
   params
 }: {
@@ -206,24 +300,28 @@ export default async function WorkPage({
     role
   }));
   const editorial = projectEditorialCredits(work.credits);
+  const attribution = buildSourceAttribution(work);
 
   const rights = `${work.title.toUpperCase()} · © ADJUNG ${(work.publishedAt ?? "2026").slice(0, 4)} · ILUSTRASI JALIN`;
   const hero = work.visuals.find((visual) => visual.role === "hero");
   const inlineVisuals = work.visuals.filter((visual) => visual.anchor);
 
   const sections = work.sections && work.sections.length > 0 ? work.sections : [];
+
+  // The base /kategori/novela/[slug] URL used to silently render the first
+  // section's body, duplicating /[slug]/[firstSectionSlug]. Redirect to the
+  // section URL so there is one canonical, primary address per chapter.
+  if (sections.length > 0 && !sectionSlug) {
+    redirect(`/kategori/${type}/${slug}/${sections[0]!.slug}`);
+  }
+
   let activeSection: ReadingSection | undefined;
   let bodyToRender = work.body;
 
   if (sections.length > 0) {
-    if (sectionSlug) {
-      activeSection = sections.find((s) => s.slug === sectionSlug);
-      if (!activeSection) notFound();
-      bodyToRender = activeSection.body;
-    } else {
-      activeSection = sections[0];
-      bodyToRender = activeSection.body;
-    }
+    activeSection = sections.find((s) => s.slug === sectionSlug);
+    if (!activeSection) notFound();
+    bodyToRender = activeSection.body;
   }
 
   const segmentNodes: (string | { visual: (typeof work.visuals)[number] })[] = [];
@@ -239,6 +337,23 @@ export default async function WorkPage({
   segmentNodes.push(remaining);
 
   const publicSections = projectPublicSections(sections);
+
+  const sameTypeWorks = await getWorksByTypeUnified(type as WorkType);
+  const relatedWorks = sameTypeWorks
+    .filter((w) => w.slug !== work.slug)
+    .sort((a, b) => {
+      const aDate = a.updatedAt ?? a.publishedAt ?? "";
+      const bDate = b.updatedAt ?? b.publishedAt ?? "";
+      return bDate.localeCompare(aDate);
+    })
+    .slice(0, 3)
+    .map((w) => ({
+      slug: w.slug,
+      type: w.type,
+      title: w.title,
+      dek: w.dek,
+      readingMinutes: w.readingMinutes
+    }));
 
   const mobileInfo: StoryInfoData = {
     work: workMeta,
@@ -270,6 +385,10 @@ export default async function WorkPage({
           dek={work.dek ?? ""}
           byline={byline}
         />
+
+        {attribution.sumberAsal ? (
+          <SourceAttributionStrip sourceLine={attribution.sumberAsal} status={attribution.status} />
+        ) : null}
 
         <div className="site-shell">
           <EditorialImage
@@ -341,6 +460,8 @@ export default async function WorkPage({
         )}
 
         <StoryEnd title={work.title} />
+
+        <RelatedWorks works={relatedWorks} typeLabel={typeLabel} />
 
         <MobileStoryInfo data={mobileInfo} />
       </main>

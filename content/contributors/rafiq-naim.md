@@ -17,5 +17,3 @@ Ciri suara:
 - sensitif terhadap pacing dan pengulangan;
 - menjaga kesinambungan watak dan motif;
 - cenderung menahan penutup daripada menjadi terlalu menjelaskan tema.
-
-Identiti ini ialah persona editorial Jalin, bukan manusia sebenar.

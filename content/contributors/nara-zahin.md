@@ -17,5 +17,3 @@ Ciri suara:
 - tidak melodramatik;
 - mengutamakan subteks berbanding penerangan emosi secara terus;
 - sesuai untuk cerpen keluarga dan coming-of-age yang intim.
-
-Identiti ini ialah persona editorial Jalin, bukan manusia sebenar.

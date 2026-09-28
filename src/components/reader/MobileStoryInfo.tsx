@@ -59,23 +59,96 @@ export default function MobileStoryInfo({ data }: { data: StoryInfoData }) {
         <div className="sheet-drag-zone" onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={onPointerUp}>
           <span className="sheet-grabber" />
         </div>
-        <div className="sheet-tabs" role="tablist" aria-label="Maklumat cerita">
-          <button type="button" className={tab === "karya" ? "active" : ""} onClick={() => setTab("karya")}>Karya</button>
-          <button type="button" className={tab === "watak" ? "active" : ""} onClick={() => setTab("watak")}>Watak</button>
-          <button type="button" className={tab === "editorial" ? "active" : ""} onClick={() => setTab("editorial")}>Editorial</button>
+        <div
+          className="sheet-tabs"
+          role="tablist"
+          aria-label="Maklumat cerita"
+          onKeyDown={(event) => {
+            const tabs: Tab[] = ["karya", "watak", "editorial", ...(data.bab && data.bab.length > 0 ? (["bab"] as Tab[]) : [])];
+            const index = tabs.indexOf(tab);
+            if (event.key === "ArrowRight") {
+              event.preventDefault();
+              const next = tabs[(index + 1) % tabs.length]!;
+              setTab(next);
+              document.getElementById(`sheet-tab-${next}`)?.focus();
+            } else if (event.key === "ArrowLeft") {
+              event.preventDefault();
+              const prev = tabs[(index - 1 + tabs.length) % tabs.length]!;
+              setTab(prev);
+              document.getElementById(`sheet-tab-${prev}`)?.focus();
+            }
+          }}
+        >
+          <button
+            type="button"
+            id="sheet-tab-karya"
+            role="tab"
+            aria-selected={tab === "karya"}
+            aria-controls="sheet-panel-karya"
+            tabIndex={tab === "karya" ? 0 : -1}
+            className={tab === "karya" ? "active" : ""}
+            onClick={() => setTab("karya")}
+          >
+            Karya
+          </button>
+          <button
+            type="button"
+            id="sheet-tab-watak"
+            role="tab"
+            aria-selected={tab === "watak"}
+            aria-controls="sheet-panel-watak"
+            tabIndex={tab === "watak" ? 0 : -1}
+            className={tab === "watak" ? "active" : ""}
+            onClick={() => setTab("watak")}
+          >
+            Watak
+          </button>
+          <button
+            type="button"
+            id="sheet-tab-editorial"
+            role="tab"
+            aria-selected={tab === "editorial"}
+            aria-controls="sheet-panel-editorial"
+            tabIndex={tab === "editorial" ? 0 : -1}
+            className={tab === "editorial" ? "active" : ""}
+            onClick={() => setTab("editorial")}
+          >
+            Editorial
+          </button>
           {data.bab && data.bab.length > 0 ? (
-            <button type="button" className={tab === "bab" ? "active" : ""} onClick={() => setTab("bab")}>Bab</button>
+            <button
+              type="button"
+              id="sheet-tab-bab"
+              role="tab"
+              aria-selected={tab === "bab"}
+              aria-controls="sheet-panel-bab"
+              tabIndex={tab === "bab" ? 0 : -1}
+              className={tab === "bab" ? "active" : ""}
+              onClick={() => setTab("bab")}
+            >
+              Bab
+            </button>
           ) : null}
         </div>
         <div className="sheet-content">
-          {tab === "karya" && <dl className="sheet-list">{data.work.map((row) => <div key={row.label}><dt>{row.label}</dt><dd>{row.value}</dd></div>)}</dl>}
-          {tab === "watak" && <div className="sheet-stack">{data.characters.map((character) => <div key={character.name}><b>{character.name}</b><span>{character.role}</span></div>)}</div>}
-          {tab === "editorial" && <div className="sheet-stack">
-            {data.editorial.map((credit) => <div key={credit.role + "-" + credit.name}><span>{credit.role}</span><b>{credit.name}</b></div>)}
-            {data.note ? <p className="sheet-note">{data.note}</p> : null}
-          </div>}
+          {tab === "karya" && (
+            <dl id="sheet-panel-karya" role="tabpanel" aria-labelledby="sheet-tab-karya" className="sheet-list">
+              {data.work.map((row) => <div key={row.label}><dt>{row.label}</dt><dd>{row.value}</dd></div>)}
+            </dl>
+          )}
+          {tab === "watak" && (
+            <div id="sheet-panel-watak" role="tabpanel" aria-labelledby="sheet-tab-watak" className="sheet-stack">
+              {data.characters.map((character) => <div key={character.name}><b>{character.name}</b><span>{character.role}</span></div>)}
+            </div>
+          )}
+          {tab === "editorial" && (
+            <div id="sheet-panel-editorial" role="tabpanel" aria-labelledby="sheet-tab-editorial" className="sheet-stack">
+              {data.editorial.map((credit) => <div key={credit.role + "-" + credit.name}><span>{credit.role}</span><b>{credit.name}</b></div>)}
+              {data.note ? <p className="sheet-note">{data.note}</p> : null}
+            </div>
+          )}
           {tab === "bab" && data.bab && (
-            <div className="sheet-stack">
+            <div id="sheet-panel-bab" role="tabpanel" aria-labelledby="sheet-tab-bab" className="sheet-stack">
               {data.bab.map((item) => (
                 <div key={item.href}>
                   <a href={item.href}>{item.label}</a>

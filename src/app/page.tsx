@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { SiteFooter, SiteHeader } from "../components/reader/StoryChrome";
 import { WorkCover } from "../components/reader/WorkCover";
 import { initContentRepository } from "../lib/content";
@@ -34,7 +35,7 @@ const TYPE_LABELS: Record<string, string> = {
 };
 
 const TYPE_DESCS: Record<string, string> = {
-  cerpen: "Cerita pendek berilustrasi untuk jiwa muda",
+  cerpen: "Cerita pendek berilustrasi untuk pembaca Jalin",
   novela: "Novela pendek berilustrasi untuk pembaca Jalin",
   bersiri: "Karya bersiri berilustrasi — sambungan demi sambungan",
   fragmen: "Sedutan bermakna daripada karya agung",
@@ -73,7 +74,7 @@ function FeaturedHero({ work }: { work: PublicFeaturedSummary }) {
           </div>
           {hero?.src ? (
             <div className="hero-featured-visual">
-              <img src={hero.src} alt={hero.alt} />
+              <Image src={hero.src} alt={hero.alt} fill sizes="(max-width: 900px) 100vw, 640px" priority />
             </div>
           ) : null}
         </div>
@@ -102,6 +103,32 @@ function LatestWorkCard({ work }: { work: PublicWorkSummary }) {
         </div>
       </a>
     </article>
+  );
+}
+
+function QuickReads({ works }: { works: PublicWorkSummary[] }) {
+  if (works.length === 0) return null;
+  return (
+    <section className="quick-reads">
+      <div className="site-shell">
+        <header className="section-head">
+          <h2>Bacaan Ringkas</h2>
+          <p className="section-sub">Untuk masa terhad — kurang daripada 6 minit membaca</p>
+        </header>
+        <div className="quick-reads-row">
+          {works.map((work) => (
+            <a
+              key={work.slug}
+              className="quick-read-card"
+              href={`/kategori/${work.type}/${work.slug}`}
+            >
+              <span>± {work.readingMinutes} min</span>
+              <h3>{work.title}</h3>
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -164,6 +191,10 @@ export default async function Home() {
 
   const featured = sorted[0] ?? null;
   const latest = sorted.slice(0, 6);
+  const quickReads = sorted
+    .filter((work) => (work.readingMinutes ?? 0) > 0 && (work.readingMinutes ?? 0) <= 6)
+    .slice(0, 6)
+    .map((work) => projectPublicWorkSummary(work));
 
   return (
     <>
@@ -173,6 +204,8 @@ export default async function Home() {
         {featured ? (
           <FeaturedHero work={projectPublicFeaturedSummary(featured)} />
         ) : null}
+
+        <QuickReads works={quickReads} />
 
         <EditorialSelection works={editorialPicks} />
 
