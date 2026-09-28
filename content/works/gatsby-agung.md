@@ -39,8 +39,6 @@ glossary:
 
 # Gatsby Agung
 
-## Bahagian 1
-
 Pada musim panas tahun 1922, seorang lelaki muda bernama Nick Carraway berpindah ke Long Island, New York, untuk memulakan kehidupan baharu selepas meninggalkan kampung halamannya di Midwest. Dia datang ke sebuah kawasan yang dipenuhi rumah besar, pesta mewah dan golongan kaya yang hidup dalam suasana kemakmuran selepas Perang Dunia Pertama.
 
 Nick menyewa sebuah rumah kecil di kawasan West Egg, sebuah kawasan yang dihuni oleh golongan kaya baharu — mereka yang memperoleh kekayaan melalui usaha sendiri tetapi masih dipandang berbeza oleh golongan bangsawan lama. Di sebelah rumah kecilnya berdiri sebuah rumah agam yang sangat besar milik seorang lelaki misteri bernama Jay Gatsby.

@@ -1,29 +1,11 @@
 import type { ReactNode } from "react";
+import Image from "next/image";
 import type { BylineCredit, CharacterMeta, EditorialCredit, WorkMetaRow } from "./types";
-
-const NAV_LINKS: { label: string; href: string; match?: string }[] = [
-  { label: "Utama", href: "/" },
-  { label: "Cerpen", href: "/kategori/cerpen", match: "cerpen" },
-  { label: "Novela", href: "/kategori/novela", match: "novela" },
-  { label: "Bersiri", href: "/kategori/bersiri", match: "bersiri" },
-  { label: "Fragmen", href: "/kategori/fragmen", match: "fragmen" },
-  { label: "Sinopsis", href: "/kategori/sinopsis", match: "sinopsis" }
-];
+import { NAV_LINKS, SiteNavLinks } from "./nav-links";
+import MobileNavMenu from "./MobileNavMenu";
 
 function SiteNav({ active, className }: { active?: string; className: string }) {
-  return (
-    <nav className={className} aria-label="Navigasi utama">
-      {NAV_LINKS.map((link) => (
-        <a
-          key={link.href}
-          className={active && link.match === active ? "active" : undefined}
-          href={link.href}
-        >
-          {link.label}
-        </a>
-      ))}
-    </nav>
-  );
+  return <SiteNavLinks active={active} className={className} links={NAV_LINKS} />;
 }
 
 export function SiteHeader({ active }: { active?: string }) {
@@ -34,10 +16,7 @@ export function SiteHeader({ active }: { active?: string }) {
           <img src="/brand/jalin-wordmark.svg" alt="Jalin" />
         </a>
         <SiteNav active={active} className="header-nav" />
-        <details className="header-mobile-nav">
-          <summary>Menu</summary>
-          <SiteNav active={active} className="header-mobile-nav-links" />
-        </details>
+        <MobileNavMenu active={active} />
       </div>
     </header>
   );
@@ -99,7 +78,13 @@ export function EditorialImage({
   if (!src) return null;
   return (
     <figure className={figureClass}>
-      <img src={src} alt={alt} />
+      <Image
+        src={src}
+        alt={alt}
+        fill
+        sizes={kind === "hero" ? "(max-width: 720px) 100vw, 1180px" : "(max-width: 720px) 100vw, 800px"}
+        priority={kind === "hero"}
+      />
       <div className="image-rights" aria-hidden="true">{rights}</div>
     </figure>
   );

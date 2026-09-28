@@ -128,6 +128,7 @@ nav a.active { color: var(--ink); border-bottom: 1px solid var(--clay); padding-
   overflow: hidden;
   border-radius: 2px;
   background: #e8dfd2;
+  aspect-ratio: 16 / 9;
 }
 .hero-figure img {
   width: 100%;
@@ -224,6 +225,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 .inline-figure {
   width: calc(100% + 64px);
   margin: 56px -32px 72px;
+  aspect-ratio: 16 / 10;
 }
 .inline-figure img {
   width: 100%;
@@ -328,6 +330,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
   overflow: hidden;
   border-radius: 2px;
   background: #e8dfd2;
+  aspect-ratio: 15 / 8;
 }
 .hero-featured-visual img {
   width: 100%;
@@ -410,6 +413,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 
 /* ── Work card cover (hero image or editorial gradient placeholder) ── */
 .work-cover {
+  position: relative;
   aspect-ratio: 16 / 10;
   overflow: hidden;
   background: var(--line);
@@ -617,11 +621,9 @@ dd { margin: 0; color: var(--ink); text-align: left; }
   .story-head { padding-top: 48px; }
   .story-head h1 { font-size: 52px; }
   .dek { font-size: 18px; }
-  .hero-figure { margin-bottom: 44px; }
-  .hero-figure img { aspect-ratio: 16 / 9; }
+  .hero-figure { margin-bottom: 44px; aspect-ratio: 16 / 9; }
   .story-body { font-size: 19px; line-height: 1.8; }
-  .inline-figure { width: 100%; margin: 40px 0 48px; }
-  .inline-figure img { aspect-ratio: 4 / 3; }
+  .inline-figure { width: 100%; margin: 40px 0 48px; aspect-ratio: 4 / 3; }
 
   /* Mobile category navigation: native <details>/<summary> disclosure.
      Keyboard accessible (summary is focusable, Enter/Space toggles) and
@@ -831,7 +833,9 @@ dd { margin: 0; color: var(--ink); text-align: left; }
     border: 1px solid rgba(24,52,60,.14);
     border-right: 0;
     border-radius: 10px 0 0 10px;
-    padding: 12px 10px;
+    padding: 16px 14px;
+    min-height: 44px;
+    min-width: 44px;
     background: rgba(251,248,242,.96);
     color: var(--ink);
     box-shadow: 0 4px 18px rgba(24,52,60,.08);
@@ -997,6 +1001,9 @@ dd { margin: 0; color: var(--ink); text-align: left; }
   line-height: 1.75;
 }
 .contributor-copy p { margin: 0 0 1.25em; }
+.contributor-copy ul { margin: 0 0 1.25em; padding-left: 1.25em; }
+.contributor-copy li { margin: 0 0 0.4em; }
+.contributor-copy strong { color: var(--ink); }
 .contributor-disclosure {
   margin-top: 42px;
   padding-top: 20px;
@@ -1719,3 +1726,109 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 .story-head h1, .category-head h1, .hero-featured-title, .work-card-title { overflow-wrap: anywhere; }
 .hero-figure img, .inline-figure img, .hero-featured-visual img { width: 100%; height: auto; object-fit: cover; }
 @media (max-width: 680px) { .category-head h1 { font-size: clamp(34px, 11vw, 44px); } .story-head h1 { font-size: clamp(38px, 12vw, 52px); } .category-explorer-card { min-width: 0; padding: 22px 16px; } }
+
+/* ── Source attribution strip (sinopsis/fragmen/terjemahan) ── */
+.source-attribution-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  align-items: baseline;
+  margin: -8px 0 32px;
+  font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+.source-attribution-status {
+  padding: 2px 9px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 11px;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+/* ── Related works ("Selepas ini") after a story ends ── */
+.related-works {
+  padding: 56px 0 72px;
+}
+.related-works-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+}
+.related-work-card {
+  display: block;
+  padding: 20px 22px 22px;
+  border: 1px solid var(--line);
+  transition: border-color .18s ease, box-shadow .18s ease;
+}
+.related-work-card:hover {
+  border-color: var(--clay);
+  box-shadow: 0 6px 24px rgba(24,52,60,.1);
+}
+.related-work-card h3 {
+  margin: 0 0 8px;
+  font-size: 19px;
+  line-height: 1.3;
+}
+.related-work-card p {
+  margin: 0 0 10px;
+  color: var(--ink-soft);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.related-work-card span {
+  font-family: Inter, ui-sans-serif, sans-serif;
+  font-size: 12px;
+  color: var(--clay);
+  font-weight: 600;
+}
+
+/* ── "Bacaan ringkas" quick-entry row on the homepage ── */
+.quick-reads {
+  padding: 8px 0 64px;
+}
+.quick-reads-row {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  -webkit-overflow-scrolling: touch;
+}
+.quick-read-card {
+  flex: 0 0 auto;
+  width: 200px;
+  border: 1px solid var(--line);
+  padding: 16px 18px 18px;
+}
+.quick-read-card span {
+  font-family: Inter, ui-sans-serif, sans-serif;
+  font-size: 11px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--clay);
+  font-weight: 700;
+}
+.quick-read-card h3 {
+  margin: 8px 0 0;
+  font-size: 17px;
+  line-height: 1.3;
+}
+
+/* ── Empty category fallback with a way back into the site ── */
+.category-empty-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 16px;
+}
+.category-empty-links a {
+  padding: 8px 16px;
+  border: 1px solid var(--line);
+  font-family: Inter, ui-sans-serif, sans-serif;
+  font-size: 13px;
+}
+.category-empty-links a:hover {
+  border-color: var(--clay);
+}

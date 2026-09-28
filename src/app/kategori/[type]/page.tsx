@@ -11,6 +11,7 @@ import {
   type PublicWorkSummary
 } from "../../../lib/reader/public-projection";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 
 const CATEGORY_META: Record<string, { title: string; intro: string; headerLabel: string }> = {
   cerpen: {
@@ -105,6 +106,42 @@ function SeriesCard({ series, episodeCount }: { series: PublicSeriesSummary; epi
   );
 }
 
+export function generateMetadata({ params }: { params: Promise<{ type: string }> }): Promise<Metadata> {
+  return params.then(({ type }) => {
+    const meta = CATEGORY_META[type];
+    if (!meta) return {};
+    return {
+      title: meta.title,
+      description: meta.intro,
+      alternates: { canonical: `/kategori/${type}` },
+      openGraph: {
+        title: meta.title,
+        description: meta.intro,
+        url: `/kategori/${type}`
+      }
+    };
+  });
+}
+
+function EmptyCategoryFallback({ currentType }: { currentType: string }) {
+  const others = CATEGORY_META_LIST.filter(({ type }) => type !== currentType);
+  return (
+    <div className="category-empty">
+      <p>Belum ada karya diterbitkan dalam kategori ini. Jelajahi kategori lain buat masa ini:</p>
+      <div className="category-empty-links">
+        {others.map(({ type, label }) => (
+          <a key={type} href={`/kategori/${type}`}>{label}</a>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+const CATEGORY_META_LIST = Object.entries(CATEGORY_META).map(([type, meta]) => ({
+  type,
+  label: meta.headerLabel
+}));
+
 async function getWorks(type: string): Promise<Work[]> {
   const repo = await initContentRepository();
   if (repo.source === "database") {
@@ -135,7 +172,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ type:
               <p className="category-intro">{meta.intro}</p>
             </header>
             <div className="work-list">
-              {seriesList.length === 0 ? <div className="category-empty"><p>Belum ada karya diterbitkan dalam kategori ini.</p></div> : null}
+              {seriesList.length === 0 ? <EmptyCategoryFallback currentType={type} /> : null}
               {seriesList.map((series) => (
                 <SeriesCard
                   key={series.id}
@@ -170,7 +207,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ type:
           </header>
 
           <div className="work-list">
-            {works.length === 0 ? <div className="category-empty"><p>Belum ada karya diterbitkan dalam kategori ini.</p></div> : null}
+            {works.length === 0 ? <EmptyCategoryFallback currentType={type} /> : null}
             {works.map((work) => (
               <WorkCard
                 key={work.slug}
