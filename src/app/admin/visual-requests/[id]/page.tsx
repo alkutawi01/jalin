@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
+import CopyButton from "../../../../components/admin/CopyButton";
+import { composeVisualPrompt } from "../../../../lib/admin/visual-generation/prompt-composer";
 
 const VISUAL_ROLES = [
   { value: "hero", label: "Hero" },
@@ -166,6 +168,35 @@ export default function EditVisualRequestPage() {
   const [attaching, setAttaching] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadTool, setUploadTool] = useState("");
+  const [workInfo, setWorkInfo] = useState<{ title: string; type: string } | null>(null);
+
+  const workIdForInfo = record?.work_id ?? null;
+  useEffect(() => {
+    if (!workIdForInfo) {
+      setWorkInfo(null);
+      return;
+    }
+    let cancelled = false;
+    fetch(`/api/admin/works/${workIdForInfo}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((work) => {
+        if (!cancelled && work?.title) setWorkInfo({ title: String(work.title), type: String(work.type ?? "") });
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [workIdForInfo]);
+
+  const finalPrompt = record
+    ? composeVisualPrompt({
+        sceneInstruction: record.prompt,
+        role: record.visual_role as Parameters<typeof composeVisualPrompt>[0]["role"],
+        aspectRatio: (record.aspect_ratio || "3:2") as Parameters<typeof composeVisualPrompt>[0]["aspectRatio"],
+        workTitle: workInfo?.title ?? null,
+        workType: workInfo?.type ?? null,
+      }).finalPrompt
+    : "";
 
   useEffect(() => {
     async function loadRequest() {
@@ -620,6 +651,28 @@ export default function EditVisualRequestPage() {
                 {attaching ? "Memautkan..." : record.asset_finalized ? "Attach to Work" : "Attach (asset belum final)"}
               </button>
             )}
+          </div>
+
+          <div style={{ marginTop: 16, paddingTop: 12, borderTop: "1px solid #ddd" }}>
+            <h3 style={{ margin: "0 0 8px", fontSize: 14, textTransform: "uppercase", opacity: 0.7 }}>
+              Arahan penuh untuk penjana imej
+            </h3>
+            <p style={{ margin: "0 0 8px", fontSize: 13, opacity: 0.8 }}>
+              Gaya Jalin + adegan di atas, seperti yang dihantar ke Magnific. Salin dan tampal ke penjana lain jika perlu. Muka manusia
+              tidak jelas; jana satu imej dahulu.
+            </p>
+            <textarea
+              className="admin-textarea"
+              readOnly
+              rows={7}
+              value={finalPrompt}
+            />
+            <div style={{ marginTop: 8 }}>
+              <CopyButton
+                text={finalPrompt}
+                label="Salin arahan penuh"
+              />
+            </div>
           </div>
 
           {["draft", "failed", "generated", "under_review", "rejected"].includes(record.status) && (

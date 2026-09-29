@@ -13,6 +13,7 @@ import {
 } from "../../../../components/reader/StoryChrome";
 import StoryMarkdown from "../../../../components/reader/StoryMarkdown";
 import { WorkCover } from "../../../../components/reader/WorkCover";
+import { extractInlineChapters } from "../../../../lib/reader/inline-chapters";
 import MobileStoryInfo from "../../../../components/reader/MobileStoryInfo";
 import { initContentRepository } from "../../../../lib/content";
 import { getWorkBySlug, getWorksByType } from "../../../../lib/content/workLoader";
@@ -209,25 +210,17 @@ function SectionNav({
   );
 }
 
-function SectionIndexDetails({
-  workSlug,
-  sections
-}: {
-  workSlug: string;
-  sections: PublicSectionRef[];
-}) {
-  if (sections.length === 0) return null;
+function SectionIndexDetails({ items }: { items: { label: string; href: string }[] }) {
+  if (items.length === 0) return null;
   return (
     <details>
       <summary style={{ cursor: "pointer", fontSize: "0.78rem", letterSpacing: "0.06em", textTransform: "uppercase", opacity: 0.75 }}>
-        Bab ({sections.length})
+        Bab ({items.length})
       </summary>
       <ol style={{ margin: "0.5rem 0 0", paddingLeft: "1.1rem", fontSize: "0.85rem", lineHeight: 1.55 }}>
-        {sections.map((section) => (
-          <li key={section.slug} style={{ marginBottom: "0.25rem" }}>
-            <a href={`/kategori/novela/${workSlug}/${section.slug}`}>
-              {section.title || section.slug}
-            </a>
+        {items.map((item) => (
+          <li key={item.href} style={{ marginBottom: "0.25rem" }}>
+            <a href={item.href}>{item.label}</a>
           </li>
         ))}
       </ol>
@@ -368,19 +361,26 @@ export default async function WorkPage({
       };
     });
 
+  // DB novelas have real sections (separate pages); a Markdown novela keeps its
+  // chapters as "## Bab N" headings in one body, so link to those in-page anchors.
+  const inlineChapters =
+    publicSections.length === 0 && work.type === "novela" ? extractInlineChapters(work.body) : [];
+  const chapterItems: { label: string; href: string }[] =
+    publicSections.length > 0
+      ? publicSections.map((section) => ({
+          label: section.title || section.slug,
+          href: `/kategori/novela/${work.slug}/${section.slug}`
+        }))
+      : inlineChapters.length > 1
+        ? inlineChapters.map((chapter) => ({ label: chapter.label, href: `#${chapter.id}` }))
+        : [];
+
   const mobileInfo: StoryInfoData = {
     work: workMeta,
     characters,
     editorial,
     note: work.reader?.note ?? "Penulis Maya bekerja di bawah kawal selia editorial manusia.",
-    ...(publicSections.length > 0
-      ? {
-          bab: publicSections.map((section) => ({
-            label: section.title || section.slug,
-            href: `/kategori/novela/${work.slug}/${section.slug}`
-          }))
-        }
-      : {})
+    ...(chapterItems.length > 0 ? { bab: chapterItems } : {})
   };
 
   return (
@@ -422,12 +422,7 @@ export default async function WorkPage({
             rows={workMeta}
             note="Penulis Maya bekerja di bawah kawal selia editorial manusia."
           >
-            {publicSections.length > 0 ? (
-              <SectionIndexDetails
-                workSlug={work.slug}
-                sections={publicSections}
-              />
-            ) : null}
+            <SectionIndexDetails items={chapterItems} />
           </LeftRail>
 
           <article className="story-body">

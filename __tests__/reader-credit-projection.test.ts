@@ -50,18 +50,27 @@ console.log("reader credit projection tests\n");
 {
   const sinopsis = getWorkBySlug("di-hadapan-singgahsana");
   const editorial = projectEditorialCredits(sinopsis?.credits ?? []);
-  assert(editorial.length === 1, "Sinopsis credits project to exactly one public credit");
-  assert(editorial[0]?.role === "Pengarang asal", "Sinopsis author credit label reads Pengarang asal");
-  assert(editorial[0]?.name === "Naguib Mahfouz", "Sinopsis source author name preserved");
+  // The original author is distinct from the people who wrote the Jalin sinopsis.
+  const original = editorial.filter((credit) => credit.role === "Pengarang asal");
+  assert(original.length === 1, "Sinopsis has exactly one 'Pengarang asal' credit");
+  assert(original[0]?.name === "Naguib Mahfouz", "Sinopsis source author name preserved");
+  assert(
+    editorial.some((credit) => credit.role === "Penulis") && editorial.some((credit) => credit.role === "Editor"),
+    "Sinopsis also credits the Jalin writers/editor under their own labels"
+  );
   assert(!json(editorial).includes("author"), "No raw 'author' enum reaches the reader");
-  assert(projectBylineCredits(sinopsis?.credits ?? []).length === 0, "Sinopsis source author stays out of the byline");
+  const byline = projectBylineCredits(sinopsis?.credits ?? []);
+  assert(byline.length === 2 && byline.every((credit) => credit.maya), "Sinopsis byline is the Jalin writers (Maya)");
+  assert(!json(byline).includes("Naguib Mahfouz"), "Sinopsis source author stays out of the byline");
 }
 
 {
   const gatsby = getWorkBySlug("gatsby-agung");
   const editorial = projectEditorialCredits(gatsby?.credits ?? []);
-  assert(editorial.length === 1 && editorial[0]?.role === "Pengarang asal", "Second real derivative source author labelled Pengarang asal");
-  assert(editorial[0]?.name === "F. Scott Fitzgerald", "Second real derivative source author name preserved");
+  const original = editorial.filter((credit) => credit.role === "Pengarang asal");
+  assert(original.length === 1, "Second real derivative source author labelled Pengarang asal");
+  assert(original[0]?.name === "F. Scott Fitzgerald", "Second real derivative source author name preserved");
+  assert(!json(projectBylineCredits(gatsby?.credits ?? [])).includes("Fitzgerald"), "Second derivative's source author stays out of the byline");
 }
 
 {

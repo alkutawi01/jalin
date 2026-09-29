@@ -1,6 +1,14 @@
 import React, { type ReactNode } from "react";
 import ReactMarkdown from "react-markdown";
 import type { GlossaryMap } from "./types";
+import { headingId } from "../../lib/reader/inline-chapters";
+
+function plainText(node: ReactNode): string {
+  if (typeof node === "string" || typeof node === "number") return String(node);
+  if (Array.isArray(node)) return node.map(plainText).join("");
+  if (React.isValidElement(node)) return plainText((node.props as { children?: ReactNode }).children);
+  return "";
+}
 
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^$()|[\]\\{}]/g, "\\$&");
@@ -70,6 +78,7 @@ export default function StoryMarkdown({
     <ReactMarkdown
       components={{
         h1: () => null,
+        h2: ({ children }) => <h2 id={headingId(plainText(children))}>{children}</h2>,
         p: ({ children }) => <p>{decorateChildren(children, glossary)}</p>,
         em: ({ children }) => <em>{decorateChildren(children, glossary)}</em>,
         hr: () => (

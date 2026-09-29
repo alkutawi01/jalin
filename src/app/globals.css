@@ -199,6 +199,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
   color: #243d43;
 }
 .story-body p { margin: 0 0 1.55em; }
+.story-body h2 { scroll-margin-top: 96px; }
 .story-body em {
   color: inherit;
   font-style: italic;

@@ -10,7 +10,7 @@ version: "v1.0"
 publishedAt: "2026-09-29"
 updatedAt: "2026-09-29"
 dek: "Seorang penyelidik kecerdasan buatan menemui satu modul tersembunyi di dalam sistem ciptaannya sendiri — dan sekuntum bunga digital yang tidak pernah diminta sesiapa — lalu tertanya-tanya siapa sebenarnya yang meninggalkan sebahagian roh di dalam mesin itu."
-readingMinutes: 45
+readingMinutes: 50
 credits:
   - contributor: nara-zahin
     role: initial_draft
