@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
+import WorkVisualUpload from "../../../../components/admin/WorkVisualUpload";
 
 const WORK_TYPES = [
   { value: "cerpen", label: "Cerpen" },
@@ -1707,6 +1708,8 @@ export default function EditWorkPage() {
               + Tambah Visual
             </button>
           </div>
+
+          <WorkVisualUpload workId={workId} onDone={loadVisuals} />
 
           {editingVisual && (
             <div className="admin-credit-form">
