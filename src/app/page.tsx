@@ -89,54 +89,62 @@ function LatestWorkCard({ work }: { work: PublicWorkSummary }) {
   return (
     <article className="latest-card">
       <a href={`/kategori/${work.type}/${work.slug}`}>
-        <WorkCover type={work.type} title={work.title} hero={work.hero} />
-        <div className="latest-card-meta">
-          <span className="latest-card-type">{label}</span>
-          {reading ? <span className="latest-card-reading">{reading}</span> : null}
+        <div className="latest-card-cover">
+          <WorkCover type={work.type} title={work.title} hero={work.hero} />
         </div>
-        <h3 className="latest-card-title">{work.title}</h3>
-        {work.dek ? <p className="latest-card-dek">{work.dek}</p> : null}
-        <div className="latest-card-date">
-          {formatDate(work.updatedAt ?? work.publishedAt) !== "—"
-            ? formatDate(work.updatedAt ?? work.publishedAt)
-            : null}
+        <div className="latest-card-body">
+          <div className="latest-card-meta">
+            <span className="latest-card-type">{label}</span>
+            {reading ? <span className="latest-card-reading">{reading}</span> : null}
+          </div>
+          <h3 className="latest-card-title">{work.title}</h3>
+          {work.dek ? <p className="latest-card-dek">{work.dek}</p> : null}
+          <div className="latest-card-footer">
+            <span className="latest-card-cta">Baca →</span>
+            <span className="latest-card-date">
+              {formatDate(work.updatedAt ?? work.publishedAt) !== "—"
+                ? formatDate(work.updatedAt ?? work.publishedAt)
+                : null}
+            </span>
+          </div>
         </div>
       </a>
     </article>
   );
 }
 
-function QuickReads({ works }: { works: PublicWorkSummary[] }) {
-  if (works.length === 0) return null;
+function CategoryCard({
+  type,
+  label,
+  imageSrc,
+  imageAlt,
+}: {
+  type: string;
+  label: string;
+  imageSrc?: string | null;
+  imageAlt?: string | null;
+}) {
+  const hasImage = !!imageSrc;
   return (
-    <section className="quick-reads">
-      <div className="site-shell">
-        <header className="section-head">
-          <h2>Bacaan Ringkas</h2>
-          <p className="section-sub">Untuk masa terhad — kurang daripada 6 minit membaca</p>
-        </header>
-        <div className="quick-reads-row">
-          {works.map((work) => (
-            <a
-              key={work.slug}
-              className="quick-read-card"
-              href={`/kategori/${work.type}/${work.slug}`}
-            >
-              <span>± {work.readingMinutes} min</span>
-              <h3>{work.title}</h3>
-            </a>
-          ))}
-        </div>
+    <a
+      href={`/kategori/${type}`}
+      className={`category-explorer-card category-explorer-card--${type}${hasImage ? " category-explorer-card--photo" : ""}`}
+    >
+      {hasImage ? (
+        <Image
+          src={imageSrc!}
+          alt={imageAlt ?? ""}
+          fill
+          sizes="(max-width: 1050px) 45vw, 22vw"
+          className="category-explorer-card-img"
+        />
+      ) : null}
+      <div className="category-explorer-card-scrim" />
+      <div className="category-explorer-card-body">
+        <h3>{label}</h3>
+        <p>{TYPE_DESCS[type] ?? ""}</p>
+        <span className="category-explorer-card-arrow" aria-hidden="true">→</span>
       </div>
-    </section>
-  );
-}
-
-function CategoryCard({ type, label }: { type: string; label: string }) {
-  return (
-    <a href={`/kategori/${type}`} className={`category-explorer-card category-explorer-card--${type}`}>
-      <h3>{label}</h3>
-      <p>{TYPE_DESCS[type] ?? ""}</p>
     </a>
   );
 }
@@ -191,10 +199,18 @@ export default async function Home() {
 
   const featured = sorted[0] ?? null;
   const latest = sorted.slice(0, 6);
-  const quickReads = sorted
-    .filter((work) => (work.readingMinutes ?? 0) > 0 && (work.readingMinutes ?? 0) <= 6)
-    .slice(0, 6)
-    .map((work) => projectPublicWorkSummary(work));
+
+  const categoryImages = new Map<string, { src: string; alt: string }>();
+  for (const cat of CATEGORIES) {
+    const withHero = sorted.find((work) => {
+      const summary = projectPublicWorkSummary(work);
+      return summary.type === cat.type && summary.hero?.src;
+    });
+    if (withHero) {
+      const summary = projectPublicWorkSummary(withHero);
+      if (summary.hero) categoryImages.set(cat.type, summary.hero);
+    }
+  }
 
   return (
     <>
@@ -204,8 +220,6 @@ export default async function Home() {
         {featured ? (
           <FeaturedHero work={projectPublicFeaturedSummary(featured)} />
         ) : null}
-
-        <QuickReads works={quickReads} />
 
         <EditorialSelection works={editorialPicks} />
 
@@ -231,9 +245,18 @@ export default async function Home() {
               <h2>Jelajahi Kategori</h2>
             </header>
             <div className="category-explorer-grid">
-              {CATEGORIES.map((cat) => (
-                <CategoryCard key={cat.type} type={cat.type} label={cat.label} />
-              ))}
+              {CATEGORIES.map((cat) => {
+                const img = categoryImages.get(cat.type);
+                return (
+                  <CategoryCard
+                    key={cat.type}
+                    type={cat.type}
+                    label={cat.label}
+                    imageSrc={img?.src}
+                    imageAlt={img?.alt}
+                  />
+                );
+              })}
             </div>
           </div>
         </section>
