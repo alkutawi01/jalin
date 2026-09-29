@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import ReactMarkdown from "react-markdown";
 
 const WORK_TYPES = [
   { value: "cerpen", label: "Cerpen" },
@@ -11,10 +12,43 @@ const WORK_TYPES = [
   { value: "sinopsis", label: "Sinopsis" },
 ];
 
+const GENRE_SUGGESTIONS = ["Keluarga", "Drama Sosial", "Sejarah", "Drama", "Coming-of-age", "Misteri"];
+
+const STATUS_OPTIONS = [
+  { value: "draft", label: "Draf", hint: "Kerja dalam proses. Tidak kelihatan pada laman awam." },
+  { value: "review", label: "Semakan", hint: "Sedang disemak editor. Masih tidak kelihatan pada laman awam." },
+  { value: "ready", label: "Sedia", hint: "Lulus semakan dan sedia diterbitkan, tertakluk kepada gate penerbitan." },
+];
+
+function countWords(text: string): number {
+  const trimmed = text.trim();
+  if (!trimmed) return 0;
+  return trimmed.split(/\s+/).length;
+}
+
+function estimateReadingMinutes(wordCount: number): number {
+  return Math.max(1, Math.round(wordCount / 200));
+}
+
+function generateSlug(title: string): string {
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
 export default function NewWorkPage() {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
+
+  // Once the editor edits slug or readingMinutes by hand, stop silently
+  // overwriting their value from title/body changes.
+  const [slugTouched, setSlugTouched] = useState(false);
+  const [readingMinutesTouched, setReadingMinutesTouched] = useState(false);
 
   const [form, setForm] = useState({
     title: "",
@@ -23,27 +57,45 @@ export default function NewWorkPage() {
     status: "draft",
     body: "",
     genre: "",
-    audience: "",
+    audience: "13-17",
     dek: "",
     readingMinutes: "",
     version: "v0.1",
   });
 
-  function generateSlug(title: string): string {
-    return title
-      .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, "")
-      .replace(/\s+/g, "-")
-      .replace(/-+/g, "-")
-      .replace(/^-|-$/g, "");
-  }
+  const wordCount = useMemo(() => countWords(form.body), [form.body]);
 
   function handleTitleChange(value: string) {
     setForm((prev) => ({
       ...prev,
       title: value,
-      slug: prev.slug || generateSlug(value),
+      slug: slugTouched ? prev.slug : generateSlug(value),
     }));
+  }
+
+  function handleBodyChange(value: string) {
+    setForm((prev) => ({
+      ...prev,
+      body: value,
+      readingMinutes: readingMinutesTouched
+        ? prev.readingMinutes
+        : String(estimateReadingMinutes(countWords(value))),
+    }));
+  }
+
+  function handleSlugChange(value: string) {
+    setSlugTouched(true);
+    setForm((prev) => ({ ...prev, slug: value }));
+  }
+
+  function handleReadingMinutesChange(value: string) {
+    setReadingMinutesTouched(true);
+    // Reject negative input at the source rather than relying on the
+    // number input's min attribute, which some browsers only enforce
+    // on the spinner and not on typed or pasted values.
+    const n = Number(value);
+    if (value !== "" && (Number.isNaN(n) || n < 0)) return;
+    setForm((prev) => ({ ...prev, readingMinutes: value }));
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -75,11 +127,13 @@ export default function NewWorkPage() {
     }
   }
 
+  const activeStatus = STATUS_OPTIONS.find((s) => s.value === form.status) ?? STATUS_OPTIONS[0]!;
+
   return (
     <div className="admin-form-page">
       <header className="admin-page-header">
         <h1>Karya Baharu</h1>
-        <p className="admin-page-sub">Cipta karya baharu dalam database</p>
+        <p className="admin-page-sub">Mulakan draf karya baharu</p>
       </header>
 
       {error && (
@@ -87,6 +141,9 @@ export default function NewWorkPage() {
       )}
 
       <form onSubmit={handleSubmit} className="admin-form">
+        {/* 1. Butiran asas */}
+        <h2 className="admin-form-section-title">Butiran asas</h2>
+
         <div className="admin-form-group">
           <label htmlFor="title">Tajuk *</label>
           <input
@@ -100,56 +157,72 @@ export default function NewWorkPage() {
         </div>
 
         <div className="admin-form-group">
-          <label htmlFor="slug">Slug *</label>
+          <label htmlFor="type">Jenis</label>
+          <select
+            id="type"
+            aria-describedby="type-hint"
+            value={form.type}
+            onChange={(e) => setForm((prev) => ({ ...prev, type: e.target.value }))}
+          >
+            {WORK_TYPES.map((t) => (
+              <option key={t.value} value={t.value}>{t.label}</option>
+            ))}
+          </select>
+          <span id="type-hint" className="admin-form-hint">Lalai: Cerpen. Tukar jika karya ini jenis lain.</span>
+        </div>
+
+        <div className="admin-form-group">
+          <label htmlFor="dek">Ringkasan pendek</label>
           <input
-            id="slug"
+            id="dek"
             type="text"
-            required
-            value={form.slug}
-            onChange={(e) => setForm((prev) => ({ ...prev, slug: e.target.value }))}
-            placeholder="kerusi-di-beranda"
+            value={form.dek}
+            onChange={(e) => setForm((prev) => ({ ...prev, dek: e.target.value }))}
+            placeholder="Satu ayat ringkasan karya, tanpa spoiler"
           />
-          <span className="admin-form-hint">Unik dalam system. Contoh: kerusi-di-beranda</span>
         </div>
 
-        <div className="admin-form-row">
-          <div className="admin-form-group">
-            <label htmlFor="type">Jenis *</label>
-            <select
-              id="type"
-              value={form.type}
-              onChange={(e) => setForm((prev) => ({ ...prev, type: e.target.value }))}
-            >
-              {WORK_TYPES.map((t) => (
-                <option key={t.value} value={t.value}>{t.label}</option>
-              ))}
-            </select>
-          </div>
+        {/* 2. Manuskrip */}
+        <h2 className="admin-form-section-title">Manuskrip</h2>
 
-          <div className="admin-form-group">
-            <label htmlFor="status">Status</label>
-            <select
-              id="status"
-              value={form.status}
-              onChange={(e) => setForm((prev) => ({ ...prev, status: e.target.value }))}
-            >
-              <option value="draft">Draf</option>
-              <option value="review">Semakan</option>
-              <option value="ready">Sedia</option>
-            </select>
+        <div className="admin-form-group">
+          <label htmlFor="body">Manuskrip (Markdown) *</label>
+          <textarea
+            id="body"
+            required
+            aria-describedby="body-hint"
+            value={form.body}
+            onChange={(e) => handleBodyChange(e.target.value)}
+            placeholder="Tampal atau tulis manuskrip di sini dalam format Markdown..."
+            rows={20}
+            className="admin-textarea"
+          />
+          <div className="admin-manuscript-meta">
+            <span id="body-hint" className="admin-form-hint">
+              Gunakan Markdown untuk pemformatan. Baris kosong memulakan perenggan baharu.
+            </span>
+            <span className="admin-word-count">{wordCount} perkataan</span>
           </div>
-
-          <div className="admin-form-group">
-            <label htmlFor="version">Versi</label>
-            <input
-              id="version"
-              type="text"
-              value={form.version}
-              onChange={(e) => setForm((prev) => ({ ...prev, version: e.target.value }))}
-              placeholder="v0.1"
-            />
-          </div>
+          <button
+            type="button"
+            className="admin-btn admin-btn-outline admin-btn-sm admin-preview-toggle"
+            onClick={() => setShowPreview((v) => !v)}
+          >
+            {showPreview ? "Sembunyikan pratonton" : "Pratonton Markdown"}
+          </button>
+          {showPreview && (
+            <div className="admin-markdown-preview">
+              {form.body.trim() ? (
+                <ReactMarkdown>{form.body}</ReactMarkdown>
+              ) : (
+                <p className="admin-form-hint">Tiada kandungan untuk dipratonton lagi.</p>
+              )}
+            </div>
+          )}
         </div>
+
+        {/* 3. Butiran penerbitan */}
+        <h2 className="admin-form-section-title">Butiran penerbitan</h2>
 
         <div className="admin-form-row">
           <div className="admin-form-group">
@@ -157,21 +230,27 @@ export default function NewWorkPage() {
             <input
               id="genre"
               type="text"
+              list="genre-suggestions"
               value={form.genre}
               onChange={(e) => setForm((prev) => ({ ...prev, genre: e.target.value }))}
               placeholder="Keluarga"
             />
+            <datalist id="genre-suggestions">
+              {GENRE_SUGGESTIONS.map((g) => (
+                <option key={g} value={g} />
+              ))}
+            </datalist>
           </div>
 
           <div className="admin-form-group">
             <label htmlFor="audience">Audiens</label>
-            <input
+            <select
               id="audience"
-              type="text"
               value={form.audience}
               onChange={(e) => setForm((prev) => ({ ...prev, audience: e.target.value }))}
-              placeholder="Remaja 13-17"
-            />
+            >
+              <option value="13-17">13-17</option>
+            </select>
           </div>
 
           <div className="admin-form-group">
@@ -179,38 +258,67 @@ export default function NewWorkPage() {
             <input
               id="readingMinutes"
               type="number"
+              min={0}
+              aria-describedby="reading-minutes-hint"
               value={form.readingMinutes}
-              onChange={(e) => setForm((prev) => ({ ...prev, readingMinutes: e.target.value }))}
+              onChange={(e) => handleReadingMinutesChange(e.target.value)}
               placeholder="15"
             />
+            <span id="reading-minutes-hint" className="admin-form-hint">
+              Anggaran automatik daripada manuskrip. Boleh dilaraskan.
+            </span>
           </div>
         </div>
 
         <div className="admin-form-group">
-          <label htmlFor="dek">Dek</label>
+          <label htmlFor="slug">Alamat pautan *</label>
           <input
-            id="dek"
+            id="slug"
             type="text"
-            value={form.dek}
-            onChange={(e) => setForm((prev) => ({ ...prev, dek: e.target.value }))}
-            placeholder="Ringkasan pendek karya"
-          />
-        </div>
-
-        <div className="admin-form-group">
-          <label htmlFor="body">Manuskrip (Markdown) *</label>
-          <textarea
-            id="body"
             required
-            value={form.body}
-            onChange={(e) => setForm((prev) => ({ ...prev, body: e.target.value }))}
-            placeholder="Tulis manuskrip di sini dalam format Markdown..."
-            rows={20}
-            className="admin-textarea"
+            aria-describedby="slug-hint"
+            value={form.slug}
+            onChange={(e) => handleSlugChange(e.target.value)}
+            placeholder="kerusi-di-beranda"
           />
-          <span className="admin-form-hint">Gunakan Markdown untuk pemformatan. Ganti baris kosong untuk perenggan baharu.</span>
+          <span id="slug-hint" className="admin-form-hint">
+            /kategori/{form.type}/{form.slug || "alamat-pautan"} — dijana daripada tajuk, boleh disunting. Mesti unik.
+          </span>
         </div>
 
+        <div className="admin-form-row">
+          <div className="admin-form-group">
+            <label htmlFor="status">Status</label>
+            <select
+              id="status"
+              aria-describedby="status-hint"
+              value={form.status}
+              onChange={(e) => setForm((prev) => ({ ...prev, status: e.target.value }))}
+            >
+              {STATUS_OPTIONS.map((s) => (
+                <option key={s.value} value={s.value}>{s.label}</option>
+              ))}
+            </select>
+            <span id="status-hint" className="admin-form-hint">{activeStatus.hint}</span>
+          </div>
+
+          <details className="admin-advanced-field">
+            <summary>Versi (lanjutan)</summary>
+            <div className="admin-form-group">
+              <label htmlFor="version">Versi</label>
+              <input
+                id="version"
+                type="text"
+                value={form.version}
+                onChange={(e) => setForm((prev) => ({ ...prev, version: e.target.value }))}
+                placeholder="v0.1"
+              />
+              <span className="admin-form-hint">Karya baharu bermula pada v0.1.</span>
+            </div>
+          </details>
+        </div>
+
+        {/* 4. Simpan */}
         <div className="admin-form-actions">
           <a href="/admin/works" className="admin-btn admin-btn-outline">
             Batal
@@ -220,7 +328,7 @@ export default function NewWorkPage() {
             className="admin-btn admin-btn-primary"
             disabled={saving}
           >
-            {saving ? "Menyimpan..." : "Cipta Karya"}
+            {saving ? "Menyimpan..." : "Simpan Draf"}
           </button>
         </div>
       </form>
