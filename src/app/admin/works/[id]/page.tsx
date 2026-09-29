@@ -99,7 +99,19 @@ interface GlossaryData {
   sort_order: number;
 }
 
-type Tab = "content" | "metadata" | "sections" | "credits" | "visuals" | "glossary" | "source";
+/**
+ * Character metadata (Content Model Readiness audit). Stored as one
+ * JSON array in works.metadata.characters, not individual DB rows —
+ * so unlike credits/visuals/glossary there's no per-row id; the whole
+ * list is read and replaced together.
+ */
+interface CharacterEntry {
+  name: string;
+  role: string;
+  firstAppearanceSection: string | null;
+}
+
+type Tab = "content" | "metadata" | "sections" | "credits" | "visuals" | "glossary" | "characters" | "source";
 
 interface SectionData {
   id: number;
@@ -195,6 +207,11 @@ export default function EditWorkPage() {
   const [editingGlossary, setEditingGlossary] = useState<Partial<GlossaryData> | null>(null);
   const [glossaryError, setGlossaryError] = useState<string | null>(null);
 
+  const [characters, setCharacters] = useState<CharacterEntry[]>([]);
+  const [charactersError, setCharactersError] = useState<string | null>(null);
+  const [charactersSuccess, setCharactersSuccess] = useState<string | null>(null);
+  const [charactersSaving, setCharactersSaving] = useState(false);
+
   const [sections, setSections] = useState<SectionData[]>([]);
   const [editingSection, setEditingSection] = useState<Partial<SectionData> | null>(null);
   const [sectionError, setSectionError] = useState<string | null>(null);
@@ -269,6 +286,7 @@ export default function EditWorkPage() {
     loadContributors();
     loadVisuals();
     loadGlossary();
+    loadCharacters();
     loadReadiness();
     loadSourceRights();
     loadSections();
@@ -564,6 +582,56 @@ export default function EditWorkPage() {
       }
     } catch {
       // Ignore glossary loading errors
+    }
+  }
+
+  async function loadCharacters() {
+    try {
+      const res = await fetch(`/api/admin/works/${workId}/characters`);
+      if (res.ok) {
+        setCharacters(await res.json());
+      }
+    } catch {
+      // Ignore character loading errors
+    }
+  }
+
+  function addCharacterRow() {
+    setCharacters((prev) => [...prev, { name: "", role: "", firstAppearanceSection: null }]);
+  }
+
+  function updateCharacterRow(index: number, patch: Partial<CharacterEntry>) {
+    setCharacters((prev) => prev.map((c, i) => (i === index ? { ...c, ...patch } : c)));
+  }
+
+  function removeCharacterRow(index: number) {
+    setCharacters((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  async function handleSaveCharacters() {
+    setCharactersError(null);
+    setCharactersSuccess(null);
+    setCharactersSaving(true);
+
+    try {
+      const res = await fetch(`/api/admin/works/${workId}/characters`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ characters }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Gagal menyimpan watak.");
+      }
+
+      setCharacters(data);
+      setCharactersSuccess("Watak disimpan.");
+      setTimeout(() => setCharactersSuccess(null), 3000);
+    } catch (err) {
+      setCharactersError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+    } finally {
+      setCharactersSaving(false);
     }
   }
 
@@ -1083,6 +1151,12 @@ export default function EditWorkPage() {
           onClick={() => setActiveTab("glossary")}
         >
           Glosari ({glossaryTerms.length})
+        </button>
+        <button
+          className={`admin-tab ${activeTab === "characters" ? "admin-tab-active" : ""}`}
+          onClick={() => setActiveTab("characters")}
+        >
+          Watak ({characters.length})
         </button>
         {DERIVATIVE_TYPES.has(form.type) && (
           <button
@@ -1931,6 +2005,105 @@ export default function EditWorkPage() {
               </table>
             </div>
           )}
+        </div>
+      )}
+      {activeTab === "characters" && (
+        <div className="admin-characters">
+          {charactersError && (
+            <div className="admin-alert admin-alert-error">{charactersError}</div>
+          )}
+          {charactersSuccess && (
+            <div className="admin-alert admin-alert-success">{charactersSuccess}</div>
+          )}
+
+          <div className="admin-credits-header">
+            <h3>Watak Karya</h3>
+            <button
+              type="button"
+              className="admin-btn admin-btn-sm admin-btn-primary"
+              onClick={addCharacterRow}
+            >
+              + Tambah Watak
+            </button>
+          </div>
+
+          <p className="admin-form-hint admin-characters-note">
+            Nama dan peranan sahaja — dipaparkan kepada pembaca (Tentang Karya).
+            {form.type === "novela"
+              ? " Bahagian Kemunculan Pertama untuk novela sahaja: bab/seksyen di mana watak ini PERTAMA disebut. Belum ditapis oleh pembaca lagi — direkodkan untuk kerja akan datang (lihat docs/NOVELA_PROGRESSIVE_DISCLOSURE.md)."
+              : ""}
+          </p>
+
+          {characters.length === 0 ? (
+            <p className="admin-table-empty">Tiada watak direkodkan untuk karya ini.</p>
+          ) : (
+            <div className="admin-table-wrap">
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>Nama</th>
+                    <th>Peranan</th>
+                    {form.type === "novela" && <th>Kemunculan Pertama</th>}
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {characters.map((character, index) => (
+                    <tr key={index}>
+                      <td>
+                        <input
+                          type="text"
+                          value={character.name}
+                          onChange={(e) => updateCharacterRow(index, { name: e.target.value })}
+                          placeholder="Nama watak"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="text"
+                          value={character.role}
+                          onChange={(e) => updateCharacterRow(index, { role: e.target.value })}
+                          placeholder="Contoh: Watak utama"
+                        />
+                      </td>
+                      {form.type === "novela" && (
+                        <td>
+                          <input
+                            type="text"
+                            value={character.firstAppearanceSection ?? ""}
+                            onChange={(e) => updateCharacterRow(index, {
+                              firstAppearanceSection: e.target.value || null,
+                            })}
+                            placeholder="cth. bab-1"
+                          />
+                        </td>
+                      )}
+                      <td>
+                        <button
+                          type="button"
+                          className="admin-btn admin-btn-sm admin-btn-danger"
+                          onClick={() => removeCharacterRow(index)}
+                        >
+                          Padam
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          <div className="admin-form-actions">
+            <button
+              type="button"
+              className="admin-btn admin-btn-primary"
+              disabled={charactersSaving}
+              onClick={handleSaveCharacters}
+            >
+              {charactersSaving ? "Menyimpan..." : "Simpan Watak"}
+            </button>
+          </div>
         </div>
       )}
       {activeTab === "source" && DERIVATIVE_TYPES.has(form.type) && (

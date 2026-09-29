@@ -1294,6 +1294,10 @@ dd { margin: 0; color: var(--ink); text-align: left; }
   border-radius: 3px;
 }
 
+.admin-characters-note {
+  margin: 0 0 16px;
+}
+
 .admin-table-empty {
   text-align: center;
   color: var(--ink-soft);
