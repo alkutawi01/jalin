@@ -66,7 +66,7 @@ async function main() {
     let attempts = 0;
     while (result.status !== "completed" && result.status !== "failed" && attempts < 60) {
       await new Promise((r) => setTimeout(r, 5000));
-      const polled = await adapter.pollVisualTask!(submission.taskId);
+      const polled = await adapter.pollVisualTask!(submission.taskId!);
       console.log(`  poll #${attempts}:`, polled.status);
       if (polled.status === "completed") {
         result = { ...submission, status: "completed", assetUrl: polled.assetUrl };
