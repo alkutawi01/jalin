@@ -46,6 +46,36 @@ export function isVercelRuntime(): boolean {
   return process.env.VERCEL === "1" || process.env.VERCEL === "true";
 }
 
+/** Vercel Blob (public store). Set by Vercel when a Blob store is connected to the project. */
+export function blobConfigured(): boolean {
+  return Boolean(process.env.BLOB_READ_WRITE_TOKEN?.trim());
+}
+
+async function putVercelBlob(
+  body: Buffer,
+  key: string,
+  contentType: string
+): Promise<{ ok: boolean; url?: string; error?: string }> {
+  try {
+    const { put } = await import("@vercel/blob");
+    const result = await put(key, body, {
+      access: "public",
+      contentType,
+      addRandomSuffix: false,
+      allowOverwrite: false,
+      token: process.env.BLOB_READ_WRITE_TOKEN
+    });
+    return { ok: true, url: result.url };
+  } catch (error) {
+    return { ok: false, error: error instanceof Error ? error.message : "Vercel Blob upload failed." };
+  }
+}
+
+/** Any durable store: Vercel Blob or S3-compatible object storage. */
+export function durableStorageConfigured(): boolean {
+  return blobConfigured() || objectStorageConfigured();
+}
+
 export function objectStorageConfigured(): boolean {
   const endpoint = process.env.OBJECT_STORAGE_ENDPOINT?.trim();
   const bucket = process.env.OBJECT_STORAGE_BUCKET?.trim();
@@ -273,6 +303,17 @@ async function persistAssetBytes(
   const contentHash = crypto.createHash("sha256").update(buffer).digest("hex");
   const version = options.version ?? 1;
   const key = buildImmutableObjectKey(visualRequestId, ext, version, contentHash);
+
+  // Vercel Blob first (simplest on Vercel), then S3-compatible storage.
+  if (blobConfigured()) {
+    const blob = await putVercelBlob(buffer, key, mimeType);
+    if (blob.ok && blob.url) {
+      return { stableAssetPath: blob.url, finalized: true, providerAssetUrl, backend: "object_storage" };
+    }
+    if (isVercelRuntime()) {
+      return { stableAssetPath: null, finalized: false, providerAssetUrl, backend: "none" };
+    }
+  }
 
   // Preferred durable path: object storage → canonical = durable object URL
   if (objectStorageConfigured()) {
