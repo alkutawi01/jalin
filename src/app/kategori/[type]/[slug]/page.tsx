@@ -12,10 +12,10 @@ import {
   StoryHead
 } from "../../../../components/reader/StoryChrome";
 import StoryMarkdown from "../../../../components/reader/StoryMarkdown";
+import { WorkCover } from "../../../../components/reader/WorkCover";
 import MobileStoryInfo from "../../../../components/reader/MobileStoryInfo";
 import { initContentRepository } from "../../../../lib/content";
 import { getWorkBySlug, getWorksByType } from "../../../../lib/content/workLoader";
-import { buildSourceAttribution } from "../../../../lib/content/source-attribution";
 import {
   projectBylineCredits,
   projectEditorialCredits
@@ -134,21 +134,25 @@ async function getWorksByTypeUnified(type: WorkType) {
 
 function buildMetaRows(work: Awaited<ReturnType<typeof getWork>>): WorkMetaRow[] {
   if (!work) return [];
-  const attribution = buildSourceAttribution(work);
   const genre = displayableGenre(work.genre);
   return [
     { label: "Bentuk", value: TYPE_LABELS[work.type] ?? work.type },
     ...(genre ? [{ label: "Genre", value: genre }] : []),
     { label: "Bacaan", value: work.readingMinutes ? `± ${work.readingMinutes} min` : "—" },
-    ...(attribution.sumberAsal
-      ? [{ label: "Sumber asal", value: attribution.sumberAsal }]
-      : []),
     ...(work.sourceWork?.language
       ? [{ label: "Bahasa asal", value: work.sourceWork.language }]
       : []),
-    { label: "Status", value: attribution.status },
     ...(work.version ? [{ label: "Versi", value: work.version }] : [])
   ];
+}
+
+const MALAY_LANGUAGE_NAMES = new Set(["melayu", "malay", "bahasa melayu"]);
+
+function originalTitleOf(work: { sourceWork?: { title?: string; language?: string } }): string | undefined {
+  const source = work.sourceWork;
+  if (!source?.title || !source.language) return undefined;
+  if (MALAY_LANGUAGE_NAMES.has(source.language.trim().toLowerCase())) return undefined;
+  return source.title;
 }
 
 function SectionNav({
@@ -231,20 +235,19 @@ function SectionIndexDetails({
   );
 }
 
-function SourceAttributionStrip({ sourceLine, status }: { sourceLine: string; status: string }) {
-  return (
-    <div className="site-shell source-attribution-strip">
-      <span>Sumber: {sourceLine}</span>
-      <span className="source-attribution-status">{status}</span>
-    </div>
-  );
-}
-
 function RelatedWorks({
   works,
   typeLabel
 }: {
-  works: { slug: string; type: string; title: string; dek?: string; readingMinutes?: number }[];
+  works: {
+    slug: string;
+    type: string;
+    title: string;
+    dek?: string;
+    readingMinutes?: number;
+    hero?: { src: string; alt: string };
+    year: string;
+  }[];
   typeLabel: string;
 }) {
   if (works.length === 0) return null;
@@ -262,9 +265,14 @@ function RelatedWorks({
               className="related-work-card"
               href={`/kategori/${related.type}/${related.slug}`}
             >
-              <h3>{related.title}</h3>
-              {related.dek ? <p>{related.dek}</p> : null}
-              {related.readingMinutes ? <span>± {related.readingMinutes} min</span> : null}
+              <div className="related-work-cover">
+                <WorkCover type={related.type} title={related.title} hero={related.hero} rightsYear={related.year} />
+              </div>
+              <div className="related-work-body">
+                <h3>{related.title}</h3>
+                {related.dek ? <p>{related.dek}</p> : null}
+                {related.readingMinutes ? <span>± {related.readingMinutes} min</span> : null}
+              </div>
             </a>
           ))}
         </div>
@@ -300,9 +308,9 @@ export default async function WorkPage({
     role
   }));
   const editorial = projectEditorialCredits(work.credits);
-  const attribution = buildSourceAttribution(work);
+  const originalTitle = originalTitleOf(work);
 
-  const rights = `${work.title.toUpperCase()} · © ADJUNG ${(work.publishedAt ?? "2026").slice(0, 4)} · ILUSTRASI JALIN`;
+  const rights = `© ADJUNG ${(work.publishedAt ?? "2026").slice(0, 4)}`;
   const hero = work.visuals.find((visual) => visual.role === "hero");
   const inlineVisuals = work.visuals.filter((visual) => visual.anchor);
 
@@ -347,13 +355,18 @@ export default async function WorkPage({
       return bDate.localeCompare(aDate);
     })
     .slice(0, 3)
-    .map((w) => ({
-      slug: w.slug,
-      type: w.type,
-      title: w.title,
-      dek: w.dek,
-      readingMinutes: w.readingMinutes
-    }));
+    .map((w) => {
+      const hero = w.visuals.find((visual) => visual.role === "hero");
+      return {
+        slug: w.slug,
+        type: w.type,
+        title: w.title,
+        dek: w.dek,
+        readingMinutes: w.readingMinutes,
+        hero: hero ? { src: hero.src, alt: hero.alt } : undefined,
+        year: (w.updatedAt ?? w.publishedAt ?? "2026").slice(0, 4)
+      };
+    });
 
   const mobileInfo: StoryInfoData = {
     work: workMeta,
@@ -384,11 +397,8 @@ export default async function WorkPage({
           title={work.title}
           dek={work.dek ?? ""}
           byline={byline}
+          originalTitle={originalTitle}
         />
-
-        {attribution.sumberAsal ? (
-          <SourceAttributionStrip sourceLine={attribution.sumberAsal} status={attribution.status} />
-        ) : null}
 
         <div className="site-shell">
           <EditorialImage

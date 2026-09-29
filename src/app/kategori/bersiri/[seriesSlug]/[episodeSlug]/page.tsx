@@ -181,7 +181,7 @@ export default async function EpisodePage({
     note: work.reader?.note ?? "Penulis Maya bekerja di bawah kawal selia editorial manusia."
   };
 
-  const rights = `${work.title.toUpperCase()} · © ADJUNG ${(work.publishedAt ?? "2026").slice(0, 4)} · ILUSTRASI JALIN`;
+  const rights = `© ADJUNG ${(work.publishedAt ?? "2026").slice(0, 4)}`;
   const hero = work.visuals.find((visual) => visual.role === "hero");
   const inlineVisuals = work.visuals.filter((visual) => visual.anchor);
 

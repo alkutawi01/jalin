@@ -15,8 +15,17 @@ credits:
   - contributor: "guest:Naguib Mahfouz"
     role: author
     byline: false
+  - contributor: nara-zahin
+    role: initial_draft
+    byline: true
+  - contributor: rafiq-naim
+    role: story_editor
+    byline: true
+  - contributor: izzat-anas
+    role: final_editor
+    byline: false
 sourceWork:
-  title: "Before the Throne"
+  title: "Amam al-'Arsh"
   author: "Naguib Mahfouz"
   language: "Arab"
   rightsStatus: "needs_review"

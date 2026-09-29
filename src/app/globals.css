@@ -93,6 +93,12 @@ nav a.active { color: var(--ink); border-bottom: 1px solid var(--clay); padding-
   font-weight: 500;
   letter-spacing: -.04em;
 }
+.story-original-title {
+  margin: -12px 0 20px;
+  color: var(--ink-soft);
+  font-size: 17px;
+  font-style: italic;
+}
 .dek {
   max-width: 600px;
   margin: 0 auto;
@@ -973,24 +979,22 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 }
 .image-rights {
   position: absolute;
-  top: 14px;
-  right: 12px;
-  bottom: 14px;
+  z-index: 2;
+  right: 10px;
+  bottom: 10px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 0;
-  background: transparent;
+  padding: 3px 7px;
+  background: rgba(0,0,0,.4);
+  border-radius: 4px;
   color: rgba(255,255,255,.92);
   font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  font-size: 8px;
+  font-size: 9px;
   font-weight: 600;
-  letter-spacing: .14em;
+  letter-spacing: .08em;
   text-transform: uppercase;
-  writing-mode: vertical-rl;
-  transform: rotate(180deg);
-  text-shadow: 0 1px 3px rgba(0,0,0,.85), 0 0 6px rgba(0,0,0,.45);
-  -webkit-text-stroke: .2px rgba(0,0,0,.55);
+  white-space: nowrap;
+  line-height: 1;
   pointer-events: none;
 }
 
@@ -1139,10 +1143,10 @@ dd { margin: 0; color: var(--ink); text-align: left; }
   }
 
   .image-rights {
-    top: 9px;
-    right: 7px;
-    bottom: 9px;
-    font-size: 7px;
+    right: 6px;
+    bottom: 6px;
+    padding: 2px 6px;
+    font-size: 8px;
   }
 }
 
@@ -1755,6 +1759,12 @@ dd { margin: 0; color: var(--ink); text-align: left; }
   border: 1px solid #badbcc;
 }
 
+.admin-alert-warning {
+  background: #fff3cd;
+  color: #664d03;
+  border: 1px solid #ffecb5;
+}
+
 /* ── Admin Loading ── */
 .admin-loading {
   text-align: center;
@@ -2048,26 +2058,6 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 .hero-figure img, .inline-figure img, .hero-featured-visual img { width: 100%; height: auto; object-fit: cover; }
 @media (max-width: 680px) { .category-head h1 { font-size: clamp(34px, 11vw, 44px); } .story-head h1 { font-size: clamp(38px, 12vw, 52px); } .category-explorer-card { min-width: 0; padding: 22px 16px; } }
 
-/* ── Source attribution strip (sinopsis/fragmen/terjemahan) ── */
-.source-attribution-strip {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 14px;
-  align-items: baseline;
-  margin: -8px 0 32px;
-  font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  font-size: 13px;
-  color: var(--ink-soft);
-}
-.source-attribution-status {
-  padding: 2px 9px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  font-size: 11px;
-  letter-spacing: .04em;
-  text-transform: uppercase;
-}
-
 /* ── Related works ("Selepas ini") after a story ends ── */
 .related-works {
   padding: 56px 0 72px;
@@ -2079,13 +2069,25 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 }
 .related-work-card {
   display: block;
-  padding: 20px 22px 22px;
   border: 1px solid var(--line);
-  transition: border-color .18s ease, box-shadow .18s ease;
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--white);
+  transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
 }
 .related-work-card:hover {
   border-color: var(--clay);
   box-shadow: 0 6px 24px rgba(24,52,60,.1);
+  transform: translateY(-2px);
+}
+.related-work-cover {
+  aspect-ratio: 16 / 10;
+}
+.related-work-cover .work-cover {
+  border-radius: 0;
+}
+.related-work-body {
+  padding: 18px 20px 20px;
 }
 .related-work-card h3 {
   margin: 0 0 8px;

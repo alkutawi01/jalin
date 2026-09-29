@@ -26,17 +26,20 @@ export function StoryHead({
   kicker,
   title,
   dek,
-  byline
+  byline,
+  originalTitle
 }: {
   kicker: string;
   title: string;
   dek: string;
   byline: BylineCredit[];
+  originalTitle?: string;
 }) {
   return (
     <div className="site-shell story-head">
       <div className="story-kicker">{kicker}</div>
       <h1>{title}</h1>
+      {originalTitle ? <p className="story-original-title">{originalTitle}</p> : null}
       <p className="dek">{dek}</p>
       {byline.length > 0 && (
         <div className="byline">

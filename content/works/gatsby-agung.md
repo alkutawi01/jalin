@@ -15,6 +15,15 @@ credits:
   - contributor: "guest:F. Scott Fitzgerald"
     role: author
     byline: false
+  - contributor: nara-zahin
+    role: initial_draft
+    byline: true
+  - contributor: rafiq-naim
+    role: story_editor
+    byline: true
+  - contributor: izzat-anas
+    role: final_editor
+    byline: false
 sourceWork:
   title: "The Great Gatsby"
   author: "F. Scott Fitzgerald"
