@@ -125,7 +125,7 @@ const ANSWER_FENCED = "Berikut hasilnya:\n```json\n" + JSON.stringify(JSON_BODY,
 // ── validation ────────────────────────────────────────────────
 {
   const bersiri = readParserAnswer(JSON.stringify({ ...JSON_BODY, type: "bersiri" }));
-  assert(bersiri.data === null && bersiri.errors.some((e) => e.code === "type_bersiri"), "bersiri is rejected with a pointer to /admin/series");
+  assert(bersiri.data !== null && bersiri.data.type === "bersiri", "bersiri is accepted as a type");
   const noTitle = readParserAnswer(JSON.stringify({ ...JSON_BODY, title: "tidak dinyatakan" }));
   assert(noTitle.errors.some((e) => e.code === "title_missing"), "'tidak dinyatakan' title is a missing title");
   const noSections = readParserAnswer(JSON.stringify({ ...JSON_BODY, sections: [] }));
@@ -192,7 +192,7 @@ const ANSWER_FENCED = "Berikut hasilnya:\n```json\n" + JSON.stringify(JSON_BODY,
   const plan = result.plan!;
   assert(plan.work.status === "draft", "plan is always a draft");
   assert(plan.work.body === "" && plan.sections.length === 3, "novela keeps works.body empty and stores chapters as sections");
-  assert(plan.credits.length === 0 && result.warnings.some((w) => w.code === "author_unknown"), "unknown author: no credit, and a warning");
+  assert(plan.credits.length === 0 && result.warnings.some((w) => w.code === "byline_missing"), "unknown author: no credit, and a warning");
   assert(plan.glossary.length === 1 && plan.glossary[0]!.term === "audit", "glossary keeps only real terms (drops names and terms absent from the text)");
   assert(result.warnings.some((w) => w.code === "glossary_term_is_name"), "name-as-glossary-term is reported");
   assert(result.warnings.some((w) => w.code === "glossary_term_not_in_text"), "term missing from the text is reported");

@@ -58,7 +58,7 @@ export default async function AdminDashboard() {
   return (
     <div className="admin-dashboard">
       <header className="admin-page-header">
-        <h1>Dashboard</h1>
+        <h1>Papan Pemuka</h1>
         <p className="admin-page-sub">Jalin Admin Console</p>
       </header>
 
@@ -86,27 +86,27 @@ export default async function AdminDashboard() {
       </div>
 
       <section className="admin-section">
-        <h2>Navigasi Admin</h2>
+        <h2>Pintasan</h2>
         <div className="admin-nav-grid">
+          <a href="/admin/works/add" className="admin-nav-card">
+            <h3>+ Tambah Karya</h3>
+            <p>Cerpen, novela, bersiri, fragmen atau sinopsis — dengan bantuan chatbot</p>
+          </a>
           <a href="/admin/works" className="admin-nav-card">
             <h3>Karya</h3>
-            <p>Urus karya sastera — metadata, status, kredit</p>
+            <p>Senarai karya, semakan, penerbitan dan gambar</p>
+          </a>
+          <a href="/admin/works?status=review" className="admin-nav-card">
+            <h3>Menunggu semakan</h3>
+            <p>Karya yang menunggu keputusan editor</p>
           </a>
           <a href="/admin/contributors" className="admin-nav-card">
-            <h3>Penyumbang</h3>
-            <p>Urus penyumbang — penulis, editor, penyemak</p>
+            <h3>Editorial</h3>
+            <p>Penyumbang: penulis, editor, penyemak</p>
           </a>
-          <a href="/admin/submissions" className="admin-nav-card">
-            <h3>Submissions</h3>
-            <p>Urus submission karya — semakan, kelulusan</p>
-          </a>
-          <a href="/admin/prompts" className="admin-nav-card">
-            <h3>Prompt Templates</h3>
-            <p>Urus template prompt editorial</p>
-          </a>
-          <a href="/admin/visual-requests" className="admin-nav-card">
-            <h3>Visual Requests</h3>
-            <p>Urus permintaan visual — Magnific pipeline</p>
+          <a href="/admin/settings" className="admin-nav-card">
+            <h3>Tetapan</h3>
+            <p>Arahan AI dan status sistem</p>
           </a>
         </div>
       </section>

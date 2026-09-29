@@ -73,7 +73,7 @@ export async function importPlanAsDraft(
           {
             version: "v0.1",
             type: "initial",
-            summary: "Draf awal diimport daripada Master Parser v3",
+            summary: "Draf awal disediakan melalui Tambah Karya",
             date: now
           }
         ]),
@@ -172,6 +172,49 @@ export async function importPlanAsDraft(
         finalPrompt: visual.finalPrompt,
         altText: visual.altText
       });
+    }
+
+    if (plan.series) {
+      let seriesId: string;
+      if (plan.series.kind === "baharu") {
+        const slugClash = await trx.selectFrom("series").where("slug", "=", plan.series.slug).select("id").executeTakeFirst();
+        if (slugClash) throw new Error(`Slug siri "${plan.series.slug}" sudah wujud. Pilih "sambung siri sedia ada".`);
+        seriesId = `SER-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+        await trx
+          .insertInto("series")
+          .values({
+            id: seriesId,
+            slug: plan.series.slug,
+            title: plan.series.title,
+            dek: plan.series.dek,
+            genre: plan.work.genre,
+            audience: plan.work.audience,
+            mode: plan.series.mode,
+            status: "ongoing",
+            created_at: now,
+            updated_at: now
+          })
+          .execute();
+      } else {
+        const existing = await trx.selectFrom("series").where("id", "=", plan.series.seriesId).select("id").executeTakeFirst();
+        if (!existing) throw new Error("Siri yang dipilih tidak ditemui.");
+        seriesId = existing.id;
+      }
+      const last = await trx
+        .selectFrom("series_entries")
+        .where("series_id", "=", seriesId)
+        .select((eb) => eb.fn.max("position").as("max"))
+        .executeTakeFirst();
+      await trx
+        .insertInto("series_entries")
+        .values({
+          series_id: seriesId,
+          work_id: id,
+          position: Number(last?.max ?? 0) + 1,
+          created_at: now,
+          updated_at: now
+        })
+        .execute();
     }
 
     return { workId: id, visualRequests };

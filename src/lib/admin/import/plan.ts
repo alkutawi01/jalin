@@ -1,7 +1,7 @@
 /**
- * Builds an ImportPlan from a chatbot answer + the manuscript. Pure: no
- * database access. The plan is what a dry-run shows and what the
- * transactional writer (import-service.ts) persists as a DRAFT.
+ * Builds an ImportPlan from a chatbot answer (+ the manuscript for "data"
+ * mode). Pure: no database access. The plan is what a preview shows and what
+ * the transactional writer (import-service.ts) persists as a DRAFT.
  */
 
 import { composeVisualPrompt } from "../visual-generation/prompt-composer";
@@ -9,6 +9,7 @@ import {
   prepareSingleBody,
   resolveAnchor,
   splitIntoSections,
+  toParagraphs,
   type SplitSection
 } from "./manuscript";
 import {
@@ -17,7 +18,7 @@ import {
   type ImportIssue,
   type ParsedSource
 } from "./parser-output";
-import { countWords, estimateReadingMinutes, foldText } from "./text-utils";
+import { countWords, estimateReadingMinutes, foldText, slugify } from "./text-utils";
 
 export interface PlannedCredit {
   guestName: string;
@@ -42,6 +43,10 @@ export interface PlannedVisual {
   faceTreatment: string | null;
 }
 
+export type PlannedSeries =
+  | { kind: "baharu"; title: string; slug: string; mode: "continuous" | "anthology"; dek: string | null }
+  | { kind: "sambung"; seriesId: string };
+
 export interface ImportPlan {
   work: {
     title: string;
@@ -59,6 +64,7 @@ export interface ImportPlan {
   glossary: { term: string; meaning: string; source: string; sortOrder: number }[];
   sections: { slug: string; title: string; position: number; body: string; words: number }[];
   source: ParsedSource | null;
+  series: PlannedSeries | null;
   visuals: PlannedVisual[];
   stats: {
     manuscriptWords: number;
@@ -76,35 +82,67 @@ export interface ImportResult {
   errors: ImportIssue[];
   warnings: ImportIssue[];
   plan: ImportPlan | null;
-  /** The chatbot's Editor Report (text after the JSON), shown to the editor. */
+  /** Text the chatbot added after its data (old JSON format only). */
   report: string;
 }
 
 export interface ImportOptions {
+  /** "data": the editor's manuscript is the text. "tulis": the chatbot wrote the text ([KANDUNGAN]). */
+  mode?: "data" | "tulis";
+  /** Values the editor typed over the chatbot's suggestions. */
+  overrides?: { title?: string; slug?: string; dek?: string; genre?: string };
+  /** Kept for the older import page. Same as overrides.slug. */
   slugOverride?: string;
+  /** Real person to credit as the writer (public byline). */
+  writerName?: string;
+  /** bersiri only. "baharu" uses the chatbot's [SIRI] (or the overrides); "sambung" joins an existing series. */
+  series?:
+    | { kind: "baharu"; title?: string; mode?: "continuous" | "anthology"; dek?: string }
+    | { kind: "sambung"; seriesId: string };
+}
+
+function present(value: string | undefined | null): string | undefined {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : undefined;
 }
 
 export function buildImportPlan(answer: string, manuscript: string, options: ImportOptions = {}): ImportResult {
+  const mode = options.mode ?? "data";
   const parsed = readParserAnswer(answer);
   const errors: ImportIssue[] = [...parsed.errors];
   const warnings: ImportIssue[] = [...parsed.warnings];
 
-  if (!manuscript.trim()) {
+  if (mode === "data" && !manuscript.trim()) {
     errors.push({ code: "manuscript_missing", message: "Manuskrip belum ditampal." });
   }
-  if (!parsed.data || !manuscript.trim()) {
+  if (!parsed.data || errors.length > 0) {
     return { ok: false, errors, warnings, plan: null, report: parsed.report };
   }
 
-  const data = parsed.data;
-  const slug = options.slugOverride?.trim() ? options.slugOverride.trim() : data.slug;
+  const data = { ...parsed.data };
+  const overrides = options.overrides ?? {};
+  data.title = present(overrides.title) ?? data.title;
+  data.dek = present(overrides.dek) ?? data.dek;
+  data.genre = present(overrides.genre) ?? data.genre;
+  const slug = present(overrides.slug) ?? present(options.slugOverride) ?? (present(overrides.title) ? slugify(data.title) : data.slug);
 
   let bodyForWork = "";
   let sections: SplitSection[] = [];
   let storedWords = 0;
-  const manuscriptWords = countWords(manuscript);
+  let manuscriptWords = countWords(manuscript);
 
-  if (data.type === "novela") {
+  if (mode === "tulis") {
+    if (!data.content) {
+      errors.push({
+        code: "content_missing",
+        message: "Chatbot tidak menyertakan bahagian [KANDUNGAN] (teks karya). Minta chatbot menjana semula mengikut format."
+      });
+      return { ok: false, errors, warnings, plan: null, report: parsed.report };
+    }
+    bodyForWork = toParagraphs(data.content);
+    storedWords = countWords(bodyForWork);
+    manuscriptWords = storedWords;
+  } else if (data.type === "novela") {
     const split = splitIntoSections(manuscript, data.sections);
     errors.push(...split.errors);
     warnings.push(...split.warnings);
@@ -142,25 +180,28 @@ export function buildImportPlan(answer: string, manuscript: string, options: Imp
     });
   }
 
-  const bodies = data.type === "novela"
+  const bodies = data.type === "novela" && mode === "data"
     ? sections.map((s) => ({ slug: s.slug, body: s.body }))
     : [{ slug: "", body: bodyForWork }];
 
   const sectionSlugs = new Set(sections.map((s) => s.slug));
 
+  // Credits: the original author (sinopsis/fragmen) is labelled "Pengarang asal" and stays out of
+  // the byline. The person who wrote the Jalin text is credited as "Penulis" with a public byline.
   const credits: PlannedCredit[] = [];
-  if (data.authorName) {
-    credits.push({
-      guestName: data.authorName,
-      roleLabel: data.authorCredit ?? "author",
-      byline: false,
-      isPublic: true,
-      sortOrder: 1
-    });
-  } else {
+  const isDerivative = data.type === "sinopsis" || data.type === "fragmen";
+  const sourceAuthor = present(data.source?.author);
+  if (isDerivative && sourceAuthor) {
+    credits.push({ guestName: sourceAuthor, roleLabel: "author", byline: false, isPublic: true, sortOrder: credits.length + 1 });
+  }
+  const writer = present(options.writerName) ?? (mode === "data" ? present(data.authorName) : undefined);
+  if (writer && !(isDerivative && sourceAuthor && foldText(writer) === foldText(sourceAuthor))) {
+    credits.push({ guestName: writer, roleLabel: "initial_draft", byline: true, isPublic: true, sortOrder: credits.length + 1 });
+  }
+  if (!credits.some((c) => c.byline)) {
     warnings.push({
-      code: "author_unknown",
-      message: "Nama penulis tidak dinyatakan. Tambah kredit (penulis/penyunting) di tab Kredit; gate penerbitan menuntut sekurang-kurangnya satu kredit dan satu byline awam."
+      code: "byline_missing",
+      message: "Belum ada penulis dikreditkan. Isi nama penulis sebenar (kredit awam) sebelum terbit; gate penerbitan menuntut sekurang-kurangnya satu byline."
     });
   }
 
@@ -213,8 +254,8 @@ export function buildImportPlan(answer: string, manuscript: string, options: Imp
 
   const visuals: PlannedVisual[] = [];
   const heroCount = data.visuals.filter((v) => v.role === "hero").length;
-  if (heroCount === 0 && (data.type === "cerpen" || data.type === "novela")) {
-    warnings.push({ code: "hero_missing", message: "Tiada cadangan visual hero; hero diwajibkan untuk terbit (cerpen/novela)." });
+  if (heroCount === 0 && (data.type === "cerpen" || data.type === "novela" || data.type === "bersiri")) {
+    warnings.push({ code: "hero_missing", message: "Tiada cadangan visual hero; hero diwajibkan untuk terbit." });
   }
   if (heroCount > 1) {
     warnings.push({ code: "hero_multiple", message: `${heroCount} visual hero dicadangkan; hanya satu boleh menjadi hero.` });
@@ -276,11 +317,35 @@ export function buildImportPlan(answer: string, manuscript: string, options: Imp
     });
   });
 
-  if (data.type === "fragmen" || data.type === "sinopsis") {
+  if (isDerivative) {
     warnings.push({
       code: "rights_review_required",
       message: "Status hak karya asal ditetapkan oleh editor manusia (tab Sumber) sebelum boleh terbit."
     });
+  }
+
+  let series: PlannedSeries | null = null;
+  if (data.type === "bersiri") {
+    const choice = options.series;
+    if (!choice) {
+      errors.push({ code: "series_choice_missing", message: "Pilih sama ada episod ini menyambung siri sedia ada atau memulakan siri baharu." });
+    } else if (choice.kind === "sambung") {
+      series = { kind: "sambung", seriesId: choice.seriesId };
+    } else {
+      const seriesTitle = present(choice.title) ?? data.series?.title;
+      if (!seriesTitle) {
+        errors.push({ code: "series_title_missing", message: "Tajuk siri diperlukan untuk siri baharu." });
+      } else {
+        series = {
+          kind: "baharu",
+          title: seriesTitle,
+          slug: slugify(seriesTitle),
+          mode: choice.mode ?? data.series?.mode ?? "continuous",
+          dek: present(choice.dek) ?? data.series?.dek ?? null
+        };
+      }
+    }
+    if (errors.length > 0) return { ok: false, errors, warnings, plan: null, report: parsed.report };
   }
 
   const plan: ImportPlan = {
@@ -300,6 +365,7 @@ export function buildImportPlan(answer: string, manuscript: string, options: Imp
     glossary,
     sections: sections.map((s) => ({ slug: s.slug, title: s.title, position: s.position, body: s.body, words: s.words })),
     source: data.source,
+    series,
     visuals,
     stats: {
       manuscriptWords,
