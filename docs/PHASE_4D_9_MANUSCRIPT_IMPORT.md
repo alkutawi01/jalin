@@ -2,7 +2,7 @@
 
 | | |
 | --- | --- |
-| **Status** | Separuh siap (lihat "Belum siap"). Belum di-commit. |
+| **Status** | Siap dan digabung (PR #28); ujian DB sebenar lulus pada cawangan Neon ujian. Baki di "Belum siap". |
 | **Tarikh** | 2026-09-29 |
 | **Sebab** | Ujian penerbitan novela "Sekuntum Bunga untuk Alia": editor manusia tampal manuskrip ke chatbot, chatbot sediakan semua maklumat (termasuk arahan gambar), sistem baca terus. Sebelum ini output parser disalin manual medan demi medan. |
 | **Berkaitan** | `docs/JALIN_MASTER_CONTENT_PARSER_PROMPT.md` (v3), `docs/JALIN_EDITOR_CHECKLIST.md`, `docs/VISUAL_GENERATION_GUARDRAILS.md` |
@@ -26,7 +26,9 @@
 
 ## Belum siap
 
-1. **Ujian hujung-ke-hujung dengan pangkalan data** (cipta draf sebenar → kredit → terbit). Perlu cawangan Neon ujian (seperti percubaan terdahulu); tempatan tiada `DATABASE_URL`. Laluan `importPlanAsDraft` belum dijalankan terhadap DB.
+1. ~~Ujian hujung-ke-hujung dengan pangkalan data~~ **Selesai 2026-09-29** pada cawangan Neon ujian (dipadam): import mencipta karya draf lengkap (10 bab, 7 watak, 2 glosari, 3 visual request); kredit, muat naik hero manual, luluskan dan pautkan berjaya. Penghalang terbit yang tinggal ialah status (keputusan editor) dan src sementara (storan tempatan).
 2. ~~Imej yang dibuat manual oleh editor tidak boleh dipautkan.~~ **Selesai 2026-09-29 atas arahan Izzat ("batalkan gate magnific").** `validateAttachGate` kini menerima sebarang provider yang direkod (Magnific masih perlu ID Magnific supaya tidak didakwa palsu; kelulusan manusia dan asset stabil kekal wajib). Ditambah `POST /api/admin/visual-requests/[id]/upload` (`manual-upload.ts`: sahkan jenis imej dengan magic bytes, PNG/JPEG/WebP ≤ 10 MB, simpan melalui `storeVisualAssetBytes`, direkod provider `manual` + nama alat, status `under_review`) dan kawalan muat naik pada halaman visual request. AGENTS #15 dan `VISUAL_GENERATION_GUARDRAILS.md` dipinda. Catatan: pada Vercel imej hanya disimpan jika `OBJECT_STORAGE_*` dikonfigurasi; dan gate terbit menganggap laluan `/assets/…` (storan tempatan dev) sebagai sementara.
 3. Sumber produksi masih Markdown (`docs/DATABASE_SOURCE_SWITCH.md`): karya yang dicipta dalam DB tidak muncul di laman awam sehingga `CONTENT_SOURCE=database`.
-4. Halaman ringkasan import belum menunjukkan butang salin pada halaman visual request sedia ada.
+4. ~~Butang salin arahan penuh pada halaman visual request~~ Selesai (komponen kongsi CopyButton).
+5. Skema staging: projek jalin-staging, cawangan production, tiada jadual; migrasi (db:schema:migrate) hanya dijalankan pada cawangan ujian.
+6. `__tests__/repository-detection.test.ts` memerlukan DATABASE_URL hidup dan novela terbit dalam DB; ia gagal tanpa DB (bukan regresi).
