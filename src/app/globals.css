@@ -2163,3 +2163,51 @@ dd { margin: 0; color: var(--ink); text-align: left; }
   color: #fff;
   font-size: 0.8rem;
 }
+
+/* Work page header: text beside a hero card (below the text on narrow screens) */
+.work-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr);
+  gap: 48px;
+  align-items: center;
+  padding-top: 48px;
+  padding-bottom: 40px;
+}
+.work-head-text.story-head {
+  max-width: none;
+  padding: 0;
+  text-align: left;
+}
+.work-head-text .story-head h1,
+.work-head-text h1 {
+  font-size: clamp(40px, 5vw, 68px);
+}
+.work-head-text .dek {
+  margin: 0;
+  max-width: 34em;
+}
+.work-head-text .byline {
+  justify-content: flex-start;
+}
+.work-head-visual {
+  position: relative;
+  margin: 0;
+  overflow: hidden;
+  border-radius: 18px;
+  background: #e8dfd2;
+  aspect-ratio: 4 / 3;
+  box-shadow: 0 24px 60px -24px rgba(24, 52, 60, .35);
+}
+.work-head-visual img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+@media (max-width: 900px) {
+  .work-head {
+    grid-template-columns: 1fr;
+    gap: 28px;
+    padding-top: 32px;
+    padding-bottom: 28px;
+  }
+}

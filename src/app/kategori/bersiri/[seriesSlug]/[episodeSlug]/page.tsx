@@ -213,16 +213,9 @@ export default async function EpisodePage({
           title={work.title}
           dek={work.dek ?? ""}
           byline={byline}
+          hero={hero?.src ? { src: hero.src, alt: hero.alt ?? "", rights } : undefined}
         />
 
-        <div className="site-shell">
-          <EditorialImage
-            kind="hero"
-            src={hero?.src ?? ""}
-            alt={hero?.alt ?? ""}
-            rights={rights}
-          />
-        </div>
 
         <EpisodeNav
           seriesSlug={series.slug}
