@@ -123,13 +123,11 @@ function CategoryCard({
   label,
   imageSrc,
   imageAlt,
-  imageYear,
 }: {
   type: string;
   label: string;
   imageSrc?: string | null;
   imageAlt?: string | null;
-  imageYear?: string | null;
 }) {
   const hasImage = !!imageSrc;
   return (
@@ -138,18 +136,13 @@ function CategoryCard({
       className={`category-explorer-card category-explorer-card--${type}${hasImage ? " category-explorer-card--photo" : ""}`}
     >
       {hasImage ? (
-        <>
-          <Image
-            src={imageSrc!}
-            alt={imageAlt ?? ""}
-            fill
-            sizes="(max-width: 1050px) 45vw, 22vw"
-            className="category-explorer-card-img"
-          />
-          {imageYear ? (
-            <div className="image-rights" aria-hidden="true">{`© ADJUNG ${imageYear}`}</div>
-          ) : null}
-        </>
+        <Image
+          src={imageSrc!}
+          alt={imageAlt ?? ""}
+          fill
+          sizes="(max-width: 1050px) 45vw, 22vw"
+          className="category-explorer-card-img"
+        />
       ) : null}
       <div className="category-explorer-card-scrim" />
       <div className="category-explorer-card-body">
@@ -266,7 +259,6 @@ export default async function Home() {
                     label={cat.label}
                     imageSrc={img?.src}
                     imageAlt={img?.alt}
-                    imageYear={img?.year}
                   />
                 );
               })}

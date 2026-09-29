@@ -27,16 +27,19 @@ export function StoryHead({
   title,
   dek,
   byline,
-  originalTitle
+  originalTitle,
+  hero
 }: {
   kicker: string;
   title: string;
   dek: string;
   byline: BylineCredit[];
   originalTitle?: string;
+  /** Hero image shown as a card beside the title (below it on narrow screens). */
+  hero?: { src: string; alt: string; rights: string };
 }) {
-  return (
-    <div className="site-shell story-head">
+  const text = (
+    <>
       <div className="story-kicker">{kicker}</div>
       <h1>{title}</h1>
       {originalTitle ? <p className="story-original-title">{originalTitle}</p> : null}
@@ -62,6 +65,20 @@ export function StoryHead({
           ))}
         </div>
       )}
+    </>
+  );
+
+  if (!hero?.src) {
+    return <div className="site-shell story-head">{text}</div>;
+  }
+
+  return (
+    <div className="site-shell work-head">
+      <div className="story-head work-head-text">{text}</div>
+      <figure className="work-head-visual editorial-image">
+        <Image src={hero.src} alt={hero.alt} fill sizes="(max-width: 900px) 100vw, 560px" priority />
+        <div className="image-rights" aria-hidden="true">{hero.rights}</div>
+      </figure>
     </div>
   );
 }
