@@ -1,0 +1,35 @@
+{
+  "type": "cerpen",
+  "title": "Nombor Giliran 117",
+  "slug": "nombor-giliran-117",
+  "dek": "Seorang ibu menunggu di hospital bersama anaknya yang kini dewasa, mengenang tahun-tahun ketika dialah yang tidak pernah berhenti menunggu demi anak itu.",
+  "genre": "keluarga",
+  "audience": "13-17",
+  "readingMinutes": 11,
+  "author": { "name": "tidak dinyatakan", "credit": "author" },
+  "characters": [
+    { "name": "Rohani", "role": "ibu, watak utama", "description": "Berniaga nasi lemak untuk membesarkan Danish selepas kematian suaminya, Azman; kini menunggu pemeriksaan lutut di hospital." },
+    { "name": "Danish", "role": "anak Rohani", "description": "Mengalami kehilangan pendengaran sensorineural sejak bayi; kini bekerja sebagai pereka antara muka dan menemani Rohani ke hospital." },
+    { "name": "Azman", "role": "suami Rohani, arwah", "description": "Pemandu lori yang meninggal dalam kemalangan semasa Danish masih kecil; dikenang melalui watak dan tabiat hariannya." }
+  ],
+  "locations": ["kedai/gerai nasi lemak di hadapan sekolah rendah", "hospital"],
+  "themes": ["pengorbanan ibu tunggal", "membesarkan anak kurang upaya pendengaran", "kematian dan kehilangan", "kitaran penjagaan yang berbalik (anak menjaga ibu)"],
+  "glossary": [
+    { "term": "kehilangan pendengaran sensorineural", "meaning": "kehilangan pendengaran yang berpunca daripada masalah pada telinga dalam atau laluan saraf pendengaran, seperti yang dijelaskan doktor kepada Rohani dan Azman." },
+    { "term": "alat bantu dengar", "meaning": "alat elektronik kecil yang membantu menguatkan bunyi untuk orang yang mengalami kehilangan pendengaran; digunakan oleh Danish." },
+    { "term": "bahasa isyarat", "meaning": "bahasa visual menggunakan gerakan tangan dan ekspresi untuk berkomunikasi; dipelajari Rohani pada waktu malam selepas berniaga." },
+    { "term": "pereka antara muka", "meaning": "orang yang mereka bentuk paparan dan cara pengguna berinteraksi dengan sesuatu produk digital; pekerjaan Danish apabila dewasa." }
+  ],
+  "sections": [],
+  "episodes": [],
+  "visualSuggestions": [
+    { "scene": "\"Nombor 117 terpampang di skrin LCD yang pudar... Rohani sudah menunggu di situ sambil menggenggam sekeping kertas kecil.\"", "reason": "Adegan pembuka yang menetapkan latar hospital dan watak Rohani sebagai orang yang menunggu; sesuai untuk visual hero." },
+    { "scene": "\"Danish duduk di hujung tilam... menanggalkan alat bantu dengar dari telinga kanan, kemudian kiri.\"", "reason": "Detik emosi yang menunjukkan tekanan Danish di sekolah tanpa memerlukan dialog panjang." }
+  ],
+  "editorialNotes": {
+    "factsToVerify": [
+      "Penulis manuskrip tidak dinyatakan dalam teks — editor perlu isi kredit sebenar (frontmatter terbitan menunjukkan Nara Zahin sebagai penulis draf awal, Rafiq Naim sebagai penyunting cerita)."
+    ],
+    "notes": "readingMinutes parser (2241 perkataan / 200 = 11.2, dibulatkan 11) padan tepat dengan nilai terbitan (11)."
+  }
+}

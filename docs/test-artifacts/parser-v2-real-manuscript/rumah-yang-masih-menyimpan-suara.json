@@ -1,0 +1,36 @@
+{
+  "type": "cerpen",
+  "title": "Rumah yang Masih Menyimpan Suara",
+  "slug": "rumah-yang-masih-menyimpan-suara",
+  "dek": "Seorang anak pulang ke rumah lama keluarganya untuk membantu adiknya mengemas selepas kematian ibu mereka, dan menemui bahawa sesetengah kenangan tidak pernah benar-benar pergi.",
+  "genre": "keluarga",
+  "audience": "13-17",
+  "readingMinutes": 10,
+  "author": { "name": "tidak dinyatakan", "credit": "author" },
+  "characters": [
+    { "name": "Aiman", "role": "anak sulung, pulang ke rumah lama keluarga", "description": "Enggan menjual rumah lama keluarganya; menyimpan ingatan tentang ibunya melalui benda-benda di rumah itu." },
+    { "name": "Farid", "role": "adik Aiman", "description": "Ingin menjual rumah kerana ia kosong dan sukar diurus; akhirnya bersetuju menangguhkan keputusan." },
+    { "name": "Mak Cik Salmah", "role": "jiran sebelah rumah", "description": "Datang meninjau dan berkongsi cerita tentang doa ibu Aiman dan Farid semasa hidup." }
+  ],
+  "locations": ["rumah lama keluarga Aiman dan Farid"],
+  "themes": ["kehilangan dan kenangan", "keputusan keluarga tentang harta pusaka", "solat dan doa ibu", "objek sebagai pembawa ingatan"],
+  "glossary": [
+    { "term": "beranda", "meaning": "Ruang terbuka atau beratap di hadapan rumah, tempat Mak selalu duduk pada waktu petang." },
+    { "term": "pusaka", "meaning": "Harta peninggalan yang diwarisi, dalam teks ini merujuk kepada rumah lama keluarga." },
+    { "term": "reda", "meaning": "Menerima sesuatu dengan lapang hati; digunakan untuk menggambarkan perasaan Aiman terhadap dua kehendak yang bercanggah." },
+    { "term": "kenangan", "meaning": "Sesuatu yang teringat atau tersimpan dalam ingatan, tema utama cerita ini." }
+  ],
+  "sections": [],
+  "episodes": [],
+  "visualSuggestions": [
+    { "scene": "\"Dan di atas meja kecil, ada sekeping kertas dengan tulisan tangan Mak.\" — bilik Mak, telekung dan sejadah tersusun, nota pendek \"Jangan lupa makan.\"", "reason": "Adegan emosi puncak cerita; objek peribadi ibu yang mendedahkan wataknya tanpa dialog." },
+    { "scene": "\"Sebelum mereka pulang, Aiman berdiri sekali lagi di beranda.\" — Aiman memandang halaman berdaun kering pada waktu Maghrib.", "reason": "Penutup visual yang menekankan tema kembali dan reda; sesuai sebagai hero atau visual penutup." }
+  ],
+  "editorialNotes": {
+    "factsToVerify": [
+      "Penulis manuskrip tidak dinyatakan dalam teks — editor perlu isi kredit sebenar (frontmatter terbitan menunjukkan ChatGPT & Mimo sebagai co_writer, izzat-anas sebagai final_editor).",
+      "Mak Cik Salmah muncul sebagai watak sampingan dalam teks tetapi tidak disenaraikan dalam metadata.characters terbitan — editor perlu putuskan sama ada dikekalkan."
+    ],
+    "notes": "Watak 'Mak' (ibu) hanya hadir melalui ingatan dan objek peninggalan, bukan watak aktif dalam adegan semasa; tidak disenaraikan berasingan dalam characters[] parser kerana tiada 'role' aktif dalam naratif semasa — nyatakan dalam Editor Report."
+  }
+}
