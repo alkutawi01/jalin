@@ -235,52 +235,80 @@ export async function storeVisualAsset(
     }
 
     const buffer = Buffer.from(await response.arrayBuffer());
-    const ext = extFromMime(mimeType);
-    const crypto = await import("node:crypto");
-    const contentHash = crypto.createHash("sha256").update(buffer).digest("hex");
-    const version = options.version ?? 1;
-    const key = buildImmutableObjectKey(visualRequestId, ext, version, contentHash);
-
-    // Preferred durable path: object storage → canonical = durable object URL
-    if (objectStorageConfigured()) {
-      const put = await putObjectStorage(buffer, key, mimeType);
-      if (put.ok && put.url) {
-        return {
-          stableAssetPath: put.url,
-          finalized: true,
-          providerAssetUrl,
-          backend: "object_storage",
-        };
-      }
-      // Object storage failed — do not fall back to ephemeral FS on Vercel.
-      if (isVercelRuntime()) {
-        return { stableAssetPath: null, finalized: false, providerAssetUrl, backend: "none" };
-      }
-    }
-
-    // Vercel runtime without working object storage: local FS is ephemeral.
-    if (isVercelRuntime()) {
-      return { stableAssetPath: null, finalized: false, providerAssetUrl, backend: "none" };
-    }
-
-    // Local development filesystem (not durable in production, OK in dev).
-    const fs = await import("fs/promises");
-    const path = await import("path");
-    const publicDir = path.join(process.cwd(), "public", "assets", "visuals");
-    await fs.mkdir(publicDir, { recursive: true });
-    const filename = key.split("/").pop() || `vr-${visualRequestId}.${ext}`;
-    const filePath = path.join(publicDir, filename);
-    await fs.writeFile(filePath, buffer);
-
-    return {
-      stableAssetPath: `/${key}`,
-      finalized: true,
-      providerAssetUrl,
-      backend: "local_fs",
-    };
+    return await persistAssetBytes(buffer, visualRequestId, mimeType, options, providerAssetUrl);
   } catch {
     return { stableAssetPath: null, finalized: false, providerAssetUrl, backend: "none" };
   } finally {
     _testFetchImpl = prevTestFetch;
   }
+}
+
+/**
+ * Persist image bytes supplied directly by an editor (manual upload) using
+ * the same durability rules as provider assets. `providerAssetUrl` in the
+ * result is "" because there is no provider.
+ */
+export async function storeVisualAssetBytes(
+  buffer: Buffer,
+  visualRequestId: number,
+  mimeType: string,
+  options: StoreVisualAssetOptions = {}
+): Promise<AssetStorageResult> {
+  try {
+    return await persistAssetBytes(buffer, visualRequestId, mimeType, options, "");
+  } catch {
+    return { stableAssetPath: null, finalized: false, providerAssetUrl: "", backend: "none" };
+  }
+}
+
+async function persistAssetBytes(
+  buffer: Buffer,
+  visualRequestId: number,
+  mimeType: string,
+  options: StoreVisualAssetOptions,
+  providerAssetUrl: string
+): Promise<AssetStorageResult> {
+  const ext = extFromMime(mimeType);
+  const crypto = await import("node:crypto");
+  const contentHash = crypto.createHash("sha256").update(buffer).digest("hex");
+  const version = options.version ?? 1;
+  const key = buildImmutableObjectKey(visualRequestId, ext, version, contentHash);
+
+  // Preferred durable path: object storage → canonical = durable object URL
+  if (objectStorageConfigured()) {
+    const put = await putObjectStorage(buffer, key, mimeType);
+    if (put.ok && put.url) {
+      return {
+        stableAssetPath: put.url,
+        finalized: true,
+        providerAssetUrl,
+        backend: "object_storage",
+      };
+    }
+    // Object storage failed — do not fall back to ephemeral FS on Vercel.
+    if (isVercelRuntime()) {
+      return { stableAssetPath: null, finalized: false, providerAssetUrl, backend: "none" };
+    }
+  }
+
+  // Vercel runtime without working object storage: local FS is ephemeral.
+  if (isVercelRuntime()) {
+    return { stableAssetPath: null, finalized: false, providerAssetUrl, backend: "none" };
+  }
+
+  // Local development filesystem (not durable in production, OK in dev).
+  const fs = await import("fs/promises");
+  const path = await import("path");
+  const publicDir = path.join(process.cwd(), "public", "assets", "visuals");
+  await fs.mkdir(publicDir, { recursive: true });
+  const filename = key.split("/").pop() || `vr-${visualRequestId}.${ext}`;
+  const filePath = path.join(publicDir, filename);
+  await fs.writeFile(filePath, buffer);
+
+  return {
+    stableAssetPath: `/${key}`,
+    finalized: true,
+    providerAssetUrl,
+    backend: "local_fs",
+  };
 }

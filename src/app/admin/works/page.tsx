@@ -54,9 +54,14 @@ export default async function AdminWorksPage() {
             <h1>Karya</h1>
             <p className="admin-page-sub">{works.length} karya dalam database</p>
           </div>
-          <a href="/admin/works/new" className="admin-btn admin-btn-primary">
-            + Karya Baharu
-          </a>
+          <div className="admin-page-header-actions">
+            <a href="/admin/works/import" className="admin-btn admin-btn-outline">
+              Import daripada Parser
+            </a>
+            <a href="/admin/works/new" className="admin-btn admin-btn-primary">
+              + Karya Baharu
+            </a>
+          </div>
         </div>
       </header>
 

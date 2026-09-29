@@ -164,6 +164,8 @@ export default function EditVisualRequestPage() {
   const [polling, setPolling] = useState(false);
   const [approving, setApproving] = useState(false);
   const [attaching, setAttaching] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadTool, setUploadTool] = useState("");
 
   useEffect(() => {
     async function loadRequest() {
@@ -337,6 +339,38 @@ export default function EditVisualRequestPage() {
       setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
     } finally {
       setApproving(false);
+    }
+  }
+
+  async function handleUpload(file: File) {
+    setUploading(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      const body = new FormData();
+      body.append("file", file);
+      if (uploadTool.trim()) body.append("tool", uploadTool.trim());
+      const res = await fetch(`/api/admin/visual-requests/${requestId}/upload`, { method: "POST", body });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Gagal memuat naik imej.");
+      setSuccess("Imej dimuat naik dan menunggu semakan. Semak imej, kemudian tekan Approve.");
+      const refreshed = await fetch(`/api/admin/visual-requests/${requestId}`);
+      if (refreshed.ok) {
+        const r: VisualRequestData = await refreshed.json();
+        setRecord(r);
+        setForm((prev) => ({
+          ...prev,
+          status: r.status,
+          approvalState: r.approval_state,
+          sourceAssetUrl: r.source_asset_url || "",
+          sourceAssetPath: r.source_asset_path || "",
+          model: r.model || "",
+        }));
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+    } finally {
+      setUploading(false);
     }
   }
 
@@ -587,6 +621,38 @@ export default function EditVisualRequestPage() {
               </button>
             )}
           </div>
+
+          {["draft", "failed", "generated", "under_review", "rejected"].includes(record.status) && (
+            <div style={{ marginTop: 16, paddingTop: 12, borderTop: "1px solid #ddd" }}>
+              <h3 style={{ margin: "0 0 8px", fontSize: 14, textTransform: "uppercase", opacity: 0.7 }}>
+                Atau muat naik imej sendiri
+              </h3>
+              <p style={{ margin: "0 0 8px", fontSize: 13, opacity: 0.8 }}>
+                Untuk imej yang dibuat di luar Magnific. Direkod sebagai sumber &quot;manual&quot;. Selepas dimuat naik anda masih perlu
+                menekan Approve, kemudian Attach. PNG/JPEG/WebP, maksimum 10 MB (disyorkan bawah 4 MB).
+              </p>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+                <input
+                  type="text"
+                  value={uploadTool}
+                  onChange={(e) => setUploadTool(e.target.value)}
+                  placeholder="Alat yang digunakan (cth. ChatGPT)"
+                  style={{ padding: "6px 10px", width: 240 }}
+                />
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  disabled={uploading}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) void handleUpload(file);
+                    e.target.value = "";
+                  }}
+                />
+                {uploading ? <span>Memuat naik...</span> : null}
+              </div>
+            </div>
+          )}
         </div>
       )}
 

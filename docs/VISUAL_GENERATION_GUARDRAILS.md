@@ -15,6 +15,8 @@ Jika tugasan atau arahan projek menetapkan **Magnific**, agent WAJIB menggunakan
 
 Pelanggaran provenance dianggap **factual/editorial failure**, bukan variasi kreatif kecil.
 
+**Pindaan 2026-09-29 (arahan manusia — Izzat, pemilik produk):** gate "Magnific sahaja" pada pautan visual ke karya dibatalkan. Peraturan di atas kekal untuk agent/AI yang menjana imej. Editor manusia boleh memuat naik imej yang dibuat dengan alat lain (`POST /api/admin/visual-requests/[id]/upload`); imej itu direkod sebagai provider `manual` dengan nama alat, mesti diluluskan manusia sebelum dipautkan (`validateAttachGate`), dan tidak pernah didakwa sebagai Magnific. Semua gate lain (muka, scene truth, anatomi, alt text, asset stabil) tidak berubah.
+
 ## 2. Faces — default Jalin fiction rule
 
 Untuk ilustrasi fiksyen Jalin, **muka manusia tidak dipaparkan dengan jelas secara default**.
