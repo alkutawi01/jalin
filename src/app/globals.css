@@ -339,10 +339,19 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 }
 .hero-featured-text-only {
   grid-template-columns: 1fr;
+  /* No visual column to balance, so don't force the same min-height as
+     the with-hero layout — that's what left a large empty gap below
+     the CTA when a featured work has no hero image. */
+  min-height: 0;
 }
 .hero-featured-text-only .hero-featured-text {
   max-width: 680px;
-  margin: 0 auto;
+  /* Left-align with the site container instead of centering: centering
+     put the title/dek/CTA out of step with Bacaan Ringkas, Karya
+     Terbaru and Jelajahi Kategori below, which all start at the same
+     left edge as .site-shell. */
+  margin: 0;
+  padding: 40px 0 48px;
 }
 
 /* ── Homepage: Latest Works ── */
