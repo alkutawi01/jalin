@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import WorkVisualUpload from "../../../../components/admin/WorkVisualUpload";
+import WorkImagesPanel from "../../../../components/admin/WorkImagesPanel";
 
 const WORK_TYPES = [
   { value: "cerpen", label: "Cerpen" },
@@ -1709,6 +1710,7 @@ export default function EditWorkPage() {
             </button>
           </div>
 
+          <WorkImagesPanel workId={workId} onChanged={loadVisuals} />
           <WorkVisualUpload workId={workId} onDone={loadVisuals} />
 
           {editingVisual && (
