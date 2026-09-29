@@ -20,6 +20,12 @@ sourceWork:
   author: "F. Scott Fitzgerald"
   language: "Inggeris"
   rightsStatus: "public_domain"
+visuals:
+  - role: hero
+    src: /visuals/gatsby-agung/hero.png
+    alt: "Siluet seorang lelaki di hujung jeti memandang cahaya hijau di seberang teluk, dengan rumah agung bercahaya di belakang."
+    provider: magnific
+    creationId: 80dc6d89-0e6f-40e0-b855-e2627e5579bf
 editorialHistory:
   - version: "v1.0"
     type: "initial"

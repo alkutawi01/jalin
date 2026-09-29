@@ -20,6 +20,12 @@ sourceWork:
   author: "Naguib Mahfouz"
   language: "Arab"
   rightsStatus: "needs_review"
+visuals:
+  - role: hero
+    src: /visuals/di-hadapan-singgahsana/hero.png
+    alt: "Dewan pengadilan Mesir purba dengan singgahsana kosong dan bayangan pemerintah menghadap dari kejauhan."
+    provider: magnific
+    creationId: 63c8568b-98fb-4e67-88b0-a4413e8497fc
 editorialHistory:
   - version: "v1.0"
     type: "initial"
