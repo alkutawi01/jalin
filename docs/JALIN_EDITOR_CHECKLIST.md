@@ -5,7 +5,7 @@
 | **Status** | Checklist operasi. Tiada kod diubah. |
 | **Tarikh** | 2026-09-29 |
 | **Skop** | Untuk 4 jenis karya (Cerpen, Novela, Fragmen, Sinopsis): langkah import manual, medan wajib, medan pilihan, gate sebelum publish, anggaran masa. |
-| **Kaedah** | Digabung drpd `JALIN_PRODUCTION_READINESS_AUDIT.md`, `JALIN_VISUAL_WORKFLOW_AUDIT.md`, `JALIN_CONTENT_MODEL_READINESS_AUDIT.md`, dan ujian hidup cerpen sebenar (2026-09-29). Bersiri **tiada** dalam senarai ini (tidak diminta) — lihat nota di hujung. |
+| **Kaedah** | Digabung drpd `JALIN_PRODUCTION_READINESS_AUDIT.md`, `JALIN_VISUAL_WORKFLOW_AUDIT.md`, `JALIN_CONTENT_MODEL_READINESS_AUDIT.md`, dan ujian hidup cerpen + novela sebenar (2026-09-29, Content Production Trial Batch 1). Bersiri **tiada** dalam senarai ini (tidak diminta) — lihat nota di hujung. |
 | **Berkaitan** | `docs/JALIN_MASTER_CONTENT_PARSER_PROMPT.md` (v2), fail-fail audit di atas |
 
 ## Cara guna checklist ini
@@ -54,24 +54,40 @@ kredit+watak: ~15 minit).
 
 ## 2. Novela
 
-**Anggaran masa total**: jauh lebih tinggi drpd cerpen — bergantung
-bilangan bab. Anggaran kasar: ~15–20 minit setup + **~10–15 minit
-per bab** (tampal body bab sebenar + slug/tajuk/position setiap satu).
-**Belum disahkan hidup** dlm pass ini (hanya semakan kod).
+**Anggaran masa total**: **disahkan hidup 2026-09-29** — "Sekuntum
+Bunga untuk Alia" (10 bab, ~10,048 patah perkataan): **~45 minit**
+end-to-end (10 bab + 8 watak + 3 glosari + 1 kredit). Kebanyakan masa
+ialah salin-tampal teks bab, bukan medan metadata — anggaran kasar
+~4 minit/bab purata untuk manuskrip sepanjang ini.
+
+### DAPATAN PENTING: `readingMinutes` tidak dikira drpd `reading_sections`
+
+Disahkan hidup 2026-09-29: `readingMinutes` auto-cadang pada
+`/admin/works/new` dikira **hanya drpd medan `body` karya**, BUKAN
+jumlah/anggaran drpd semua `reading_sections`. Kalau editor terus ke
+tab Bahagian tanpa isi `body` (atau isi placeholder pendek), nilai
+`readingMinutes` akan tersalah rendah (cth. "1 minit" utk novela
+50-minit) dan MESTI dibetulkan manual mengikut anggaran parser
+(jumlah perkataan kesemua bab ÷ 200). Ini bukan pepijat — sengaja
+kerana `body` dan `reading_sections` ialah dua sumber struktur
+berasingan (lihat Bahagian 2, Langkah 2) — tetapi editor perlu sedar
+supaya tidak terbitkan karya dgn anggaran masa bacaan yang salah.
 
 ### Langkah import manual
 
-1–6. Sama seperti Cerpen, TAMBAH:
+1. Jalankan parser → JSON + Editor Report.
+2. `/admin/works/new`: tampal `title`, `dek`, `genre`, pilih jenis Novela. Body boleh diisi ringkas/placeholder (lihat dapatan di atas) — **tapi kemudian betulkan `readingMinutes` manual** ikut jumlah perkataan sebenar semua bab. Simpan Draf.
+3–6. Sama seperti Cerpen (Kredit, Glosari, Visual), TAMBAH:
    - `characters[].firstAppearanceSection` turut direkod (medan tambahan pada tab Watak, khusus novela).
    - `glossary[].firstAppearanceSection` **tiada destinasi** (rekod di luar sistem buat masa ini — gap sedia diketahui).
-7. Tab **Bahagian** (reading_sections) — untuk SETIAP bab dlm `sections[]` parser: slug, tajuk, **tampal teks manuskrip SEBENAR bab itu** (parser TIDAK beri teks penuh, hanya `summary` rujukan editor — jangan salin `summary` sebagai body). Position mesti 1..N berturutan tanpa jurang.
+7. Tab **Bahagian** (reading_sections) — untuk SETIAP bab dlm `sections[]` parser: slug, tajuk, **tampal teks manuskrip SEBENAR bab itu** (parser TIDAK beri teks penuh, hanya `summary` rujukan editor — jangan salin `summary` sebagai body). Position mesti 1..N berturutan tanpa jurang — **disahkan hidup: sistem terima 10 bab berturutan tanpa isu**.
 8. Naikkan Status → `ready`.
 
 ### Medan wajib
 
 - Sama seperti Cerpen, TAMBAH:
 - Sekurang-kurangnya satu `reading_section` (atau `body` karya diisi terus, tapi sections diutamakan) dgn body, slug sah, position berturutan tanpa jurang/pendua.
-- Visual hero: **wajib** (sama polisi dgn cerpen).
+- Visual hero: **wajib** (sama polisi dgn cerpen) — **disahkan hidup: blocker sebenar sahaja yang tertinggal selepas kandungan+metadata lengkap, sama seperti cerpen**.
 
 ### Medan pilihan
 
