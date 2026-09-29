@@ -53,6 +53,7 @@ export interface WorkRecord {
   editor_pick_reason: string | null;
   published_at: Date | null;
   published_by: string | null;
+  metadata: Record<string, unknown> | null;
   updated_at: Date;
   created_at: Date;
 }
@@ -229,4 +230,90 @@ export async function updateWork(
  */
 export async function archiveWork(id: string): Promise<WorkRecord> {
   return updateWork(id, { status: "archived" });
+}
+
+/**
+ * Character metadata (Content Model Readiness audit,
+ * docs/JALIN_CONTENT_MODEL_READINESS_AUDIT.md).
+ *
+ * Deliberately minimal, per director instruction: name, role and an
+ * optional novela section reference only. No age/appearance/
+ * relationship/secret fields — those carry real spoiler risk and
+ * were explicitly excluded from this phase.
+ *
+ * Stored inside the existing works.metadata jsonb column (added by
+ * migration 018, previously write-only-via-SQL) under the
+ * "characters" key. No schema change: this is the first admin write
+ * path into that column, not a new column.
+ */
+export interface CharacterEntry {
+  name: string;
+  role: string;
+  /** Novela section slug (ReadingSection.slug) this character first
+   *  appears in. Optional/nullable for cerpen, fragmen, sinopsis and
+   *  bersiri, where progressive disclosure doesn't apply. Recorded
+   *  now; not yet consumed by the reader (see
+   *  docs/NOVELA_PROGRESSIVE_DISCLOSURE.md) — that filtering is
+   *  separate, unbuilt work. */
+  firstAppearanceSection?: string | null;
+}
+
+function validateCharacterEntries(characters: unknown): CharacterEntry[] {
+  if (!Array.isArray(characters)) {
+    throw new Error("characters mesti senarai (array).");
+  }
+
+  return characters.map((entry, index) => {
+    if (!entry || typeof entry !== "object") {
+      throw new Error(`Watak #${index + 1}: bentuk tidak sah.`);
+    }
+    const name = "name" in entry ? String((entry as { name: unknown }).name ?? "").trim() : "";
+    const role = "role" in entry ? String((entry as { role: unknown }).role ?? "").trim() : "";
+    if (!name) throw new Error(`Watak #${index + 1}: nama diperlukan.`);
+    if (!role) throw new Error(`Watak #${index + 1}: peranan diperlukan.`);
+
+    const rawSection =
+      "firstAppearanceSection" in entry
+        ? (entry as { firstAppearanceSection: unknown }).firstAppearanceSection
+        : undefined;
+    const firstAppearanceSection =
+      rawSection === undefined || rawSection === null || rawSection === ""
+        ? null
+        : String(rawSection).trim();
+
+    return { name, role, firstAppearanceSection };
+  });
+}
+
+/**
+ * Replace the full character list stored in works.metadata.characters.
+ * Read-modify-write on the metadata jsonb: other keys that may live in
+ * `metadata` later (this phase adds none) are preserved untouched.
+ */
+export async function updateWorkCharacters(
+  id: string,
+  characters: unknown
+): Promise<WorkRecord> {
+  const db = getAdminDb();
+
+  const existing = await getWork(id);
+  if (!existing) {
+    throw new Error("Work not found.");
+  }
+
+  const validated = validateCharacterEntries(characters);
+  const metadata = { ...(existing.metadata ?? {}), characters: validated };
+
+  await db
+    .updateTable("works")
+    .where("id", "=", id)
+    .set({ metadata, updated_at: new Date().toISOString() })
+    .execute();
+
+  const work = await getWork(id);
+  if (!work) {
+    throw new Error("Work not found after update.");
+  }
+
+  return work;
 }
