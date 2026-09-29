@@ -2,7 +2,7 @@
 
 | | |
 | --- | --- |
-| **Status** | Audit only. No code, schema or UI changed in this pass, per instruction. |
+| **Status** | Audit asal: tiada kod/skema/UI diubah. **Kemas kini 2026-09-29**: laluan tulis admin untuk `characters` kini SIAP — lihat nota di bawah. |
 | **Tarikh** | 2026-09-29 |
 | **Skop** | Untuk setiap medan yang dihasilkan Master Content Parser v2: adakah Jalin (DB schema + admin write path + reader) sudah ada destinasi, atau belum. |
 | **Berkaitan** | `docs/JALIN_MASTER_CONTENT_PARSER_PROMPT.md` (v2), `docs/JALIN_MASTER_PARSER_V2_REAL_MANUSCRIPT_TEST.md`, `docs/NOVELA_PROGRESSIVE_DISCLOSURE.md` |
@@ -29,34 +29,35 @@ ketinggalan zaman):
 | `visualSuggestions` → visuals | ✅ `visuals` (001, 008 `is_asset_finalized`) | ✅ tab Visual (manual attach) + `/admin/visual-requests` (Magnific) | ✅ | **Siap**, tapi *brief* parser (scene/reason) ≠ `src` sedia guna — subsistem penuh, bukan salin medan |
 | `sourceWork` (fragmen/sinopsis) | ✅ `source_works`/rujukan (011) | ✅ Karya → Sumber | ✅ | **Siap sepenuhnya** |
 | `sections`/`episodes` (novela/bersiri) | ✅ `sections`, siri (012) | ✅ tab Bahagian Novela, `/admin/series` | ✅ | **Siap sepenuhnya** |
-| **`characters`** (`name`, `role`) | ⚠️ **Separuh** — `works.metadata` jsonb wujud (018) tapi cuma untuk `characters`, TIADA validasi bentuk | ❌ **TIADA laluan tulis admin langsung** | ✅ dibaca (`RightRail`, `MobileStoryInfo`) *jika* wujud dalam DB | **Gap: laluan tulis** |
+| **`characters`** (`name`, `role`, `firstAppearanceSection`) | ✅ `works.metadata` jsonb (018), validasi bentuk kini ada (`work-service.ts`) | ✅ **SIAP** — tab "Watak" + `PATCH /api/admin/works/[id]/characters` (PR #19, 2026-09-29) | ✅ dibaca (`RightRail`, `MobileStoryInfo`) — **hanya `name`/`role` dipaparkan**; `firstAppearanceSection` sengaja TIDAK didedahkan kepada pembaca (arahan director) sehingga progressive disclosure novela dilaksanakan | **Admin workflow siap. Reader filtering (progressive disclosure) fasa berasingan, belum dibina.** |
 | **`locations`** | ❌ Tiada lajur/medan langsung — hanya boleh disorok dlm `works.metadata` jsonb bebas bentuk jika seseorang tulis SQL terus | ❌ Tiada | ❌ Tiada di `Work` type langsung | **Gap: skema + tulis + baca** |
 | **`themes`** | ❌ Sama seperti locations | ❌ Tiada | ❌ Tiada | **Gap: skema + tulis + baca** |
 | **`firstAppearanceSection`** (pada characters/locations/glossary, novela) | ❌ Tiada lajur di mana-mana jadual (`credits`, `glossary_terms`, atau `works.metadata`) | ❌ Tiada | ❌ Reader tidak menapis mengikutnya — direkodkan sebagai keputusan editorial belum dilaksanakan (`NOVELA_PROGRESSIVE_DISCLOSURE.md`) | **Gap: skema + tulis + baca** |
 
 ## Butiran per medan
 
-### `characters` — separuh siap, bukan kosong
+### `characters` — SIAP (laluan tulis admin), 2026-09-29
 
-- **Skema**: `works.metadata` (jsonb, nullable) sudah wujud sejak
-  migration `018_work_metadata_reader.ts`. Ia dibaca terus oleh
+- **Skema**: `works.metadata` (jsonb, nullable) wujud sejak migration
+  `018_work_metadata_reader.ts`. Ia dibaca terus oleh
   `database-repository.ts:73`
   (`parseJsonbField<{ characters?: CharacterMeta[] }>(row.metadata)`)
-  dan digunakan pembaca (`RightRail`, `MobileStoryInfo`) — **jika**
-  medan itu wujud dalam baris DB.
-- **Bentuk semasa**: `CharacterMeta = { name: string; role: string }`
-  sahaja (`src/lib/content/types.ts:54`). Tiada `description`, tiada
-  `firstAppearanceSection`.
-- **Laluan tulis admin**: `grep` terhadap `src/lib/admin/work-service.ts`
-  dan semua route `/api/admin/works/**` tidak menjumpai SATU rujukan
-  pun kepada `metadata` atau `reader`. Medan ini hanya boleh diisi
-  hari ini melalui SQL terus atau skrip seed (`db-seed.ts` validasi
-  sahaja, tidak sebenarnya insert) — **bukan** melalui mana-mana
-  borang admin.
-- **Kesimpulan**: skema TIDAK perlu diubah untuk `characters` asas
-  (`name`/`role`). Yang tiada ialah **UI + endpoint PATCH** untuk
-  admin tulis ke `works.metadata`. Ini kerja kod sederhana (satu tab
-  baharu + satu endpoint), bukan migration.
+  dan digunakan pembaca (`RightRail`, `MobileStoryInfo`).
+- **Laluan tulis admin (PR #19)**: `updateWorkCharacters()` di
+  `src/lib/admin/work-service.ts` — read-modify-write pada
+  `metadata`, validasi `name`/`role` wajib. Endpoint
+  `GET`/`PATCH /api/admin/works/[id]/characters`. Tab "Watak" pada
+  `src/app/admin/works/[id]/page.tsx` — tambah/edit/padam baris,
+  lajur `firstAppearanceSection` (opsyenal, hanya novela).
+  Disahkan hidup terhadap cawangan Neon ujian terpencil sebelum
+  merge.
+- **Sempadan sengaja (arahan director)**: `firstAppearanceSection`
+  direkodkan untuk kegunaan admin/editorial sahaja. `RightRail` dan
+  `MobileStoryInfo` **TIDAK** diubah dalam PR #19 — kekal papar
+  `name`/`role` sahaja. Penapisan pembaca mengikut
+  `firstAppearanceSection` (progressive disclosure novela) ialah
+  kerja berasingan yang belum dibina — lihat
+  `docs/NOVELA_PROGRESSIVE_DISCLOSURE.md`.
 
 ### `locations` dan `themes` — kosong sepenuhnya
 
