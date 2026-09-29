@@ -603,13 +603,25 @@ export default function EditWorkPage() {
 
     setCreditError(null);
 
+    // The read side (GET /api/admin/credits) returns DB column names
+    // (snake_case), which editingCredit is populated from. The write side
+    // (POST/PATCH) expects camelCase — translate here rather than sending
+    // editingCredit as-is, which the API silently rejects as missing.
+    const payload = {
+      contributorSlug: editingCredit.contributor_slug || undefined,
+      guestName: editingCredit.guest_name || undefined,
+      roleLabel: editingCredit.role_label,
+      byline: editingCredit.byline,
+      isPublic: editingCredit.is_public,
+    };
+
     try {
       if (editingCredit.id) {
         // Update existing credit
         const res = await fetch(`/api/admin/credits/${editingCredit.id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(editingCredit),
+          body: JSON.stringify(payload),
         });
 
         if (!res.ok) {
@@ -622,7 +634,7 @@ export default function EditWorkPage() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            ...editingCredit,
+            ...payload,
             workId,
             sortOrder: credits.length + 1,
           }),
@@ -665,13 +677,18 @@ export default function EditWorkPage() {
 
     setVisualError(null);
 
+    // Same read/write naming split as credits (see handleSaveCredit): the
+    // GET response and editingVisual use the DB column name creation_id,
+    // but the API expects creationId — translate it here.
+    const payload = { ...editingVisual, creationId: editingVisual.creation_id };
+
     try {
       if (editingVisual.id) {
         // Update existing visual
         const res = await fetch(`/api/admin/visuals/${editingVisual.id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(editingVisual),
+          body: JSON.stringify(payload),
         });
 
         if (!res.ok) {
@@ -684,7 +701,7 @@ export default function EditWorkPage() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            ...editingVisual,
+            ...payload,
             workId,
             sortOrder: visuals.length + 1,
           }),
