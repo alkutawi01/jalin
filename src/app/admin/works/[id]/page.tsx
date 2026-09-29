@@ -203,6 +203,7 @@ export default function EditWorkPage() {
   const [publishPreview, setPublishPreview] = useState<{
     isNew: boolean;
     currentExists: boolean;
+    slugCollision: boolean;
     metadataChanged: boolean;
     bodyChanged: boolean;
   } | null>(null);
@@ -941,6 +942,16 @@ export default function EditWorkPage() {
 
       {publishSuccess && (
         <div className="admin-alert admin-alert-success">{publishSuccess}</div>
+      )}
+
+      {publishPreview?.slugCollision && (
+        <div className="admin-alert admin-alert-error">
+          Alamat pautan (slug) &quot;{form.slug}&quot; sudah digunakan oleh
+          fail Markdown lain yang bukan kepunyaan karya ini. Menerbitkan
+          karya ini akan ditolak sehingga konflik slug diselesaikan
+          (tukar Alamat pautan, atau sahkan fail sedia ada bukan
+          diperlukan lagi).
+        </div>
       )}
 
       <section className="admin-publish-preview" aria-label="Publication Readiness">

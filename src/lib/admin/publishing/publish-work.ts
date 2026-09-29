@@ -6,6 +6,7 @@
 
 import fs from "node:fs";
 import path from "node:path";
+import matter from "gray-matter";
 import { serializeWork } from "./serialize-work";
 
 const CONTENT_DIR = path.join(process.cwd(), "content");
@@ -24,6 +25,14 @@ export interface PublishPreview {
   slug: string;
   isNew: boolean;
   currentExists: boolean;
+  /**
+   * True when a Markdown file already occupies this slug but its
+   * frontmatter `id` does NOT match this work's id — i.e. the slug is
+   * taken by an unrelated file, not by a prior publish of this same
+   * work. Surfaced explicitly rather than folded into currentExists so
+   * the UI can warn instead of silently treating it as "no conflict".
+   */
+  slugCollision: boolean;
   metadataChanged: boolean;
   bodyChanged: boolean;
   creditsChanged: boolean;
@@ -67,10 +76,47 @@ function readExistingMarkdown(slug: string): string | null {
 }
 
 /**
- * Create a backup of existing Markdown before overwriting.
+ * Identity guard for the DB -> Markdown publish boundary.
+ *
+ * Slugs are unique within the database (`slugExists`), but nothing
+ * stops a newly created DB work from sharing a slug with an unrelated
+ * Markdown file that predates it or was never migrated in (legacy
+ * content, a fixture, another work entirely). Both the DB row and a
+ * canonical Jalin Markdown file carry a stable `id` in frontmatter —
+ * use that, not just the slug, to decide whether an existing file on
+ * disk is genuinely "this work"'s current published state.
+ *
+ * Returns the existing file's raw content only when its frontmatter
+ * `id` matches the DB work's id. A same-slug file with a different
+ * (or missing) id is treated as unrelated: present on disk, but not
+ * "this work"'s current content.
  */
-function createBackup(slug: string): string | null {
+export function readMatchingExistingMarkdown(slug: string, workId: string): string | null {
   const existing = readExistingMarkdown(slug);
+  if (existing === null) return null;
+
+  let existingId: unknown;
+  try {
+    existingId = matter(existing).data?.id;
+  } catch {
+    // Malformed frontmatter on the existing file: don't treat it as a
+    // match, but don't let a parse failure here break publishing either.
+    return null;
+  }
+
+  return existingId === workId ? existing : null;
+}
+
+/**
+ * Create a backup of existing Markdown before overwriting.
+ *
+ * Only backs up content that is actually this work's own prior
+ * publish (matching frontmatter `id`). An unrelated file at the same
+ * slug is never backed up here, because publishWork() refuses to
+ * overwrite it in the first place — see the collision check there.
+ */
+function createBackup(slug: string, workId: string): string | null {
+  const existing = readMatchingExistingMarkdown(slug, workId);
   if (!existing) {
     return null;
   }
@@ -93,8 +139,10 @@ export async function generatePublishPreview(workId: string): Promise<PublishPre
   const serialized = await serializeWork(workId);
   const slug = serialized.frontmatter.slug as string;
 
-  const existing = readExistingMarkdown(slug);
+  const rawExisting = readExistingMarkdown(slug);
+  const existing = readMatchingExistingMarkdown(slug, workId);
   const currentExists = existing !== null;
+  const slugCollision = rawExisting !== null && existing === null;
 
   // Simple diff detection
   let metadataChanged = true;
@@ -119,6 +167,7 @@ export async function generatePublishPreview(workId: string): Promise<PublishPre
     slug,
     isNew: !currentExists,
     currentExists,
+    slugCollision,
     metadataChanged,
     bodyChanged,
     creditsChanged,
@@ -194,10 +243,24 @@ export async function publishWork(workId: string): Promise<PublishResult> {
       };
     }
 
+    // Refuse to publish over a Markdown file that already occupies
+    // this slug but belongs to a different work (mismatched or
+    // missing frontmatter id). Overwriting it would silently destroy
+    // unrelated published content just because two works happened to
+    // land on the same slug string.
+    if (workExistsAsMarkdown(slug) && readMatchingExistingMarkdown(slug, workId) === null) {
+      return {
+        success: false,
+        slug,
+        filePath,
+        error: `Slug "${slug}" sudah digunakan oleh fail Markdown lain yang bukan kepunyaan karya ini (id tidak sepadan). Selesaikan konflik slug sebelum menerbitkan.`,
+      };
+    }
+
     // Create backup if file exists
     let backupPath: string | undefined;
     if (workExistsAsMarkdown(slug)) {
-      backupPath = createBackup(slug) || undefined;
+      backupPath = createBackup(slug, workId) || undefined;
     }
 
     // Ensure works directory exists
