@@ -81,7 +81,7 @@ export async function applyManualUpload(
     return {
       ok: false,
       status: 503,
-      error: "Storan imej tahan lama tidak tersedia (OBJECT_STORAGE_* belum dikonfigurasi pada persekitaran ini). Imej tidak disimpan."
+      error: "Storan imej tahan lama tidak tersedia (Vercel Blob atau OBJECT_STORAGE_* belum dikonfigurasi pada persekitaran ini). Imej tidak disimpan."
     };
   }
 

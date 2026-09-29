@@ -10,7 +10,7 @@ export default async function SettingsPage() {
   const recipes = await Promise.all(
     RECIPE_KEYS.map(async (key) => ({ recipe: getRecipe(key), prompts: await loadPrompts(key) }))
   );
-  const storage = Boolean(process.env.OBJECT_STORAGE_BUCKET || process.env.OBJECT_STORAGE_ENDPOINT);
+  const storage = Boolean(process.env.BLOB_READ_WRITE_TOKEN || process.env.OBJECT_STORAGE_BUCKET || process.env.OBJECT_STORAGE_ENDPOINT);
 
   return (
     <div className="admin-form-page">
