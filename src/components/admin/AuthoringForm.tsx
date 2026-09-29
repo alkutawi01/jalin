@@ -274,11 +274,26 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
             </div>
           ))}
 
+          {!plan && result.errors.some((e) => e.code === "title_missing" || e.code === "slug_missing") ? (
+            <div className="admin-form-group">
+              <label htmlFor="f-title-missing">Karya ini belum bertajuk. Taipkan tajuk, kemudian tekan Semak semula.</label>
+              <input id="f-title-missing" value={title} onChange={(e) => setTitle(e.target.value)} />
+            </div>
+          ) : null}
+
           {plan ? (
             <>
               <div className="admin-form-group">
                 <label htmlFor="f-title">Tajuk</label>
-                <input id="f-title" value={title} onChange={(e) => setTitle(e.target.value)} />
+                <input
+                  id="f-title"
+                  value={title}
+                  onChange={(e) => {
+                    setTitle(e.target.value);
+                    setSlug(""); // the slug follows the title unless typed afterwards
+                  }}
+                />
+                <p className="admin-form-hint">Alamat karya: {slug || "(dijana daripada tajuk)"}</p>
               </div>
               <div className="admin-form-group">
                 <label htmlFor="f-slug">Slug (alamat URL)</label>
