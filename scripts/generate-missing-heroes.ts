@@ -20,20 +20,12 @@ interface Job {
 
 const jobs: Job[] = [
   {
-    slug: "di-hadapan-singgahsana",
-    workTitle: "Di Hadapan Singgahsana",
-    workType: "sinopsis",
+    slug: "sekuntum-bunga-untuk-alia",
+    workTitle: "Sekuntum Bunga untuk Alia",
+    workType: "novela",
     scene:
-      "An ancient Egyptian judgment hall lit by torchlight, a grand empty stone throne on a raised dais flanked by towering columns carved with hieroglyphs, faint robed pharaonic figures approaching from the shadows, shown from behind or obscured by pillars so no faces are clearly visible, a sense of timelessness and reckoning, warm golden torchlight.",
-    alt: "Dewan pengadilan Mesir purba dengan singgahsana kosong dan bayangan pemerintah menghadap dari kejauhan.",
-  },
-  {
-    slug: "gatsby-agung",
-    workTitle: "Gatsby Agung",
-    workType: "sinopsis",
-    scene:
-      "A grand 1920s mansion overlooking a dark bay at dusk, warm light glowing from tall windows with a lively party silhouette in the background, in the foreground a solitary figure standing at the end of a wooden dock reaching toward a single green light glowing across the water, the figure shown from behind in silhouette so no face is visible, wistful golden-to-twilight lighting.",
-    alt: "Siluet seorang lelaki di hujung jeti memandang cahaya hijau di seberang teluk, dengan rumah agung bercahaya di belakang.",
+      "A Malay Muslim woman wearing a plain black niqab (her entire face completely covered by black fabric, absolutely no eyes, nose, mouth or skin visible -- the niqab is opaque) and a modest black long-sleeved abaya, seated at a desk, photographed/painted from directly behind her so only the back of her covered head and shoulders are seen in near-silhouette -- zero facial features visible anywhere in this image. She faces a single computer monitor. The ENTIRE monitor screen glows a cold, deep BLUE-GREY color (like slate or steel blue), never yellow, never orange, never warm -- and on that blue-grey screen is one pale white-blue wireframe outline of a flower made of thin geometric construction lines, like a CAD diagram, not a painted or photographed flower. The room around them is almost fully dark, unlit except for that cold blue-grey screen glow spilling onto the desk. No warm lamps, no window, no daylight, no orange or yellow light anywhere in this image.",
+    alt: "Bunga digital biru kelabu terbentuk daripada garis geometri bercahaya lembut di atas skrin makmal gelap pada waktu malam.",
   },
 ];
 

@@ -731,7 +731,10 @@ export type AttachGateResult =
  * - work_id present
  * - asset_finalized === true
  * - source_asset_path non-empty (provider URL alone NEVER accepted)
- * - provider magnific (mock allowed only for tests via provider==="mock")
+ * - a recorded provider. Any provider is accepted (editor decision
+ *   2026-09-29: the Magnific-only gate was removed; images made outside
+ *   Magnific are attached as provider "manual"). Provenance must stay
+ *   honest: a request that claims "magnific" must carry Magnific ids.
  * - valid role + alt text
  */
 export function validateAttachGate(input: AttachGateInput): AttachGateResult {
@@ -743,8 +746,8 @@ export function validateAttachGate(input: AttachGateInput): AttachGateResult {
     return { ok: false, error: "Work ID diperlukan untuk pautan visual." };
   }
 
-  if (input.provider !== "magnific" && input.provider !== "mock") {
-    return { ok: false, error: "Hanya visual Magnific boleh dipautkan." };
+  if (!input.provider || !input.provider.trim()) {
+    return { ok: false, error: "Provider (sumber imej) mesti direkod untuk pautan." };
   }
 
   if (input.provider === "magnific" && !input.provider_request_id && !input.provider_creation_id) {

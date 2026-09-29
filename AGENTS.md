@@ -23,7 +23,7 @@ Jalin bukan platform novel penuh. Novel dan Novel Pendek tidak berada dalam taxo
 10. Semua karya perlu menyokong glosari ringkas pada perkataan terpilih.
 13. Jangan overengineer MVP.
 14. Perubahan besar pada schema, auth, publishing flow atau deployment perlu didokumenkan dahulu.
-15. **Semua imej yang dijana atau diedit untuk digunakan dalam Jalin WAJIB melalui Magnific.** Jangan silently substitute generator/editor lain. Rekod provenance Magnific untuk aset produksi atau staging yang dipilih.
+15. **Agent/AI menjana imej melalui Magnific sahaja.** Jangan silently substitute generator/editor lain. Rekod provenance Magnific untuk aset yang dijana agent. **Pindaan 2026-09-29 (arahan Izzat, pemilik produk): gate Magnific-sahaja pada pautan visual dibatalkan.** Editor manusia boleh memuat naik imej yang dibuat di luar Magnific; ia direkod sebagai provider `manual` (dengan nama alat), dan masih perlu diluluskan manusia sebelum dipautkan. Jangan mendakwa imej sebagai "magnific" jika bukan.
 16. Muka manusia dalam ilustrasi fiksyen Jalin tidak boleh jelas secara default; gunakan crop, belakang, profil separa, siluet atau obstruction kecuali editor manusia meluluskan sebaliknya.
 17. Setiap visual mesti dipaut pada adegan teks spesifik dan disemak fakta adegan sebelum generation.
 18. Jika tidak pasti siapa melakukan tindakan, objek/lokasi canonical, tool, atau face rule: STOP dan semak source terlebih dahulu.

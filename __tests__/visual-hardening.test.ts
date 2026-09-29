@@ -550,20 +550,59 @@ async function main() {
     });
     assert(gateEmpty.ok === false, "Empty source_asset_path cannot attach");
 
-    // Non-magnific provider rejected
-    const gateOther = validateAttachGate({
+    // Magnific-only gate removed (editor decision 2026-09-29): manual/other
+    // providers may attach once approved + finalized; provenance stays honest.
+    const gateManual = validateAttachGate({
       status: "approved",
       approval_state: "approved",
       work_id: "JLN-CER-0001",
       asset_finalized: true,
       source_asset_path: "/assets/visuals/vr-1.png",
       source_asset_url: null,
-      provider: "openai",
-      provider_request_id: "x",
+      provider: "manual",
       visual_role: "hero",
       alt_text: "alt",
     });
-    assert(gateOther.ok === false, "Non-Magnific provider cannot attach");
+    assert(gateManual.ok === true, "Manual provider can attach when approved and finalized");
+
+    const gateNoProvider = validateAttachGate({
+      status: "approved",
+      approval_state: "approved",
+      work_id: "JLN-CER-0001",
+      asset_finalized: true,
+      source_asset_path: "/assets/visuals/vr-1.png",
+      source_asset_url: null,
+      provider: "",
+      visual_role: "hero",
+      alt_text: "alt",
+    });
+    assert(gateNoProvider.ok === false, "A missing provider cannot attach (provenance must be recorded)");
+
+    const gateFalseMagnific = validateAttachGate({
+      status: "approved",
+      approval_state: "approved",
+      work_id: "JLN-CER-0001",
+      asset_finalized: true,
+      source_asset_path: "/assets/visuals/vr-1.png",
+      source_asset_url: null,
+      provider: "magnific",
+      visual_role: "hero",
+      alt_text: "alt",
+    });
+    assert(gateFalseMagnific.ok === false, "Claiming Magnific without Magnific ids still cannot attach");
+
+    const gateUnapprovedManual = validateAttachGate({
+      status: "under_review",
+      approval_state: "pending",
+      work_id: "JLN-CER-0001",
+      asset_finalized: true,
+      source_asset_path: "/assets/visuals/vr-1.png",
+      source_asset_url: null,
+      provider: "manual",
+      visual_role: "hero",
+      alt_text: "alt",
+    });
+    assert(gateUnapprovedManual.ok === false, "Manual images still need human approval before attaching");
 
     // Storage durability awareness
     const vercelBefore = process.env.VERCEL;

@@ -75,12 +75,17 @@ function FeaturedHero({ work }: { work: PublicFeaturedSummary }) {
           {hero?.src ? (
             <div className="hero-featured-visual">
               <Image src={hero.src} alt={hero.alt} fill sizes="(max-width: 900px) 100vw, 640px" priority />
+              <div className="image-rights" aria-hidden="true">{`© ADJUNG ${(work.updatedAt ?? work.publishedAt ?? "2026").slice(0, 4)}`}</div>
             </div>
           ) : null}
         </div>
       </div>
     </section>
   );
+}
+
+function yearOf(work: { updatedAt?: string; publishedAt?: string }): string {
+  return (work.updatedAt ?? work.publishedAt ?? "2026").slice(0, 4);
 }
 
 function LatestWorkCard({ work }: { work: PublicWorkSummary }) {
@@ -90,7 +95,7 @@ function LatestWorkCard({ work }: { work: PublicWorkSummary }) {
     <article className="latest-card">
       <a href={`/kategori/${work.type}/${work.slug}`}>
         <div className="latest-card-cover">
-          <WorkCover type={work.type} title={work.title} hero={work.hero} />
+          <WorkCover type={work.type} title={work.title} hero={work.hero} rightsYear={yearOf(work)} />
         </div>
         <div className="latest-card-body">
           <div className="latest-card-meta">
@@ -118,11 +123,13 @@ function CategoryCard({
   label,
   imageSrc,
   imageAlt,
+  imageYear,
 }: {
   type: string;
   label: string;
   imageSrc?: string | null;
   imageAlt?: string | null;
+  imageYear?: string | null;
 }) {
   const hasImage = !!imageSrc;
   return (
@@ -131,13 +138,18 @@ function CategoryCard({
       className={`category-explorer-card category-explorer-card--${type}${hasImage ? " category-explorer-card--photo" : ""}`}
     >
       {hasImage ? (
-        <Image
-          src={imageSrc!}
-          alt={imageAlt ?? ""}
-          fill
-          sizes="(max-width: 1050px) 45vw, 22vw"
-          className="category-explorer-card-img"
-        />
+        <>
+          <Image
+            src={imageSrc!}
+            alt={imageAlt ?? ""}
+            fill
+            sizes="(max-width: 1050px) 45vw, 22vw"
+            className="category-explorer-card-img"
+          />
+          {imageYear ? (
+            <div className="image-rights" aria-hidden="true">{`© ADJUNG ${imageYear}`}</div>
+          ) : null}
+        </>
       ) : null}
       <div className="category-explorer-card-scrim" />
       <div className="category-explorer-card-body">
@@ -162,7 +174,7 @@ function EditorialSelection({ works }: { works: PublicWorkSummary[] }) {
         <div className="editorial-grid">
           {works.map((work) => (
             <a key={work.slug} href={`/kategori/${work.type}/${work.slug}`} className="editorial-pick">
-              <WorkCover type={work.type} title={work.title} hero={work.hero} />
+              <WorkCover type={work.type} title={work.title} hero={work.hero} rightsYear={yearOf(work)} />
               <div className="editorial-pick-body">
                 <span className="editorial-pick-type">
                   {TYPE_LABELS[work.type] ?? work.type}
@@ -200,7 +212,7 @@ export default async function Home() {
   const featured = sorted[0] ?? null;
   const latest = sorted.slice(0, 6);
 
-  const categoryImages = new Map<string, { src: string; alt: string }>();
+  const categoryImages = new Map<string, { src: string; alt: string; year: string }>();
   for (const cat of CATEGORIES) {
     const withHero = sorted.find((work) => {
       const summary = projectPublicWorkSummary(work);
@@ -208,7 +220,7 @@ export default async function Home() {
     });
     if (withHero) {
       const summary = projectPublicWorkSummary(withHero);
-      if (summary.hero) categoryImages.set(cat.type, summary.hero);
+      if (summary.hero) categoryImages.set(cat.type, { ...summary.hero, year: yearOf(summary) });
     }
   }
 
@@ -254,6 +266,7 @@ export default async function Home() {
                     label={cat.label}
                     imageSrc={img?.src}
                     imageAlt={img?.alt}
+                    imageYear={img?.year}
                   />
                 );
               })}
