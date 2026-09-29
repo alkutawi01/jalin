@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 
@@ -46,11 +46,28 @@ function generateSlug(title: string): string {
   return base || `karya-${Date.now().toString(36)}`;
 }
 
+// Markdown-assist toolbar: each button inserts/wraps plain Markdown
+// syntax at the cursor or around the current selection — it never
+// converts the manuscript into rich text/HTML. Data saved is exactly
+// what's typed, same as pasting Markdown by hand. Deliberately not a
+// WYSIWYG editor: Jalin receives finished manuscripts, it doesn't
+// become a writing suite (docs/JALIN_MASTER_CONTENT_PARSER_PROMPT.md
+// principle carries over to this form).
+type MarkdownAction = "bold" | "quote" | "chapterHeading" | "sceneBreak";
+
+const MARKDOWN_TOOLBAR: { action: MarkdownAction; label: string; title: string }[] = [
+  { action: "bold", label: "Tebal", title: "Tebalkan teks dipilih (**teks**)" },
+  { action: "quote", label: "Petikan", title: "Jadikan baris petikan (> teks)" },
+  { action: "chapterHeading", label: "Tajuk Bab", title: "Tajuk bahagian/bab (## Tajuk)" },
+  { action: "sceneBreak", label: "Pemisah Adegan", title: "Sisipkan pemisah adegan (***)" },
+];
+
 export default function NewWorkPage() {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
+  const bodyRef = useRef<HTMLTextAreaElement>(null);
 
   // Once the editor edits slug or readingMinutes by hand, stop silently
   // overwriting their value from title/body changes.
@@ -92,6 +109,67 @@ export default function NewWorkPage() {
         ? prev.readingMinutes
         : String(estimateReadingMinutes(count)),
     }));
+  }
+
+  function applyMarkdownAction(action: MarkdownAction) {
+    const el = bodyRef.current;
+    if (!el) return;
+
+    const { selectionStart, selectionEnd, value } = el;
+    const selected = value.slice(selectionStart, selectionEnd);
+    const before = value.slice(0, selectionStart);
+    const after = value.slice(selectionEnd);
+    let insert: string;
+    let selectFrom: number;
+    let selectTo: number;
+
+    switch (action) {
+      case "bold": {
+        insert = `**${selected || "teks tebal"}**`;
+        selectFrom = selectionStart + 2;
+        selectTo = selectFrom + (selected || "teks tebal").length;
+        break;
+      }
+      case "quote": {
+        // Blockquotes are block-level, same as a heading or scene break:
+        // they need to start on their own line or Markdown renders them
+        // as plain text glued onto whatever precedes them.
+        const needsLeadingBreak = before.length > 0 && !before.endsWith("\n");
+        const leading = needsLeadingBreak ? "\n\n" : "";
+        const lines = (selected || "petikan").split("\n").map((line) => `> ${line}`).join("\n");
+        insert = `${leading}${lines}`;
+        selectFrom = selectionStart + leading.length;
+        selectTo = selectFrom + lines.length;
+        break;
+      }
+      case "chapterHeading": {
+        // Heading needs its own line: pad with a blank line before it
+        // if the cursor isn't already at the start of a line.
+        const needsLeadingBreak = before.length > 0 && !before.endsWith("\n");
+        const leading = needsLeadingBreak ? "\n\n" : "";
+        insert = `${leading}## ${selected || "Tajuk Bab"}`;
+        selectFrom = selectionStart + leading.length + 3;
+        selectTo = selectFrom + (selected || "Tajuk Bab").length;
+        break;
+      }
+      case "sceneBreak": {
+        const needsLeadingBreak = before.length > 0 && !before.endsWith("\n");
+        const leading = needsLeadingBreak ? "\n\n" : "";
+        insert = `${leading}***\n\n`;
+        selectFrom = selectionStart + insert.length;
+        selectTo = selectFrom;
+        break;
+      }
+    }
+
+    const nextValue = before + insert + after;
+    handleBodyChange(nextValue);
+
+    // Restore focus and selection after the state update re-renders.
+    requestAnimationFrame(() => {
+      el.focus();
+      el.setSelectionRange(selectFrom, selectTo);
+    });
   }
 
   function handleSlugChange(value: string) {
@@ -200,8 +278,22 @@ export default function NewWorkPage() {
 
         <div className="admin-form-group">
           <label htmlFor="body">Manuskrip (Markdown) *</label>
+          <div className="admin-markdown-toolbar" role="toolbar" aria-label="Bantuan format Markdown">
+            {MARKDOWN_TOOLBAR.map((item) => (
+              <button
+                key={item.action}
+                type="button"
+                className="admin-btn admin-btn-outline admin-btn-sm"
+                title={item.title}
+                onClick={() => applyMarkdownAction(item.action)}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
           <textarea
             id="body"
+            ref={bodyRef}
             required
             aria-describedby="body-hint"
             value={form.body}
