@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import AdminMobileNav from "../../components/admin/AdminMobileNav";
 
 export const metadata: Metadata = {
   title: "Jalin Admin",
@@ -33,6 +34,7 @@ export default function AdminLayout({
               </button>
             </form>
           </nav>
+          <AdminMobileNav />
         </div>
       </header>
       <main className="admin-main">
