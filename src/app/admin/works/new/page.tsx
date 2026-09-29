@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 
@@ -14,12 +14,6 @@ const WORK_TYPES = [
 
 const GENRE_SUGGESTIONS = ["Keluarga", "Drama Sosial", "Sejarah", "Drama", "Coming-of-age", "Misteri"];
 
-const STATUS_OPTIONS = [
-  { value: "draft", label: "Draf", hint: "Kerja dalam proses. Tidak kelihatan pada laman awam." },
-  { value: "review", label: "Semakan", hint: "Sedang disemak editor. Masih tidak kelihatan pada laman awam." },
-  { value: "ready", label: "Sedia", hint: "Lulus semakan dan sedia diterbitkan, tertakluk kepada gate penerbitan." },
-];
-
 function countWords(text: string): number {
   const trimmed = text.trim();
   if (!trimmed) return 0;
@@ -30,13 +24,26 @@ function estimateReadingMinutes(wordCount: number): number {
   return Math.max(1, Math.round(wordCount / 200));
 }
 
+/**
+ * Jalin publishes Melayu originals alongside translations, so a title can
+ * carry diacritics (Melayu, Vietnamese, French, ...) or a non-Latin script
+ * (Arab, Cina, ...) entirely. NFKD + stripping combining marks recovers a
+ * usable slug for the diacritic case; a script with no Latin base at all
+ * (e.g. Arabic) still strips to nothing, so that case falls back to a
+ * short, guaranteed-unique placeholder rather than an empty/invalid slug.
+ * The field stays editable either way — this only has to not be empty.
+ */
 function generateSlug(title: string): string {
-  return title
+  const base = title
+    .normalize("NFKD")
+    .replace(/\p{Diacritic}/gu, "")
     .toLowerCase()
     .replace(/[^a-z0-9\s-]/g, "")
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-")
     .replace(/^-|-$/g, "");
+
+  return base || `karya-${Date.now().toString(36)}`;
 }
 
 export default function NewWorkPage() {
@@ -49,12 +56,12 @@ export default function NewWorkPage() {
   // overwriting their value from title/body changes.
   const [slugTouched, setSlugTouched] = useState(false);
   const [readingMinutesTouched, setReadingMinutesTouched] = useState(false);
+  const [wordCount, setWordCount] = useState(0);
 
   const [form, setForm] = useState({
     title: "",
     slug: "",
     type: "cerpen",
-    status: "draft",
     body: "",
     genre: "",
     audience: "13-17",
@@ -62,8 +69,6 @@ export default function NewWorkPage() {
     readingMinutes: "",
     version: "v0.1",
   });
-
-  const wordCount = useMemo(() => countWords(form.body), [form.body]);
 
   function handleTitleChange(value: string) {
     setForm((prev) => ({
@@ -74,12 +79,18 @@ export default function NewWorkPage() {
   }
 
   function handleBodyChange(value: string) {
+    // Count words exactly once per change (novela-length manuscripts run
+    // 30,000-50,000 words; scanning the body twice per keystroke — once
+    // for the display count, once for the readingMinutes estimate — was
+    // measurably slower while typing). The one count is reused for both.
+    const count = countWords(value);
+    setWordCount(count);
     setForm((prev) => ({
       ...prev,
       body: value,
       readingMinutes: readingMinutesTouched
         ? prev.readingMinutes
-        : String(estimateReadingMinutes(countWords(value))),
+        : String(estimateReadingMinutes(count)),
     }));
   }
 
@@ -109,6 +120,10 @@ export default function NewWorkPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...form,
+          // New works always start as a draft. Review/ready is a
+          // deliberate editorial decision made afterwards on the work's
+          // own edit page, not a choice made while still typing a title.
+          status: "draft",
           readingMinutes: form.readingMinutes ? Number(form.readingMinutes) : undefined,
         }),
       });
@@ -126,8 +141,6 @@ export default function NewWorkPage() {
       setSaving(false);
     }
   }
-
-  const activeStatus = STATUS_OPTIONS.find((s) => s.value === form.status) ?? STATUS_OPTIONS[0]!;
 
   return (
     <div className="admin-form-page">
@@ -286,22 +299,12 @@ export default function NewWorkPage() {
           </span>
         </div>
 
-        <div className="admin-form-row">
-          <div className="admin-form-group">
-            <label htmlFor="status">Status</label>
-            <select
-              id="status"
-              aria-describedby="status-hint"
-              value={form.status}
-              onChange={(e) => setForm((prev) => ({ ...prev, status: e.target.value }))}
-            >
-              {STATUS_OPTIONS.map((s) => (
-                <option key={s.value} value={s.value}>{s.label}</option>
-              ))}
-            </select>
-            <span id="status-hint" className="admin-form-hint">{activeStatus.hint}</span>
-          </div>
+        <p className="admin-status-notice">
+          Karya baharu sentiasa bermula sebagai <strong>Draf</strong>. Tukar status ke Semakan
+          atau Sedia selepas ini pada halaman sunting karya.
+        </p>
 
+        <div className="admin-form-row">
           <details className="admin-advanced-field">
             <summary>Versi (lanjutan)</summary>
             <div className="admin-form-group">

@@ -1523,6 +1523,18 @@ dd { margin: 0; color: var(--ink); text-align: left; }
   margin-bottom: 0;
 }
 
+.admin-status-notice {
+  margin: 0 0 20px;
+  padding: 12px 16px;
+  background: #f5f5f5;
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+.admin-status-notice strong {
+  color: var(--ink);
+}
+
 .admin-advanced-field {
   align-self: start;
 }
