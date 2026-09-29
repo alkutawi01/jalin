@@ -3,13 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 
 const NAV_LINKS: { href: string; label: string }[] = [
-  { href: "/admin", label: "Dashboard" },
+  { href: "/admin", label: "Papan Pemuka" },
   { href: "/admin/works", label: "Karya" },
-  { href: "/admin/series", label: "Siri" },
-  { href: "/admin/contributors", label: "Penyumbang" },
-  { href: "/admin/submissions", label: "Submissions" },
-  { href: "/admin/prompts", label: "Prompt" },
-  { href: "/admin/visual-requests", label: "Visual" },
+  { href: "/admin/contributors", label: "Editorial" },
+  { href: "/admin/settings", label: "Tetapan" },
+  { href: "/admin/works/add", label: "+ Tambah Karya" },
 ];
 
 export default function AdminMobileNav() {

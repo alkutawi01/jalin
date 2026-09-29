@@ -148,7 +148,15 @@ export default function MobileStoryInfo({ data }: { data: StoryInfoData }) {
             </div>
           )}
           {tab === "bab" && data.bab && (
-            <div id="sheet-panel-bab" role="tabpanel" aria-labelledby="sheet-tab-bab" className="sheet-stack">
+            <div
+              id="sheet-panel-bab"
+              role="tabpanel"
+              aria-labelledby="sheet-tab-bab"
+              className="sheet-stack"
+              onClick={(event) => {
+                if ((event.target as HTMLElement).closest("a")) setOpen(false);
+              }}
+            >
               {data.bab.map((item) => (
                 <div key={item.href}>
                   <a href={item.href}>{item.label}</a>

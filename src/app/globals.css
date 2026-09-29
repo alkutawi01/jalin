@@ -199,6 +199,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
   color: #243d43;
 }
 .story-body p { margin: 0 0 1.55em; }
+.story-body h2 { scroll-margin-top: 96px; }
 .story-body em {
   color: inherit;
   font-style: italic;
@@ -2123,4 +2124,42 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 }
 .category-empty-links a:hover {
   border-color: var(--clay);
+}
+
+/* Tambah Karya wizard */
+.admin-choice-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+  margin: 16px 0;
+}
+.admin-choice {
+  display: block;
+  padding: 16px;
+  border: 1px solid var(--admin-border, #d8d4cc);
+  border-radius: 8px;
+  text-decoration: none;
+  color: inherit;
+  background: var(--admin-surface, #fff);
+}
+.admin-choice:hover {
+  border-color: var(--admin-accent, #8a5a2b);
+}
+.admin-choice strong {
+  display: block;
+  margin-bottom: 4px;
+}
+.admin-choice span {
+  font-size: 0.875rem;
+  opacity: 0.75;
+}
+.admin-step-num {
+  display: inline-block;
+  min-width: 1.6em;
+  margin-right: 6px;
+  text-align: center;
+  border-radius: 999px;
+  background: var(--admin-accent, #8a5a2b);
+  color: #fff;
+  font-size: 0.8rem;
 }

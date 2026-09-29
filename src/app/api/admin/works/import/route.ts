@@ -3,7 +3,7 @@ import { getCurrentAdmin } from "../../../../../lib/admin/auth";
 import { hasDb } from "../../../../../lib/db";
 import { slugExists } from "../../../../../lib/admin/work-service";
 import { importPlanAsDraft } from "../../../../../lib/admin/import/import-service";
-import { buildImportPlan, type ImportPlan } from "../../../../../lib/admin/import/plan";
+import { buildImportPlan, type ImportOptions, type ImportPlan } from "../../../../../lib/admin/import/plan";
 import type { ImportIssue } from "../../../../../lib/admin/import/parser-output";
 
 const MAX_ANSWER_CHARS = 400_000;
@@ -25,6 +25,7 @@ function summarise(plan: ImportPlan) {
       end: s.body.slice(-90)
     })),
     source: plan.source,
+    series: plan.series,
     locations: plan.locations,
     themes: plan.themes,
     visuals: plan.visuals.map((v) => ({
@@ -58,6 +59,10 @@ export async function POST(request: NextRequest) {
       manuscript?: unknown;
       dryRun?: unknown;
       slugOverride?: unknown;
+      mode?: unknown;
+      overrides?: unknown;
+      writerName?: unknown;
+      series?: unknown;
     };
     const answer = typeof body.answer === "string" ? body.answer : "";
     const manuscript = typeof body.manuscript === "string" ? body.manuscript : "";
@@ -71,7 +76,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Output parser belum ditampal." }, { status: 400 });
     }
 
-    const result = buildImportPlan(answer, manuscript, { slugOverride });
+    const str = (v: unknown) => (typeof v === "string" ? v : undefined);
+    const ov = (body.overrides && typeof body.overrides === "object" ? body.overrides : {}) as Record<string, unknown>;
+    const sr = (body.series && typeof body.series === "object" ? body.series : null) as Record<string, unknown> | null;
+    const options: ImportOptions = {
+      mode: body.mode === "tulis" ? "tulis" : "data",
+      slugOverride,
+      overrides: { title: str(ov.title), slug: str(ov.slug), dek: str(ov.dek), genre: str(ov.genre) },
+      writerName: str(body.writerName),
+      series:
+        sr?.kind === "sambung" && typeof sr.seriesId === "string"
+          ? { kind: "sambung", seriesId: sr.seriesId }
+          : sr?.kind === "baharu"
+            ? { kind: "baharu", title: str(sr.title), dek: str(sr.dek), mode: sr.mode === "anthology" ? "anthology" : undefined }
+            : undefined
+    };
+    const result = buildImportPlan(answer, manuscript, options);
     const errors: ImportIssue[] = [...result.errors];
     const warnings: ImportIssue[] = [...result.warnings];
 

@@ -3,9 +3,10 @@
  * it into a validated, normalised structure. Pure functions, no I/O.
  */
 
+import { looksLabelled, parseLabelledAnswer } from "../authoring/labelled-output";
 import { SECTION_SLUG_PATTERN, slugify } from "./text-utils";
 
-export const IMPORTABLE_TYPES = ["cerpen", "novela", "fragmen", "sinopsis"] as const;
+export const IMPORTABLE_TYPES = ["cerpen", "novela", "bersiri", "fragmen", "sinopsis"] as const;
 export type ImportableType = (typeof IMPORTABLE_TYPES)[number];
 
 export const ASPECT_RATIOS = ["1:1", "3:2", "2:3", "16:9", "9:16", "4:3", "3:4"] as const;
@@ -57,6 +58,13 @@ export interface ParsedSource {
   provenance: string | null;
 }
 
+export interface ParsedSeries {
+  title: string;
+  slug: string;
+  mode: "continuous" | "anthology";
+  dek: string | null;
+}
+
 export interface ParserOutput {
   parserVersion: string | null;
   type: ImportableType;
@@ -75,6 +83,10 @@ export interface ParserOutput {
   sections: ParsedSection[];
   source: ParsedSource | null;
   visuals: ParsedVisual[];
+  /** Text written by the chatbot (sinopsis/fragmen in "tulis" mode). */
+  content: string | null;
+  /** New-series details (bersiri, only when the editor is starting a series). */
+  series: ParsedSeries | null;
 }
 
 export interface ExtractedAnswer {
@@ -188,16 +200,35 @@ export interface ValidatedParserOutput {
 }
 
 /** Extract, parse and validate a chatbot answer. */
-export function readParserAnswer(answer: string): ValidatedParserOutput {
+/** The editor's own title/slug fill a gap when the chatbot could not find them in the text. */
+function withHints(raw: Record<string, unknown>, hints: { title?: string; slug?: string }): Record<string, unknown> {
+  const out = { ...raw };
+  const title = hints.title?.trim();
+  if (title && !text(out.title)) out.title = title;
+  const slug = hints.slug?.trim();
+  if (slug && !text(out.slug)) out.slug = slug;
+  else if (title && !text(out.slug)) out.slug = slugify(title);
+  return out;
+}
+
+export function readParserAnswer(answer: string, hints: { title?: string; slug?: string } = {}): ValidatedParserOutput {
   const errors: ImportIssue[] = [];
   const warnings: ImportIssue[] = [];
+
+  if (looksLabelled(answer)) {
+    const labelled = parseLabelledAnswer(answer);
+    if (labelled) {
+      const data = normaliseParserOutput(withHints(labelled.raw, hints), errors, warnings);
+      return { data: errors.length > 0 ? null : data, errors, warnings, report: "" };
+    }
+  }
 
   const extracted = extractParserJson(answer);
   if (!extracted) {
     errors.push(
       parseIssue(
         "json_not_found",
-        "Blok JSON tidak ditemui dalam output parser. Salin keseluruhan jawapan chatbot, termasuk JSON."
+        "Jawapan chatbot tidak dikenali. Salin KESELURUHAN jawapan chatbot (bermula dengan [KARYA]) dan tekan Tampal semula."
       )
     );
     return { data: null, errors, warnings, report: "" };
@@ -226,7 +257,7 @@ export function readParserAnswer(answer: string): ValidatedParserOutput {
     return { data: null, errors, warnings, report: extracted.report };
   }
 
-  const data = normaliseParserOutput(raw, errors, warnings);
+  const data = normaliseParserOutput(withHints(raw, hints), errors, warnings);
   return { data: errors.length > 0 ? null : data, errors, warnings, report: extracted.report };
 }
 
@@ -249,10 +280,6 @@ function normaliseParserOutput(
   let type: ImportableType | null = null;
   if (!rawType) {
     errors.push(parseIssue("type_missing", "Jenis karya (type) tiada dalam output parser.", "type"));
-  } else if (rawType === "bersiri") {
-    errors.push(
-      parseIssue("type_bersiri", "Jenis bersiri belum disokong oleh import. Guna /admin/series untuk siri dan episod.", "type")
-    );
   } else if ((IMPORTABLE_TYPES as readonly string[]).includes(rawType)) {
     type = rawType as ImportableType;
   } else {
@@ -406,6 +433,20 @@ function normaliseParserOutput(
     });
   }
 
+  let series: ParsedSeries | null = null;
+  if (isRecord(raw.series)) {
+    const seriesTitle = text(raw.series.title);
+    if (seriesTitle) {
+      series = {
+        title: seriesTitle,
+        slug: slugify(seriesTitle),
+        mode: text(raw.series.mode)?.toLowerCase() === "anthology" ? "anthology" : "continuous",
+        dek: text(raw.series.dek)
+      };
+    }
+  }
+  const content = text(raw.content);
+
   const readingRaw = typeof raw.readingMinutes === "number" ? raw.readingMinutes : Number(raw.readingMinutes);
   const readingMinutes = Number.isFinite(readingRaw) && readingRaw > 0 ? Math.round(readingRaw) : null;
 
@@ -428,6 +469,8 @@ function normaliseParserOutput(
     glossary,
     sections,
     source,
-    visuals
+    visuals,
+    content,
+    series
   };
 }

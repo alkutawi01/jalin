@@ -29,7 +29,12 @@ function formatDate(date: Date | string | null): string {
   });
 }
 
-export default async function AdminWorksPage() {
+export default async function AdminWorksPage({
+  searchParams
+}: {
+  searchParams: Promise<{ status?: string }>;
+}) {
+  const { status } = await searchParams;
   if (!hasDb()) {
     return (
       <div className="admin-placeholder">
@@ -44,7 +49,17 @@ export default async function AdminWorksPage() {
     );
   }
 
-  const works = await listWorks();
+  const allWorks = await listWorks();
+  const filter = status && ["draft", "review", "ready", "published", "archived"].includes(status) ? status : "";
+  const works = filter ? allWorks.filter((w) => w.status === filter) : allWorks;
+  const tabs: { key: string; label: string }[] = [
+    { key: "", label: "Semua" },
+    { key: "draft", label: "Draf" },
+    { key: "review", label: "Menunggu semakan" },
+    { key: "ready", label: "Sedia" },
+    { key: "published", label: "Diterbitkan" },
+    { key: "archived", label: "Arkib" }
+  ];
 
   return (
     <div className="admin-works">
@@ -52,18 +67,27 @@ export default async function AdminWorksPage() {
         <div className="admin-page-header-row">
           <div>
             <h1>Karya</h1>
-            <p className="admin-page-sub">{works.length} karya dalam database</p>
+            <p className="admin-page-sub">{works.length} karya{filter ? ` (${STATUS_LABELS[filter]})` : ""}</p>
           </div>
           <div className="admin-page-header-actions">
-            <a href="/admin/works/import" className="admin-btn admin-btn-outline">
-              Import daripada Parser
-            </a>
-            <a href="/admin/works/new" className="admin-btn admin-btn-primary">
-              + Karya Baharu
+            <a href="/admin/works/add" className="admin-btn admin-btn-primary">
+              + Tambah Karya
             </a>
           </div>
         </div>
       </header>
+
+      <nav className="admin-form-actions" aria-label="Tapis status">
+        {tabs.map((t) => (
+          <a
+            key={t.key}
+            href={t.key ? `/admin/works?status=${t.key}` : "/admin/works"}
+            className={`admin-btn admin-btn-sm ${filter === t.key ? "admin-btn-primary" : "admin-btn-outline"}`}
+          >
+            {t.label} ({t.key ? allWorks.filter((w) => w.status === t.key).length : allWorks.length})
+          </a>
+        ))}
+      </nav>
 
       <div className="admin-table-wrap">
         <table className="admin-table">
