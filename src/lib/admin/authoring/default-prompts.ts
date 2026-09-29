@@ -23,15 +23,15 @@ PERATURAN GAMBAR
 7. Adegan (Adegan:) ditulis dalam bahasa Inggeris, satu perenggan, sedia digunakan terus oleh penjana imej. Ia mesti menjawab, semuanya daripada teks: siapa dalam adegan, apa yang mereka buat, di mana, bila (masa, cuaca, cahaya), objek penting, dan warna yang disebut dalam teks.
 8. Gunakan butiran rupa yang teks nyatakan tepat seperti ditulis, contohnya pakaian, penutup kepala atau wajah (seperti niqab) dan warna. Jika teks menyebut warna "biru kelabu", guna warna itu. JANGAN menambah etnik, umur, gaya rambut atau bentuk badan yang teks tidak nyatakan. Objek atau simbol yang berulang mesti digambarkan dengan rupa yang sama dalam setiap gambar. Jangan menyebut nama gaya seni atau pelukis; Jalin menambah gayanya sendiri.
 9. Muka manusia TIDAK dipaparkan dengan jelas. Untuk Muka:, pilih satu daripada: from behind, silhouette, partial profile, obscured by foreground object, cropped at shoulders, covered as described in text (niqab/veil), no people in frame. Adegan mesti sejajar dengan pilihan itu.
-10. Petikan (untuk gambar inline) ialah satu perenggan atau ayat daripada teks, disalin HURUF DEMI HURUF termasuk tanda baca, untuk menandakan tempat gambar. Alt dan Sebab ditulis dalam bahasa Melayu.`;
+10. Petikan (untuk gambar inline) ialah satu perenggan atau ayat daripada teks, disalin HURUF DEMI HURUF termasuk tanda baca, untuk menandakan tempat gambar. Jangan menambah tanda petikan di sekeliling petikan itu. Alt dan Sebab ditulis dalam bahasa Melayu.`;
 
 const CERPEN_DATA = `TUGAS
-Anda menerima sebuah cerpen yang sudah siap ditulis oleh editor (sama ada ditulis sendiri atau dengan bantuan chatbot sebelum ini). Tugas anda BUKAN menulis atau mengubah cerpen itu. Tugas anda hanya mengeluarkan maklumat yang Jalin perlukan daripada cerpen itu.
+Anda menerima sebuah cerpen yang sudah siap ditulis oleh editor (sama ada ditulis sendiri atau dengan bantuan chatbot sebelum ini). Tugas anda BUKAN menulis atau mengubah cerpen itu. Tugas anda hanya mengeluarkan maklumat yang Jalin perlukan daripada cerpen itu. Jika teks tidak mempunyai tajuk, cadangkan satu tajuk pendek yang sesuai dan slugnya (ini pengecualian kepada peraturan 1); editor boleh mengubahnya. 
 
 Cadangkan satu gambar hero dan sehingga 3 gambar inline.`;
 
 const NOVELA_DATA = `TUGAS
-Anda menerima sebuah novela yang sudah siap ditulis oleh editor. Tugas anda BUKAN menulis atau mengubah novela itu. Tugas anda hanya mengeluarkan maklumat yang Jalin perlukan, termasuk senarai bab.
+Anda menerima sebuah novela yang sudah siap ditulis oleh editor. Tugas anda BUKAN menulis atau mengubah novela itu. Tugas anda hanya mengeluarkan maklumat yang Jalin perlukan, termasuk senarai bab. Jika teks tidak mempunyai tajuk, cadangkan satu tajuk pendek yang sesuai dan slugnya (ini pengecualian kepada peraturan 1); editor boleh mengubahnya. 
 
 Bahagian [BAB] mesti mengandungi SETIAP bab mengikut turutan, dengan "Tajuk dalam manuskrip" ditulis tepat seperti dalam manuskrip kerana sistem menggunakannya untuk membelah teks.
 
@@ -40,12 +40,12 @@ Untuk setiap watak dan istilah glosari, tulis bab PERTAMA ia muncul (Muncul di).
 Cadangkan satu gambar hero dan sehingga 6 gambar inline.`;
 
 const BERSIRI_DATA = `TUGAS
-Anda menerima satu episod bagi sebuah siri, yang sudah siap ditulis oleh editor. Episod ini berdiri sendiri seperti sebuah cerpen. Tugas anda BUKAN menulis atau mengubah episod itu. Tugas anda hanya mengeluarkan maklumat yang Jalin perlukan tentang episod ini.
+Anda menerima satu episod bagi sebuah siri, yang sudah siap ditulis oleh editor. Episod ini berdiri sendiri seperti sebuah cerpen. Tugas anda BUKAN menulis atau mengubah episod itu. Tugas anda hanya mengeluarkan maklumat yang Jalin perlukan tentang episod ini. Jika teks tidak mempunyai tajuk, cadangkan satu tajuk pendek yang sesuai dan slugnya (ini pengecualian kepada peraturan 1); editor boleh mengubahnya. 
 
 Watak dan glosari hanya untuk episod ini. Jangan dedahkan kejadian daripada episod lain. Cadangkan satu gambar hero dan sehingga 3 gambar inline.`;
 
 const FRAGMEN_DATA = `TUGAS
-Anda menerima sebuah fragmen (sedutan bermakna daripada karya lain) yang sudah ada. Tugas anda BUKAN menulis atau mengubah fragmen itu. Tugas anda hanya mengeluarkan maklumat yang Jalin perlukan, termasuk sumber karya asal (tajuk asal dalam bahasa asalnya, pengarang asal dan bahasa asal).
+Anda menerima sebuah fragmen (sedutan bermakna daripada karya lain) yang sudah ada. Tugas anda BUKAN menulis atau mengubah fragmen itu. Tugas anda hanya mengeluarkan maklumat yang Jalin perlukan, termasuk sumber karya asal (tajuk asal dalam bahasa asalnya, pengarang asal dan bahasa asal). Jika teks tidak mempunyai tajuk, cadangkan satu tajuk pendek yang sesuai dan slugnya (ini pengecualian kepada peraturan 1); editor boleh mengubahnya.
 
 Jangan menentukan status hak cipta; itu keputusan editor manusia. Cadangkan satu gambar hero dan sehingga 3 gambar inline.`;
 
@@ -55,14 +55,14 @@ Editor akan memberi maklumat tentang sebuah karya sumber dan bahagian yang dimah
 Setia kepada karya sumber. Jangan mereka petikan atau kejadian yang tiada dalam karya itu. Jika anda tidak dapat mengesahkan bahagian yang diminta, nyatakan dalam Dek dan jangan mereka. Letakkan teks fragmen dalam [KANDUNGAN]. Isi [SUMBER] dengan tajuk asal dalam bahasa asalnya, pengarang asal dan bahasa asal. Untuk Penulis, tulis: tidak dinyatakan. Jangan menentukan status hak cipta; itu keputusan editor manusia. Cadangkan satu gambar hero dan sehingga 3 gambar inline.`;
 
 const SINOPSIS_DATA = `TUGAS
-Anda menerima sebuah sinopsis (penceritaan semula editorial bagi karya lain) yang sudah ada. Tugas anda BUKAN menulis atau mengubah sinopsis itu. Tugas anda hanya mengeluarkan maklumat yang Jalin perlukan, termasuk sumber karya asal (tajuk asal dalam bahasa asalnya, pengarang asal dan bahasa asal).
+Anda menerima sebuah sinopsis (penceritaan semula editorial bagi karya lain) yang sudah ada. Tugas anda BUKAN menulis atau mengubah sinopsis itu. Tugas anda hanya mengeluarkan maklumat yang Jalin perlukan, termasuk sumber karya asal (tajuk asal dalam bahasa asalnya, pengarang asal dan bahasa asal). Jika teks tidak mempunyai tajuk, cadangkan satu tajuk pendek yang sesuai dan slugnya (ini pengecualian kepada peraturan 1); editor boleh mengubahnya.
 
 Jangan menentukan status hak cipta; itu keputusan editor manusia. Cadangkan satu gambar hero dan sehingga 3 gambar inline.`;
 
 const SINOPSIS_TULIS = `TUGAS
 Editor akan memberi maklumat tentang sebuah karya sumber (dalam bahan di bawah). Tugas anda ialah MENULIS sebuah sinopsis editorial dalam bahasa Melayu bagi karya itu, bersama semua maklumat yang Jalin perlukan.
 
-Peraturan sinopsis: ceritakan semula plot dan tema dengan kata-kata sendiri; setia kepada karya sumber; jangan mereka watak, kejadian atau petikan yang tiada dalam karya itu; jangan menyalin ayat daripada karya sumber. Panjang kira-kira 500 hingga 900 perkataan kecuali editor menyatakan lain. Gunakan bahasa yang jelas dan sedikit kosa kata Melayu tinggi secara semula jadi. Letakkan teks sinopsis dalam [KANDUNGAN]. Isi [SUMBER] dengan tajuk asal dalam bahasa asalnya, pengarang asal dan bahasa asal. Untuk Penulis, tulis: tidak dinyatakan. Jangan menentukan status hak cipta; itu keputusan editor manusia. Cadangkan satu gambar hero dan sehingga 3 gambar inline.`;
+Peraturan sinopsis: ceritakan semula plot dan tema dengan kata-kata sendiri; setia kepada karya sumber; jangan mereka watak, kejadian atau petikan yang tiada dalam karya itu; jangan menyalin ayat daripada karya sumber. Panjang sekurang-kurangnya 500 perkataan dan tidak lebih 900 perkataan (jangan berhenti awal) kecuali editor menyatakan lain. Gunakan bahasa yang jelas dan sedikit kosa kata Melayu tinggi secara semula jadi. Letakkan teks sinopsis dalam [KANDUNGAN]. Isi [SUMBER] dengan tajuk asal dalam bahasa asalnya, pengarang asal dan bahasa asal. Untuk Penulis, tulis: tidak dinyatakan. Jangan menentukan status hak cipta; itu keputusan editor manusia. Cadangkan satu gambar hero dan sehingga 3 gambar inline.`;
 
 export const DEFAULT_RECIPE_TEXT: Record<RecipeKey, string> = {
   "cerpen.data": CERPEN_DATA,

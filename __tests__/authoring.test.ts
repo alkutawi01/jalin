@@ -70,6 +70,60 @@ assert(bersiri.ok && bersiri.plan!.series?.kind === "baharu", "bersiri needs a s
 const noSeries = buildImportPlan(CERPEN.replace("Jenis: cerpen", "Jenis: bersiri"), TEXT, {});
 assert(!noSeries.ok && noSeries.errors.some((e) => e.code === "series_choice_missing"), "bersiri without a series choice is rejected");
 
+// Real ChatGPT behaviours seen in testing: blank-line separators, "istilah: maksud" shorthand,
+// quotes around Petikan, no title when the text has none.
+const REAL = `[KARYA]
+Jenis: cerpen
+Tajuk: tidak dinyatakan
+Slug: tidak dinyatakan
+Dek: Satu premis.
+Genre: keluarga
+
+[WATAK]
+Nama: Mak Limah
+Peranan: Nenek
+
+Nama: Hakim
+Peranan: Cucu
+
+[GLOSARI]
+beranda: bahagian rumah di hadapan
+
+lorong: jalan sempit
+
+[GAMBAR]
+Jenis: hero
+Petikan:
+Nisbah: 3:2
+Adegan: A veranda in the rain.
+Muka: no people in frame
+Alt: Beranda.
+
+Jenis: inline
+Petikan: "Lampu jalan berkelip-kelip pada senja itu, di lorong."
+Letak: selepas
+Nisbah: 4:3
+Adegan: A flickering street lamp at dusk.
+Muka: no people in frame
+Alt: Lampu jalan.`;
+const realText = ["Aina berdiri di beranda.", "Lampu jalan berkelip-kelip pada senja itu, di lorong."].join("\n\n");
+const noTitle = buildImportPlan(REAL, realText, {});
+assert(!noTitle.ok && noTitle.errors.some((e) => e.code === "title_missing"), "no title from chatbot and none typed is an error");
+const real = buildImportPlan(REAL, realText, { overrides: { title: "Beranda Senja" }, writerName: "X" });
+assert(real.ok && real.plan!.work.slug === "beranda-senja", "editor's title fills a missing title and derives the slug");
+assert(real.plan!.characters.length === 2, "items separated only by a blank line are all kept");
+assert(real.plan!.glossary.length === 2, "glossary shorthand 'istilah: maksud' is read");
+assert(real.plan!.visuals.length === 2 && real.plan!.visuals[1]!.anchor !== null, "quoted Petikan still resolves to its paragraph");
+
+const NOVELA = [
+  "[KARYA]", "Jenis: novela", "Tajuk: Dua Bab", "Slug: dua-bab", "Dek: Ujian.",
+  "", "[BAB]", "Nombor: 1", "Slug: bab-1", "Tajuk: Satu", "Tajuk dalam manuskrip: BAB 1 — Satu", "",
+  "Nombor: 2", "Slug: bab-2", "Tajuk: Dua", "Tajuk dalam manuskrip: BAB 2 — Dua",
+  "", "[GAMBAR]", "Jenis: hero", "Bab:", "Petikan:", "Nisbah: 3:2", "Adegan: A door.", "Muka: no people in frame", "Alt: Pintu."
+].join("\n");
+const novelaText = "BAB 1 — Satu\n\nIsi bab satu.\n\nBAB 2 — Dua\n\nIsi bab dua.";
+const nov = buildImportPlan(NOVELA, novelaText, { writerName: "X" });
+assert(nov.ok && nov.plan!.sections.length === 2 && nov.plan!.visuals.length === 1, "an empty 'Bab:' label in GAMBAR is not read as a [BAB] heading");
 assert(RECIPE_KEYS.length === 7, "seven recipes");
 assert(recipeFor("cerpen", "data") !== undefined && getRecipe("sinopsis.tulis").mode === "tulis", "recipes resolve");
 for (const key of RECIPE_KEYS) {

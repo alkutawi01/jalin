@@ -101,6 +101,16 @@ export interface ImportOptions {
     | { kind: "sambung"; seriesId: string };
 }
 
+/** Chatbots often wrap a quoted passage in an extra pair of quotation marks. */
+function stripWrappingQuotes(value: string): string {
+  const t = value.trim();
+  const pairs: [string, string][] = [["\"", "\""], ["“", "”"], ["'", "'"], ["‘", "’"], ["«", "»"]];
+  for (const [open, close] of pairs) {
+    if (t.length > 2 && t.startsWith(open) && t.endsWith(close)) return t.slice(open.length, t.length - close.length).trim();
+  }
+  return t;
+}
+
 function present(value: string | undefined | null): string | undefined {
   const trimmed = value?.trim();
   return trimmed ? trimmed : undefined;
@@ -108,7 +118,10 @@ function present(value: string | undefined | null): string | undefined {
 
 export function buildImportPlan(answer: string, manuscript: string, options: ImportOptions = {}): ImportResult {
   const mode = options.mode ?? "data";
-  const parsed = readParserAnswer(answer);
+  const parsed = readParserAnswer(answer, {
+    title: options.overrides?.title,
+    slug: options.overrides?.slug ?? options.slugOverride
+  });
   const errors: ImportIssue[] = [...parsed.errors];
   const warnings: ImportIssue[] = [...parsed.warnings];
 
@@ -268,7 +281,7 @@ export function buildImportPlan(answer: string, manuscript: string, options: Imp
       if (!v.anchor) {
         warnings.push({ code: "visual_no_anchor", message: `Visual inline #${index + 1} tiada anchor; tetapkan penempatan secara manual.` });
       } else {
-        const resolved = resolveAnchor(v.anchor, bodies, v.sectionSlug);
+        const resolved = resolveAnchor(v.anchor, bodies, v.sectionSlug) ?? resolveAnchor(stripWrappingQuotes(v.anchor), bodies, v.sectionSlug);
         if (!resolved) {
           warnings.push({
             code: "visual_anchor_not_found",

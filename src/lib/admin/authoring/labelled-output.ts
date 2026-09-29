@@ -47,6 +47,11 @@ function headingOf(line: string): OutputSection | null {
     .replace(/^[#>*_\s\[\(<-]+/, "")
     .replace(/[\]\)>*_:\s-]+$/, "");
   if (!stripped || stripped.length > 30) return null;
+  // "Bab:" or "Jenis:" are field labels (a GAMBAR item has "Bab:"), not headings. A heading is
+  // bracketed ([BAB]), a Markdown heading (## Bab), or written in capitals (BAB / BAB:).
+  const raw = line.trim().replace(/^[*_\s>-]+/, "");
+  const decorated = /^[\[<(#]/.test(raw);
+  if (!decorated && stripped !== stripped.toUpperCase()) return null;
   const key = fold(stripped).toUpperCase();
   return HEADING_ALIASES[key] ?? null;
 }
@@ -158,6 +163,13 @@ function parseBlock(section: OutputSection, lines: string[]): Record<string, str
     const match = line.match(LABEL_LINE);
     if (match) {
       const key = aliases[fold(match[1]!.replace(/\(.*?\)/g, ""))];
+      if (!key && section === "GLOSARI" && !("term" in fields) && !("meaning" in fields)) {
+        // Shorthand "perkataan: maksud" instead of the two labelled lines.
+        fields.term = cleanValue(match[1]!);
+        fields.meaning = cleanValue(match[2] ?? "");
+        current = "meaning";
+        continue;
+      }
       if (key) {
         current = key;
         if (!(key in fields)) fields[key] = cleanValue(match[2] ?? "");
@@ -172,11 +184,33 @@ function parseBlock(section: OutputSection, lines: string[]): Record<string, str
   return fields;
 }
 
-function splitBlocks(lines: string[]): string[][] {
+/**
+ * Items are split at an explicit separator (____), and also whenever a label
+ * repeats inside the same block: chatbots often separate items with a blank
+ * line only, and dropping the second item silently would lose data.
+ */
+function splitBlocks(section: OutputSection, lines: string[]): string[][] {
+  const aliases = FIELD_ALIASES[section];
   const blocks: string[][] = [[]];
+  let seen = new Set<string>();
   for (const line of lines) {
-    if (SEPARATOR.test(line)) blocks.push([]);
-    else blocks[blocks.length - 1]!.push(line);
+    if (SEPARATOR.test(line)) {
+      blocks.push([]);
+      seen = new Set();
+      continue;
+    }
+    const match = line.match(LABEL_LINE);
+    const known = match ? aliases[fold(match[1]!.replace(/\(.*?\)/g, ""))] : undefined;
+    // "perkataan: maksud" shorthand in GLOSARI: every such line starts a new item.
+    const key = known ?? (match && section === "GLOSARI" ? "__shorthand" : undefined);
+    if (key) {
+      if (seen.has(key)) {
+        blocks.push([]);
+        seen = new Set();
+      }
+      seen.add(key);
+    }
+    blocks[blocks.length - 1]!.push(line);
   }
   return blocks.filter((block) => block.some((line) => line.trim().length > 0));
 }
@@ -221,7 +255,7 @@ export function parseLabelledAnswer(answer: string): LabelledParse | null {
   const raw: Record<string, unknown> = {};
   const found: OutputSection[] = [];
   const blocksOf = (name: OutputSection): string[][] =>
-    sections.filter((s) => s.name === name).flatMap((s) => splitBlocks(s.lines));
+    sections.filter((s) => s.name === name).flatMap((s) => splitBlocks(name, s.lines));
 
   for (const name of SECTION_NAMES) {
     if (!sections.some((s) => s.name === name)) continue;

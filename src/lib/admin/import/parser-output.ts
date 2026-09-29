@@ -200,14 +200,25 @@ export interface ValidatedParserOutput {
 }
 
 /** Extract, parse and validate a chatbot answer. */
-export function readParserAnswer(answer: string): ValidatedParserOutput {
+/** The editor's own title/slug fill a gap when the chatbot could not find them in the text. */
+function withHints(raw: Record<string, unknown>, hints: { title?: string; slug?: string }): Record<string, unknown> {
+  const out = { ...raw };
+  const title = hints.title?.trim();
+  if (title && !text(out.title)) out.title = title;
+  const slug = hints.slug?.trim();
+  if (slug && !text(out.slug)) out.slug = slug;
+  else if (title && !text(out.slug)) out.slug = slugify(title);
+  return out;
+}
+
+export function readParserAnswer(answer: string, hints: { title?: string; slug?: string } = {}): ValidatedParserOutput {
   const errors: ImportIssue[] = [];
   const warnings: ImportIssue[] = [];
 
   if (looksLabelled(answer)) {
     const labelled = parseLabelledAnswer(answer);
     if (labelled) {
-      const data = normaliseParserOutput(labelled.raw, errors, warnings);
+      const data = normaliseParserOutput(withHints(labelled.raw, hints), errors, warnings);
       return { data: errors.length > 0 ? null : data, errors, warnings, report: "" };
     }
   }
@@ -246,7 +257,7 @@ export function readParserAnswer(answer: string): ValidatedParserOutput {
     return { data: null, errors, warnings, report: extracted.report };
   }
 
-  const data = normaliseParserOutput(raw, errors, warnings);
+  const data = normaliseParserOutput(withHints(raw, hints), errors, warnings);
   return { data: errors.length > 0 ? null : data, errors, warnings, report: extracted.report };
 }
 
