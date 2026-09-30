@@ -215,6 +215,14 @@ function RelatedWorks({
   typeLabel: string;
 }) {
   if (works.length === 0) return null;
+  // The grid shows one full-width card, two half-width cards, or three thirds.
+  // Accurate sizes keep the artwork sharp on high-density displays without
+  // downloading the full hero for every below-the-fold card.
+  const coverSizes = works.length === 1
+    ? "(max-width: 620px) calc(100vw - 40px), 580px"
+    : works.length === 2
+      ? "(max-width: 500px) calc(100vw - 40px), (max-width: 820px) 45vw, (max-width: 1244px) 47vw, 580px"
+      : "(max-width: 500px) calc(100vw - 40px), (max-width: 740px) 45vw, (max-width: 1244px) 31vw, 380px";
   return (
     <section className="related-works">
       <div className="site-shell">
@@ -222,7 +230,7 @@ function RelatedWorks({
           <h2>Selepas ini</h2>
           <p className="section-sub">Karya {typeLabel.toLowerCase()} lain daripada Jalin</p>
         </header>
-        <div className="related-works-grid">
+        <div className={`related-works-grid${works.length === 1 ? " related-works-grid-single" : ""}`}>
           {works.map((related) => (
             <a
               key={related.slug}
@@ -230,7 +238,7 @@ function RelatedWorks({
               href={`/kategori/${related.type}/${related.slug}`}
             >
               <div className="related-work-cover">
-                <WorkCover type={related.type} title={related.title} hero={related.hero} rightsYear={related.year} />
+                <WorkCover type={related.type} title={related.title} hero={related.hero} sizes={coverSizes} quality={85} rightsYear={related.year} />
               </div>
               <div className="related-work-body">
                 <h3>{related.title}</h3>

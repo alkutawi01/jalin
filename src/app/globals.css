@@ -2041,6 +2041,9 @@ dd { margin: 0; color: var(--ink); text-align: left; }
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 20px;
 }
+.related-works-grid-single {
+  grid-template-columns: minmax(0, 580px);
+}
 .related-work-card {
   display: block;
   border: 1px solid var(--line);
