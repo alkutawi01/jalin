@@ -530,7 +530,11 @@ export default function EditWorkPage() {
   }
 
   async function handleExplicitPublish() {
-    if (!(await confirmAction("Terbitkan karya ini secara eksplisit? Tindakan ini menetapkan status published."))) return;
+    if (!(await confirmAction("Terbitkan karya ini kepada pembaca? Karya akan kelihatan di laman awam."))) return;
+    await doPublish();
+  }
+
+  async function doPublish() {
     setPublishing(true);
     setPublishError(null);
     setPublishSuccess(null);
@@ -988,6 +992,28 @@ export default function EditWorkPage() {
     }
   }
 
+  async function publishNow() {
+    if (!(await confirmAction("Terbitkan karya ini kepada pembaca? Karya akan kelihatan di laman awam."))) return;
+    if (form.status !== "ready") {
+      setSaving(true);
+      try {
+        const res = await fetch(`/api/admin/works/${workId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: "ready" })
+        });
+        if (!res.ok) throw new Error("Gagal menyediakan karya untuk diterbitkan.");
+        setForm((prev) => (prev ? { ...prev, status: "ready" } : prev));
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+        setSaving(false);
+        return;
+      }
+      setSaving(false);
+    }
+    await doPublish();
+  }
+
   async function changeStatus(next: string) {
     setSaving(true);
     setError(null);
@@ -1032,6 +1058,7 @@ export default function EditWorkPage() {
         onRecheck={loadReadiness}
         onChangeStatus={changeStatus}
         onPublish={handleExplicitPublish}
+        onPublishNow={publishNow}
         onGoTab={(tab) => setActiveTab(tab as Tab)}
       />
 

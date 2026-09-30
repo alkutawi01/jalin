@@ -415,7 +415,7 @@ export function evaluatePublicationReadinessFromData(
         creditBlockers.push(
           issue(
             "credit_identity_xor",
-            `Kredit #${credit.id} mempunyai contributor_slug dan guest_name serentak (mesti XOR).`
+            `Kredit #${credit.id} mempunyai penyumbang dan nama tetamu sekali gus. Buka tab Kredit, edit kredit itu dan simpan semula dengan satu pilihan sahaja.`
           )
         );
       } else if (!hasContributor && !hasGuest) {
