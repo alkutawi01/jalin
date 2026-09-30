@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getVisual, updateVisual, deleteVisual } from "../../../../../lib/admin/visual-service";
+import { getDb } from "../../../../../lib/db";
+import { isImageMarker } from "../../../../../lib/reader/image-markers";
 
 export async function GET(
   request: NextRequest,
@@ -54,6 +56,19 @@ export async function PATCH(
       if (!validRoles.includes(body.role)) {
         return NextResponse.json({ error: "role tidak sah." }, { status: 400 });
       }
+    }
+
+    const role = body.role ?? existing.role;
+    if (role !== "hero" && isImageMarker(body.anchor)) {
+      const marker = String(body.anchor).trim();
+      const work = await getDb().selectFrom("works").where("id", "=", existing.work_id).select("body").executeTakeFirst();
+      if (work?.body?.split(marker).length !== 2) {
+        return NextResponse.json({ error: "Penanda gambar mesti muncul tepat sekali dalam manuskrip tersimpan." }, { status: 400 });
+      }
+      const assigned = await getDb().selectFrom("visuals")
+        .where("work_id", "=", existing.work_id).where("anchor", "=", marker).where("id", "!=", visualId)
+        .select("id").executeTakeFirst();
+      if (assigned) return NextResponse.json({ error: "Penanda ini sudah digunakan oleh gambar lain." }, { status: 409 });
     }
 
     const visual = await updateVisual(visualId, {

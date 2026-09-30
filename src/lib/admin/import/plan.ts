@@ -267,7 +267,7 @@ export function buildImportPlan(answer: string, manuscript: string, options: Imp
     if (knownNames.has(key)) {
       warnings.push({
         code: "glossary_term_is_name",
-        message: `"${g.term}" ialah nama watak/lokasi/sistem, bukan istilah glosari (ia akan digaris bawah pada setiap kemunculan). Dilangkau.`
+        message: `"${g.term}" ialah nama watak/lokasi/sistem, bukan istilah glosari. Dilangkau.`
       });
       continue;
     }

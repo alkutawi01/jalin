@@ -14,7 +14,8 @@ import type { WorkType } from "../../db/types";
 import { generateWorkId } from "../work-id";
 import { upsertSourceProvenance } from "../source-rights";
 import type { ImportPlan } from "./plan";
-import { estimateReadingMinutes, countWords } from "./text-utils";
+import { estimateReadingMinutes } from "./text-utils";
+import { materializeImportImageMarkers } from "./image-markers";
 
 export interface ImportedVisualRequest {
   id: number;
@@ -40,6 +41,7 @@ export async function importPlanAsDraft(
   }
   const db = getDb();
   const now = new Date().toISOString();
+  const draft = materializeImportImageMarkers(plan);
 
   const created = await db.transaction().execute(async (trx) => {
     const clash = await trx
@@ -61,7 +63,7 @@ export async function importPlanAsDraft(
         title: plan.work.title,
         type: plan.work.type as WorkType,
         status: "draft",
-        body: plan.work.body,
+        body: draft.work.body,
         genre: plan.work.genre,
         audience: plan.work.audience,
         dek: plan.work.dek,
@@ -118,7 +120,7 @@ export async function importPlanAsDraft(
         .execute();
     }
 
-    for (const section of plan.sections) {
+    for (const section of draft.sections) {
       await trx
         .insertInto("reading_sections")
         .values({
@@ -127,7 +129,7 @@ export async function importPlanAsDraft(
           title: section.title,
           position: section.position,
           body: section.body,
-          reading_minutes: estimateReadingMinutes(countWords(section.body)),
+          reading_minutes: estimateReadingMinutes(section.words),
           created_at: now,
           updated_at: now
         })
@@ -135,7 +137,7 @@ export async function importPlanAsDraft(
     }
 
     const visualRequests: ImportedVisualRequest[] = [];
-    for (const visual of plan.visuals) {
+    for (const visual of draft.visuals) {
       const row = await trx
         .insertInto("visual_requests")
         .values({

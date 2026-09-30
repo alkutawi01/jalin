@@ -52,7 +52,7 @@ for (const required of [
 
 assert(
   MASTER_PARSER_PROMPT.includes("JANGAN masukkan nama watak"),
-  "prompt forbids names as glossary terms (reader underlines every occurrence)"
+  "prompt forbids names as glossary terms (first occurrence gets the tooltip)"
 );
 
 console.log(`\n${passed} passed, ${failed} failed`);

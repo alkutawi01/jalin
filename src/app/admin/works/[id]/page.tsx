@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import WorkVisualUpload from "../../../../components/admin/WorkVisualUpload";
-import { paragraphAtCaret } from "../../../../lib/admin/manuscript-image-position";
+import { imageMarkers, insertImageMarker, isImageMarker } from "../../../../lib/reader/image-markers";
 import CreditRoleSelect from "../../../../components/admin/CreditRoleSelect";
 import AiCreditPicker from "../../../../components/admin/AiCreditPicker";
 import { roleDisplay } from "../../../../lib/credit-roles";
@@ -99,8 +99,9 @@ interface VisualData {
   sort_order: number;
 }
 
-function WorkImageCard({ visual, onEdit, onReplace, onDelete }: {
+function WorkImageCard({ visual, body, onEdit, onReplace, onDelete }: {
   visual: VisualData;
+  body: string;
   onEdit: (visual: VisualData) => void;
   onReplace: (id: number, file: File) => void;
   onDelete: (id: number) => void;
@@ -116,7 +117,10 @@ function WorkImageCard({ visual, onEdit, onReplace, onDelete }: {
         <p>{visual.alt || "Teks alternatif belum diisi."}</p>
         {visual.role !== "hero" ? (
           <p className="admin-form-hint">
-            {visual.anchor ? `${visual.place === "before" ? "Sebelum" : "Selepas"} perenggan: “${visual.anchor.slice(0, 110)}${visual.anchor.length > 110 ? "…" : ""}”` : "Tiada perenggan dipilih — gambar tidak muncul dalam karya."}
+            {!visual.anchor ? "Tiada penanda — gambar tidak muncul dalam karya."
+              : isImageMarker(visual.anchor)
+                ? body.includes(visual.anchor) ? `Penanda ${visual.anchor} · alihkan penanda dalam manuskrip untuk memindahkan gambar.` : `Penanda ${visual.anchor} tiada dalam manuskrip tersimpan — gambar tidak muncul.`
+                : body.includes(visual.anchor) ? `Anchor lama pada petikan: “${visual.anchor.slice(0, 90)}${visual.anchor.length > 90 ? "…" : ""}”. Tukar kepada penanda supaya suntingan teks tidak mengalihkan gambar.` : "Petikan anchor lama tidak ditemui — pilih penanda gambar baharu."}
           </p>
         ) : <p className="admin-form-hint">Dipaparkan pada kad dan kepala halaman karya.</p>}
         <div className="work-image-card-actions">
@@ -221,6 +225,7 @@ export default function EditWorkPage() {
   const [activeTab, setActiveTab] = useState<Tab>("content");
   const manuscriptRef = useRef<HTMLTextAreaElement>(null);
   const [selectedImageAnchor, setSelectedImageAnchor] = useState("");
+  const [savedBody, setSavedBody] = useState("");
   const [positionError, setPositionError] = useState("");
   useEffect(() => {
     const restoreTab = () => {
@@ -239,14 +244,16 @@ export default function EditWorkPage() {
   function chooseImagePosition() {
     const textarea = manuscriptRef.current;
     if (!textarea) return;
-    const paragraph = paragraphAtCaret(form.body, textarea.selectionStart);
-    if (!paragraph) {
+    const insertion = insertImageMarker(form.body, textarea.selectionStart, visuals.map((visual) => visual.anchor));
+    if (!insertion) {
       setPositionError("Letakkan kursor pada perenggan yang mengandungi teks dahulu.");
       return;
     }
     setPositionError("");
-    setSelectedImageAnchor(paragraph);
-    document.getElementById("work-image-upload")?.scrollIntoView({ behavior: "smooth", block: "center" });
+    setForm((prev) => ({ ...prev, body: insertion.body }));
+    setDirty(true);
+    setSelectedImageAnchor(insertion.marker);
+    toast(`Penanda ${insertion.marker} disisipkan. Simpan teks & maklumat sebelum memuat naik gambar.`, "success");
   }
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -367,6 +374,7 @@ export default function EditWorkPage() {
           editorPickRank: work.editor_pick_rank?.toString() || "",
           editorPickReason: work.editor_pick_reason ?? "",
         });
+        setSavedBody(work.body || "");
       } catch (err) {
         setError(err instanceof Error ? err.message : "Ralat memuatkan karya.");
       } finally {
@@ -733,8 +741,12 @@ export default function EditWorkPage() {
     }
   }
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function handleSubmit(e?: React.FormEvent) {
+    e?.preventDefault();
+    if (!form.title.trim() || !form.slug.trim() || !form.body.trim()) {
+      setError("Tajuk, alamat pautan dan manuskrip perlu diisi sebelum menyimpan.");
+      return;
+    }
     setSaving(true);
     setError(null);
     setSuccess(null);
@@ -755,7 +767,8 @@ export default function EditWorkPage() {
         throw new Error(data.error || "Gagal menyimpan.");
       }
 
-      setSuccess("Berjaya disimpan.");
+      setSuccess("Teks & maklumat karya disimpan.");
+      setSavedBody(form.body);
       setDirty(false);
       setTimeout(() => setSuccess(null), 3000);
       await loadReadiness();
@@ -845,14 +858,25 @@ export default function EditWorkPage() {
 
     setVisualError(null);
     if (editingVisual.role !== "hero" && !editingVisual.anchor?.trim()) {
-      setVisualError("Pilih perenggan dalam manuskrip sebelum menyimpan gambar dalam teks.");
+      setVisualError("Pilih penanda dalam manuskrip sebelum menyimpan gambar dalam teks.");
       return;
+    }
+    if (editingVisual.role !== "hero" && isImageMarker(editingVisual.anchor)) {
+      const marker = editingVisual.anchor!.trim();
+      if (savedBody.split(marker).length !== 2) {
+        setVisualError("Penanda mesti muncul tepat sekali dalam manuskrip yang telah disimpan.");
+        return;
+      }
+      if (visuals.some((visual) => visual.id !== editingVisual.id && visual.anchor === marker)) {
+        setVisualError("Penanda ini sudah digunakan oleh gambar lain. Pilih penanda yang kosong.");
+        return;
+      }
     }
 
     // Same read/write naming split as credits (see handleSaveCredit): the
     // GET response and editingVisual use the DB column name creation_id,
     // but the API expects creationId — translate it here.
-    const payload = { ...editingVisual, creationId: editingVisual.creation_id };
+    const payload = { ...editingVisual, anchor: editingVisual.role === "hero" ? null : editingVisual.anchor, creationId: editingVisual.creation_id };
 
     try {
       if (editingVisual.id) {
@@ -886,7 +910,8 @@ export default function EditWorkPage() {
       }
 
       setEditingVisual(null);
-      loadVisuals();
+      await loadVisuals();
+      toast("Butiran gambar disimpan.", "success");
     } catch (err) {
       setVisualError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
     }
@@ -905,8 +930,8 @@ export default function EditWorkPage() {
       const res = await fetch(`/api/admin/visuals/${id}/replace`, { method: "POST", body });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Gagal mengganti imej.");
+      await loadVisuals();
       toast(form.status === "published" ? "Gambar diganti. Semak halaman awam sebentar lagi." : "Gambar diganti. Semak pratonton sebelum menerbitkan.", "success");
-      loadVisuals();
     } catch (err) {
       setVisualError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
     }
@@ -1172,6 +1197,20 @@ export default function EditWorkPage() {
         </div>
       )}
 
+      <div className="a-work-savebar" aria-label="Simpan teks dan maklumat karya">
+        <div>
+          <strong>Teks &amp; maklumat karya</strong>
+          <span className="a-savebar-note" role="status">{dirty ? "Ada perubahan belum disimpan" : "Tiada perubahan tertunggak"}</span>
+        </div>
+        <div className="a-work-savebar-actions">
+          <a href="/admin/works" className="admin-btn admin-btn-outline">Kembali</a>
+          <button type="button" className="admin-btn admin-btn-primary" onClick={() => void handleSubmit()} disabled={saving || !dirty}>
+            {saving ? "Menyimpan…" : "Simpan teks & maklumat"}
+          </button>
+        </div>
+      </div>
+      <p className="admin-form-hint a-work-save-help">Gambar, kredit, glosari dan bahagian disimpan melalui tindakan masing-masing — tidak memerlukan butang ini.</p>
+
       <div className="admin-tabs">
         <button
           className={`admin-tab ${activeTab === "content" ? "admin-tab-active" : ""}`}
@@ -1256,25 +1295,12 @@ export default function EditWorkPage() {
               className="admin-textarea"
             />
             <span className="admin-form-hint">Gunakan Markdown. Ganti baris kosong untuk perenggan baharu.</span>
-            <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={chooseImagePosition} disabled={dirty}>
-              Letak gambar pada perenggan ini
+            <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={chooseImagePosition}>
+              Sisip penanda gambar selepas perenggan ini
             </button>
-            {dirty ? <span className="admin-form-hint">Simpan perubahan manuskrip dahulu sebelum menambah gambar.</span> : null}
+            <span className="admin-form-hint">Penanda seperti [[gambar:1]] tidak dipaparkan kepada pembaca. Pindahkan baris penanda untuk mengalihkan gambar, kemudian simpan teks &amp; maklumat.</span>
+            {dirty ? <span className="admin-form-hint">Simpan manuskrip sebelum memautkan gambar pada penanda baharu.</span> : null}
             {positionError ? <span className="admin-alert admin-alert-error" role="alert">{positionError}</span> : null}
-          </div>
-
-          <div className="admin-form-actions a-savebar">
-            <span className="a-savebar-note">{dirty ? "Ada perubahan yang belum disimpan" : "Semua perubahan disimpan"}</span>
-            <a href="/admin/works" className="admin-btn admin-btn-outline">
-              Kembali
-            </a>
-            <button
-              type="submit"
-              className="admin-btn admin-btn-primary"
-              disabled={saving}
-            >
-              {saving ? "Menyimpan..." : "Simpan Perubahan"}
-            </button>
           </div>
         </form>
       )}
@@ -1415,19 +1441,6 @@ export default function EditWorkPage() {
             ke Markdown.
           </p>
 
-          <div className="admin-form-actions a-savebar">
-            <span className="a-savebar-note">{dirty ? "Ada perubahan yang belum disimpan" : "Semua perubahan disimpan"}</span>
-            <a href="/admin/works" className="admin-btn admin-btn-outline">
-              Kembali
-            </a>
-            <button
-              type="submit"
-              className="admin-btn admin-btn-primary"
-              disabled={saving}
-            >
-              {saving ? "Menyimpan..." : "Simpan Perubahan"}
-            </button>
-          </div>
         </form>
       )}
 
@@ -1823,7 +1836,7 @@ export default function EditWorkPage() {
                   </select>
                 </div>
 
-                <div className="admin-form-group">
+                {!isImageMarker(editingVisual.anchor) && <div className="admin-form-group">
                   <label>Kedudukan</label>
                   <select
                     value={editingVisual.place || "after"}
@@ -1835,7 +1848,7 @@ export default function EditWorkPage() {
                     <option value="before">Sebelum</option>
                     <option value="after">Selepas</option>
                   </select>
-                </div>
+                </div>}
               </div>
 
               <div className="admin-form-group">
@@ -1851,18 +1864,17 @@ export default function EditWorkPage() {
                 />
               </div>
 
-              <div className="admin-form-group">
-                <label>Perenggan tempat gambar muncul</label>
-                <input
-                  type="text"
-                  value={editingVisual.anchor || ""}
-                  onChange={(e) => setEditingVisual((prev) => ({
-                    ...prev,
-                    anchor: e.target.value,
-                  }))}
-                  placeholder="Salin perenggan tepat daripada manuskrip"
-                />
-              </div>
+              {editingVisual.role !== "hero" && <div className="admin-form-group">
+                <label htmlFor="edit-image-marker">Penanda dalam manuskrip</label>
+                <select id="edit-image-marker" value={editingVisual.anchor || ""} onChange={(e) => setEditingVisual((prev) => ({ ...prev, anchor: e.target.value }))}>
+                  <option value="">Pilih penanda…</option>
+                  {editingVisual.anchor && !isImageMarker(editingVisual.anchor) && <option value={editingVisual.anchor}>Anchor lama — kekalkan sementara</option>}
+                  {imageMarkers(savedBody).map((marker) => (
+                    <option key={marker} value={marker} disabled={visuals.some((visual) => visual.id !== editingVisual.id && visual.anchor === marker)}>{marker}</option>
+                  ))}
+                </select>
+                <span className="admin-form-hint">Untuk memindahkan gambar: sisip penanda di manuskrip, simpan teks &amp; maklumat, kemudian pilih penanda itu di sini. Gambar sedia ada tidak diganti.</span>
+              </div>}
 
               <div className="admin-form-actions">
                 <button
@@ -1884,20 +1896,20 @@ export default function EditWorkPage() {
           )}
 
           {visuals.length === 0 ? (
-            <p className="admin-table-empty">Belum ada gambar. Tambah gambar utama untuk kad karya, atau letakkan gambar pada perenggan manuskrip.</p>
+            <p className="admin-table-empty">Belum ada gambar. Tambah gambar utama, atau sisip penanda dalam manuskrip untuk gambar dalam teks.</p>
           ) : (
             <div className="work-image-list">
               {visuals.filter((visual) => visual.role === "hero").map((visual) => (
-                <WorkImageCard key={visual.id} visual={visual} onEdit={setEditingVisual} onReplace={handleReplaceVisual} onDelete={handleDeleteVisual} />
+                <WorkImageCard key={visual.id} visual={visual} body={savedBody} onEdit={setEditingVisual} onReplace={handleReplaceVisual} onDelete={handleDeleteVisual} />
               ))}
               {visuals.filter((visual) => visual.role !== "hero").length > 0 && <h4>Gambar dalam teks</h4>}
               {visuals.filter((visual) => visual.role !== "hero").map((visual) => (
-                <WorkImageCard key={visual.id} visual={visual} onEdit={setEditingVisual} onReplace={handleReplaceVisual} onDelete={handleDeleteVisual} />
+                <WorkImageCard key={visual.id} visual={visual} body={savedBody} onEdit={setEditingVisual} onReplace={handleReplaceVisual} onDelete={handleDeleteVisual} />
               ))}
             </div>
           )}
           <div id="work-image-upload">
-            <WorkVisualUpload workId={workId} hasHero={visuals.some((v) => v.role === "hero")} published={form.status === "published"} suggestedAnchor={selectedImageAnchor} onDone={loadVisuals} />
+            <WorkVisualUpload workId={workId} hasHero={visuals.some((v) => v.role === "hero")} published={form.status === "published"} suggestedAnchor={selectedImageAnchor} markers={imageMarkers(savedBody).filter((marker) => !visuals.some((visual) => visual.anchor === marker))} onDone={loadVisuals} />
           </div>
         </div>
       )}
@@ -1919,7 +1931,7 @@ export default function EditWorkPage() {
                 source: "",
               })}
             >
-              + Tambah Term
+              + Tambah istilah
             </button>
           </div>
 
@@ -1977,7 +1989,7 @@ export default function EditWorkPage() {
                   className="admin-btn admin-btn-primary"
                   onClick={handleSaveGlossary}
                 >
-                  Simpan Term
+                  Simpan istilah
                 </button>
               </div>
             </div>

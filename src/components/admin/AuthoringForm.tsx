@@ -561,7 +561,7 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
               ))}
 
               <h3>Glosari ({review.glossary.length})</h3>
-              <p className="admin-form-hint">Setiap istilah digaris bawah pada semua kemunculannya dalam teks.</p>
+              <p className="admin-form-hint">Tooltip hanya muncul pada kemunculan pertama setiap istilah dalam halaman bacaan.</p>
               {review.glossary.length === 0 ? <p className="admin-form-hint">Tiada istilah glosari.</p> : null}
               {review.glossary.map((g, i) => (
                 <div className="admin-form-row" key={i}>
@@ -603,7 +603,7 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
               <h3>Gambar ({review.visuals.filter((v) => !v.removed).length})</h3>
               <p className="admin-form-hint">
                 Arahan gambar disediakan oleh chatbot. Anda boleh ubah sebelum menyimpan; selepas disimpan, arahan penuh boleh
-                disalin dan imej dimuat naik di tab Visual karya.
+                disalin dan imej dimuat naik di editor karya. Gambar dalam teks akan mendapat penanda bernombor yang boleh dialihkan dalam manuskrip.
               </p>
               {review.visuals.map((v, i) => (
                 <div className="admin-section" key={v.originalIndex} style={v.removed ? { opacity: 0.45 } : undefined}>
@@ -611,7 +611,7 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
                   {v.sectionSlug ? <> · {v.sectionSlug}</> : null}
                   {v.role === "inline" ? (
                     <p className="admin-form-hint">
-                      {v.anchorStart ? <>Diletakkan {v.place === "before" ? "sebelum" : "selepas"} perenggan: “{v.anchorStart}…”</> : "Kedudukan belum ditetapkan (petikan tidak ditemui)."}
+                      {v.anchorStart ? <>Selepas draf disimpan, gambar ini mendapat penanda berhampiran petikan: “{v.anchorStart}…”</> : "Kedudukan belum ditetapkan (petikan tidak ditemui)."}
                     </p>
                   ) : null}
                   {v.removed ? (

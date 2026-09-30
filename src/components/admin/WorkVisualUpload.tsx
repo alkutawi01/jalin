@@ -1,18 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 /**
  * Upload an image straight from a work. One step: the file is
  * stored, the editor's action is recorded as approval, and the image is attached to
  * the work. The work is never published by this.
  */
-export default function WorkVisualUpload({ workId, onDone, hasHero, published, suggestedAnchor = "" }: { workId: string; onDone: () => void; hasHero: boolean; published: boolean; suggestedAnchor?: string }) {
+export default function WorkVisualUpload({ workId, onDone, hasHero, published, suggestedAnchor = "", markers }: { workId: string; onDone: () => void; hasHero: boolean; published: boolean; suggestedAnchor?: string; markers: string[] }) {
   const [role, setRole] = useState(hasHero ? "inline" : "hero");
   const [alt, setAlt] = useState("");
   const [anchor, setAnchor] = useState("");
-  const [place, setPlace] = useState("after");
   const [file, setFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -21,13 +21,13 @@ export default function WorkVisualUpload({ workId, onDone, hasHero, published, s
     if (hasHero && role === "hero") setRole("inline");
   }, [hasHero, role]);
   useEffect(() => {
-    if (suggestedAnchor) {
+    if (suggestedAnchor && markers.includes(suggestedAnchor)) {
       setRole("inline");
       setAnchor(suggestedAnchor);
     }
-  }, [suggestedAnchor]);
+  }, [suggestedAnchor, markers]);
 
-  const canSubmit = !!file && alt.trim().length > 0 && (role === "hero" || anchor.trim().length > 0) && !busy;
+  const canSubmit = !!file && alt.trim().length > 0 && (role === "hero" || markers.includes(anchor)) && !busy;
 
   async function submit() {
     if (!file) return;
@@ -40,14 +40,15 @@ export default function WorkVisualUpload({ workId, onDone, hasHero, published, s
       body.append("role", role);
       body.append("alt", alt);
       if (role !== "hero") {
-        if (anchor.trim()) body.append("anchor", anchor.trim());
-        body.append("place", place);
+        body.append("anchor", anchor);
+        body.append("place", "after");
       }
       const res = await fetch(`/api/admin/works/${workId}/visuals/upload`, { method: "POST", body });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Gagal memuat naik imej.");
       setSuccess(published ? "Gambar disimpan. Semak pratonton dan halaman awam; perubahan mungkin mengambil masa sehingga 30 saat untuk muncul." : "Gambar disimpan. Semak pratonton sebelum menerbitkan karya.");
       setFile(null);
+      if (fileInputRef.current) fileInputRef.current.value = "";
       setAlt("");
       setAnchor("");
       onDone();
@@ -62,8 +63,7 @@ export default function WorkVisualUpload({ workId, onDone, hasHero, published, s
     <div className="admin-credit-form" style={{ marginBottom: 16 }}>
       <h4 style={{ margin: "0 0 8px" }}>Tambah gambar</h4>
       <p className="admin-form-hint">
-        Pilih imej (PNG/JPEG/WebP, maksimum 10 MB; disyorkan bawah 4 MB). Ia disimpan dan dipautkan terus. Direkod sebagai sumber
-        &quot;manual&quot;.
+        Pilih imej (PNG/JPEG/WebP, maksimum 10 MB; disyorkan bawah 4 MB). Muat naik menyimpan dan memautkan gambar terus; tidak perlu tekan “Simpan teks &amp; maklumat” selepasnya.
       </p>
 
       {error ? <div className="admin-alert admin-alert-error">{error}</div> : null}
@@ -81,6 +81,7 @@ export default function WorkVisualUpload({ workId, onDone, hasHero, published, s
           <label htmlFor="wvu-file">Fail imej *</label>
           <input
             id="wvu-file"
+            ref={fileInputRef}
             type="file"
             accept="image/png,image/jpeg,image/webp"
             onChange={(e) => setFile(e.target.files?.[0] ?? null)}
@@ -94,18 +95,13 @@ export default function WorkVisualUpload({ workId, onDone, hasHero, published, s
       </div>
 
       {role !== "hero" ? (
-        <div className="admin-form-row">
-          <div className="admin-form-group">
-            <label htmlFor="wvu-anchor">Perenggan tempat gambar muncul</label>
-            <textarea id="wvu-anchor" className="admin-textarea" rows={3} value={anchor} onChange={(e) => setAnchor(e.target.value)} />
-          </div>
-          <div className="admin-form-group">
-            <label htmlFor="wvu-place">Letak imej</label>
-            <select id="wvu-place" value={place} onChange={(e) => setPlace(e.target.value)}>
-              <option value="after">Selepas petikan penanda</option>
-              <option value="before">Sebelum petikan penanda</option>
-            </select>
-          </div>
+        <div className="admin-form-group">
+          <label htmlFor="wvu-anchor">Penanda gambar dalam manuskrip *</label>
+          <select id="wvu-anchor" value={markers.includes(anchor) ? anchor : ""} onChange={(e) => setAnchor(e.target.value)}>
+            <option value="">Pilih penanda yang belum digunakan…</option>
+            {markers.map((marker) => <option key={marker} value={marker}>{marker}</option>)}
+          </select>
+          <span className="admin-form-hint">{markers.length === 0 ? "Tiada penanda kosong. Sisip penanda baharu dalam manuskrip dan simpan teks & maklumat dahulu." : "Gambar muncul di tempat penanda ini. Alihkan baris penanda dalam manuskrip untuk mengubah kedudukannya."}</span>
         </div>
       ) : null}
 

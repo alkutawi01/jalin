@@ -1,3 +1,5 @@
+import { isImageMarker, stripImageMarkers } from "./image-markers";
+
 export interface AnchoredVisual {
   role?: string | null;
   anchor?: string | null;
@@ -11,7 +13,14 @@ export function placeVisuals<T extends AnchoredVisual>(body: string, visuals: T[
     .map((visual, index) => {
       const anchor = visual.anchor!.trim();
       const start = body.indexOf(anchor);
-      return { visual, index, position: visual.place === "before" ? start : start + anchor.length, found: start >= 0 };
+      const marker = isImageMarker(anchor);
+      return {
+        visual,
+        index,
+        position: marker || visual.place === "before" ? start : start + anchor.length,
+        end: marker ? start + anchor.length : null,
+        found: start >= 0,
+      };
     })
     .filter((item) => item.found)
     .sort((a, b) => a.position - b.position || a.index - b.index);
@@ -19,10 +28,11 @@ export function placeVisuals<T extends AnchoredVisual>(body: string, visuals: T[
   const result: (string | T)[] = [];
   let cursor = 0;
   for (const item of placements) {
-    result.push(body.slice(cursor, item.position));
+    if (item.position < cursor) continue;
+    result.push(stripImageMarkers(body.slice(cursor, item.position)));
     result.push(item.visual);
-    cursor = item.position;
+    cursor = item.end ?? item.position;
   }
-  result.push(body.slice(cursor));
+  result.push(stripImageMarkers(body.slice(cursor)));
   return result;
 }
