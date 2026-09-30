@@ -3,7 +3,9 @@ import { SiteFooter, SiteHeader } from "../../../../components/reader/StoryChrom
 import { initContentRepository } from "../../../../lib/content";
 import { displayableGenre } from "../../../../lib/reader/genre-display";
 
-export const dynamicParams = false;
+// Works are published after the build, so unknown slugs must render on demand (and refresh every minute).
+export const dynamicParams = true;
+export const revalidate = 60;
 
 export async function generateStaticParams() {
   const params: { seriesSlug: string }[] = [];

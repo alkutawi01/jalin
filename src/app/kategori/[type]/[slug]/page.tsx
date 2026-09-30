@@ -33,7 +33,9 @@ import type {
 } from "../../../../components/reader/types";
 import type { ReadingSection, WorkType } from "../../../../lib/content/types";
 
-export const dynamicParams = false;
+// Works are published after the build, so unknown slugs must render on demand (and refresh every minute).
+export const dynamicParams = true;
+export const revalidate = 60;
 
 export async function generateStaticParams() {
   const types: WorkType[] = ["cerpen", "novela", "bersiri", "fragmen", "sinopsis"];
