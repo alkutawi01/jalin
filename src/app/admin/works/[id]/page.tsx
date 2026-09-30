@@ -1693,13 +1693,21 @@ export default function EditWorkPage() {
             <div className="admin-alert admin-alert-error">{visualError}</div>
           )}
 
+          {visuals.length > 0 && !visuals.some((v) => v.role === "hero") ? (
+            <div className="admin-alert admin-alert-warning">
+              Karya ini belum ada visual berperanan <strong>Hero</strong>. Halaman utama dan kad hanya memaparkan gambar
+              Hero; tanpanya karya dipaparkan dengan huruf sahaja. Tukar peranan satu gambar kepada Hero.
+            </div>
+          ) : null}
+
           <div className="admin-credits-header">
             <h3>Visual Karya</h3>
             <button
               type="button"
               className="admin-btn admin-btn-sm admin-btn-primary"
               onClick={() => setEditingVisual({
-                role: "inline",
+                // The first image of a work is its hero; a wrong role hides it from the homepage.
+                role: visuals.some((v) => v.role === "hero") ? "inline" : "hero",
                 src: "",
                 alt: "",
                 place: "after",
