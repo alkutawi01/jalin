@@ -9,6 +9,7 @@ import { roleDisplay } from "../../../../lib/credit-roles";
 import WorkStatusPanel from "../../../../components/admin/WorkStatusPanel";
 import { toast, confirmAction } from "../../../../lib/admin/dialogs";
 import LoadingBlock from "../../../../components/admin/LoadingBlock";
+import WorkImagesPanel from "../../../../components/admin/WorkImagesPanel";
 
 const WORK_TYPES = [
   { value: "cerpen", label: "Cerpen" },
@@ -1708,6 +1709,7 @@ export default function EditWorkPage() {
             </button>
           </div>
 
+          <WorkImagesPanel workId={workId} onChanged={loadVisuals} />
           <WorkVisualUpload workId={workId} onDone={loadVisuals} />
 
           {editingVisual && (

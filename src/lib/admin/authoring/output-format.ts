@@ -80,7 +80,7 @@ function watak(recipe: Recipe): string {
 function glosari(recipe: Recipe): string {
   const lines = ["[GLOSARI]", "Istilah: (perkataan seperti dieja dalam teks)", "Maksud: (maksud berdasarkan konteks dalam teks)"];
   if (recipe.kind === "novela") lines.push("Muncul di: (slug bab pertama istilah ini digunakan)");
-  lines.push("____", "(ulang untuk setiap istilah, 3 hingga 8 sahaja)");
+  lines.push("____", "(ulang untuk setiap istilah, sehingga 8 sahaja; kosongkan jika tiada perkataan sesuai)");
   return lines.join("\n");
 }
 
