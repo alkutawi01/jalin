@@ -112,7 +112,7 @@ export default function WorkVisualUpload({ workId, onDone }: { workId: string; o
 
       <label className="admin-checkbox-label">
         <input type="checkbox" checked={approved} onChange={(e) => setApproved(e.target.checked)} /> Saya telah menyemak imej ini
-        (muka manusia tidak jelas, sepadan dengan adegan) dan meluluskannya.
+        (muka manusia tidak jelas, sepadan dengan adegan, tiada teks, nombor, jenama atau bingkai pada imej) dan meluluskannya.
       </label>
 
       <div className="admin-form-actions">

@@ -45,6 +45,7 @@ interface VisualData {
   src: string;
   alt: string | null;
   anchor: string | null;
+  place?: string | null;
 }
 
 interface SectionData {
@@ -88,6 +89,7 @@ export default function PreviewWorkPage() {
   const [activeSectionId, setActiveSectionId] = useState<number | null>(null);
   const [series, setSeries] = useState<SeriesData | null>(null);
   const [seriesEntries, setSeriesEntries] = useState<SeriesEntryData[]>([]);
+  const [contributorNames, setContributorNames] = useState<Record<string, { name: string; virtual: boolean }>>({});
 
   useEffect(() => {
     async function loadWork() {
@@ -96,6 +98,12 @@ export default function PreviewWorkPage() {
         if (!res.ok) throw new Error("Karya tidak ditemui.");
         const w: WorkData = await res.json();
         setWork(w);
+        fetch("/api/admin/contributors")
+          .then((r) => (r.ok ? r.json() : []))
+          .then((list: { slug: string; display_name: string; kind: string }[]) =>
+            setContributorNames(Object.fromEntries(list.map((c) => [c.slug, { name: c.display_name, virtual: c.kind === "virtual" }])))
+          )
+          .catch(() => {});
         const [cr, gl, vs, secs] = await Promise.all([
           fetch(`/api/admin/credits?workId=${workId}`).then((r) => (r.ok ? r.json() : [])),
           fetch(`/api/admin/glossary?workId=${workId}`).then((r) => (r.ok ? r.json() : [])),
@@ -282,12 +290,34 @@ export default function PreviewWorkPage() {
           )}
         </div>
 
+        {visuals.filter((v) => v.role !== "hero").length > 0 && (
+          <section style={{ marginTop: "1.5rem" }}>
+            <h3>Gambar dalam teks ({visuals.filter((v) => v.role !== "hero").length})</h3>
+            <p className="admin-form-hint">Kedudukan sebenar mengikut anchor; di sini disenaraikan untuk semakan.</p>
+            {visuals
+              .filter((v) => v.role !== "hero")
+              .map((v) => (
+                <figure key={v.src} style={{ margin: "1rem 0" }}>
+                  <img src={v.src} alt={v.alt || ""} style={{ maxWidth: "100%", height: "auto" }} />
+                  <figcaption className="admin-form-hint">
+                    {v.alt || "(tiada alt text)"}
+                    {v.anchor ? ` · ${v.place === "before" ? "sebelum" : "selepas"}: “${v.anchor.slice(0, 70)}…”` : ""}
+                  </figcaption>
+                </figure>
+              ))}
+          </section>
+        )}
+
         {credits.filter((c) => c.is_public && c.byline).length > 0 && (
           <footer style={{ marginTop: "1.5rem", opacity: 0.85 }}>
             <strong>Kredit byline:</strong>{" "}
             {credits
               .filter((c) => c.is_public && c.byline)
-              .map((c) => c.guest_name || c.contributor_slug || c.role_label)
+              .map((c) => {
+                const person = c.contributor_slug ? contributorNames[c.contributor_slug] : undefined;
+                if (person) return person.virtual ? `${person.name} · Maya` : person.name;
+                return c.guest_name || c.contributor_slug || c.role_label;
+              })
               .join(" · ")}
           </footer>
         )}

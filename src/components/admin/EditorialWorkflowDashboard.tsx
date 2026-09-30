@@ -29,7 +29,7 @@ export function EditorialWorkflowDashboard() {
   const fetchData = () => {
     setLoading(true);
     fetch("/api/admin/editorial-dashboard")
-      .then(res => res.json())
+      .then(res => (res.ok ? res.json() : Promise.reject(new Error("gagal"))))
       .then(setData)
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -53,8 +53,8 @@ export function EditorialWorkflowDashboard() {
     if (result.success) fetchData();
   };
 
-  if (loading) return <p>Loading dashboard...</p>;
-  if (!data) return <p>Dashboard data not available</p>;
+  if (loading) return <p>Memuatkan…</p>;
+  if (!data) return <p>Data belum tersedia untuk paparan ini.</p>;
 
   return (
     <div className="admin-workflow-dashboard">

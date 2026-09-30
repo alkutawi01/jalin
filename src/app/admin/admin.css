@@ -425,3 +425,8 @@
 .a-danger-zone p { margin: 2px 0 0; }
 .a-btn-danger-outline { background: var(--a-surface); color: var(--a-danger); border-color: #e3b5b0; }
 .a-btn-danger-outline:hover { background: var(--a-danger-bg); border-color: var(--a-danger); }
+
+.a-filterbar { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 14px; }
+.a-filterbar input[type="search"] { flex: 1 1 220px; width: auto; min-height: 38px; padding: 8px 12px; border: 1px solid var(--a-line-strong); border-radius: var(--a-radius); background: var(--a-surface); font: inherit; }
+.a-filterbar input[type="search"]:focus { outline: none; border-color: var(--a-accent); box-shadow: 0 0 0 3px var(--a-focus); }
+.a-filterbar select { flex: 0 0 auto; width: auto; min-width: 150px; }

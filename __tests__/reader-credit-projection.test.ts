@@ -104,7 +104,7 @@ console.log("reader credit projection tests\n");
 }
 
 {
-  const unknownRole: ContributorRef[] = [{ slug: "izzat-anas", role: "fact_checker", byline: false }];
+  const unknownRole: ContributorRef[] = [{ slug: "izzat-anas", role: "internal_only_key", byline: false }];
   assert(projectEditorialCredits(unknownRole).length === 0, "Unrecognised internal role keys are hidden");
 }
 

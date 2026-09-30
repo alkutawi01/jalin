@@ -806,6 +806,27 @@ export default function EditWorkPage() {
     }
   }
 
+  async function handleReplaceVisual(id: number, file: File) {
+    const ok = await confirmAction(
+      "Ganti imej ini dengan fail yang dipilih? Anda mengesahkan imej baharu telah disemak: tiada wajah jelas, tiada teks atau jenama pada imej, dan sepadan dengan adegan.",
+      { confirmLabel: "Ya, ganti" }
+    );
+    if (!ok) return;
+    setVisualError(null);
+    try {
+      const body = new FormData();
+      body.append("file", file);
+      body.append("approved", "true");
+      const res = await fetch(`/api/admin/visuals/${id}/replace`, { method: "POST", body });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Gagal mengganti imej.");
+      toast("Imej diganti. Karya belum diterbitkan semula.", "success");
+      loadVisuals();
+    } catch (err) {
+      setVisualError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+    }
+  }
+
   async function handleDeleteVisual(id: number) {
     if (!(await confirmAction("Pasti ingin memadam visual ini?", { danger: true, confirmLabel: "Ya, teruskan" }))) return;
 
@@ -1816,7 +1837,7 @@ export default function EditWorkPage() {
                 <thead>
                   <tr>
                     <th>Role</th>
-                    <th>Src</th>
+                    <th>Imej</th>
                     <th>Alt</th>
                     <th>Provider</th>
                     <th>Order</th>
@@ -1831,7 +1852,12 @@ export default function EditWorkPage() {
                           {visual.role}
                         </span>
                       </td>
-                      <td><code>{visual.src.substring(0, 30)}...</code></td>
+                      <td>
+                        <a href={visual.src} target="_blank" rel="noreferrer" title="Buka imej penuh">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={visual.src} alt={visual.alt || ""} style={{ width: 88, height: 66, objectFit: "cover", borderRadius: 6, display: "block", border: "1px solid var(--a-line)" }} />
+                        </a>
+                      </td>
                       <td>{visual.alt || "—"}</td>
                       <td>{visual.provider || "—"}</td>
                       <td>{visual.sort_order}</td>
@@ -1844,6 +1870,20 @@ export default function EditWorkPage() {
                           >
                             Edit
                           </button>
+                          <label className="admin-btn admin-btn-sm" style={{ cursor: "pointer" }} title="Ganti imej ini; kedudukan dan alt text dikekalkan">
+                            Ganti imej
+                            <input
+                              type="file"
+                              accept="image/png,image/jpeg,image/webp"
+                              hidden
+                              onChange={async (e) => {
+                                const file = e.target.files?.[0];
+                                e.target.value = "";
+                                if (!file) return;
+                                await handleReplaceVisual(visual.id, file);
+                              }}
+                            />
+                          </label>
                           <button
                             type="button"
                             className="admin-btn admin-btn-sm admin-btn-danger"
