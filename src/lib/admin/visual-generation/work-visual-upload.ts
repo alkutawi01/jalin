@@ -1,8 +1,8 @@
 /**
- * One-step visual upload from a work's Visual tab.
+ * One-step visual upload from a work's editor.
  *
- * The editor picks an image, writes the alt text and ticks that they have
- * reviewed and approved it. Behind the scenes this still goes through the
+ * The editor picks an image, writes the alt text and submits the upload.
+ * The authenticated editor's action is recorded as approval. This goes through the
  * same records as every other visual (visual_request -> stored asset ->
  * approval -> attach), so provenance ("manual" + tool name) and the
  * human-approval record are kept. It never publishes the work.
@@ -23,8 +23,6 @@ export interface WorkVisualUploadInput {
   place: "before" | "after";
   toolName: string | null;
   bytes: Buffer;
-  /** The editor's explicit "I reviewed and approve this image" tick. */
-  approved: boolean;
   /** Set when replacing an existing hero, so the one-hero rule does not block it. */
   allowExistingHero?: boolean;
   actor: string;
@@ -47,14 +45,6 @@ export async function uploadVisualForWork(
   if (input.role !== "hero" && !input.anchor?.trim()) {
     return { ok: false, status: 400, error: "Imej dalam teks memerlukan petikan penanda yang wujud dalam karya." };
   }
-  if (!input.approved) {
-    return {
-      ok: false,
-      status: 400,
-      error: "Sahkan bahawa anda telah menyemak dan meluluskan imej ini sebelum dimuat naik."
-    };
-  }
-
   const work = await db.selectFrom("works").where("id", "=", input.workId).select(["id", "body"]).executeTakeFirst();
   if (!work) return { ok: false, status: 404, error: "Karya tidak ditemui." };
   if (input.role !== "hero" && !work.body?.includes(input.anchor!.trim())) {
@@ -151,7 +141,7 @@ export type ReplaceVisualResult =
  */
 export async function replaceVisualImage(
   db: Kysely<Database>,
-  input: { visualId: number; bytes: Buffer; approved: boolean; toolName: string | null; altText?: string; actor: string }
+  input: { visualId: number; bytes: Buffer; toolName: string | null; altText?: string; actor: string }
 ): Promise<ReplaceVisualResult> {
   const old = await db.selectFrom("visuals").where("id", "=", input.visualId).selectAll().executeTakeFirst();
   if (!old) return { ok: false, status: 404, error: "Visual tidak ditemui." };
@@ -164,7 +154,6 @@ export async function replaceVisualImage(
     place: old.place === "before" ? "before" : "after",
     toolName: input.toolName,
     bytes: input.bytes,
-    approved: input.approved,
     actor: input.actor,
     allowExistingHero: true
   });

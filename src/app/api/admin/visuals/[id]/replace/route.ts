@@ -5,7 +5,7 @@ import { replaceVisualImage } from "../../../../../../lib/admin/visual-generatio
 
 /**
  * POST /api/admin/visuals/[id]/replace  (multipart/form-data)
- *   file (image), approved ("true"), optional alt, tool.
+ *   file (image), optional alt, tool.
  * Replaces the image of an attached visual, keeping its role, position and alt text.
  */
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -29,7 +29,6 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const result = await replaceVisualImage(getDb(), {
       visualId,
       bytes: Buffer.from(await file.arrayBuffer()),
-      approved: text("approved") === "true",
       toolName: text("tool").slice(0, 80) || null,
       altText: text("alt") || undefined,
       actor: admin.email || admin.id

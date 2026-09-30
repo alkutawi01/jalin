@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 
 /**
- * Upload an image straight from a work's Visual tab. One step: the file is
- * stored, the editor's approval is recorded, and the image is attached to
+ * Upload an image straight from a work. One step: the file is
+ * stored, the editor's action is recorded as approval, and the image is attached to
  * the work. The work is never published by this.
  */
 export default function WorkVisualUpload({ workId, onDone, hasHero, published, suggestedAnchor = "" }: { workId: string; onDone: () => void; hasHero: boolean; published: boolean; suggestedAnchor?: string }) {
@@ -12,7 +12,6 @@ export default function WorkVisualUpload({ workId, onDone, hasHero, published, s
   const [alt, setAlt] = useState("");
   const [anchor, setAnchor] = useState("");
   const [place, setPlace] = useState("after");
-  const [approved, setApproved] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -28,7 +27,7 @@ export default function WorkVisualUpload({ workId, onDone, hasHero, published, s
     }
   }, [suggestedAnchor]);
 
-  const canSubmit = !!file && alt.trim().length > 0 && (role === "hero" || anchor.trim().length > 0) && approved && !busy;
+  const canSubmit = !!file && alt.trim().length > 0 && (role === "hero" || anchor.trim().length > 0) && !busy;
 
   async function submit() {
     if (!file) return;
@@ -40,7 +39,6 @@ export default function WorkVisualUpload({ workId, onDone, hasHero, published, s
       body.append("file", file);
       body.append("role", role);
       body.append("alt", alt);
-      body.append("approved", approved ? "true" : "false");
       if (role !== "hero") {
         if (anchor.trim()) body.append("anchor", anchor.trim());
         body.append("place", place);
@@ -52,7 +50,6 @@ export default function WorkVisualUpload({ workId, onDone, hasHero, published, s
       setFile(null);
       setAlt("");
       setAnchor("");
-      setApproved(false);
       onDone();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
@@ -111,11 +108,6 @@ export default function WorkVisualUpload({ workId, onDone, hasHero, published, s
           </div>
         </div>
       ) : null}
-
-      <label className="admin-checkbox-label">
-        <input type="checkbox" checked={approved} onChange={(e) => setApproved(e.target.checked)} /> Saya telah menyemak imej ini
-        (muka manusia tidak jelas, sepadan dengan adegan, tiada teks, nombor, jenama atau bingkai pada imej) dan meluluskannya.
-      </label>
 
       <div className="admin-form-actions">
         <button type="button" className="admin-btn admin-btn-primary" disabled={!canSubmit} onClick={submit}>

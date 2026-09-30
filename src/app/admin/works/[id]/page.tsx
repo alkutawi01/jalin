@@ -894,7 +894,7 @@ export default function EditWorkPage() {
 
   async function handleReplaceVisual(id: number, file: File) {
     const ok = await confirmAction(
-      "Ganti imej ini dengan fail yang dipilih? Anda mengesahkan imej baharu telah disemak: tiada wajah jelas, tiada teks atau jenama pada imej, dan sepadan dengan adegan.",
+      "Ganti gambar ini dengan fail yang dipilih? Gambar lama akan dikeluarkan daripada karya.",
       { confirmLabel: "Ya, ganti" }
     );
     if (!ok) return;
@@ -902,7 +902,6 @@ export default function EditWorkPage() {
     try {
       const body = new FormData();
       body.append("file", file);
-      body.append("approved", "true");
       const res = await fetch(`/api/admin/visuals/${id}/replace`, { method: "POST", body });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Gagal mengganti imej.");

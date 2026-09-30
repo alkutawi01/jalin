@@ -5,7 +5,7 @@ import { uploadVisualForWork } from "../../../../../../../lib/admin/visual-gener
 
 /**
  * POST /api/admin/works/[id]/visuals/upload  (multipart/form-data)
- *   file, role (hero|inline|section), alt, approved ("true"), and optionally
+ *   file, role (hero|inline|section), alt, and optionally
  *   anchor, place (before|after), tool.
  *
  * One step: store the editor's image, record the approval and attach it to
@@ -40,7 +40,6 @@ export async function POST(
       place: text("place") === "before" ? "before" : "after",
       toolName: text("tool").slice(0, 80) || null,
       bytes: Buffer.from(await file.arrayBuffer()),
-      approved: text("approved") === "true",
       actor: admin.email || admin.id
     });
 
