@@ -23,6 +23,8 @@ PERATURAN GAMBAR
 7. Adegan (Adegan:) ditulis dalam bahasa Inggeris, satu perenggan, sedia digunakan terus oleh penjana imej. Ia mesti menjawab, semuanya daripada teks: siapa dalam adegan, apa yang mereka buat, di mana, bila (masa, cuaca, cahaya), objek penting, dan warna yang disebut dalam teks.
 8. Gunakan butiran rupa yang teks nyatakan tepat seperti ditulis, contohnya pakaian, penutup kepala atau wajah (seperti niqab) dan warna. Jika teks menyebut warna "biru kelabu", guna warna itu. JANGAN menambah etnik, umur, gaya rambut atau bentuk badan yang teks tidak nyatakan. Objek atau simbol yang berulang mesti digambarkan dengan rupa yang sama dalam setiap gambar. Jangan menyebut nama gaya seni atau pelukis; Jalin menambah gayanya sendiri.
 9. Muka manusia TIDAK dipaparkan dengan jelas. Untuk Muka:, pilih satu daripada: from behind, silhouette, partial profile, obscured by foreground object, cropped at shoulders, covered as described in text (niqab/veil), no people in frame. Adegan mesti sejajar dengan pilihan itu.
+
+10a. Setiap gambar menggambarkan KEADAAN PADA TITIK ITU dalam cerita sahaja: cuaca, waktu, objek dan perbuatan mesti sama seperti pada petikan atau adegan itu. Jangan mencampurkan cuaca, benda atau kejadian dari bahagian lain (contoh: jangan letak hujan pada adegan sebelum hujan turun; jangan beri payung kepada watak yang belum membawanya). Jika gambar menunjukkan sesuatu yang berlaku kemudian, ia tidak sah.
 10. Petikan (untuk gambar inline) ialah satu perenggan atau ayat daripada teks, disalin HURUF DEMI HURUF termasuk tanda baca, untuk menandakan tempat gambar. Jangan menambah tanda petikan di sekeliling petikan itu. Alt dan Sebab ditulis dalam bahasa Melayu.`;
 
 const CERPEN_DATA = `TUGAS

@@ -15,7 +15,7 @@ function summarise(plan: ImportPlan) {
     stats: plan.stats,
     credits: plan.credits,
     characters: plan.characters,
-    glossary: plan.glossary.map((g) => g.term),
+    glossary: plan.glossary.map((g) => ({ term: g.term, meaning: g.meaning })),
     sections: plan.sections.map((s) => ({
       slug: s.slug,
       title: s.title,
@@ -29,6 +29,8 @@ function summarise(plan: ImportPlan) {
     locations: plan.locations,
     themes: plan.themes,
     visuals: plan.visuals.map((v) => ({
+      originalIndex: v.originalIndex,
+      scenePrompt: v.scenePrompt,
       role: v.role,
       sectionSlug: v.sectionSlug,
       place: v.place,
@@ -62,6 +64,7 @@ export async function POST(request: NextRequest) {
       mode?: unknown;
       overrides?: unknown;
       writerName?: unknown;
+      edits?: unknown;
       series?: unknown;
     };
     const answer = typeof body.answer === "string" ? body.answer : "";
@@ -84,6 +87,7 @@ export async function POST(request: NextRequest) {
       slugOverride,
       overrides: { title: str(ov.title), slug: str(ov.slug), dek: str(ov.dek), genre: str(ov.genre) },
       writerName: str(body.writerName),
+      edits: body.edits && typeof body.edits === "object" ? (body.edits as ImportOptions["edits"]) : undefined,
       series:
         sr?.kind === "sambung" && typeof sr.seriesId === "string"
           ? { kind: "sambung", seriesId: sr.seriesId }

@@ -29,6 +29,8 @@ export interface PlannedCredit {
 }
 
 export interface PlannedVisual {
+  /** Position in the chatbot's list; stays stable when the editor removes images. */
+  originalIndex: number;
   role: "hero" | "inline";
   sectionSlug: string | null;
   anchor: string | null;
@@ -77,6 +79,18 @@ export interface ImportPlan {
   themes: string[];
 }
 
+/** What the editor changed on the review screen after pasting the chatbot's answer. */
+export interface ReviewEdits {
+  readingMinutes?: number;
+  source?: { title?: string | null; author?: string | null; language?: string | null; provenance?: string | null };
+  /** Replaces the parsed glossary (terms not found in the text are dropped with a warning). */
+  glossary?: { term: string; meaning: string }[];
+  /** Replaces the parsed characters. */
+  characters?: { name: string; role: string }[];
+  /** By original index; null removes that image. */
+  visuals?: ({ altText?: string; scene?: string; place?: "before" | "after"; aspectRatio?: string } | null)[];
+}
+
 export interface ImportResult {
   ok: boolean;
   errors: ImportIssue[];
@@ -95,6 +109,8 @@ export interface ImportOptions {
   slugOverride?: string;
   /** Real person to credit as the writer (public byline). */
   writerName?: string;
+  /** Editor's changes on the review screen. */
+  edits?: ReviewEdits;
   /** bersiri only. "baharu" uses the chatbot's [SIRI] (or the overrides); "sambung" joins an existing series. */
   series?:
     | { kind: "baharu"; title?: string; mode?: "continuous" | "anthology"; dek?: string }
@@ -317,6 +333,7 @@ export function buildImportPlan(answer: string, manuscript: string, options: Imp
     });
 
     visuals.push({
+      originalIndex: index,
       role: v.role,
       sectionSlug,
       anchor,
@@ -391,5 +408,77 @@ export function buildImportPlan(answer: string, manuscript: string, options: Imp
     themes: data.themes
   };
 
+  if (options.edits) applyEdits(plan, options.edits, foldedWhole, warnings);
+
   return { ok: true, errors, warnings, plan, report: parsed.report };
+}
+
+function applyEdits(plan: ImportPlan, edits: ReviewEdits, foldedText: string, warnings: ImportIssue[]): void {
+  if (typeof edits.readingMinutes === "number" && edits.readingMinutes > 0 && edits.readingMinutes < 1000) {
+    plan.work.readingMinutes = Math.round(edits.readingMinutes);
+    plan.stats.readingMinutes = plan.work.readingMinutes;
+  }
+
+  if (edits.source && plan.source) {
+    const clean = (v: string | null | undefined, old: string | null) => (v === undefined ? old : present(v) ?? null);
+    plan.source = {
+      title: clean(edits.source.title, plan.source.title),
+      author: clean(edits.source.author, plan.source.author),
+      language: clean(edits.source.language, plan.source.language),
+      provenance: clean(edits.source.provenance, plan.source.provenance)
+    };
+    // Keep the original-author credit in step with the edited source author.
+    const sourceCredit = plan.credits.find((c) => c.roleLabel === "author" && !c.byline);
+    if (plan.source.author && sourceCredit) sourceCredit.guestName = plan.source.author;
+  }
+
+  if (edits.characters) {
+    plan.characters = edits.characters
+      .map((c) => ({ name: c.name.trim(), role: c.role.trim() }))
+      .filter((c) => c.name)
+      .map((c) => ({
+        ...c,
+        firstAppearanceSection: plan.characters.find((o) => foldText(o.name) === foldText(c.name))?.firstAppearanceSection ?? null
+      }));
+  }
+
+  if (edits.glossary) {
+    const seen = new Set<string>();
+    const next: ImportPlan["glossary"] = [];
+    for (const g of edits.glossary) {
+      const term = g.term.trim();
+      const meaning = g.meaning.trim();
+      if (!term || !meaning || seen.has(foldText(term))) continue;
+      seen.add(foldText(term));
+      if (!foldedText.includes(foldText(term))) {
+        warnings.push({ code: "glossary_term_not_in_text", message: `Istilah glosari "${term}" tidak ditemui dalam teks; dilangkau.` });
+        continue;
+      }
+      next.push({ term, meaning, source: "", sortOrder: next.length + 1 });
+    }
+    plan.glossary = next;
+  }
+
+  if (edits.visuals) {
+    const kept: PlannedVisual[] = [];
+    plan.visuals.forEach((v, index) => {
+      const edit = edits.visuals![index];
+      if (edit === null) return;
+      if (edit) {
+        if (edit.altText !== undefined) v.altText = edit.altText.trim();
+        if (edit.place) v.place = edit.place;
+        if (edit.aspectRatio) v.aspectRatio = edit.aspectRatio;
+        if (edit.scene !== undefined && edit.scene.trim()) v.scenePrompt = edit.scene.trim();
+        v.finalPrompt = composeVisualPrompt({
+          sceneInstruction: v.scenePrompt,
+          role: v.role,
+          aspectRatio: v.aspectRatio as Parameters<typeof composeVisualPrompt>[0]["aspectRatio"],
+          workTitle: plan.work.title,
+          workType: plan.work.type
+        }).finalPrompt;
+      }
+      kept.push(v);
+    });
+    plan.visuals = kept;
+  }
 }
