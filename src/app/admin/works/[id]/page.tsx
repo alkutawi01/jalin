@@ -1,15 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import WorkVisualUpload from "../../../../components/admin/WorkVisualUpload";
+import { paragraphAtCaret } from "../../../../lib/admin/manuscript-image-position";
 import CreditRoleSelect from "../../../../components/admin/CreditRoleSelect";
 import AiCreditPicker from "../../../../components/admin/AiCreditPicker";
 import { roleDisplay } from "../../../../lib/credit-roles";
 import WorkStatusPanel from "../../../../components/admin/WorkStatusPanel";
 import { toast, confirmAction } from "../../../../lib/admin/dialogs";
 import LoadingBlock from "../../../../components/admin/LoadingBlock";
-import WorkImagesPanel from "../../../../components/admin/WorkImagesPanel";
 
 const WORK_TYPES = [
   { value: "cerpen", label: "Cerpen" },
@@ -99,6 +99,43 @@ interface VisualData {
   sort_order: number;
 }
 
+function WorkImageCard({ visual, onEdit, onReplace, onDelete }: {
+  visual: VisualData;
+  onEdit: (visual: VisualData) => void;
+  onReplace: (id: number, file: File) => void;
+  onDelete: (id: number) => void;
+}) {
+  return (
+    <article className="work-image-card">
+      <a className="work-image-card-preview" href={visual.src} target="_blank" rel="noreferrer" title="Buka gambar saiz penuh">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={visual.src} alt={visual.alt || ""} />
+      </a>
+      <div className="work-image-card-detail">
+        <strong>{visual.role === "hero" ? "Gambar utama" : "Gambar dalam teks"}</strong>
+        <p>{visual.alt || "Teks alternatif belum diisi."}</p>
+        {visual.role !== "hero" ? (
+          <p className="admin-form-hint">
+            {visual.anchor ? `${visual.place === "before" ? "Sebelum" : "Selepas"} perenggan: “${visual.anchor.slice(0, 110)}${visual.anchor.length > 110 ? "…" : ""}”` : "Tiada perenggan dipilih — gambar tidak muncul dalam karya."}
+          </p>
+        ) : <p className="admin-form-hint">Dipaparkan pada kad dan kepala halaman karya.</p>}
+        <div className="work-image-card-actions">
+          <button type="button" className="admin-btn admin-btn-sm" onClick={() => onEdit(visual)}>Ubah butiran</button>
+          <label className="admin-btn admin-btn-sm" style={{ cursor: "pointer" }}>
+            Ganti gambar
+            <input type="file" accept="image/png,image/jpeg,image/webp" hidden onChange={(e) => {
+              const file = e.target.files?.[0];
+              e.target.value = "";
+              if (file) onReplace(visual.id, file);
+            }} />
+          </label>
+          <button type="button" className="admin-btn admin-btn-sm admin-btn-danger" onClick={() => onDelete(visual.id)}>Padam</button>
+        </div>
+      </div>
+    </article>
+  );
+}
+
 interface GlossaryData {
   id: number;
   work_id: string;
@@ -120,7 +157,8 @@ interface CharacterEntry {
   firstAppearanceSection: string | null;
 }
 
-type Tab = "content" | "metadata" | "sections" | "credits" | "visuals" | "glossary" | "characters" | "source";
+type Tab = "content" | "metadata" | "sections" | "credits" | "glossary" | "characters" | "source";
+const TABS: readonly Tab[] = ["content", "metadata", "sections", "credits", "glossary", "characters", "source"];
 
 interface SectionData {
   id: number;
@@ -181,6 +219,35 @@ export default function EditWorkPage() {
   const workId = params.id as string;
 
   const [activeTab, setActiveTab] = useState<Tab>("content");
+  const manuscriptRef = useRef<HTMLTextAreaElement>(null);
+  const [selectedImageAnchor, setSelectedImageAnchor] = useState("");
+  const [positionError, setPositionError] = useState("");
+  useEffect(() => {
+    const restoreTab = () => {
+      const hash = window.location.hash.slice(1);
+      if (hash === "visuals") setActiveTab("content");
+      else if (TABS.includes(hash as Tab)) setActiveTab(hash as Tab);
+    };
+    restoreTab();
+    window.addEventListener("hashchange", restoreTab);
+    return () => window.removeEventListener("hashchange", restoreTab);
+  }, []);
+  function selectTab(tab: Tab) {
+    setActiveTab(tab);
+    window.history.replaceState(window.history.state, "", `#${tab}`);
+  }
+  function chooseImagePosition() {
+    const textarea = manuscriptRef.current;
+    if (!textarea) return;
+    const paragraph = paragraphAtCaret(form.body, textarea.selectionStart);
+    if (!paragraph) {
+      setPositionError("Letakkan kursor pada perenggan yang mengandungi teks dahulu.");
+      return;
+    }
+    setPositionError("");
+    setSelectedImageAnchor(paragraph);
+    document.getElementById("work-image-upload")?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
@@ -777,6 +844,10 @@ export default function EditWorkPage() {
     if (!editingVisual) return;
 
     setVisualError(null);
+    if (editingVisual.role !== "hero" && !editingVisual.anchor?.trim()) {
+      setVisualError("Pilih perenggan dalam manuskrip sebelum menyimpan gambar dalam teks.");
+      return;
+    }
 
     // Same read/write naming split as credits (see handleSaveCredit): the
     // GET response and editingVisual use the DB column name creation_id,
@@ -835,7 +906,7 @@ export default function EditWorkPage() {
       const res = await fetch(`/api/admin/visuals/${id}/replace`, { method: "POST", body });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Gagal mengganti imej.");
-      toast("Imej diganti. Karya belum diterbitkan semula.", "success");
+      toast(form.status === "published" ? "Gambar diganti. Semak halaman awam sebentar lagi." : "Gambar diganti. Semak pratonton sebelum menerbitkan.", "success");
       loadVisuals();
     } catch (err) {
       setVisualError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
@@ -1059,7 +1130,7 @@ export default function EditWorkPage() {
         onChangeStatus={changeStatus}
         onPublish={handleExplicitPublish}
         onPublishNow={publishNow}
-        onGoTab={(tab) => setActiveTab(tab as Tab)}
+        onGoTab={(tab) => selectTab(tab === "visuals" ? "content" : tab as Tab)}
       />
 
       {error && (
@@ -1105,52 +1176,46 @@ export default function EditWorkPage() {
       <div className="admin-tabs">
         <button
           className={`admin-tab ${activeTab === "content" ? "admin-tab-active" : ""}`}
-          onClick={() => setActiveTab("content")}
+          onClick={() => selectTab("content")}
         >
           Kandungan
         </button>
         <button
           className={`admin-tab ${activeTab === "metadata" ? "admin-tab-active" : ""}`}
-          onClick={() => setActiveTab("metadata")}
+          onClick={() => selectTab("metadata")}
         >
           Maklumat
         </button>
         {form.type === "novela" && (
           <button
             className={`admin-tab ${activeTab === "sections" ? "admin-tab-active" : ""}`}
-            onClick={() => setActiveTab("sections")}
+            onClick={() => selectTab("sections")}
           >
             Bahagian ({sections.length})
           </button>
         )}
         <button
           className={`admin-tab ${activeTab === "credits" ? "admin-tab-active" : ""}`}
-          onClick={() => setActiveTab("credits")}
+          onClick={() => selectTab("credits")}
         >
           Kredit ({credits.length})
         </button>
         <button
-          className={`admin-tab ${activeTab === "visuals" ? "admin-tab-active" : ""}`}
-          onClick={() => setActiveTab("visuals")}
-        >
-          Visual ({visuals.length})
-        </button>
-        <button
           className={`admin-tab ${activeTab === "glossary" ? "admin-tab-active" : ""}`}
-          onClick={() => setActiveTab("glossary")}
+          onClick={() => selectTab("glossary")}
         >
           Glosari ({glossaryTerms.length})
         </button>
         <button
           className={`admin-tab ${activeTab === "characters" ? "admin-tab-active" : ""}`}
-          onClick={() => setActiveTab("characters")}
+          onClick={() => selectTab("characters")}
         >
           Watak ({characters.length})
         </button>
         {DERIVATIVE_TYPES.has(form.type) && (
           <button
             className={`admin-tab ${activeTab === "source" ? "admin-tab-active" : ""}`}
-            onClick={() => setActiveTab("source")}
+            onClick={() => selectTab("source")}
           >
             Sumber &amp; Hak
           </button>
@@ -1184,6 +1249,7 @@ export default function EditWorkPage() {
             <label htmlFor="body">Manuskrip (Markdown) *</label>
             <textarea
               id="body"
+              ref={manuscriptRef}
               required
               value={form.body}
               onChange={(e) => setForm((prev) => ({ ...prev, body: e.target.value }))}
@@ -1191,6 +1257,11 @@ export default function EditWorkPage() {
               className="admin-textarea"
             />
             <span className="admin-form-hint">Gunakan Markdown. Ganti baris kosong untuk perenggan baharu.</span>
+            <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={chooseImagePosition} disabled={dirty}>
+              Letak gambar pada perenggan ini
+            </button>
+            {dirty ? <span className="admin-form-hint">Simpan perubahan manuskrip dahulu sebelum menambah gambar.</span> : null}
+            {positionError ? <span className="admin-alert admin-alert-error" role="alert">{positionError}</span> : null}
           </div>
 
           <div className="admin-form-actions a-savebar">
@@ -1718,7 +1789,7 @@ export default function EditWorkPage() {
         </div>
       )}
 
-      {activeTab === "visuals" && (
+      {activeTab === "content" && (
         <div className="admin-visuals">
           {visualError && (
             <div className="admin-alert admin-alert-error">{visualError}</div>
@@ -1732,11 +1803,8 @@ export default function EditWorkPage() {
           ) : null}
 
           <div className="admin-credits-header">
-            <h3>Visual Karya</h3>
+            <h3>Gambar dalam karya</h3>
           </div>
-
-          <WorkImagesPanel workId={workId} onChanged={loadVisuals} />
-          <WorkVisualUpload workId={workId} hasHero={visuals.some((v) => v.role === "hero")} onDone={loadVisuals} />
 
           {editingVisual && (
             <div className="admin-credit-form">
@@ -1750,7 +1818,7 @@ export default function EditWorkPage() {
                       role: e.target.value,
                     }))}
                   >
-                    <option value="hero">Hero</option>
+                    <option value="hero" disabled={visuals.some((v) => v.role === "hero" && v.id !== editingVisual.id)}>Gambar utama</option>
                     <option value="inline">Dalam teks</option>
                     <option value="section">Bahagian</option>
                   </select>
@@ -1772,19 +1840,6 @@ export default function EditWorkPage() {
               </div>
 
               <div className="admin-form-group">
-                <label>Imej (URL) *</label>
-                <input
-                  type="text"
-                  value={editingVisual.src || ""}
-                  onChange={(e) => setEditingVisual((prev) => ({
-                    ...prev,
-                    src: e.target.value,
-                  }))}
-                  placeholder="/visuals/work-name/hero.png"
-                />
-              </div>
-
-              <div className="admin-form-group">
                 <label>Teks alternatif</label>
                 <input
                   type="text"
@@ -1797,36 +1852,8 @@ export default function EditWorkPage() {
                 />
               </div>
 
-              <div className="admin-form-row">
-                <div className="admin-form-group">
-                  <label>Penyedia</label>
-                  <input
-                    type="text"
-                    value={editingVisual.provider || ""}
-                    onChange={(e) => setEditingVisual((prev) => ({
-                      ...prev,
-                      provider: e.target.value,
-                    }))}
-                    placeholder="magnific"
-                  />
-                </div>
-
-                <div className="admin-form-group">
-                  <label>ID ciptaan</label>
-                  <input
-                    type="text"
-                    value={editingVisual.creation_id || ""}
-                    onChange={(e) => setEditingVisual((prev) => ({
-                      ...prev,
-                      creation_id: e.target.value,
-                    }))}
-                    placeholder="Xm5ZOkMBfo"
-                  />
-                </div>
-              </div>
-
               <div className="admin-form-group">
-                <label>Petikan penanda</label>
+                <label>Perenggan tempat gambar muncul</label>
                 <input
                   type="text"
                   value={editingVisual.anchor || ""}
@@ -1834,7 +1861,7 @@ export default function EditWorkPage() {
                     ...prev,
                     anchor: e.target.value,
                   }))}
-                  placeholder="Petikan daripada manuskrip untuk menandakan kedudukan"
+                  placeholder="Salin perenggan tepat daripada manuskrip"
                 />
               </div>
 
@@ -1851,82 +1878,28 @@ export default function EditWorkPage() {
                   className="admin-btn admin-btn-primary"
                   onClick={handleSaveVisual}
                 >
-                  Simpan Visual
+                  Simpan butiran
                 </button>
               </div>
             </div>
           )}
 
           {visuals.length === 0 ? (
-            <p className="admin-table-empty">Tiada visual untuk karya ini.</p>
+            <p className="admin-table-empty">Belum ada gambar. Tambah gambar utama untuk kad karya, atau letakkan gambar pada perenggan manuskrip.</p>
           ) : (
-            <div className="admin-table-wrap">
-              <table className="admin-table">
-                <thead>
-                  <tr>
-                    <th>Jenis</th>
-                    <th>Imej</th>
-                    <th>Teks alternatif</th>
-                    <th>Penyedia</th>
-                    <th>Susunan</th>
-                    <th>Aksi</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {visuals.map((visual) => (
-                    <tr key={visual.id}>
-                      <td>
-                        <span className={`admin-kind admin-kind-${visual.role}`}>
-                          {visual.role}
-                        </span>
-                      </td>
-                      <td>
-                        <a href={visual.src} target="_blank" rel="noreferrer" title="Buka imej penuh">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={visual.src} alt={visual.alt || ""} style={{ width: 88, height: 66, objectFit: "cover", borderRadius: 6, display: "block", border: "1px solid var(--a-line)" }} />
-                        </a>
-                      </td>
-                      <td>{visual.alt || "—"}</td>
-                      <td>{visual.provider || "—"}</td>
-                      <td>{visual.role === "hero" ? "Kepala karya" : visual.anchor ? `${visual.place === "before" ? "Sebelum" : "Selepas"}: ${visual.anchor.slice(0, 70)}` : "Tiada petikan penanda — imej tidak dipaparkan"}</td>
-                      <td>
-                        <div className="admin-table-actions">
-                          <button
-                            type="button"
-                            className="admin-btn admin-btn-sm"
-                            onClick={() => setEditingVisual(visual)}
-                          >
-                            Edit
-                          </button>
-                          <label className="admin-btn admin-btn-sm" style={{ cursor: "pointer" }} title="Ganti imej ini; kedudukan dan alt text dikekalkan">
-                            Ganti imej
-                            <input
-                              type="file"
-                              accept="image/png,image/jpeg,image/webp"
-                              hidden
-                              onChange={async (e) => {
-                                const file = e.target.files?.[0];
-                                e.target.value = "";
-                                if (!file) return;
-                                await handleReplaceVisual(visual.id, file);
-                              }}
-                            />
-                          </label>
-                          <button
-                            type="button"
-                            className="admin-btn admin-btn-sm admin-btn-danger"
-                            onClick={() => handleDeleteVisual(visual.id)}
-                          >
-                            Padam
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="work-image-list">
+              {visuals.filter((visual) => visual.role === "hero").map((visual) => (
+                <WorkImageCard key={visual.id} visual={visual} onEdit={setEditingVisual} onReplace={handleReplaceVisual} onDelete={handleDeleteVisual} />
+              ))}
+              {visuals.filter((visual) => visual.role !== "hero").length > 0 && <h4>Gambar dalam teks</h4>}
+              {visuals.filter((visual) => visual.role !== "hero").map((visual) => (
+                <WorkImageCard key={visual.id} visual={visual} onEdit={setEditingVisual} onReplace={handleReplaceVisual} onDelete={handleDeleteVisual} />
+              ))}
             </div>
           )}
+          <div id="work-image-upload">
+            <WorkVisualUpload workId={workId} hasHero={visuals.some((v) => v.role === "hero")} published={form.status === "published"} suggestedAnchor={selectedImageAnchor} onDone={loadVisuals} />
+          </div>
         </div>
       )}
 

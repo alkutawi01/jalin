@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
  * stored, the editor's approval is recorded, and the image is attached to
  * the work. The work is never published by this.
  */
-export default function WorkVisualUpload({ workId, onDone, hasHero }: { workId: string; onDone: () => void; hasHero: boolean }) {
+export default function WorkVisualUpload({ workId, onDone, hasHero, published, suggestedAnchor = "" }: { workId: string; onDone: () => void; hasHero: boolean; published: boolean; suggestedAnchor?: string }) {
   const [role, setRole] = useState(hasHero ? "inline" : "hero");
   const [alt, setAlt] = useState("");
   const [anchor, setAnchor] = useState("");
@@ -21,6 +21,12 @@ export default function WorkVisualUpload({ workId, onDone, hasHero }: { workId: 
   useEffect(() => {
     if (hasHero && role === "hero") setRole("inline");
   }, [hasHero, role]);
+  useEffect(() => {
+    if (suggestedAnchor) {
+      setRole("inline");
+      setAnchor(suggestedAnchor);
+    }
+  }, [suggestedAnchor]);
 
   const canSubmit = !!file && alt.trim().length > 0 && (role === "hero" || anchor.trim().length > 0) && approved && !busy;
 
@@ -42,7 +48,7 @@ export default function WorkVisualUpload({ workId, onDone, hasHero }: { workId: 
       const res = await fetch(`/api/admin/works/${workId}/visuals/upload`, { method: "POST", body });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Gagal memuat naik imej.");
-      setSuccess("Imej dimuat naik dan dipautkan ke karya. Karya belum diterbitkan.");
+      setSuccess(published ? "Gambar disimpan. Semak pratonton dan halaman awam; perubahan mungkin mengambil masa sehingga 30 saat untuk muncul." : "Gambar disimpan. Semak pratonton sebelum menerbitkan karya.");
       setFile(null);
       setAlt("");
       setAnchor("");
@@ -57,7 +63,7 @@ export default function WorkVisualUpload({ workId, onDone, hasHero }: { workId: 
 
   return (
     <div className="admin-credit-form" style={{ marginBottom: 16 }}>
-      <h3 style={{ margin: "0 0 8px" }}>Tambah imej baharu</h3>
+      <h4 style={{ margin: "0 0 8px" }}>Tambah gambar</h4>
       <p className="admin-form-hint">
         Pilih imej (PNG/JPEG/WebP, maksimum 10 MB; disyorkan bawah 4 MB). Ia disimpan dan dipautkan terus. Direkod sebagai sumber
         &quot;manual&quot;.
@@ -71,8 +77,7 @@ export default function WorkVisualUpload({ workId, onDone, hasHero }: { workId: 
           <label htmlFor="wvu-role">Jenis *</label>
           <select id="wvu-role" value={role} onChange={(e) => setRole(e.target.value)}>
             <option value="hero" disabled={hasHero}>Hero (gambar utama)</option>
-            <option value="inline">Inline (dalam teks)</option>
-            <option value="section">Bahagian</option>
+            <option value="inline">Dalam teks</option>
           </select>
         </div>
         <div className="admin-form-group">
@@ -94,7 +99,7 @@ export default function WorkVisualUpload({ workId, onDone, hasHero }: { workId: 
       {role !== "hero" ? (
         <div className="admin-form-row">
           <div className="admin-form-group">
-            <label htmlFor="wvu-anchor">Anchor (teks dalam karya; salin satu perenggan penuh)</label>
+            <label htmlFor="wvu-anchor">Perenggan tempat gambar muncul</label>
             <textarea id="wvu-anchor" className="admin-textarea" rows={3} value={anchor} onChange={(e) => setAnchor(e.target.value)} />
           </div>
           <div className="admin-form-group">
