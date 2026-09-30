@@ -1444,7 +1444,7 @@ export default function EditWorkPage() {
                     <th>Alamat pautan</th>
                     <th>Tajuk</th>
                     <th>Isi</th>
-                    <th>Susunan</th>
+                    <th>Kedudukan dalam teks</th>
                     <th>Aksi</th>
                   </tr>
                 </thead>
@@ -1733,23 +1733,10 @@ export default function EditWorkPage() {
 
           <div className="admin-credits-header">
             <h3>Visual Karya</h3>
-            <button
-              type="button"
-              className="admin-btn admin-btn-sm admin-btn-primary"
-              onClick={() => setEditingVisual({
-                // The first image of a work is its hero; a wrong role hides it from the homepage.
-                role: visuals.some((v) => v.role === "hero") ? "inline" : "hero",
-                src: "",
-                alt: "",
-                place: "after",
-              })}
-            >
-              + Tambah Visual
-            </button>
           </div>
 
           <WorkImagesPanel workId={workId} onChanged={loadVisuals} />
-          <WorkVisualUpload workId={workId} onDone={loadVisuals} />
+          <WorkVisualUpload workId={workId} hasHero={visuals.some((v) => v.role === "hero")} onDone={loadVisuals} />
 
           {editingVisual && (
             <div className="admin-credit-form">
@@ -1901,7 +1888,7 @@ export default function EditWorkPage() {
                       </td>
                       <td>{visual.alt || "—"}</td>
                       <td>{visual.provider || "—"}</td>
-                      <td>{visual.sort_order}</td>
+                      <td>{visual.role === "hero" ? "Kepala karya" : visual.anchor ? `${visual.place === "before" ? "Sebelum" : "Selepas"}: ${visual.anchor.slice(0, 70)}` : "Tiada petikan penanda — imej tidak dipaparkan"}</td>
                       <td>
                         <div className="admin-table-actions">
                           <button

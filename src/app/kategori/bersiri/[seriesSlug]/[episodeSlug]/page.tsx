@@ -18,6 +18,7 @@ import {
   projectEditorialCredits
 } from "../../../../../lib/reader/credit-projection";
 import { buildVerifiedGlossary } from "../../../../../lib/reader/verified-glossary";
+import { placeVisuals } from "../../../../../lib/reader/place-visuals";
 import type {
   CharacterMeta,
   StoryInfoData,
@@ -25,28 +26,8 @@ import type {
 } from "../../../../../components/reader/types";
 import type { SeriesEpisodeRef, WorkType } from "../../../../../lib/content/types";
 
-// Works are published after the build, so unknown slugs must render on demand (and refresh every minute).
+export const dynamic = "force-dynamic";
 export const dynamicParams = true;
-export const revalidate = 60;
-
-export async function generateStaticParams() {
-  const params: { seriesSlug: string; episodeSlug: string }[] = [];
-  try {
-    const repo = await initContentRepository();
-    if (repo.source === "database") {
-      const seriesList = repo.getPublishedSeries();
-      for (const series of seriesList) {
-        const episodes = repo.getPublishedSeriesEpisodes(series.id);
-        for (const ep of episodes) {
-          params.push({ seriesSlug: series.slug, episodeSlug: ep.slug });
-        }
-      }
-    }
-  } catch {
-    // markdown mode / no DB: fall through
-  }
-  return params;
-}
 
 const TYPE_LABELS: Record<string, string> = {
   cerpen: "Cerpen",
@@ -55,16 +36,6 @@ const TYPE_LABELS: Record<string, string> = {
   fragmen: "Fragmen",
   sinopsis: "Sinopsis"
 };
-
-function splitBody(body: string, anchor: string, place: "before" | "after"): [string, string] {
-  const index = body.indexOf(anchor);
-  if (index < 0) return [body, ""];
-  if (place === "before") {
-    return [body.slice(0, index), body.slice(index)];
-  }
-  const end = index + anchor.length;
-  return [body.slice(0, end), body.slice(end)];
-}
 
 function EpisodeNav({
   seriesSlug,
@@ -185,19 +156,7 @@ export default async function EpisodePage({
 
   const rights = `© ADJUNG ${(work.publishedAt ?? "2026").slice(0, 4)}`;
   const hero = work.visuals.find((visual) => visual.role === "hero");
-  const inlineVisuals = work.visuals.filter((visual) => visual.anchor);
-
-  let remaining = work.body;
-  const segmentNodes: (string | { visual: (typeof work.visuals)[number] })[] = [];
-  for (const visual of inlineVisuals) {
-    const anchor = visual.anchor ?? "";
-    if (!anchor || remaining.indexOf(anchor) < 0) continue;
-    const [before, after] = splitBody(remaining, anchor, visual.place ?? "after");
-    segmentNodes.push(before);
-    segmentNodes.push({ visual });
-    remaining = after;
-  }
-  segmentNodes.push(remaining);
+  const segmentNodes = placeVisuals(work.body, work.visuals);
 
   return (
     <>
@@ -240,12 +199,12 @@ export default async function EpisodePage({
                   </StoryMarkdown>
                 );
               }
-              if ("visual" in node) {
+              if (typeof node !== "string") {
                 return (
                   <EditorialImage
                     key={index}
-                    src={node.visual.src}
-                    alt={node.visual.alt}
+                    src={node.src}
+                    alt={node.alt}
                     rights={rights}
                   />
                 );

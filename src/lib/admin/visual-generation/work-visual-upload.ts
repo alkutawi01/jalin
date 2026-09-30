@@ -44,6 +44,9 @@ export async function uploadVisualForWork(
   if (!input.altText.trim()) {
     return { ok: false, status: 400, error: "Alt text diperlukan (penerangan gambar untuk pembaca)." };
   }
+  if (input.role !== "hero" && !input.anchor?.trim()) {
+    return { ok: false, status: 400, error: "Imej dalam teks memerlukan petikan penanda yang wujud dalam karya." };
+  }
   if (!input.approved) {
     return {
       ok: false,
@@ -86,7 +89,7 @@ export async function uploadVisualForWork(
       source_asset_url: null,
       source_asset_path: null,
       alt_text: input.altText.trim(),
-      anchor: input.role === "inline" ? input.anchor : null,
+      anchor: input.role === "hero" ? null : input.anchor,
       place: input.place,
       approval_state: "pending",
       aspect_ratio: input.role === "hero" ? "3:2" : "4:3",
@@ -164,7 +167,9 @@ export async function replaceVisualImage(
   });
   if (!result.ok) return { ok: false, status: result.status, error: result.error };
 
-  await db.updateTable("visuals").set({ sort_order: old.sort_order }).where("id", "=", result.visualId).execute();
-  await db.deleteFrom("visuals").where("id", "=", input.visualId).execute();
+  await db.transaction().execute(async (trx) => {
+    await trx.updateTable("visuals").set({ sort_order: old.sort_order }).where("id", "=", result.visualId).execute();
+    await trx.deleteFrom("visuals").where("id", "=", input.visualId).where("work_id", "=", old.work_id).execute();
+  });
   return { ok: true, visualId: result.visualId, assetPath: result.assetPath };
 }

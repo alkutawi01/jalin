@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import StoryMarkdown from "../../../../../components/reader/StoryMarkdown";
+import { placeVisuals } from "../../../../../lib/reader/place-visuals";
 
 const TYPE_LABELS: Record<string, string> = {
   cerpen: "Cerpen",
@@ -167,6 +168,18 @@ export default function PreviewWorkPage() {
     );
   }
 
+  const glossaryMap = Object.fromEntries(glossary.map((g) => [g.term, { meaning: g.meaning }]));
+  const renderBody = (body: string) => placeVisuals(body, visuals).map((node, index) =>
+    typeof node === "string" ? (
+      <StoryMarkdown key={index} glossary={glossaryMap}>{node}</StoryMarkdown>
+    ) : (
+      <figure key={`visual-${index}`} style={{ margin: "1.5rem 0" }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={node.src} alt={node.alt || ""} style={{ maxWidth: "100%", height: "auto" }} />
+      </figure>
+    )
+  );
+
   return (
     <div className="admin-preview">
       <header className="admin-page-header">
@@ -268,45 +281,15 @@ export default function PreviewWorkPage() {
                         {active.title}
                       </h2>
                     ) : null}
-                    <StoryMarkdown
-                      glossary={Object.fromEntries(
-                        glossary.map((g) => [g.term, { meaning: g.meaning }])
-                      )}
-                    >
-                      {active.body || ""}
-                    </StoryMarkdown>
+                    {renderBody(active.body || "")}
                   </>
                 );
               })()}
             </>
           ) : (
-            <StoryMarkdown
-              glossary={Object.fromEntries(
-                glossary.map((g) => [g.term, { meaning: g.meaning }])
-              )}
-            >
-              {work.body || ""}
-            </StoryMarkdown>
+            renderBody(work.body || "")
           )}
         </div>
-
-        {visuals.filter((v) => v.role !== "hero").length > 0 && (
-          <section style={{ marginTop: "1.5rem" }}>
-            <h3>Gambar dalam teks ({visuals.filter((v) => v.role !== "hero").length})</h3>
-            <p className="admin-form-hint">Kedudukan sebenar mengikut anchor; di sini disenaraikan untuk semakan.</p>
-            {visuals
-              .filter((v) => v.role !== "hero")
-              .map((v) => (
-                <figure key={v.src} style={{ margin: "1rem 0" }}>
-                  <img src={v.src} alt={v.alt || ""} style={{ maxWidth: "100%", height: "auto" }} />
-                  <figcaption className="admin-form-hint">
-                    {v.alt || "(tiada alt text)"}
-                    {v.anchor ? ` · ${v.place === "before" ? "sebelum" : "selepas"}: “${v.anchor.slice(0, 70)}…”` : ""}
-                  </figcaption>
-                </figure>
-              ))}
-          </section>
-        )}
 
         {credits.filter((c) => c.is_public && c.byline).length > 0 && (
           <footer style={{ marginTop: "1.5rem", opacity: 0.85 }}>

@@ -159,16 +159,17 @@ export default function WorkImagesPanel({ workId, onChanged }: { workId: string;
 
   if (error) return <div className="admin-alert admin-alert-error">{error}</div>;
   if (!items) return <p className="admin-form-hint">Memuatkan…</p>;
-  if (items.length === 0) return null;
+  const pendingItems = items.filter((item) => item.status !== "attached");
+  if (pendingItems.length === 0) return null;
 
   return (
     <section style={{ marginBottom: 16 }}>
-      <h3 style={{ margin: "0 0 8px" }}>Gambar untuk karya ini ({items.length})</h3>
+      <h3 style={{ margin: "0 0 8px" }}>Permintaan gambar belum selesai ({pendingItems.length})</h3>
       <p className="admin-form-hint">
         Untuk setiap gambar: salin arahan ke penjana imej pilihan anda, kemudian muat naik hasilnya, atau tekan Jana dengan
         Magnific. Selepas itu luluskan dan pautkan.
       </p>
-      {items.map((item) => (
+      {pendingItems.map((item) => (
         <Card
           key={item.id}
           item={item}

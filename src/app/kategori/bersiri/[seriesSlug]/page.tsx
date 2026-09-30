@@ -3,31 +3,8 @@ import { SiteFooter, SiteHeader } from "../../../../components/reader/StoryChrom
 import { initContentRepository } from "../../../../lib/content";
 import { displayableGenre } from "../../../../lib/reader/genre-display";
 
-// Works are published after the build, so unknown slugs must render on demand (and refresh every minute).
+export const dynamic = "force-dynamic";
 export const dynamicParams = true;
-export const revalidate = 60;
-
-export async function generateStaticParams() {
-  const params: { seriesSlug: string }[] = [];
-  try {
-    const repo = await initContentRepository();
-    if (repo.source === "database") {
-      for (const series of repo.getPublishedSeries()) {
-        params.push({ seriesSlug: series.slug });
-      }
-      // Flat episode slugs also generate so the redirect path can run at build time
-      // (dynamicParams=false): /kategori/bersiri/[episodeSlug] → nested Series URL.
-      for (const work of repo.getWorksByType("bersiri")) {
-        if (work.series) {
-          params.push({ seriesSlug: work.slug });
-        }
-      }
-    }
-  } catch {
-    // markdown / no DB
-  }
-  return params;
-}
 
 const MODE_LABELS: Record<string, string> = {
   continuous: "Bersambung",
