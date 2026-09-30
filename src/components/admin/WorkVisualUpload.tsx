@@ -68,8 +68,8 @@ export default function WorkVisualUpload({ workId, onDone }: { workId: string; o
         <div className="admin-form-group">
           <label htmlFor="wvu-role">Jenis *</label>
           <select id="wvu-role" value={role} onChange={(e) => setRole(e.target.value)}>
-            <option value="hero">Hero (gambar utama)</option>
-            <option value="inline">Inline (dalam teks)</option>
+            <option value="hero">Utama (gambar utama)</option>
+            <option value="inline">Dalam teks</option>
             <option value="section">Bahagian</option>
           </select>
         </div>

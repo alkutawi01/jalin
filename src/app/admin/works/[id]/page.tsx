@@ -1339,8 +1339,8 @@ export default function EditWorkPage() {
             </div>
           </div>
           <p className="admin-form-hint">
-            Pilihan Editor dibaca terus daripada database pada setiap kunjungan laman utama —
-            tiada publish semula diperlukan. Hanya karya berstatus terbit dipaparkan (maksimum 3,
+            Pilihan Editor dibaca terus daripada pangkalan data pada setiap kunjungan laman utama —
+            tidak perlu diterbitkan semula. Hanya karya berstatus terbit dipaparkan (maksimum 3,
             susun mengikut kedudukan). Sebab tidak dipaparkan kepada pembaca dan tidak dieksport
             ke Markdown.
           </p>
@@ -1890,7 +1890,7 @@ export default function EditWorkPage() {
                     <tr key={visual.id}>
                       <td>
                         <span className={`admin-kind admin-kind-${visual.role}`}>
-                          {visual.role}
+                          {visual.role === "hero" ? "Utama" : visual.role === "inline" ? "Dalam teks" : visual.role}
                         </span>
                       </td>
                       <td>
@@ -1960,7 +1960,7 @@ export default function EditWorkPage() {
                 source: "",
               })}
             >
-              + Tambah Term
+              + Tambah Istilah
             </button>
           </div>
 
@@ -2018,7 +2018,7 @@ export default function EditWorkPage() {
                   className="admin-btn admin-btn-primary"
                   onClick={handleSaveGlossary}
                 >
-                  Simpan Term
+                  Simpan Istilah
                 </button>
               </div>
             </div>
