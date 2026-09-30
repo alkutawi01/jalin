@@ -1,4 +1,5 @@
 import PromptEditor from "../../../components/admin/PromptEditor";
+import AiPersonaSettings from "../../../components/admin/AiPersonaSettings";
 import { loadPrompts } from "../../../lib/admin/authoring/prompt-store";
 import { RECIPE_KEYS, getRecipe, KIND_LABELS } from "../../../lib/admin/authoring/recipes";
 import { hasDb } from "../../../lib/db";
@@ -44,6 +45,11 @@ export default async function SettingsPage() {
             customised={prompts.recipeCustomised}
           />
         ))}
+      </section>
+
+      <section className="admin-section">
+        <h2 className="admin-form-section-title">Nama samaran AI</h2>
+        <AiPersonaSettings />
       </section>
 
       <section className="admin-section">

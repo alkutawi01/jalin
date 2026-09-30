@@ -3,6 +3,9 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import WorkVisualUpload from "../../../../components/admin/WorkVisualUpload";
+import CreditRoleSelect from "../../../../components/admin/CreditRoleSelect";
+import AiCreditPicker from "../../../../components/admin/AiCreditPicker";
+import { roleDisplay } from "../../../../lib/credit-roles";
 
 const WORK_TYPES = [
   { value: "cerpen", label: "Cerpen" },
@@ -1543,6 +1546,10 @@ export default function EditWorkPage() {
 
           {editingCredit && (
             <div className="admin-credit-form">
+              <AiCreditPicker
+                currentSlug={editingCredit.contributor_slug || undefined}
+                onPick={(slug) => setEditingCredit((prev) => ({ ...prev, contributor_slug: slug, guest_name: undefined }))}
+              />
               <div className="admin-form-row">
                 <div className="admin-form-group">
                   <label>Penyumbang</label>
@@ -1579,14 +1586,12 @@ export default function EditWorkPage() {
               <div className="admin-form-row">
                 <div className="admin-form-group">
                   <label>Peranan *</label>
-                  <input
-                    type="text"
+                  <CreditRoleSelect
                     value={editingCredit.role_label || ""}
-                    onChange={(e) => setEditingCredit((prev) => ({
+                    onChange={(role) => setEditingCredit((prev) => ({
                       ...prev,
-                      role_label: e.target.value,
+                      role_label: role,
                     }))}
-                    placeholder="Contoh: Penulis, Penyunting"
                   />
                 </div>
 
@@ -1661,7 +1666,7 @@ export default function EditWorkPage() {
                           ? contributors.find((c) => c.slug === credit.contributor_slug)?.display_name || credit.contributor_slug
                           : credit.guest_name || "—"}
                       </td>
-                      <td>{credit.role_label}</td>
+                      <td>{roleDisplay(credit.role_label)}</td>
                       <td>{credit.byline ? "Ya" : "Tidak"}</td>
                       <td>{credit.is_public ? "Ya" : "Tidak"}</td>
                       <td>{credit.sort_order}</td>

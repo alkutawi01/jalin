@@ -36,6 +36,11 @@ function projectRole(role: string): string | undefined {
   if (APPROVED_LABELS.has(role)) {
     return role;
   }
+  // A role an editor added in admin is stored as its own display text starting with a capital
+  // (see lib/credit-roles.ts). Internal keys are lowercase snake_case and stay hidden.
+  if (/^[A-Z][^_]*$/.test(role.trim())) {
+    return role.trim();
+  }
   return undefined;
 }
 
