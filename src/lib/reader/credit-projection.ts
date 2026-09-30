@@ -18,7 +18,12 @@ const ROLE_LABELS: Record<string, string> = {
   initial_draft: "Penulis",
   story_editor: "Penulis & penyemak",
   final_editor: "Editor",
-  co_writer: "Penulis bersama"
+  co_writer: "Penulis bersama",
+  language_editor: "Penyemak bahasa",
+  fact_checker: "Penyemak fakta",
+  publication_editor: "Editor penerbitan",
+  translated_by: "Penterjemah",
+  translation_editor: "Penyunting terjemahan"
 };
 
 const APPROVED_LABELS = new Set(Object.values(ROLE_LABELS));

@@ -7,6 +7,7 @@
  * (no JSON, no Markdown) is used because chatbots keep to it far more reliably.
  */
 
+import { SELF_CHECK, exampleBlock } from "./format-guidance";
 import type { OutputSection, Recipe } from "./recipes";
 
 export const FORMAT_VERSION = "v4";
@@ -80,7 +81,7 @@ function watak(recipe: Recipe): string {
 function glosari(recipe: Recipe): string {
   const lines = ["[GLOSARI]", "Istilah: (perkataan seperti dieja dalam teks)", "Maksud: (maksud berdasarkan konteks dalam teks)"];
   if (recipe.kind === "novela") lines.push("Muncul di: (slug bab pertama istilah ini digunakan)");
-  lines.push("____", "(ulang untuk setiap istilah, 3 hingga 8 sahaja)");
+  lines.push("____", "(ulang untuk setiap istilah, sehingga 8 sahaja; kosongkan jika tiada perkataan sesuai)");
   return lines.join("\n");
 }
 
@@ -126,6 +127,7 @@ export function sectionsFor(recipe: Recipe, options: FormatOptions = {}): Output
 }
 
 export function buildFormatBlock(recipe: Recipe, options: FormatOptions = {}): string {
-  const parts = sectionsFor(recipe, options).map((section) => RENDERERS[section](recipe));
-  return [INTRO, "", parts.join("\n\n")].join("\n");
+  const sections = sectionsFor(recipe, options);
+  const parts = sections.map((section) => RENDERERS[section](recipe));
+  return [INTRO, "", parts.join("\n\n"), "", SELF_CHECK, "", exampleBlock(recipe, sections)].join("\n");
 }

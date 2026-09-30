@@ -42,3 +42,12 @@ Rujuk `docs/VISUAL_BIBLE.md`.
 - Do not crop, reconstruct, combine, redraw or regenerate the wordmark in UI code.
 - Do not create alternate logo lockups unless explicitly approved by the human editor.
 - The current `jalin-wordmark.svg` and `jalin-logo-primary.svg` were replaced from user-approved source artwork and are the production source of truth.
+
+## Vector variants (2026-09-30, approved by the human editor)
+`jalin-logo-primary.svg` and `jalin-wordmark.svg` are smooth curve artwork. The icon, favicon, mono and reversed files had been low-resolution polyline traces (jagged when enlarged, and the reversed one was invisible: cream shapes on a cream rectangle). They were regenerated from the approved primary artwork with geometry untouched; only framing and colours changed:
+
+- `jalin-icon-color.svg`, `jalin-favicon.svg`: the mark only, framed square
+- `jalin-icon-mono.svg`, `jalin-logo-mono.svg`: one colour (#132f38)
+- `jalin-logo-reversed.svg`: for the deep teal background (#0b2935): white wordmark, leaves in the background colour with a white outline, terracotta and beige unchanged; transparent background
+
+Do not hand-edit these; if the primary artwork changes, regenerate them.

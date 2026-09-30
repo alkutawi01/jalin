@@ -25,6 +25,8 @@ export interface WorkVisualUploadInput {
   bytes: Buffer;
   /** The editor's explicit "I reviewed and approve this image" tick. */
   approved: boolean;
+  /** Set when replacing an existing hero, so the one-hero rule does not block it. */
+  allowExistingHero?: boolean;
   actor: string;
 }
 
@@ -53,7 +55,7 @@ export async function uploadVisualForWork(
   const work = await db.selectFrom("works").where("id", "=", input.workId).select(["id"]).executeTakeFirst();
   if (!work) return { ok: false, status: 404, error: "Karya tidak ditemui." };
 
-  if (input.role === "hero") {
+  if (input.role === "hero" && !input.allowExistingHero) {
     const existingHero = await db
       .selectFrom("visuals")
       .where("work_id", "=", input.workId)
@@ -129,4 +131,40 @@ export async function uploadVisualForWork(
   }
 
   return { ok: true, visualRequestId: created.id, visualId: attach.visualId, assetPath: upload.assetPath };
+}
+
+export type ReplaceVisualResult =
+  | { ok: true; visualId: number; assetPath: string }
+  | { ok: false; status: number; error: string };
+
+/**
+ * Replaces the image of a visual that is already attached to a work. The role,
+ * anchor, placement, alt text and order are kept; the new image goes through the
+ * same request -> approval -> attach records as any upload, then the old visual
+ * row is removed. Earlier visual requests stay as history.
+ */
+export async function replaceVisualImage(
+  db: Kysely<Database>,
+  input: { visualId: number; bytes: Buffer; approved: boolean; toolName: string | null; altText?: string; actor: string }
+): Promise<ReplaceVisualResult> {
+  const old = await db.selectFrom("visuals").where("id", "=", input.visualId).selectAll().executeTakeFirst();
+  if (!old) return { ok: false, status: 404, error: "Visual tidak ditemui." };
+
+  const result = await uploadVisualForWork(db, {
+    workId: old.work_id,
+    role: old.role,
+    altText: (input.altText ?? "").trim() || old.alt || "",
+    anchor: old.anchor ?? null,
+    place: old.place === "before" ? "before" : "after",
+    toolName: input.toolName,
+    bytes: input.bytes,
+    approved: input.approved,
+    actor: input.actor,
+    allowExistingHero: true
+  });
+  if (!result.ok) return { ok: false, status: result.status, error: result.error };
+
+  await db.updateTable("visuals").set({ sort_order: old.sort_order }).where("id", "=", result.visualId).execute();
+  await db.deleteFrom("visuals").where("id", "=", input.visualId).execute();
+  return { ok: true, visualId: result.visualId, assetPath: result.assetPath };
 }

@@ -67,14 +67,16 @@ export interface VisualGenerationResult {
 /** Statuses that count as an in-flight (active) generation. */
 const ACTIVE_STATUSES: VisualRequestStatus[] = ["queued", "generating"];
 
-/** Statuses where an existing idempotency key should short-circuit. */
+/**
+ * Statuses where an existing idempotency key should short-circuit. A rejected request is not one
+ * of them: the editor rejected that image and generating again must start a new task.
+ */
 const IDEMPOTENT_HIT_STATUSES: VisualRequestStatus[] = [
   "queued",
   "generating",
   "under_review",
   "approved",
   "attached",
-  "rejected",
 ];
 
 export async function hasActiveVisualGeneration(

@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 
 const KIND_LABELS: Record<string, string> = {
   human: "Manusia",
-  virtual: "Maya",
+  virtual: "AI (Maya)",
   organization: "Organisasi",
 };
 
@@ -41,8 +41,10 @@ export default async function AdminContributorsPage() {
       <header className="admin-page-header">
         <div className="admin-page-header-row">
           <div>
-            <h1>Penyumbang</h1>
-            <p className="admin-page-sub">{contributors.length} penyumbang dalam database</p>
+            <h1>Editorial</h1>
+            <p className="admin-page-sub">
+              {contributors.length} penyumbang: manusia dan AI (dengan nama samaran). Padanan AI dengan nama samaran ditetapkan di <a href="/admin/settings">Tetapan</a>.
+            </p>
           </div>
           <a href="/admin/contributors/new" className="admin-btn admin-btn-primary">
             + Penyumbang Baharu

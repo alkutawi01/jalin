@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import CopyButton from "../../../../components/admin/CopyButton";
 import { composeVisualPrompt } from "../../../../lib/admin/visual-generation/prompt-composer";
+import { confirmAction } from "../../../../lib/admin/dialogs";
+import LoadingBlock from "../../../../components/admin/LoadingBlock";
 
 const VISUAL_ROLES = [
   { value: "hero", label: "Hero" },
@@ -255,6 +257,12 @@ export default function EditVisualRequestPage() {
         throw new Error(data.error || "Gagal menyimpan.");
       }
 
+      const refreshed = await fetch(`/api/admin/visual-requests/${requestId}`);
+      if (refreshed.ok) {
+        const r: VisualRequestData = await refreshed.json();
+        setRecord(r);
+        setForm((prev) => ({ ...prev, status: r.status, approvalState: r.approval_state ?? prev.approvalState }));
+      }
       setSuccess("Berjaya disimpan.");
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
@@ -406,7 +414,7 @@ export default function EditVisualRequestPage() {
   }
 
   async function handleReject() {
-    if (!confirm("Pasti ingin menolak visual ini?")) return;
+    if (!(await confirmAction("Pasti ingin menolak visual ini?", { danger: true, confirmLabel: "Ya, teruskan" }))) return;
     setApproving(true);
     setError(null);
     setSuccess(null);
@@ -429,7 +437,7 @@ export default function EditVisualRequestPage() {
   }
 
   async function handleAttach() {
-    if (!confirm("Pautkan visual ini ke Work? Work TIDAK akan diterbitkan secara automatik.")) return;
+    if (!(await confirmAction("Pautkan visual ini ke Work? Work TIDAK akan diterbitkan secara automatik."))) return;
     setAttaching(true);
     setError(null);
     setSuccess(null);
@@ -452,7 +460,7 @@ export default function EditVisualRequestPage() {
   }
 
   async function handleDelete() {
-    if (!confirm("Pasti ingin memadam visual request ini?")) return;
+    if (!(await confirmAction("Pasti ingin memadam visual request ini?", { danger: true, confirmLabel: "Ya, teruskan" }))) return;
     setDeleting(true);
 
     try {
@@ -469,7 +477,7 @@ export default function EditVisualRequestPage() {
   }
 
   if (loading) {
-    return <div className="admin-loading"><p>Memuatkan visual request...</p></div>;
+    return <div className="admin-loading"><LoadingBlock label="visual request" /></div>;
   }
 
   return (

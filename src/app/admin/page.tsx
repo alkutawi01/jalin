@@ -112,7 +112,7 @@ export default async function AdminDashboard() {
       </section>
 
       <section className="admin-section">
-        <h2>Editorial Health</h2>
+        <h2>Kesihatan Editorial</h2>
         {stats.editorialHealth ? (
           <>
             <p className="admin-section-meta">Last checked: {new Date().toLocaleString("ms-MY")}</p>
@@ -165,22 +165,22 @@ export default async function AdminDashboard() {
           </div>
           </>
         ) : (
-          <p>Editorial health data not available</p>
+          <p>Data kesihatan editorial belum tersedia.</p>
         )}
       </section>
 
       <section className="admin-section">
-        <h2>Audit History</h2>
+        <h2>Sejarah Audit</h2>
         <EditorialAuditHistory />
       </section>
 
       <section className="admin-section">
-        <h2>Editorial Issues</h2>
+        <h2>Isu Editorial</h2>
         <EditorialIssueQueue />
       </section>
 
       <section className="admin-section">
-        <h2>Editorial Workflow</h2>
+        <h2>Aliran Editorial</h2>
         <EditorialWorkflowDashboard />
       </section>
     </div>

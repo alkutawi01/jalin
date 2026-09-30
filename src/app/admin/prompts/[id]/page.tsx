@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
+import { confirmAction } from "../../../../lib/admin/dialogs";
+import LoadingBlock from "../../../../components/admin/LoadingBlock";
 
 const WORK_TYPES = [
   { value: "cerpen", label: "Cerpen" },
@@ -109,7 +111,7 @@ export default function EditPromptPage() {
   }
 
   async function handleDelete() {
-    if (!confirm("Pasti ingin memadam template ini?")) return;
+    if (!(await confirmAction("Pasti ingin memadam template ini?", { danger: true, confirmLabel: "Ya, teruskan" }))) return;
     setDeleting(true);
 
     try {
@@ -126,7 +128,7 @@ export default function EditPromptPage() {
   }
 
   if (loading) {
-    return <div className="admin-loading"><p>Memuatkan template...</p></div>;
+    return <div className="admin-loading"><LoadingBlock label="template" /></div>;
   }
 
   return (
