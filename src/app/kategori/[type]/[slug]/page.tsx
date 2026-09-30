@@ -14,6 +14,7 @@ import {
 import StoryMarkdown from "../../../../components/reader/StoryMarkdown";
 import { WorkCover } from "../../../../components/reader/WorkCover";
 import { extractInlineChapters } from "../../../../lib/reader/inline-chapters";
+import { placeVisuals } from "../../../../lib/reader/place-visuals";
 import MobileStoryInfo from "../../../../components/reader/MobileStoryInfo";
 import { initContentRepository } from "../../../../lib/content";
 import { getWorkBySlug, getWorksByType } from "../../../../lib/content/workLoader";
@@ -33,31 +34,9 @@ import type {
 } from "../../../../components/reader/types";
 import type { ReadingSection, WorkType } from "../../../../lib/content/types";
 
-// Works are published after the build, so unknown slugs must render on demand (and refresh every minute).
+// Editorial changes must be visible on work pages just as on the dynamic homepage.
+export const dynamic = "force-dynamic";
 export const dynamicParams = true;
-export const revalidate = 60;
-
-export async function generateStaticParams() {
-  const types: WorkType[] = ["cerpen", "novela", "bersiri", "fragmen", "sinopsis"];
-  const params: { type: string; slug: string; sectionSlug?: string }[] = [];
-
-  const repo = await initContentRepository();
-  const useRepo = repo.source === "database";
-
-  for (const type of types) {
-    if (type === "bersiri") continue; // nested/series routes own bersiri URLs
-    const works = useRepo ? repo.getWorksByType(type) : getWorksByType(type);
-    for (const work of works) {
-      if (type === "novela" && work.sections && work.sections.length > 0) {
-        for (const section of work.sections) {
-          params.push({ type, slug: work.slug, sectionSlug: section.slug });
-        }
-      }
-      params.push({ type, slug: work.slug });
-    }
-  }
-  return params;
-}
 
 const TYPE_LABELS: Record<string, string> = {
   cerpen: "Cerpen",
@@ -107,16 +86,6 @@ export async function generateMetadata({
       images: hero?.src ? [absoluteUrl(hero.src)] : undefined
     }
   };
-}
-
-function splitBody(body: string, anchor: string, place: "before" | "after"): [string, string] {
-  const index = body.indexOf(anchor);
-  if (index < 0) return [body, ""];
-  if (place === "before") {
-    return [body.slice(0, index), body.slice(index)];
-  }
-  const end = index + anchor.length;
-  return [body.slice(0, end), body.slice(end)];
 }
 
 async function getWork(slug: string) {
@@ -307,7 +276,6 @@ export default async function WorkPage({
 
   const rights = `© ADJUNG ${(work.publishedAt ?? "2026").slice(0, 4)}`;
   const hero = work.visuals.find((visual) => visual.role === "hero");
-  const inlineVisuals = work.visuals.filter((visual) => visual.anchor);
 
   const sections = work.sections && work.sections.length > 0 ? work.sections : [];
 
@@ -327,17 +295,7 @@ export default async function WorkPage({
     bodyToRender = activeSection.body;
   }
 
-  const segmentNodes: (string | { visual: (typeof work.visuals)[number] })[] = [];
-  let remaining = bodyToRender;
-  for (const visual of inlineVisuals) {
-    const anchor = visual.anchor ?? "";
-    if (!anchor || remaining.indexOf(anchor) < 0) continue;
-    const [before, after] = splitBody(remaining, anchor, visual.place ?? "after");
-    segmentNodes.push(before);
-    segmentNodes.push({ visual });
-    remaining = after;
-  }
-  segmentNodes.push(remaining);
+  const segmentNodes = placeVisuals(bodyToRender, work.visuals);
 
   const publicSections = projectPublicSections(sections);
 
@@ -434,12 +392,12 @@ export default async function WorkPage({
                   </StoryMarkdown>
                 );
               }
-              if ("visual" in node) {
+              if (typeof node !== "string") {
                 return (
                   <EditorialImage
                     key={index}
-                    src={node.visual.src}
-                    alt={node.visual.alt}
+                    src={node.src}
+                    alt={node.alt}
                     rights={rights}
                   />
                 );

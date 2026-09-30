@@ -898,6 +898,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
   color: var(--clay);
 }
 .glossary-tooltip {
+  font-style: normal;
   position: absolute;
   z-index: 30;
   left: 50%;

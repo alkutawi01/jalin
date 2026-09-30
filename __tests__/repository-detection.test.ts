@@ -12,8 +12,8 @@
  *      (simulated minification).
  *   2. The markdown repository remains recognized.
  *   3. No source file uses `constructor.name` for repository detection anymore.
- *   4. generateStaticParams pulls Works from the database when CONTENT_SOURCE=database
- *      (factory wiring + page-level branch).
+ *   4. Reader pages render dynamically, so production DB changes cannot be
+ *      hidden behind build-time static params.
  *
  * Requires DATABASE_URL (runs from the repo root with .env.local).
  */
@@ -28,8 +28,6 @@ import {
   MarkdownContentRepository,
   DatabaseContentRepository,
 } from "../src/lib/content";
-import { generateStaticParams } from "../src/app/kategori/[type]/[slug]/page";
-import { generateStaticParams as generateSectionStaticParams } from "../src/app/kategori/[type]/[slug]/[sectionSlug]/page";
 
 config({ path: ".env.local", override: true });
 
@@ -120,8 +118,8 @@ async function main() {
     "factory returns database repository when CONTENT_SOURCE=database",
   );
 
-  // --- 4. generateStaticParams uses the database when CONTENT_SOURCE=database ---
-  console.log("generateStaticParams with CONTENT_SOURCE=database:");
+  // --- 4. DB works are available and reader pages are not pre-rendered ---
+  console.log("dynamic reader routes:");
   const novelas = factoryDatabase.getWorksByType("novela");
   assert(
     novelas.length > 0,
@@ -129,38 +127,16 @@ async function main() {
   );
 
   const target = novelas[0];
-  const sections = target.sections ?? [];
-  assert(
-    sections.length > 0,
-    `novela "${target.slug}" exposes reading sections`,
-  );
-
-  const workParams = await generateStaticParams();
-  assert(
-    workParams.some((p) => p.type === "novela" && p.slug === target.slug),
-    `generateStaticParams includes database novela "${target.slug}"`,
-  );
-  assert(
-    sections.every((section) =>
-      workParams.some(
-        (p) =>
-          p.type === "novela" &&
-          p.slug === target.slug &&
-          p.sectionSlug === section.slug,
-      ),
-    ),
-    "generateStaticParams includes every section of the database novela",
-  );
-
-  const sectionParams = await generateSectionStaticParams();
-  assert(
-    sections.every((section) =>
-      sectionParams.some(
-        (p) => p.slug === target.slug && p.sectionSlug === section.slug,
-      ),
-    ),
-    "section route generateStaticParams includes every database section",
-  );
+  assert((target.sections ?? []).length > 0, `novela "${target.slug}" exposes reading sections`);
+  for (const route of [
+    "src/app/kategori/[type]/[slug]/page.tsx",
+    "src/app/kategori/[type]/[slug]/[sectionSlug]/page.tsx",
+    "src/app/kategori/bersiri/[seriesSlug]/page.tsx",
+    "src/app/kategori/bersiri/[seriesSlug]/[episodeSlug]/page.tsx",
+  ]) {
+    const source = fs.readFileSync(path.join(process.cwd(), route), "utf8");
+    assert(source.includes('export const dynamic = "force-dynamic"') && !source.includes("generateStaticParams"), `${route} renders on demand`);
+  }
 
   console.log(`\nResults: ${passed} passed, ${failed} failed`);
   process.exit(failed > 0 ? 1 : 0);
