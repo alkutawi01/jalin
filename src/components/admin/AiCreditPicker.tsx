@@ -20,14 +20,17 @@ export default function AiCreditPicker({
   onPick: (slug: string) => void;
 }) {
   const [personas, setPersonas] = useState<Persona[]>([]);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     fetch("/api/admin/ai-personas")
       .then((res) => (res.ok ? res.json() : { personas: [] }))
       .then((data) => setPersonas((data.personas as Persona[]).filter((p) => p.slug)))
-      .catch(() => setPersonas([]));
+      .catch(() => setPersonas([]))
+      .finally(() => setLoaded(true));
   }, []);
 
+  if (!loaded) return null;
   if (personas.length === 0) {
     return (
       <p className="admin-form-hint">

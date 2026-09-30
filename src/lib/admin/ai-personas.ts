@@ -11,6 +11,9 @@ import { getDb, hasDb } from "../db";
 
 const SCOPE = "ai_persona";
 
+/** Pseudonyms already recorded in the system: an AI whose contributor record exists starts mapped to it. */
+const KNOWN_SLUG: Record<string, string> = { ChatGPT: "chatgpt", "Mimo (OpenCode)": "mimo" };
+
 export const DEFAULT_AIS = ["ChatGPT", "Claude", "Gemini", "Mimo (OpenCode)", "Grok", "Copilot", "DeepSeek"];
 
 export interface AiPersona {
@@ -49,7 +52,8 @@ export async function listAiPersonas(): Promise<AiPersona[]> {
   }
   const contributors = new Map((await listContributorOptions()).map((c) => [c.slug, c.displayName]));
   return names.map((ai) => {
-    const slug = bySlug.get(ai) || null;
+    const known = KNOWN_SLUG[ai] && contributors.has(KNOWN_SLUG[ai]) ? KNOWN_SLUG[ai] : null;
+    const slug = bySlug.get(ai) || known || null;
     return { ai, slug, displayName: slug ? contributors.get(slug) ?? slug : null };
   });
 }
