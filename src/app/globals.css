@@ -1695,6 +1695,13 @@ dd { margin: 0; color: var(--ink); text-align: left; }
   white-space: nowrap;
 }
 
+.admin-markdown-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
 .admin-preview-toggle {
   margin-top: 12px;
 }
