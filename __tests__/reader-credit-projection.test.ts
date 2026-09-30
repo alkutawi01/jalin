@@ -109,6 +109,11 @@ console.log("reader credit projection tests\n");
 }
 
 {
+  const custom: ContributorRef[] = [{ slug: "izzat-anas", role: "Penterjemah", byline: false }];
+  assert(json(projectEditorialCredits(custom)) === json([{ role: "Penterjemah", name: "Izzat Anas" }]), "A role added by an editor is shown as written");
+}
+
+{
   const fallback: ContributorRef[] = [{ slug: "kontributor-tiada", role: "final_editor", byline: false }];
   const editorial = projectEditorialCredits(fallback);
   assert(editorial.length === 0, "Unapproved contributor is hidden instead of showing a fallback name");
@@ -125,7 +130,7 @@ console.log("reader credit projection tests\n");
 
 {
   const dbLabel: ContributorRef[] = [{ slug: "izzat-anas", role: "Penyunting akhir", byline: false }];
-  assert(projectEditorialCredits(dbLabel).length === 0, "Arbitrary DB role labels that are not approved stay hidden");
+  assert(projectEditorialCredits(dbLabel).length === 1, "A role label chosen or added in admin (capitalised text) is shown; lowercase internal keys stay hidden");
   const approvedLabel: ContributorRef[] = [{ slug: "izzat-anas", role: "Editor", byline: false }];
   assert(json(projectEditorialCredits(approvedLabel)) === json([{ role: "Editor", name: "Izzat Anas" }]), "Already-projected approved labels pass through");
 }

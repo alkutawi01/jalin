@@ -3,6 +3,9 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import WorkVisualUpload from "../../../../components/admin/WorkVisualUpload";
+import CreditRoleSelect from "../../../../components/admin/CreditRoleSelect";
+import AiCreditPicker from "../../../../components/admin/AiCreditPicker";
+import { roleDisplay } from "../../../../lib/credit-roles";
 
 const WORK_TYPES = [
   { value: "cerpen", label: "Cerpen" },
@@ -76,6 +79,7 @@ interface CreditData {
 interface ContributorOption {
   slug: string;
   display_name: string;
+  kind?: string;
 }
 
 interface VisualData {
@@ -197,6 +201,9 @@ export default function EditWorkPage() {
 
   const [credits, setCredits] = useState<CreditData[]>([]);
   const [contributors, setContributors] = useState<ContributorOption[]>([]);
+  // A credit is either to a human or to an AI (shown under its pseudonym); the form never mixes the two.
+  const [creditKind, setCreditKind] = useState<"manusia" | "ai">("manusia");
+  const isAiSlug = (slug: string | null | undefined) => contributors.find((c) => c.slug === slug)?.kind === "virtual";
   const [editingCredit, setEditingCredit] = useState<Partial<CreditData> | null>(null);
   const [creditError, setCreditError] = useState<string | null>(null);
 
@@ -559,9 +566,10 @@ export default function EditWorkPage() {
       const res = await fetch("/api/admin/contributors");
       if (res.ok) {
         const data = await res.json();
-        setContributors(data.map((c: { slug: string; display_name: string }) => ({
+        setContributors(data.map((c: { slug: string; display_name: string; kind?: string }) => ({
           slug: c.slug,
           display_name: c.display_name,
+          kind: c.kind,
         })));
       }
     } catch {
@@ -1530,12 +1538,15 @@ export default function EditWorkPage() {
             <button
               type="button"
               className="admin-btn admin-btn-sm admin-btn-primary"
-              onClick={() => setEditingCredit({
-                contributor_slug: "",
-                guest_name: "",
-                role_label: "",
-                byline: false,
-              })}
+              onClick={() => {
+                setCreditKind("manusia");
+                setEditingCredit({
+                  contributor_slug: "",
+                  guest_name: "",
+                  role_label: "",
+                  byline: false,
+                });
+              }}
             >
               + Tambah Kredit
             </button>
@@ -1543,9 +1554,44 @@ export default function EditWorkPage() {
 
           {editingCredit && (
             <div className="admin-credit-form">
-              <div className="admin-form-row">
+              <div className="admin-form-group">
+                <label>Kredit ini untuk</label>
+                <div className="admin-checkbox-group">
+                  <label className="admin-checkbox-label">
+                    <input
+                      type="radio"
+                      name="credit-kind"
+                      checked={creditKind === "manusia"}
+                      onChange={() => {
+                        setCreditKind("manusia");
+                        setEditingCredit((prev) => (isAiSlug(prev?.contributor_slug) ? { ...prev, contributor_slug: undefined } : prev));
+                      }}
+                    />
+                    Manusia
+                  </label>
+                  <label className="admin-checkbox-label">
+                    <input
+                      type="radio"
+                      name="credit-kind"
+                      checked={creditKind === "ai"}
+                      onChange={() => {
+                        setCreditKind("ai");
+                        setEditingCredit((prev) => ({ ...prev, contributor_slug: isAiSlug(prev?.contributor_slug) ? prev?.contributor_slug : undefined, guest_name: undefined }));
+                      }}
+                    />
+                    AI (dipaparkan dengan nama samaran)
+                  </label>
+                </div>
+              </div>
+              {creditKind === "ai" ? (
+                <AiCreditPicker
+                  currentSlug={editingCredit.contributor_slug || undefined}
+                  onPick={(slug) => setEditingCredit((prev) => ({ ...prev, contributor_slug: slug, guest_name: undefined }))}
+                />
+              ) : null}
+              <div className="admin-form-row" style={creditKind === "ai" ? { display: "none" } : undefined}>
                 <div className="admin-form-group">
-                  <label>Penyumbang</label>
+                  <label>Penyumbang (manusia)</label>
                   <select
                     value={editingCredit.contributor_slug || ""}
                     onChange={(e) => setEditingCredit((prev) => ({
@@ -1555,7 +1601,7 @@ export default function EditWorkPage() {
                     }))}
                   >
                     <option value="">-- Pilih --</option>
-                    {contributors.map((c) => (
+                    {contributors.filter((c) => c.kind !== "virtual").map((c) => (
                       <option key={c.slug} value={c.slug}>{c.display_name}</option>
                     ))}
                   </select>
@@ -1579,14 +1625,12 @@ export default function EditWorkPage() {
               <div className="admin-form-row">
                 <div className="admin-form-group">
                   <label>Peranan *</label>
-                  <input
-                    type="text"
+                  <CreditRoleSelect
                     value={editingCredit.role_label || ""}
-                    onChange={(e) => setEditingCredit((prev) => ({
+                    onChange={(role) => setEditingCredit((prev) => ({
                       ...prev,
-                      role_label: e.target.value,
+                      role_label: role,
                     }))}
-                    placeholder="Contoh: Penulis, Penyunting"
                   />
                 </div>
 
@@ -1646,6 +1690,7 @@ export default function EditWorkPage() {
                 <thead>
                   <tr>
                     <th>Penyumbang</th>
+                    <th>Jenis</th>
                     <th>Peranan</th>
                     <th>Byline</th>
                     <th>Public</th>
@@ -1661,7 +1706,8 @@ export default function EditWorkPage() {
                           ? contributors.find((c) => c.slug === credit.contributor_slug)?.display_name || credit.contributor_slug
                           : credit.guest_name || "—"}
                       </td>
-                      <td>{credit.role_label}</td>
+                      <td>{isAiSlug(credit.contributor_slug) ? "AI" : "Manusia"}</td>
+                      <td>{roleDisplay(credit.role_label)}</td>
                       <td>{credit.byline ? "Ya" : "Tidak"}</td>
                       <td>{credit.is_public ? "Ya" : "Tidak"}</td>
                       <td>{credit.sort_order}</td>
@@ -1670,7 +1716,10 @@ export default function EditWorkPage() {
                           <button
                             type="button"
                             className="admin-btn admin-btn-sm"
-                            onClick={() => setEditingCredit(credit)}
+                            onClick={() => {
+                              setCreditKind(isAiSlug(credit.contributor_slug) ? "ai" : "manusia");
+                              setEditingCredit(credit);
+                            }}
                           >
                             Edit
                           </button>
