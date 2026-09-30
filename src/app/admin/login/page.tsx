@@ -40,8 +40,8 @@ export default function LoginPage() {
     <div className="admin-login-page">
       <div className="admin-login-card">
         <header className="admin-login-header">
-          <h1>JALIN</h1>
-          <p>Admin Console</p>
+          <img className="a-login-logo" src="/brand/jalin-wordmark.svg" alt="Jalin" />
+          <p>Admin</p>
         </header>
 
         {error && (
