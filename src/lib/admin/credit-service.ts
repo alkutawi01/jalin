@@ -129,11 +129,17 @@ export async function updateCredit(
 ): Promise<CreditRecord> {
   const db = getAdminDb();
 
-  // Validate: must have either contributorSlug or guestName
+  // A credit names either a contributor or a guest, never both. Choosing one clears the other,
+  // so switching a guest credit to a contributor (or the reverse) cannot leave both set.
+  const hasSlug = Boolean(input.contributorSlug);
+  const hasGuest = Boolean(input.guestName);
   if (input.contributorSlug === undefined && input.guestName === undefined) {
     // No change to contributor/guest, skip validation
-  } else if (!input.contributorSlug && !input.guestName) {
-    throw new Error("Must provide either contributor or guest name.");
+  } else if (!hasSlug && !hasGuest) {
+    throw new Error("Pilih penyumbang atau isi nama tetamu.");
+  } else if (hasSlug && hasGuest) {
+    // The form may send both while the editor switches; a contributor takes precedence.
+    input = { ...input, guestName: "" };
   }
 
   // If contributorSlug provided, verify it exists
@@ -153,6 +159,8 @@ export async function updateCredit(
 
   if (input.contributorSlug !== undefined) updateData.contributor_slug = input.contributorSlug || null;
   if (input.guestName !== undefined) updateData.guest_name = input.guestName || null;
+  if (hasSlug && input.guestName === undefined) updateData.guest_name = null;
+  if (hasGuest && input.contributorSlug === undefined) updateData.contributor_slug = null;
   if (input.roleLabel !== undefined) updateData.role_label = input.roleLabel;
   if (input.byline !== undefined) updateData.byline = input.byline;
   if (input.isPublic !== undefined) updateData.is_public = input.isPublic;

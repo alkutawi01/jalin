@@ -47,6 +47,8 @@ const TYPE_LABEL: Record<string, string> = {
   sinopsis: "Sinopsis"
 };
 
+const STATUS_ONLY = "status_not_publishable";
+
 export default function WorkStatusPanel({
   workId,
   title,
@@ -60,6 +62,7 @@ export default function WorkStatusPanel({
   onRecheck,
   onChangeStatus,
   onPublish,
+  onPublishNow,
   onGoTab
 }: {
   workId: string;
@@ -74,24 +77,33 @@ export default function WorkStatusPanel({
   onRecheck: () => void;
   onChangeStatus: (next: string) => void;
   onPublish: () => void;
+  /** Moves the work to Sedia and publishes it in one step. */
+  onPublishNow: () => void;
   onGoTab: (tab: string) => void;
 }) {
   const stepIndex = STEPS.findIndex((s) => s.value === status);
-  const failing = readiness ? GATES.filter((g) => !readiness.gates[g.key]?.pass) : [];
-  const issueCount = readiness ? readiness.blockers.length : 0;
+  // The stepper already shows the status, so a work that is merely still "Draf" is not a checklist problem.
+  const realBlockers = readiness ? readiness.blockers.filter((b) => b.code !== STATUS_ONLY) : [];
+  const gatePasses = (key: keyof ReadinessLike["gates"]) =>
+    !readiness || readiness.gates[key]?.blockers.every((b) => b.code === STATUS_ONLY) !== false;
+  const failing = readiness ? GATES.filter((g) => !gatePasses(g.key)) : [];
+  const issueCount = realBlockers.length;
+  const allClear = !!readiness && realBlockers.length === 0;
 
   let next: { label: string; run: () => void; disabled?: boolean; hint?: string } | null = null;
-  if (status === "draft") {
+  if ((status === "draft" || status === "review") && allClear) {
+    next = { label: "Terbitkan", run: onPublishNow };
+  } else if (status === "draft") {
     next = { label: "Hantar untuk semakan", run: () => onChangeStatus("review") };
   } else if (status === "review") {
     next = {
       label: "Tandakan sedia",
       run: () => onChangeStatus("ready"),
-      disabled: !readiness?.ready,
-      hint: readiness?.ready ? undefined : "Selesaikan senarai semak di bawah dahulu."
+      disabled: !allClear,
+      hint: allClear ? undefined : "Selesaikan senarai semak di bawah dahulu."
     };
   } else if (status === "ready") {
-    next = { label: "Terbitkan", run: onPublish, disabled: !readiness?.ready };
+    next = { label: "Terbitkan", run: onPublish, disabled: !allClear };
   }
 
   return (
@@ -148,8 +160,8 @@ export default function WorkStatusPanel({
             {loading ? (
               <span className="a-check-state">Menyemak…</span>
             ) : readiness ? (
-              <span className={`a-check-state ${readiness.ready ? "is-ok" : "is-bad"}`}>
-                {readiness.ready ? "Semua lulus" : `${failing.length} bahagian belum lulus`}
+              <span className={`a-check-state ${allClear ? "is-ok" : "is-bad"}`}>
+                {allClear ? "Semua lulus" : `${failing.length} bahagian belum lulus`}
               </span>
             ) : null}
             <button type="button" className="a-btn a-btn-quiet" onClick={onRecheck} disabled={loading}>
@@ -161,7 +173,7 @@ export default function WorkStatusPanel({
             <>
               <div className="a-chips">
                 {GATES.map((gate) => {
-                  const pass = readiness.gates[gate.key]?.pass;
+                  const pass = gatePasses(gate.key);
                   return (
                     <button
                       type="button"
@@ -181,7 +193,7 @@ export default function WorkStatusPanel({
                     Lihat butiran ({issueCount} perlu dibetulkan, {readiness.warnings.length} amaran)
                   </summary>
                   <ul>
-                    {readiness.blockers.map((b) => (
+                    {realBlockers.map((b) => (
                       <li key={b.code + b.message} className="is-bad">
                         {b.message}
                       </li>
