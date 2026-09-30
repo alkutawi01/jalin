@@ -124,6 +124,25 @@ const NOVELA = [
 const novelaText = "BAB 1 — Satu\n\nIsi bab satu.\n\nBAB 2 — Dua\n\nIsi bab dua.";
 const nov = buildImportPlan(NOVELA, novelaText, { writerName: "X" });
 assert(nov.ok && nov.plan!.sections.length === 2 && nov.plan!.visuals.length === 1, "an empty 'Bab:' label in GAMBAR is not read as a [BAB] heading");
+// Review-screen edits
+const edited = buildImportPlan(REAL, realText, {
+  overrides: { title: "Beranda Senja" },
+  writerName: "X",
+  edits: {
+    readingMinutes: 7,
+    glossary: [{ term: "beranda", meaning: "bahagian depan rumah" }, { term: "tiada", meaning: "tiada dalam teks" }],
+    characters: [{ name: "Aina", role: "Anak" }],
+    visuals: [null, { altText: "Lampu di senja", place: "before", scene: "A lamp at dusk, no people." }]
+  }
+});
+assert(edited.ok && edited.plan!.work.readingMinutes === 7, "edited reading minutes are used");
+assert(edited.plan!.glossary.length === 1 && edited.plan!.glossary[0]!.meaning === "bahagian depan rumah", "edited glossary replaces the parsed one and drops terms absent from the text");
+assert(edited.plan!.characters.length === 1 && edited.plan!.characters[0]!.role === "Anak", "edited characters replace the parsed ones");
+assert(edited.plan!.visuals.length === 1 && edited.plan!.visuals[0]!.place === "before" && edited.plan!.visuals[0]!.originalIndex === 1, "an image can be removed and another edited");
+assert(edited.plan!.visuals[0]!.finalPrompt.includes("A lamp at dusk"), "edited scene is reflected in the full image prompt");
+const placed = buildImportPlan(REAL.replace("Nisbah: 4:3", ["Letak: selepas tajuk", "Nisbah: 4:3"].join("\n")), realText, { overrides: { title: "T" }, writerName: "X" });
+assert(placed.plan!.visuals[1]!.place === "after", "a loose Letak label such as 'selepas tajuk' still means after");
+
 assert(RECIPE_KEYS.length === 7, "seven recipes");
 assert(recipeFor("cerpen", "data") !== undefined && getRecipe("sinopsis.tulis").mode === "tulis", "recipes resolve");
 for (const key of RECIPE_KEYS) {

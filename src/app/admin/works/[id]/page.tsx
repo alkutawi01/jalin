@@ -226,6 +226,11 @@ export default function EditWorkPage() {
     bodyChanged: boolean;
   } | null>(null);
   const [publishing, setPublishing] = useState(false);
+  // Markdown sync writes files in the project folder; it is only meaningful on a developer machine.
+  const [isLocalHost, setIsLocalHost] = useState(false);
+  useEffect(() => {
+    setIsLocalHost(/^(localhost|127.0.0.1)$/.test(window.location.hostname));
+  }, []);
   const [publishError, setPublishError] = useState<string | null>(null);
   const [publishSuccess, setPublishSuccess] = useState<string | null>(null);
 
@@ -975,7 +980,7 @@ export default function EditWorkPage() {
                 Sudah Terbit
               </span>
             )}
-            {publishPreview && (
+            {publishPreview && isLocalHost && (
               <button
                 type="button"
                 onClick={handlePublish}
@@ -1101,7 +1106,7 @@ export default function EditWorkPage() {
         </div>
       </section>
 
-      {publishPreview && (
+      {publishPreview && isLocalHost && (
         <div className="admin-publish-preview">
           <h3>Sinkronisasi</h3>
           {publishPreview.isNew ? (
