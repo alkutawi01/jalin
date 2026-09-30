@@ -32,9 +32,9 @@ function formatDate(date: Date | string | null): string {
 export default async function AdminWorksPage({
   searchParams
 }: {
-  searchParams: Promise<{ status?: string }>;
+  searchParams: Promise<{ status?: string; q?: string; type?: string }>;
 }) {
-  const { status } = await searchParams;
+  const { status, q, type } = await searchParams;
   if (!hasDb()) {
     return (
       <div className="admin-placeholder">
@@ -51,7 +51,14 @@ export default async function AdminWorksPage({
 
   const allWorks = await listWorks();
   const filter = status && ["draft", "review", "ready", "published", "archived"].includes(status) ? status : "";
-  const works = filter ? allWorks.filter((w) => w.status === filter) : allWorks;
+  const query = (q ?? "").trim().toLowerCase();
+  const typeFilter = type && TYPE_LABELS[type] ? type : "";
+  const works = allWorks.filter(
+    (w) =>
+      (!filter || w.status === filter) &&
+      (!typeFilter || w.type === typeFilter) &&
+      (!query || w.title.toLowerCase().includes(query) || w.slug.toLowerCase().includes(query))
+  );
   const tabs: { key: string; label: string }[] = [
     { key: "", label: "Semua" },
     { key: "draft", label: "Draf" },
@@ -77,11 +84,24 @@ export default async function AdminWorksPage({
         </div>
       </header>
 
+      <form method="get" action="/admin/works" className="a-filterbar">
+        {filter ? <input type="hidden" name="status" value={filter} /> : null}
+        <input type="search" name="q" defaultValue={q ?? ""} placeholder="Cari tajuk atau slug…" aria-label="Cari karya" />
+        <select name="type" defaultValue={typeFilter} aria-label="Jenis karya">
+          <option value="">Semua jenis</option>
+          {Object.entries(TYPE_LABELS).map(([value, label]) => (
+            <option key={value} value={value}>{label}</option>
+          ))}
+        </select>
+        <button type="submit" className="a-btn a-btn-primary">Cari</button>
+        {query || typeFilter ? <a href="/admin/works" className="a-btn">Set semula</a> : null}
+      </form>
+
       <nav className="admin-form-actions" aria-label="Tapis status">
         {tabs.map((t) => (
           <a
             key={t.key}
-            href={t.key ? `/admin/works?status=${t.key}` : "/admin/works"}
+            href={`/admin/works?${new URLSearchParams({ ...(t.key ? { status: t.key } : {}), ...(query ? { q: query } : {}), ...(typeFilter ? { type: typeFilter } : {}) }).toString()}`}
             className={`admin-btn admin-btn-sm ${filter === t.key ? "admin-btn-primary" : "admin-btn-outline"}`}
           >
             {t.label} ({t.key ? allWorks.filter((w) => w.status === t.key).length : allWorks.length})
@@ -106,7 +126,7 @@ export default async function AdminWorksPage({
             {works.length === 0 ? (
               <tr>
                 <td colSpan={7} className="admin-table-empty">
-                  Tiada karya dalam database.
+                  {query || typeFilter || filter ? "Tiada karya yang sepadan dengan carian ini." : "Tiada karya dalam database."}
                 </td>
               </tr>
             ) : (
