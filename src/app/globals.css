@@ -2211,3 +2211,17 @@ dd { margin: 0; color: var(--ink); text-align: left; }
     padding-bottom: 28px;
   }
 }
+
+/* Category listing: homepage-style cards; the empty-state fallback spans the row */
+.category-grid {
+  padding: 24px 0 72px;
+}
+.category-grid .category-empty {
+  grid-column: 1 / -1;
+}
+@media (max-width: 1050px) {
+  .category-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 680px) {
+  .category-grid { grid-template-columns: 1fr; }
+}

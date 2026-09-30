@@ -65,21 +65,25 @@ function WorkCard({ work, type }: { work: PublicWorkSummary; type: string }) {
   const genre = displayableGenre(work.genre);
   const reading = work.readingMinutes ? `± ${work.readingMinutes} min` : null;
   const updated = work.updatedAt ?? work.publishedAt;
+  const year = (updated ?? "2026").slice(0, 4);
+  const label = CATEGORY_META[type]?.headerLabel ?? type;
   return (
-    <article className="work-card">
+    <article className="latest-card">
       <a href={`/kategori/${type}/${work.slug}`}>
-        <WorkCover type={work.type} title={work.title} hero={work.hero} />
-        <div className="work-card-meta">
-          <span>
-            {CATEGORY_META[type]?.headerLabel ?? type}
-            {genre ? ` · ${genre}` : ""}
-          </span>
-          {reading ? <span>{reading} membaca</span> : null}
+        <div className="latest-card-cover">
+          <WorkCover type={work.type} title={work.title} hero={work.hero} rightsYear={year} />
         </div>
-        <h2 className="work-card-title">{work.title}</h2>
-        {work.dek ? <p className="work-card-dek">{work.dek}</p> : null}
-        <div className="work-card-updated">
-          {formatDate(updated) === "—" ? null : <>Dikemas kini {formatDate(updated)}</>}
+        <div className="latest-card-body">
+          <div className="latest-card-meta">
+            <span className="latest-card-type">{genre ? `${label} · ${genre}` : label}</span>
+            {reading ? <span className="latest-card-reading">{reading}</span> : null}
+          </div>
+          <h2 className="latest-card-title">{work.title}</h2>
+          {work.dek ? <p className="latest-card-dek">{work.dek}</p> : null}
+          <div className="latest-card-footer">
+            <span className="latest-card-cta">Baca →</span>
+            <span className="latest-card-date">{formatDate(updated) === "—" ? null : formatDate(updated)}</span>
+          </div>
         </div>
       </a>
     </article>
@@ -206,7 +210,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ type:
             <p className="category-intro">{meta.intro}</p>
           </header>
 
-          <div className="work-list">
+          <div className="latest-grid category-grid">
             {works.length === 0 ? <EmptyCategoryFallback currentType={type} /> : null}
             {works.map((work) => (
               <WorkCard
