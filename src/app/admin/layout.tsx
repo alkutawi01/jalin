@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import AdminMobileNav from "../../components/admin/AdminMobileNav";
+import AdminShell from "../../components/admin/AdminShell";
+import "./admin.css";
 
 export const metadata: Metadata = {
   title: "Jalin Admin",
@@ -11,35 +12,5 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <div className="admin-layout">
-      <header className="admin-header">
-        <div className="admin-header-inner">
-          <a href="/admin" className="admin-logo">
-            <span className="admin-logo-text">JALIN</span>
-            <span className="admin-logo-badge">Admin</span>
-          </a>
-          <nav className="admin-nav">
-            <a href="/admin" className="admin-nav-link">Papan Pemuka</a>
-            <a href="/admin/works" className="admin-nav-link">Karya</a>
-            <a href="/admin/contributors" className="admin-nav-link">Editorial</a>
-            <a href="/admin/settings" className="admin-nav-link">Tetapan</a>
-            <a href="/admin/works/add" className="admin-btn admin-btn-primary admin-btn-sm">+ Tambah Karya</a>
-            <a href="/" className="admin-nav-link admin-nav-public">Laman Awam →</a>
-            <form action="/api/admin/auth/logout" method="POST" className="admin-nav-form">
-              <button type="submit" className="admin-nav-link admin-nav-logout">
-                Log Keluar
-              </button>
-            </form>
-          </nav>
-          <AdminMobileNav />
-        </div>
-      </header>
-      <main className="admin-main">
-        <div className="admin-container">
-          {children}
-        </div>
-      </main>
-    </div>
-  );
+  return <AdminShell>{children}</AdminShell>;
 }
