@@ -417,9 +417,37 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
 
           {plan && review ? (
             <>
+              <h3>Pratonton kad</h3>
+              <p className="admin-form-hint">Begini karya ini kelihatan pada halaman utama dan senarai. Gambar hero dimuat naik selepas draf disimpan.</p>
+              <div style={{ maxWidth: 340 }}>
+                <article className="latest-card">
+                  <div className="latest-card-cover">
+                    <div className="work-cover work-cover--placeholder">
+                      <span className="work-cover-monogram" aria-hidden="true">
+                        {(title || "?").trim().charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="latest-card-body">
+                    <div className="latest-card-meta">
+                      <span className="latest-card-type">
+                        {plan.work.type}
+                        {genre ? ` · ${genre}` : ""}
+                      </span>
+                      <span className="latest-card-reading">± {review.readingMinutes || "?"} min</span>
+                    </div>
+                    <h3 className="latest-card-title">{title || "(belum bertajuk)"}</h3>
+                    {dek ? <p className="latest-card-dek">{dek}</p> : null}
+                    <div className="latest-card-footer">
+                      <span className="latest-card-cta">Baca →</span>
+                    </div>
+                  </div>
+                </article>
+              </div>
+
               <h3>Maklumat karya</h3>
               <div className="admin-form-group">
-                <label htmlFor="f-title">Tajuk</label>
+                <label htmlFor="f-title">Tajuk ({title.length}/60 aksara disyorkan)</label>
                 <input
                   id="f-title"
                   value={title}
@@ -434,7 +462,7 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
                 <input id="f-slug" value={slug} onChange={(e) => setSlug(e.target.value)} placeholder="(dijana daripada tajuk)" />
               </div>
               <div className="admin-form-group">
-                <label htmlFor="f-dek">Dek</label>
+                <label htmlFor="f-dek">Dek ({dek.length}/260 aksara disyorkan)</label>
                 <textarea id="f-dek" className="admin-textarea" rows={2} value={dek} onChange={(e) => setDek(e.target.value)} />
               </div>
               <div className="admin-form-row">

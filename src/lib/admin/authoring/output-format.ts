@@ -7,6 +7,7 @@
  * (no JSON, no Markdown) is used because chatbots keep to it far more reliably.
  */
 
+import { LIMITS, SELF_CHECK, exampleBlock } from "./format-guidance";
 import type { OutputSection, Recipe } from "./recipes";
 
 export const FORMAT_VERSION = "v4";
@@ -126,6 +127,7 @@ export function sectionsFor(recipe: Recipe, options: FormatOptions = {}): Output
 }
 
 export function buildFormatBlock(recipe: Recipe, options: FormatOptions = {}): string {
-  const parts = sectionsFor(recipe, options).map((section) => RENDERERS[section](recipe));
-  return [INTRO, "", parts.join("\n\n")].join("\n");
+  const sections = sectionsFor(recipe, options);
+  const parts = sections.map((section) => RENDERERS[section](recipe));
+  return [INTRO, "", parts.join("\n\n"), "", LIMITS, "", SELF_CHECK, "", exampleBlock(recipe, sections)].join("\n");
 }
