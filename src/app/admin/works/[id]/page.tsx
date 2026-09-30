@@ -6,7 +6,8 @@ import WorkVisualUpload from "../../../../components/admin/WorkVisualUpload";
 import CreditRoleSelect from "../../../../components/admin/CreditRoleSelect";
 import AiCreditPicker from "../../../../components/admin/AiCreditPicker";
 import { roleDisplay } from "../../../../lib/credit-roles";
-import { confirmAction } from "../../../../lib/admin/dialogs";
+import WorkStatusPanel from "../../../../components/admin/WorkStatusPanel";
+import { toast, confirmAction } from "../../../../lib/admin/dialogs";
 import LoadingBlock from "../../../../components/admin/LoadingBlock";
 
 const WORK_TYPES = [
@@ -955,6 +956,27 @@ export default function EditWorkPage() {
     }
   }
 
+  async function changeStatus(next: string) {
+    setSaving(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/admin/works/${workId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: next })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Gagal menukar status.");
+      setForm((prev) => (prev ? { ...prev, status: next } : prev));
+      toast("Status dikemas kini.", "success");
+      loadReadiness();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
   if (loading) {
     return (
       <div className="admin-loading">
@@ -965,52 +987,21 @@ export default function EditWorkPage() {
 
   return (
     <div className="admin-form-page">
-      <header className="admin-page-header">
-        <div className="admin-page-header-row">
-          <div>
-            <h1>Edit Karya</h1>
-            <p className="admin-page-sub">ID: {workId}</p>
-          </div>
-          <div className="admin-page-header-actions">
-            <a href={`/admin/works/${workId}/preview`} className="admin-btn admin-btn-outline">
-              Preview
-            </a>
-            {form.status !== "published" && readiness?.ready && (
-              <button
-                type="button"
-                onClick={handleExplicitPublish}
-                className="admin-btn admin-btn-primary"
-                disabled={publishing}
-              >
-                {publishing ? "Menerbitkan..." : "Terbitkan"}
-              </button>
-            )}
-            {form.status === "published" && (
-              <span className="admin-btn admin-btn-outline" aria-hidden="true" style={{ opacity: 0.7, cursor: "default" }}>
-                Sudah Terbit
-              </span>
-            )}
-            {publishPreview && isLocalHost && (
-              <button
-                type="button"
-                onClick={handlePublish}
-                className="admin-btn admin-btn-outline"
-                disabled={publishing}
-              >
-                {publishing ? "Menerbitkan..." : "Sync Markdown"}
-              </button>
-            )}
-            <button
-              type="button"
-              onClick={handleArchive}
-              className="admin-btn admin-btn-danger"
-              disabled={saving}
-            >
-              Arkib
-            </button>
-          </div>
-        </div>
-      </header>
+      <WorkStatusPanel
+        workId={workId}
+        title={form.title}
+        type={form.type}
+        slug={form.slug}
+        status={form.status}
+        readiness={readiness}
+        loading={readinessLoading}
+        error={readinessError}
+        busy={publishing || saving}
+        onRecheck={loadReadiness}
+        onChangeStatus={changeStatus}
+        onPublish={handleExplicitPublish}
+        onGoTab={(tab) => setActiveTab(tab as Tab)}
+      />
 
       {error && (
         <div className="admin-alert admin-alert-error">{error}</div>
@@ -1038,83 +1029,6 @@ export default function EditWorkPage() {
         </div>
       )}
 
-      <section className="admin-publish-preview" aria-label="Publication Readiness">
-        <h3>Publication Readiness</h3>
-        {readinessLoading && <p>Menyemak kesediaan...</p>}
-        {readinessError && (
-          <div className="admin-alert admin-alert-error">{readinessError}</div>
-        )}
-        {readiness && !readinessLoading && (
-          <>
-            <p>
-              <strong>{readiness.ready ? "READY" : "NOT READY"}</strong>
-              {" · "}
-              <span style={{ opacity: 0.7 }}>
-                disemak {new Date(readiness.checkedAt).toLocaleString("ms-MY")}
-              </span>
-            </p>
-            <div className="admin-form-row">
-              {(["content", "credits", "visuals", "privacy", "rights", "structure", "workflow"] as const).map((name) => {
-                const gate = readiness.gates[name];
-                const labels: Record<string, string> = {
-                  content: "Kandungan",
-                  credits: "Kredit",
-                  visuals: "Visual",
-                  privacy: "Privasi",
-                  rights: "Hak",
-                  structure: "Struktur",
-                  workflow: "Aliran kerja",
-                };
-                return (
-                  <span
-                    key={name}
-                    className={`admin-status ${gate.pass ? "admin-status-ready" : "admin-status-draft"}`}
-                    title={gate.pass ? "Lulus" : `Blocker: ${gate.blockers.length}`}
-                  >
-                    {labels[name]}: {gate.pass ? "✓" : `✗ (${gate.blockers.length})`}
-                  </span>
-                );
-              })}
-            </div>
-            {readiness.blockers.length > 0 && (
-              <ul className="admin-alert admin-alert-error" style={{ marginBottom: 0 }}>
-                {readiness.blockers.map((b) => (
-                  <li key={b.code + b.message}>[BLOCKER] {b.message}</li>
-                ))}
-              </ul>
-            )}
-            {readiness.warnings.length > 0 && (
-              <ul style={{ opacity: 0.85, marginTop: "0.5rem" }}>
-                {readiness.warnings.map((w) => (
-                  <li key={w.code + w.message}>[AMARAN] {w.message}</li>
-                ))}
-              </ul>
-            )}
-            {form.status === "ready" && readiness.ready && (
-              <div style={{ marginTop: "0.75rem" }}>
-                <button
-                  type="button"
-                  onClick={handleExplicitPublish}
-                  className="admin-btn admin-btn-primary"
-                  disabled={publishing}
-                >
-                  {publishing ? "Menerbitkan..." : "Terbitkan Karya Ini"}
-                </button>
-              </div>
-            )}
-            {form.status === "draft" || form.status === "review" ? (
-              <p style={{ marginTop: "0.5rem", opacity: 0.8 }}>
-                Naikkan status ke <strong>Sedia</strong> selepas semua gate lulus untuk membolehkan butang Terbitkan.
-              </p>
-            ) : null}
-          </>
-        )}
-        <div style={{ marginTop: "0.5rem" }}>
-          <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={loadReadiness} disabled={readinessLoading}>
-            Semak Semula
-          </button>
-        </div>
-      </section>
 
       {publishPreview && isLocalHost && (
         <div className="admin-publish-preview">
@@ -2384,6 +2298,17 @@ export default function EditWorkPage() {
           )}
         </div>
       )}
+      {form.status !== "archived" ? (
+        <div className="a-danger-zone">
+          <div>
+            <strong>Arkibkan karya ini</strong>
+            <p className="admin-form-hint">Karya diarkibkan dan tidak lagi dipaparkan. Ia boleh dipulihkan kemudian.</p>
+          </div>
+          <button type="button" className="a-btn a-btn-danger-outline" onClick={handleArchive} disabled={saving}>
+            Arkibkan
+          </button>
+        </div>
+      ) : null}
     </div>
   );
 }
