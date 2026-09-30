@@ -10,6 +10,8 @@ import { roleDisplay } from "../../../../lib/credit-roles";
 import WorkStatusPanel from "../../../../components/admin/WorkStatusPanel";
 import { toast, confirmAction } from "../../../../lib/admin/dialogs";
 import LoadingBlock from "../../../../components/admin/LoadingBlock";
+import StoryMarkdown from "../../../../components/reader/StoryMarkdown";
+import { stripImageMarkers } from "../../../../lib/reader/image-markers";
 
 const WORK_TYPES = [
   { value: "cerpen", label: "Cerpen" },
@@ -42,6 +44,7 @@ interface WorkData {
   dek: string | null;
   reading_minutes: number | null;
   version: string;
+  version_label?: string | null;
   published_at: string | null;
   published_by?: string | null;
   updated_at: string;
@@ -227,6 +230,8 @@ export default function EditWorkPage() {
   const [selectedImageAnchor, setSelectedImageAnchor] = useState("");
   const [savedBody, setSavedBody] = useState("");
   const [positionError, setPositionError] = useState("");
+  const [showManuscriptPreview, setShowManuscriptPreview] = useState(false);
+  const [assistantNote, setAssistantNote] = useState("");
   useEffect(() => {
     const restoreTab = () => {
       const hash = window.location.hash.slice(1);
@@ -240,6 +245,22 @@ export default function EditWorkPage() {
   function selectTab(tab: Tab) {
     setActiveTab(tab);
     window.history.replaceState(window.history.state, "", `#${tab}`);
+  }
+  async function copyAssistantPrompt() {
+    const focus = activeTab === "content" ? "semak struktur dan kelancaran manuskrip tanpa menulis semula karya"
+      : activeTab === "metadata" ? "cadangkan dek, genre dan minit bacaan berdasarkan manuskrip"
+      : activeTab === "credits" ? "senaraikan peranan kredit yang benar-benar dibuktikan oleh maklumat diberi; jangan reka penyumbang"
+      : activeTab === "glossary" ? "cadangkan istilah yang benar-benar hadir dalam manuskrip serta maksud ringkas"
+      : activeTab === "characters" ? "senaraikan watak yang benar-benar hadir, peranan, dan kemunculan pertama tanpa spoiler"
+      : activeTab === "source" ? "susun maklumat sumber dan bukti hak yang editor berikan; jangan mendakwa status domain awam tanpa bukti"
+      : "semak struktur bahagian tanpa mengubah urutan cerita";
+    const prompt = `Anda pembantu editorial Jalin. Jenis karya: ${form.type}. Tugas: ${focus}. Jawab dalam bahasa Melayu dengan butiran yang mudah dipindahkan ke tab ${activeTab}. Jangan mereka fakta, kredit, sumber atau peristiwa. Tanda maklumat yang tidak dapat disahkan sebagai 'perlu semakan editor'. ${form.type === "bersiri" ? "Episod ini sebahagian siri; minta ringkasan episod terdahulu dan nota canon jika belum diberi. Jangan anggap episod berdiri sendiri." : ""}\n\nMANUSKRIP:\n${form.body.trim() || "[Editor akan tampal manuskrip]"}`;
+    try {
+      await navigator.clipboard.writeText(prompt);
+      setAssistantNote("Arahan untuk tab ini telah disalin. Semak cadangan chatbot sebelum memasukkannya ke editor.");
+    } catch {
+      setAssistantNote("Salin gagal. Benarkan akses papan keratan dalam pelayar dan cuba lagi.");
+    }
   }
   function chooseImagePosition() {
     const textarea = manuscriptRef.current;
@@ -295,6 +316,9 @@ export default function EditWorkPage() {
   const [creditError, setCreditError] = useState<string | null>(null);
 
   const [visuals, setVisuals] = useState<VisualData[]>([]);
+  const [markerMigration, setMarkerMigration] = useState<{ plan: { originalBody: string; body: string; changes: { id: number; from: string; to: string }[]; skipped: { id: number; reason: string }[] }; canRestore: boolean } | null>(null);
+  const [markerMigrationBusy, setMarkerMigrationBusy] = useState(false);
+  const [markerMigrationError, setMarkerMigrationError] = useState("");
   const [editingVisual, setEditingVisual] = useState<Partial<VisualData> | null>(null);
   const [visualError, setVisualError] = useState<string | null>(null);
 
@@ -368,7 +392,7 @@ export default function EditWorkPage() {
           audience: work.audience || "",
           dek: work.dek || "",
           readingMinutes: work.reading_minutes?.toString() || "",
-          version: work.version,
+          version: work.version_label || work.version,
           publishedAt: work.published_at ? work.published_at.split("T")[0] : "",
           editorPick: work.editor_pick ?? false,
           editorPickRank: work.editor_pick_rank?.toString() || "",
@@ -630,7 +654,7 @@ export default function EditWorkPage() {
       const workRes = await fetch(`/api/admin/works/${workId}`);
       if (workRes.ok) {
         const work: WorkData = await workRes.json();
-        setForm((prev) => ({ ...prev, status: work.status }));
+        setForm((prev) => ({ ...prev, status: work.status, version: work.version_label || work.version }));
       }
       await loadReadiness();
       setTimeout(() => setPublishSuccess(null), 5000);
@@ -677,6 +701,51 @@ export default function EditWorkPage() {
       }
     } catch {
       // Ignore visual loading errors
+    }
+  }
+
+  async function previewMarkerMigration() {
+    if (dirty) {
+      setMarkerMigrationError("Simpan perubahan manuskrip dahulu sebelum menyemak penanda gambar lama.");
+      return;
+    }
+    setMarkerMigrationBusy(true);
+    setMarkerMigrationError("");
+    try {
+      const res = await fetch(`/api/admin/works/${workId}/image-markers`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Pratonton gagal dimuatkan.");
+      setMarkerMigration(data);
+    } catch (error) {
+      setMarkerMigrationError(error instanceof Error ? error.message : "Pratonton gagal dimuatkan.");
+    } finally {
+      setMarkerMigrationBusy(false);
+    }
+  }
+
+  async function runMarkerMigration(action: "apply" | "restore") {
+    if (!markerMigration || dirty) return;
+    setMarkerMigrationBusy(true);
+    setMarkerMigrationError("");
+    try {
+      const res = await fetch(`/api/admin/works/${workId}/image-markers`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action, expectedBody: markerMigration.plan.originalBody, expectedChanges: markerMigration.plan.changes }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Penukaran gagal.");
+      const workRes = await fetch(`/api/admin/works/${workId}`);
+      const work = await workRes.json();
+      setForm((prev) => ({ ...prev, body: work.body || "" }));
+      setSavedBody(work.body || "");
+      await loadVisuals();
+      setMarkerMigration(null);
+      setSuccess(action === "apply" ? `${data.converted} gambar ditukar kepada penanda. Semak pratonton sebelum menerbitkan semula.` : `${data.restored} gambar dipulihkan kepada anchor asal.`);
+    } catch (error) {
+      setMarkerMigrationError(error instanceof Error ? error.message : "Penukaran gagal.");
+    } finally {
+      setMarkerMigrationBusy(false);
     }
   }
 
@@ -743,8 +812,8 @@ export default function EditWorkPage() {
 
   async function handleSubmit(e?: React.FormEvent) {
     e?.preventDefault();
-    if (!form.title.trim() || !form.slug.trim() || !form.body.trim()) {
-      setError("Tajuk, alamat pautan dan manuskrip perlu diisi sebelum menyimpan.");
+    if (!form.title.trim() || !form.slug.trim()) {
+      setError("Tajuk dan alamat pautan perlu diisi sebelum menyimpan.");
       return;
     }
     setSaving(true);
@@ -752,11 +821,12 @@ export default function EditWorkPage() {
     setSuccess(null);
 
     try {
+      const { version: _displayVersion, type: _fixedType, ...editableForm } = form;
       const res = await fetch(`/api/admin/works/${workId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...form,
+          ...editableForm,
           readingMinutes: form.readingMinutes ? Number(form.readingMinutes) : undefined,
           editorPickRank: form.editorPickRank === "" ? null : Number(form.editorPickRank),
         }),
@@ -1260,6 +1330,13 @@ export default function EditWorkPage() {
         )}
       </div>
 
+      <details className="admin-advanced-field">
+        <summary>Bantuan chatbot untuk tab {activeTab === "metadata" ? "Maklumat" : activeTab === "content" ? "Kandungan" : activeTab}</summary>
+        <p className="admin-form-hint">Salin arahan bersama manuskrip semasa, kemudian tampal ke chatbot pilihan anda. Cadangan tidak diimport atau disimpan secara automatik; editor kekal bertanggungjawab menyemaknya.</p>
+        <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={() => void copyAssistantPrompt()}>Salin arahan tab ini</button>
+        {assistantNote && <p className="admin-form-hint" role="status">{assistantNote}</p>}
+      </details>
+
       {activeTab === "content" && (
         <form onSubmit={handleSubmit} onChange={() => setDirty(true)} className="admin-form">
           <div className="admin-form-group">
@@ -1269,7 +1346,11 @@ export default function EditWorkPage() {
               type="text"
               required
               value={form.title}
-              onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
+              onChange={(e) => setForm((prev) => {
+                const title = e.target.value;
+                const generated = title.normalize("NFKD").replace(/\p{Diacritic}/gu, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+                return { ...prev, title, slug: prev.slug.startsWith("draf-") && generated ? generated : prev.slug };
+              })}
             />
           </div>
 
@@ -1288,13 +1369,19 @@ export default function EditWorkPage() {
             <textarea
               id="body"
               ref={manuscriptRef}
-              required
               value={form.body}
               onChange={(e) => setForm((prev) => ({ ...prev, body: e.target.value }))}
               rows={25}
               className="admin-textarea"
             />
             <span className="admin-form-hint">Gunakan Markdown. Ganti baris kosong untuk perenggan baharu.</span>
+            <details className="admin-advanced-field">
+              <summary>Panduan Markdown ringkas</summary>
+              <p><code>**tebal**</code> → <strong>tebal</strong> · <code>*condong*</code> → <em>condong</em> · <code>## Tajuk bahagian</code> → tajuk kecil · <code>---</code> → pemisah adegan.</p>
+              <p>Letak satu baris kosong antara perenggan. Gunakan <code>[[gambar:1]]</code> pada baris sendiri untuk kedudukan gambar; alihkan baris itu tanpa mengubah teks perenggan.</p>
+            </details>
+            <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={() => setShowManuscriptPreview((value) => !value)}>{showManuscriptPreview ? "Tutup pratonton bacaan" : "Pratonton bacaan"}</button>
+            {showManuscriptPreview && <div className="admin-markdown-preview"><StoryMarkdown glossary={{}}>{stripImageMarkers(form.body)}</StoryMarkdown></div>}
             <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={chooseImagePosition}>
               Sisip penanda gambar selepas perenggan ini
             </button>
@@ -1321,15 +1408,8 @@ export default function EditWorkPage() {
           <div className="admin-form-row">
             <div className="admin-form-group">
               <label htmlFor="type">Jenis *</label>
-              <select
-                id="type"
-                value={form.type}
-                onChange={(e) => setForm((prev) => ({ ...prev, type: e.target.value }))}
-              >
-                {WORK_TYPES.map((t) => (
-                  <option key={t.value} value={t.value}>{t.label}</option>
-                ))}
-              </select>
+              <input id="type" value={WORK_TYPES.find((t) => t.value === form.type)?.label ?? form.type} readOnly aria-describedby="type-hint" />
+              <span id="type-hint" className="admin-form-hint">Jenis ditetapkan semasa karya dicipta supaya struktur dan pautannya kekal tepat.</span>
             </div>
 
             <div className="admin-form-group">
@@ -1357,12 +1437,8 @@ export default function EditWorkPage() {
 
             <div className="admin-form-group">
               <label htmlFor="version">Versi</label>
-              <input
-                id="version"
-                type="text"
-                value={form.version}
-                onChange={(e) => setForm((prev) => ({ ...prev, version: e.target.value }))}
-              />
+              <input id="version" type="text" value={form.version} readOnly aria-describedby="version-hint" />
+              <span id="version-hint" className="admin-form-hint">Dikemas kini melalui aliran penerbitan dan sejarah editorial.</span>
             </div>
           </div>
 
@@ -1908,6 +1984,23 @@ export default function EditWorkPage() {
               ))}
             </div>
           )}
+          {visuals.some((visual) => visual.role === "inline") && (
+            <div className="admin-form-group">
+              <h4>Urus penanda gambar</h4>
+              <p className="admin-form-hint">Jika ada anchor lama, semak kedudukannya sebelum menukar kepada [[gambar:N]]. Petikan yang tidak jelas akan dilangkau. Penukaran boleh dipulihkan selagi manuskrip belum disunting lagi.</p>
+              <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" disabled={markerMigrationBusy || dirty} onClick={() => void previewMarkerMigration()}>Semak / pulihkan penanda</button>
+            </div>
+          )}
+          {markerMigrationError && <p className="admin-alert admin-alert-error" role="alert">{markerMigrationError}</p>}
+          {markerMigration && (
+            <div className="admin-form-group" aria-label="Pratonton penukaran penanda gambar">
+              <strong>{markerMigration.plan.changes.length} boleh ditukar · {markerMigration.plan.skipped.length} perlu semakan manual</strong>
+              <ul>{markerMigration.plan.changes.map((change) => <li key={change.id}>Gambar #{change.id}: {change.from.slice(0, 75)} → {change.to}</li>)}</ul>
+              {markerMigration.plan.skipped.length > 0 && <ul>{markerMigration.plan.skipped.map((item) => <li key={item.id}>Gambar #{item.id}: {item.reason}</li>)}</ul>}
+              {markerMigration.plan.changes.length > 0 && <button type="button" className="admin-btn admin-btn-primary admin-btn-sm" disabled={markerMigrationBusy || dirty} onClick={() => void runMarkerMigration("apply")}>Sahkan penukaran</button>}
+              {markerMigration.canRestore && <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" disabled={markerMigrationBusy || dirty} onClick={() => void runMarkerMigration("restore")}>Pulihkan anchor asal</button>}
+            </div>
+          )}
           <div id="work-image-upload">
             <WorkVisualUpload workId={workId} hasHero={visuals.some((v) => v.role === "hero")} published={form.status === "published"} suggestedAnchor={selectedImageAnchor} markers={imageMarkers(savedBody).filter((marker) => !visuals.some((visual) => visual.anchor === marker))} onDone={loadVisuals} />
           </div>
@@ -1958,7 +2051,8 @@ export default function EditWorkPage() {
                     ...prev,
                     meaning: e.target.value,
                   }))}
-                  rows={3}
+                  rows={5}
+                  className="admin-textarea"
                   placeholder="Maksud istilah"
                 />
               </div>

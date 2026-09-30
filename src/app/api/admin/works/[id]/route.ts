@@ -53,12 +53,13 @@ export async function PATCH(
       }
     }
 
-    // Validate type if provided
-    if (body.type) {
-      const validTypes = ["cerpen", "novela", "bersiri", "terjemahan", "fragmen", "sinopsis"];
-      if (!validTypes.includes(body.type)) {
-        return NextResponse.json({ error: "Jenis tidak sah." }, { status: 400 });
-      }
+    // A work's taxonomy determines series membership, sections and rights gates.
+    // Changing it through a generic edit would leave those relations inconsistent.
+    if (body.type !== undefined && body.type !== existing.type) {
+      return NextResponse.json({ error: "Jenis karya ditetapkan semasa draf dibuat dan tidak boleh ditukar di sini." }, { status: 400 });
+    }
+    if (body.version !== undefined && body.version !== existing.version) {
+      return NextResponse.json({ error: "Versi diurus oleh aliran penerbitan, bukan medan suntingan." }, { status: 400 });
     }
 
     // Validate status if provided.
@@ -133,14 +134,12 @@ export async function PATCH(
     const work = await updateWork(id, {
       title: body.title,
       slug: body.slug,
-      type: body.type,
       status: body.status,
       body: body.body,
       genre: body.genre,
       audience: body.audience,
       dek: body.dek,
       readingMinutes: body.readingMinutes,
-      version: body.version,
       // publishedAt is only meaningful alongside published status; ignore raw sets.
       publishedAt:
         body.status === "published" ? body.publishedAt : undefined,

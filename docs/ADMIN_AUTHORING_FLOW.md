@@ -25,3 +25,18 @@ Toleransi yang dipelajari daripada output ChatGPT sebenar: item dipisahkan baris
 ## Simpan
 `/api/admin/works/import` (dry-run dahulu, kemudian `dryRun:false`) mencipta DRAF dalam satu transaksi (karya, kredit, glosari, bab, visual, siri). Tidak pernah menerbitkan.
 Penulis yang ditaip editor dikreditkan `initial_draft` (byline); pengarang asal sinopsis/fragmen dikreditkan `author` tanpa byline.
+
+## Editor bertab selepas pilihan jenis
+
+Pintu masuk `Tambah Karya` memilih jenis sekali sahaja. Pilihan itu mencipta draf yang terus dibuka dalam editor bertab. Jenis karya tidak boleh ditukar pada karya yang sudah mempunyai ID kerana Bersiri, Novela dan karya terbitan semula mempunyai hubungan serta syarat editorial berbeza.
+
+- Cerpen: satu karya lengkap.
+- Novela: satu karya lengkap dengan pilihan Bahagian dalaman.
+- Bersiri: setiap episod ialah Work berasingan; draf dan keahlian `series_entries` diwujudkan dalam transaksi yang sama. Siri baharu atau sedia ada dipilih sebelum draf episod dibuat.
+- Fragmen dan Sinopsis: tab Sumber & Hak kekal wajib sebelum terbit.
+
+Draf baharu bermula dengan tajuk dan slug sementara. Kedua-duanya mesti diganti sebelum penerbitan; manuskrip boleh dibiarkan kosong semasa editor melengkapkan maklumat tab lain. Versi dipaparkan sebagai maklumat sistem dan hanya dikemas kini oleh aliran penerbitan.
+
+Pembantu chatbot dalam editor menyalin arahan mengikut tab bersama manuskrip semasa. Ia tidak mengimport hasil AI ke dalam draf tanpa semakan manusia. Aliran import AI lama masih tersedia untuk jawapan chatbot berstruktur yang sudah siap dan akan mencipta draf berasingan.
+
+Penukaran anchor gambar lama ialah tindakan opt-in per karya: pratonton menunjukkan anchor yang dapat dipadankan secara unik dan yang perlu semakan manual; pengesahan menyimpan manuskrip dan anchor baru bersama-sama dalam satu transaksi. Sandaran sebelum/selepas berada dalam metadata Work untuk pemulihan selagi manuskrip dan penanda belum diubah lagi. Karya terbitan tidak berubah pada halaman pembaca sehingga aliran penerbitan eksplisit dijalankan semula. Anchor dalam Bahagian Novela yang tidak ditemui dalam `works.body` dilangkau, bukan diteka.

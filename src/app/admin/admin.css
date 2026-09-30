@@ -232,6 +232,9 @@
 }
 .a-shell .admin-nav-card:hover,
 .a-shell .admin-choice:hover { border-color: var(--a-accent); transform: translateY(-1px); }
+.a-shell button.admin-choice { width: 100%; text-align: left; cursor: pointer; font: inherit; }
+.a-shell button.admin-choice:focus-visible { outline: 2px solid var(--a-accent); outline-offset: 3px; }
+.a-shell button.admin-choice:disabled { opacity: .6; cursor: wait; }
 .a-shell .admin-nav-card h3,
 .a-shell .admin-choice strong { font-family: var(--a-font); font-size: 15px; font-weight: 700; margin: 0 0 4px; display: block; color: var(--a-ink); }
 .a-shell .admin-nav-card p,

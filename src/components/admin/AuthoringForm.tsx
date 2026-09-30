@@ -275,8 +275,17 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
 
   function loadFile(file: File | undefined) {
     if (!file) return;
+    if (!/\.(txt|md)$/i.test(file.name)) {
+      setError("Hanya fail teks .txt atau .md boleh digunakan.");
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      setError("Fail teks melebihi 2 MB. Tampal bahagian yang diperlukan atau kecilkan fail.");
+      return;
+    }
     const reader = new FileReader();
-    reader.onload = () => setMaterial(String(reader.result ?? ""));
+    reader.onload = () => { setMaterial(String(reader.result ?? "")); setError(null); };
+    reader.onerror = () => setError("Fail tidak dapat dibaca. Cuba fail .txt atau .md yang lain.");
     reader.readAsText(file);
   }
 

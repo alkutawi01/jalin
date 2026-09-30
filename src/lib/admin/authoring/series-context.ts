@@ -33,7 +33,7 @@ export async function loadSeriesContext(seriesId: string): Promise<SeriesContext
     .innerJoin("works", "works.id", "series_entries.work_id")
     .where("series_entries.series_id", "=", seriesId)
     .orderBy("series_entries.position", "asc")
-    .select("works.title")
+    .select(["works.title", "works.dek"])
     .execute();
-  return { kind: "sambung", title: series.title, mode: series.mode, previousEpisodes: episodes.map((e) => e.title) };
+  return { kind: "sambung", title: series.title, mode: series.mode, previousEpisodes: episodes.map((e) => e.title), previousSummaries: episodes.map((e) => e.dek ?? "") };
 }

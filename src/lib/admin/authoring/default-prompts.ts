@@ -42,7 +42,7 @@ Untuk setiap watak dan istilah glosari, tulis bab PERTAMA ia muncul (Muncul di).
 Cadangkan satu gambar hero dan sehingga 6 gambar inline.`;
 
 const BERSIRI_DATA = `TUGAS
-Anda menerima satu episod bagi sebuah siri, yang sudah siap ditulis oleh editor. Episod ini berdiri sendiri seperti sebuah cerpen. Tugas anda BUKAN menulis atau mengubah episod itu. Tugas anda hanya mengeluarkan maklumat yang Jalin perlukan tentang episod ini. Jika teks tidak mempunyai tajuk, cadangkan satu tajuk pendek yang sesuai dan slugnya (ini pengecualian kepada peraturan 1); editor boleh mengubahnya. 
+Anda menerima satu episod bagi sebuah siri, yang sudah siap ditulis oleh editor. Siri bersambung mesti menjaga kesinambungan canon; siri antologi boleh mempunyai kisah tersendiri tetapi kekal dalam dunia siri yang sama. Tugas anda BUKAN menulis atau mengubah episod itu. Tugas anda hanya mengeluarkan maklumat yang Jalin perlukan tentang episod ini. Jika teks tidak mempunyai tajuk, cadangkan satu tajuk pendek yang sesuai dan slugnya (ini pengecualian kepada peraturan 1); editor boleh mengubahnya.
 
 Watak dan glosari hanya untuk episod ini. Jangan dedahkan kejadian daripada episod lain. Cadangkan satu gambar hero dan sehingga 3 gambar inline.`;
 

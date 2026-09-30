@@ -355,9 +355,13 @@ export function evaluatePublicationReadinessFromData(
   }
   if (!work.title || !work.title.trim()) {
     contentBlockers.push(issue("title_missing", "Tajuk kosong."));
+  } else if (work.title.trim() === "Draf tanpa tajuk") {
+    contentBlockers.push(issue("title_placeholder", "Ganti tajuk sementara sebelum menerbitkan karya."));
   }
   if (!work.slug || !work.slug.trim()) {
     contentBlockers.push(issue("slug_missing", "Slug kosong."));
+  } else if (work.slug.startsWith("draf-")) {
+    contentBlockers.push(issue("slug_placeholder", "Ganti alamat pautan draf sebelum menerbitkan karya."));
   } else if (!SLUG_RE.test(work.slug)) {
     contentBlockers.push(
       issue(

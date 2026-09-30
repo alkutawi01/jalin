@@ -14,7 +14,7 @@ import { getRecipe, type RecipeKey } from "./recipes";
 
 export type SeriesContext =
   | { kind: "baharu" }
-  | { kind: "sambung"; title: string; mode: string; previousEpisodes: string[] };
+  | { kind: "sambung"; title: string; mode: string; previousEpisodes: string[]; previousSummaries?: string[] };
 
 export interface ComposeInput {
   recipe: RecipeKey;
@@ -33,12 +33,12 @@ function seriesBlock(series: SeriesContext | null | undefined): string | null {
   }
   const number = series.previousEpisodes.length + 1;
   const previous = series.previousEpisodes.length
-    ? "Episod terdahulu: " + series.previousEpisodes.map((title, i) => `${i + 1}) ${title}`).join("; ") + "."
+    ? "Episod terdahulu: " + series.previousEpisodes.map((title, i) => `${i + 1}) ${title}${series.previousSummaries?.[i] ? ` — ${series.previousSummaries[i]}` : ""}`).join("; ") + "."
     : "";
   return [
     "KONTEKS SIRI",
     `Episod ini ialah episod ke-${number} bagi siri sedia ada "${series.title}" (${series.mode === "anthology" ? "antologi" : "bersambung"}). ${previous}`.trim(),
-    "Jangan sediakan maklumat siri; hanya maklumat episod ini."
+    "Bagi siri bersambung, semak kesinambungan watak, hubungan, masa dan peristiwa daripada ringkasan terdahulu; jangan andaikan tajuk sahaja mencukupi sebagai canon. Jika ringkasan tidak cukup, minta editor membekalkan nota canon. Jangan sediakan maklumat siri; hanya maklumat episod ini."
   ].join("\n");
 }
 
