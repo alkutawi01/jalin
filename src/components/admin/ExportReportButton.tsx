@@ -21,8 +21,8 @@ export function ExportReportButton() {
         a.click();
         URL.revokeObjectURL(url);
       } else {
-        let md = `# Editorial Health Report\n\n`;
-        md += `Generated: ${new Date(data.generatedAt).toLocaleString("ms-MY")}\n\n`;
+        let md = `# Laporan Kesihatan Editorial\n\n`;
+        md += `Dijana: ${new Date(data.generatedAt).toLocaleString("ms-MY")}\n\n`;
         
         for (const [category, info] of Object.entries(data.summary)) {
           const status = (info as string).toUpperCase();
@@ -31,7 +31,7 @@ export function ExportReportButton() {
         }
         
         if (data.issues.length > 0) {
-          md += `## Issues\n\n`;
+          md += `## Isu\n\n`;
           for (const issue of data.issues) {
             md += `- ${issue}\n`;
           }
@@ -53,10 +53,10 @@ export function ExportReportButton() {
   return (
     <div className="admin-export-buttons">
       <button onClick={() => handleExport("json")} className="admin-btn">
-        Export JSON
+        Eksport JSON
       </button>
       <button onClick={() => handleExport("markdown")} className="admin-btn">
-        Export Markdown
+        Eksport Markdown
       </button>
     </div>
   );

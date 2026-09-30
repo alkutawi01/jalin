@@ -626,7 +626,7 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
                       </div>
                       <div className="admin-form-row">
                         <div className="admin-form-group" style={{ flex: 2 }}>
-                          <label>Alt text</label>
+                          <label>Teks alternatif</label>
                           <input value={v.altText} onChange={(e) => patchVisual(i, { altText: e.target.value })} />
                         </div>
                         <div className="admin-form-group">

@@ -61,8 +61,8 @@ export default function NewSubmissionPage() {
       <header className="admin-page-header">
         <div className="admin-page-header-row">
           <div>
-            <h1>Submission Baharu</h1>
-            <p className="admin-page-sub">Cipta submission baru</p>
+            <h1>Penghantaran Baharu</h1>
+            <p className="admin-page-sub">Cipta penghantaran baharu</p>
           </div>
           <a href="/admin/submissions" className="admin-btn admin-btn-outline">Kembali</a>
         </div>
@@ -111,7 +111,7 @@ export default function NewSubmissionPage() {
         </div>
 
         <div className="admin-form-group">
-          <label htmlFor="proposedSlug">Slug</label>
+          <label htmlFor="proposedSlug">Alamat pautan</label>
           <input
             id="proposedSlug"
             type="text"

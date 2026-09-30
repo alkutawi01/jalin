@@ -183,6 +183,15 @@ export default function EditWorkPage() {
   const [activeTab, setActiveTab] = useState<Tab>("content");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [dirty, setDirty] = useState(false);
+  useEffect(() => {
+    if (!dirty) return;
+    const warn = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+    };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [dirty]);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
@@ -676,6 +685,7 @@ export default function EditWorkPage() {
       }
 
       setSuccess("Berjaya disimpan.");
+      setDirty(false);
       setTimeout(() => setSuccess(null), 3000);
       await loadReadiness();
     } catch (err) {
@@ -1054,7 +1064,7 @@ export default function EditWorkPage() {
 
       {publishPreview && isLocalHost && (
         <div className="admin-publish-preview">
-          <h3>Sinkronisasi</h3>
+          <h3>Penyegerakan</h3>
           {publishPreview.isNew ? (
             <p className="admin-sync-status admin-sync-new">MARKDOWN MISSING — Karya ini belum ada sebagai Markdown.</p>
           ) : publishPreview.metadataChanged || publishPreview.bodyChanged ? (
@@ -1076,7 +1086,7 @@ export default function EditWorkPage() {
           className={`admin-tab ${activeTab === "metadata" ? "admin-tab-active" : ""}`}
           onClick={() => setActiveTab("metadata")}
         >
-          Metadata
+          Maklumat
         </button>
         {form.type === "novela" && (
           <button
@@ -1121,7 +1131,7 @@ export default function EditWorkPage() {
       </div>
 
       {activeTab === "content" && (
-        <form onSubmit={handleSubmit} className="admin-form">
+        <form onSubmit={handleSubmit} onChange={() => setDirty(true)} className="admin-form">
           <div className="admin-form-group">
             <label htmlFor="title">Tajuk *</label>
             <input
@@ -1156,7 +1166,8 @@ export default function EditWorkPage() {
             <span className="admin-form-hint">Gunakan Markdown. Ganti baris kosong untuk perenggan baharu.</span>
           </div>
 
-          <div className="admin-form-actions">
+          <div className="admin-form-actions a-savebar">
+            <span className="a-savebar-note">{dirty ? "Ada perubahan yang belum disimpan" : "Semua perubahan disimpan"}</span>
             <a href="/admin/works" className="admin-btn admin-btn-outline">
               Kembali
             </a>
@@ -1172,9 +1183,9 @@ export default function EditWorkPage() {
       )}
 
       {activeTab === "metadata" && (
-        <form onSubmit={handleSubmit} className="admin-form">
+        <form onSubmit={handleSubmit} onChange={() => setDirty(true)} className="admin-form">
           <div className="admin-form-group">
-            <label htmlFor="slug">Slug *</label>
+            <label htmlFor="slug">Alamat pautan *</label>
             <input
               id="slug"
               type="text"
@@ -1307,7 +1318,8 @@ export default function EditWorkPage() {
             ke Markdown.
           </p>
 
-          <div className="admin-form-actions">
+          <div className="admin-form-actions a-savebar">
+            <span className="a-savebar-note">{dirty ? "Ada perubahan yang belum disimpan" : "Semua perubahan disimpan"}</span>
             <a href="/admin/works" className="admin-btn admin-btn-outline">
               Kembali
             </a>
@@ -1346,7 +1358,7 @@ export default function EditWorkPage() {
             <div className="admin-credit-form">
               <div className="admin-form-row">
                 <div className="admin-form-group">
-                  <label>Slug *</label>
+                  <label>Alamat pautan *</label>
                   <input
                     type="text"
                     value={editingSection.slug || ""}
@@ -1365,7 +1377,7 @@ export default function EditWorkPage() {
                 </div>
               </div>
               <div className="admin-form-group">
-                <label>Body (Markdown) *</label>
+                <label>Isi (Markdown) *</label>
                 <textarea
                   value={editingSection.body || ""}
                   onChange={(e) => setEditingSection((prev) => ({ ...prev, body: e.target.value }))}
@@ -1402,9 +1414,9 @@ export default function EditWorkPage() {
                 <thead>
                   <tr>
                     <th>#</th>
-                    <th>Slug</th>
+                    <th>Alamat pautan</th>
                     <th>Tajuk</th>
-                    <th>Body</th>
+                    <th>Isi</th>
                     <th>Susunan</th>
                     <th>Aksi</th>
                   </tr>
@@ -1584,7 +1596,7 @@ export default function EditWorkPage() {
                           byline: e.target.checked,
                         }))}
                       />
-                      Byline
+                      Nama di bawah tajuk
                     </label>
                     <label className="admin-checkbox-label">
                       <input
@@ -1595,7 +1607,7 @@ export default function EditWorkPage() {
                           is_public: e.target.checked,
                         }))}
                       />
-                      Public
+                      Awam
                     </label>
                   </div>
                 </div>
@@ -1630,9 +1642,9 @@ export default function EditWorkPage() {
                     <th>Penyumbang</th>
                     <th>Jenis</th>
                     <th>Peranan</th>
-                    <th>Byline</th>
-                    <th>Public</th>
-                    <th>Order</th>
+                    <th>Nama di bawah tajuk</th>
+                    <th>Awam</th>
+                    <th>Susunan</th>
                     <th>Aksi</th>
                   </tr>
                 </thead>
@@ -1716,7 +1728,7 @@ export default function EditWorkPage() {
             <div className="admin-credit-form">
               <div className="admin-form-row">
                 <div className="admin-form-group">
-                  <label>Role *</label>
+                  <label>Jenis *</label>
                   <select
                     value={editingVisual.role || "inline"}
                     onChange={(e) => setEditingVisual((prev) => ({
@@ -1725,13 +1737,13 @@ export default function EditWorkPage() {
                     }))}
                   >
                     <option value="hero">Hero</option>
-                    <option value="inline">Inline</option>
-                    <option value="section">Section</option>
+                    <option value="inline">Dalam teks</option>
+                    <option value="section">Bahagian</option>
                   </select>
                 </div>
 
                 <div className="admin-form-group">
-                  <label>Place</label>
+                  <label>Kedudukan</label>
                   <select
                     value={editingVisual.place || "after"}
                     onChange={(e) => setEditingVisual((prev) => ({
@@ -1739,14 +1751,14 @@ export default function EditWorkPage() {
                       place: e.target.value,
                     }))}
                   >
-                    <option value="before">Before</option>
-                    <option value="after">After</option>
+                    <option value="before">Sebelum</option>
+                    <option value="after">Selepas</option>
                   </select>
                 </div>
               </div>
 
               <div className="admin-form-group">
-                <label>Src *</label>
+                <label>Imej (URL) *</label>
                 <input
                   type="text"
                   value={editingVisual.src || ""}
@@ -1759,7 +1771,7 @@ export default function EditWorkPage() {
               </div>
 
               <div className="admin-form-group">
-                <label>Alt</label>
+                <label>Teks alternatif</label>
                 <input
                   type="text"
                   value={editingVisual.alt || ""}
@@ -1767,13 +1779,13 @@ export default function EditWorkPage() {
                     ...prev,
                     alt: e.target.value,
                   }))}
-                  placeholder="Deskripsi visual"
+                  placeholder="Huraian visual"
                 />
               </div>
 
               <div className="admin-form-row">
                 <div className="admin-form-group">
-                  <label>Provider</label>
+                  <label>Penyedia</label>
                   <input
                     type="text"
                     value={editingVisual.provider || ""}
@@ -1786,7 +1798,7 @@ export default function EditWorkPage() {
                 </div>
 
                 <div className="admin-form-group">
-                  <label>Creation ID</label>
+                  <label>ID ciptaan</label>
                   <input
                     type="text"
                     value={editingVisual.creation_id || ""}
@@ -1800,7 +1812,7 @@ export default function EditWorkPage() {
               </div>
 
               <div className="admin-form-group">
-                <label>Anchor</label>
+                <label>Petikan penanda</label>
                 <input
                   type="text"
                   value={editingVisual.anchor || ""}
@@ -1808,7 +1820,7 @@ export default function EditWorkPage() {
                     ...prev,
                     anchor: e.target.value,
                   }))}
-                  placeholder="Teks anchor dalam manuskrip"
+                  placeholder="Petikan daripada manuskrip untuk menandakan kedudukan"
                 />
               </div>
 
@@ -1838,11 +1850,11 @@ export default function EditWorkPage() {
               <table className="admin-table">
                 <thead>
                   <tr>
-                    <th>Role</th>
+                    <th>Jenis</th>
                     <th>Imej</th>
-                    <th>Alt</th>
-                    <th>Provider</th>
-                    <th>Order</th>
+                    <th>Teks alternatif</th>
+                    <th>Penyedia</th>
+                    <th>Susunan</th>
                     <th>Aksi</th>
                   </tr>
                 </thead>
@@ -1928,7 +1940,7 @@ export default function EditWorkPage() {
           {editingGlossary && (
             <div className="admin-credit-form">
               <div className="admin-form-group">
-                <label>Term *</label>
+                <label>Istilah *</label>
                 <input
                   type="text"
                   value={editingGlossary.term || ""}
@@ -1941,7 +1953,7 @@ export default function EditWorkPage() {
               </div>
 
               <div className="admin-form-group">
-                <label>Definisi *</label>
+                <label>Maksud *</label>
                 <textarea
                   value={editingGlossary.meaning || ""}
                   onChange={(e) => setEditingGlossary((prev) => ({
@@ -1992,8 +2004,8 @@ export default function EditWorkPage() {
               <table className="admin-table">
                 <thead>
                   <tr>
-                    <th>Term</th>
-                    <th>Definisi</th>
+                    <th>Istilah</th>
+                    <th>Maksud</th>
                     <th>Sumber</th>
                     <th>Aksi</th>
                   </tr>
@@ -2142,7 +2154,7 @@ export default function EditWorkPage() {
 
           {sourceError && <div className="admin-alert admin-alert-error">{sourceError}</div>}
           {sourceSuccess && <div className="admin-alert admin-alert-success">{sourceSuccess}</div>}
-          {sourceLoading && <LoadingBlock label="provenance" />}
+          {sourceLoading && <LoadingBlock label="asal-usul" />}
 
           {sourceRights && !sourceLoading && (
             <>
@@ -2224,7 +2236,7 @@ export default function EditWorkPage() {
                 </div>
                 <div className="admin-form-row">
                   <div className="admin-form-group">
-                    <label htmlFor="src-locator">Locator (muka surat/bab)</label>
+                    <label htmlFor="src-locator">Lokasi (muka surat/bab)</label>
                     <input
                       id="src-locator"
                       type="text"
@@ -2315,7 +2327,7 @@ export default function EditWorkPage() {
                       <thead>
                         <tr>
                           <th>Masa</th>
-                          <th>Aktor</th>
+                          <th>Pelaku</th>
                           <th>Tindakan</th>
                           <th>Status</th>
                           <th>Nota</th>

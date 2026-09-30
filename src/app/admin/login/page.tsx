@@ -50,7 +50,7 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} className="admin-login-form">
           <div className="admin-form-group">
-            <label htmlFor="email">Email</label>
+            <label htmlFor="email">E-mel</label>
             <input
               id="email"
               type="email"
@@ -62,14 +62,14 @@ export default function LoginPage() {
           </div>
 
           <div className="admin-form-group">
-            <label htmlFor="password">Password</label>
+            <label htmlFor="password">Kata laluan</label>
             <input
               id="password"
               type="password"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Masukkan password"
+              placeholder="Masukkan kata laluan"
             />
           </div>
 

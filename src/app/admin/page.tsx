@@ -7,8 +7,14 @@ import { ExportReportButton } from "../../components/admin/ExportReportButton";
 import { EditorialAuditHistory } from "../../components/admin/EditorialAuditHistory";
 import { EditorialIssueQueue } from "../../components/admin/EditorialIssueQueue";
 import { EditorialWorkflowDashboard } from "../../components/admin/EditorialWorkflowDashboard";
+import { listWorks } from "../../lib/admin/work-service";
 
 export const dynamic = "force-dynamic";
+
+const HEALTH_LABELS: Record<string, string> = { pass: "LULUS", fail: "GAGAL", warning: "AMARAN" };
+function healthLabel(status: string): string {
+  return HEALTH_LABELS[status] ?? status.toUpperCase();
+}
 
 async function getStats() {
   if (!hasDb()) {
@@ -52,21 +58,82 @@ async function getStats() {
   };
 }
 
+const TYPE_LABELS: Record<string, string> = { cerpen: "Cerpen", novela: "Novela", bersiri: "Bersiri", fragmen: "Fragmen", sinopsis: "Sinopsis" };
+
+const TODO_GROUPS: { status: string; title: string; hint: string }[] = [
+  { status: "draft", title: "Draf untuk disiapkan", hint: "Lengkapkan gambar dan kredit, kemudian hantar untuk semakan." },
+  { status: "review", title: "Menunggu semakan", hint: "Semak, kemudian tandakan sedia." },
+  { status: "ready", title: "Sedia diterbitkan", hint: "Semua semakan lulus. Tekan Terbitkan bila anda bersedia." }
+];
+
+async function getTodo() {
+  if (!hasDb()) return null;
+  try {
+    return await listWorks();
+  } catch {
+    return null;
+  }
+}
+
 export default async function AdminDashboard() {
   const stats = await getStats();
+  const works = await getTodo();
 
   return (
     <div className="admin-dashboard">
       <header className="admin-page-header">
         <h1>Papan Pemuka</h1>
-        <p className="admin-page-sub">Jalin Admin Console</p>
+        <p className="admin-page-sub">Pentadbiran Jalin</p>
       </header>
 
+      <section className="admin-section" aria-label="Yang perlu dibuat">
+        <h2>Yang perlu dibuat</h2>
+        {works === null ? (
+          <p className="admin-form-hint">Senarai kerja belum tersedia.</p>
+        ) : TODO_GROUPS.every((g) => !works.some((w) => w.status === g.status)) ? (
+          <div className="a-empty">
+            <strong>Tiada kerja tertunggak.</strong>
+            Mulakan dengan butang Tambah Karya di sebelah kiri.
+          </div>
+        ) : (
+          TODO_GROUPS.map((group) => {
+            const items = works.filter((w) => w.status === group.status);
+            if (items.length === 0) return null;
+            return (
+              <div key={group.status} style={{ marginBottom: 18 }}>
+                <h3 style={{ margin: "0 0 2px" }}>
+                  {group.title} ({items.length})
+                </h3>
+                <p className="admin-form-hint" style={{ margin: "0 0 8px" }}>{group.hint}</p>
+                <div className="admin-table-wrap">
+                  <table className="admin-table">
+                    <tbody>
+                      {items.slice(0, 6).map((w) => (
+                        <tr key={w.id}>
+                          <td className="admin-table-title">{w.title}</td>
+                          <td>{TYPE_LABELS[w.type] ?? w.type}</td>
+                          <td style={{ textAlign: "right" }}>
+                            <a href={`/admin/works/${w.id}`} className="admin-btn admin-btn-sm admin-btn-primary">
+                              Buka
+                            </a>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {items.length > 6 ? (
+                  <p className="admin-form-hint">
+                    <a href={`/admin/works?status=${group.status}`}>Lihat semua {items.length}</a>
+                  </p>
+                ) : null}
+              </div>
+            );
+          })
+        )}
+      </section>
+
       <div className="admin-stats-grid">
-        <div className="admin-stat-card">
-          <div className="admin-stat-label">Sumber Kandungan</div>
-          <div className="admin-stat-value">{stats.contentSource}</div>
-        </div>
         <div className="admin-stat-card">
           <div className="admin-stat-label">Jumlah Karya</div>
           <div className="admin-stat-value">{stats.totalWorks}</div>
@@ -85,42 +152,18 @@ export default async function AdminDashboard() {
         </div>
       </div>
 
-      <section className="admin-section">
-        <h2>Pintasan</h2>
-        <div className="admin-nav-grid">
-          <a href="/admin/works/add" className="admin-nav-card">
-            <h3>+ Tambah Karya</h3>
-            <p>Cerpen, novela, bersiri, fragmen atau sinopsis — dengan bantuan chatbot</p>
-          </a>
-          <a href="/admin/works" className="admin-nav-card">
-            <h3>Karya</h3>
-            <p>Senarai karya, semakan, penerbitan dan gambar</p>
-          </a>
-          <a href="/admin/works?status=review" className="admin-nav-card">
-            <h3>Menunggu semakan</h3>
-            <p>Karya yang menunggu keputusan editor</p>
-          </a>
-          <a href="/admin/contributors" className="admin-nav-card">
-            <h3>Editorial</h3>
-            <p>Penyumbang: penulis, editor, penyemak</p>
-          </a>
-          <a href="/admin/settings" className="admin-nav-card">
-            <h3>Tetapan</h3>
-            <p>Arahan AI dan status sistem</p>
-          </a>
-        </div>
-      </section>
-
+      <details className="admin-section a-tech">
+        <summary>Butiran teknikal (untuk pentadbir)</summary>
       <section className="admin-section">
         <h2>Kesihatan Editorial</h2>
         {stats.editorialHealth ? (
           <>
-            <p className="admin-section-meta">Last checked: {new Date().toLocaleString("ms-MY")}</p>
+            <p className="admin-section-meta">Disemak: {new Date().toLocaleString("ms-MY")}</p>
             <ExportReportButton />
             <div className="admin-stats-grid">
             <div className="admin-stat-card">
-              <div className="admin-stat-label">Authors</div>
-              <div className="admin-stat-value">{stats.editorialHealth.authors.status.toUpperCase()}</div>
+              <div className="admin-stat-label">Penulis</div>
+              <div className="admin-stat-value">{healthLabel(stats.editorialHealth.authors.status)}</div>
               {stats.editorialHealth.authors.issues.length > 0 && (
                 <ul className="admin-stat-issues">
                   {stats.editorialHealth.authors.issues.map((issue, i) => (
@@ -130,8 +173,8 @@ export default async function AdminDashboard() {
               )}
             </div>
             <div className="admin-stat-card">
-              <div className="admin-stat-label">Revisions</div>
-              <div className="admin-stat-value">{stats.editorialHealth.revisions.status.toUpperCase()}</div>
+              <div className="admin-stat-label">Semakan semula</div>
+              <div className="admin-stat-value">{healthLabel(stats.editorialHealth.revisions.status)}</div>
               {stats.editorialHealth.revisions.issues.length > 0 && (
                 <ul className="admin-stat-issues">
                   {stats.editorialHealth.revisions.issues.map((issue, i) => (
@@ -141,8 +184,8 @@ export default async function AdminDashboard() {
               )}
             </div>
             <div className="admin-stat-card">
-              <div className="admin-stat-label">Visual Credits</div>
-              <div className="admin-stat-value">{stats.editorialHealth.visuals.status.toUpperCase()}</div>
+              <div className="admin-stat-label">Kredit visual</div>
+              <div className="admin-stat-value">{healthLabel(stats.editorialHealth.visuals.status)}</div>
               {stats.editorialHealth.visuals.issues.length > 0 && (
                 <ul className="admin-stat-issues">
                   {stats.editorialHealth.visuals.issues.map((issue, i) => (
@@ -152,8 +195,8 @@ export default async function AdminDashboard() {
               )}
             </div>
             <div className="admin-stat-card">
-              <div className="admin-stat-label">Translations</div>
-              <div className="admin-stat-value">{stats.editorialHealth.translations.status.toUpperCase()}</div>
+              <div className="admin-stat-label">Terjemahan</div>
+              <div className="admin-stat-value">{healthLabel(stats.editorialHealth.translations.status)}</div>
               {stats.editorialHealth.translations.issues.length > 0 && (
                 <ul className="admin-stat-issues">
                   {stats.editorialHealth.translations.issues.map((issue, i) => (
@@ -183,6 +226,7 @@ export default async function AdminDashboard() {
         <h2>Aliran Editorial</h2>
         <EditorialWorkflowDashboard />
       </section>
+      </details>
     </div>
   );
 }

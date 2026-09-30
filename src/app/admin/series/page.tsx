@@ -49,8 +49,8 @@ export default async function AdminSeriesPage() {
           <thead>
             <tr>
               <th>Tajuk</th>
-              <th>Slug</th>
-              <th>Mode</th>
+              <th>Alamat pautan</th>
+              <th>Mod</th>
               <th>Status</th>
               <th>Aksi</th>
             </tr>

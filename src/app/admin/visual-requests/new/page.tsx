@@ -5,9 +5,9 @@ import { useRouter } from "next/navigation";
 
 const VISUAL_ROLES = [
   { value: "hero", label: "Hero" },
-  { value: "inline", label: "Inline" },
-  { value: "section", label: "Section" },
-  { value: "decorative", label: "Decorative" },
+  { value: "inline", label: "Dalam teks" },
+  { value: "section", label: "Bahagian" },
+  { value: "decorative", label: "Hiasan" },
 ];
 
 const ASPECT_RATIOS = [
@@ -21,8 +21,8 @@ const ASPECT_RATIOS = [
 ];
 
 const PLACES = [
-  { value: "before", label: "Before" },
-  { value: "after", label: "After" },
+  { value: "before", label: "Sebelum" },
+  { value: "after", label: "Selepas" },
 ];
 
 export default function NewVisualRequestPage() {
@@ -75,8 +75,8 @@ export default function NewVisualRequestPage() {
       <header className="admin-page-header">
         <div className="admin-page-header-row">
           <div>
-            <h1>Visual Request Baharu</h1>
-            <p className="admin-page-sub">Cipta permintaan visual baru</p>
+            <h1>Permintaan Visual Baharu</h1>
+            <p className="admin-page-sub">Cipta permintaan visual baharu</p>
           </div>
           <a href="/admin/visual-requests" className="admin-btn admin-btn-outline">Kembali</a>
         </div>
@@ -87,7 +87,7 @@ export default function NewVisualRequestPage() {
       <form onSubmit={handleSubmit} className="admin-form">
         <div className="admin-form-row">
           <div className="admin-form-group">
-            <label htmlFor="workId">Work ID</label>
+            <label htmlFor="workId">ID Karya</label>
             <input
               id="workId"
               type="text"
@@ -98,7 +98,7 @@ export default function NewVisualRequestPage() {
           </div>
 
           <div className="admin-form-group">
-            <label htmlFor="submissionId">Submission ID</label>
+            <label htmlFor="submissionId">ID Penghantaran</label>
             <input
               id="submissionId"
               type="number"
@@ -110,7 +110,7 @@ export default function NewVisualRequestPage() {
 
         <div className="admin-form-row">
           <div className="admin-form-group">
-            <label htmlFor="visualRole">Role Visual *</label>
+            <label htmlFor="visualRole">Jenis Visual *</label>
             <select
               id="visualRole"
               value={form.visualRole}
@@ -123,7 +123,7 @@ export default function NewVisualRequestPage() {
           </div>
 
           <div className="admin-form-group">
-            <label htmlFor="provider">Provider</label>
+            <label htmlFor="provider">Penyedia</label>
             <input
               id="provider"
               type="text"
@@ -148,7 +148,7 @@ export default function NewVisualRequestPage() {
 
         <div className="admin-form-row">
           <div className="admin-form-group">
-            <label htmlFor="aspectRatio">Aspect Ratio</label>
+            <label htmlFor="aspectRatio">Nisbah imej</label>
             <select
               id="aspectRatio"
               value={form.aspectRatio}
@@ -162,7 +162,7 @@ export default function NewVisualRequestPage() {
         </div>
 
         <div className="admin-form-group">
-          <label htmlFor="prompt">Prompt *</label>
+          <label htmlFor="prompt">Arahan *</label>
           <textarea
             id="prompt"
             required
@@ -174,7 +174,7 @@ export default function NewVisualRequestPage() {
         </div>
 
         <div className="admin-form-group">
-          <label htmlFor="altText">Alt Text</label>
+          <label htmlFor="altText">Teks alternatif</label>
           <input
             id="altText"
             type="text"
@@ -184,13 +184,13 @@ export default function NewVisualRequestPage() {
         </div>
 
         <div className="admin-form-group">
-          <label htmlFor="anchor">Anchor</label>
+          <label htmlFor="anchor">Petikan penanda</label>
           <input
             id="anchor"
             type="text"
             value={form.anchor}
             onChange={(e) => setForm((prev) => ({ ...prev, anchor: e.target.value }))}
-            placeholder="Teks anchor dalam manuskrip"
+            placeholder="Petikan daripada manuskrip untuk menandakan kedudukan"
           />
         </div>
 

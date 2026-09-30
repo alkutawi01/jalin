@@ -33,8 +33,8 @@ export default async function AdminSubmissionsPage() {
     return (
       <div className="admin-placeholder">
         <header className="admin-page-header">
-          <h1>Submissions</h1>
-          <p className="admin-page-sub">Admin submissions management</p>
+          <h1>Penghantaran</h1>
+          <p className="admin-page-sub">Pengurusan penghantaran</p>
         </header>
         <div className="admin-placeholder-content">
           <p>Database tidak tersedia. Set <code>DATABASE_URL</code> untuk mengaktifkan ciri admin.</p>
@@ -51,7 +51,7 @@ export default async function AdminSubmissionsPage() {
       <header className="admin-page-header">
         <div className="admin-page-header-row">
           <div>
-            <h1>Submissions</h1>
+            <h1>Penghantaran</h1>
             <p className="admin-page-sub">{submissions.length} submissions dalam database</p>
           </div>
           <a href="/admin/submissions/new" className="admin-btn admin-btn-primary">

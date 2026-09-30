@@ -377,7 +377,7 @@ export default function EditSubmissionPage() {
   if (loading) {
     return (
       <div className="admin-loading">
-        <LoadingBlock label="submission" />
+        <LoadingBlock label="penghantaran" />
       </div>
     );
   }
@@ -387,7 +387,7 @@ export default function EditSubmissionPage() {
       <header className="admin-page-header">
         <div className="admin-page-header-row">
           <div>
-            <h1>Edit Submission</h1>
+            <h1>Edit Penghantaran</h1>
             <p className="admin-page-sub">ID: {submissionId}</p>
           </div>
           <a href="/admin/submissions" className="admin-btn admin-btn-outline">
@@ -453,7 +453,7 @@ export default function EditSubmissionPage() {
         </div>
 
         <div className="admin-form-group">
-          <label htmlFor="proposedSlug">Slug</label>
+          <label htmlFor="proposedSlug">Alamat pautan</label>
           <input
             id="proposedSlug"
             type="text"
@@ -495,7 +495,7 @@ export default function EditSubmissionPage() {
         </div>
 
         <div className="admin-form-group">
-          <label htmlFor="resultWorkId">Work ID (selepas kelulusan)</label>
+          <label htmlFor="resultWorkId">ID Karya (selepas kelulusan)</label>
           <input
             id="resultWorkId"
             type="text"
@@ -601,7 +601,7 @@ export default function EditSubmissionPage() {
 
             <div className="admin-form-row">
               <div className="admin-form-group">
-                <label>Penyumbang Slug</label>
+                <label>Alamat penyumbang</label>
                 <input
                   type="text"
                   value={editingContribution.contributor_slug || ""}
@@ -612,7 +612,7 @@ export default function EditSubmissionPage() {
                 />
               </div>
               <div className="admin-form-group">
-                <label>Peranan Key</label>
+                <label>Kunci peranan</label>
                 <input
                   type="text"
                   value={editingContribution.role_key || ""}
@@ -626,7 +626,7 @@ export default function EditSubmissionPage() {
 
             <div className="admin-form-row">
               <div className="admin-form-group">
-                <label>AI Provider</label>
+                <label>Penyedia AI</label>
                 <input
                   type="text"
                   value={editingContribution.ai_provider || ""}
@@ -637,7 +637,7 @@ export default function EditSubmissionPage() {
                 />
               </div>
               <div className="admin-form-group">
-                <label>AI Model</label>
+                <label>Model AI</label>
                 <input
                   type="text"
                   value={editingContribution.ai_model || ""}
@@ -670,9 +670,9 @@ export default function EditSubmissionPage() {
                     ai_identity_source: e.target.value,
                   }))}
                 >
-                  <option value="unknown">Unknown</option>
-                  <option value="runtime_verified">Runtime Verified</option>
-                  <option value="self_reported">Self Reported</option>
+                  <option value="unknown">Tidak diketahui</option>
+                  <option value="runtime_verified">Disahkan sistem</option>
+                  <option value="self_reported">Dilapor sendiri</option>
                   <option value="manual">Manual</option>
                 </select>
               </div>
@@ -690,7 +690,7 @@ export default function EditSubmissionPage() {
         )}
 
         {contributions.length === 0 ? (
-          <p className="admin-table-empty">Tiada sumbangan untuk submission ini.</p>
+          <p className="admin-table-empty">Tiada sumbangan untuk penghantaran ini.</p>
         ) : (
           <div className="admin-table-wrap">
             <table className="admin-table">
@@ -768,7 +768,7 @@ export default function EditSubmissionPage() {
 
         <div className="admin-form-row">
           <div className="admin-form-group">
-            <label htmlFor="genProvider">Provider</label>
+            <label htmlFor="genProvider">Penyedia</label>
             <select
               id="genProvider"
               value={genForm.provider}
@@ -838,10 +838,10 @@ export default function EditSubmissionPage() {
                 <thead>
                   <tr>
                     <th>ID</th>
-                    <th>Provider</th>
+                    <th>Penyedia</th>
                     <th>Model</th>
                     <th>Status</th>
-                    <th>Tokens</th>
+                    <th>Token</th>
                     <th>Masa</th>
                     <th>Ralat</th>
                   </tr>
@@ -873,7 +873,7 @@ export default function EditSubmissionPage() {
 
       <section className="admin-section" style={{ marginTop: "2rem" }}>
         <div className="admin-credits-header">
-          <h3>Promosi ke Work</h3>
+          <h3>Naikkan ke Karya</h3>
         </div>
 
         {form.resultWorkId ? (
@@ -914,14 +914,14 @@ export default function EditSubmissionPage() {
             {promoteSuccess && <div className="admin-alert admin-alert-success">{promoteSuccess}</div>}
 
             <div className="admin-form-group">
-              <label>Slug Work</label>
+              <label>Alamat pautan karya</label>
               <input
                 type="text"
                 value={promoteSlug}
                 onChange={(e) => setPromoteSlug(e.target.value)}
                 placeholder={form.proposedSlug || "auto-dari-tajuk"}
               />
-              <span className="admin-form-hint">Kosongkan untuk auto-generate dari tajuk</span>
+              <span className="admin-form-hint">Kosongkan untuk dijana daripada tajuk</span>
             </div>
 
             <div style={{ marginTop: "1rem" }}>
@@ -941,7 +941,7 @@ export default function EditSubmissionPage() {
                         <th>Identiti</th>
                         <th>Peranan Akhir</th>
                         <th>Awam</th>
-                        <th>Byline</th>
+                        <th>Nama di bawah tajuk</th>
                       </tr>
                     </thead>
                     <tbody>

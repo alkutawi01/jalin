@@ -78,7 +78,7 @@ export function EditorialWorkflowDashboard() {
 
       <div className="admin-dashboard-grid">
         <div className="admin-dashboard-section">
-          <h3>Health</h3>
+          <h3>Kesihatan</h3>
           <div className="admin-health-grid">
             {Object.entries(data.health).map(([category, info]) => (
               <div key={category} className={`admin-health-item admin-health-${info.status}`}>
@@ -90,10 +90,10 @@ export function EditorialWorkflowDashboard() {
         </div>
 
         <div className="admin-dashboard-section">
-          <h3>Issues</h3>
+          <h3>Isu</h3>
           <div className="admin-issue-stats">
             <div className="admin-stat">
-              <span className="admin-stat-label">Total</span>
+              <span className="admin-stat-label">Jumlah</span>
               <span className="admin-stat-value">{data.issues.total}</span>
             </div>
             {Object.entries(data.issues.byStatus).map(([status, count]) => (
@@ -106,9 +106,9 @@ export function EditorialWorkflowDashboard() {
         </div>
 
         <div className="admin-dashboard-section">
-          <h3>Recent Audits</h3>
+          <h3>Audit Terkini</h3>
           {data.history.runs.length === 0 ? (
-            <p>No audit runs</p>
+            <p>Tiada audit dijalankan</p>
           ) : (
             <div className="admin-audit-list">
               {data.history.runs.map(run => (

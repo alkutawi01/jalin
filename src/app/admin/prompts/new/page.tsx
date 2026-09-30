@@ -12,7 +12,7 @@ const WORK_TYPES = [
 ];
 
 const SCOPES = [
-  { value: "global", label: "Global" },
+  { value: "global", label: "Am" },
   { value: "category", label: "Kategori" },
   { value: "work", label: "Karya" },
 ];
@@ -60,8 +60,8 @@ export default function NewPromptPage() {
       <header className="admin-page-header">
         <div className="admin-page-header-row">
           <div>
-            <h1>Prompt Template Baharu</h1>
-            <p className="admin-page-sub">Cipta template prompt baru</p>
+            <h1>Templat Arahan Baharu</h1>
+            <p className="admin-page-sub">Cipta templat arahan baharu</p>
           </div>
           <a href="/admin/prompts" className="admin-btn admin-btn-outline">Kembali</a>
         </div>
@@ -111,7 +111,7 @@ export default function NewPromptPage() {
         </div>
 
         <div className="admin-form-group">
-          <label htmlFor="workId">Work ID (pilihan)</label>
+          <label htmlFor="workId">ID Karya (pilihan)</label>
           <input
             id="workId"
             type="text"
@@ -122,7 +122,7 @@ export default function NewPromptPage() {
         </div>
 
         <div className="admin-form-group">
-          <label htmlFor="promptText">Teks Prompt *</label>
+          <label htmlFor="promptText">Teks Arahan *</label>
           <textarea
             id="promptText"
             required

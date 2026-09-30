@@ -66,11 +66,11 @@ export default function WorkVisualUpload({ workId, onDone }: { workId: string; o
 
       <div className="admin-form-row">
         <div className="admin-form-group">
-          <label htmlFor="wvu-role">Role *</label>
+          <label htmlFor="wvu-role">Jenis *</label>
           <select id="wvu-role" value={role} onChange={(e) => setRole(e.target.value)}>
             <option value="hero">Hero (gambar utama)</option>
             <option value="inline">Inline (dalam teks)</option>
-            <option value="section">Section</option>
+            <option value="section">Bahagian</option>
           </select>
         </div>
         <div className="admin-form-group">
@@ -85,7 +85,7 @@ export default function WorkVisualUpload({ workId, onDone }: { workId: string; o
       </div>
 
       <div className="admin-form-group">
-        <label htmlFor="wvu-alt">Alt text * (satu ayat menerangkan gambar)</label>
+        <label htmlFor="wvu-alt">Teks alternatif * (satu ayat menerangkan gambar untuk pembaca yang tidak nampak gambar)</label>
         <input id="wvu-alt" value={alt} onChange={(e) => setAlt(e.target.value)} placeholder="cth. Seorang penyelidik berniqab menghadap skrin komputer…" />
       </div>
 
@@ -98,8 +98,8 @@ export default function WorkVisualUpload({ workId, onDone }: { workId: string; o
           <div className="admin-form-group">
             <label htmlFor="wvu-place">Letak imej</label>
             <select id="wvu-place" value={place} onChange={(e) => setPlace(e.target.value)}>
-              <option value="after">Selepas anchor</option>
-              <option value="before">Sebelum anchor</option>
+              <option value="after">Selepas petikan penanda</option>
+              <option value="before">Sebelum petikan penanda</option>
             </select>
           </div>
         </div>

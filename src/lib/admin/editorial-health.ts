@@ -44,7 +44,7 @@ export async function getEditorialHealth(): Promise<EditorialHealth> {
     const workCredits = credits.filter(c => c.work_id === work.id);
     const hasAuthor = workCredits.some(c => c.contributor_slug && c.is_public);
     if (!hasAuthor) {
-      health.authors.issues.push(`${work.title || work.id} missing public author`);
+      health.authors.issues.push(`${work.title || work.id} tiada penulis awam`);
       health.authors.status = "fail";
     }
   }
@@ -55,7 +55,7 @@ export async function getEditorialHealth(): Promise<EditorialHealth> {
     if (work.published_revision_id) {
       const hasRevision = workRevisions.some(r => r.id === work.published_revision_id);
       if (!hasRevision) {
-        health.revisions.issues.push(`${work.title || work.id} published revision missing`);
+        health.revisions.issues.push(`${work.title || work.id} semakan terbitan tiada`);
         health.revisions.status = "fail";
       }
     }
@@ -65,7 +65,7 @@ export async function getEditorialHealth(): Promise<EditorialHealth> {
   for (const work of works) {
     const workVisuals = visuals.filter(v => v.work_id === work.id);
     if (workVisuals.length > 0) {
-      health.visuals.issues.push(`${work.title || work.id}: ${workVisuals.length} visuals without credit`);
+      health.visuals.issues.push(`${work.title || work.id}: ${workVisuals.length} visual tanpa kredit`);
       health.visuals.status = "warning";
     }
   }
@@ -74,7 +74,7 @@ export async function getEditorialHealth(): Promise<EditorialHealth> {
   const translationWorks = await db.selectFrom("works").where("type", "=", "terjemahan").selectAll().execute();
   if (translationWorks.length > 0) {
     for (const w of translationWorks) {
-      health.translations.issues.push(`${w.title || w.id}: legacy type=terjemahan`);
+      health.translations.issues.push(`${w.title || w.id}: jenis lama (terjemahan)`);
     }
     health.translations.status = "warning";
   }

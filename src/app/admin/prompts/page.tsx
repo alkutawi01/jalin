@@ -28,8 +28,8 @@ export default async function AdminPromptsPage() {
     return (
       <div className="admin-placeholder">
         <header className="admin-page-header">
-          <h1>Prompt Templates</h1>
-          <p className="admin-page-sub">Admin prompt template management</p>
+          <h1>Templat Arahan</h1>
+          <p className="admin-page-sub">Pengurusan templat arahan</p>
         </header>
         <div className="admin-placeholder-content">
           <p>Database tidak tersedia. Set <code>DATABASE_URL</code> untuk mengaktifkan ciri admin.</p>
@@ -46,7 +46,7 @@ export default async function AdminPromptsPage() {
       <header className="admin-page-header">
         <div className="admin-page-header-row">
           <div>
-            <h1>Prompt Templates</h1>
+            <h1>Templat Arahan</h1>
             <p className="admin-page-sub">{templates.length} template dalam database</p>
           </div>
           <a href="/admin/prompts/new" className="admin-btn admin-btn-primary">

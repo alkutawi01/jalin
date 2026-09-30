@@ -49,7 +49,7 @@ export function EditorialIssueQueue() {
   };
 
   if (loading) {
-    return <p>Loading issues...</p>;
+    return <p>Memuatkan isu…</p>;
   }
 
   return (
@@ -67,7 +67,7 @@ export function EditorialIssueQueue() {
       </div>
       
       {issues.length === 0 ? (
-        <p>No issues found</p>
+        <p>Tiada isu ditemui</p>
       ) : (
         <div className="admin-issue-list">
           {issues.map(issue => (

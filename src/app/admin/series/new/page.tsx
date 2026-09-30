@@ -59,7 +59,7 @@ export default function NewSeriesPage() {
           />
         </div>
         <div className="admin-form-group">
-          <label htmlFor="slug">Slug *</label>
+          <label htmlFor="slug">Alamat pautan *</label>
           <input
             id="slug"
             type="text"
@@ -100,14 +100,14 @@ export default function NewSeriesPage() {
         </div>
         <div className="admin-form-row">
           <div className="admin-form-group">
-            <label htmlFor="mode">Mode</label>
+            <label htmlFor="mode">Mod</label>
             <select
               id="mode"
               value={form.mode}
               onChange={(e) => setForm((p) => ({ ...p, mode: e.target.value }))}
             >
-              <option value="continuous">Bersambung (continuous)</option>
-              <option value="anthology">Antologi (anthology)</option>
+              <option value="continuous">Bersambung</option>
+              <option value="anthology">Antologi</option>
             </select>
           </div>
           <div className="admin-form-group">

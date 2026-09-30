@@ -40,7 +40,7 @@ export default async function AdminWorksPage({
       <div className="admin-placeholder">
         <header className="admin-page-header">
           <h1>Karya</h1>
-          <p className="admin-page-sub">Admin works management</p>
+          <p className="admin-page-sub">Pengurusan karya</p>
         </header>
         <div className="admin-placeholder-content">
           <p>Database tidak tersedia. Set <code>DATABASE_URL</code> untuk mengaktifkan ciri admin.</p>
@@ -114,7 +114,7 @@ export default async function AdminWorksPage({
           <thead>
             <tr>
               <th>Tajuk</th>
-              <th>Slug</th>
+              <th>Alamat pautan</th>
               <th>Jenis</th>
               <th>Status</th>
               <th>Versi</th>
