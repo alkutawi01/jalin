@@ -31,6 +31,7 @@ import EpisodePage from "../src/app/kategori/bersiri/[seriesSlug]/[episodeSlug]/
 import PenulisPage from "../src/app/penulis/[slug]/page";
 import MobileStoryInfo from "../src/components/reader/MobileStoryInfo";
 import MobileNavMenu from "../src/components/reader/MobileNavMenu";
+import GlossaryTerm from "../src/components/reader/GlossaryTerm";
 import { initContentRepository } from "../src/lib/content";
 
 let passed = 0;
@@ -75,7 +76,7 @@ const FORBIDDEN_STRINGS = [
 ];
 
 /** Client components receive their data as props; do not execute them. */
-const CLIENT_COMPONENTS = new Set<unknown>([MobileStoryInfo, MobileNavMenu]);
+const CLIENT_COMPONENTS = new Set<unknown>([MobileStoryInfo, MobileNavMenu, GlossaryTerm]);
 
 function scanValue(value: unknown, path: string, hits: string[]) {
   if (typeof value === "string") {
