@@ -12,7 +12,11 @@ import { getDb, hasDb } from "../db";
 const SCOPE = "ai_persona";
 
 /** Pseudonyms already recorded in the system: an AI whose contributor record exists starts mapped to it. */
-const KNOWN_SLUG: Record<string, string> = { ChatGPT: "chatgpt", "Mimo (OpenCode)": "mimo" };
+const KNOWN_SLUG: Record<string, string> = {
+  ChatGPT: "chatgpt", // Rafiq Naim
+  Claude: "nara-zahin", // confirmed by the product owner
+  "Mimo (OpenCode)": "mimo"
+};
 
 export const DEFAULT_AIS = ["ChatGPT", "Claude", "Gemini", "Mimo (OpenCode)", "Grok", "Copilot", "DeepSeek"];
 
