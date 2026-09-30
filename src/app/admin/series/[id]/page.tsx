@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback, use } from "react";
 import { useRouter } from "next/navigation";
+import { confirmAction } from "../../../../lib/admin/dialogs";
+import LoadingBlock from "../../../../components/admin/LoadingBlock";
 
 interface SeriesData {
   id: string;
@@ -144,7 +146,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
   }
 
   async function handleDetach(workId: string) {
-    if (!confirm("Keluarkan episod ini daripada Siri? Work tidak akan dipadam.")) return;
+    if (!(await confirmAction("Keluarkan episod ini daripada Siri? Work tidak akan dipadam.", { danger: true, confirmLabel: "Ya, teruskan" }))) return;
     setError(null);
     try {
       const res = await fetch(`/api/admin/series/${id}/entries/${workId}`, { method: "DELETE" });
@@ -166,7 +168,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
     // Confirm if any affected episode is published
     const hasPublished = ids.some((wid) => entryWorks.get(wid)?.status === "published");
     if (hasPublished) {
-      if (!confirm("Susunan semula melibatkan episod terbit. Teruskan?")) return;
+      if (!(await confirmAction("Susunan semula melibatkan episod terbit. Teruskan?"))) return;
     }
 
     setError(null);
@@ -185,7 +187,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
   }
 
   async function handleDelete() {
-    if (!confirm("Padam Siri ini? Hanya dibenarkan jika tiada episod. Work episod tidak akan dipadam.")) return;
+    if (!(await confirmAction("Padam Siri ini? Hanya dibenarkan jika tiada episod. Work episod tidak akan dipadam.", { danger: true, confirmLabel: "Ya, teruskan" }))) return;
     setError(null);
     try {
       const res = await fetch(`/api/admin/series/${id}`, { method: "DELETE" });
@@ -198,7 +200,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
   }
 
   if (loading) {
-    return <div className="admin-loading"><p>Memuatkan siri...</p></div>;
+    return <div className="admin-loading"><LoadingBlock label="siri" /></div>;
   }
   if (!series) {
     return <div className="admin-placeholder"><p>{error || "Siri tidak ditemui."}</p></div>;

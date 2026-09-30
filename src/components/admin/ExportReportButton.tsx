@@ -1,11 +1,12 @@
 "use client";
+import { toast } from "../../lib/admin/dialogs";
 
 export function ExportReportButton() {
   const handleExport = async (format: "json" | "markdown") => {
     try {
       const response = await fetch("/api/admin/editorial-report");
       if (!response.ok) {
-        alert("Gagal memuat turun laporan");
+        toast("Gagal memuat turun laporan", "error");
         return;
       }
       
@@ -45,7 +46,7 @@ export function ExportReportButton() {
         URL.revokeObjectURL(url);
       }
     } catch (error) {
-      alert("Ralat semasa memuat turun laporan");
+      toast("Ralat semasa memuat turun laporan", "error");
     }
   };
 

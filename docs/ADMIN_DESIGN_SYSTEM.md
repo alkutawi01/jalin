@@ -20,4 +20,4 @@ Komponen baharu bertanda `.a-*`: rangka (`.a-shell`, `.a-side`, `.a-topbar`, `.a
 Sidebar kiri (Papan Pemuka, Karya, Editorial, Tetapan), butang **Tambah Karya** tetap di atas, Laman awam dan Log keluar di bawah. Bawah 900px: bar atas dengan butang Menu dan laci. Halaman log masuk tanpa rangka.
 
 ## Belum (fasa 2)
-Toast dan pengesahan padam dalam laman (kini `window.confirm`), keadaan kosong dan rangka pemuatan yang seragam, halaman-halaman panjang (tab karya) disusun semula, gaya cetak, mod gelap.
+Selesai dalam fasa 2: dialog pengesahan dan toast dalam laman (`lib/admin/dialogs.ts`, `DialogHost`), rangka pemuatan (`LoadingBlock`), keadaan kosong (`.a-empty`). Belum: menyusun semula halaman tab karya yang panjang, gaya cetak, mod gelap.

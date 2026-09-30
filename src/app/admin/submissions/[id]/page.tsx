@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
+import { confirmAction } from "../../../../lib/admin/dialogs";
+import LoadingBlock from "../../../../components/admin/LoadingBlock";
 
 const WORK_TYPES = [
   { value: "cerpen", label: "Cerpen" },
@@ -254,7 +256,7 @@ export default function EditSubmissionPage() {
   }
 
   async function handlePromote() {
-    if (!confirm("Pasti ingin mempromosikan submission ini ke Work? Tindakan ini tidak boleh dibatalkan.")) {
+    if (!(await confirmAction("Pasti ingin mempromosikan submission ini ke Work? Tindakan ini tidak boleh dibatalkan."))) {
       return;
     }
 
@@ -358,7 +360,7 @@ export default function EditSubmissionPage() {
   }
 
   async function handleDeleteContribution(id: number) {
-    if (!confirm("Pasti ingin memadam sumbangan ini?")) return;
+    if (!(await confirmAction("Pasti ingin memadam sumbangan ini?", { danger: true, confirmLabel: "Ya, teruskan" }))) return;
 
     try {
       const res = await fetch(`/api/admin/contributions/${id}`, { method: "DELETE" });
@@ -375,7 +377,7 @@ export default function EditSubmissionPage() {
   if (loading) {
     return (
       <div className="admin-loading">
-        <p>Memuatkan submission...</p>
+        <LoadingBlock label="submission" />
       </div>
     );
   }

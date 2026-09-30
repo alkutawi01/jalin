@@ -6,6 +6,8 @@ import WorkVisualUpload from "../../../../components/admin/WorkVisualUpload";
 import CreditRoleSelect from "../../../../components/admin/CreditRoleSelect";
 import AiCreditPicker from "../../../../components/admin/AiCreditPicker";
 import { roleDisplay } from "../../../../lib/credit-roles";
+import { confirmAction } from "../../../../lib/admin/dialogs";
+import LoadingBlock from "../../../../components/admin/LoadingBlock";
 
 const WORK_TYPES = [
   { value: "cerpen", label: "Cerpen" },
@@ -353,7 +355,7 @@ export default function EditWorkPage() {
   }
 
   async function handleDeleteSection(id: number) {
-    if (!confirm("Pasti ingin memadam bahagian ini? Susunan selebihnya akan dirapatkan.")) return;
+    if (!(await confirmAction("Pasti ingin memadam bahagian ini? Susunan selebihnya akan dirapatkan.", { danger: true, confirmLabel: "Ya, teruskan" }))) return;
     setSectionError(null);
     try {
       const res = await fetch(`/api/admin/works/${workId}/sections/${id}`, { method: "DELETE" });
@@ -517,7 +519,7 @@ export default function EditWorkPage() {
   }
 
   async function handleExplicitPublish() {
-    if (!confirm("Terbitkan karya ini secara eksplisit? Tindakan ini menetapkan status published.")) return;
+    if (!(await confirmAction("Terbitkan karya ini secara eksplisit? Tindakan ini menetapkan status published."))) return;
     setPublishing(true);
     setPublishError(null);
     setPublishSuccess(null);
@@ -737,7 +739,7 @@ export default function EditWorkPage() {
   }
 
   async function handleDeleteCredit(id: number) {
-    if (!confirm("Pasti ingin memadam kredit ini?")) return;
+    if (!(await confirmAction("Pasti ingin memadam kredit ini?", { danger: true, confirmLabel: "Ya, teruskan" }))) return;
 
     try {
       const res = await fetch(`/api/admin/credits/${id}`, {
@@ -804,7 +806,7 @@ export default function EditWorkPage() {
   }
 
   async function handleDeleteVisual(id: number) {
-    if (!confirm("Pasti ingin memadam visual ini?")) return;
+    if (!(await confirmAction("Pasti ingin memadam visual ini?", { danger: true, confirmLabel: "Ya, teruskan" }))) return;
 
     try {
       const res = await fetch(`/api/admin/visuals/${id}`, {
@@ -866,7 +868,7 @@ export default function EditWorkPage() {
   }
 
   async function handleDeleteGlossary(id: number) {
-    if (!confirm("Pasti ingin memadam glossary ini?")) return;
+    if (!(await confirmAction("Pasti ingin memadam glossary ini?", { danger: true, confirmLabel: "Ya, teruskan" }))) return;
 
     try {
       const res = await fetch(`/api/admin/glossary/${id}`, {
@@ -896,7 +898,7 @@ export default function EditWorkPage() {
   }
 
   async function handlePublish() {
-    if (!confirm("Pasti ingin menerbitkan karya ini ke Markdown?")) return;
+    if (!(await confirmAction("Pasti ingin menerbitkan karya ini ke Markdown?"))) return;
 
     setPublishing(true);
     setPublishError(null);
@@ -933,7 +935,7 @@ export default function EditWorkPage() {
   }, [workId]);
 
   async function handleArchive() {
-    if (!confirm("Pasti ingin mengarkibkan karya ini?")) return;
+    if (!(await confirmAction("Pasti ingin mengarkibkan karya ini?", { danger: true, confirmLabel: "Ya, teruskan" }))) return;
 
     setSaving(true);
     setError(null);
@@ -956,7 +958,7 @@ export default function EditWorkPage() {
   if (loading) {
     return (
       <div className="admin-loading">
-        <p>Memuatkan karya...</p>
+        <LoadingBlock label="karya" />
       </div>
     );
   }
@@ -2184,7 +2186,7 @@ export default function EditWorkPage() {
 
           {sourceError && <div className="admin-alert admin-alert-error">{sourceError}</div>}
           {sourceSuccess && <div className="admin-alert admin-alert-success">{sourceSuccess}</div>}
-          {sourceLoading && <p>Memuatkan provenance...</p>}
+          {sourceLoading && <LoadingBlock label="provenance" />}
 
           {sourceRights && !sourceLoading && (
             <>

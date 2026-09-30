@@ -366,3 +366,25 @@
 /* Table columns: keep titles readable, let secondary columns stay on one line */
 .a-shell .admin-table td:first-child { min-width: 190px; }
 .a-shell .admin-table td code { max-width: 170px; }
+
+/* ── Phase 2: dialogs, toasts, loading, empty states ─── */
+.a-btn-danger { background: var(--a-danger); border-color: var(--a-danger); color: #fff; }
+.a-btn-danger:hover { background: #8a2a21; border-color: #8a2a21; }
+.a-modal-backdrop { position: fixed; inset: 0; z-index: 300; background: rgba(15, 32, 38, 0.45); display: flex; align-items: center; justify-content: center; padding: 20px; }
+.a-modal { width: 100%; max-width: 420px; background: var(--a-surface); border-radius: var(--a-radius-lg); box-shadow: 0 24px 60px -20px rgba(15, 32, 38, 0.5); padding: 22px 24px; font-family: var(--a-font); color: var(--a-ink); }
+.a-modal h2 { font-family: var(--a-font); font-size: 17px; margin: 0 0 8px; }
+.a-modal p { margin: 0 0 20px; color: var(--a-ink-soft); line-height: 1.55; }
+.a-modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
+.a-toasts { position: fixed; right: 20px; bottom: 20px; z-index: 310; display: flex; flex-direction: column; gap: 8px; max-width: min(380px, calc(100vw - 40px)); }
+.a-toast { font-family: var(--a-font); font-size: 14px; padding: 11px 16px; border-radius: var(--a-radius); background: var(--a-ink); color: #fff; box-shadow: var(--a-shadow); }
+.a-toast-success { background: var(--a-ok); }
+.a-toast-error { background: var(--a-danger); }
+.a-loading { display: flex; flex-direction: column; gap: 14px; padding-top: 8px; }
+.a-skel { height: 14px; border-radius: 6px; background: linear-gradient(90deg, #ebe6da 25%, #f4f0e7 50%, #ebe6da 75%); background-size: 200% 100%; animation: a-shimmer 1.3s infinite linear; }
+.a-skel-title { height: 30px; width: 30%; }
+.a-skel-card { height: 96px; border-radius: var(--a-radius-lg); }
+@keyframes a-shimmer { to { background-position: -200% 0; } }
+.a-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+@media (prefers-reduced-motion: reduce) { .a-skel { animation: none; } }
+.a-empty { text-align: center; padding: 40px 20px; color: var(--a-muted); border: 1px dashed var(--a-line-strong); border-radius: var(--a-radius-lg); background: var(--a-surface); }
+.a-empty strong { display: block; color: var(--a-ink); font-size: 15px; margin-bottom: 4px; }
