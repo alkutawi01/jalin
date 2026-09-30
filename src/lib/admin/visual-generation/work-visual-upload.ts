@@ -55,8 +55,11 @@ export async function uploadVisualForWork(
     };
   }
 
-  const work = await db.selectFrom("works").where("id", "=", input.workId).select(["id"]).executeTakeFirst();
+  const work = await db.selectFrom("works").where("id", "=", input.workId).select(["id", "body"]).executeTakeFirst();
   if (!work) return { ok: false, status: 404, error: "Karya tidak ditemui." };
+  if (input.role !== "hero" && !work.body?.includes(input.anchor!.trim())) {
+    return { ok: false, status: 400, error: "Perenggan gambar tidak ditemui dalam manuskrip tersimpan. Simpan manuskrip dahulu, kemudian cuba lagi." };
+  }
 
   if (input.role === "hero" && !input.allowExistingHero) {
     const existingHero = await db

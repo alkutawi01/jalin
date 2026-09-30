@@ -300,6 +300,15 @@
 .a-shell .admin-table-title { font-weight: 600; }
 .a-shell .admin-table-actions { display: flex; gap: 6px; justify-content: flex-end; }
 .a-shell .admin-table-empty { text-align: center; color: var(--a-muted); padding: 32px; }
+.a-shell .work-image-list { display: grid; gap: 18px; margin: 20px 0 28px; }
+.a-shell .work-image-list h4 { margin: 12px 0 0; }
+.a-shell .work-image-card { display: grid; grid-template-columns: minmax(180px, 280px) minmax(0, 1fr); gap: 20px; align-items: start; padding: 16px; border: 1px solid var(--a-line); border-radius: var(--a-radius-lg); background: var(--a-surface); }
+.a-shell .work-image-card-preview { display: grid; place-items: center; min-height: 120px; background: #f2eee7; border-radius: 6px; overflow: hidden; }
+.a-shell .work-image-card-preview img { display: block; width: 100%; height: auto; max-height: 360px; object-fit: contain; }
+.a-shell .work-image-card-detail { min-width: 0; }
+.a-shell .work-image-card-detail p { overflow-wrap: anywhere; }
+.a-shell .work-image-card-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+@media (max-width: 650px) { .a-shell .work-image-card { grid-template-columns: minmax(0, 1fr); } }
 
 /* ── Badges / status ─────────────────────────────────── */
 .a-shell .admin-status,

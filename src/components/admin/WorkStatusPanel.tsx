@@ -32,7 +32,7 @@ const STEPS: { value: string; label: string }[] = [
 const GATES: { key: keyof ReadinessLike["gates"]; label: string; tab: string }[] = [
   { key: "content", label: "Kandungan", tab: "content" },
   { key: "credits", label: "Kredit", tab: "credits" },
-  { key: "visuals", label: "Visual", tab: "visuals" },
+  { key: "visuals", label: "Gambar", tab: "content" },
   { key: "privacy", label: "Privasi", tab: "content" },
   { key: "rights", label: "Hak", tab: "source" },
   { key: "structure", label: "Struktur", tab: "sections" },
