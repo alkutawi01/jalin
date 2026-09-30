@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
+import DialogHost from "./DialogHost";
 
 /**
  * Admin app shell: a sidebar on wide screens, a top bar with a drawer on
@@ -87,6 +88,7 @@ export default function AdminShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="a-shell">
+      <DialogHost />
       <aside className="a-side">
         <a href="/admin" className="a-brand" aria-label="Jalin Admin">
           <img src="/brand/jalin-wordmark.svg" alt="Jalin" />
