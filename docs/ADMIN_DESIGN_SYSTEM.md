@@ -19,5 +19,10 @@ Komponen baharu bertanda `.a-*`: rangka (`.a-shell`, `.a-side`, `.a-topbar`, `.a
 ## Rangka
 Sidebar kiri (Papan Pemuka, Karya, Editorial, Tetapan), butang **Tambah Karya** tetap di atas, Laman awam dan Log keluar di bawah. Bawah 900px: bar atas dengan butang Menu dan laci. Halaman log masuk tanpa rangka.
 
+## Penyunting karya: simpan dan penanda gambar
+- Ganti, tambah, padam dan ubah butiran gambar disimpan terus oleh tindakan masing-masing. Butang peringkat halaman hanya menyimpan teks karya dan medan Maklumat; labelnya mesti menyatakan skop itu dan kekal di luar kad Kandungan/Maklumat.
+- Gambar dalam teks baharu menggunakan penanda bernombor `[[gambar:N]]` pada baris sendiri dalam manuskrip. Nilai `visuals.anchor` ialah penanda yang sama. Memindahkan baris penanda dan menyimpan manuskrip mengalihkan gambar tanpa bergantung pada teks perenggan; penanda tidak dipaparkan kepada pembaca.
+- Anchor petikan lama kekal dibaca untuk karya sedia ada. Editor boleh menambah penanda baharu, menyimpan manuskrip, kemudian memilih penanda itu pada butiran gambar lama untuk menukarnya secara berperingkat. Tiada migrasi data production automatik.
+
 ## Belum (fasa 2)
 Selesai dalam fasa 2: dialog pengesahan dan toast dalam laman (`lib/admin/dialogs.ts`, `DialogHost`), rangka pemuatan (`LoadingBlock`), keadaan kosong (`.a-empty`). Belum: menyusun semula halaman tab karya yang panjang, gaya cetak, mod gelap.

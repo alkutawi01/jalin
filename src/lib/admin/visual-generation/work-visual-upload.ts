@@ -12,6 +12,7 @@ import type { Kysely } from "kysely";
 import type { Database, VisualRole } from "../../db/types";
 import { applyManualUpload } from "./manual-upload";
 import { approveVisualRequest, attachVisualToWork } from "./visual-generation-service";
+import { isImageMarker } from "../../reader/image-markers";
 
 const ROLES = new Set<VisualRole>(["hero", "inline", "section"]);
 
@@ -25,6 +26,8 @@ export interface WorkVisualUploadInput {
   bytes: Buffer;
   /** Set when replacing an existing hero, so the one-hero rule does not block it. */
   allowExistingHero?: boolean;
+  /** Replacement may reuse the marker already owned by the image being replaced. */
+  replaceVisualId?: number;
   actor: string;
 }
 
@@ -43,12 +46,21 @@ export async function uploadVisualForWork(
     return { ok: false, status: 400, error: "Alt text diperlukan (penerangan gambar untuk pembaca)." };
   }
   if (input.role !== "hero" && !input.anchor?.trim()) {
-    return { ok: false, status: 400, error: "Imej dalam teks memerlukan petikan penanda yang wujud dalam karya." };
+    return { ok: false, status: 400, error: "Imej dalam teks memerlukan penanda yang wujud dalam karya." };
   }
   const work = await db.selectFrom("works").where("id", "=", input.workId).select(["id", "body"]).executeTakeFirst();
   if (!work) return { ok: false, status: 404, error: "Karya tidak ditemui." };
   if (input.role !== "hero" && !work.body?.includes(input.anchor!.trim())) {
-    return { ok: false, status: 400, error: "Perenggan gambar tidak ditemui dalam manuskrip tersimpan. Simpan manuskrip dahulu, kemudian cuba lagi." };
+    return { ok: false, status: 400, error: "Penanda gambar tidak ditemui dalam manuskrip tersimpan. Simpan manuskrip dahulu, kemudian cuba lagi." };
+  }
+  if (input.role !== "hero" && isImageMarker(input.anchor)) {
+    const marker = input.anchor!.trim();
+    if (work.body!.split(marker).length !== 2) {
+      return { ok: false, status: 400, error: "Penanda gambar mesti muncul tepat sekali dalam manuskrip." };
+    }
+    const assigned = await db.selectFrom("visuals").where("work_id", "=", input.workId)
+      .where("anchor", "=", marker).select("id").executeTakeFirst();
+    if (assigned && assigned.id !== input.replaceVisualId) return { ok: false, status: 409, error: "Penanda ini sudah digunakan oleh gambar lain." };
   }
 
   if (input.role === "hero" && !input.allowExistingHero) {
@@ -155,7 +167,8 @@ export async function replaceVisualImage(
     toolName: input.toolName,
     bytes: input.bytes,
     actor: input.actor,
-    allowExistingHero: true
+    allowExistingHero: true,
+    replaceVisualId: input.visualId
   });
   if (!result.ok) return { ok: false, status: result.status, error: result.error };
 

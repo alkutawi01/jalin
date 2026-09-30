@@ -15,7 +15,7 @@
 - Teks manuskrip tidak diubah. Hanya pemisah perenggan diseragamkan (setiap baris = satu perenggan markdown) kerana reader memerlukan baris kosong. Tajuk bab dipadankan tanpa mengira huruf besar/kecil, pemisah baris dan jenis petikan.
 - `readingMinutes` dikira daripada teks yang disimpan (menutup dapatan checklist: novela dulu tersalah jadi "1 minit").
 - `anchor` visual inline dilebarkan ke sempadan perenggan dan disimpan sebagai teks tepat manuskrip, kerana reader memotong badan tepat pada hujung anchor.
-- Istilah glosari yang sama dengan nama watak/lokasi dilangkau (reader menggaris bawah setiap kemunculan).
+- Istilah glosari yang sama dengan nama watak/lokasi dilangkau (tooltip kini hanya pada kemunculan pertama istilah sebenar).
 - Jenis `bersiri` belum disokong oleh import (guna `/admin/series`).
 - Perkhidmatan sedia ada tidak boleh berkongsi transaksi (setiap satu buka sambungan sendiri), maka penulis import memasukkan lajur yang sama secara terus.
 

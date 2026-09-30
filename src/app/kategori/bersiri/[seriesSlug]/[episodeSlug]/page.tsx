@@ -19,6 +19,7 @@ import {
 } from "../../../../../lib/reader/credit-projection";
 import { buildVerifiedGlossary } from "../../../../../lib/reader/verified-glossary";
 import { placeVisuals } from "../../../../../lib/reader/place-visuals";
+import { firstGlossaryBySegment } from "../../../../../lib/reader/glossary-first";
 import type {
   CharacterMeta,
   StoryInfoData,
@@ -157,6 +158,7 @@ export default async function EpisodePage({
   const rights = `© ADJUNG ${(work.publishedAt ?? "2026").slice(0, 4)}`;
   const hero = work.visuals.find((visual) => visual.role === "hero");
   const segmentNodes = placeVisuals(work.body, work.visuals);
+  const segmentGlossaries = firstGlossaryBySegment(segmentNodes, glossary);
 
   return (
     <>
@@ -194,7 +196,7 @@ export default async function EpisodePage({
             {segmentNodes.map((node, index) => {
               if (typeof node === "string") {
                 return (
-                  <StoryMarkdown key={index} glossary={glossary}>
+                  <StoryMarkdown key={index} glossary={segmentGlossaries[index]}>
                     {node}
                   </StoryMarkdown>
                 );

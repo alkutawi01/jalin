@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getWork, updateWork, archiveWork } from "../../../../../lib/admin/work-service";
+import { getDb, hasDb } from "../../../../../lib/db";
+import { imageMarkers, isImageMarker } from "../../../../../lib/reader/image-markers";
 
 export async function GET(
   request: NextRequest,
@@ -34,6 +36,21 @@ export async function PATCH(
     const existing = await getWork(id);
     if (!existing) {
       return NextResponse.json({ error: "Karya tidak ditemui." }, { status: 404 });
+    }
+
+    if (typeof body.body === "string" && hasDb()) {
+      const markers = imageMarkers(body.body);
+      for (const marker of markers) {
+        if (body.body.split(marker).length !== 2) {
+          return NextResponse.json({ error: `Penanda ${marker} berulang. Setiap penanda gambar mesti unik.` }, { status: 400 });
+        }
+      }
+      const attached = await getDb().selectFrom("visuals").where("work_id", "=", id).select("anchor").execute();
+      for (const visual of attached) {
+        if (isImageMarker(visual.anchor) && !markers.includes(visual.anchor!)) {
+          return NextResponse.json({ error: `Penanda ${visual.anchor} masih digunakan oleh gambar. Alihkannya, jangan padam; atau padam gambar itu dahulu.` }, { status: 400 });
+        }
+      }
     }
 
     // Validate type if provided

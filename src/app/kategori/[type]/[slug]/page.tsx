@@ -15,6 +15,7 @@ import StoryMarkdown from "../../../../components/reader/StoryMarkdown";
 import { WorkCover } from "../../../../components/reader/WorkCover";
 import { extractInlineChapters } from "../../../../lib/reader/inline-chapters";
 import { placeVisuals } from "../../../../lib/reader/place-visuals";
+import { firstGlossaryBySegment } from "../../../../lib/reader/glossary-first";
 import MobileStoryInfo from "../../../../components/reader/MobileStoryInfo";
 import { initContentRepository } from "../../../../lib/content";
 import { getWorkBySlug, getWorksByType } from "../../../../lib/content/workLoader";
@@ -304,6 +305,7 @@ export default async function WorkPage({
   }
 
   const segmentNodes = placeVisuals(bodyToRender, work.visuals);
+  const segmentGlossaries = firstGlossaryBySegment(segmentNodes, glossary);
 
   const publicSections = projectPublicSections(sections);
 
@@ -395,7 +397,7 @@ export default async function WorkPage({
             {segmentNodes.map((node, index) => {
               if (typeof node === "string") {
                 return (
-                  <StoryMarkdown key={index} glossary={glossary}>
+                  <StoryMarkdown key={index} glossary={segmentGlossaries[index]}>
                     {node}
                   </StoryMarkdown>
                 );

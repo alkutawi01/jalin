@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import StoryMarkdown from "../../../../../components/reader/StoryMarkdown";
 import { placeVisuals } from "../../../../../lib/reader/place-visuals";
+import { firstGlossaryBySegment } from "../../../../../lib/reader/glossary-first";
 
 const TYPE_LABELS: Record<string, string> = {
   cerpen: "Cerpen",
@@ -169,16 +170,20 @@ export default function PreviewWorkPage() {
   }
 
   const glossaryMap = Object.fromEntries(glossary.map((g) => [g.term, { meaning: g.meaning }]));
-  const renderBody = (body: string) => placeVisuals(body, visuals).map((node, index) =>
+  const renderBody = (body: string) => {
+    const segments = placeVisuals(body, visuals);
+    const segmentGlossaries = firstGlossaryBySegment(segments, glossaryMap);
+    return segments.map((node, index) =>
     typeof node === "string" ? (
-      <StoryMarkdown key={index} glossary={glossaryMap}>{node}</StoryMarkdown>
+      <StoryMarkdown key={index} glossary={segmentGlossaries[index]}>{node}</StoryMarkdown>
     ) : (
       <figure key={`visual-${index}`} style={{ margin: "1.5rem 0" }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={node.src} alt={node.alt || ""} style={{ maxWidth: "100%", height: "auto" }} />
       </figure>
     )
-  );
+    );
+  };
 
   return (
     <div className="admin-preview">
