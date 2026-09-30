@@ -257,6 +257,12 @@ export default function EditVisualRequestPage() {
         throw new Error(data.error || "Gagal menyimpan.");
       }
 
+      const refreshed = await fetch(`/api/admin/visual-requests/${requestId}`);
+      if (refreshed.ok) {
+        const r: VisualRequestData = await refreshed.json();
+        setRecord(r);
+        setForm((prev) => ({ ...prev, status: r.status, approvalState: r.approval_state ?? prev.approvalState }));
+      }
       setSuccess("Berjaya disimpan.");
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {

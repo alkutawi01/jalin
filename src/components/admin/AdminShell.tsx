@@ -3,6 +3,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import DialogHost from "./DialogHost";
+import { confirmAction } from "../../lib/admin/dialogs";
 
 /**
  * Admin app shell: a sidebar on wide screens, a top bar with a drawer on
@@ -77,7 +78,15 @@ export default function AdminShell({ children }: { children: ReactNode }) {
         <a href="/" className="a-nav-link">
           Laman awam →
         </a>
-        <form action="/api/admin/auth/logout" method="POST">
+        <form
+          action="/api/admin/auth/logout"
+          method="POST"
+          onSubmit={async (e) => {
+            e.preventDefault();
+            const form = e.currentTarget;
+            if (await confirmAction("Log keluar daripada admin?", { confirmLabel: "Log keluar" })) form.submit();
+          }}
+        >
           <button type="submit" className="a-nav-link a-nav-button">
             Log keluar
           </button>

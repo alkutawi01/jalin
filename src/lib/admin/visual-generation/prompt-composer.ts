@@ -57,6 +57,11 @@ export function composeVisualPrompt(input: VisualPromptInput): ComposedVisualPro
   // 3. Visual role hint
   parts.push(`Role: ${ROLE_HINTS[input.role] ?? ROLE_HINTS.inline}`);
 
+  // 3b. Composition guard for every role (models otherwise add frames, letterbox bars and lettering)
+  parts.push(
+    "Composition: full-bleed to all four edges, no frame, border or matte, no letterbox bars, and no text, lettering, captions, numbers, logos, brand names or watermarks anywhere in the image."
+  );
+
   // 4. Aspect ratio
   parts.push(`Aspect ratio: ${input.aspectRatio}.`);
 
