@@ -447,7 +447,7 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
 
               <h3>Maklumat karya</h3>
               <div className="admin-form-group">
-                <label htmlFor="f-title">Tajuk ({title.length}/60 aksara disyorkan)</label>
+                <label htmlFor="f-title">Tajuk</label>
                 <input
                   id="f-title"
                   value={title}
@@ -462,7 +462,7 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
                 <input id="f-slug" value={slug} onChange={(e) => setSlug(e.target.value)} placeholder="(dijana daripada tajuk)" />
               </div>
               <div className="admin-form-group">
-                <label htmlFor="f-dek">Dek ({dek.length}/260 aksara disyorkan)</label>
+                <label htmlFor="f-dek">Dek</label>
                 <textarea id="f-dek" className="admin-textarea" rows={2} value={dek} onChange={(e) => setDek(e.target.value)} />
               </div>
               <div className="admin-form-row">

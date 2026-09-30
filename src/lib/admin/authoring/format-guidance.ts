@@ -1,5 +1,5 @@
 /**
- * Guidance appended to the answer format: safe length targets, a self-check the
+ * Guidance appended to the answer format: a self-check the
  * chatbot runs before answering, and a FILLED example (about an invented
  * story) so the chatbot sees realistic values instead of "(placeholder)" text.
  * Modelled on how Adjung Brief prompts its chatbot.
@@ -7,25 +7,13 @@
 
 import type { OutputSection, Recipe } from "./recipes";
 
-export const LIMITS = [
-  "PANJANG SETIAP MEDAN (sasaran selamat, jangan melebihinya)",
-  "Tajuk: 10 hingga 60 aksara",
-  "Dek: 120 hingga 260 aksara (satu atau dua ayat)",
-  "Ringkasan bab: 100 hingga 250 aksara",
-  "Penerangan watak: 60 hingga 200 aksara",
-  "Maksud glosari: 40 hingga 140 aksara",
-  "Adegan gambar (bahasa Inggeris): 300 hingga 700 aksara, satu perenggan",
-  "Alt: 60 hingga 150 aksara; Sebab: 60 hingga 160 aksara",
-  "Anggaran bacaan: nombor sahaja (perkataan dibahagi 200, dibulatkan)"
-].join("\n");
-
 export const SELF_CHECK = [
   "SEMAKAN SENDIRI (lakukan sebelum memberi jawapan akhir; jangan paparkan hasil semakan)",
   "1. Setiap Petikan ialah teks yang wujud HURUF DEMI HURUF dalam bahan, tanpa tanda petikan tambahan.",
   "2. Setiap istilah glosari ialah perkataan yang benar-benar sukar; tiada nama watak atau lokasi.",
   "3. Setiap Adegan menggambarkan keadaan pada titik itu dalam cerita sahaja (cuaca, waktu, objek, siapa hadir), dan sepadan dengan pilihan Muka.",
   "4. Dek dan ringkasan tidak mendedahkan pengakhiran atau kejutan.",
-  "5. Tiada Markdown, tiada nota atau penjelasan di luar format. Jika mana-mana medan melebihi panjang, tulis semula medan itu sahaja."
+  "5. Tiada Markdown, tiada nota atau penjelasan di luar format."
 ].join("\n");
 
 function lines(...items: (string | null)[]): string {
