@@ -236,7 +236,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
             onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))} />
         </div>
         <div className="admin-form-group">
-          <label htmlFor="slug">Slug *</label>
+          <label htmlFor="slug">Alamat pautan *</label>
           <input id="slug" type="text" required value={form.slug}
             onChange={(e) => setForm((p) => ({ ...p, slug: e.target.value }))} />
         </div>
@@ -259,11 +259,11 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
         </div>
         <div className="admin-form-row">
           <div className="admin-form-group">
-            <label htmlFor="mode">Mode</label>
+            <label htmlFor="mode">Mod</label>
             <select id="mode" value={form.mode}
               onChange={(e) => setForm((p) => ({ ...p, mode: e.target.value }))}>
-              <option value="continuous">Bersambung (continuous)</option>
-              <option value="anthology">Antologi (anthology)</option>
+              <option value="continuous">Bersambung</option>
+              <option value="anthology">Antologi</option>
             </select>
             <span className="admin-form-hint">
               {form.mode === "continuous"

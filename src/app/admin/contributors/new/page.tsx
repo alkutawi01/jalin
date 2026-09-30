@@ -89,7 +89,7 @@ export default function NewContributorPage() {
         </div>
 
         <div className="admin-form-group">
-          <label htmlFor="slug">Slug *</label>
+          <label htmlFor="slug">Alamat pautan *</label>
           <input
             id="slug"
             type="text"
@@ -98,7 +98,7 @@ export default function NewContributorPage() {
             onChange={(e) => setForm((prev) => ({ ...prev, slug: e.target.value }))}
             placeholder="rafiq-naim"
           />
-          <span className="admin-form-hint">Unik dalam system. Contoh: rafiq-naim</span>
+          <span className="admin-form-hint">Unik dalam sistem. Contoh: rafiq-naim</span>
         </div>
 
         <div className="admin-form-group">
@@ -126,7 +126,7 @@ export default function NewContributorPage() {
         </div>
 
         <div className="admin-form-group">
-          <label htmlFor="disclosure">Disclosure</label>
+          <label htmlFor="disclosure">Pendedahan</label>
           <input
             id="disclosure"
             type="text"
@@ -134,7 +134,7 @@ export default function NewContributorPage() {
             onChange={(e) => setForm((prev) => ({ ...prev, disclosure: e.target.value }))}
             placeholder="Contoh: Penulis Maya bekerja di bawah kawal selia editorial manusia."
           />
-          <span className="admin-form-hint">Disclosure awam untuk penyumbang maya/AI.</span>
+          <span className="admin-form-hint">Pendedahan awam untuk penyumbang maya/AI.</span>
         </div>
 
         <div className="admin-form-actions">

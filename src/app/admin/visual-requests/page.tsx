@@ -36,8 +36,8 @@ export default async function AdminVisualRequestsPage() {
     return (
       <div className="admin-placeholder">
         <header className="admin-page-header">
-          <h1>Visual Requests</h1>
-          <p className="admin-page-sub">Admin visual request management</p>
+          <h1>Permintaan Visual</h1>
+          <p className="admin-page-sub">Pengurusan permintaan visual</p>
         </header>
         <div className="admin-placeholder-content">
           <p>Database tidak tersedia. Set <code>DATABASE_URL</code> untuk mengaktifkan ciri admin.</p>
@@ -54,7 +54,7 @@ export default async function AdminVisualRequestsPage() {
       <header className="admin-page-header">
         <div className="admin-page-header-row">
           <div>
-            <h1>Visual Requests</h1>
+            <h1>Permintaan Visual</h1>
             <p className="admin-page-sub">{requests.length} permintaan visual</p>
           </div>
           <a href="/admin/visual-requests/new" className="admin-btn admin-btn-primary">
@@ -68,12 +68,12 @@ export default async function AdminVisualRequestsPage() {
           <thead>
             <tr>
               <th>ID</th>
-              <th>Work</th>
-              <th>Submission</th>
-              <th>Role</th>
-              <th>Provider</th>
+              <th>Karya</th>
+              <th>Penghantaran</th>
+              <th>Jenis</th>
+              <th>Penyedia</th>
               <th>Status</th>
-              <th>Approval</th>
+              <th>Kelulusan</th>
               <th>Dicipta</th>
               <th>Aksi</th>
             </tr>

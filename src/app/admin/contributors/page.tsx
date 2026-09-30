@@ -25,7 +25,7 @@ export default async function AdminContributorsPage() {
       <div className="admin-placeholder">
         <header className="admin-page-header">
           <h1>Penyumbang</h1>
-          <p className="admin-page-sub">Admin contributors management</p>
+          <p className="admin-page-sub">Pengurusan penyumbang</p>
         </header>
         <div className="admin-placeholder-content">
           <p>Database tidak tersedia. Set <code>DATABASE_URL</code> untuk mengaktifkan ciri admin.</p>
@@ -57,7 +57,7 @@ export default async function AdminContributorsPage() {
           <thead>
             <tr>
               <th>Nama</th>
-              <th>Slug</th>
+              <th>Alamat pautan</th>
               <th>Jenis</th>
               <th>Dicipta</th>
               <th>Aksi</th>

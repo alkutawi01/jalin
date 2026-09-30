@@ -151,7 +151,7 @@ export default function PreviewWorkPage() {
   if (loading) {
     return (
       <div className="admin-loading">
-        <p>Memuatkan preview...</p>
+        <p>Memuatkan pratonton…</p>
       </div>
     );
   }
@@ -240,7 +240,7 @@ export default function PreviewWorkPage() {
                 gap: "0.5rem",
                 marginBottom: "1rem",
                 fontSize: "0.9rem"
-              }} aria-label="Navigasi bahagian preview">
+              }} aria-label="Navigasi bahagian pratonton">
                 {sections.map((s) => (
                   <button
                     key={s.id}
@@ -310,7 +310,7 @@ export default function PreviewWorkPage() {
 
         {credits.filter((c) => c.is_public && c.byline).length > 0 && (
           <footer style={{ marginTop: "1.5rem", opacity: 0.85 }}>
-            <strong>Kredit byline:</strong>{" "}
+            <strong>Nama di bawah tajuk:</strong>{" "}
             {credits
               .filter((c) => c.is_public && c.byline)
               .map((c) => {

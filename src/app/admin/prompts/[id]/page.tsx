@@ -14,7 +14,7 @@ const WORK_TYPES = [
 ];
 
 const SCOPES = [
-  { value: "global", label: "Global" },
+  { value: "global", label: "Am" },
   { value: "category", label: "Kategori" },
   { value: "work", label: "Karya" },
 ];
@@ -128,7 +128,7 @@ export default function EditPromptPage() {
   }
 
   if (loading) {
-    return <div className="admin-loading"><LoadingBlock label="template" /></div>;
+    return <div className="admin-loading"><LoadingBlock label="templat" /></div>;
   }
 
   return (
@@ -136,7 +136,7 @@ export default function EditPromptPage() {
       <header className="admin-page-header">
         <div className="admin-page-header-row">
           <div>
-            <h1>Edit Prompt Template</h1>
+            <h1>Edit Templat Arahan</h1>
             <p className="admin-page-sub">ID: {promptId}</p>
           </div>
           <div className="admin-page-header-actions">
@@ -216,7 +216,7 @@ export default function EditPromptPage() {
         </div>
 
         <div className="admin-form-group">
-          <label htmlFor="workId">Work ID (pilihan)</label>
+          <label htmlFor="workId">ID Karya (pilihan)</label>
           <input
             id="workId"
             type="text"
@@ -227,7 +227,7 @@ export default function EditPromptPage() {
         </div>
 
         <div className="admin-form-group">
-          <label htmlFor="promptText">Teks Prompt *</label>
+          <label htmlFor="promptText">Teks Arahan *</label>
           <textarea
             id="promptText"
             required

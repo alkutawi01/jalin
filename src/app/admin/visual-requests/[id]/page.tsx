@@ -9,9 +9,9 @@ import LoadingBlock from "../../../../components/admin/LoadingBlock";
 
 const VISUAL_ROLES = [
   { value: "hero", label: "Hero" },
-  { value: "inline", label: "Inline" },
-  { value: "section", label: "Section" },
-  { value: "decorative", label: "Decorative" },
+  { value: "inline", label: "Dalam teks" },
+  { value: "section", label: "Bahagian" },
+  { value: "decorative", label: "Hiasan" },
 ];
 
 const ASPECT_RATIOS = [
@@ -25,8 +25,8 @@ const ASPECT_RATIOS = [
 ];
 
 const PLACES = [
-  { value: "before", label: "Before" },
-  { value: "after", label: "After" },
+  { value: "before", label: "Sebelum" },
+  { value: "after", label: "Selepas" },
 ];
 
 const GENERATION_STATUSES = [
@@ -477,7 +477,7 @@ export default function EditVisualRequestPage() {
   }
 
   if (loading) {
-    return <div className="admin-loading"><LoadingBlock label="visual request" /></div>;
+    return <div className="admin-loading"><LoadingBlock label="permintaan visual" /></div>;
   }
 
   return (
@@ -485,7 +485,7 @@ export default function EditVisualRequestPage() {
       <header className="admin-page-header">
         <div className="admin-page-header-row">
           <div>
-            <h1>Edit Visual Request</h1>
+            <h1>Edit Permintaan Visual</h1>
             <p className="admin-page-sub">ID: {requestId}</p>
           </div>
           <div className="admin-page-header-actions">
@@ -628,7 +628,7 @@ export default function EditVisualRequestPage() {
                   type="text"
                   value={genOverride}
                   onChange={(e) => setGenOverride(e.target.value)}
-                  placeholder="Editorial override (optional)"
+                  placeholder="Ubah suai arahan (pilihan)"
                   style={{ padding: "6px 10px", width: 220 }}
                 />
                 <button type="button" onClick={handleGenerate} className="admin-btn admin-btn-primary" disabled={generating}>
@@ -720,7 +720,7 @@ export default function EditVisualRequestPage() {
       <form onSubmit={handleSubmit} className="admin-form">
         <div className="admin-form-row">
           <div className="admin-form-group">
-            <label htmlFor="workId">Work ID</label>
+            <label htmlFor="workId">ID Karya</label>
             <input
               id="workId"
               type="text"
@@ -731,7 +731,7 @@ export default function EditVisualRequestPage() {
           </div>
 
           <div className="admin-form-group">
-            <label htmlFor="submissionId">Submission ID</label>
+            <label htmlFor="submissionId">ID Penghantaran</label>
             <input
               id="submissionId"
               type="number"
@@ -743,7 +743,7 @@ export default function EditVisualRequestPage() {
 
         <div className="admin-form-row">
           <div className="admin-form-group">
-            <label htmlFor="visualRole">Role Visual</label>
+            <label htmlFor="visualRole">Jenis Visual</label>
             <select
               id="visualRole"
               value={form.visualRole}
@@ -756,7 +756,7 @@ export default function EditVisualRequestPage() {
           </div>
 
           <div className="admin-form-group">
-            <label htmlFor="provider">Provider</label>
+            <label htmlFor="provider">Penyedia</label>
             <select
               id="provider"
               value={form.provider}
@@ -769,7 +769,7 @@ export default function EditVisualRequestPage() {
           </div>
 
           <div className="admin-form-group">
-            <label htmlFor="aspectRatio">Aspect Ratio</label>
+            <label htmlFor="aspectRatio">Nisbah imej</label>
             <select
               id="aspectRatio"
               value={form.aspectRatio}
@@ -796,7 +796,7 @@ export default function EditVisualRequestPage() {
         </div>
 
         <div className="admin-form-group">
-          <label htmlFor="prompt">Prompt *</label>
+          <label htmlFor="prompt">Arahan *</label>
           <textarea
             id="prompt"
             required
@@ -809,7 +809,7 @@ export default function EditVisualRequestPage() {
 
         <div className="admin-form-row">
           <div className="admin-form-group">
-            <label htmlFor="status">Status (Generation)</label>
+            <label htmlFor="status">Status penjanaan</label>
             <select
               id="status"
               value={form.status}
@@ -850,7 +850,7 @@ export default function EditVisualRequestPage() {
 
         <div className="admin-form-row">
           <div className="admin-form-group">
-            <label htmlFor="providerRequestId">Provider Request ID</label>
+            <label htmlFor="providerRequestId">ID permintaan penyedia</label>
             <input
               id="providerRequestId"
               type="text"
@@ -860,7 +860,7 @@ export default function EditVisualRequestPage() {
           </div>
 
           <div className="admin-form-group">
-            <label htmlFor="providerCreationId">Provider Creation ID</label>
+            <label htmlFor="providerCreationId">ID ciptaan penyedia</label>
             <input
               id="providerCreationId"
               type="text"
@@ -870,7 +870,7 @@ export default function EditVisualRequestPage() {
           </div>
         {form.model !== undefined && (
             <div className="admin-form-group">
-              <label htmlFor="executionMode">Execution Mode</label>
+              <label htmlFor="executionMode">Mod pelaksanaan</label>
               <input
                 id="executionMode"
                 type="text"
@@ -883,7 +883,7 @@ export default function EditVisualRequestPage() {
         </div>
 
         <div className="admin-form-group">
-          <label htmlFor="sourceAssetUrl">Source Asset URL (provenance sahaja)</label>
+          <label htmlFor="sourceAssetUrl">URL aset sumber (rujukan asal sahaja)</label>
           <input
             id="sourceAssetUrl"
             type="text"
@@ -893,7 +893,7 @@ export default function EditVisualRequestPage() {
         </div>
 
         <div className="admin-form-group">
-          <label htmlFor="sourceAssetPath">Source Asset Path</label>
+          <label htmlFor="sourceAssetPath">Laluan aset sumber</label>
           <input
             id="sourceAssetPath"
             type="text"
@@ -903,7 +903,7 @@ export default function EditVisualRequestPage() {
         </div>
 
         <div className="admin-form-group">
-          <label htmlFor="altText">Alt Text</label>
+          <label htmlFor="altText">Teks alternatif</label>
           <input
             id="altText"
             type="text"
@@ -913,13 +913,13 @@ export default function EditVisualRequestPage() {
         </div>
 
         <div className="admin-form-group">
-          <label htmlFor="anchor">Anchor</label>
+          <label htmlFor="anchor">Petikan penanda</label>
           <input
             id="anchor"
             type="text"
             value={form.anchor}
             onChange={(e) => setForm((prev) => ({ ...prev, anchor: e.target.value }))}
-            placeholder="Teks anchor dalam manuskrip"
+            placeholder="Petikan daripada manuskrip untuk menandakan kedudukan"
           />
         </div>
 

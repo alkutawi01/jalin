@@ -126,7 +126,7 @@ export default function EditContributorPage() {
         </div>
 
         <div className="admin-form-group">
-          <label htmlFor="slug">Slug *</label>
+          <label htmlFor="slug">Alamat pautan *</label>
           <input
             id="slug"
             type="text"
@@ -160,14 +160,14 @@ export default function EditContributorPage() {
         </div>
 
         <div className="admin-form-group">
-          <label htmlFor="disclosure">Disclosure</label>
+          <label htmlFor="disclosure">Pendedahan</label>
           <input
             id="disclosure"
             type="text"
             value={form.disclosure}
             onChange={(e) => setForm((prev) => ({ ...prev, disclosure: e.target.value }))}
           />
-          <span className="admin-form-hint">Disclosure awam untuk penyumbang maya/AI.</span>
+          <span className="admin-form-hint">Pendedahan awam untuk penyumbang maya/AI.</span>
         </div>
 
         <div className="admin-form-group">

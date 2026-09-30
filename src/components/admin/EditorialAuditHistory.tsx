@@ -27,11 +27,11 @@ export function EditorialAuditHistory() {
   }, []);
 
   if (loading) {
-    return <p>Loading audit history...</p>;
+    return <p>Memuatkan sejarah audit…</p>;
   }
 
   if (runs.length === 0) {
-    return <p>No audit history available</p>;
+    return <p>Tiada sejarah audit</p>;
   }
 
   return (
