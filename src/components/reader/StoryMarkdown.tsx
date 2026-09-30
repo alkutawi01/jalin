@@ -2,6 +2,7 @@ import React, { type ReactNode } from "react";
 import ReactMarkdown from "react-markdown";
 import type { GlossaryMap } from "./types";
 import { headingId } from "../../lib/reader/inline-chapters";
+import GlossaryTerm from "./GlossaryTerm";
 
 function plainText(node: ReactNode): string {
   if (typeof node === "string" || typeof node === "number") return String(node);
@@ -21,28 +22,6 @@ function normalizeMarkdown(markdown: string): string {
   return markdown.replace(/\r\n/g, "\n");
 }
 
-function GlossaryTerm({
-  term,
-  glossary,
-  children
-}: {
-  term: string;
-  glossary: GlossaryMap;
-  children: ReactNode;
-}) {
-  const item = glossary[term];
-
-  return (
-    <span className="glossary-term" tabIndex={0}>
-      {children}
-      <span className="glossary-tooltip" role="tooltip">
-        <strong>{term}</strong>
-        <span>{item.meaning}</span>
-      </span>
-    </span>
-  );
-}
-
 function decorateGlossary(text: string, glossary: GlossaryMap): ReactNode[] {
   const terms = Object.keys(glossary).sort((a, b) => b.length - a.length);
   if (terms.length === 0) return [text];
@@ -54,7 +33,7 @@ function decorateGlossary(text: string, glossary: GlossaryMap): ReactNode[] {
     if (!key) return part;
 
     return (
-      <GlossaryTerm key={part + "-" + index} term={key} glossary={glossary}>
+      <GlossaryTerm key={part + "-" + index} term={key} meaning={glossary[key].meaning}>
         {part}
       </GlossaryTerm>
     );

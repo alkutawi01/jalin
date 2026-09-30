@@ -889,23 +889,38 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 
 .glossary-term {
   position: relative;
+  display: inline;
+  padding: 0;
+  border: 0;
   border-bottom: 1px dotted rgba(167,100,80,.75);
-  cursor: text;
-  outline: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-style: inherit;
+  line-height: inherit;
+  text-align: inherit;
+  cursor: help;
 }
 .glossary-term:hover,
-.glossary-term:focus {
+.glossary-term:focus-visible {
   color: var(--clay);
+}
+.glossary-term:focus-visible {
+  outline: 2px solid var(--clay);
+  outline-offset: 3px;
+}
+.glossary-term::before {
+  content: "";
+  position: absolute;
+  inset: -10px -4px;
 }
 .glossary-tooltip {
   font-style: normal;
-  position: absolute;
-  z-index: 30;
-  left: 50%;
-  bottom: calc(100% + 12px);
+  position: fixed;
+  z-index: 1000;
   width: min(320px, calc(100vw - 32px));
   max-width: calc(100vw - 32px);
-  transform: translateX(-50%) translateY(4px);
+  max-height: calc(100dvh - 24px);
   padding: 14px 16px;
   border: 1px solid rgba(24,52,60,.1);
   border-radius: 8px;
@@ -915,10 +930,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
   font-family: Arial, sans-serif;
   font-size: 13px;
   line-height: 1.5;
-  opacity: 0;
-  visibility: hidden;
   pointer-events: none;
-  transition: opacity .14s ease, transform .14s ease;
   overflow-wrap: break-word;
 }
 .glossary-tooltip strong,
@@ -936,46 +948,6 @@ dd { margin: 0; color: var(--ink); text-align: left; }
   color: #8a9597;
   font-size: 11px;
 }
-.glossary-term:hover .glossary-tooltip,
-.glossary-term:focus .glossary-tooltip {
-  opacity: 1;
-  visibility: visible;
-  transform: translateX(-50%) translateY(0);
-}
-
-/* Mobile: tooltip expands in flow directly under the term.
-   A centred absolute box would extend past the viewport edge on
-   narrow screens, growing the document width. An in-flow block can
-   never leave the reading column, so nothing is clipped and no
-   horizontal scrolling is possible. */
-@media (max-width: 820px) {
-  .glossary-tooltip {
-    position: static;
-    left: auto;
-    bottom: auto;
-    display: none;
-    width: auto;
-    max-width: none;
-    margin: 10px 0 4px;
-    transform: none;
-    transition: none;
-    opacity: 1;
-    visibility: visible;
-    background: #fffdf8;
-    box-shadow: none;
-    border-left: 2px solid rgba(167, 100, 80, .55);
-    border-radius: 0 8px 8px 0;
-  }
-  .glossary-term:hover .glossary-tooltip,
-  .glossary-term:focus .glossary-tooltip {
-    display: block;
-    opacity: 1;
-    visibility: visible;
-    transform: none;
-  }
-}
-
-
 .editorial-image {
   position: relative;
 }
