@@ -416,6 +416,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
   gap: 28px;
 }
 .latest-card {
+  display: flex;
   border: 1px solid var(--line);
   border-radius: 14px;
   overflow: hidden;
@@ -423,7 +424,9 @@ dd { margin: 0; color: var(--ink); text-align: left; }
   transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
 }
 .latest-card a {
-  display: block;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
 }
 .latest-card:hover {
   border-color: var(--clay);
@@ -434,6 +437,9 @@ dd { margin: 0; color: var(--ink); text-align: left; }
   border-radius: 0;
 }
 .latest-card-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
   padding: 20px;
 }
 .latest-card-meta {
@@ -456,7 +462,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
   line-height: 1.25;
 }
 .latest-card-dek {
-  margin: 0;
+  margin: 0 0 16px;
   color: var(--ink-soft);
   font-size: 15px;
   line-height: 1.55;
@@ -465,7 +471,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 16px;
+  margin-top: auto;
   padding-top: 14px;
   border-top: 1px solid var(--line);
 }
