@@ -6,10 +6,11 @@ type WorkCoverProps = {
   title: string;
   hero?: { src: string; alt: string };
   sizes?: string;
+  quality?: number;
   rightsYear?: string;
 };
 
-export function WorkCover({ type, title, hero, sizes = "(max-width: 640px) 50vw, 320px", rightsYear }: WorkCoverProps) {
+export function WorkCover({ type, title, hero, sizes = "(max-width: 640px) 50vw, 320px", quality, rightsYear }: WorkCoverProps) {
   const placeholder = !hero?.src;
   return (
     <div
@@ -17,7 +18,7 @@ export function WorkCover({ type, title, hero, sizes = "(max-width: 640px) 50vw,
     >
       {hero?.src ? (
         <>
-          <Image src={hero.src} alt={hero.alt} fill sizes={sizes} />
+          <Image src={hero.src} alt={hero.alt} fill sizes={sizes} quality={quality} />
           {rightsYear ? (
             <div className="image-rights" aria-hidden="true">{`© ADJUNG ${rightsYear}`}</div>
           ) : null}

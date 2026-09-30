@@ -2,7 +2,8 @@
 const nextConfig = {
   images: {
     // Uploaded/generated visuals live in Vercel Blob (public store).
-    remotePatterns: [{ protocol: "https", hostname: "*.public.blob.vercel-storage.com" }]
+    remotePatterns: [{ protocol: "https", hostname: "*.public.blob.vercel-storage.com" }],
+    qualities: [75, 85]
   }
 };
 
