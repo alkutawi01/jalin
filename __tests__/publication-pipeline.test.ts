@@ -5,6 +5,7 @@
  * public visibility semantics, privacy, grandfather compatibility.
  */
 
+import { fragmenTextHash } from "../src/lib/content/fragmen-kind";
 import {
   computeMaterialHash,
   evaluatePublicationReadinessFromData,
@@ -104,6 +105,13 @@ console.log("\n=== Readiness: complete valid Work ===");
   const r = evaluatePublicationReadinessFromData(validInput());
   assert(r.ready === true, "Valid Work is ready");
   assert(r.blockers.length === 0, "No blockers on valid Work");
+  // Credits must include a real writer; an editor alone is not enough, a guest-named author (import) is.
+  const editorOnly = evaluatePublicationReadinessFromData(validInput({ credits: [baseCredit({ role_label: "final_editor" })] }));
+  assert(editorOnly.blockers.some((b) => b.code === "writer_credit_missing"), "work credited only to an editor is blocked");
+  const guestWriter = evaluatePublicationReadinessFromData(validInput({ credits: [baseCredit({ contributor_slug: null, guest_name: "Aina Zulaikha", role_label: "initial_draft" })] }));
+  assert(!guestWriter.blockers.some((b) => b.code === "writer_credit_missing"), "guest-named writer from import satisfies the writer check");
+  const customWriter = evaluatePublicationReadinessFromData(validInput({ credits: [baseCredit({ role_label: "Penulis skrip" })] }));
+  assert(!customWriter.blockers.some((b) => b.code === "writer_credit_missing"), "a custom role starting with Penulis counts");
   assert(r.gates.content.pass && r.gates.credits.pass && r.gates.visuals.pass && r.gates.privacy.pass && r.gates.workflow.pass, "All gates pass");
   assert(typeof r.checkedAt === "string" && r.checkedAt.length > 0, "checkedAt present");
 }
@@ -305,9 +313,27 @@ console.log("\n=== Readiness: visuals ===");
   approvedSourceForVisualPolicy.approved_material_hash =
     computeMaterialHash(approvedSourceForVisualPolicy);
 
+  // A Fragmen also needs a human to confirm the displayed text is Bahasa Melayu.
+  const fragmenMeta = (lang: string, body: string | null = baseWork().body) => ({
+    fragmenTextLanguage: lang,
+    fragmenTextReview: { reviewedBy: "editor@jalin.local", reviewedAt: "2026-10-01T00:00:00.000Z", textHash: fragmenTextHash(body) },
+  });
+  const fragmenUnreviewed = evaluatePublicationReadinessFromData(validInput({
+    work: baseWork({ type: "fragmen", metadata: { fragmenTextLanguage: "Bahasa Melayu" } }),
+    sourceWork: approvedSourceForVisualPolicy,
+  }));
+  assert(fragmenUnreviewed.blockers.some((b) => b.code === "fragmen_text_unreviewed"),
+    "Malay display text must be confirmed by a human, a dropdown/typed language is not enough");
+  const fragmenEdited = evaluatePublicationReadinessFromData(validInput({
+    work: baseWork({ type: "fragmen", metadata: fragmenMeta("Bahasa Melayu", "teks lain yang disahkan dahulu") }),
+    sourceWork: approvedSourceForVisualPolicy,
+  }));
+  assert(fragmenEdited.blockers.some((b) => b.code === "fragmen_text_changed_after_review"),
+    "editing the fragment text after confirmation withdraws the confirmation");
+
   const fragmenNoHero = evaluatePublicationReadinessFromData(
     validInput({
-      work: baseWork({ type: "fragmen", metadata: { fragmenTextLanguage: "Melayu Klasik" } }),
+      work: baseWork({ type: "fragmen", metadata: fragmenMeta("Melayu Klasik") }),
       visuals: [],
       sourceWork: approvedSourceForVisualPolicy,
     })
@@ -325,7 +351,7 @@ console.log("\n=== Readiness: visuals ===");
     "fragmen requires published excerpt language");
 
   const fragmenTranslated = evaluatePublicationReadinessFromData(validInput({
-    work: baseWork({ type: "fragmen", metadata: { fragmenTextLanguage: "Bahasa Melayu" } }),
+    work: baseWork({ type: "fragmen", metadata: fragmenMeta("Bahasa Melayu") }),
     sourceWork: { ...approvedSourceForVisualPolicy, original_language: "Bahasa Indonesia", source_text_basis: null },
   }));
   assert(fragmenTranslated.blockers.some((b) => b.code === "fragmen_translation_basis_missing"),
@@ -334,13 +360,48 @@ console.log("\n=== Readiness: visuals ===");
     "translated fragmen requires real translator credit");
 
   const duplicateSource = evaluatePublicationReadinessFromData(validInput({
-    work: baseWork({ type: "fragmen", metadata: { fragmenTextLanguage: "Melayu Klasik" } }),
+    work: baseWork({ type: "fragmen", metadata: fragmenMeta("Melayu Klasik") }),
     sourceWork: approvedSourceForVisualPolicy,
     publishedSourcePeers: [{ id: "JLN-SIN-0099", title: "Hikayat Visual", type: "sinopsis",
       original_title: "Hikayat Visual", author: "Siti Aminah" }],
   }));
   assert(duplicateSource.blockers.some((b) => b.code === "source_cross_type_duplicate"),
     "same original source cannot publish under another work type");
+
+  // Same source detected through diacritics, alias titles and pending peers, with a way out in the message.
+  const fragWork = baseWork({ type: "fragmen", metadata: fragmenMeta("Melayu Klasik") });
+  const aliasPeer = evaluatePublicationReadinessFromData(validInput({
+    work: fragWork,
+    sourceWork: { ...approvedSourceForVisualPolicy, original_title: "The Café", author: "SITI AMINAH" },
+    publishedSourcePeers: [{ id: "JLN-SIN-0100", title: "Kafe Itu", type: "sinopsis", status: "published", original_title: "the cafe", author: "Siti Aminah" }],
+  }));
+  assert(aliasPeer.blockers.some((b) => b.code === "source_cross_type_duplicate"),
+    "diacritics and case do not hide the same source");
+  assert(Boolean(aliasPeer.blockers.find((b) => b.code === "source_cross_type_duplicate")?.message.includes("JLN-SIN-0100")),
+    "duplicate source message names the other work so the editor can open it");
+  const translatedAlias = evaluatePublicationReadinessFromData(validInput({
+    work: { ...fragWork, title: "Hikayat Visual" },
+    sourceWork: { ...approvedSourceForVisualPolicy, original_title: "Visual Tale", author: "Siti Aminah" },
+    publishedSourcePeers: [{ id: "JLN-SIN-0101", title: "Visual Tale", type: "sinopsis", status: "published", original_title: "Hikayat Visual", author: "Siti Aminah" }],
+  }));
+  assert(translatedAlias.blockers.some((b) => b.code === "source_cross_type_duplicate"),
+    "translated title and original title match each other as aliases");
+  const pendingPeer = evaluatePublicationReadinessFromData(validInput({
+    work: fragWork,
+    sourceWork: approvedSourceForVisualPolicy,
+    publishedSourcePeers: [{ id: "JLN-SIN-0102", title: "Hikayat Visual", type: "sinopsis", status: "draft", original_title: "Hikayat Visual", author: "Siti Aminah" }],
+  }));
+  assert(!pendingPeer.blockers.some((b) => b.code === "source_cross_type_duplicate") &&
+    pendingPeer.warnings.some((w) => w.code === "source_cross_type_pending"),
+    "a draft peer with the same source warns early instead of blocking");
+  const sameTypePeer = evaluatePublicationReadinessFromData(validInput({
+    work: fragWork,
+    sourceWork: approvedSourceForVisualPolicy,
+    publishedSourcePeers: [{ id: "JLN-FRG-0001", title: "Petikan lain", type: "fragmen", status: "published", original_title: "Hikayat Visual", author: "Siti Aminah" }],
+  }));
+  assert(!sameTypePeer.blockers.some((b) => b.code === "source_cross_type_duplicate") &&
+    sameTypePeer.warnings.some((w) => w.code === "source_same_type_duplicate"),
+    "two fragments of one source are allowed but flagged");
 
   const englishOriginal = evaluatePublicationReadinessFromData(validInput({
     work: baseWork({ type: "fragmen", metadata: { fragmenTextLanguage: "English" } }),

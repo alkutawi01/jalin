@@ -97,9 +97,9 @@ async function loadReadinessInput(
     .select("id");
   const publishedSourcePeersQ = db.selectFrom("source_works as source")
     .innerJoin("works as peer", "peer.id", "source.work_id")
-    .where("peer.status", "=", "published")
+    .where("peer.status", "in", ["published", "draft", "review", "ready"])
     .where("peer.id", "!=", workId)
-    .select(["peer.id", "peer.title", "peer.type", "source.original_title", "source.author"]);
+    .select(["peer.id", "peer.title", "peer.type", "peer.status", "source.original_title", "source.author"]);
 
   const [credits, visuals, glossary, visualRequests, sourceWork, readingSections, seriesEntryRows, slugDup, publishedSourcePeers] = await Promise.all([
     (lock ? creditsQ.forUpdate() : creditsQ).execute(),

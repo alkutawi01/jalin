@@ -194,6 +194,7 @@ interface SourceRightsData {
   workId: string;
   isDerivative: boolean;
   fragmenTextLanguage: string | null;
+  fragmenTextReview?: { reviewedBy: string; reviewedAt: string; current: boolean } | null;
   sourceWork: {
     id: number;
     originalTitle: string | null;
@@ -503,6 +504,23 @@ export default function EditWorkPage() {
       await loadReadiness();
     } catch (err) {
       setSectionError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+    }
+  }
+
+  async function confirmMalayText(confirmed: boolean) {
+    setSourceError(null);
+    try {
+      const res = await fetch(`/api/admin/works/${workId}/source-rights/text-review`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ confirmed })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Gagal menyimpan pengesahan bahasa.");
+      await loadSourceRights();
+      await loadReadiness();
+    } catch (err) {
+      setSourceError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
     }
   }
 
@@ -2343,6 +2361,27 @@ export default function EditWorkPage() {
                           ? "Fragmen terjemahan: jelaskan asas terjemahan di bawah dan tambah kredit Penterjemah sebenar. Hak sumber tetap perlu disemak."
                           : "Isi bahasa asal dan bahasa petikan. Jenis Fragmen ditentukan daripada perbandingan kedua-duanya."}
                     </span>
+                    {isMalayLanguage(sourceForm.fragmenTextLanguage) ? (
+                      <label className="admin-checkbox-label" style={{ marginTop: 8 }}>
+                        <input
+                          type="checkbox"
+                          checked={Boolean(sourceRights?.fragmenTextReview?.current)}
+                          disabled={dirty}
+                          onChange={(e) => void confirmMalayText(e.target.checked)}
+                        />
+                        <span>
+                          Saya sudah membaca teks Fragmen ini dan mengesahkan ia ditulis dalam Bahasa Melayu (bukan Indonesia atau Inggeris).
+                        </span>
+                      </label>
+                    ) : null}
+                    {sourceRights?.fragmenTextReview ? (
+                      <span className="admin-form-hint">
+                        {sourceRights.fragmenTextReview.current
+                          ? `Disahkan oleh ${sourceRights.fragmenTextReview.reviewedBy} pada ${new Date(sourceRights.fragmenTextReview.reviewedAt).toLocaleDateString("ms-MY")}.`
+                          : "Teks berubah selepas disahkan. Baca dan sahkan semula."}
+                      </span>
+                    ) : null}
+                    {dirty ? <span className="admin-form-hint">Simpan teks dahulu sebelum mengesahkan bahasanya.</span> : null}
                   </div>
                 )}
                 <div className="admin-form-row">

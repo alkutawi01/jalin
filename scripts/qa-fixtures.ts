@@ -48,7 +48,7 @@ export async function setupFixtures() {
   // Add credits + visual for publishability
   await db.insertInto("credits").values({
     work_id: NOV_ID, contributor_slug: null, guest_name: "Uji QA",
-    role_label: "Editor", byline: true, is_public: true, sort_order: 0,
+    role_label: "Penulis", byline: true, is_public: true, sort_order: 0,
   } as never).execute();
   await db.insertInto("visuals").values({
     work_id: NOV_ID, role: "hero",
@@ -69,7 +69,7 @@ export async function setupFixtures() {
   } as never).execute();
   await db.insertInto("credits").values({
     work_id: EP_ID, contributor_slug: null, guest_name: "Uji QA",
-    role_label: "Editor", byline: true, is_public: true, sort_order: 0,
+    role_label: "Penulis", byline: true, is_public: true, sort_order: 0,
   } as never).execute();
   await db.insertInto("visuals").values({
     work_id: EP_ID, role: "hero",
