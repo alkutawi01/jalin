@@ -2239,3 +2239,26 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 @media (max-width: 680px) {
   .category-grid { grid-template-columns: 1fr; }
 }
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Very narrow phones (320–360px): keep text columns readable and nothing clipped. */
+@media (max-width: 360px) {
+  .latest-card a { gap: 10px; padding: 12px; }
+  .latest-card-cover { flex-basis: 112px; width: 112px; }
+  .latest-card-meta { flex-wrap: wrap; white-space: normal; }
+  .latest-card-title { font-size: 15px; overflow-wrap: anywhere; }
+  .category-explorer-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .category-explorer-card-body h3 { overflow-wrap: anywhere; }
+  .header-mobile-nav .header-mobile-nav-links { min-width: min(210px, calc(100vw - 32px)); }
+}

@@ -89,3 +89,19 @@ export function projectBylineCredits(credits: ContributorRef[]): BylineCredit[] 
   }
   return projected;
 }
+
+export const VIRTUAL_WRITER_NOTE = "Penulis Maya bekerja di bawah kawal selia editorial manusia.";
+
+/** True when at least one public credit on the work belongs to a virtual (Maya) contributor. */
+export function hasVirtualCredit(credits: ContributorRef[]): boolean {
+  return (credits ?? []).some((credit) => {
+    if (!projectRole(credit.role ?? "")) return false;
+    return projectPerson(credit)?.maya === true;
+  });
+}
+
+/** The disclosure note for one work: only when a virtual contributor is credited (or the editor wrote one). */
+export function disclosureNoteFor(work: { credits: ContributorRef[]; reader?: { note?: string } }): string | undefined {
+  if (work.reader?.note) return work.reader.note;
+  return hasVirtualCredit(work.credits) ? VIRTUAL_WRITER_NOTE : undefined;
+}
