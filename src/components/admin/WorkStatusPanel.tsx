@@ -20,6 +20,8 @@ export interface ReadinessLike {
   gates: Record<"content" | "credits" | "visuals" | "privacy" | "rights" | "structure" | "workflow", Gate>;
   blockers: Issue[];
   warnings: Issue[];
+  /** Only for published works: how the draft relates to the version readers see. */
+  unpublished?: { snapshotMissing: boolean; changed: boolean } | null;
 }
 
 const STEPS: { value: string; label: string }[] = [
@@ -63,6 +65,8 @@ export default function WorkStatusPanel({
   onChangeStatus,
   onPublish,
   onPublishNow,
+  onRepublish,
+  dirty = false,
   onGoTab
 }: {
   workId: string;
@@ -79,6 +83,10 @@ export default function WorkStatusPanel({
   onPublish: () => void;
   /** Moves the work to Sedia and publishes it in one step. */
   onPublishNow: () => void;
+  /** Publish the current draft of an already published work as a new public version. */
+  onRepublish: () => void;
+  /** Text or details were edited and not saved yet; publishing would use the old saved version. */
+  dirty?: boolean;
   onGoTab: (tab: string) => void;
 }) {
   const stepIndex = STEPS.findIndex((s) => s.value === status);
@@ -107,6 +115,20 @@ export default function WorkStatusPanel({
       label: "Terbitkan", run: onPublish, disabled: !allClear,
       hint: allClear ? undefined : "Terbitan disekat. Selesaikan bahagian yang ditandakan di bawah dahulu."
     };
+  }
+
+  const pendingChanges = status === "published" && readiness?.unpublished?.changed === true;
+  if (pendingChanges) {
+    next = {
+      label: "Terbitkan semula",
+      run: onRepublish,
+      disabled: !allClear,
+      hint: allClear ? "Pembaca akan melihat versi draf ini." : "Selesaikan bahagian yang ditandakan di bawah dahulu."
+    };
+  }
+
+  if (dirty && next && (next.label === "Terbitkan semula" || next.label === "Terbitkan" || next.label === "Tandakan sedia")) {
+    next = { ...next, disabled: true, hint: "Simpan teks & maklumat dahulu." };
   }
 
   return (
@@ -140,6 +162,16 @@ export default function WorkStatusPanel({
           ) : null}
         </div>
       </div>
+
+      {status === "published" ? (
+        <p className="a-status-hint" role="status">
+          {readiness?.unpublished?.changed
+            ? "Ada perubahan dalam draf yang belum diterbitkan. Pembaca masih melihat versi terakhir yang diterbitkan."
+            : readiness?.unpublished?.snapshotMissing
+              ? "Karya ini diterbitkan sebelum versi beku wujud, jadi pembaca melihat draf semasa. Terbitkan semula untuk membekukan versi awam."
+              : "Pembaca melihat versi yang sama seperti draf ini."}
+        </p>
+      ) : null}
 
       <ol className="a-steps" aria-label="Peringkat">
         {STEPS.map((step, index) => (
