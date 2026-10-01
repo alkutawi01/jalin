@@ -1,5 +1,6 @@
 import { listWorks } from "../../../lib/admin/work-service";
 import { hasDb } from "../../../lib/db";
+import { summarizeReadiness } from "../../../lib/admin/publication-service";
 
 export const dynamic = "force-dynamic";
 
@@ -59,6 +60,7 @@ export default async function AdminWorksPage({
       (!query || w.title.toLowerCase().includes(query) || w.slug.toLowerCase().includes(query))
   );
   const works = matchingWorks.filter((w) => !filter || w.status === filter);
+  const verdicts = await summarizeReadiness(works.filter((w) => w.status === "ready").map((w) => w.id));
   const resetHref = filter ? `/admin/works?status=${filter}` : "/admin/works";
   const tabs: { key: string; label: string }[] = [
     { key: "", label: "Semua" },
@@ -141,6 +143,16 @@ export default async function AdminWorksPage({
                     <span className={`admin-status admin-status-${work.status}`}>
                       {STATUS_LABELS[work.status] ?? work.status}
                     </span>
+                    {work.status === "ready" && verdicts.get(work.id)?.ready === false ? (
+                      <a
+                        href={`/admin/works/${work.id}#${verdicts.get(work.id)?.firstTab ?? "content"}`}
+                        className="admin-form-hint"
+                        style={{ display: "block", margin: "4px 0 0" }}
+                        title={verdicts.get(work.id)?.firstBlocker ?? undefined}
+                      >
+                        Disekat: {verdicts.get(work.id)?.firstBlocker}
+                      </a>
+                    ) : null}
                   </td>
                   <td>{work.version_label || work.version}</td>
                   <td>{formatDate(work.updated_at)}</td>
