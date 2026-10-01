@@ -333,6 +333,22 @@ console.log("\n=== Readiness: visuals ===");
   assert(fragmenTranslated.blockers.some((b) => b.code === "fragmen_translator_missing"),
     "translated fragmen requires real translator credit");
 
+  const duplicateSource = evaluatePublicationReadinessFromData(validInput({
+    work: baseWork({ type: "fragmen", metadata: { fragmenTextLanguage: "Melayu Klasik" } }),
+    sourceWork: approvedSourceForVisualPolicy,
+    publishedSourcePeers: [{ id: "JLN-SIN-0099", title: "Hikayat Visual", type: "sinopsis",
+      original_title: "Hikayat Visual", author: "Siti Aminah" }],
+  }));
+  assert(duplicateSource.blockers.some((b) => b.code === "source_cross_type_duplicate"),
+    "same original source cannot publish under another work type");
+
+  const englishOriginal = evaluatePublicationReadinessFromData(validInput({
+    work: baseWork({ type: "fragmen", metadata: { fragmenTextLanguage: "English" } }),
+    sourceWork: { ...approvedSourceForVisualPolicy, original_language: "Inggeris" },
+  }));
+  assert(englishOriginal.blockers.some((b) => b.code === "fragmen_english_original"),
+    "English original fragment requires a Malay translation for Jalin");
+
   assert(VISUAL_POLICY.cerpen.hero === "required", "VISUAL_POLICY cerpen hero required");
   assert(VISUAL_POLICY.novela.hero === "required", "VISUAL_POLICY novela hero required");
 }

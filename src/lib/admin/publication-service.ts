@@ -95,8 +95,13 @@ async function loadReadinessInput(
     .where("slug", "=", work.slug)
     .where("id", "!=", workId)
     .select("id");
+  const publishedSourcePeersQ = db.selectFrom("source_works as source")
+    .innerJoin("works as peer", "peer.id", "source.work_id")
+    .where("peer.status", "=", "published")
+    .where("peer.id", "!=", workId)
+    .select(["peer.id", "peer.title", "peer.type", "source.original_title", "source.author"]);
 
-  const [credits, visuals, glossary, visualRequests, sourceWork, readingSections, seriesEntryRows, slugDup] = await Promise.all([
+  const [credits, visuals, glossary, visualRequests, sourceWork, readingSections, seriesEntryRows, slugDup, publishedSourcePeers] = await Promise.all([
     (lock ? creditsQ.forUpdate() : creditsQ).execute(),
     (lock ? visualsQ.forUpdate() : visualsQ).execute(),
     (lock ? glossaryQ.forUpdate() : glossaryQ).execute(),
@@ -105,6 +110,7 @@ async function loadReadinessInput(
     (lock ? sectionsQ.forUpdate() : sectionsQ).execute(),
     (lock ? seriesEntryQ.forUpdate() : seriesEntryQ).execute(),
     (lock ? slugQ.forUpdate() : slugQ).executeTakeFirst(),
+    (lock ? publishedSourcePeersQ.forShare() : publishedSourcePeersQ).execute(),
   ]);
 
   const seriesEntry = seriesEntryRows.length > 0 ? seriesEntryRows[0] : null;
@@ -196,6 +202,10 @@ async function loadReadinessInput(
     series,
     knownContributorSlugs: new Set(contributors.map((c) => String(c.slug))),
     slugTakenByOther: Boolean(slugDup),
+    publishedSourcePeers: publishedSourcePeers.map((peer) => ({
+      id: String(peer.id), title: String(peer.title), type: String(peer.type),
+      original_title: peer.original_title, author: peer.author,
+    })),
   };
 }
 

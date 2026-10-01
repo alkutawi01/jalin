@@ -19,3 +19,7 @@ export function classifyFragmen(
   if (!original || !text) return "belum_ditentukan";
   return original === text ? "asal" : "terjemahan";
 }
+
+export function isEnglishLanguage(value: string | null | undefined): boolean {
+  return canonicalLanguage(value) === "inggeris";
+}

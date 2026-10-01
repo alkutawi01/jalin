@@ -57,7 +57,7 @@ export default async function SeriesLandingPage({
         <SiteHeader active="bersiri" />
         <main>
           <div className="site-shell">
-            <header className="category-head">
+            <header className="category-head series-category-head">
               <p className="category-kicker">
                 Bersiri · {MODE_LABELS[series.mode] ?? series.mode}
               </p>

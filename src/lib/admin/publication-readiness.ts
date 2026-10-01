@@ -7,7 +7,7 @@
  */
 
 import type { WorkStatus, WorkType } from "../db/types";
-import { classifyFragmen } from "../content/fragmen-kind";
+import { classifyFragmen, isEnglishLanguage } from "../content/fragmen-kind";
 
 export type ReadinessGateName =
   | "content"
@@ -156,6 +156,13 @@ export interface EvaluatePublicationReadinessInput {
   knownContributorSlugs: Set<string>;
   /** True when another Work already owns this slug. */
   slugTakenByOther?: boolean;
+  /** Other published works derived from the same original source. */
+  publishedSourcePeers?: { id: string; title: string; type: string; original_title: string | null; author: string | null }[];
+}
+
+function sourceIdentity(value: string | null | undefined): string {
+  return (value ?? "").normalize("NFKC").toLocaleLowerCase("ms-MY")
+    .replace(/[^\p{L}\p{N}]+/gu, " ").trim().replace(/\s+/g, " ");
 }
 
 const VALID_TYPES: ReadonlySet<string> = new Set([
@@ -567,6 +574,8 @@ export function evaluatePublicationReadinessFromData(
     };
     if (!textLanguage) {
       fragmentIssue("fragmen_text_language_missing", "Isi bahasa petikan yang diterbitkan dalam tab Sumber sebelum menerbitkan Fragmen.");
+    } else if (kind === "asal" && isEnglishLanguage(textLanguage)) {
+      fragmentIssue("fragmen_english_original", "Fragmen bahasa Inggeris asal tidak diterbitkan terus di Jalin. Sediakan petikan terjemahan Melayu dengan asas teks dan kredit penterjemah.");
     } else if (kind === "terjemahan") {
       if (!input.sourceWork?.source_text_basis?.trim()) {
         fragmentIssue("fragmen_translation_basis_missing", "Fragmen terjemahan memerlukan asas teks/terjemahan yang jelas dalam tab Sumber.");
@@ -586,6 +595,17 @@ export function evaluatePublicationReadinessFromData(
         )
       );
     } else {
+      const sameSourceOtherType = (input.publishedSourcePeers ?? []).find((peer) =>
+        peer.id !== work.id && peer.type !== work.type &&
+        sourceIdentity(peer.original_title) === sourceIdentity(src.original_title) &&
+        sourceIdentity(peer.author) === sourceIdentity(src.author) &&
+        Boolean(sourceIdentity(src.original_title)) && Boolean(sourceIdentity(src.author))
+      );
+      if (sameSourceOtherType) {
+        const conflict = issue("source_cross_type_duplicate",
+          `Karya asal ini sudah diterbitkan sebagai ${sameSourceOtherType.type} (${sameSourceOtherType.title}). Pilih satu jenis penerbitan untuk sumber yang sama.`);
+        (alreadyPublished ? rightsWarnings : rightsBlockers).push(conflict);
+      }
       const missing: string[] = [];
       if (!src.original_title || !src.original_title.trim()) missing.push("Tajuk asal");
       if (!src.author || !src.author.trim()) missing.push("Penulis asal");

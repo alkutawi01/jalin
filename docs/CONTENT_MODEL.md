@@ -138,6 +138,8 @@ Tiada content derivative berasaskan karya lama boleh READY tanpa provenance yang
 
 - **Fragmen asal**: bahasa petikan yang diterbitkan sama dengan bahasa karya sumber. Petikan Bahasa Indonesia yang dikekalkan dalam Bahasa Indonesia termasuk di sini; “asal” tidak bermaksud karya milik Jalin atau automatik domain awam.
 - **Fragmen terjemahan**: bahasa petikan yang diterbitkan berbeza daripada bahasa karya sumber. Rekod asas teks/terjemahan dan kredit penterjemah sebenar sebelum terbit.
+- Fragmen asal berbahasa Inggeris tidak diterbitkan terus pada Jalin; sediakan terjemahan Melayu, asas teks dan kredit penterjemah. Petikan asal Bahasa Indonesia yang dikekalkan masih boleh menjadi Fragmen asal.
+- Satu karya sumber asal (tajuk asal + penulis asal) tidak boleh diterbitkan serentak dalam dua jenis Jalin yang berbeza. Semakan penerbitan menyekat pertindihan dengan karya yang sudah diterbitkan.
 - Simpan bahasa petikan diterbitkan dalam `works.metadata.fragmenTextLanguage`; bahasa karya sumber kekal dalam `source_works.original_language`. Jenis Fragmen diterbitkan sebagai hasil perbandingan kedua-duanya, bukan pilihan bebas yang boleh bercanggah dengan data.
 - Kedua-duanya tetap melalui semakan hak sumber oleh editor manusia. Perubahan bahasa petikan selepas kelulusan membatalkan kelulusan hak supaya semakan dibuat semula.
 - Jika tajuk paparan Fragmen berbeza daripada tajuk karya sumber (misalnya tajuk petikan atau tajuk terjemahan), paparkan tajuk asal dengan label jelas pada halaman pembaca.

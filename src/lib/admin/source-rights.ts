@@ -14,6 +14,7 @@ import {
   isPassRightsStatus,
 } from "./publication-readiness";
 import { evaluatePublicationReadiness } from "./publication-service";
+import { classifyFragmen } from "../content/fragmen-kind";
 
 /** Rights states that block publication (BLOCK). */
 export const RIGHTS_BLOCK_STATUSES: ReadonlySet<string> = new Set([
@@ -259,6 +260,10 @@ async function saveFragmenTextLanguage(
       .execute();
     const source = await loadSourceWork(trx, workId, { lock: true });
     if (!source || !isPassRightsStatus(source.rights_status)) return false;
+    // Backfilling an omitted language with the already-reviewed source language
+    // does not change the rights basis. A translation or later change still does.
+    if (!metadata.fragmenTextLanguage &&
+      classifyFragmen(source.original_language, next) === "asal") return false;
     const history = parseRightsHistory(source.rights_history);
     history.push({
       at: new Date().toISOString(), actor: actor.email || actor.id,

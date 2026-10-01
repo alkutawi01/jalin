@@ -97,8 +97,18 @@ nav a.active { color: var(--ink); border-bottom: 1px solid var(--clay); padding-
   margin: -12px 0 20px;
   color: var(--ink-soft);
   font-size: 17px;
-  font-style: italic;
+  font-style: normal;
 }
+.story-original-title cite { font-style: italic; }
+
+/* Editorial convention: displayed work and series titles are italic in every public listing. */
+.story-head h1,
+.hero-featured-title,
+.latest-card-title,
+.editorial-pick h3,
+.work-card-title,
+.related-work-card h3,
+.series-category-head h1 { font-style: italic; }
 .dek {
   max-width: 600px;
   margin: 0 auto;
