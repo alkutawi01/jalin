@@ -14,7 +14,8 @@ Kaedah bukti: **Terbukti dalam kod** (K), **Diulang dalam UI/ujian** (U), **Hipo
 | 4 | [#57](https://github.com/alkutawi01/jalin/pull/57) | Fasa 5: UI awam |
 | 5 | [#58](https://github.com/alkutawi01/jalin/pull/58) | Fasa 6: UI admin (disusun di atas #55) |
 | 6 | [#60](https://github.com/alkutawi01/jalin/pull/60) | Aksesibiliti: kontras dan landmark (disusun di atas #57 dan #58) |
-| 7 | PR e2e | Skrip E2E editor (disusun di atas #55) |
+| 7 | [#62](https://github.com/alkutawi01/jalin/pull/62) | Skrip E2E editor (disusun di atas #55) |
+| – | [#61](https://github.com/alkutawi01/jalin/pull/61) | Laporan ini |
 
 Pesanan merge di atas mengelakkan konflik. Semua cabang telah digabungkan dalam satu cabang percubaan tempatan dan diuji bersama (bahagian 3).
 
