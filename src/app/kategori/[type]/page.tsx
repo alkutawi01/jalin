@@ -61,6 +61,18 @@ function formatDate(date: string | undefined): string {
   return `${day} ${months[(month ?? 1) - 1]} ${year}`;
 }
 
+function renderAttribution(text: string) {
+  const match = text.match(/^Berdasarkan (.+?)(?: karya (.+))?$/);
+  if (!match) return text;
+  const [, sourceTitle, sourceAuthor] = match;
+  return (
+    <>
+      Berdasarkan <cite>{sourceTitle}</cite>
+      {sourceAuthor ? <> karya {sourceAuthor}</> : null}
+    </>
+  );
+}
+
 function WorkCard({ work, type }: { work: PublicWorkSummary; type: string }) {
   const genre = displayableGenre(work.genre);
   const reading = work.readingMinutes ? `± ${work.readingMinutes} min` : null;
@@ -78,9 +90,9 @@ function WorkCard({ work, type }: { work: PublicWorkSummary; type: string }) {
             <span className="latest-card-type">{genre ? `${label} · ${genre}` : label}</span>
             {reading ? <span className="latest-card-reading">{reading}</span> : null}
           </div>
-          <h2 className="latest-card-title">{work.title}</h2>
-          {work.attribution ? <p className="work-attribution">{work.attribution.primary}</p> : null}
-          {work.attribution?.secondary ? <p className="work-attribution-source">{work.attribution.secondary}</p> : null}
+          <h2 className="latest-card-title" style={{ fontStyle: "normal" }}>{work.title}</h2>
+          {work.attribution ? <p className="work-attribution">{renderAttribution(work.attribution.primary)}</p> : null}
+          {work.attribution?.secondary ? <p className="work-attribution-source">{renderAttribution(work.attribution.secondary)}</p> : null}
           {work.dek ? <p className="latest-card-dek">{work.dek}</p> : null}
           <div className="latest-card-footer">
             <span className="latest-card-cta">Baca →</span>
@@ -105,7 +117,7 @@ function SeriesCard({ series, episodeCount }: { series: PublicSeriesSummary; epi
           <span>{STATUS_LABELS[series.status] ?? series.status}</span>
           <span>{episodeCount} episod</span>
         </div>
-        <h2 className="work-card-title">{series.title}</h2>
+        <h2 className="work-card-title" style={{ fontStyle: "normal" }}>{series.title}</h2>
         {series.dek ? <p className="work-card-dek">{series.dek}</p> : null}
       </a>
     </article>

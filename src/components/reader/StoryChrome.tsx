@@ -41,7 +41,7 @@ export function StoryHead({
   const text = (
     <>
       <div className="story-kicker">{kicker}</div>
-      <h1>{title}</h1>
+      <h1 style={{ fontStyle: "normal" }}>{title}</h1>
       {originalTitle ? <p className="story-original-title">Tajuk asal: <cite>{originalTitle}</cite></p> : null}
       <p className="dek">{dek}</p>
       {byline.length > 0 && (
@@ -164,7 +164,7 @@ export function RightRail({ characters, editorial }: { characters: CharacterMeta
 export function StoryEnd({ title }: { title: string }) {
   return (
     <div className="site-shell story-end">
-      <span>Tamat</span><div className="end-rule" /><p><cite>{title}</cite> · Jalin</p>
+      <span>Tamat</span><div className="end-rule" /><p><span style={{ fontStyle: "normal" }}>{title}</span> · Jalin</p>
     </div>
   );
 }

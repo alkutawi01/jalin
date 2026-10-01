@@ -50,6 +50,18 @@ const CATEGORIES: { type: string; label: string }[] = [
   { type: "sinopsis", label: "Sinopsis" },
 ];
 
+function renderAttribution(text: string) {
+  const match = text.match(/^Berdasarkan (.+?)(?: karya (.+))?$/);
+  if (!match) return text;
+  const [, sourceTitle, sourceAuthor] = match;
+  return (
+    <>
+      Berdasarkan <cite>{sourceTitle}</cite>
+      {sourceAuthor ? <> karya {sourceAuthor}</> : null}
+    </>
+  );
+}
+
 function FeaturedHero({ work }: { work: PublicFeaturedSummary }) {
   const hero = work.hero;
   const label = TYPE_LABELS[work.type] ?? work.type;
@@ -62,8 +74,8 @@ function FeaturedHero({ work }: { work: PublicFeaturedSummary }) {
         <div className={`hero-featured-inner${hero?.src ? "" : " hero-featured-text-only"}`}>
           <div className="hero-featured-text">
             <p className="hero-featured-kicker">{genre ? `${label} · ${genre}` : label}</p>
-            <h1 className="hero-featured-title">{work.title}</h1>
-            {work.attribution ? <p className="work-attribution hero-featured-attribution">{work.attribution.primary}</p> : null}
+            <h1 className="hero-featured-title" style={{ fontStyle: "normal" }}>{work.title}</h1>
+            {work.attribution ? <p className="work-attribution hero-featured-attribution">{renderAttribution(work.attribution.primary)}</p> : null}
             {work.dek ? <p className="hero-featured-dek">{work.dek}</p> : null}
             <div className="hero-featured-meta">
               {reading ? <span>{reading}</span> : null}
@@ -103,9 +115,9 @@ function LatestWorkCard({ work }: { work: PublicWorkSummary }) {
             <span className="latest-card-type">{label}</span>
             {reading ? <span className="latest-card-reading">{reading}</span> : null}
           </div>
-          <h3 className="latest-card-title">{work.title}</h3>
-          {work.attribution ? <p className="work-attribution">{work.attribution.primary}</p> : null}
-          {work.attribution?.secondary ? <p className="work-attribution-source">{work.attribution.secondary}</p> : null}
+          <h3 className="latest-card-title" style={{ fontStyle: "normal" }}>{work.title}</h3>
+          {work.attribution ? <p className="work-attribution">{renderAttribution(work.attribution.primary)}</p> : null}
+          {work.attribution?.secondary ? <p className="work-attribution-source">{renderAttribution(work.attribution.secondary)}</p> : null}
           {work.dek ? <p className="latest-card-dek">{work.dek}</p> : null}
           <div className="latest-card-footer">
             <span className="latest-card-cta">Baca →</span>
@@ -176,8 +188,8 @@ function EditorialSelection({ works }: { works: PublicWorkSummary[] }) {
                   {TYPE_LABELS[work.type] ?? work.type}
                   {work.readingMinutes ? ` · ± ${work.readingMinutes} min` : ""}
                 </span>
-                <h3>{work.title}</h3>
-                {work.attribution ? <p className="work-attribution">{work.attribution.primary}</p> : null}
+                <h3 style={{ fontStyle: "normal" }}>{work.title}</h3>
+                {work.attribution ? <p className="work-attribution">{renderAttribution(work.attribution.primary)}</p> : null}
                 {work.dek ? <p>{work.dek}</p> : null}
                 <span className="editorial-pick-cta">Baca</span>
               </div>

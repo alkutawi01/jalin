@@ -247,7 +247,7 @@ function RelatedWorks({
                 <WorkCover type={related.type} title={related.title} hero={related.hero} sizes={coverSizes} quality={85} rightsYear={related.year} />
               </div>
               <div className="related-work-body">
-                <h3>{related.title}</h3>
+                <h3 style={{ fontStyle: "normal" }}>{related.title}</h3>
                 {related.dek ? <p>{related.dek}</p> : null}
                 {related.readingMinutes ? <span>± {related.readingMinutes} min</span> : null}
               </div>
