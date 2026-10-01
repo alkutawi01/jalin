@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
+
 /**
  * Top of a work's admin page: what it is, where it stands (a status stepper),
  * the ONE next step, and a compact publishing checklist whose chips jump to the
@@ -98,8 +100,20 @@ export default function WorkStatusPanel({
   const issueCount = realBlockers.length;
   const allClear = !!readiness && realBlockers.length === 0;
 
+  // Re-check by itself when the editor returns to this tab, so no manual refresh is needed.
+  useEffect(() => {
+    const refresh = () => {
+      if (document.visibilityState === "visible") onRecheck();
+    };
+    document.addEventListener("visibilitychange", refresh);
+    return () => document.removeEventListener("visibilitychange", refresh);
+  }, [onRecheck]);
+
   let next: { label: string; run: () => void; disabled?: boolean; hint?: string } | null = null;
-  if ((status === "draft" || status === "review") && allClear) {
+  if (!readiness && (status === "draft" || status === "review" || status === "ready")) {
+    // Until the checklist has loaded, do not offer a step that may change a moment later.
+    next = { label: "Menyemak…", run: () => {}, disabled: true };
+  } else if ((status === "draft" || status === "review") && allClear) {
     next = { label: "Terbitkan", run: onPublishNow };
   } else if (status === "draft") {
     next = { label: "Hantar untuk semakan", run: () => onChangeStatus("review") };
@@ -200,7 +214,7 @@ export default function WorkStatusPanel({
               </span>
             ) : null}
             <button type="button" className="a-btn a-btn-quiet" onClick={onRecheck} disabled={loading}>
-              Semak semula
+              Segarkan semakan
             </button>
           </div>
           {error ? <p className="a-status-hint">{error}</p> : null}
