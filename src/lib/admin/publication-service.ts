@@ -10,6 +10,7 @@
  * - Idempotent: publishing an already-published Work is a safe no-op.
  */
 
+import { createRevisionTx, getUnpublishedChanges } from "./revision-service";
 import type { Kysely, Transaction } from "kysely";
 import type { Database } from "../db/types";
 import { getDb, hasDb } from "../db";
@@ -390,6 +391,12 @@ export async function publishWorkExplicit(
           })
           .execute();
 
+        // Freeze what readers will see. Later edits stay in draft until the work is published again.
+        await createRevisionTx(trx, workId, { id: actor.id, email: actor.email }, {
+          changeType: "major",
+          revisionSummary: "Penerbitan pertama",
+        });
+
         return {
           alreadyPublished: false as const,
           readiness,
@@ -432,4 +439,108 @@ export async function publishWorkExplicit(
     // Authoritative readiness from the successful transactional evaluation.
     readiness: result.readiness,
   };
+}
+
+export interface ReadinessSummary {
+  /** Every gate passes; the status is the only thing left to change. */
+  ready: boolean;
+  blockerCount: number;
+  /** First real blocker (the status itself is not counted), already in Malay. */
+  firstBlocker: string | null;
+  /** Tab on the work page that fixes the first blocker. */
+  firstTab: "content" | "metadata" | "sections" | "credits" | "source";
+}
+
+const GATE_TAB: Record<string, ReadinessSummary["firstTab"]> = {
+  content: "content",
+  credits: "credits",
+  visuals: "content",
+  privacy: "content",
+  rights: "source",
+  structure: "sections",
+  workflow: "metadata"
+};
+
+/**
+ * One readiness verdict for list pages and dashboards, taken from the same service the publish
+ * button and API use. Without this, a work marked "Sedia" can look publishable while Hak blocks it.
+ */
+export async function summarizeReadiness(workIds: string[]): Promise<Map<string, ReadinessSummary>> {
+  const out = new Map<string, ReadinessSummary>();
+  for (const id of workIds) {
+    try {
+      const r = await evaluatePublicationReadiness(id);
+      if (!r) continue;
+      let firstTab: ReadinessSummary["firstTab"] = "content";
+      let first: string | null = null;
+      let count = 0;
+      for (const [gate, res] of Object.entries(r.gates)) {
+        for (const b of res.blockers) {
+          if (b.code === "status_not_publishable") continue;
+          count += 1;
+          if (!first) {
+            first = b.message;
+            firstTab = GATE_TAB[gate] ?? "content";
+          }
+        }
+      }
+      out.set(id, { ready: count === 0, blockerCount: count, firstBlocker: first, firstTab });
+    } catch {
+      /* a work that cannot be evaluated is simply left without a verdict */
+    }
+  }
+  return out;
+}
+
+export interface RepublishResult {
+  workId: string;
+  slug: string;
+  changed: boolean;
+  revisionNo: number | null;
+}
+
+/**
+ * Publish the current working copy of an already published work as a new public version.
+ * Readiness is checked again exactly like a first publish; nothing changes for readers until this succeeds.
+ */
+export async function republishWork(
+  workId: string,
+  actor: PublishActor,
+  options: { summary?: string; changeType?: "major" | "minor" | "patch" } = {}
+): Promise<RepublishResult> {
+  const db = getDbOrThrow();
+  const existing = await db.selectFrom("works").where("id", "=", workId).selectAll().executeTakeFirst();
+  if (!existing) throw new Error("Work tidak ditemui.");
+  if (existing.status !== "published") {
+    throw new Error("Hanya karya yang sudah terbit boleh diterbitkan semula.");
+  }
+  const readiness = await evaluatePublicationReadiness(workId);
+  if (!readiness) throw new Error("Work tidak ditemui.");
+  if (!readiness.ready) {
+    throw new Error(`Publication readiness gagal: ${readiness.blockers.map((b) => b.message).join(" | ")}`);
+  }
+  const state = await getUnpublishedChanges(workId);
+  if (!state.snapshotMissing && !state.changed) {
+    return { workId, slug: String(existing.slug), changed: false, revisionNo: existing.revision_count ?? null };
+  }
+  const nowIso = new Date().toISOString();
+  const by = actor.email || actor.id;
+  const changeType = options.changeType ?? "minor";
+  const summary = options.summary?.trim() || "Kemas kini diterbitkan";
+  return db.transaction().setIsolationLevel("serializable").execute(async (trx) => {
+    const rev = await createRevisionTx(trx, workId, { id: actor.id, email: actor.email }, {
+      changeType,
+      revisionSummary: summary,
+    });
+    // Living text: record the meaningful change in the public editorial history.
+    const fresh = await trx.selectFrom("works").where("id", "=", workId).select(["editorial_history", "version_label"]).executeTakeFirstOrThrow();
+    let history: unknown[] = [];
+    try {
+      const parsed = typeof fresh.editorial_history === "string" ? JSON.parse(fresh.editorial_history) : fresh.editorial_history;
+      if (Array.isArray(parsed)) history = parsed;
+    } catch { history = []; }
+    history = [...history, { version: fresh.version_label ?? "", type: changeType === "major" ? "major" : "minor", summary, date: nowIso, publishedBy: by }];
+    await trx.updateTable("works").where("id", "=", workId).set({ editorial_history: JSON.stringify(history) as never, updated_at: nowIso }).execute();
+    return { workId, slug: String(existing.slug), changed: true, revisionNo: rev.revisionNo };
+  });
 }

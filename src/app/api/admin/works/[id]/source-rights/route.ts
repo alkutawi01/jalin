@@ -31,7 +31,7 @@ export async function PUT(
   try {
     const admin = await getCurrentAdmin();
     if (!admin) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: "Sesi anda telah tamat. Log masuk semula." }, { status: 401 });
     }
 
     const { id } = await params;

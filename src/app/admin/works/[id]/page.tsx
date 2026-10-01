@@ -71,6 +71,7 @@ interface ReadinessData {
   warnings: ReadinessIssue[];
   gates: Record<"content" | "credits" | "visuals" | "privacy" | "rights" | "structure" | "workflow", ReadinessGate>;
   checkedAt: string;
+  unpublished?: { snapshotMissing: boolean; changed: boolean } | null;
 }
 
 interface CreditData {
@@ -124,7 +125,7 @@ function WorkImageCard({ visual, body, onEdit, onReplace, onDelete }: {
             {!visual.anchor ? "Tiada penanda — gambar tidak muncul dalam karya."
               : isImageMarker(visual.anchor)
                 ? body.includes(visual.anchor) ? `Penanda ${visual.anchor} · alihkan penanda dalam manuskrip untuk memindahkan gambar.` : `Penanda ${visual.anchor} tiada dalam manuskrip tersimpan — gambar tidak muncul.`
-                : body.includes(visual.anchor) ? `Anchor lama pada petikan: “${visual.anchor.slice(0, 90)}${visual.anchor.length > 90 ? "…" : ""}”. Tukar kepada penanda supaya suntingan teks tidak mengalihkan gambar.` : "Petikan anchor lama tidak ditemui — pilih penanda gambar baharu."}
+                : body.includes(visual.anchor) ? `Penanda lama pada petikan: “${visual.anchor.slice(0, 90)}${visual.anchor.length > 90 ? "…" : ""}”. Tukar kepada penanda supaya suntingan teks tidak mengalihkan gambar.` : "Petikan anchor lama tidak ditemui — pilih penanda gambar baharu."}
           </p>
         ) : <p className="admin-form-hint">Dipaparkan pada kad dan kepala halaman karya.</p>}
         <div className="work-image-card-actions">
@@ -513,7 +514,7 @@ export default function EditWorkPage() {
       const res = await fetch(`/api/admin/works/${workId}/source-rights`);
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "Gagal memuatkan provenance sumber.");
+        throw new Error(data.error || "Gagal memuatkan maklumat sumber karya.");
       }
       const data: SourceRightsData = await res.json();
       setSourceRights(data);
@@ -563,7 +564,7 @@ export default function EditWorkPage() {
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Gagal menyimpan provenance.");
+      if (!res.ok) throw new Error(data.error || "Gagal menyimpan maklumat sumber.");
       setSourceSuccess(
         data.invalidatedApproval
           ? "Provenance disimpan — kelulusan hak direset ke needs_review kerana material berubah."
@@ -640,8 +641,38 @@ export default function EditWorkPage() {
   }
 
   async function handleExplicitPublish() {
+    if (dirty) {
+      setPublishError("Ada perubahan teks atau maklumat yang belum disimpan. Tekan Simpan teks & maklumat dahulu, kemudian terbitkan.");
+      return;
+    }
     if (!(await confirmAction("Terbitkan karya ini kepada pembaca? Karya akan kelihatan di laman awam."))) return;
     await doPublish();
+  }
+
+  async function republishNow() {
+    if (dirty) {
+      setPublishError("Ada perubahan teks atau maklumat yang belum disimpan. Tekan Simpan teks & maklumat dahulu, kemudian terbitkan semula.");
+      return;
+    }
+    if (!(await confirmAction("Terbitkan semula? Pembaca akan terus melihat versi draf ini."))) return;
+    setPublishing(true);
+    setPublishError(null);
+    try {
+      const res = await fetch(`/api/admin/works/${workId}/publish`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ republish: true, summary: "Kemas kini diterbitkan", changeType: "minor" })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Gagal menerbitkan semula.");
+      setPublishSuccess(data.changed ? "Versi baharu diterbitkan. Pembaca kini melihatnya." : "Tiada perubahan untuk diterbitkan.");
+      await loadReadiness();
+      setTimeout(() => setPublishSuccess(null), 5000);
+    } catch (err) {
+      setPublishError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+    } finally {
+      setPublishing(false);
+    }
   }
 
   async function doPublish() {
@@ -1053,7 +1084,7 @@ export default function EditWorkPage() {
 
         if (!res.ok) {
           const data = await res.json();
-          throw new Error(data.error || "Gagal menyimpan glossary.");
+          throw new Error(data.error || "Gagal menyimpan istilah glosari.");
         }
       } else {
         // Create new term
@@ -1069,7 +1100,7 @@ export default function EditWorkPage() {
 
         if (!res.ok) {
           const data = await res.json();
-          throw new Error(data.error || "Gagal mencipta glossary.");
+          throw new Error(data.error || "Gagal menambah istilah glosari.");
         }
       }
 
@@ -1081,7 +1112,7 @@ export default function EditWorkPage() {
   }
 
   async function handleDeleteGlossary(id: number) {
-    if (!(await confirmAction("Pasti ingin memadam glossary ini?", { danger: true, confirmLabel: "Ya, teruskan" }))) return;
+    if (!(await confirmAction("Pasti ingin memadam istilah glosari ini?", { danger: true, confirmLabel: "Ya, teruskan" }))) return;
 
     try {
       const res = await fetch(`/api/admin/glossary/${id}`, {
@@ -1090,7 +1121,7 @@ export default function EditWorkPage() {
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error || "Gagal memadam glossary.");
+        throw new Error(data.error || "Gagal memadam istilah glosari.");
       }
 
       loadGlossary();
@@ -1169,6 +1200,10 @@ export default function EditWorkPage() {
   }
 
   async function publishNow() {
+    if (dirty) {
+      setPublishError("Ada perubahan teks atau maklumat yang belum disimpan. Tekan Simpan teks & maklumat dahulu, kemudian terbitkan.");
+      return;
+    }
     if (!(await confirmAction("Terbitkan karya ini kepada pembaca? Karya akan kelihatan di laman awam."))) return;
     if (form.status !== "ready") {
       setSaving(true);
@@ -1235,6 +1270,8 @@ export default function EditWorkPage() {
         onChangeStatus={changeStatus}
         onPublish={handleExplicitPublish}
         onPublishNow={publishNow}
+        onRepublish={republishNow}
+        dirty={dirty}
         onGoTab={(tab) => selectTab(tab === "visuals" ? "content" : tab as Tab)}
       />
 
@@ -1282,6 +1319,9 @@ export default function EditWorkPage() {
         <div>
           <strong>Teks &amp; maklumat karya</strong>
           <span className="a-savebar-note" role="status">{dirty ? "Ada perubahan belum disimpan" : "Tiada perubahan tertunggak"}</span>
+          <span className="admin-form-hint" style={{ display: "block", margin: 0 }}>
+            Teks dan maklumat hanya disimpan apabila anda menekan butang ini. Kredit, gambar, glosari dan watak disimpan serta-merta apabila anda menyimpannya sendiri di tab masing-masing.
+          </span>
         </div>
         <div className="a-work-savebar-actions">
           <a href="/admin/works" className="admin-btn admin-btn-outline">Kembali</a>
@@ -1904,7 +1944,7 @@ export default function EditWorkPage() {
 
           {visuals.length > 0 && !visuals.some((v) => v.role === "hero") ? (
             <div className="admin-alert admin-alert-warning">
-              Karya ini belum ada visual berperanan <strong>Hero</strong>. Halaman utama dan kad hanya memaparkan gambar
+              Karya ini belum ada gambar berperanan <strong>Utama</strong>. Halaman utama dan kad hanya memaparkan gambar
               Hero; tanpanya karya dipaparkan dengan huruf sahaja. Tukar peranan satu gambar kepada Hero.
             </div>
           ) : null}
@@ -1947,15 +1987,17 @@ export default function EditWorkPage() {
               </div>
 
               <div className="admin-form-group">
-                <label>Teks alternatif</label>
+                <label htmlFor="visual-edit-alt">Teks alternatif *</label>
                 <input
+                  id="visual-edit-alt"
                   type="text"
+                  required
                   value={editingVisual.alt || ""}
                   onChange={(e) => setEditingVisual((prev) => ({
                     ...prev,
                     alt: e.target.value,
                   }))}
-                  placeholder="Huraian visual"
+                  placeholder="Satu ayat yang menerangkan gambar kepada pembaca yang tidak dapat melihatnya"
                 />
               </div>
 
@@ -2006,7 +2048,7 @@ export default function EditWorkPage() {
           {visuals.some((visual) => visual.role === "inline") && (
             <div className="admin-form-group">
               <h4>Urus penanda gambar</h4>
-              <p className="admin-form-hint">Jika ada anchor lama, semak kedudukannya sebelum menukar kepada [[gambar:N]]. Petikan yang tidak jelas akan dilangkau. Penukaran boleh dipulihkan selagi manuskrip belum disunting lagi.</p>
+              <p className="admin-form-hint">Jika ada penanda lama, semak kedudukannya sebelum menukar kepada [[gambar:N]]. Petikan yang tidak jelas akan dilangkau. Penukaran boleh dipulihkan selagi manuskrip belum disunting lagi.</p>
               <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" disabled={markerMigrationBusy || dirty} onClick={() => void previewMarkerMigration()}>Semak / pulihkan penanda</button>
             </div>
           )}

@@ -478,4 +478,22 @@
   color: #8f503e; /* accent as text colour: 6:1 on the surface */
   text-decoration: underline;
   text-underline-offset: 2px;
+/* Touch screens: every control is at least 44px so it can be hit reliably. */
+@media (pointer: coarse) {
+  .admin-btn-sm,
+  .a-btn-quiet,
+  .a-nav-link,
+  .admin-tab {
+    min-height: 44px;
+  }
+  .a-filterbar input,
+  .a-filterbar select {
+    min-height: 44px;
+  }
+  .admin-form input[type="checkbox"],
+  .admin-form input[type="radio"],
+  .admin-checkbox-label input {
+    width: 22px;
+    height: 22px;
+  }
 }

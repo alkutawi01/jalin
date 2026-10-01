@@ -15,6 +15,8 @@ export interface PublishRevisionOptions {
   changeType?: "major" | "minor" | "patch";
   versionLabel?: string;
   revisionSummary?: string;
+  /** Freeze only: leave published_at, version label and updated_at as they are (used by the backfill). */
+  preserveMeta?: boolean;
 }
 
 export interface RevisionResult {
@@ -72,11 +74,11 @@ async function loadWorkForRevision(
     }
   }
 
-  const contributors = await db
-    .selectFrom("contributors")
-    .where("slug", "in", credits.map((c) => c.contributor_slug).filter(Boolean))
-    .select(["slug"])
-    .execute();
+  // An empty IN () is a SQL syntax error, which broke publishing works credited only to guests.
+  const creditedSlugs = credits.map((c) => c.contributor_slug).filter((x): x is string => Boolean(x));
+  const contributors = creditedSlugs.length
+    ? await db.selectFrom("contributors").where("slug", "in", creditedSlugs).select(["slug"]).execute()
+    : [];
 
   return {
     work,
@@ -91,10 +93,38 @@ async function loadWorkForRevision(
   };
 }
 
+/** Hash of only what readers can see; timestamps and bookkeeping are left out so "no changes" is detectable. */
+export function materialHashOf(input: NonNullable<Awaited<ReturnType<typeof loadWorkForRevision>>>): string {
+  const w = input.work;
+  return computeContentHash({
+    slug: w.slug, title: w.title, type: w.type, dek: w.dek, genre: w.genre, audience: w.audience,
+    readingMinutes: w.reading_minutes, body: w.body,
+    credits: input.credits.map((c) => [c.contributor_slug, c.guest_name, c.role_label, c.byline, c.is_public, c.sort_order]),
+    visuals: input.visuals.map((v) => [v.role, v.src, v.alt, v.anchor, v.place, v.sort_order, v.provider]),
+    glossary: input.glossary.map((g) => [g.term, g.meaning, g.source, g.sort_order]),
+    sections: input.readingSections.map((r) => [r.slug, r.title, r.body, r.position]),
+    source: input.sourceWork
+      ? [input.sourceWork.original_title, input.sourceWork.author, input.sourceWork.original_language, input.sourceWork.rights_status]
+      : null,
+    series: input.series ? [input.series.slug, input.series.title] : null,
+  });
+}
+
 function buildSnapshot(input: Awaited<ReturnType<typeof loadWorkForRevision>>) {
   if (!input) return null;
 
   const snapshot = {
+    // Complete rows as they were at publish time. The public repository maps THESE (with the same
+    // mapping it uses for live rows) so a published work never changes until it is published again.
+    raw: {
+      work: input.work,
+      credits: input.credits,
+      visuals: input.visuals,
+      glossary: input.glossary,
+      sourceWork: input.sourceWork ?? null,
+      readingSections: input.readingSections,
+    },
+    materialHash: materialHashOf(input),
     id: input.work.id,
     slug: input.work.slug,
     title: input.work.title,
@@ -196,8 +226,17 @@ export async function createRevision(
   options: PublishRevisionOptions = {}
 ): Promise<RevisionResult> {
   const db = getDbOrThrow();
+  return await db.transaction().execute((trx) => createRevisionTx(trx, workId, actor, options));
+}
 
-  return await db.transaction().execute(async (trx) => {
+/** Freeze the current working copy as the public version. Runs inside the caller's transaction. */
+export async function createRevisionTx(
+  trx: Transaction<Database>,
+  workId: string,
+  actor: RevisionActor,
+  options: PublishRevisionOptions = {}
+): Promise<RevisionResult> {
+  {
     const work = await trx.selectFrom("works").where("id", "=", workId).selectAll().executeTakeFirst();
     if (!work) throw new Error("Work tidak ditemui.");
     if (work.status !== "published" && work.status !== "ready") {
@@ -208,9 +247,9 @@ export async function createRevision(
     const snapshot = buildSnapshot(input);
     if (!snapshot) throw new Error("Gagal membina snapshot.");
 
-    const contentHash = computeContentHash(snapshot);
+    const contentHash = snapshot.materialHash;
 
-    // Check if content hash already exists for this work (idempotent)
+    // Same visible content as an existing revision: reuse it, but make sure it is the public one.
     const existing = await trx
       .selectFrom("work_revisions")
       .where("work_id", "=", workId)
@@ -218,6 +257,11 @@ export async function createRevision(
       .select(["id", "revision_no"])
       .executeTakeFirst();
     if (existing) {
+      await trx
+        .updateTable("works")
+        .where("id", "=", workId)
+        .set({ published_revision_id: existing.id })
+        .execute();
       return {
         revisionId: existing.id,
         revisionNo: existing.revision_no,
@@ -261,7 +305,7 @@ export async function createRevision(
     await trx
       .updateTable("works")
       .where("id", "=", workId)
-      .set({
+      .set(options.preserveMeta ? { published_revision_id: revisionId, revision_count: revisionNo } : {
         published_revision_id: revisionId,
         revision_count: revisionNo,
         version_label: options.versionLabel ?? `v${revisionNo}`,
@@ -278,7 +322,26 @@ export async function createRevision(
       publishedAt: nowIso,
       publishedBy,
     };
-  });
+  }
+}
+
+export interface UnpublishedChanges {
+  /** A published work with no frozen version: readers still see the live working copy. */
+  snapshotMissing: boolean;
+  /** The working copy differs from the version readers see. */
+  changed: boolean;
+}
+
+/** Compare the working copy with the version readers currently see. Only meaningful for published works. */
+export async function getUnpublishedChanges(workId: string): Promise<UnpublishedChanges> {
+  const db = getDbOrThrow();
+  const work = await db.selectFrom("works").where("id", "=", workId).select(["published_revision_id"]).executeTakeFirst();
+  if (!work?.published_revision_id) return { snapshotMissing: true, changed: false };
+  const rev = await db.selectFrom("work_revisions").where("id", "=", work.published_revision_id).select(["content_hash"]).executeTakeFirst();
+  if (!rev) return { snapshotMissing: true, changed: false };
+  const live = await loadWorkForRevision(db, workId);
+  if (!live) return { snapshotMissing: false, changed: false };
+  return { snapshotMissing: false, changed: materialHashOf(live) !== rev.content_hash };
 }
 
 export async function getRevisions(workId: string) {

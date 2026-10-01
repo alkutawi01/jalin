@@ -146,7 +146,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
   }
 
   async function handleDetach(workId: string) {
-    if (!(await confirmAction("Keluarkan episod ini daripada Siri? Work tidak akan dipadam.", { danger: true, confirmLabel: "Ya, teruskan" }))) return;
+    if (!(await confirmAction("Keluarkan episod ini daripada Siri? Karya tidak akan dipadam.", { danger: true, confirmLabel: "Ya, teruskan" }))) return;
     setError(null);
     try {
       const res = await fetch(`/api/admin/series/${id}/entries/${workId}`, { method: "DELETE" });
@@ -187,7 +187,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
   }
 
   async function handleDelete() {
-    if (!(await confirmAction("Padam Siri ini? Hanya dibenarkan jika tiada episod. Work episod tidak akan dipadam.", { danger: true, confirmLabel: "Ya, teruskan" }))) return;
+    if (!(await confirmAction("Padam Siri ini? Hanya dibenarkan jika tiada episod. Karya episod tidak akan dipadam.", { danger: true, confirmLabel: "Ya, teruskan" }))) return;
     setError(null);
     try {
       const res = await fetch(`/api/admin/series/${id}`, { method: "DELETE" });
@@ -304,7 +304,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
           <div className="admin-form-group" style={{ flex: 1 }}>
             <label>Sertakan episod</label>
             <select value={attachWorkId} onChange={(e) => setAttachWorkId(e.target.value)}>
-              <option value="">-- Pilih Work bersiri --</option>
+              <option value="">-- Pilih karya bersiri --</option>
               {attachable.map((w) => (
                 <option key={w.id} value={w.id}>
                   {w.title} ({w.status})

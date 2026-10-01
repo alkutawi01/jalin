@@ -1,31 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
-import { publishWorkExplicit } from "../../../../../../lib/admin/publication-service";
+import { publishWorkExplicit, republishWork } from "../../../../../../lib/admin/publication-service";
 import { getCurrentAdmin } from "../../../../../../lib/admin/auth";
-import { validateWorkForPublish } from "../../../../../../lib/admin/publish-validator";
 
 export async function POST(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const admin = await getCurrentAdmin();
     if (!admin) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: "Sesi anda telah tamat. Log masuk semula." }, { status: 401 });
     }
 
     const { id } = await params;
-    
-    // Run publish validation
-    const validation = await validateWorkForPublish(id);
-    const failures = validation.filter(r => r.status === "FAIL");
-    
-    if (failures.length > 0) {
-      return NextResponse.json({ 
-        error: "Publish blocked",
-        issues: failures.map(f => f.message)
-      }, { status: 422 });
+    const body = await request.json().catch(() => ({}));
+    if (body?.republish) {
+      const result = await republishWork(id, { id: admin.id, email: admin.email }, {
+        summary: typeof body.summary === "string" ? body.summary : undefined,
+        changeType: ["major", "minor", "patch"].includes(body.changeType) ? body.changeType : undefined,
+      });
+      return NextResponse.json(result);
     }
     
+    // The readiness service (inside publishWorkExplicit) is the single source of truth for what blocks publishing.
     const result = await publishWorkExplicit(id, {
       id: admin.id,
       email: admin.email,

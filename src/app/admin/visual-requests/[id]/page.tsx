@@ -8,7 +8,7 @@ import { confirmAction } from "../../../../lib/admin/dialogs";
 import LoadingBlock from "../../../../components/admin/LoadingBlock";
 
 const VISUAL_ROLES = [
-  { value: "hero", label: "Hero" },
+  { value: "hero", label: "Utama" },
   { value: "inline", label: "Dalam teks" },
   { value: "section", label: "Bahagian" },
   { value: "decorative", label: "Hiasan" },
@@ -392,7 +392,7 @@ export default function EditVisualRequestPage() {
       const res = await fetch(`/api/admin/visual-requests/${requestId}/upload`, { method: "POST", body });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Gagal memuat naik imej.");
-      setSuccess("Imej dimuat naik dan menunggu semakan. Semak imej, kemudian tekan Approve.");
+      setSuccess("Imej dimuat naik dan menunggu semakan. Semak imej, kemudian tekan Lulus.");
       const refreshed = await fetch(`/api/admin/visual-requests/${requestId}`);
       if (refreshed.ok) {
         const r: VisualRequestData = await refreshed.json();
@@ -437,7 +437,7 @@ export default function EditVisualRequestPage() {
   }
 
   async function handleAttach() {
-    if (!(await confirmAction("Pautkan visual ini ke Work? Work TIDAK akan diterbitkan secara automatik."))) return;
+    if (!(await confirmAction("Pautkan gambar ini ke karya? Karya TIDAK akan diterbitkan secara automatik."))) return;
     setAttaching(true);
     setError(null);
     setSuccess(null);
@@ -646,7 +646,7 @@ export default function EditVisualRequestPage() {
             {["under_review", "generated"].includes(record.status) && (record.source_asset_url || record.source_asset_path) && (
               <>
                 <button type="button" onClick={handleApprove} className="admin-btn admin-btn-primary" disabled={approving}>
-                  {approving ? "Memproses..." : "Approve"}
+                  {approving ? "Memproses..." : "Lulus"}
                 </button>
                 <button type="button" onClick={handleReject} className="admin-btn admin-btn-danger" disabled={approving}>
                   Reject
@@ -656,7 +656,7 @@ export default function EditVisualRequestPage() {
 
             {record.status === "approved" && record.work_id && (
               <button type="button" onClick={handleAttach} className="admin-btn admin-btn-primary" disabled={attaching || !record.asset_finalized}>
-                {attaching ? "Memautkan..." : record.asset_finalized ? "Attach to Work" : "Attach (asset belum final)"}
+                {attaching ? "Memautkan..." : record.asset_finalized ? "Pautkan ke karya" : "Pautkan (gambar belum siap)"}
               </button>
             )}
           </div>

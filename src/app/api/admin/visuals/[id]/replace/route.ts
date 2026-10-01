@@ -11,7 +11,7 @@ import { replaceVisualImage } from "../../../../../../lib/admin/visual-generatio
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const admin = await getCurrentAdmin();
-    if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!admin) return NextResponse.json({ error: "Sesi anda telah tamat. Log masuk semula." }, { status: 401 });
     if (!hasDb()) return NextResponse.json({ error: "Pangkalan data tidak tersedia." }, { status: 503 });
 
     const { id } = await params;
