@@ -4,6 +4,7 @@ import type { GlossaryMap } from "./types";
 import { headingId } from "../../lib/reader/inline-chapters";
 import GlossaryTerm from "./GlossaryTerm";
 import { glossaryPattern } from "../../lib/reader/glossary-first";
+import { splitCommunicationBlocks } from "../../lib/reader/communication-blocks";
 
 function plainText(node: ReactNode): string {
   if (typeof node === "string" || typeof node === "number") return String(node);
@@ -59,21 +60,20 @@ export default function StoryMarkdown({
   glossary: GlossaryMap;
 }) {
   const used = new Set<string>();
+  const components = {
+    h1: () => null,
+    h2: ({ children }: { children?: ReactNode }) => <h2 id={headingId(plainText(children))}>{children}</h2>,
+    p: ({ children }: { children?: ReactNode }) => <p>{decorateChildren(children, glossary, used)}</p>,
+    em: ({ children }: { children?: ReactNode }) => <em>{children}</em>,
+    hr: () => <div className="scene-break" aria-hidden="true"><span>•</span></div>,
+  };
   return (
-    <ReactMarkdown
-      components={{
-        h1: () => null,
-        h2: ({ children }) => <h2 id={headingId(plainText(children))}>{children}</h2>,
-        p: ({ children }) => <p>{decorateChildren(children, glossary, used)}</p>,
-        em: ({ children }) => <em>{children}</em>,
-        hr: () => (
-          <div className="scene-break" aria-hidden="true">
-            <span>•</span>
-          </div>
-        )
-      }}
-    >
-      {normalizeMarkdown(children)}
-    </ReactMarkdown>
+    <>
+      {splitCommunicationBlocks(normalizeMarkdown(children)).map((segment, index) => segment.kind === "prose"
+        ? <ReactMarkdown key={index} components={components}>{segment.content}</ReactMarkdown>
+        : <div key={index} className={`story-communication story-communication-${segment.kind}`} role="group" aria-label={segment.kind === "mesej" ? "Mesej dalam cerita" : "E-mel dalam cerita"}>
+            <ReactMarkdown components={components}>{segment.content}</ReactMarkdown>
+          </div>)}
+    </>
   );
 }

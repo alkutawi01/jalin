@@ -1,0 +1,170 @@
+"use client";
+
+import { useEffect, useRef } from "react";
+import { nextImageMarker } from "../../lib/reader/image-markers";
+import { splitCommunicationBlocks } from "../../lib/reader/communication-blocks";
+
+const MARKER = /^\[\[gambar:[1-9]\d*\]\]$/;
+
+function escapeHtml(value: string): string {
+  return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+function inlineHtml(value: string): string {
+  return value.split(/(\*\*[^*\n]+\*\*|\*[^*\n]+\*)/g).map((part) => {
+    if (part.startsWith("**") && part.endsWith("**")) return `<strong>${escapeHtml(part.slice(2, -2))}</strong>`;
+    if (part.startsWith("*") && part.endsWith("*")) return `<em>${escapeHtml(part.slice(1, -1))}</em>`;
+    return escapeHtml(part).replace(/\n/g, "<br>");
+  }).join("");
+}
+
+/** Keep unsupported Markdown in the source editor; never silently flatten it. */
+export function canEditVisually(markdown: string): boolean {
+  const segments = splitCommunicationBlocks(markdown);
+  if (segments.some((segment) => segment.content.includes(":::"))) return false;
+  const blocks = segments.flatMap((segment) => segment.kind === "prose" ? segment.content.split(/\n{2,}/) : [segment.content]);
+  if (blocks.some((block) => block.split("\n").length > 1 && block.split("\n").some((line) => MARKER.test(line.trim()) || /^(---|\*\*\*)$/.test(line.trim()) || /^## /.test(line)))) return false;
+  const lines = blocks.flatMap((block) => block.split("\n"));
+  return lines.every((line) => {
+    if (!line.trim() || MARKER.test(line.trim()) || /^(---|\*\*\*)$/.test(line.trim())) return true;
+    if (/^## (?!#)/.test(line)) return !/[`\[\]<>\\_|]/.test(line);
+    if (/^#{1,6}\s|^>\s|^[-+*]\s|^\d+\.\s|^\s{4}|^\||^:::/.test(line)) return false;
+    if (/[`\[\]<>\\_|]/.test(line)) return false;
+    return !line.replace(/\*\*[^*\n]+\*\*|\*[^*\n]+\*/g, "").includes("*");
+  });
+}
+
+function toHtml(markdown: string): string {
+  if (!markdown.trim()) return "<p><br></p>";
+  return splitCommunicationBlocks(markdown).map((segment) => segment.kind === "prose" ? segment.content.split(/\n{2,}/).map((block) => {
+    const trimmed = block.trim();
+    if (!trimmed) return "";
+    if (MARKER.test(trimmed)) return `<div class="visual-manuscript-marker" contenteditable="false" data-marker="${trimmed}">Gambar ${trimmed.match(/\d+/)?.[0]}</div>`;
+    if (/^(---|\*\*\*)$/.test(trimmed)) return '<hr class="visual-manuscript-break">';
+    if (trimmed.startsWith("## ")) return `<h2>${inlineHtml(trimmed.slice(3))}</h2>`;
+    return `<p>${inlineHtml(block)}</p>`;
+  }).join("") : `<div class="visual-manuscript-communication visual-manuscript-communication-${segment.kind}" data-communication="${segment.kind}">${inlineHtml(segment.content)}</div>`).join("");
+}
+
+function inlineMarkdown(node: Node): string {
+  if (node.nodeType === Node.TEXT_NODE) return (node.textContent ?? "").replace(/\\/g, "\\\\").replace(/\*/g, "\\*");
+  if (!(node instanceof HTMLElement)) return "";
+  if (node.tagName === "BR") return "\n";
+  const body = [...node.childNodes].map(inlineMarkdown).join("");
+  if (node.tagName === "STRONG" || node.tagName === "B") return `**${body}**`;
+  if (node.tagName === "EM" || node.tagName === "I") return `*${body}*`;
+  if (node.tagName === "DIV" || node.tagName === "P") return `${body}\n`;
+  return body;
+}
+
+function fromHtml(root: HTMLElement): string {
+  return [...root.childNodes].map((node) => {
+    if (node.nodeType === Node.TEXT_NODE) return inlineMarkdown(node);
+    const element = node as HTMLElement;
+    if (element.dataset.marker) return element.dataset.marker;
+    if (element.dataset.communication) return `:::${element.dataset.communication}\n${[...element.childNodes].map(inlineMarkdown).join("").trimEnd()}\n:::`;
+    if (element.tagName === "HR") return "---";
+    const body = [...element.childNodes].map(inlineMarkdown).join("").trimEnd();
+    if (element.tagName === "H2") return `## ${body}`;
+    return body;
+  }).join("\n\n");
+}
+
+interface Props {
+  value: string;
+  onChange: (value: string) => void;
+  existingAnchors: (string | null)[];
+  onMarkerInserted: (marker: string) => void;
+}
+
+export default function VisualManuscriptEditor({ value, onChange, existingAnchors, onMarkerInserted }: Props) {
+  const editorRef = useRef<HTMLDivElement>(null);
+  const emittedRef = useRef<string | null>(null);
+  const selectionRef = useRef<Range | null>(null);
+
+  useEffect(() => {
+    const editor = editorRef.current;
+    if (editor && value !== emittedRef.current) editor.innerHTML = toHtml(value);
+  }, [value]);
+
+  function sync() {
+    const editor = editorRef.current;
+    if (!editor) return;
+    const next = fromHtml(editor);
+    emittedRef.current = next;
+    onChange(next);
+  }
+
+  function rememberSelection() {
+    const selection = window.getSelection();
+    if (selection?.rangeCount && editorRef.current?.contains(selection.anchorNode)) selectionRef.current = selection.getRangeAt(0).cloneRange();
+  }
+
+  function format(command: "bold" | "italic") {
+    editorRef.current?.focus();
+    if (selectionRef.current) {
+      const selection = window.getSelection();
+      selection?.removeAllRanges();
+      selection?.addRange(selectionRef.current);
+    }
+    document.execCommand(command);
+    sync();
+    rememberSelection();
+  }
+
+  function insertBlock(kind: "paragraph" | "heading" | "scene" | "image" | "mesej" | "emel") {
+    const editor = editorRef.current;
+    if (!editor) return;
+    const selection = window.getSelection();
+    const saved = selectionRef.current;
+    const anchor = saved && editor.contains(saved.startContainer)
+      ? (saved.startContainer.nodeType === Node.ELEMENT_NODE ? saved.startContainer as Element : saved.startContainer.parentElement)?.closest("p,h2,div,hr")
+      : null;
+    const block = kind === "heading" ? document.createElement("h2") : kind === "scene" ? document.createElement("hr") : document.createElement("p");
+    if (kind === "heading") block.textContent = "Tajuk bahagian";
+    if (kind === "paragraph") block.appendChild(document.createElement("br"));
+    if (kind === "image") {
+      const marker = nextImageMarker(value, existingAnchors);
+      block.className = "visual-manuscript-marker";
+      block.contentEditable = "false";
+      block.dataset.marker = marker;
+      block.textContent = `Gambar ${marker.match(/\d+/)?.[0]}`;
+      onMarkerInserted(marker);
+    }
+    if (kind === "mesej" || kind === "emel") {
+      block.className = `visual-manuscript-communication visual-manuscript-communication-${kind}`;
+      block.dataset.communication = kind;
+      block.textContent = "Tulis kandungan di sini.";
+    }
+    if (anchor?.parentElement === editor) anchor.after(block);
+    else editor.appendChild(block);
+    sync();
+    if (kind === "paragraph" || kind === "heading" || kind === "mesej" || kind === "emel") {
+      const range = document.createRange();
+      range.selectNodeContents(block);
+      if (kind === "paragraph" || kind === "heading") range.collapse(true);
+      selection?.removeAllRanges();
+      selection?.addRange(range);
+      editor.focus();
+    }
+  }
+
+  return <div className="visual-manuscript">
+    <div className="visual-manuscript-toolbar" role="toolbar" aria-label="Pemformatan manuskrip">
+      <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => format("bold")} aria-label="Tebalkan teks terpilih"><strong>Tebal</strong></button>
+      <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => format("italic")} aria-label="Condongkan teks terpilih"><em>Condong</em></button>
+      <button type="button" onClick={() => insertBlock("paragraph")}>Perenggan</button>
+      <button type="button" onClick={() => insertBlock("heading")}>Tajuk bahagian</button>
+      <button type="button" onClick={() => insertBlock("scene")}>Pemisah adegan</button>
+      <button type="button" onClick={() => insertBlock("image")}>Penanda gambar</button>
+      <button type="button" onClick={() => insertBlock("mesej")}>Kotak mesej</button>
+      <button type="button" onClick={() => insertBlock("emel")}>Kotak e-mel</button>
+    </div>
+    <div ref={editorRef} className="visual-manuscript-surface" contentEditable role="textbox" aria-label="Manuskrip visual" aria-multiline="true" suppressContentEditableWarning onInput={sync} onKeyUp={rememberSelection} onMouseUp={rememberSelection} onBlur={rememberSelection} onPaste={(event) => {
+      event.preventDefault();
+      document.execCommand("insertText", false, event.clipboardData.getData("text/plain"));
+      sync();
+    }} />
+    <p className="admin-form-hint">Sunting terus pada halaman. Pilih teks untuk Tebal atau Condong; gunakan butang untuk menambah blok. Tukar ke Markdown untuk kawalan penuh.</p>
+  </div>;
+}
