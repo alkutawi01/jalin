@@ -15,7 +15,7 @@ async function current(id: string) {
 }
 
 export async function GET(_request: NextRequest, { params }: Context) {
-  if (!await getCurrentAdmin()) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!await getCurrentAdmin()) return NextResponse.json({ error: "Sesi anda telah tamat. Log masuk semula." }, { status: 401 });
   const { id } = await params;
   const state = await current(id);
   if (!state) return NextResponse.json({ error: "Karya tidak ditemui." }, { status: 404 });
@@ -24,7 +24,7 @@ export async function GET(_request: NextRequest, { params }: Context) {
 }
 
 export async function POST(request: NextRequest, { params }: Context) {
-  if (!await getCurrentAdmin()) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!await getCurrentAdmin()) return NextResponse.json({ error: "Sesi anda telah tamat. Log masuk semula." }, { status: 401 });
   const { id } = await params;
   const payload = await request.json().catch(() => ({}));
   if (!(["apply", "restore"] as unknown[]).includes(payload.action)) {

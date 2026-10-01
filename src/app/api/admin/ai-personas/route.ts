@@ -5,7 +5,7 @@ import { listAiPersonas, listContributorOptions, saveAiPersona, findOrCreatePers
 /** GET: every AI with its pseudonym (if set), plus the contributors that can be chosen. */
 export async function GET() {
   const admin = await getCurrentAdmin();
-  if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!admin) return NextResponse.json({ error: "Sesi anda telah tamat. Log masuk semula." }, { status: 401 });
   const [personas, contributors] = await Promise.all([listAiPersonas(), listContributorOptions()]);
   return NextResponse.json({ personas, contributors });
 }
@@ -13,7 +13,7 @@ export async function GET() {
 /** POST { ai, name }: set the pseudonym for an AI by typing it (empty clears it). A matching contributor is reused or created. */
 export async function POST(request: NextRequest) {
   const admin = await getCurrentAdmin();
-  if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!admin) return NextResponse.json({ error: "Sesi anda telah tamat. Log masuk semula." }, { status: 401 });
   const body = (await request.json().catch(() => ({}))) as { ai?: unknown; name?: unknown };
   if (typeof body.ai !== "string" || !body.ai.trim()) {
     return NextResponse.json({ error: "Nama AI diperlukan." }, { status: 400 });

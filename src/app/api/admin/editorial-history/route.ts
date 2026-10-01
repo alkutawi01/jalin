@@ -6,7 +6,7 @@ export async function GET(_request: NextRequest) {
   try {
     const admin = await getCurrentAdmin();
     if (!admin) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: "Sesi anda telah tamat. Log masuk semula." }, { status: 401 });
     }
     
     const history = await getAuditHistory(20);

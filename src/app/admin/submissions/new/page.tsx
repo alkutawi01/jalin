@@ -45,7 +45,7 @@ export default function NewSubmissionPage() {
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error || "Gagal mencipta submission.");
+        throw new Error(data.error || "Gagal mencipta penghantaran.");
       }
 
       const sub = await res.json();

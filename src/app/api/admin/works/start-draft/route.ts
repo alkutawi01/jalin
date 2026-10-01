@@ -5,7 +5,7 @@ import { getDb } from "../../../../../lib/db";
 const types = new Set(["cerpen", "novela", "bersiri", "fragmen", "sinopsis"]);
 
 export async function POST(request: NextRequest) {
-  if (!await getCurrentAdmin()) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!await getCurrentAdmin()) return NextResponse.json({ error: "Sesi anda telah tamat. Log masuk semula." }, { status: 401 });
   const input = await request.json().catch(() => ({}));
   if (!types.has(input.type)) return NextResponse.json({ error: "Jenis karya tidak sah." }, { status: 400 });
   if (input.type === "bersiri" && !input.seriesId && !String(input.newSeriesTitle ?? "").trim()) {

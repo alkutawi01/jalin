@@ -470,3 +470,23 @@
 }
 .a-tech > summary { cursor: pointer; font-weight: 700; font-size: 15px; color: var(--a-ink-soft); }
 .a-tech[open] > summary { margin-bottom: 16px; }
+
+/* Touch screens: every control is at least 44px so it can be hit reliably. */
+@media (pointer: coarse) {
+  .admin-btn-sm,
+  .a-btn-quiet,
+  .a-nav-link,
+  .admin-tab {
+    min-height: 44px;
+  }
+  .a-filterbar input,
+  .a-filterbar select {
+    min-height: 44px;
+  }
+  .admin-form input[type="checkbox"],
+  .admin-form input[type="radio"],
+  .admin-checkbox-label input {
+    width: 22px;
+    height: 22px;
+  }
+}

@@ -12,7 +12,7 @@ import { loadSeriesContext } from "../../../../../lib/admin/authoring/series-con
  */
 export async function POST(request: NextRequest) {
   const admin = await getCurrentAdmin();
-  if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!admin) return NextResponse.json({ error: "Sesi anda telah tamat. Log masuk semula." }, { status: 401 });
 
   const body = (await request.json().catch(() => ({}))) as { recipe?: unknown; series?: unknown; special?: unknown };
   if (typeof body.recipe !== "string" || !isRecipeKey(body.recipe)) {

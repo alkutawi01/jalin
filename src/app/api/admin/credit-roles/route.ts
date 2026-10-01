@@ -6,7 +6,7 @@ import { STANDARD_ROLES } from "../../../../lib/credit-roles";
 /** GET /api/admin/credit-roles: roles editors added earlier (custom labels in use), for the credit dropdown. */
 export async function GET() {
   const admin = await getCurrentAdmin();
-  if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!admin) return NextResponse.json({ error: "Sesi anda telah tamat. Log masuk semula." }, { status: 401 });
   if (!hasDb()) return NextResponse.json({ custom: [] });
 
   const rows = await getDb().selectFrom("credits").select("role_label").distinct().execute();

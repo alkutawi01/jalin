@@ -93,7 +93,7 @@ export async function middleware(request: NextRequest) {
   if (!sessionCookie) {
     if (pathname.startsWith("/api/")) {
       return NextResponse.json(
-        { error: "Unauthorized" },
+        { error: "Sesi anda telah tamat. Log masuk semula." },
         { status: 401 }
       );
     }
@@ -107,7 +107,7 @@ export async function middleware(request: NextRequest) {
     // Invalid/forged/expired session - reject and clear cookie
     if (pathname.startsWith("/api/")) {
       const response = NextResponse.json(
-        { error: "Unauthorized" },
+        { error: "Sesi anda telah tamat. Log masuk semula." },
         { status: 401 }
       );
       response.cookies.delete("jalin-admin-session");

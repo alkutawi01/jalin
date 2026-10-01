@@ -52,7 +52,7 @@ export default async function AdminSubmissionsPage() {
         <div className="admin-page-header-row">
           <div>
             <h1>Penghantaran</h1>
-            <p className="admin-page-sub">{submissions.length} submissions dalam database</p>
+            <p className="admin-page-sub">{submissions.length} penghantaran dalam pangkalan data</p>
           </div>
           <a href="/admin/submissions/new" className="admin-btn admin-btn-primary">
             + Submission Baharu
@@ -77,7 +77,7 @@ export default async function AdminSubmissionsPage() {
             {submissions.length === 0 ? (
               <tr>
                 <td colSpan={7} className="admin-table-empty">
-                  Tiada submissions dalam database.
+                  Tiada penghantaran dalam pangkalan data.
                 </td>
               </tr>
             ) : (

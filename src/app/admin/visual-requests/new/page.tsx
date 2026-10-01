@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 const VISUAL_ROLES = [
-  { value: "hero", label: "Hero" },
+  { value: "hero", label: "Utama" },
   { value: "inline", label: "Dalam teks" },
   { value: "section", label: "Bahagian" },
   { value: "decorative", label: "Hiasan" },
