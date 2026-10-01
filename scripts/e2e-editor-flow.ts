@@ -4,11 +4,19 @@
  *   ADMIN_DEV_BYPASS=true npm run dev            (with DATABASE_URL pointing at a test branch)
  *   E2E_BASE=http://localhost:3000 npx tsx scripts/e2e-editor-flow.ts [cerpen|fragmen|bersiri|all]
  *
+ * NOTE: needs CONTENT_SOURCE=database in the app so the public pages read the test database.
+ * Uploaded images land on local disk in dev, so the script gives them a durable-looking address
+ * (production uses object storage) — this is a simulation of that one step.
+ *
  * It drives the same admin APIs the screens use: new draft → text → credits → glossary → upload and
  * replace an image → move the image marker → preview data → ready → publish → the public site shows the
  * published version → a later edit stays draft → republish shows the new version. Test works are archived.
  */
+import { config } from "dotenv";
+if (process.env.AUDIT_ENV) config({ path: process.env.AUDIT_ENV, override: true });
 import sharp from "sharp";
+import { promises as fs } from "node:fs";
+import { getDb, closeDb } from "../src/lib/db";
 
 const BASE = process.env.E2E_BASE ?? "http://localhost:3000";
 const REFRESH_WAIT_MS = Number(process.env.E2E_REFRESH_MS ?? 36000);
@@ -45,6 +53,22 @@ async function upload(workId: string, fields: Record<string, string>, color: { r
   for (const [k, v] of Object.entries(fields)) form.set(k, v);
   form.set("file", new File([new Uint8Array(await png(color))], "ujian.png", { type: "image/png" }));
   return api("POST", `/api/admin/works/${workId}/visuals/upload`, undefined, form);
+}
+
+/**
+ * In dev the uploaded files land on local disk, which readiness (rightly) refuses as a public address.
+ * Production stores them in durable object storage; here we give each uploaded image a durable-looking
+ * address so the rest of the flow can be exercised.
+ */
+async function simulateDurableStorage(workId: string) {
+  const db = getDb();
+  const rows = await db.selectFrom("visuals").where("work_id", "=", workId).select(["id", "src"]).execute();
+  for (const row of rows) {
+    if (!/^https:/.test(row.src)) {
+      await db.updateTable("visuals").where("id", "=", row.id)
+        .set({ src: `https://hinxqignbwjdoi92.public.blob.vercel-storage.com/assets/visuals/e2e-${row.id}.png`, is_asset_finalized: true } as never).execute();
+    }
+  }
 }
 
 async function readiness(id: string) {
@@ -117,6 +141,7 @@ async function flowCerpen() {
   r = await api("PATCH", `/api/admin/works/${id}`, { body: body("akhir", v1).replace("[[gambar:1]]", "") });
   check(!r.ok, "membuang penanda yang masih digunakan gambar ditolak");
 
+  await simulateDurableStorage(id);
   const before = await readiness(id);
   check(before.codes.length === 0, `semakan: tiada sekatan selain status (${before.codes.join(",")})`);
   r = await api("PATCH", `/api/admin/works/${id}`, { status: "ready" });
@@ -125,8 +150,8 @@ async function flowCerpen() {
   check(r.ok, `diterbitkan (${r.status} ${r.data?.error ?? ""})`);
 
   const path = `/kategori/cerpen/${slug}`;
-  let pub = await waitForPublic(path, (h) => h.includes("Versi satu ujian"));
-  check(pub.status === 200 && pub.html.includes("Versi satu ujian"), "laman awam memaparkan versi terbit");
+  let pub = await waitForPublic(path, (h) => h.includes(`Versi satu ujian ${suffix}`));
+  check(pub.status === 200 && pub.html.includes(`Versi satu ujian ${suffix}`), `laman awam memaparkan versi terbit (status ${pub.status}, ${pub.html.length} bait, ${path})`);
 
   const v2 = `Versi dua ujian ${suffix}, draf baharu yang belum diterbitkan.`;
   r = await api("PATCH", `/api/admin/works/${id}`, { body: body("akhir", v2), dek: "Dek draf baharu." });
@@ -136,12 +161,13 @@ async function flowCerpen() {
   console.log(`  … menunggu ${Math.round(REFRESH_WAIT_MS / 1000)} saat supaya laman awam sempat memuat semula`);
   await sleep(REFRESH_WAIT_MS);
   pub = await publicHtml(path);
-  check(pub.html.includes("Versi satu ujian") && !pub.html.includes("Versi dua ujian"), "suntingan belum bocor ke laman awam");
+  check(pub.status === 200 && pub.html.includes(`Versi satu ujian ${suffix}`) && !pub.html.includes(`Versi dua ujian ${suffix}`), `suntingan belum bocor ke laman awam (status ${pub.status}, v1=${pub.html.includes(`Versi satu ujian ${suffix}`)}, v2=${pub.html.includes(`Versi dua ujian ${suffix}`)})`);
 
+  if (process.env.E2E_STOP_AFTER_EDIT) { await fs.writeFile(process.env.TEMP + "/leak.html", pub.html); console.log("  · berhenti sebelum terbit semula:", slug); return; }
   r = await api("POST", `/api/admin/works/${id}/publish`, { republish: true, summary: "Ujian terbit semula", changeType: "minor" });
   check(r.ok && r.data?.changed === true, `terbit semula (${r.status} ${r.data?.error ?? ""})`);
-  pub = await waitForPublic(path, (h) => h.includes("Versi dua ujian"), 90000);
-  check(pub.html.includes("Versi dua ujian"), "selepas terbit semula laman awam memaparkan versi baharu");
+  pub = await waitForPublic(path, (h) => h.includes(`Versi dua ujian ${suffix}`), 90000);
+  check(pub.html.includes(`Versi dua ujian ${suffix}`), "selepas terbit semula laman awam memaparkan versi baharu");
 }
 
 async function fragmenBase(label: string, originalLanguage: string) {
@@ -151,6 +177,7 @@ async function fragmenBase(label: string, originalLanguage: string) {
   await addCredit(id, "initial_draft", "Aina Zulaikha", true, 0);
   const hero = await upload(id, { role: "hero", alt: "Ilustrasi petikan.", tool: "Ujian" }, { r: 30, g: 90, b: 60 });
   check(hero.ok, "gambar utama fragmen dimuat naik");
+  await simulateDurableStorage(id);
   const r = await api("PUT", `/api/admin/works/${id}/source-rights`, {
     fragmenTextLanguage: "Bahasa Melayu",
     originalTitle: `Karya Asal ${label} ${suffix}`, author: "Pengarang Klasik", originalLanguage,
@@ -188,9 +215,10 @@ async function flowFragmen() {
   console.log("\n=== Karya sumber sama dalam dua jenis ===");
   const sin = await newDraft("sinopsis");
   await api("PATCH", `/api/admin/works/${sin}`, { title: `Sinopsis ${suffix}`, slug: `uji-e2e-sinopsis-${suffix}`, body: "Sinopsis ringkas ujian.", dek: "Dek.", genre: "Klasik", audience: "remaja", readingMinutes: 1 });
-  await api("PUT", `/api/admin/works/${sin}/source-rights`, { originalTitle: `Karya Asal asal ${suffix}`.toUpperCase(), author: "pengarang klasik", originalLanguage: "Bahasa Melayu", sourceUrl: "https://example.org/sumber" });
+  const put = await api("PUT", `/api/admin/works/${sin}/source-rights`, { originalTitle: `Karya Asal asal ${suffix}`.toUpperCase(), author: "pengarang klasik", originalLanguage: "Bahasa Melayu", sourceUrl: "https://example.org/sumber" });
+  check(put.ok, `sumber sinopsis disimpan (${put.status} ${put.data?.error ?? ""})`);
   s = await readiness(sin);
-  check(s.warnings?.some((w: { code: string }) => w.code === "source_cross_type_pending"), "amaran awal: sumber sama sedang disediakan sebagai Fragmen");
+  check(Boolean(s.warnings?.some((w: { code: string }) => w.code === "source_cross_type_pending")), `amaran awal: sumber sama sedang disediakan sebagai Fragmen (${(s.warnings ?? []).map((w: { code: string }) => w.code).join(",")})`);
 }
 
 async function flowBersiri() {
@@ -202,6 +230,7 @@ async function flowBersiri() {
   await addCredit(id, "initial_draft", "Aina Zulaikha", true, 0);
   const hero = await upload(id, { role: "hero", alt: "Lorong sunyi.", tool: "Ujian" }, { r: 60, g: 60, b: 90 });
   check(hero.ok, "gambar utama episod dimuat naik");
+  await simulateDurableStorage(id);
   const s = await readiness(id);
   check(s.codes.length === 0, `episod siap diterbitkan (${s.codes.join(",")})`);
   await api("PATCH", `/api/admin/works/${id}`, { status: "ready" });
@@ -221,6 +250,7 @@ async function flowBersiri() {
 }
 
 async function cleanup() {
+  if (process.env.E2E_KEEP) { console.log("  · dikekalkan:", created.join(",")); return; }
   for (const id of created) await api("PATCH", `/api/admin/works/${id}`, { status: "archived" }).catch(() => undefined);
 }
 
@@ -233,6 +263,7 @@ async function main() {
     if (which === "bersiri" || which === "all") await flowBersiri();
   } finally {
     await cleanup();
+    await closeDb?.();
   }
   if (failures) {
     console.error(`\n${failures} semakan gagal`);
