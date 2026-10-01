@@ -136,11 +136,14 @@ function originalTitleOf(work: { title: string; sourceWork?: { title?: string } 
 function SectionNav({
   workSlug,
   sections,
-  activeSlug
+  activeSlug,
+  position
 }: {
   workSlug: string;
   sections: PublicSectionRef[];
   activeSlug?: string;
+  /** Two of these appear on a chapter page; each landmark needs its own name. */
+  position: "atas" | "bawah";
 }) {
   const currentIndex = activeSlug
     ? sections.findIndex((s) => s.slug === activeSlug)
@@ -152,7 +155,7 @@ function SectionNav({
   if (!current) return null;
 
   return (
-    <nav className="site-shell section-nav" aria-label="Navigasi bahagian" style={{
+    <nav className="site-shell section-nav" aria-label={`Navigasi bahagian (${position})`} style={{
       maxWidth: "42rem",
       margin: "0 auto 1.5rem",
       padding: "0 1.25rem",
@@ -191,7 +194,7 @@ function SectionIndexDetails({ items }: { items: { label: string; href: string }
   if (items.length === 0) return null;
   return (
     <details>
-      <summary style={{ cursor: "pointer", fontSize: "0.78rem", letterSpacing: "0.06em", textTransform: "uppercase", opacity: 0.75 }}>
+      <summary style={{ cursor: "pointer", fontSize: "0.78rem", letterSpacing: "0.06em", textTransform: "uppercase", opacity: 1, color: "#4b5f64" }}>
         Bab ({items.length})
       </summary>
       <ol style={{ margin: "0.5rem 0 0", paddingLeft: "1.1rem", fontSize: "0.85rem", lineHeight: 1.55 }}>
@@ -382,6 +385,7 @@ export default async function WorkPage({
             workSlug={work.slug}
             sections={publicSections}
             activeSlug={activeSection?.slug}
+            position="atas"
           />
         )}
 
@@ -429,6 +433,7 @@ export default async function WorkPage({
             workSlug={work.slug}
             sections={publicSections}
             activeSlug={activeSection?.slug}
+            position="bawah"
           />
         )}
 

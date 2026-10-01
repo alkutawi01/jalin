@@ -15,7 +15,7 @@
   --a-line-strong: #cfc7b8;
   --a-ink: #18343c;
   --a-ink-soft: #52656a;
-  --a-muted: #7a898d;
+  --a-muted: #5d6e72;
   --a-accent: #a76450;
   --a-accent-soft: #f3e5df;
   --a-focus: rgba(167, 100, 80, 0.28);
@@ -470,3 +470,12 @@
 }
 .a-tech > summary { cursor: pointer; font-weight: 700; font-size: 15px; color: var(--a-ink-soft); }
 .a-tech[open] > summary { margin-bottom: 16px; }
+
+/* Links inside running text are underlined, so they are not told apart from the text by colour alone. */
+.a-shell p a:not(.a-btn):not(.admin-btn),
+.a-shell li a:not(.a-btn):not(.admin-btn),
+.a-shell .admin-form-hint a {
+  color: #8f503e; /* accent as text colour: 6:1 on the surface */
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
