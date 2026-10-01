@@ -250,8 +250,10 @@
 .a-shell input:not([type]),
 .a-shell .admin-form-group input:not([type="radio"]):not([type="checkbox"]):not([type="file"]),
 .a-shell select,
-.a-shell .admin-textarea {
+.a-shell textarea {
   width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   min-height: 38px;
   padding: 8px 12px;
   border: 1px solid var(--a-line-strong);
@@ -262,13 +264,14 @@
   font-size: 14px;
   line-height: 1.4;
 }
-.a-shell .admin-textarea { font-family: var(--a-font); line-height: 1.55; min-height: 96px; }
+.a-shell textarea { font-family: var(--a-font); line-height: 1.55; min-height: 120px; resize: vertical; }
+.a-shell textarea.admin-textarea--long { min-height: 200px; }
 .a-shell .admin-textarea[readonly] { background: #f7f4ec; }
 .a-shell input:focus,
 .a-shell select:focus,
-.a-shell .admin-textarea:focus { outline: none; border-color: var(--a-accent); box-shadow: 0 0 0 3px var(--a-focus); }
+.a-shell textarea:focus { outline: none; border-color: var(--a-accent); box-shadow: 0 0 0 3px var(--a-focus); }
 .a-shell input::placeholder,
-.a-shell .admin-textarea::placeholder { color: #9aa6a9; }
+.a-shell textarea::placeholder { color: #9aa6a9; }
 .a-shell input[type="radio"],
 .a-shell input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--a-accent); margin: 0 8px 0 0; flex: none; }
 .a-shell input[type="file"] { font-size: 13px; }

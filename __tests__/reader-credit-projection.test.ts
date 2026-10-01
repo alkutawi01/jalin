@@ -32,6 +32,16 @@ function json(list: unknown): string {
 console.log("reader credit projection tests\n");
 
 {
+  const renamed: ContributorRef = {
+    slug: "claude", role: "initial_draft", byline: true,
+    displayName: "Nama Pilihan Editor", kind: "virtual",
+  };
+  assert(json(projectBylineCredits([renamed])) === json([
+    { name: "Nama Pilihan Editor", href: "/penulis/claude", maya: true },
+  ]), "Contributor renamed in admin retains a public byline and profile link");
+}
+
+{
   const kerusi = getWorkBySlug("kerusi-di-beranda");
   const editorial = projectEditorialCredits(kerusi?.credits ?? []);
   assert(json(editorial) === json([

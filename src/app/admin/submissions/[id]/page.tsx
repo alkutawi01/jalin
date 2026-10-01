@@ -464,9 +464,8 @@ export default function EditSubmissionPage() {
 
         <div className="admin-form-group">
           <label htmlFor="dek">Dek</label>
-          <input
+          <textarea className="admin-textarea" rows={4}
             id="dek"
-            type="text"
             value={form.dek}
             onChange={(e) => setForm((prev) => ({ ...prev, dek: e.target.value }))}
           />

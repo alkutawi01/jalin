@@ -49,15 +49,17 @@ function projectRole(role: string): string | undefined {
   return undefined;
 }
 
-function projectPerson(slug: string): ProjectedPerson | undefined {
-  const trimmed = slug.trim();
+function projectPerson(credit: ContributorRef): ProjectedPerson | undefined {
+  const trimmed = (credit.slug ?? "").trim();
   if (!trimmed) return undefined;
   if (trimmed.startsWith("guest:")) {
     const name = trimmed.slice("guest:".length).trim();
     if (!name) return undefined;
     return { name, maya: false };
   }
-  const meta = getContributorMeta(trimmed);
+  const meta = credit.displayName && credit.kind
+    ? { name: credit.displayName, kind: credit.kind }
+    : getContributorMeta(trimmed);
   if (!meta) return undefined;
   return { name: meta.name, href: `/penulis/${trimmed}`, maya: meta.kind === "virtual" };
 }
@@ -67,7 +69,7 @@ export function projectEditorialCredits(credits: ContributorRef[]): EditorialCre
   for (const credit of credits ?? []) {
     const label = projectRole(credit.role ?? "");
     if (!label) continue;
-    const person = projectPerson(credit.slug ?? "");
+    const person = projectPerson(credit);
     if (!person) continue;
     projected.push({
       role: label,
@@ -81,7 +83,7 @@ export function projectBylineCredits(credits: ContributorRef[]): BylineCredit[] 
   const projected: BylineCredit[] = [];
   for (const credit of credits ?? []) {
     if (!credit.byline) continue;
-    const person = projectPerson(credit.slug ?? "");
+    const person = projectPerson(credit);
     if (!person) continue;
     projected.push({ name: person.name, href: person.href, maya: person.maya });
   }

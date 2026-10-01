@@ -29,6 +29,9 @@ export async function PATCH(
   try {
     const { slug } = await params;
     const body = await request.json();
+    if (body.displayName !== undefined && !String(body.displayName).trim()) {
+      return NextResponse.json({ error: "Nama diperlukan." }, { status: 400 });
+    }
 
     // Check if contributor exists
     const existing = await getContributor(slug);
@@ -45,7 +48,7 @@ export async function PATCH(
     }
 
     const contributor = await updateContributor(slug, {
-      displayName: body.displayName,
+      displayName: body.displayName?.trim(),
       slug: body.slug,
       kind: body.kind,
       bio: body.bio,
@@ -56,7 +59,8 @@ export async function PATCH(
     return NextResponse.json(contributor);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Ralat tidak diketahui.";
-    const status = message.includes("already exists") ? 409 : 500;
+    const status = message.includes("already exists") ? 409
+      : message.startsWith("Alamat pautan") ? 400 : 500;
     return NextResponse.json({ error: message }, { status });
   }
 }

@@ -111,6 +111,12 @@ export class DatabaseContentRepository implements ContentRepository {
     const dbVisuals = await db.selectFrom("visuals").orderBy("sort_order", "asc").selectAll().execute();
     const dbGlossary = await db.selectFrom("glossary_terms").orderBy("sort_order", "asc").selectAll().execute();
     const dbContributors = await db.selectFrom("contributors").selectAll().execute();
+    const publicContributorBySlug = new Map(dbContributors
+      .filter((c) => c.is_visible)
+      .map((c) => [String(c.slug), {
+        displayName: String(c.display_name),
+        kind: c.kind === "virtual" ? "virtual" as const : "human" as const,
+      }]));
     const dbSources = await db.selectFrom("source_works").selectAll().execute();
     const dbSections = await db.selectFrom("reading_sections").orderBy("position", "asc").selectAll().execute();
     const dbSeries = await db.selectFrom("series").selectAll().execute();
@@ -153,6 +159,7 @@ export class DatabaseContentRepository implements ContentRepository {
           slug: String(slug || ""),
           role: String(c.role_label || ""),
           byline: Boolean(c.byline),
+          ...publicContributorBySlug.get(String(slug || "")),
         });
       }
     }
@@ -239,6 +246,10 @@ export class DatabaseContentRepository implements ContentRepository {
         // Use the published revision snapshot for public view
         const revisionWork = this.buildSnapshotWork(snapshot, wid);
         if (revisionWork) {
+          revisionWork.credits = revisionWork.credits.map((credit) => ({
+            ...credit,
+            ...publicContributorBySlug.get(credit.slug),
+          }));
           this.worksCache.set(revisionWork.slug, revisionWork);
           this.worksByIdCache.set(wid, revisionWork);
           this.workIdBySlug.set(revisionWork.slug, wid);

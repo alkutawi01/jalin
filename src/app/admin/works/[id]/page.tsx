@@ -575,6 +575,11 @@ export default function EditWorkPage() {
   }
 
   async function handleRightsReview() {
+    if (["public_domain", "licensed", "permission_obtained"].includes(sourceForm.rightsStatus) && !sourceForm.rightsNotes.trim()) {
+      setSourceError("Nyatakan asas keputusan hak sebelum merekod kelulusan.");
+      document.getElementById("src-notes")?.focus();
+      return;
+    }
     setSourceSaving(true);
     setSourceError(null);
     setSourceSuccess(null);
@@ -1363,9 +1368,10 @@ export default function EditWorkPage() {
 
           <div className="admin-form-group">
             <label htmlFor="dek">Dek</label>
-            <input
+            <textarea
               id="dek"
-              type="text"
+              className="admin-textarea"
+              rows={5}
               value={form.dek}
               onChange={(e) => setForm((prev) => ({ ...prev, dek: e.target.value }))}
             />
@@ -2345,9 +2351,10 @@ export default function EditWorkPage() {
                   </div>
                   <div className="admin-form-group">
                     <label htmlFor="src-basis">Asas teks (source_text_basis)</label>
-                    <input
+                    <textarea
                       id="src-basis"
-                      type="text"
+                      className="admin-textarea"
+                      rows={4}
                       value={sourceForm.sourceTextBasis}
                       onChange={(e) => setSourceForm((p) => ({ ...p, sourceTextBasis: e.target.value }))}
                       placeholder="Contoh: teks asal Melayu 1957 (domain awam)"
@@ -2358,19 +2365,22 @@ export default function EditWorkPage() {
                   </div>
                 </div>
                 <div className="admin-form-group">
-                  <label htmlFor="src-notes">Nota hak (rights_notes)</label>
+                  <label htmlFor="src-notes">Asas keputusan hak {(["public_domain", "licensed", "permission_obtained"].includes(sourceForm.rightsStatus)) ? "*" : ""}</label>
                   <textarea
                     id="src-notes"
-                    rows={3}
+                    className="admin-textarea"
+                    rows={5}
                     value={sourceForm.rightsNotes}
                     onChange={(e) => setSourceForm((p) => ({ ...p, rightsNotes: e.target.value }))}
                   />
+                  <span className="admin-form-hint">Wajib untuk kelulusan. Nyatakan alasan dan sumber semakan; memilih status sahaja tidak mengesahkan hak.</span>
                 </div>
                 <div className="admin-form-group">
                   <label htmlFor="src-evidence">Bukti/rujukan (rights_evidence — teks)</label>
                   <textarea
                     id="src-evidence"
-                    rows={2}
+                    className="admin-textarea"
+                    rows={5}
                     value={sourceForm.rightsEvidence}
                     onChange={(e) => setSourceForm((p) => ({ ...p, rightsEvidence: e.target.value }))}
                     placeholder="Petikan katalog, DOI, nota arkib, dsb."
@@ -2384,8 +2394,9 @@ export default function EditWorkPage() {
                     onClick={handleSaveProvenance}
                     disabled={sourceSaving}
                   >
-                    {sourceSaving ? "Menyimpan..." : "Simpan Provenance"}
+                    {sourceSaving ? "Menyimpan..." : "Simpan draf sumber"}
                   </button>
+                  <span className="admin-form-hint">Menyimpan butiran sumber sahaja, tanpa meluluskan status hak.</span>
                 </div>
 
                 <hr style={{ margin: "1.25rem 0", opacity: 0.3 }} />
@@ -2402,7 +2413,7 @@ export default function EditWorkPage() {
                     ))}
                   </select>
                   <span className="admin-form-hint">
-                    reviewed_by dan reviewed_at ditetapkan di server daripada sesi admin — bukan daripada klien.
+                    Status tersimpan: {RIGHTS_STATUS_OPTIONS.find((option) => option.value === sourceRights.sourceWork?.rightsStatus)?.label ?? "Belum direkod"}. Memilih pilihan baharu belum menyimpannya; semak bukti, kemudian tekan butang di bawah.
                   </span>
                 </div>
 
@@ -2413,7 +2424,7 @@ export default function EditWorkPage() {
                     onClick={handleRightsReview}
                     disabled={sourceSaving}
                   >
-                    {sourceSaving ? "Merekod..." : "Rekod Semakan Hak"}
+                    {sourceSaving ? "Merekod..." : "Sahkan keputusan hak"}
                   </button>
                 </div>
               </div>

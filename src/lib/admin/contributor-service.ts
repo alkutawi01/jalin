@@ -86,6 +86,9 @@ export async function slugExists(slug: string, excludeSlug?: string): Promise<bo
  */
 export async function createContributor(input: ContributorInput): Promise<ContributorRecord> {
   const db = getAdminDb();
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(input.slug)) {
+    throw new Error("Alamat pautan hanya boleh mengandungi huruf kecil, angka dan sengkang.");
+  }
 
   // Check slug uniqueness
   if (await slugExists(input.slug)) {
@@ -124,6 +127,9 @@ export async function updateContributor(
   input: Partial<ContributorInput>
 ): Promise<ContributorRecord> {
   const db = getAdminDb();
+  if (input.slug !== undefined && !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(input.slug)) {
+    throw new Error("Alamat pautan hanya boleh mengandungi huruf kecil, angka dan sengkang.");
+  }
 
   // Check slug uniqueness if slug is being changed
   if (input.slug && input.slug !== slug) {
@@ -145,11 +151,27 @@ export async function updateContributor(
   if (input.disclosure !== undefined) updateData.disclosure = input.disclosure || null;
   if (input.isVisible !== undefined) updateData.is_visible = input.isVisible;
 
-  await db
-    .updateTable("contributors")
-    .where("slug", "=", slug)
-    .set(updateData)
-    .execute();
+  await db.transaction().execute(async (trx) => {
+    const updated = await trx
+      .updateTable("contributors")
+      .where("slug", "=", slug)
+      .set(updateData)
+      .executeTakeFirst();
+    if (Number(updated.numUpdatedRows) !== 1) {
+      throw new Error("Penyumbang tidak ditemui.");
+    }
+
+    if (input.slug && input.slug !== slug) {
+      await trx.updateTable("credits")
+        .set({ contributor_slug: input.slug })
+        .where("contributor_slug", "=", slug)
+        .execute();
+      await trx.updateTable("submission_contributions")
+        .set({ contributor_slug: input.slug })
+        .where("contributor_slug", "=", slug)
+        .execute();
+    }
+  });
 
   const targetSlug = input.slug || slug;
   const contributor = await getContributor(targetSlug);

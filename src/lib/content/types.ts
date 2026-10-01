@@ -16,6 +16,9 @@ export interface ContributorRef {
   slug: string;
   role: string;
   byline?: boolean;
+  /** Live public contributor identity; populated by the database repository. */
+  displayName?: string;
+  kind?: "human" | "virtual";
 }
 
 export interface GlossaryEntry {

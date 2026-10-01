@@ -472,7 +472,7 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
               </div>
               <div className="admin-form-group">
                 <label htmlFor="f-dek">Dek</label>
-                <textarea id="f-dek" className="admin-textarea" rows={2} value={dek} onChange={(e) => setDek(e.target.value)} />
+                <textarea id="f-dek" className="admin-textarea" rows={4} value={dek} onChange={(e) => setDek(e.target.value)} />
               </div>
               <div className="admin-form-row">
                 <div className="admin-form-group">

@@ -71,9 +71,8 @@ export default function NewSeriesPage() {
         </div>
         <div className="admin-form-group">
           <label htmlFor="dek">Dek</label>
-          <input
+          <textarea className="admin-textarea" rows={4}
             id="dek"
-            type="text"
             value={form.dek}
             onChange={(e) => setForm((p) => ({ ...p, dek: e.target.value }))}
           />

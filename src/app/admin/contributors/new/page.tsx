@@ -118,18 +118,20 @@ export default function NewContributorPage() {
           <label htmlFor="bio">Bio</label>
           <textarea
             id="bio"
+            className="admin-textarea admin-textarea--long"
             value={form.bio}
             onChange={(e) => setForm((prev) => ({ ...prev, bio: e.target.value }))}
             placeholder="Bio ringkas penyumbang..."
-            rows={4}
+            rows={8}
           />
         </div>
 
         <div className="admin-form-group">
           <label htmlFor="disclosure">Pendedahan</label>
-          <input
+          <textarea
             id="disclosure"
-            type="text"
+            className="admin-textarea"
+            rows={5}
             value={form.disclosure}
             onChange={(e) => setForm((prev) => ({ ...prev, disclosure: e.target.value }))}
             placeholder="Contoh: Penulis Maya bekerja di bawah kawal selia editorial manusia."

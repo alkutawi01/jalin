@@ -81,6 +81,10 @@ export default function EditContributorPage() {
         throw new Error(data.error || "Gagal menyimpan.");
       }
 
+      const saved: ContributorData = await res.json();
+      if (saved.slug !== contributorSlug) {
+        router.replace(`/admin/contributors/${encodeURIComponent(saved.slug)}`);
+      }
       setSuccess("Berjaya disimpan.");
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
@@ -94,6 +98,15 @@ export default function EditContributorPage() {
     return (
       <div className="admin-loading">
         <p>Memuatkan penyumbang...</p>
+      </div>
+    );
+  }
+
+  if (error && !form.slug) {
+    return (
+      <div className="admin-form-page">
+        <div className="admin-alert admin-alert-error">{error} Alamat pautan penyumbang mungkin sudah bertukar.</div>
+        <a href="/admin/contributors" className="admin-btn admin-btn-outline">Lihat senarai penyumbang</a>
       </div>
     );
   }
@@ -134,6 +147,7 @@ export default function EditContributorPage() {
             value={form.slug}
             onChange={(e) => setForm((prev) => ({ ...prev, slug: e.target.value }))}
           />
+          <span className="admin-form-hint">Boleh ditukar kepada alamat pilihan anda (huruf kecil, angka dan sengkang). Pautan profil baharu akan menggunakan alamat ini selepas disimpan.</span>
         </div>
 
         <div className="admin-form-group">
@@ -153,17 +167,19 @@ export default function EditContributorPage() {
           <label htmlFor="bio">Bio</label>
           <textarea
             id="bio"
+            className="admin-textarea admin-textarea--long"
             value={form.bio}
             onChange={(e) => setForm((prev) => ({ ...prev, bio: e.target.value }))}
-            rows={4}
+            rows={8}
           />
         </div>
 
         <div className="admin-form-group">
           <label htmlFor="disclosure">Pendedahan</label>
-          <input
+          <textarea
             id="disclosure"
-            type="text"
+            className="admin-textarea"
+            rows={5}
             value={form.disclosure}
             onChange={(e) => setForm((prev) => ({ ...prev, disclosure: e.target.value }))}
           />
