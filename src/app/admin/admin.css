@@ -478,6 +478,8 @@
   color: #8f503e; /* accent as text colour: 6:1 on the surface */
   text-decoration: underline;
   text-underline-offset: 2px;
+}
+
 /* Touch screens: every control is at least 44px so it can be hit reliably. */
 @media (pointer: coarse) {
   .admin-btn-sm,
