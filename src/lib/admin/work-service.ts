@@ -47,6 +47,8 @@ export interface WorkRecord {
   body: string | null;
   reading_minutes: number | null;
   version: string;
+  version_label: string | null;
+  revision_count: number;
   editorial_history: unknown;
   editor_pick: boolean | null;
   editor_pick_rank: number | null;

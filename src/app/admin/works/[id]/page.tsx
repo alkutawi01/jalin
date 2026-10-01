@@ -1284,12 +1284,14 @@ export default function EditWorkPage() {
       <div className="admin-tabs">
         <button
           className={`admin-tab ${activeTab === "content" ? "admin-tab-active" : ""}`}
+          aria-pressed={activeTab === "content"}
           onClick={() => selectTab("content")}
         >
           Kandungan
         </button>
         <button
           className={`admin-tab ${activeTab === "metadata" ? "admin-tab-active" : ""}`}
+          aria-pressed={activeTab === "metadata"}
           onClick={() => selectTab("metadata")}
         >
           Maklumat
@@ -1297,6 +1299,7 @@ export default function EditWorkPage() {
         {form.type === "novela" && (
           <button
             className={`admin-tab ${activeTab === "sections" ? "admin-tab-active" : ""}`}
+            aria-pressed={activeTab === "sections"}
             onClick={() => selectTab("sections")}
           >
             Bahagian ({sections.length})
@@ -1304,18 +1307,21 @@ export default function EditWorkPage() {
         )}
         <button
           className={`admin-tab ${activeTab === "credits" ? "admin-tab-active" : ""}`}
+          aria-pressed={activeTab === "credits"}
           onClick={() => selectTab("credits")}
         >
           Kredit ({credits.length})
         </button>
         <button
           className={`admin-tab ${activeTab === "glossary" ? "admin-tab-active" : ""}`}
+          aria-pressed={activeTab === "glossary"}
           onClick={() => selectTab("glossary")}
         >
           Glosari ({glossaryTerms.length})
         </button>
         <button
           className={`admin-tab ${activeTab === "characters" ? "admin-tab-active" : ""}`}
+          aria-pressed={activeTab === "characters"}
           onClick={() => selectTab("characters")}
         >
           Watak ({characters.length})
@@ -1323,6 +1329,7 @@ export default function EditWorkPage() {
         {DERIVATIVE_TYPES.has(form.type) && (
           <button
             className={`admin-tab ${activeTab === "source" ? "admin-tab-active" : ""}`}
+            aria-pressed={activeTab === "source"}
             onClick={() => selectTab("source")}
           >
             Sumber &amp; Hak

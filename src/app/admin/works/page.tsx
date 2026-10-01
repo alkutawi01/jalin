@@ -53,12 +53,13 @@ export default async function AdminWorksPage({
   const filter = status && ["draft", "review", "ready", "published", "archived"].includes(status) ? status : "";
   const query = (q ?? "").trim().toLowerCase();
   const typeFilter = type && TYPE_LABELS[type] ? type : "";
-  const works = allWorks.filter(
+  const matchingWorks = allWorks.filter(
     (w) =>
-      (!filter || w.status === filter) &&
       (!typeFilter || w.type === typeFilter) &&
       (!query || w.title.toLowerCase().includes(query) || w.slug.toLowerCase().includes(query))
   );
+  const works = matchingWorks.filter((w) => !filter || w.status === filter);
+  const resetHref = filter ? `/admin/works?status=${filter}` : "/admin/works";
   const tabs: { key: string; label: string }[] = [
     { key: "", label: "Semua" },
     { key: "draft", label: "Draf" },
@@ -94,7 +95,7 @@ export default async function AdminWorksPage({
           ))}
         </select>
         <button type="submit" className="a-btn a-btn-primary">Cari</button>
-        {query || typeFilter ? <a href="/admin/works" className="a-btn">Set semula</a> : null}
+        {query || typeFilter ? <a href={resetHref} className="a-btn">Kosongkan carian &amp; jenis</a> : null}
       </form>
 
       <nav className="admin-form-actions" aria-label="Tapis status">
@@ -103,8 +104,9 @@ export default async function AdminWorksPage({
             key={t.key}
             href={`/admin/works?${new URLSearchParams({ ...(t.key ? { status: t.key } : {}), ...(query ? { q: query } : {}), ...(typeFilter ? { type: typeFilter } : {}) }).toString()}`}
             className={`admin-btn admin-btn-sm ${filter === t.key ? "admin-btn-primary" : "admin-btn-outline"}`}
+            aria-current={filter === t.key ? "page" : undefined}
           >
-            {t.label} ({t.key ? allWorks.filter((w) => w.status === t.key).length : allWorks.length})
+            {t.label} ({t.key ? matchingWorks.filter((w) => w.status === t.key).length : matchingWorks.length})
           </a>
         ))}
       </nav>
@@ -126,13 +128,13 @@ export default async function AdminWorksPage({
             {works.length === 0 ? (
               <tr>
                 <td colSpan={7} className="admin-table-empty">
-                  {query || typeFilter || filter ? "Tiada karya yang sepadan dengan carian ini." : "Tiada karya dalam database."}
+                  {query || typeFilter || filter ? "Tiada karya yang sepadan. Kosongkan carian atau pilih status lain." : "Belum ada karya. Pilih Tambah Karya untuk bermula."}
                 </td>
               </tr>
             ) : (
               works.map((work) => (
                 <tr key={work.id}>
-                  <td className="admin-table-title">{work.title}</td>
+                  <td className="admin-table-title"><a href={`/admin/works/${work.id}`} className="a-work-title-link">{work.title}</a></td>
                   <td><code>{work.slug}</code></td>
                   <td>{TYPE_LABELS[work.type] ?? work.type}</td>
                   <td>
@@ -140,15 +142,15 @@ export default async function AdminWorksPage({
                       {STATUS_LABELS[work.status] ?? work.status}
                     </span>
                   </td>
-                  <td>{work.version}</td>
+                  <td>{work.version_label || work.version}</td>
                   <td>{formatDate(work.updated_at)}</td>
                   <td>
                     <div className="admin-table-actions">
                       <a href={`/admin/works/${work.id}`} className="admin-btn admin-btn-sm">
-                        Edit
+                        Sunting
                       </a>
                       <a href={`/admin/works/${work.id}/preview`} className="admin-btn admin-btn-sm admin-btn-outline">
-                        Preview
+                        Pratonton
                       </a>
                     </div>
                   </td>

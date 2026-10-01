@@ -303,6 +303,8 @@
 .a-shell .admin-table td code { white-space: nowrap; max-width: 220px; overflow: hidden; text-overflow: ellipsis; display: inline-block; vertical-align: bottom; }
 .a-shell .admin-table td:nth-child(n+3) { white-space: nowrap; }
 .a-shell .admin-table-title { font-weight: 600; }
+.a-shell .a-work-title-link { color: var(--a-ink); text-decoration: underline; text-decoration-color: var(--a-line-strong); text-underline-offset: 3px; }
+.a-shell .a-work-title-link:hover, .a-shell .a-work-title-link:focus-visible { color: var(--a-accent); text-decoration-color: currentColor; }
 .a-shell .admin-table-actions { display: flex; gap: 6px; justify-content: flex-end; }
 .a-shell .admin-table-empty { text-align: center; color: var(--a-muted); padding: 32px; }
 .a-shell .work-image-list { display: grid; gap: 18px; margin: 20px 0 28px; }
@@ -356,6 +358,10 @@
 }
 .a-shell .admin-tab:hover { color: var(--a-ink); }
 .a-shell .admin-tab-active { color: var(--a-ink); border-bottom-color: var(--a-accent); }
+@media (max-width: 650px) {
+  .a-shell .admin-btn-sm, .a-shell .admin-tab { min-height: 44px; }
+  .a-shell .admin-table-actions { justify-content: flex-start; }
+}
 
 /* ── Alerts ──────────────────────────────────────────── */
 .a-shell .admin-alert { border-radius: var(--a-radius); padding: 10px 14px; margin: 0 0 12px; font-size: 14px; border: 1px solid transparent; }

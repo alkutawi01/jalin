@@ -35,7 +35,8 @@ async function getStats() {
   const repo = await initContentRepository();
   const useDb = repo.source === "database";
 
-  const works = useDb ? repo.getWorks() : getAllWorks();
+  // Admin totals include drafts/review/ready, unlike the public repository.
+  const works = await listWorks();
   
   let editorialHealth = null;
   try {
