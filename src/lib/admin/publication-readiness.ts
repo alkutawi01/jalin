@@ -7,6 +7,7 @@
  */
 
 import type { WorkStatus, WorkType } from "../db/types";
+import { classifyFragmen } from "../content/fragmen-kind";
 
 export type ReadinessGateName =
   | "content"
@@ -49,6 +50,7 @@ export interface ReadinessWorkInput {
   version: string;
   published_at: string | Date | null;
   editorial_history: unknown;
+  metadata?: Record<string, unknown> | null;
 }
 
 export interface ReadinessCreditInput {
@@ -556,6 +558,24 @@ export function evaluatePublicationReadinessFromData(
   }
 
   // --- Rights (source provenance gate) ---
+  if (work.type === "fragmen") {
+    const textLanguage = typeof work.metadata?.fragmenTextLanguage === "string"
+      ? work.metadata.fragmenTextLanguage.trim() : "";
+    const kind = classifyFragmen(input.sourceWork?.original_language, textLanguage);
+    const fragmentIssue = (code: string, message: string) => {
+      (alreadyPublished ? rightsWarnings : rightsBlockers).push(issue(code, message));
+    };
+    if (!textLanguage) {
+      fragmentIssue("fragmen_text_language_missing", "Isi bahasa petikan yang diterbitkan dalam tab Sumber sebelum menerbitkan Fragmen.");
+    } else if (kind === "terjemahan") {
+      if (!input.sourceWork?.source_text_basis?.trim()) {
+        fragmentIssue("fragmen_translation_basis_missing", "Fragmen terjemahan memerlukan asas teks/terjemahan yang jelas dalam tab Sumber.");
+      }
+      if (!credits.some((credit) => ["translated_by", "penterjemah"].includes(credit.role_label.toLowerCase()))) {
+        fragmentIssue("fragmen_translator_missing", "Fragmen terjemahan memerlukan kredit Penterjemah sebenar.");
+      }
+    }
+  }
   if (DERIVATIVE_TYPES.has(String(work.type))) {
     const src = input.sourceWork ?? null;
     if (!src) {
@@ -567,14 +587,14 @@ export function evaluatePublicationReadinessFromData(
       );
     } else {
       const missing: string[] = [];
-      if (!src.original_title || !src.original_title.trim()) missing.push("original_title");
-      if (!src.author || !src.author.trim()) missing.push("author");
-      if (!src.original_language || !src.original_language.trim()) missing.push("original_language");
+      if (!src.original_title || !src.original_title.trim()) missing.push("Tajuk asal");
+      if (!src.author || !src.author.trim()) missing.push("Penulis asal");
+      if (!src.original_language || !src.original_language.trim()) missing.push("Bahasa asal");
       if (missing.length > 0) {
         rightsBlockers.push(
           issue(
             "source_incomplete",
-            `Provenance sumber belum lengkap — medan kosong: ${missing.join(", ")}.`
+            `Butiran sumber belum lengkap — isi ${missing.join(", ")} dalam tab Sumber.`
           )
         );
       }
@@ -597,7 +617,7 @@ export function evaluatePublicationReadinessFromData(
         rightsBlockers.push(
           issue(
             "rights_not_approved",
-            `Status hak "${status}" tidak membenarkan penerbitan. Perlu public_domain, licensed, atau permission_obtained.`
+            `Hak sumber masih ${status === "needs_review" ? "perlu semakan" : status === "unknown" ? "belum diketahui" : "belum diluluskan"}. Semak bukti dan sahkan keputusan hak dalam tab Sumber.`
           )
         );
       } else if (!reviewed) {

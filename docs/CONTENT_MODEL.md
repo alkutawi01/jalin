@@ -134,6 +134,14 @@ Cadangan field:
 
 Tiada content derivative berasaskan karya lama boleh READY tanpa provenance yang mencukupi.
 
+### Dua bentuk Fragmen (keputusan editorial 1 Oktober 2026)
+
+- **Fragmen asal**: bahasa petikan yang diterbitkan sama dengan bahasa karya sumber. Petikan Bahasa Indonesia yang dikekalkan dalam Bahasa Indonesia termasuk di sini; “asal” tidak bermaksud karya milik Jalin atau automatik domain awam.
+- **Fragmen terjemahan**: bahasa petikan yang diterbitkan berbeza daripada bahasa karya sumber. Rekod asas teks/terjemahan dan kredit penterjemah sebenar sebelum terbit.
+- Simpan bahasa petikan diterbitkan dalam `works.metadata.fragmenTextLanguage`; bahasa karya sumber kekal dalam `source_works.original_language`. Jenis Fragmen diterbitkan sebagai hasil perbandingan kedua-duanya, bukan pilihan bebas yang boleh bercanggah dengan data.
+- Kedua-duanya tetap melalui semakan hak sumber oleh editor manusia. Perubahan bahasa petikan selepas kelulusan membatalkan kelulusan hak supaya semakan dibuat semula.
+- Jika tajuk paparan Fragmen berbeza daripada tajuk karya sumber (misalnya tajuk petikan atau tajuk terjemahan), paparkan tajuk asal dengan label jelas pada halaman pembaca.
+
 ## GlossaryTerm
 
 - id

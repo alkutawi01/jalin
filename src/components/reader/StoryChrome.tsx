@@ -42,7 +42,7 @@ export function StoryHead({
     <>
       <div className="story-kicker">{kicker}</div>
       <h1>{title}</h1>
-      {originalTitle ? <p className="story-original-title">{originalTitle}</p> : null}
+      {originalTitle ? <p className="story-original-title">Tajuk asal: {originalTitle}</p> : null}
       <p className="dek">{dek}</p>
       {byline.length > 0 && (
         <div className="byline">

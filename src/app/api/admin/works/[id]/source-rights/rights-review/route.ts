@@ -28,6 +28,7 @@ export async function POST(
     const result = await performRightsReview(
       id,
       {
+        fragmenTextLanguage: body.fragmenTextLanguage,
         rights_status: String(body.rights_status),
         rights_notes: body.rights_notes ?? null,
         rights_evidence: body.rights_evidence ?? null,

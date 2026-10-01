@@ -6,16 +6,16 @@ import { getDb, hasDb } from "../db";
 /** Reader-safe public source provenance — never includes rights_notes/evidence/history/reviewed_by/reviewed_at/source_url. */
 function mapPublicSourceWork(row: any): SourceWorkRef | undefined {
   if (!row) return undefined;
-  const title = row.original_title ? String(row.original_title) : "";
+  const title = row.original_title || row.title ? String(row.original_title || row.title) : "";
   const author = row.author ? String(row.author) : "";
   if (!title && !author) return undefined;
   // Return the raw rights enum — label conversion belongs solely to
   // source-attribution.ts so the DB path matches the Markdown path (GAP-4).
-  const status = row.rights_status ? String(row.rights_status) : undefined;
+  const status = row.rights_status || row.rightsStatus ? String(row.rights_status || row.rightsStatus) : undefined;
   return {
     title,
     author: author || undefined,
-    language: row.original_language ? String(row.original_language) : undefined,
+    language: row.original_language || row.language ? String(row.original_language || row.language) : undefined,
     rightsStatus: status,
   };
 }
@@ -70,7 +70,7 @@ function mapWork(
     visuals,
     glossary,
     editorialHistory,
-    metadata: parseJsonbField<{ characters?: CharacterMeta[] }>(row.metadata),
+    metadata: parseJsonbField<{ characters?: CharacterMeta[]; fragmenTextLanguage?: string }>(row.metadata),
     reader: parseJsonbField<{ note?: string }>(row.reader),
     sourceWork,
     sections: sections && sections.length > 0 ? sections : undefined,
@@ -442,7 +442,7 @@ export class DatabaseContentRepository implements ContentRepository {
         editorialHistory: snapshot.editorialHistory || [],
         metadata: snapshot.metadata,
         reader: snapshot.reader,
-        sourceWork: snapshot.sourceWork,
+        sourceWork: mapPublicSourceWork(snapshot.sourceWork),
         sections: snapshot.sections,
         series: snapshot.series,
         publishedRevision: snapshot.publishedRevision,

@@ -12,6 +12,7 @@ import { toast, confirmAction } from "../../../../lib/admin/dialogs";
 import LoadingBlock from "../../../../components/admin/LoadingBlock";
 import StoryMarkdown from "../../../../components/reader/StoryMarkdown";
 import { stripImageMarkers } from "../../../../lib/reader/image-markers";
+import { classifyFragmen } from "../../../../lib/content/fragmen-kind";
 
 const WORK_TYPES = [
   { value: "cerpen", label: "Cerpen" },
@@ -192,6 +193,7 @@ const RIGHTS_STATUS_OPTIONS = [
 interface SourceRightsData {
   workId: string;
   isDerivative: boolean;
+  fragmenTextLanguage: string | null;
   sourceWork: {
     id: number;
     originalTitle: string | null;
@@ -362,6 +364,7 @@ export default function EditWorkPage() {
   const [sourceSuccess, setSourceSuccess] = useState<string | null>(null);
   const [sourceSaving, setSourceSaving] = useState(false);
   const [sourceForm, setSourceForm] = useState({
+    fragmenTextLanguage: "",
     originalTitle: "",
     author: "",
     originalLanguage: "",
@@ -516,6 +519,7 @@ export default function EditWorkPage() {
       setSourceRights(data);
       if (data.sourceWork) {
         setSourceForm({
+          fragmenTextLanguage: data.fragmenTextLanguage || "",
           originalTitle: data.sourceWork.originalTitle || "",
           author: data.sourceWork.author || "",
           originalLanguage: data.sourceWork.originalLanguage || "",
@@ -545,6 +549,7 @@ export default function EditWorkPage() {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          ...(form.type === "fragmen" ? { fragmenTextLanguage: sourceForm.fragmenTextLanguage } : {}),
           originalTitle: sourceForm.originalTitle || null,
           author: sourceForm.author || null,
           originalLanguage: sourceForm.originalLanguage || null,
@@ -588,6 +593,7 @@ export default function EditWorkPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          ...(form.type === "fragmen" ? { fragmenTextLanguage: sourceForm.fragmenTextLanguage } : {}),
           rights_status: sourceForm.rightsStatus,
           rights_notes: sourceForm.rightsNotes || null,
           rights_evidence: sourceForm.rightsEvidence || null,
@@ -2249,7 +2255,7 @@ export default function EditWorkPage() {
       {activeTab === "source" && DERIVATIVE_TYPES.has(form.type) && (
         <div className="admin-source-rights">
           <div className="admin-credits-header">
-            <h3>Provenance Sumber &amp; Semakan Hak</h3>
+            <h3>Sumber karya &amp; semakan hak</h3>
             {sourceRights?.sourceWork?.reviewedAt && (
               <span className="admin-status admin-status-ready">
                 Direviu {sourceRights.sourceWork.reviewedBy} · {new Date(sourceRights.sourceWork.reviewedAt).toLocaleString("ms-MY")}
@@ -2318,6 +2324,25 @@ export default function EditWorkPage() {
                     />
                   </div>
                 </div>
+                {form.type === "fragmen" && (
+                  <div className="admin-form-group">
+                    <label htmlFor="fragmen-text-language">Bahasa petikan yang diterbitkan *</label>
+                    <input
+                      id="fragmen-text-language"
+                      type="text"
+                      value={sourceForm.fragmenTextLanguage}
+                      onChange={(e) => setSourceForm((p) => ({ ...p, fragmenTextLanguage: e.target.value }))}
+                      placeholder="Contoh: Bahasa Indonesia atau Bahasa Melayu"
+                    />
+                    <span className="admin-form-hint">
+                      {classifyFragmen(sourceForm.originalLanguage, sourceForm.fragmenTextLanguage) === "asal"
+                        ? "Fragmen asal: petikan dikekalkan dalam bahasa karya sumber. Hak sumber tetap perlu disemak."
+                        : classifyFragmen(sourceForm.originalLanguage, sourceForm.fragmenTextLanguage) === "terjemahan"
+                          ? "Fragmen terjemahan: jelaskan asas terjemahan di bawah dan tambah kredit Penterjemah sebenar. Hak sumber tetap perlu disemak."
+                          : "Isi bahasa asal dan bahasa petikan. Jenis Fragmen ditentukan daripada perbandingan kedua-duanya."}
+                    </span>
+                  </div>
+                )}
                 <div className="admin-form-row">
                   <div className="admin-form-group">
                     <label htmlFor="src-edition">Edisi/cetakan sumber</label>
@@ -2350,7 +2375,7 @@ export default function EditWorkPage() {
                     />
                   </div>
                   <div className="admin-form-group">
-                    <label htmlFor="src-basis">Asas teks (source_text_basis)</label>
+                    <label htmlFor="src-basis">Asas teks {form.type === "fragmen" && classifyFragmen(sourceForm.originalLanguage, sourceForm.fragmenTextLanguage) === "terjemahan" ? "dan terjemahan *" : ""}</label>
                     <textarea
                       id="src-basis"
                       className="admin-textarea"

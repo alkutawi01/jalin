@@ -57,8 +57,8 @@ console.log("sourceWork reader tests (Phase 4D-0.5)\n");
     "Reader page derives the public-facing original title via originalTitleOf"
   );
   assert(
-    pageSource.includes('MALAY_LANGUAGE_NAMES.has'),
-    "Original title is only shown when the source language isn't Malay"
+    pageSource.includes('localeCompare(work.title.trim()'),
+    "Original title is shown when it differs from the displayed title"
   );
 }
 
@@ -68,8 +68,8 @@ console.log("sourceWork reader tests (Phase 4D-0.5)\n");
     "utf8"
   );
   assert(
-    chromeSource.includes("story-original-title"),
-    "StoryHead renders the original title as a distinct, italicized subtitle"
+    chromeSource.includes("story-original-title") && chromeSource.includes("Tajuk asal:"),
+    "StoryHead explicitly labels the original title"
   );
 }
 

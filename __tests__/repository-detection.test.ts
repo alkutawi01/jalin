@@ -15,7 +15,8 @@
  *   4. Reader pages render dynamically, so production DB changes cannot be
  *      hidden behind build-time static params.
  *
- * Requires DATABASE_URL (runs from the repo root with .env.local).
+ * Runs without a database. Database integration assertions require an explicit
+ * TEST_DATABASE_URL; the test never implicitly connects to production.
  */
 
 import fs from "node:fs";
@@ -30,6 +31,9 @@ import {
 } from "../src/lib/content";
 
 config({ path: ".env.local", override: true });
+const testDatabaseUrl = process.env.TEST_DATABASE_URL?.trim();
+if (testDatabaseUrl) process.env.DATABASE_URL = testDatabaseUrl;
+else delete process.env.DATABASE_URL;
 
 let passed = 0;
 let failed = 0;
@@ -97,10 +101,7 @@ async function main() {
 
   // --- 3. Factory wiring: source switch honours CONTENT_SOURCE ---
   console.log("repository factory:");
-  assert(
-    hasDb(),
-    "DATABASE_URL available (required — run from repo root with .env.local)",
-  );
+  const databaseAvailable = hasDb();
 
   process.env.CONTENT_SOURCE = "markdown";
   resetContentRepository();
@@ -114,20 +115,24 @@ async function main() {
   resetContentRepository();
   const factoryDatabase = await initContentRepository();
   assert(
-    factoryDatabase.source === "database",
-    "factory returns database repository when CONTENT_SOURCE=database",
+    factoryDatabase.source === (databaseAvailable ? "database" : "markdown"),
+    databaseAvailable
+      ? "factory returns database repository when CONTENT_SOURCE=database"
+      : "factory safely falls back to markdown without DATABASE_URL",
   );
 
   // --- 4. DB works are available and reader pages are not pre-rendered ---
   console.log("dynamic reader routes:");
-  const novelas = factoryDatabase.getWorksByType("novela");
-  assert(
-    novelas.length > 0,
-    "database exposes at least one published novela",
-  );
-
-  const target = novelas[0];
-  assert((target.sections ?? []).length > 0, `novela "${target.slug}" exposes reading sections`);
+  if (databaseAvailable) {
+    const novelas = factoryDatabase.getWorksByType("novela");
+    assert(novelas.length > 0, "database exposes at least one published novela");
+    const target = novelas[0];
+    if (target) {
+      assert((target.sections ?? []).length > 0, `novela "${target.slug}" exposes reading sections`);
+    }
+  } else {
+    console.log("  SKIP: database content assertions (TEST_DATABASE_URL not supplied)");
+  }
   for (const route of [
     "src/app/kategori/[type]/[slug]/page.tsx",
     "src/app/kategori/[type]/[slug]/[sectionSlug]/page.tsx",

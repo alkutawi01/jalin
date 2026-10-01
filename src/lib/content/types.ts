@@ -130,6 +130,7 @@ export interface Work {
 
   metadata?: {
     characters?: CharacterMeta[];
+    fragmenTextLanguage?: string;
   };
 
   reader?: ReaderMeta;

@@ -151,6 +151,7 @@ async function loadReadinessInput(
           ? work.published_at.toISOString()
           : work.published_at,
       editorial_history: work.editorial_history,
+      metadata: work.metadata,
     },
     credits,
     visuals,

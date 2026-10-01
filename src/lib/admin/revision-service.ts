@@ -110,6 +110,7 @@ function buildSnapshot(input: Awaited<ReturnType<typeof loadWorkForRevision>>) {
     versionLabel: input.work.version_label,
     revisionCount: input.work.revision_count,
     publishedBy: input.work.published_by,
+    metadata: input.work.metadata,
     firstPublishedAt: input.work.first_published_at,
     publishedRevisionId: input.work.published_revision_id,
     body: input.work.body,

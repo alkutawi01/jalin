@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { displayableGenre } from "../../../../lib/reader/genre-display";
+import { classifyFragmen } from "../../../../lib/content/fragmen-kind";
 import { absoluteUrl } from "../../../../lib/seo";
 import {
   EditorialImage,
@@ -108,8 +109,14 @@ async function getWorksByTypeUnified(type: WorkType) {
 function buildMetaRows(work: Awaited<ReturnType<typeof getWork>>): WorkMetaRow[] {
   if (!work) return [];
   const genre = displayableGenre(work.genre);
+  const fragmenKind = work.type === "fragmen"
+    ? classifyFragmen(work.sourceWork?.language, work.metadata?.fragmenTextLanguage)
+    : "belum_ditentukan";
+  const formLabel = fragmenKind === "asal" ? "Fragmen asal"
+    : fragmenKind === "terjemahan" ? "Fragmen terjemahan"
+      : TYPE_LABELS[work.type] ?? work.type;
   return [
-    { label: "Bentuk", value: TYPE_LABELS[work.type] ?? work.type },
+    { label: "Bentuk", value: formLabel },
     ...(genre ? [{ label: "Genre", value: genre }] : []),
     { label: "Bacaan", value: work.readingMinutes ? `± ${work.readingMinutes} min` : "—" },
     ...(work.sourceWork?.language
@@ -119,12 +126,10 @@ function buildMetaRows(work: Awaited<ReturnType<typeof getWork>>): WorkMetaRow[]
   ];
 }
 
-const MALAY_LANGUAGE_NAMES = new Set(["melayu", "malay", "bahasa melayu"]);
-
-function originalTitleOf(work: { sourceWork?: { title?: string; language?: string } }): string | undefined {
+function originalTitleOf(work: { title: string; sourceWork?: { title?: string } }): string | undefined {
   const source = work.sourceWork;
-  if (!source?.title || !source.language) return undefined;
-  if (MALAY_LANGUAGE_NAMES.has(source.language.trim().toLowerCase())) return undefined;
+  if (!source?.title) return undefined;
+  if (source.title.trim().localeCompare(work.title.trim(), "ms", { sensitivity: "base" }) === 0) return undefined;
   return source.title;
 }
 

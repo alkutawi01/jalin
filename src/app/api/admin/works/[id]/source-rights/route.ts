@@ -41,6 +41,7 @@ export async function PUT(
     const result = await upsertSourceProvenance(
       id,
       {
+        fragmenTextLanguage: body.fragmenTextLanguage,
         originalTitle: body.originalTitle ?? null,
         author: body.author ?? null,
         originalLanguage: body.originalLanguage ?? null,
@@ -66,7 +67,7 @@ export async function PUT(
     const message = error instanceof Error ? error.message : "Ralat tidak diketahui.";
     const status = message.includes("tidak ditemui")
       ? 404
-      : message.includes("hanya untuk") || message.includes("source_url")
+      : message.includes("hanya untuk") || message.includes("source_url") || message.includes("Bahasa petikan")
         ? 400
         : 500;
     return NextResponse.json({ error: message }, { status });

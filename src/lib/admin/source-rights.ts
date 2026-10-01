@@ -77,6 +77,7 @@ export interface RightsHistoryEntry {
 export interface SourceRightsAdminView {
   workId: string;
   isDerivative: boolean;
+  fragmenTextLanguage: string | null;
   sourceWork: {
     id: number;
     originalTitle: string | null;
@@ -192,6 +193,8 @@ export async function getSourceRightsView(
   return {
     workId,
     isDerivative,
+    fragmenTextLanguage: typeof work.metadata?.fragmenTextLanguage === "string"
+      ? work.metadata.fragmenTextLanguage : null,
     sourceWork: source
       ? {
           id: Number(source.id),
@@ -218,6 +221,7 @@ export async function getSourceRightsView(
 }
 
 export interface SourceProvenanceInput {
+  fragmenTextLanguage?: string | null;
   originalTitle?: string | null;
   author?: string | null;
   originalLanguage?: string | null;
@@ -233,6 +237,41 @@ export interface SourceProvenanceInput {
 export interface SourceRightsResult {
   view: SourceRightsAdminView;
   invalidatedApproval: boolean;
+}
+
+async function saveFragmenTextLanguage(
+  db: Kysely<Database>, workId: string, language: string | null | undefined,
+  actor: { id: string; email?: string },
+): Promise<boolean> {
+  if (language === undefined) return false;
+  const next = (language ?? "").trim();
+  if (!next || next.length > 80) {
+    throw new Error("Bahasa petikan terbitan wajib diisi (maksimum 80 aksara).");
+  }
+  return db.transaction().execute(async (trx) => {
+    const work = await trx.selectFrom("works").where("id", "=", workId).selectAll().forUpdate().executeTakeFirst();
+    if (!work) throw new Error("Work tidak ditemui.");
+    if (work.type !== "fragmen") return false;
+    const metadata = (work.metadata ?? {}) as Record<string, unknown>;
+    if (metadata.fragmenTextLanguage === next) return false;
+    await trx.updateTable("works").where("id", "=", workId)
+      .set({ metadata: { ...metadata, fragmenTextLanguage: next }, updated_at: new Date().toISOString() })
+      .execute();
+    const source = await loadSourceWork(trx, workId, { lock: true });
+    if (!source || !isPassRightsStatus(source.rights_status)) return false;
+    const history = parseRightsHistory(source.rights_history);
+    history.push({
+      at: new Date().toISOString(), actor: actor.email || actor.id,
+      action: "provenance_edit", rights_status: "needs_review",
+      note: "Bahasa petikan diterbitkan berubah — semakan hak perlu diulang.",
+    });
+    await trx.updateTable("source_works").where("work_id", "=", workId)
+      .set({ rights_status: "needs_review", reviewed_at: null, reviewed_by: null,
+        approved_material_hash: null, rights_history: JSON.stringify(history) as never,
+        updated_at: new Date().toISOString() })
+      .execute();
+    return true;
+  });
 }
 
 /**
@@ -263,6 +302,9 @@ export async function upsertSourceProvenance(
   const urlCheck = validateSourceUrl(input.sourceUrl ?? null);
   if (!urlCheck.ok) throw new Error(urlCheck.reason);
 
+  const invalidatedByLanguage = type === "fragmen"
+    ? await saveFragmenTextLanguage(db, workId, input.fragmenTextLanguage, actor) : false;
+
   const existing = await loadSourceWork(db, workId);
 
   const next = {
@@ -292,7 +334,7 @@ export async function upsertSourceProvenance(
       Boolean(existing.reviewed_by)
     : false;
   const materialChanged = existing ? computeMaterialHash(existing) !== nextHash : false;
-  const invalidatedApproval = wasPass && materialChanged;
+  const invalidatedApproval = invalidatedByLanguage || (wasPass && materialChanged);
 
   const history = parseRightsHistory(existing?.rights_history ?? null);
   if (existing) {
@@ -354,6 +396,7 @@ export async function upsertSourceProvenance(
 }
 
 export interface RightsReviewInput {
+  fragmenTextLanguage?: string | null;
   rights_status: string;
   rights_notes?: string | null;
   rights_evidence?: string | null;
@@ -411,6 +454,10 @@ export async function performRightsReview(
   if (input.sourceUrl !== undefined) {
     const urlCheck = validateSourceUrl(input.sourceUrl);
     if (!urlCheck.ok) throw new Error(urlCheck.reason);
+  }
+
+  if (type === "fragmen") {
+    await saveFragmenTextLanguage(db, workId, input.fragmenTextLanguage, actor);
   }
 
   const existing = await loadSourceWork(db, workId);

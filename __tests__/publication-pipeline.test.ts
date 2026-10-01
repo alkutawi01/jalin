@@ -307,7 +307,7 @@ console.log("\n=== Readiness: visuals ===");
 
   const fragmenNoHero = evaluatePublicationReadinessFromData(
     validInput({
-      work: baseWork({ type: "fragmen" }),
+      work: baseWork({ type: "fragmen", metadata: { fragmenTextLanguage: "Melayu Klasik" } }),
       visuals: [],
       sourceWork: approvedSourceForVisualPolicy,
     })
@@ -317,6 +317,21 @@ console.log("\n=== Readiness: visuals ===");
     fragmenNoHero.warnings.some((w) => w.code === "hero_missing"),
     "fragmen missing hero is warning not blocker"
   );
+
+  const fragmenMissingLanguage = evaluatePublicationReadinessFromData(validInput({
+    work: baseWork({ type: "fragmen" }), sourceWork: approvedSourceForVisualPolicy,
+  }));
+  assert(fragmenMissingLanguage.blockers.some((b) => b.code === "fragmen_text_language_missing"),
+    "fragmen requires published excerpt language");
+
+  const fragmenTranslated = evaluatePublicationReadinessFromData(validInput({
+    work: baseWork({ type: "fragmen", metadata: { fragmenTextLanguage: "Bahasa Melayu" } }),
+    sourceWork: { ...approvedSourceForVisualPolicy, original_language: "Bahasa Indonesia", source_text_basis: null },
+  }));
+  assert(fragmenTranslated.blockers.some((b) => b.code === "fragmen_translation_basis_missing"),
+    "translated fragmen requires translation basis");
+  assert(fragmenTranslated.blockers.some((b) => b.code === "fragmen_translator_missing"),
+    "translated fragmen requires real translator credit");
 
   assert(VISUAL_POLICY.cerpen.hero === "required", "VISUAL_POLICY cerpen hero required");
   assert(VISUAL_POLICY.novela.hero === "required", "VISUAL_POLICY novela hero required");
