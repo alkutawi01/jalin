@@ -172,6 +172,9 @@
 .a-shell .admin-btn-primary { background: var(--a-ink); border-color: var(--a-ink); color: #fff; }
 .a-btn-primary:hover,
 .a-shell .admin-btn-primary:hover { background: #0f2830; border-color: #0f2830; }
+.a-btn:disabled { cursor: not-allowed; opacity: .5; }
+.a-btn-primary:disabled,
+.a-btn-primary:disabled:hover { background: var(--a-ink); border-color: var(--a-ink); }
 .a-btn-quiet { min-height: 34px; padding: 6px 12px; }
 .a-shell .admin-btn-outline { background: var(--a-surface); }
 .a-shell .admin-btn-danger { background: var(--a-surface); color: var(--a-danger); border-color: #e3b5b0; }

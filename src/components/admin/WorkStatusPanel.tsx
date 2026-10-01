@@ -103,7 +103,10 @@ export default function WorkStatusPanel({
       hint: allClear ? undefined : "Selesaikan senarai semak di bawah dahulu."
     };
   } else if (status === "ready") {
-    next = { label: "Terbitkan", run: onPublish, disabled: !allClear };
+    next = {
+      label: "Terbitkan", run: onPublish, disabled: !allClear,
+      hint: allClear ? undefined : "Terbitan disekat. Selesaikan bahagian yang ditandakan di bawah dahulu."
+    };
   }
 
   return (
@@ -151,7 +154,7 @@ export default function WorkStatusPanel({
         ))}
         {status === "archived" ? <li className="a-step is-current">Diarkibkan</li> : null}
       </ol>
-      {next?.hint && status === "review" ? <p className="a-status-hint">{next.hint}</p> : null}
+      {next?.hint ? <p className="a-status-hint">{next.hint}</p> : null}
 
       {status !== "published" && status !== "archived" ? (
         <div className="a-check">
