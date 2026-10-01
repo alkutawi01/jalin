@@ -57,6 +57,8 @@ export interface EditorialRevision {
 export interface CharacterMeta {
   name: string;
   role: string;
+  /** Slug of the chapter where the character first appears (novela). Used to avoid spoilers. */
+  firstAppearanceSection?: string | null;
 }
 
 export interface ReaderMeta {

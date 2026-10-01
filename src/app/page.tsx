@@ -182,7 +182,7 @@ function EditorialSelection({ works }: { works: PublicWorkSummary[] }) {
         <div className="editorial-grid">
           {works.map((work) => (
             <a key={work.slug} href={`/kategori/${work.type}/${work.slug}`} className="editorial-pick">
-              <WorkCover type={work.type} title={work.title} hero={work.hero} rightsYear={yearOf(work)} />
+              <WorkCover type={work.type} title={work.title} hero={work.hero} rightsYear={yearOf(work)} sizes="(max-width: 680px) 100vw, 360px" quality={85} />
               <div className="editorial-pick-body">
                 <span className="editorial-pick-type">
                   {TYPE_LABELS[work.type] ?? work.type}
@@ -201,6 +201,76 @@ function EditorialSelection({ works }: { works: PublicWorkSummary[] }) {
   );
 }
 
+interface SeriesHighlightData {
+  slug: string;
+  title: string;
+  dek?: string;
+  episodeCount: number;
+  first: { slug: string; position: number };
+  latest: { slug: string; position: number; title: string };
+  hero?: { src: string; alt: string };
+  year: string;
+}
+
+/** The series with the most recent published episode. Null when no series has a published episode. */
+async function getSeriesHighlight(): Promise<SeriesHighlightData | null> {
+  const repo = await initContentRepository();
+  let best: (SeriesHighlightData & { at: string }) | null = null;
+  for (const series of repo.getPublishedSeries()) {
+    const episodes = repo.getPublishedSeriesEpisodes(series.id);
+    if (episodes.length === 0) continue;
+    const ordered = [...episodes].sort((a, b) => a.position - b.position);
+    const latest = [...episodes].sort((a, b) => (b.publishedAt ?? "").localeCompare(a.publishedAt ?? ""))[0]!;
+    const at = latest.publishedAt ?? "";
+    if (best && best.at >= at) continue;
+    const cover = repo.getWork(ordered[0]!.slug)?.visuals.find((visual) => visual.role === "hero");
+    best = {
+      slug: series.slug,
+      title: series.title,
+      dek: series.dek,
+      episodeCount: episodes.length,
+      first: { slug: ordered[0]!.slug, position: ordered[0]!.position },
+      latest: { slug: latest.slug, position: latest.position, title: latest.title },
+      hero: cover?.src ? { src: cover.src, alt: cover.alt ?? "" } : undefined,
+      year: (at || "2026").slice(0, 4),
+      at
+    };
+  }
+  return best;
+}
+
+function SeriesHighlight({ data }: { data: SeriesHighlightData }) {
+  const base = `/kategori/bersiri/${data.slug}`;
+  return (
+    <section className="editorial-selection series-highlight" aria-labelledby="series-highlight-title">
+      <div className="site-shell">
+        <header className="section-head">
+          <h2 id="series-highlight-title">Bersiri</h2>
+          <p className="section-sub">Sambungan demi sambungan, satu episod pada satu masa</p>
+        </header>
+        <div className="editorial-pick">
+          <a href={base} aria-label={`Buka siri ${data.title}`}>
+            <WorkCover type="bersiri" title={data.title} hero={data.hero} rightsYear={data.year} sizes="(max-width: 680px) 100vw, 360px" quality={85} />
+          </a>
+          <div className="editorial-pick-body">
+            <span className="editorial-pick-type">Bersiri · {data.episodeCount} episod</span>
+            <h3 style={{ fontStyle: "normal" }}><a href={base}>{data.title}</a></h3>
+            {data.dek ? <p>{data.dek}</p> : null}
+            <p className="work-attribution">Terkini: Episod {data.latest.position} — {data.latest.title}</p>
+            <span>
+              <a className="editorial-pick-cta" href={`${base}/${data.latest.slug}`}>Baca Episod {data.latest.position}</a>
+              {data.first.slug !== data.latest.slug ? (
+                <> · <a href={`${base}/${data.first.slug}`}>Mula dari Episod {data.first.position}</a></>
+              ) : null}
+              {" · "}<a href={base}>Semua episod</a>
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 async function getWorks() {
   const repo = await initContentRepository();
   if (repo.source === "database") {
@@ -211,20 +281,24 @@ async function getWorks() {
 
 export default async function Home() {
   const allWorks = await getWorks();
-  const editorialPicks = await getEditorPickSummaries(allWorks);
-
-  const sorted = [...allWorks].sort((a, b) => {
-    const aDate = a.publishedAt ?? "";
-    const bDate = b.publishedAt ?? "";
-    return bDate.localeCompare(aDate);
-  });
+  const byNewest = (a: { publishedAt?: string }, b: { publishedAt?: string }) =>
+    (b.publishedAt ?? "").localeCompare(a.publishedAt ?? "");
+  // Series episodes are reached through their series (the flat episode URL does not exist), so they
+  // are kept out of the single-work sections and shown by the Bersiri highlight instead.
+  const standalone = allWorks.filter((work) => work.type !== "bersiri");
+  const sorted = [...standalone].sort(byNewest);
+  const sortedAll = [...allWorks].sort(byNewest);
+  const editorialPicks = await getEditorPickSummaries(standalone);
+  const seriesHighlight = await getSeriesHighlight();
 
   const featured = sorted[0] ?? null;
-  const latest = sorted.slice(1, 7);
+  // A work appears once: not again as an editor's pick or as the featured work.
+  const alreadyShown = new Set<string>([featured?.slug ?? "", ...editorialPicks.map((pick) => pick.slug)]);
+  const latest = sorted.filter((work) => !alreadyShown.has(work.slug)).slice(0, 6);
 
   const categoryImages = new Map<string, { src: string; alt: string; year: string }>();
   for (const cat of CATEGORIES) {
-    const withHero = sorted.find((work) => {
+    const withHero = sortedAll.find((work) => {
       const summary = projectPublicWorkSummary(work);
       return summary.type === cat.type && summary.hero?.src;
     });
@@ -236,14 +310,22 @@ export default async function Home() {
 
   return (
     <>
-      <SiteHeader />
+      <SiteHeader active="home" />
 
       <main>
         {featured ? (
           <FeaturedHero work={projectPublicFeaturedSummary(featured)} />
         ) : null}
 
+        {allWorks.length === 0 ? (
+          <section className="site-shell">
+            <p className="section-sub">Karya pertama sedang disediakan. Kembali tidak lama lagi.</p>
+          </section>
+        ) : null}
+
         <EditorialSelection works={editorialPicks} />
+
+        {seriesHighlight ? <SeriesHighlight data={seriesHighlight} /> : null}
 
         {latest.length > 0 ? <section className="latest-works">
           <div className="site-shell">

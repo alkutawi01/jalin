@@ -1,5 +1,5 @@
 export const NAV_LINKS: { label: string; href: string; match?: string }[] = [
-  { label: "Utama", href: "/" },
+  { label: "Utama", href: "/", match: "home" },
   { label: "Cerpen", href: "/kategori/cerpen", match: "cerpen" },
   { label: "Novela", href: "/kategori/novela", match: "novela" },
   { label: "Bersiri", href: "/kategori/bersiri", match: "bersiri" },
@@ -22,6 +22,7 @@ export function SiteNavLinks({
         <a
           key={link.href}
           className={active && link.match === active ? "active" : undefined}
+          aria-current={active && link.match === active ? "page" : undefined}
           href={link.href}
         >
           {link.label}

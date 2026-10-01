@@ -14,6 +14,7 @@ import MobileStoryInfo from "../../../../../components/reader/MobileStoryInfo";
 import { initContentRepository } from "../../../../../lib/content";
 import { getWorkBySlug, getWorksByType } from "../../../../../lib/content/workLoader";
 import {
+  disclosureNoteFor,
   projectBylineCredits,
   projectEditorialCredits
 } from "../../../../../lib/reader/credit-projection";
@@ -152,7 +153,7 @@ export default async function EpisodePage({
     work: workMeta,
     characters,
     editorial,
-    note: work.reader?.note ?? "Penulis Maya bekerja di bawah kawal selia editorial manusia."
+    note: disclosureNoteFor(work)
   };
 
   const rights = `© ADJUNG ${(work.publishedAt ?? "2026").slice(0, 4)}`;
@@ -189,7 +190,7 @@ export default async function EpisodePage({
         <div className="site-shell reading-grid">
           <LeftRail
             rows={workMeta}
-            note="Penulis Maya bekerja di bawah kawal selia editorial manusia."
+            note={disclosureNoteFor(work)}
           />
 
           <article className="story-body">
