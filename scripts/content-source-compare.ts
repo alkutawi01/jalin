@@ -12,7 +12,6 @@ const SLUGS = [
   "nombor-giliran-117",
   "di-hadapan-singgahsana",
   "gatsby-agung",
-  "gatsby-kapal-melawan-arus",
 ];
 
 interface ComparisonResult {

@@ -84,8 +84,8 @@ console.log("reader credit projection tests\n");
 }
 
 {
-  const fragmen = getWorkBySlug("gatsby-kapal-melawan-arus");
-  const byline = projectBylineCredits(fragmen?.credits ?? []);
+  assert(!getWorkBySlug("gatsby-kapal-melawan-arus"), "Archived English fragment is absent from public works");
+  const byline = projectBylineCredits([{ slug: "guest:F. Scott Fitzgerald", role: "author", byline: true }]);
   assert(byline.length === 1, "Fragmen source author reaches the byline");
   assert(byline[0]?.name === "F. Scott Fitzgerald", "Fragmen byline shows the source author name");
   assert(byline[0]?.href === undefined, "Guest source author byline carries no contributor link");

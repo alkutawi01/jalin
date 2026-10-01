@@ -49,12 +49,14 @@ Watak dan glosari hanya untuk episod ini. Jangan dedahkan kejadian daripada epis
 const FRAGMEN_DATA = `TUGAS
 Anda menerima sebuah fragmen (sedutan bermakna daripada karya lain) yang sudah ada. Tugas anda BUKAN menulis atau mengubah fragmen itu. Tugas anda hanya mengeluarkan maklumat yang Jalin perlukan, termasuk sumber karya asal (tajuk asal dalam bahasa asalnya, pengarang asal dan bahasa asal). Jika teks tidak mempunyai tajuk, cadangkan satu tajuk pendek yang sesuai dan slugnya (ini pengecualian kepada peraturan 1); editor boleh mengubahnya.
 
+Jalin menerbitkan teks bahasa Melayu sahaja. Jika petikan yang diberi masih dalam bahasa lain (termasuk bahasa Indonesia), jangan ubah teks dalam mod ini; nyatakan dengan jelas bahawa editor mesti menyediakan terjemahan Melayu sebelum penerbitan.
+
 Jangan menentukan status hak cipta; itu keputusan editor manusia. Cadangkan satu gambar hero dan sehingga 3 gambar inline.`;
 
 const FRAGMEN_TULIS = `TUGAS
 Editor akan memberi maklumat tentang sebuah karya sumber dan bahagian yang dimahukan (dalam bahan di bawah). Tugas anda ialah menyediakan sebuah fragmen, iaitu sedutan bermakna daripada karya itu dalam bahasa Melayu, bersama semua maklumat yang Jalin perlukan.
 
-Setia kepada karya sumber. Jangan mereka petikan atau kejadian yang tiada dalam karya itu. Jika anda tidak dapat mengesahkan bahagian yang diminta, nyatakan dalam Dek dan jangan mereka. Letakkan teks fragmen dalam [KANDUNGAN]. Isi [SUMBER] dengan tajuk asal dalam bahasa asalnya, pengarang asal dan bahasa asal. Untuk Penulis, tulis: tidak dinyatakan. Jangan menentukan status hak cipta; itu keputusan editor manusia. Cadangkan satu gambar hero dan sehingga 3 gambar inline.`;
+Setia kepada karya sumber. Jangan mereka petikan atau kejadian yang tiada dalam karya itu. Jika anda tidak dapat mengesahkan bahagian yang diminta, nyatakan dalam Dek dan jangan mereka. Letakkan teks fragmen dalam [KANDUNGAN] sepenuhnya dalam bahasa Melayu; jika sumber bukan bahasa Melayu, hasilkan terjemahan Melayu, bukan petikan bahasa asal. Isi [SUMBER] dengan tajuk asal dalam bahasa asalnya, pengarang asal dan bahasa asal. Untuk Penulis, tulis: tidak dinyatakan. Jangan menentukan status hak cipta; itu keputusan editor manusia. Cadangkan satu gambar hero dan sehingga 3 gambar inline.`;
 
 const SINOPSIS_DATA = `TUGAS
 Anda menerima sebuah sinopsis (penceritaan semula editorial bagi karya lain) yang sudah ada. Tugas anda BUKAN menulis atau mengubah sinopsis itu. Tugas anda hanya mengeluarkan maklumat yang Jalin perlukan, termasuk sumber karya asal (tajuk asal dalam bahasa asalnya, pengarang asal dan bahasa asal). Jika teks tidak mempunyai tajuk, cadangkan satu tajuk pendek yang sesuai dan slugnya (ini pengecualian kepada peraturan 1); editor boleh mengubahnya.

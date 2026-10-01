@@ -223,7 +223,6 @@ async function main() {
   const works: { type: string; slug: string }[] = [
     { type: "cerpen", slug: "kerusi-di-beranda" },
     { type: "cerpen", slug: "nombor-giliran-117" },
-    { type: "fragmen", slug: "gatsby-kapal-melawan-arus" },
     { type: "sinopsis", slug: "gatsby-agung" },
     { type: "sinopsis", slug: "di-hadapan-singgahsana" }
   ];

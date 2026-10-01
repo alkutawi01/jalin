@@ -3,7 +3,7 @@ id: JLN-FRA-0001
 slug: gatsby-kapal-melawan-arus
 title: "The Great Gatsby: Kapal Melawan Arus"
 type: fragmen
-status: published
+status: archived
 genre: Drama Sosial
 audience: "13-17"
 version: "v1.0"

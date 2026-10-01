@@ -346,8 +346,15 @@ console.log("\n=== Readiness: visuals ===");
     work: baseWork({ type: "fragmen", metadata: { fragmenTextLanguage: "English" } }),
     sourceWork: { ...approvedSourceForVisualPolicy, original_language: "Inggeris" },
   }));
-  assert(englishOriginal.blockers.some((b) => b.code === "fragmen_english_original"),
+  assert(englishOriginal.blockers.some((b) => b.code === "fragmen_not_malay"),
     "English original fragment requires a Malay translation for Jalin");
+
+  const indonesianOriginal = evaluatePublicationReadinessFromData(validInput({
+    work: baseWork({ type: "fragmen", metadata: { fragmenTextLanguage: "Bahasa Indonesia" } }),
+    sourceWork: { ...approvedSourceForVisualPolicy, original_language: "Bahasa Indonesia" },
+  }));
+  assert(indonesianOriginal.blockers.some((b) => b.code === "fragmen_not_malay"),
+    "Indonesian original fragment also requires Malay translation");
 
   assert(VISUAL_POLICY.cerpen.hero === "required", "VISUAL_POLICY cerpen hero required");
   assert(VISUAL_POLICY.novela.hero === "required", "VISUAL_POLICY novela hero required");

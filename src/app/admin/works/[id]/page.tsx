@@ -12,7 +12,7 @@ import { toast, confirmAction } from "../../../../lib/admin/dialogs";
 import LoadingBlock from "../../../../components/admin/LoadingBlock";
 import StoryMarkdown from "../../../../components/reader/StoryMarkdown";
 import { stripImageMarkers } from "../../../../lib/reader/image-markers";
-import { classifyFragmen } from "../../../../lib/content/fragmen-kind";
+import { classifyFragmen, isMalayLanguage } from "../../../../lib/content/fragmen-kind";
 
 const WORK_TYPES = [
   { value: "cerpen", label: "Cerpen" },
@@ -2332,10 +2332,12 @@ export default function EditWorkPage() {
                       type="text"
                       value={sourceForm.fragmenTextLanguage}
                       onChange={(e) => setSourceForm((p) => ({ ...p, fragmenTextLanguage: e.target.value }))}
-                      placeholder="Contoh: Bahasa Indonesia atau Bahasa Melayu"
+                      placeholder="Bahasa Melayu"
                     />
                     <span className="admin-form-hint">
-                      {classifyFragmen(sourceForm.originalLanguage, sourceForm.fragmenTextLanguage) === "asal"
+                      {sourceForm.fragmenTextLanguage.trim() && !isMalayLanguage(sourceForm.fragmenTextLanguage)
+                        ? "Jalin hanya menerbitkan teks bahasa Melayu. Terjemahkan petikan sebelum diterbitkan; bahan asal Indonesia atau Inggeris tidak diterbitkan terus."
+                        : classifyFragmen(sourceForm.originalLanguage, sourceForm.fragmenTextLanguage) === "asal"
                         ? "Fragmen asal: petikan dikekalkan dalam bahasa karya sumber. Hak sumber tetap perlu disemak."
                         : classifyFragmen(sourceForm.originalLanguage, sourceForm.fragmenTextLanguage) === "terjemahan"
                           ? "Fragmen terjemahan: jelaskan asas terjemahan di bawah dan tambah kredit Penterjemah sebenar. Hak sumber tetap perlu disemak."

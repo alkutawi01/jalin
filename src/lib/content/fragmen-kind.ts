@@ -20,6 +20,6 @@ export function classifyFragmen(
   return original === text ? "asal" : "terjemahan";
 }
 
-export function isEnglishLanguage(value: string | null | undefined): boolean {
-  return canonicalLanguage(value) === "inggeris";
+export function isMalayLanguage(value: string | null | undefined): boolean {
+  return canonicalLanguage(value) === "melayu";
 }

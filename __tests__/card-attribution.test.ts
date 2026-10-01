@@ -20,7 +20,12 @@ assert.match(sinopsis.attribution?.primary ?? "", /^Sinopsis oleh Nara Zahin · 
 assert.match(sinopsis.attribution?.secondary ?? "", /Berdasarkan Amam al-'Arsh karya Naguib Mahfouz/);
 assert.ok(!sinopsis.attribution?.primary.includes("Naguib"), "source author is not called synopsis author");
 
-const fragmen = projectPublicWorkSummary(work("gatsby-kapal-melawan-arus"));
+assert.equal(getWorkBySlug("gatsby-kapal-melawan-arus"), undefined, "archived English fragment is not public");
+const fragmen = projectPublicWorkSummary({
+  ...work("gatsby-agung"), type: "fragmen", title: "Petikan contoh",
+  sourceWork: { title: "The Great Gatsby", author: "F. Scott Fitzgerald", language: "Inggeris" },
+  credits: [{ slug: "guest:F. Scott Fitzgerald", role: "author", byline: true }],
+});
 assert.equal(fragmen.attribution?.primary, "Petikan daripada The Great Gatsby · F. Scott Fitzgerald");
 
 const withoutCredit: Work = { ...work("kerusi-di-beranda"), credits: [], sourceWork: undefined };

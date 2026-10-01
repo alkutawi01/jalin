@@ -7,7 +7,7 @@
  */
 
 import type { WorkStatus, WorkType } from "../db/types";
-import { classifyFragmen, isEnglishLanguage } from "../content/fragmen-kind";
+import { classifyFragmen, isMalayLanguage } from "../content/fragmen-kind";
 
 export type ReadinessGateName =
   | "content"
@@ -574,8 +574,8 @@ export function evaluatePublicationReadinessFromData(
     };
     if (!textLanguage) {
       fragmentIssue("fragmen_text_language_missing", "Isi bahasa petikan yang diterbitkan dalam tab Sumber sebelum menerbitkan Fragmen.");
-    } else if (kind === "asal" && isEnglishLanguage(textLanguage)) {
-      fragmentIssue("fragmen_english_original", "Fragmen bahasa Inggeris asal tidak diterbitkan terus di Jalin. Sediakan petikan terjemahan Melayu dengan asas teks dan kredit penterjemah.");
+    } else if (!isMalayLanguage(textLanguage)) {
+      fragmentIssue("fragmen_not_malay", "Jalin menerbitkan teks dalam bahasa Melayu sahaja. Sediakan petikan terjemahan Melayu, nyatakan asas teks dan kredit penterjemah jika karya asal bukan bahasa Melayu.");
     } else if (kind === "terjemahan") {
       if (!input.sourceWork?.source_text_basis?.trim()) {
         fragmentIssue("fragmen_translation_basis_missing", "Fragmen terjemahan memerlukan asas teks/terjemahan yang jelas dalam tab Sumber.");
