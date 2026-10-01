@@ -203,7 +203,7 @@ async function loadReadinessInput(
     knownContributorSlugs: new Set(contributors.map((c) => String(c.slug))),
     slugTakenByOther: Boolean(slugDup),
     publishedSourcePeers: publishedSourcePeers.map((peer) => ({
-      id: String(peer.id), title: String(peer.title), type: String(peer.type),
+      id: String(peer.id), title: String(peer.title), type: String(peer.type), status: String(peer.status),
       original_title: peer.original_title, author: peer.author,
     })),
   };
