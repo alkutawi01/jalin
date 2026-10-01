@@ -12,7 +12,7 @@ import { toast, confirmAction } from "../../../../lib/admin/dialogs";
 import LoadingBlock from "../../../../components/admin/LoadingBlock";
 import StoryMarkdown from "../../../../components/reader/StoryMarkdown";
 import { stripImageMarkers } from "../../../../lib/reader/image-markers";
-import { classifyFragmen, isMalayLanguage } from "../../../../lib/content/fragmen-kind";
+import { classifyFragmen, isIndonesianLanguage, isMalayLanguage } from "../../../../lib/content/fragmen-kind";
 import VisualManuscriptEditor, { canEditVisually } from "../../../../components/admin/VisualManuscriptEditor";
 
 const WORK_TYPES = [
@@ -2355,13 +2355,13 @@ export default function EditWorkPage() {
                       type="text"
                       value={sourceForm.fragmenTextLanguage}
                       onChange={(e) => setSourceForm((p) => ({ ...p, fragmenTextLanguage: e.target.value }))}
-                      placeholder="Bahasa Melayu"
+                      placeholder="Bahasa Melayu atau Bahasa Indonesia"
                     />
                     <span className="admin-form-hint">
-                      {sourceForm.fragmenTextLanguage.trim() && !isMalayLanguage(sourceForm.fragmenTextLanguage)
-                        ? "Jalin hanya menerbitkan teks bahasa Melayu. Terjemahkan petikan sebelum diterbitkan; bahan asal Indonesia atau Inggeris tidak diterbitkan terus."
+                      {sourceForm.fragmenTextLanguage.trim() && !isMalayLanguage(sourceForm.fragmenTextLanguage) && !(isIndonesianLanguage(sourceForm.fragmenTextLanguage) && classifyFragmen(sourceForm.originalLanguage, sourceForm.fragmenTextLanguage) === "asal")
+                        ? "Fragmen asal Indonesia boleh diterbitkan. Untuk bahasa lain, sediakan terjemahan Melayu serta kredit penterjemah dan asas teks."
                         : classifyFragmen(sourceForm.originalLanguage, sourceForm.fragmenTextLanguage) === "asal"
-                        ? "Fragmen asal: petikan dikekalkan dalam bahasa karya sumber. Hak sumber tetap perlu disemak."
+                        ? "Fragmen asal: petikan Melayu atau Indonesia dikekalkan dalam bahasa sumber. Hak sumber tetap perlu disemak."
                         : classifyFragmen(sourceForm.originalLanguage, sourceForm.fragmenTextLanguage) === "terjemahan"
                           ? "Fragmen terjemahan: jelaskan asas terjemahan di bawah dan tambah kredit Penterjemah sebenar. Hak sumber tetap perlu disemak."
                           : "Isi bahasa asal dan bahasa petikan. Jenis Fragmen ditentukan daripada perbandingan kedua-duanya."}

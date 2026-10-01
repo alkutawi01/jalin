@@ -23,3 +23,7 @@ export function classifyFragmen(
 export function isMalayLanguage(value: string | null | undefined): boolean {
   return canonicalLanguage(value) === "melayu";
 }
+
+export function isIndonesianLanguage(value: string | null | undefined): boolean {
+  return canonicalLanguage(value) === "indonesia";
+}
