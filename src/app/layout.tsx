@@ -5,7 +5,7 @@ import { SITE_URL } from "../lib/seo";
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "Jalin — oleh Adjung",
+    default: "Jalin",
     template: "%s · Jalin"
   },
   description: "Fiksyen berilustrasi untuk jiwa muda.",

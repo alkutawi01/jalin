@@ -63,10 +63,11 @@ function FeaturedHero({ work }: { work: PublicFeaturedSummary }) {
           <div className="hero-featured-text">
             <p className="hero-featured-kicker">{genre ? `${label} · ${genre}` : label}</p>
             <h1 className="hero-featured-title">{work.title}</h1>
+            {work.attribution ? <p className="work-attribution hero-featured-attribution">{work.attribution.primary}</p> : null}
             {work.dek ? <p className="hero-featured-dek">{work.dek}</p> : null}
             <div className="hero-featured-meta">
               {reading ? <span>{reading}</span> : null}
-              <span>{formatDate(work.updatedAt ?? work.publishedAt)}</span>
+              <span>{formatDate(work.publishedAt)}</span>
             </div>
             <a className="hero-featured-cta" href={`/kategori/${work.type}/${work.slug}`}>
               Baca Sekarang
@@ -103,12 +104,14 @@ function LatestWorkCard({ work }: { work: PublicWorkSummary }) {
             {reading ? <span className="latest-card-reading">{reading}</span> : null}
           </div>
           <h3 className="latest-card-title">{work.title}</h3>
+          {work.attribution ? <p className="work-attribution">{work.attribution.primary}</p> : null}
+          {work.attribution?.secondary ? <p className="work-attribution-source">{work.attribution.secondary}</p> : null}
           {work.dek ? <p className="latest-card-dek">{work.dek}</p> : null}
           <div className="latest-card-footer">
             <span className="latest-card-cta">Baca →</span>
             <span className="latest-card-date">
-              {formatDate(work.updatedAt ?? work.publishedAt) !== "—"
-                ? formatDate(work.updatedAt ?? work.publishedAt)
+              {formatDate(work.publishedAt) !== "—"
+                ? formatDate(work.publishedAt)
                 : null}
             </span>
           </div>
@@ -174,6 +177,7 @@ function EditorialSelection({ works }: { works: PublicWorkSummary[] }) {
                   {work.readingMinutes ? ` · ± ${work.readingMinutes} min` : ""}
                 </span>
                 <h3>{work.title}</h3>
+                {work.attribution ? <p className="work-attribution">{work.attribution.primary}</p> : null}
                 {work.dek ? <p>{work.dek}</p> : null}
                 <span className="editorial-pick-cta">Baca</span>
               </div>
@@ -194,16 +198,17 @@ async function getWorks() {
 }
 
 export default async function Home() {
-  const [allWorks, editorialPicks] = await Promise.all([getWorks(), getEditorPickSummaries()]);
+  const allWorks = await getWorks();
+  const editorialPicks = await getEditorPickSummaries(allWorks);
 
   const sorted = [...allWorks].sort((a, b) => {
-    const aDate = a.updatedAt ?? a.publishedAt ?? "";
-    const bDate = b.updatedAt ?? b.publishedAt ?? "";
+    const aDate = a.publishedAt ?? "";
+    const bDate = b.publishedAt ?? "";
     return bDate.localeCompare(aDate);
   });
 
   const featured = sorted[0] ?? null;
-  const latest = sorted.slice(0, 6);
+  const latest = sorted.slice(1, 7);
 
   const categoryImages = new Map<string, { src: string; alt: string; year: string }>();
   for (const cat of CATEGORIES) {
@@ -228,7 +233,7 @@ export default async function Home() {
 
         <EditorialSelection works={editorialPicks} />
 
-        <section className="latest-works">
+        {latest.length > 0 ? <section className="latest-works">
           <div className="site-shell">
             <header className="section-head">
               <h2>Karya Terbaru</h2>
@@ -242,7 +247,7 @@ export default async function Home() {
               ))}
             </div>
           </div>
-        </section>
+        </section> : null}
 
         <section className="category-explorer">
           <div className="site-shell">

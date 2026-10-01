@@ -4,6 +4,7 @@ import type {
   Work,
   WorkType
 } from "../content/types";
+import { projectCardAttribution, type CardAttribution } from "./card-attribution";
 
 /**
  * Public page projection boundary.
@@ -26,6 +27,7 @@ export interface PublicWorkSummary {
   publishedAt?: string;
   updatedAt?: string;
   hero?: { src: string; alt: string };
+  attribution?: CardAttribution;
 }
 
 export type PublicFeaturedSummary = PublicWorkSummary;
@@ -46,6 +48,7 @@ export interface PublicSectionRef {
 
 export function projectPublicWorkSummary(work: Work): PublicWorkSummary {
   const hero = work.visuals.find((visual) => visual.role === "hero");
+  const attribution = projectCardAttribution(work);
   return {
     type: work.type,
     slug: work.slug,
@@ -55,7 +58,8 @@ export function projectPublicWorkSummary(work: Work): PublicWorkSummary {
     ...(work.readingMinutes ? { readingMinutes: work.readingMinutes } : {}),
     ...(work.publishedAt ? { publishedAt: work.publishedAt } : {}),
     ...(work.updatedAt ? { updatedAt: work.updatedAt } : {}),
-    ...(hero ? { hero: { src: hero.src, alt: hero.alt } } : {})
+    ...(hero ? { hero: { src: hero.src, alt: hero.alt } } : {}),
+    ...(attribution ? { attribution } : {})
   };
 }
 

@@ -64,8 +64,8 @@ function formatDate(date: string | undefined): string {
 function WorkCard({ work, type }: { work: PublicWorkSummary; type: string }) {
   const genre = displayableGenre(work.genre);
   const reading = work.readingMinutes ? `± ${work.readingMinutes} min` : null;
-  const updated = work.updatedAt ?? work.publishedAt;
-  const year = (updated ?? "2026").slice(0, 4);
+  const published = work.publishedAt;
+  const year = (published ?? "2026").slice(0, 4);
   const label = CATEGORY_META[type]?.headerLabel ?? type;
   return (
     <article className="latest-card">
@@ -79,10 +79,12 @@ function WorkCard({ work, type }: { work: PublicWorkSummary; type: string }) {
             {reading ? <span className="latest-card-reading">{reading}</span> : null}
           </div>
           <h2 className="latest-card-title">{work.title}</h2>
+          {work.attribution ? <p className="work-attribution">{work.attribution.primary}</p> : null}
+          {work.attribution?.secondary ? <p className="work-attribution-source">{work.attribution.secondary}</p> : null}
           {work.dek ? <p className="latest-card-dek">{work.dek}</p> : null}
           <div className="latest-card-footer">
             <span className="latest-card-cta">Baca →</span>
-            <span className="latest-card-date">{formatDate(updated) === "—" ? null : formatDate(updated)}</span>
+            <span className="latest-card-date">{formatDate(published) === "—" ? null : formatDate(published)}</span>
           </div>
         </div>
       </a>
@@ -193,8 +195,8 @@ export default async function CategoryPage({ params }: { params: Promise<{ type:
   }
 
   const works = (await getWorks(type)).sort((a, b) => {
-    const aDate = a.updatedAt ?? a.publishedAt ?? "";
-    const bDate = b.updatedAt ?? b.publishedAt ?? "";
+    const aDate = a.publishedAt ?? "";
+    const bDate = b.publishedAt ?? "";
     return bDate.localeCompare(aDate);
   });
 

@@ -396,7 +396,7 @@ export class DatabaseContentRepository implements ContentRepository {
     if (!snapshot) return undefined;
     try {
       const work: Work = {
-        id: snapshot.id,
+        id: String(snapshot.id || workId),
         slug: snapshot.slug,
         title: snapshot.title,
         type: snapshot.type,
