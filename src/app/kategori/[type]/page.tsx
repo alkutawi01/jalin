@@ -171,7 +171,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ type:
     return (
       <>
         <SiteHeader active="bersiri" />
-        <main>
+        <main id="kandungan" tabIndex={-1}>
           <div className="site-shell">
             <header className="category-head">
               <p className="category-kicker">{meta.headerLabel}</p>
@@ -205,7 +205,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ type:
     <>
       <SiteHeader active={type as WorkType} />
 
-      <main>
+      <main id="kandungan" tabIndex={-1}>
         <div className="site-shell">
           <header className="category-head">
             <p className="category-kicker">{meta.headerLabel}</p>

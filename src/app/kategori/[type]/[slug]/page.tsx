@@ -1,6 +1,7 @@
 import { ContinueNav } from "../../../../components/reader/ReadingNav";
+import { ChapterHead, NovelaIntro, readingMinutesOf, type ChapterRow } from "../../../../components/reader/NovelaChapters";
 import { visibleCharacters } from "../../../../lib/reader/visible-characters";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { displayableGenre } from "../../../../lib/reader/genre-display";
 import { classifyFragmen } from "../../../../lib/content/fragmen-kind";
@@ -268,17 +269,14 @@ export default async function WorkPage({
 
   const sections = work.sections && work.sections.length > 0 ? work.sections : [];
 
-  // The base /kategori/novela/[slug] URL used to silently render the first
-  // section's body, duplicating /[slug]/[firstSectionSlug]. Redirect to the
-  // section URL so there is one canonical, primary address per chapter.
-  if (sections.length > 0 && !sectionSlug) {
-    redirect(`/kategori/${type}/${slug}/${sections[0]!.slug}`);
-  }
+  // The base /kategori/novela/[slug] URL is the novela's own page: the blurb, who made it, and every chapter.
+  // Each chapter has its own address, so there is one canonical URL per chapter and one for the whole novela.
+  const landing = sections.length > 0 && !sectionSlug;
 
   let activeSection: ReadingSection | undefined;
   let bodyToRender = work.body;
 
-  if (sections.length > 0) {
+  if (sections.length > 0 && !landing) {
     activeSection = sections.find((s) => s.slug === sectionSlug);
     if (!activeSection) notFound();
     bodyToRender = activeSection.body;
@@ -292,7 +290,7 @@ export default async function WorkPage({
   const prevSection = sectionIndex > 0 ? publicSections[sectionIndex - 1] : undefined;
   const nextSection = sectionIndex >= 0 && sectionIndex < publicSections.length - 1 ? publicSections[sectionIndex + 1] : undefined;
   // A chapter only introduces the characters who have appeared so far, so early chapters do not spoil later ones.
-  const characters = visibleCharacters(allCharacters, sections.map((section) => section.slug), activeSection?.slug)
+  const characters = visibleCharacters(allCharacters, sections.map((section) => section.slug), activeSection?.slug ?? (landing ? sections[0]?.slug : undefined))
     .map(({ name, role }) => ({ name, role }));
   const disclosureNote = disclosureNoteFor(work);
 
@@ -332,6 +330,13 @@ export default async function WorkPage({
         ? inlineChapters.map((chapter) => ({ label: chapter.label, href: `#${chapter.id}` }))
         : [];
 
+  const chapterRows: ChapterRow[] = sections.map((section, i) => ({
+    slug: section.slug,
+    title: section.title || `Bab ${i + 1}`,
+    minutes: readingMinutesOf(section.body),
+    href: `/kategori/novela/${work.slug}/${section.slug}`
+  }));
+
   const mobileInfo: StoryInfoData = {
     work: workMeta,
     characters,
@@ -340,69 +345,74 @@ export default async function WorkPage({
     ...(chapterItems.length > 0 ? { bab: chapterItems } : {})
   };
 
+  const articleNode = (
+      <article className="story-body">
+        {segmentNodes.map((node, index) => {
+          if (typeof node === "string") {
+            return (
+              <StoryMarkdown key={index} glossary={segmentGlossaries[index]}>
+                {node}
+              </StoryMarkdown>
+            );
+          }
+          if (typeof node !== "string") {
+            return (
+              <EditorialImage
+                key={index}
+                src={node.src}
+                alt={node.alt}
+                rights={rights}
+              />
+            );
+          }
+          return null;
+        })}
+      </article>
+  );
+
   return (
     <>
       <SiteHeader active={type as WorkType} />
 
-      <main>
-        <StoryHead
-          kicker={
-            [
-              typeLabel,
-              displayableGenre(work.genre),
-              // Where the reader is in a novela, since there is no bar above the story any more.
-              sectionIndex >= 0 ? `Bab ${sectionIndex + 1} daripada ${publicSections.length}` : ""
-            ]
-              .filter(Boolean)
-              .join(" · ")
-          }
-          title={work.title}
-          dek={work.dek ?? ""}
-          byline={byline}
-          originalTitle={originalTitle}
-          hero={hero?.src ? { src: hero.src, alt: hero.alt ?? "", rights } : undefined}
-        />
+      <main id="kandungan" tabIndex={-1}>
+        {sectionIndex >= 0 ? null : (
+          <StoryHead
+            kicker={
+              [
+                typeLabel,
+                displayableGenre(work.genre),
+                landing ? `${sections.length} bab` : ""
+              ]
+                .filter(Boolean)
+                .join(" · ")
+            }
+            title={work.title}
+            dek={work.dek ?? ""}
+            byline={byline}
+            originalTitle={originalTitle}
+            hero={hero?.src ? { src: hero.src, alt: hero.alt ?? "", rights } : undefined}
+          />
+        )}
 
         <div className="site-shell reading-grid">
           <LeftRail
             rows={workMeta}
             note={disclosureNote}
           >
-            <SectionIndexDetails items={chapterItems} />
+            {landing ? null : <SectionIndexDetails items={chapterItems} />}
           </LeftRail>
 
-          <article className="story-body">
-            {sectionSlug && activeSection?.title && (
-              <h2 style={{ fontSize: "1.25rem", marginBottom: "1rem" }}>
-                {activeSection.title}
-              </h2>
-            )}
-            {segmentNodes.map((node, index) => {
-              if (typeof node === "string") {
-                return (
-                  <StoryMarkdown key={index} glossary={segmentGlossaries[index]}>
-                    {node}
-                  </StoryMarkdown>
-                );
-              }
-              if (typeof node !== "string") {
-                return (
-                  <EditorialImage
-                    key={index}
-                    src={node.src}
-                    alt={node.alt}
-                    rights={rights}
-                  />
-                );
-              }
-              return null;
-            })}
-          </article>
+          {landing ? <NovelaIntro rows={chapterRows} /> : sectionIndex >= 0 ? (
+            <div className="chapter-column">
+              <ChapterHead workTitle={work.title} workHref={`/kategori/${work.type}/${work.slug}`} rows={chapterRows} index={sectionIndex} />
+              {articleNode}
+            </div>
+          ) : articleNode}
 
           <RightRail characters={characters} editorial={editorial} />
         </div>
 
-        {sections.length > 0 ? (
+        {sections.length > 0 && !landing ? (
           <ContinueNav
             name="Selepas bab ini"
             next={nextSection ? { href: `/kategori/novela/${work.slug}/${nextSection.slug}`, label: `Bab ${sectionIndex + 2}`, title: nextSection.title || nextSection.slug } : undefined}
@@ -411,12 +421,12 @@ export default async function WorkPage({
         ) : null}
 
         {/* On a novela the note closes the last chapter only. */}
-        {sections.length === 0 || activeSection?.slug === sections[sections.length - 1]?.slug ? (
+        {sections.length === 0 || (!landing && activeSection?.slug === sections[sections.length - 1]?.slug) ? (
           <EditorNote note={work.metadata?.editorNote} />
         ) : null}
 
         {/* "Tamat" marks the end of the work, so a chapter that has a next chapter does not show it. */}
-        {sections.length === 0 || !nextSection ? <StoryEnd title={work.title} /> : null}
+        {sections.length === 0 || (!landing && !nextSection) ? <StoryEnd title={work.title} /> : null}
 
         <RelatedWorks works={relatedWorks} typeLabel={typeLabel} />
 

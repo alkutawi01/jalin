@@ -20,7 +20,7 @@ export default function MobileNavMenu({ active }: { active?: string }) {
   return (
     <details className="header-mobile-nav" ref={detailsRef}>
       <summary>Menu</summary>
-      <SiteNavLinks active={active} className="header-mobile-nav-links" links={NAV_LINKS} />
+      <SiteNavLinks active={active} className="header-mobile-nav-links" links={NAV_LINKS} label="Menu mudah alih" />
     </details>
   );
 }

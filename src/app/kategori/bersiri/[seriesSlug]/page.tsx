@@ -72,7 +72,7 @@ export default async function SeriesLandingPage({
     return (
       <>
         <SiteHeader active="bersiri" />
-        <main>
+        <main id="kandungan" tabIndex={-1}>
           <div className="site-shell">
             <header className={`series-masthead${series.hero ? " series-masthead--hero" : ""}`}>
               <div className="series-masthead-text">

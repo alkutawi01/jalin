@@ -11,6 +11,8 @@ function SiteNav({ active, className }: { active?: string; className: string }) 
 
 export function SiteHeader({ active }: { active?: string }) {
   return (
+    <>
+    <a className="skip-link" href="#kandungan">Langkau ke kandungan</a>
     <header className="site-header">
       <div className="site-shell header-inner">
         <a className="header-wordmark" href="/" aria-label="Jalin utama">
@@ -20,6 +22,7 @@ export function SiteHeader({ active }: { active?: string }) {
         <MobileNavMenu active={active} />
       </div>
     </header>
+    </>
   );
 }
 
