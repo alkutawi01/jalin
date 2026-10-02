@@ -173,6 +173,13 @@ async function loadReadinessInput(
           source_url: sourceWork.source_url,
           source_locator: sourceWork.source_locator,
           source_text_basis: sourceWork.source_text_basis,
+          publication_year: sourceWork.publication_year ?? null,
+          publisher: sourceWork.publisher ?? null,
+          edition_year: sourceWork.edition_year ?? null,
+          printing: sourceWork.printing ?? null,
+          editor_name: sourceWork.editor_name ?? null,
+          translator_name: sourceWork.translator_name ?? null,
+          isbn: sourceWork.isbn ?? null,
           rights_status: String(sourceWork.rights_status),
           rights_notes: sourceWork.rights_notes,
           reviewed_at:

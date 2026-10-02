@@ -6,6 +6,7 @@
  * Blockers prevent publish; warnings never do.
  */
 
+import { isSourcedWork } from "../content/source-origin";
 import type { WorkStatus, WorkType } from "../db/types";
 import { classifyFragmen, fragmenTextHash, isIndonesianLanguage, isMalayLanguage, readFragmenTextReview } from "../content/fragmen-kind";
 
@@ -103,6 +104,13 @@ export interface ReadinessSourceWorkInput {
   source_url: string | null;
   source_locator: string | null;
   source_text_basis: string | null;
+  publication_year?: number | null;
+  publisher?: string | null;
+  edition_year?: number | null;
+  printing?: string | null;
+  editor_name?: string | null;
+  translator_name?: string | null;
+  isbn?: string | null;
   rights_status: string;
   rights_notes: string | null;
   reviewed_at: Date | string | null;
@@ -401,7 +409,7 @@ export function evaluatePublicationReadinessFromData(
       issue("dek_missing", "Dek/summary tiada — disyorkan untuk senarai awam.")
     );
   }
-  if (DERIVATIVE_TYPES.has(String(work.type))) {
+  if (isSourcedWork(String(work.type), work.metadata)) {
     contentWarnings.push(
       issue(
         "provenance_expected",
@@ -603,7 +611,7 @@ export function evaluatePublicationReadinessFromData(
       }
     }
   }
-  if (DERIVATIVE_TYPES.has(String(work.type))) {
+  if (isSourcedWork(String(work.type), work.metadata)) {
     const src = input.sourceWork ?? null;
     if (!src) {
       rightsBlockers.push(
@@ -637,6 +645,13 @@ export function evaluatePublicationReadinessFromData(
       if (sameTypePeer) {
         rightsWarnings.push(issue("source_same_type_duplicate",
           `Sumber ini sudah digunakan oleh ${typeLabel(sameTypePeer.type)} "${sameTypePeer.title}" (${sameTypePeer.id}). Pastikan petikan atau bahagian yang dipilih berbeza.`));
+      }
+      const editionMissing: string[] = [];
+      if (!src.publication_year) editionMissing.push("Tahun terbit pertama");
+      if (!(src.publisher ?? "").trim() && !(src.source_url ?? "").trim()) editionMissing.push("Penerbit atau URL sumber");
+      if (editionMissing.length > 0) {
+        const edition = issue("source_edition_incomplete", `Butiran naskhah belum lengkap — isi ${editionMissing.join(", ")} dalam tab Sumber supaya pembaca tahu naskhah mana yang digunakan.`);
+        (alreadyPublished ? rightsWarnings : rightsBlockers).push(edition);
       }
       const missing: string[] = [];
       if (!src.original_title || !src.original_title.trim()) missing.push("Tajuk asal");

@@ -116,6 +116,7 @@ export async function PATCH(
       publishedAt:
         body.status === "published" ? body.publishedAt : undefined,
       editorNote,
+      origin: body.origin === undefined ? undefined : body.origin === "sumber" ? "sumber" : "asli",
     });
 
     return NextResponse.json(work);

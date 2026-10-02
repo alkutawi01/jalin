@@ -35,6 +35,8 @@ export interface WorkInput {
   editorPickReason?: string | null;
   /** Editor's note shown at the end of the work; empty removes it. Stored in works.metadata. */
   editorNote?: string;
+  /** Cerpen/Novela: "sumber" when taken from another source, "asli" (or empty) for Jalin's own. Stored in works.metadata. */
+  origin?: string;
 }
 
 export interface WorkRecord {
@@ -215,12 +217,18 @@ export async function updateWork(
     updateData.editor_pick_reason = input.editorPickReason ? String(input.editorPickReason) : null;
   }
 
-  if (input.editorNote !== undefined) {
+  if (input.editorNote !== undefined || input.origin !== undefined) {
     const current = await db.selectFrom("works").where("id", "=", id).select("metadata").executeTakeFirst();
     const metadata: Record<string, unknown> = { ...((current?.metadata ?? {}) as Record<string, unknown>) };
-    const note = String(input.editorNote ?? "").trim();
-    if (note) metadata.editorNote = note;
-    else delete metadata.editorNote;
+    if (input.editorNote !== undefined) {
+      const note = String(input.editorNote ?? "").trim();
+      if (note) metadata.editorNote = note;
+      else delete metadata.editorNote;
+    }
+    if (input.origin !== undefined) {
+      if (input.origin === "sumber") metadata.origin = "sumber";
+      else delete metadata.origin;
+    }
     updateData.metadata = metadata;
   }
 

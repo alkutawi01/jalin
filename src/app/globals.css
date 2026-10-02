@@ -2362,7 +2362,8 @@ dd { margin: 0; color: var(--ink); text-align: left; }
   position: relative;
   margin: 0;
   overflow: hidden;
-  border-radius: 18px;
+  /* Left edge is square; only the right corners are rounded. */
+  border-radius: 0 18px 18px 0;
   background: #e8dfd2;
   aspect-ratio: 4 / 3;
   box-shadow: 0 24px 60px -24px rgba(24, 52, 60, .35);
@@ -2549,3 +2550,20 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 
 /* Links in a crumb line are underlined so they are not told apart from the text by colour alone. */
 .series-crumb a, .crumbs a { text-decoration: underline; text-underline-offset: 3px; border-bottom: 0; }
+
+/* Bersiri is one kind of work among several, so its highlight on the homepage is a compact card, not a full-width banner. */
+.series-highlight .editorial-pick {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  max-width: 720px;
+}
+.series-highlight .editorial-pick > a { display: block; height: 100%; min-height: 0; }
+.series-highlight .editorial-pick > a > * { height: 100%; max-height: 190px; }
+.series-highlight .editorial-pick-body { padding: 16px 20px; align-self: center; }
+@media (max-width: 640px) {
+  .series-highlight .editorial-pick { grid-template-columns: 1fr; }
+  .series-highlight .editorial-pick > a > * { max-height: 120px; }
+}
+.series-highlight .editorial-pick > a { overflow: hidden; width: 200px; min-width: 0; }
+.series-highlight .editorial-pick > a > * { width: 100%; aspect-ratio: auto; }
+@media (max-width: 640px) { .series-highlight .editorial-pick > a { width: 100%; } }

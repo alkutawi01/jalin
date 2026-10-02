@@ -9,6 +9,8 @@ export type GlossaryMap = Record<string, GlossaryEntry>;
 export type WorkMetaRow = {
   label: string;
   value: string;
+  /** The value is the title of a work (taken from elsewhere), so it is set in italics. */
+  italic?: boolean;
 };
 
 export type CharacterMeta = {

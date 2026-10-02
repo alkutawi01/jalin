@@ -43,6 +43,13 @@ export async function POST(
         sourceUrl: body.sourceUrl,
         sourceLocator: body.sourceLocator,
         sourceTextBasis: body.sourceTextBasis,
+        publisher: body.publisher,
+        editionYear:
+          body.editionYear === undefined ? undefined : body.editionYear === null || body.editionYear === "" ? null : Number(body.editionYear),
+        printing: body.printing,
+        editorName: body.editorName,
+        translatorName: body.translatorName,
+        isbn: body.isbn,
       },
       { id: admin.id, email: admin.email }
     );

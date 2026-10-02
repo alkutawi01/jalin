@@ -2,6 +2,7 @@ import type { Work, WorkType, ContributorRef, GlossaryEntry, VisualRef, Editoria
 import type { ContributorMeta } from "./contributors";
 import type { ContentRepository } from "./repository";
 import { getDb, hasDb } from "../db";
+import { isSourcedWork } from "./source-origin";
 
 /** Reader-safe public source provenance — never includes rights_notes/evidence/history/reviewed_by/reviewed_at/source_url. */
 function mapPublicSourceWork(row: any): SourceWorkRef | undefined {
@@ -17,7 +18,31 @@ function mapPublicSourceWork(row: any): SourceWorkRef | undefined {
     author: author || undefined,
     language: row.original_language || row.language ? String(row.original_language || row.language) : undefined,
     rightsStatus: status,
+    firstPublished: yearOf(row.publication_year ?? row.firstPublished),
+    publisher: textOf(row.publisher),
+    editionYear: yearOf(row.edition_year ?? row.editionYear),
+    printing: textOf(row.printing),
+    editor: textOf(row.editor_name ?? row.editor),
+    translator: textOf(row.translator_name ?? row.translator),
+    isbn: textOf(row.isbn),
+    locator: textOf(row.source_locator ?? row.locator),
   };
+}
+
+function textOf(value: unknown): string | undefined {
+  const text = typeof value === "string" ? value.trim() : "";
+  return text || undefined;
+}
+
+function yearOf(value: unknown): number | undefined {
+  const n = Number(value);
+  return Number.isInteger(n) && n > 0 ? n : undefined;
+}
+
+/** A Cerpen or Novela is only shown with a source when the editor marked it "daripada sumber lain". */
+function sourceFor(type: unknown, metadata: unknown, source: SourceWorkRef | undefined): SourceWorkRef | undefined {
+  const meta = typeof metadata === "string" ? parseJsonbField<Record<string, unknown>>(metadata) : (metadata as Record<string, unknown> | null | undefined);
+  return isSourcedWork(String(type ?? ""), meta ?? null) ? source : undefined;
 }
 
 function parseJsonbField<T>(value: unknown): T | undefined {
@@ -72,7 +97,7 @@ function mapWork(
     editorialHistory,
     metadata: parseJsonbField<{ characters?: CharacterMeta[]; fragmenTextLanguage?: string }>(row.metadata),
     reader: parseJsonbField<{ note?: string }>(row.reader),
-    sourceWork,
+    sourceWork: sourceFor(row.type, row.metadata, sourceWork),
     sections: sections && sections.length > 0 ? sections : undefined,
     series,
   };
@@ -471,7 +496,7 @@ export class DatabaseContentRepository implements ContentRepository {
         editorialHistory: snapshot.editorialHistory || [],
         metadata: snapshot.metadata,
         reader: snapshot.reader,
-        sourceWork: mapPublicSourceWork(snapshot.sourceWork),
+        sourceWork: sourceFor(snapshot.type, snapshot.metadata, mapPublicSourceWork(snapshot.sourceWork)),
         sections: snapshot.sections,
         series: snapshot.series,
         publishedRevision: snapshot.publishedRevision,

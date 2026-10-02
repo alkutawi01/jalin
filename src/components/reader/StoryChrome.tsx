@@ -43,7 +43,7 @@ export function StoryHead({
     <>
       <div className="story-kicker">{kicker}</div>
       <h1 style={{ fontStyle: "normal" }}>{title}</h1>
-      {originalTitle ? <p className="story-original-title">Tajuk asal: <cite>{originalTitle}</cite></p> : null}
+      {originalTitle ? <p className="story-original-title"><cite>{originalTitle}</cite></p> : null}
       <p className="dek">{dek}</p>
       {byline.length > 0 && (
         <div className="byline">
@@ -118,7 +118,7 @@ export function LeftRail({ rows, note, children }: { rows: WorkMetaRow[]; note?:
         <div className="rail-label">Tentang karya</div>
         <dl>
           {rows.map((row) => (
-            <div key={row.label}><dt>{row.label}</dt><dd>{row.value}</dd></div>
+            <div key={row.label}><dt>{row.label}</dt><dd>{row.italic ? <cite>{row.value}</cite> : row.value}</dd></div>
           ))}
         </dl>
         {note ? <>

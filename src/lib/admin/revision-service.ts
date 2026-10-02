@@ -93,6 +93,14 @@ async function loadWorkForRevision(
   };
 }
 
+function editionDetailsOf(source: object): Array<string | number | null> {
+  const row = source as Record<string, unknown>;
+  return ["publisher", "edition_year", "printing", "editor_name", "translator_name", "isbn"].map((key) => {
+    const value = row[key];
+    return value === undefined || value === null || value === "" ? null : (value as string | number);
+  });
+}
+
 /** Hash of only what readers can see; timestamps and bookkeeping are left out so "no changes" is detectable. */
 export function materialHashOf(input: NonNullable<Awaited<ReturnType<typeof loadWorkForRevision>>>): string {
   const w = input.work;
@@ -106,7 +114,11 @@ export function materialHashOf(input: NonNullable<Awaited<ReturnType<typeof load
     glossary: input.glossary.map((g) => [g.term, g.meaning, g.source, g.sort_order]),
     sections: input.readingSections.map((r) => [r.slug, r.title, r.body, r.position]),
     source: input.sourceWork
-      ? [input.sourceWork.original_title, input.sourceWork.author, input.sourceWork.original_language, input.sourceWork.rights_status]
+      ? [
+          input.sourceWork.original_title, input.sourceWork.author, input.sourceWork.original_language, input.sourceWork.rights_status,
+          // Edition details join the hash only once one is filled in, so works published before they existed keep their hash.
+          ...(editionDetailsOf(input.sourceWork).some((v) => v !== null) ? editionDetailsOf(input.sourceWork) : [])
+        ]
       : null,
     series: input.series ? [input.series.slug, input.series.title] : null,
   });

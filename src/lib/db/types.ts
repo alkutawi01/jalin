@@ -293,6 +293,13 @@ export interface SourceWorks {
   source_url: string | null;
   source_locator: string | null;
   source_text_basis: string | null;
+  /** Edition details (migration 021). Optional until it has run. */
+  publisher?: string | null;
+  edition_year?: number | null;
+  printing?: string | null;
+  editor_name?: string | null;
+  translator_name?: string | null;
+  isbn?: string | null;
   rights_status: RightsStatus | string;
   rights_notes: string | null;
   rights_evidence: string | null;

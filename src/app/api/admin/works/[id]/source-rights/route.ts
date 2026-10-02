@@ -38,23 +38,30 @@ export async function PUT(
     const body = await request.json();
 
     // reviewed_by / reviewed_at are NEVER accepted from the client.
+    // A field that is not in the body is left as it is; only an explicit null or "" clears it.
+    const opt = (v: unknown) => (v === undefined ? undefined : v ?? null);
+    const year = (v: unknown) => (v === undefined ? undefined : v === null || v === "" ? null : Number(v));
     const result = await upsertSourceProvenance(
       id,
       {
         fragmenTextLanguage: body.fragmenTextLanguage,
-        originalTitle: body.originalTitle ?? null,
-        author: body.author ?? null,
-        originalLanguage: body.originalLanguage ?? null,
-        publicationYear:
-          body.publicationYear === null || body.publicationYear === undefined || body.publicationYear === ""
-            ? null
-            : Number(body.publicationYear),
-        sourceEdition: body.sourceEdition ?? null,
-        sourceUrl: body.sourceUrl ?? null,
-        sourceLocator: body.sourceLocator ?? null,
-        sourceTextBasis: body.sourceTextBasis ?? null,
-        rightsNotes: body.rightsNotes ?? null,
-        rightsEvidence: body.rightsEvidence ?? null,
+        originalTitle: opt(body.originalTitle) as string | null | undefined,
+        author: opt(body.author) as string | null | undefined,
+        originalLanguage: opt(body.originalLanguage) as string | null | undefined,
+        publicationYear: year(body.publicationYear),
+        sourceEdition: opt(body.sourceEdition) as string | null | undefined,
+        sourceUrl: opt(body.sourceUrl) as string | null | undefined,
+        sourceLocator: opt(body.sourceLocator) as string | null | undefined,
+        sourceTextBasis: opt(body.sourceTextBasis) as string | null | undefined,
+        publisher: opt(body.publisher) as string | null | undefined,
+        editionYear: year(body.editionYear),
+        printing: opt(body.printing) as string | null | undefined,
+        editorName: opt(body.editorName) as string | null | undefined,
+        translatorName: opt(body.translatorName) as string | null | undefined,
+        isbn: opt(body.isbn) as string | null | undefined,
+        chatbotFields: Array.isArray(body.chatbotFields) ? body.chatbotFields.map(String) : undefined,
+        rightsNotes: opt(body.rightsNotes) as string | null | undefined,
+        rightsEvidence: opt(body.rightsEvidence) as string | null | undefined,
       },
       { id: admin.id, email: admin.email }
     );

@@ -303,6 +303,7 @@ console.log("\n=== Readiness: visuals ===");
     source_edition: "Cetakan 1957",
     source_url: "https://example.org/hikayat",
     source_locator: "ms. 1",
+    publication_year: 1957,
     source_text_basis: "Teks asal 1957 (domain awam)",
     rights_status: "public_domain",
     rights_notes: "Domain awam disahkan",
@@ -606,6 +607,7 @@ console.log("\n=== Readiness: derivative rights gate (4D-7) ===");
     source_edition: "Cetakan 1957",
     source_url: "https://example.org/hikayat",
     source_locator: "ms. 12",
+    publication_year: 1957,
     source_text_basis: "Teks asal 1957 (domain awam)",
     rights_status: "public_domain",
     rights_notes: "Domain awam disahkan",
@@ -753,6 +755,46 @@ console.log("\n=== Readiness: derivative rights gate (4D-7) ===");
     modernTranslation.gates.rights.pass === true,
     "modern translation with source_text_basis can pass rights"
   );
+
+  // Edition details: first publication year, and publisher or URL, are required for a new work.
+  const noYear = evaluatePublicationReadinessFromData(
+    validInput({
+      work: baseWork({ type: "terjemahan", id: "JLN-TER-0002" }),
+      visuals: [baseVisual({ role: "section" })],
+      sourceWork: { ...baseSource, publication_year: null },
+    })
+  );
+  assert(noYear.gates.rights.pass === false && noYear.blockers.some((b) => b.code === "source_edition_incomplete"), "missing first publication year blocks a new sourced work");
+  const noPublisherNoUrl = evaluatePublicationReadinessFromData(
+    validInput({
+      work: baseWork({ type: "terjemahan", id: "JLN-TER-0003" }),
+      visuals: [baseVisual({ role: "section" })],
+      sourceWork: { ...baseSource, source_url: null, publisher: null },
+    })
+  );
+  assert(noPublisherNoUrl.blockers.some((b) => b.code === "source_edition_incomplete"), "neither publisher nor URL blocks a new sourced work");
+  const publisherOnly = evaluatePublicationReadinessFromData(
+    validInput({
+      work: baseWork({ type: "terjemahan", id: "JLN-TER-0004" }),
+      visuals: [baseVisual({ role: "section" })],
+      sourceWork: { ...baseSource, source_url: null, publisher: "Dewan Bahasa dan Pustaka" },
+    })
+  );
+  assert(!publisherOnly.blockers.some((b) => b.code === "source_edition_incomplete"), "a publisher is enough without a URL");
+  const publishedNoYear = evaluatePublicationReadinessFromData(
+    validInput({
+      work: baseWork({ type: "terjemahan", id: "JLN-TER-0005", status: "published" }),
+      visuals: [baseVisual({ role: "section" })],
+      sourceWork: { ...baseSource, publication_year: null },
+    })
+  );
+  assert(!publishedNoYear.blockers.some((b) => b.code === "source_edition_incomplete"), "an already-published work only gets a warning for missing edition details");
+
+  // Cerpen/Novela are sourced only when the editor says so.
+  const ownCerpen = evaluatePublicationReadinessFromData(validInput({ work: baseWork({ type: "cerpen", metadata: {} }) }));
+  assert(!ownCerpen.blockers.some((b) => b.code === "source_missing"), "an original cerpen needs no source record");
+  const sourcedCerpen = evaluatePublicationReadinessFromData(validInput({ work: baseWork({ type: "cerpen", metadata: { origin: "sumber" } }), sourceWork: null }));
+  assert(sourcedCerpen.blockers.some((b) => b.code === "source_missing"), "a cerpen marked 'daripada sumber lain' needs a source record");
 
   // Fragmen/sinopsis also gated.
   const fragmen = evaluatePublicationReadinessFromData(

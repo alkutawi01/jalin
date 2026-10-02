@@ -68,8 +68,8 @@ console.log("sourceWork reader tests (Phase 4D-0.5)\n");
     "utf8"
   );
   assert(
-    chromeSource.includes("story-original-title") && chromeSource.includes("Tajuk asal:"),
-    "StoryHead explicitly labels the original title"
+    chromeSource.includes("story-original-title") && chromeSource.includes("<cite>{originalTitle}</cite>") && !chromeSource.includes("Tajuk asal:"),
+    "StoryHead shows the original title in italics, without a label"
   );
 }
 
