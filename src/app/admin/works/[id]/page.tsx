@@ -239,7 +239,6 @@ export default function EditWorkPage() {
   const [assistantNote, setAssistantNote] = useState("");
   const [glossaryBusy, setGlossaryBusy] = useState(false);
   const [glossaryNote, setGlossaryNote] = useState("");
-  const [glossaryManual, setGlossaryManual] = useState("");
   useEffect(() => {
     const restoreTab = () => {
       const hash = window.location.hash.slice(1);
@@ -323,7 +322,6 @@ export default function EditWorkPage() {
         result.unreadable ? `${result.unreadable} tidak dapat dibaca` : ""
       ].filter(Boolean).join("; ");
       setGlossaryNote(`${added} istilah ditambah${skipped ? `. Dilangkau: ${skipped}` : ""}. Semak maksudnya dalam jadual dan edit jika perlu.`);
-      setGlossaryManual("");
       toast(`${added} istilah glosari ditambah.`, "success");
     } catch (err) {
       setGlossaryError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
@@ -340,7 +338,7 @@ export default function EditWorkPage() {
     try {
       text = await navigator.clipboard.readText();
     } catch {
-      setGlossaryNote("Pelayar tidak membenarkan tampal automatik. Buka \"Tampal secara manual\" di bawah dan tampal jawapan chatbot di situ.");
+      setGlossaryNote("Pelayar menyekat bacaan papan keratan. Klik ikon tetapan di sebelah alamat laman, benarkan \"Papan keratan\" untuk laman ini, kemudian tekan Tampal & import semula.");
       return;
     }
     if (!text.trim()) {
@@ -2151,20 +2149,6 @@ export default function EditWorkPage() {
               </button>
             </div>
             {glossaryNote && <p className="admin-form-hint" role="status">{glossaryNote}</p>}
-            <details className="admin-advanced-field">
-              <summary>Tampal secara manual</summary>
-              <p className="admin-form-hint">Jika pelayar tidak membenarkan tampal automatik, tampal jawapan chatbot di sini.</p>
-              <textarea
-                aria-label="Jawapan chatbot untuk glosari"
-                rows={6}
-                value={glossaryManual}
-                onChange={(e) => setGlossaryManual(e.target.value)}
-                placeholder={"[GLOSARI]\nIstilah: ...\nMaksud: ..."}
-              />
-              <button type="button" className="admin-btn admin-btn-sm admin-btn-primary" disabled={glossaryBusy || !glossaryManual.trim()} onClick={() => void importGlossaryText(glossaryManual)}>
-                Import glosari
-              </button>
-            </details>
           </section>
 
           {glossaryError && (
