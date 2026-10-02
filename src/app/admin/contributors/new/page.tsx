@@ -68,7 +68,7 @@ export default function NewContributorPage() {
     <div className="admin-form-page">
       <header className="admin-page-header">
         <h1>Penyumbang Baharu</h1>
-        <p className="admin-page-sub">Cipta penyumbang baharu dalam database</p>
+        <p className="admin-page-sub">Cipta penyumbang baharu dalam pangkalan data</p>
       </header>
 
       {error && (

@@ -28,7 +28,7 @@ export default async function AdminContributorsPage() {
           <p className="admin-page-sub">Pengurusan penyumbang</p>
         </header>
         <div className="admin-placeholder-content">
-          <p>Database tidak tersedia. Set <code>DATABASE_URL</code> untuk mengaktifkan ciri admin.</p>
+          <p>Pangkalan data tidak tersedia. Set <code>DATABASE_URL</code> untuk mengaktifkan ciri admin.</p>
         </div>
       </div>
     );
@@ -67,7 +67,7 @@ export default async function AdminContributorsPage() {
             {contributors.length === 0 ? (
               <tr>
                 <td colSpan={5} className="admin-table-empty">
-                  Tiada penyumbang dalam database.
+                  Tiada penyumbang dalam pangkalan data.
                 </td>
               </tr>
             ) : (

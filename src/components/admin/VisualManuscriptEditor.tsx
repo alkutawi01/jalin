@@ -1,5 +1,6 @@
 "use client";
 
+import { dashInSelection } from "../../lib/admin/auto-dash";
 import { useEffect, useRef } from "react";
 import { nextImageMarker } from "../../lib/reader/image-markers";
 import { splitCommunicationBlocks } from "../../lib/reader/communication-blocks";
@@ -105,6 +106,7 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
   function sync() {
     const editor = editorRef.current;
     if (!editor) return;
+    dashInSelection();
     const next = fromHtml(editor);
     emittedRef.current = next;
     onChange(next);

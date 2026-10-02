@@ -64,7 +64,10 @@ export default async function AdminWorksPage({
       const name = row.display_name || row.guest_name;
       if (!name) continue;
       const key = String(row.work_id);
-      authorsByWork.set(key, `${authorsByWork.get(key) ?? ""} ${name}`.trim());
+      // Names are separated by commas, and the same person is listed once.
+      const names = (authorsByWork.get(key) ?? "").split(", ").filter(Boolean);
+      if (!names.includes(name)) names.push(name);
+      authorsByWork.set(key, names.join(", "));
     }
   } catch {
     /* the list still works without author search */

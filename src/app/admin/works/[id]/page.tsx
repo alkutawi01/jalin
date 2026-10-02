@@ -1,6 +1,7 @@
 "use client";
 
 import { isSourcedWork } from "@/lib/content/source-origin";
+import { dashChange } from "@/lib/admin/auto-dash";
 import { useState, useEffect, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import WorkVisualUpload from "../../../../components/admin/WorkVisualUpload";
@@ -1660,11 +1661,11 @@ export default function EditWorkPage() {
         <div className="admin-publish-preview">
           <h3>Penyegerakan</h3>
           {publishPreview.isNew ? (
-            <p className="admin-sync-status admin-sync-new">MARKDOWN MISSING — Karya ini belum ada sebagai Markdown.</p>
+            <p className="admin-sync-status admin-sync-new">BELUM ADA — Karya ini belum ada sebagai Markdown.</p>
           ) : publishPreview.metadataChanged || publishPreview.bodyChanged ? (
-            <p className="admin-sync-status admin-sync-changed">DB CHANGED — Perubahan dalam database belum diterbitkan ke Markdown.</p>
+            <p className="admin-sync-status admin-sync-changed">PERUBAHAN — Perubahan dalam pangkalan data belum diterbitkan ke Markdown.</p>
           ) : (
-            <p className="admin-sync-status admin-sync-ok">IN SYNC — Database dan Markdown adalah selari.</p>
+            <p className="admin-sync-status admin-sync-ok">SELARI — Pangkalan data dan Markdown adalah selari.</p>
           )}
         </div>
       )}
@@ -1791,7 +1792,7 @@ export default function EditWorkPage() {
               className="admin-textarea"
               rows={5}
               value={form.dek}
-              onChange={(e) => setForm((prev) => ({ ...prev, dek: e.target.value }))}
+              onChange={(e) => dashChange(e, (value) => setForm((prev) => ({ ...prev, dek: value })))}
             />
           </div>
 
@@ -1822,7 +1823,7 @@ export default function EditWorkPage() {
                 id="body"
                 ref={manuscriptRef}
                 value={form.body}
-                onChange={(e) => setForm((prev) => ({ ...prev, body: e.target.value }))}
+                onChange={(e) => dashChange(e, (value) => setForm((prev) => ({ ...prev, body: value })))}
                 rows={25}
                 className="admin-textarea"
               />
@@ -1964,7 +1965,7 @@ export default function EditWorkPage() {
               rows={8}
               maxLength={5000}
               value={form.editorNote}
-              onChange={(e) => setForm((prev) => ({ ...prev, editorNote: e.target.value }))}
+              onChange={(e) => dashChange(e, (value) => setForm((prev) => ({ ...prev, editorNote: value })))}
               placeholder="Cerita asal usul karya ini, apa yang menarik tentangnya, atau apa-apa yang editor mahu kongsi dengan pembaca."
             />
             <span className="admin-form-hint">
@@ -2024,7 +2025,7 @@ export default function EditWorkPage() {
                 <label>Isi (Markdown) *</label>
                 <textarea
                   value={editingSection.body || ""}
-                  onChange={(e) => setEditingSection((prev) => ({ ...prev, body: e.target.value }))}
+                  onChange={(e) => dashChange(e, (value) => setEditingSection((prev) => ({ ...prev, body: value })))}
                   rows={12}
                   className="admin-textarea"
                 />
