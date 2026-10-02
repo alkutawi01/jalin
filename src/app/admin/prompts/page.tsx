@@ -32,7 +32,7 @@ export default async function AdminPromptsPage() {
           <p className="admin-page-sub">Pengurusan templat arahan</p>
         </header>
         <div className="admin-placeholder-content">
-          <p>Database tidak tersedia. Set <code>DATABASE_URL</code> untuk mengaktifkan ciri admin.</p>
+          <p>Pangkalan data tidak tersedia. Set <code>DATABASE_URL</code> untuk mengaktifkan ciri admin.</p>
         </div>
       </div>
     );

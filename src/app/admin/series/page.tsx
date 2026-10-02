@@ -22,7 +22,7 @@ export default async function AdminSeriesPage() {
           <p className="admin-page-sub">Pengurusan Siri Bersiri</p>
         </header>
         <div className="admin-placeholder-content">
-          <p>Database tidak tersedia. Set <code>DATABASE_URL</code> untuk mengaktifkan ciri admin.</p>
+          <p>Pangkalan data tidak tersedia. Set <code>DATABASE_URL</code> untuk mengaktifkan ciri admin.</p>
         </div>
       </div>
     );
@@ -36,7 +36,7 @@ export default async function AdminSeriesPage() {
         <div className="admin-page-header-row">
           <div>
             <h1>Siri</h1>
-            <p className="admin-page-sub">{series.length} siri dalam database</p>
+            <p className="admin-page-sub">{series.length} siri dalam pangkalan data</p>
           </div>
           <a href="/admin/series/new" className="admin-btn admin-btn-primary">
             + Siri Baharu
@@ -59,7 +59,7 @@ export default async function AdminSeriesPage() {
             {series.length === 0 ? (
               <tr>
                 <td colSpan={5} className="admin-table-empty">
-                  Tiada siri dalam database.
+                  Tiada siri dalam pangkalan data.
                 </td>
               </tr>
             ) : (
