@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "pretest": "npx tsx --tsconfig tsconfig.test.json __tests__/image-marker-glossary.test.tsx && npx tsx __tests__/fragmen-kind.test.ts",
+    "pretest": "npx tsx --tsconfig tsconfig.test.json __tests__/image-marker-glossary.test.tsx && npx tsx __tests__/fragmen-kind.test.ts && npx tsx --tsconfig tsconfig.test.json __tests__/visual-manuscript-editor.test.tsx",
     "test:editor-ui": "node __tests__/editor-workflow.browser.mjs",
     "dev": "next dev",
     "build": "next build",

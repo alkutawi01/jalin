@@ -56,11 +56,19 @@ export async function initContentRepository(): Promise<ContentRepository> {
       });
     }
     // Keep serving the previous content if the reload fails.
-    return initPromise.catch(() => repositoryInstance as ContentRepository);
+    return initPromise.catch((error) => {
+      // Never fail silently: a stuck reload means readers keep seeing old content.
+      console.error("[ContentRepository] muat semula gagal; memaparkan kandungan terdahulu", error);
+      return repositoryInstance as ContentRepository;
+    });
   }
   if (initPromise) return initPromise;
 
-  initPromise = loadFresh();
+  // Clear the promise when done. Left set, the staleness check above never starts a reload and the
+  // server would keep showing the content it loaded on its first request until the next deploy.
+  initPromise = loadFresh().finally(() => {
+    initPromise = null;
+  });
   return initPromise;
 }
 
