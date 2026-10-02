@@ -33,6 +33,8 @@ export interface WorkInput {
   editorPick?: boolean;
   editorPickRank?: number | null;
   editorPickReason?: string | null;
+  /** Editor's note shown at the end of the work; empty removes it. Stored in works.metadata. */
+  editorNote?: string;
 }
 
 export interface WorkRecord {
@@ -211,6 +213,15 @@ export async function updateWork(
   }
   if (input.editorPickReason !== undefined) {
     updateData.editor_pick_reason = input.editorPickReason ? String(input.editorPickReason) : null;
+  }
+
+  if (input.editorNote !== undefined) {
+    const current = await db.selectFrom("works").where("id", "=", id).select("metadata").executeTakeFirst();
+    const metadata: Record<string, unknown> = { ...((current?.metadata ?? {}) as Record<string, unknown>) };
+    const note = String(input.editorNote ?? "").trim();
+    if (note) metadata.editorNote = note;
+    else delete metadata.editorNote;
+    updateData.metadata = metadata;
   }
 
   await db

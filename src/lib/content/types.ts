@@ -133,6 +133,8 @@ export interface Work {
   metadata?: {
     characters?: CharacterMeta[];
     fragmenTextLanguage?: string;
+    /** Free-form note from the editor, shown at the end of the work (origin, what is interesting, ...). */
+    editorNote?: string;
   };
 
   reader?: ReaderMeta;

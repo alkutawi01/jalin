@@ -10,6 +10,7 @@ import {
   RightRail,
   SiteFooter,
   SiteHeader,
+  EditorNote,
   StoryEnd,
   StoryHead
 } from "../../../../components/reader/StoryChrome";
@@ -443,6 +444,11 @@ export default async function WorkPage({
             position="bawah"
           />
         )}
+
+        {/* On a novela the note closes the last chapter only. */}
+        {sections.length === 0 || activeSection?.slug === sections[sections.length - 1]?.slug ? (
+          <EditorNote note={work.metadata?.editorNote} />
+        ) : null}
 
         <StoryEnd title={work.title} />
 

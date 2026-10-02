@@ -2417,3 +2417,24 @@ dd { margin: 0; color: var(--ink); text-align: left; }
   .category-explorer-card-body h3 { overflow-wrap: anywhere; }
   .header-mobile-nav .header-mobile-nav-links { min-width: min(210px, calc(100vw - 32px)); }
 }
+.editor-note {
+  max-width: 700px;
+  margin: 48px auto 0;
+  padding: 28px 0 0;
+  border-top: 1px solid var(--line);
+}
+.editor-note h2 {
+  margin: 0 0 14px;
+  font-family: Arial, sans-serif;
+  font-size: 11px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.editor-note p {
+  margin: 0 0 1em;
+  font-size: 18px;
+  line-height: 1.8;
+  color: #243d43;
+}
+.editor-note em { font-style: italic; }
