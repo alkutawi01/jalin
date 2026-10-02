@@ -99,6 +99,8 @@ export function materialHashOf(input: NonNullable<Awaited<ReturnType<typeof load
   return computeContentHash({
     slug: w.slug, title: w.title, type: w.type, dek: w.dek, genre: w.genre, audience: w.audience,
     readingMinutes: w.reading_minutes, body: w.body,
+    // The editor note is shown to readers, so changing it is an unpublished change.
+    editorNote: ((w.metadata ?? {}) as { editorNote?: string }).editorNote ?? null,
     credits: input.credits.map((c) => [c.contributor_slug, c.guest_name, c.role_label, c.byline, c.is_public, c.sort_order]),
     visuals: input.visuals.map((v) => [v.role, v.src, v.alt, v.anchor, v.place, v.sort_order, v.provider]),
     glossary: input.glossary.map((g) => [g.term, g.meaning, g.source, g.sort_order]),
