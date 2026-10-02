@@ -1,6 +1,8 @@
 import { renderItalics } from "../../lib/reader/inline-italics";
 import type { ReactNode } from "react";
 import Image from "next/image";
+import { cropStyle } from "../../lib/reader/crop";
+import type { ImageCrop } from "../../lib/content/types";
 import type { BylineCredit, CharacterMeta, EditorialCredit, WorkMetaRow } from "./types";
 import { NAV_LINKS, SiteNavLinks } from "./nav-links";
 import MobileNavMenu from "./MobileNavMenu";
@@ -40,7 +42,7 @@ export function StoryHead({
   byline: BylineCredit[];
   originalTitle?: string;
   /** Hero image shown as a card beside the title (below it on narrow screens). */
-  hero?: { src: string; alt: string; rights: string };
+  hero?: { src: string; alt: string; rights: string; crop?: ImageCrop };
 }) {
   const text = (
     <>
@@ -80,7 +82,7 @@ export function StoryHead({
     <div className="site-shell work-head">
       <div className="story-head work-head-text">{text}</div>
       <figure className="work-head-visual editorial-image">
-        <Image src={hero.src} alt={hero.alt} fill sizes="(max-width: 900px) 100vw, 560px" quality={85} priority />
+        <Image src={hero.src} alt={hero.alt} fill sizes="(max-width: 900px) 100vw, 560px" quality={85} priority style={cropStyle(hero.crop)} />
         <div className="image-rights" aria-hidden="true">{hero.rights}</div>
       </figure>
     </div>
@@ -91,12 +93,14 @@ export function EditorialImage({
   src,
   alt,
   rights,
-  kind = "inline"
+  kind = "inline",
+  crop
 }: {
   src: string;
   alt: string;
   rights: string;
   kind?: "hero" | "inline";
+  crop?: ImageCrop;
 }) {
   const figureClass = (kind === "hero" ? "hero-figure" : "inline-figure") + " editorial-image";
   if (!src) return null;
@@ -109,6 +113,7 @@ export function EditorialImage({
         sizes={kind === "hero" ? "(max-width: 720px) 100vw, 1180px" : "(max-width: 720px) 100vw, 800px"}
         quality={85}
         priority={kind === "hero"}
+        style={cropStyle(crop)}
       />
       <div className="image-rights" aria-hidden="true">{rights}</div>
     </figure>

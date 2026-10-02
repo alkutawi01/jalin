@@ -28,6 +28,8 @@ export interface WorkVisualUploadInput {
   allowExistingHero?: boolean;
   /** Replacement may reuse the marker already owned by the image being replaced. */
   replaceVisualId?: number;
+  /** A novela chapter. The image then belongs to that chapter: its markers live in the chapter text, not the work's. */
+  sectionSlug?: string | null;
   actor: string;
 }
 
@@ -42,21 +44,31 @@ export async function uploadVisualForWork(
   if (!ROLES.has(input.role as VisualRole)) {
     return { ok: false, status: 400, error: "Role mesti hero, inline atau section." };
   }
-  if (input.role !== "hero" && !input.anchor?.trim()) {
+  const chapterHero = input.role === "section" && Boolean(input.sectionSlug) && !input.anchor?.trim();
+  const needsMarker = input.role !== "hero" && !chapterHero;
+  if (needsMarker && !input.anchor?.trim()) {
     return { ok: false, status: 400, error: "Imej dalam teks memerlukan penanda yang wujud dalam karya." };
   }
   const work = await db.selectFrom("works").where("id", "=", input.workId).select(["id", "body"]).executeTakeFirst();
   if (!work) return { ok: false, status: 404, error: "Karya tidak ditemui." };
-  if (input.role !== "hero" && !work.body?.includes(input.anchor!.trim())) {
+  // Where the marker has to be found: the chapter's text for a chapter image, otherwise the work's manuscript.
+  let textBody = work.body ?? "";
+  if (input.sectionSlug) {
+    const section = await db.selectFrom("reading_sections").where("work_id", "=", input.workId).where("slug", "=", input.sectionSlug).select("body").executeTakeFirst();
+    if (!section) return { ok: false, status: 404, error: "Bab tidak ditemui." };
+    textBody = section.body ?? "";
+  }
+  if (needsMarker && !textBody.includes(input.anchor!.trim())) {
     return { ok: false, status: 400, error: "Penanda gambar tidak ditemui dalam manuskrip tersimpan. Simpan manuskrip dahulu, kemudian cuba lagi." };
   }
-  if (input.role !== "hero" && isImageMarker(input.anchor)) {
+  if (needsMarker && isImageMarker(input.anchor)) {
     const marker = input.anchor!.trim();
-    if (work.body!.split(marker).length !== 2) {
-      return { ok: false, status: 400, error: "Penanda gambar mesti muncul tepat sekali dalam manuskrip." };
+    if (textBody.split(marker).length !== 2) {
+      return { ok: false, status: 400, error: input.sectionSlug ? "Penanda gambar mesti muncul tepat sekali dalam teks bab itu." : "Penanda gambar mesti muncul tepat sekali dalam manuskrip." };
     }
-    const assigned = await db.selectFrom("visuals").where("work_id", "=", input.workId)
-      .where("anchor", "=", marker).select("id").executeTakeFirst();
+    let assignedQuery = db.selectFrom("visuals").where("work_id", "=", input.workId).where("anchor", "=", marker);
+    if (input.sectionSlug) assignedQuery = assignedQuery.where("section_slug" as never, "=", input.sectionSlug as never);
+    const assigned = await assignedQuery.select("id").executeTakeFirst();
     if (assigned && assigned.id !== input.replaceVisualId) return { ok: false, status: 409, error: "Penanda ini sudah digunakan oleh gambar lain." };
   }
 
@@ -76,6 +88,12 @@ export async function uploadVisualForWork(
     }
   }
 
+  if (chapterHero && !input.replaceVisualId) {
+    const existing = await db.selectFrom("visuals").where("work_id", "=", input.workId).where("role", "=", "section")
+      .where("section_slug" as never, "=", input.sectionSlug as never).select("id").executeTakeFirst().catch(() => undefined);
+    if (existing) return { ok: false, status: 409, error: "Bab ini sudah mempunyai hero. Ganti atau padam yang lama dahulu." };
+  }
+
   const now = new Date().toISOString();
   const created = await db
     .insertInto("visual_requests")
@@ -91,7 +109,7 @@ export async function uploadVisualForWork(
       source_asset_url: null,
       source_asset_path: null,
       alt_text: input.altText.trim(),
-      anchor: input.role === "hero" ? null : input.anchor,
+      anchor: input.role === "hero" || chapterHero ? null : input.anchor,
       place: input.place,
       approval_state: "pending",
       aspect_ratio: input.role === "hero" ? "3:2" : "4:3",
@@ -135,6 +153,16 @@ export async function uploadVisualForWork(
     };
   }
 
+  if (input.sectionSlug) {
+    try {
+      await db.updateTable("visuals").set({ section_slug: input.sectionSlug } as never).where("id", "=", attach.visualId).execute();
+    } catch {
+      // Without migration 022 the chapter cannot be recorded; do not leave an image that would show on the whole work.
+      await db.deleteFrom("visuals").where("id", "=", attach.visualId).execute();
+      return { ok: false, status: 409, error: "Gambar bab memerlukan migration 022 pada pangkalan data. Hubungi pentadbir untuk menjalankannya.", visualRequestId: created.id };
+    }
+  }
+
   return { ok: true, visualRequestId: created.id, visualId: attach.visualId, assetPath: upload.assetPath };
 }
 
@@ -165,12 +193,18 @@ export async function replaceVisualImage(
     bytes: input.bytes,
     actor: input.actor,
     allowExistingHero: true,
-    replaceVisualId: input.visualId
+    replaceVisualId: input.visualId,
+    sectionSlug: (old as { section_slug?: string | null }).section_slug ?? null
   });
   if (!result.ok) return { ok: false, status: result.status, error: result.error };
 
   await db.transaction().execute(async (trx) => {
-    await trx.updateTable("visuals").set({ sort_order: old.sort_order }).where("id", "=", result.visualId).execute();
+    const keep = old as { focus_x?: number | null; focus_y?: number | null; zoom?: number | null };
+    const crop = keep.focus_x != null || keep.focus_y != null || keep.zoom != null
+      ? { focus_x: keep.focus_x ?? null, focus_y: keep.focus_y ?? null, zoom: keep.zoom ?? null }
+      : {};
+    // The crop belongs to the place the image has, so a replacement starts with the same crop.
+    await trx.updateTable("visuals").set({ sort_order: old.sort_order, ...crop } as never).where("id", "=", result.visualId).execute();
     await trx.deleteFrom("visuals").where("id", "=", input.visualId).where("work_id", "=", old.work_id).execute();
   });
   return { ok: true, visualId: result.visualId, assetPath: result.assetPath };

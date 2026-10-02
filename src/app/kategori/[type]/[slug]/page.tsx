@@ -282,7 +282,10 @@ export default async function WorkPage({
     bodyToRender = activeSection.body;
   }
 
-  const segmentNodes = placeVisuals(bodyToRender, work.visuals);
+  // A chapter's own images (hero and inline) belong to that chapter; the work's other images stay with the work.
+  const visualsForBody = work.visuals.filter((visual) => (activeSection ? visual.sectionSlug === activeSection.slug : !visual.sectionSlug));
+  const segmentNodes = placeVisuals(bodyToRender, visualsForBody);
+  const chapterHero = activeSection ? work.visuals.find((visual) => visual.role === "section" && visual.sectionSlug === activeSection.slug && !visual.anchor) : undefined;
   const segmentGlossaries = firstGlossaryBySegment(segmentNodes, glossary);
 
   const publicSections = projectPublicSections(sections);
@@ -362,6 +365,7 @@ export default async function WorkPage({
                 src={node.src}
                 alt={node.alt}
                 rights={rights}
+                crop={node.crop}
               />
             );
           }
@@ -390,7 +394,7 @@ export default async function WorkPage({
             dek={work.dek ?? ""}
             byline={byline}
             originalTitle={originalTitle}
-            hero={hero?.src ? { src: hero.src, alt: hero.alt ?? "", rights } : undefined}
+            hero={hero?.src ? { src: hero.src, alt: hero.alt ?? "", rights, crop: hero.crop } : undefined}
           />
         )}
 
@@ -406,7 +410,7 @@ export default async function WorkPage({
             <div className="chapter-column">
               <ChapterHead workTitle={work.title} workHref={`/kategori/${work.type}/${work.slug}`} rows={chapterRows} index={sectionIndex} />
               {/* A chapter shows its own hero when it has one; until then the novela's hero stands in. */}
-              {hero?.src ? <EditorialImage src={hero.src} alt={hero.alt ?? ""} rights={rights} kind="hero" /> : null}
+              {(chapterHero ?? hero)?.src ? <EditorialImage src={(chapterHero ?? hero)!.src} alt={(chapterHero ?? hero)!.alt ?? ""} rights={rights} kind="hero" crop={(chapterHero ?? hero)!.crop} /> : null}
               {articleNode}
             </div>
           ) : articleNode}

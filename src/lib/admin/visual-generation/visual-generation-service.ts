@@ -775,9 +775,7 @@ export function validateAttachGate(input: AttachGateInput): AttachGateResult {
     return { ok: false, error: "Role visual diperlukan." };
   }
 
-  if (!(input.alt_text ?? "").trim()) {
-    return { ok: false, error: "Alt text diperlukan untuk pautan visual." };
-  }
+  // Alt text is encouraged but never required (a missing one is a readiness warning).
 
   return { ok: true, stableSrc };
 }

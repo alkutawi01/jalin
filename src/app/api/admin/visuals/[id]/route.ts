@@ -3,6 +3,14 @@ import { getVisual, updateVisual, deleteVisual } from "../../../../../lib/admin/
 import { getDb } from "../../../../../lib/db";
 import { isImageMarker } from "../../../../../lib/reader/image-markers";
 
+/** undefined leaves the field alone; null or "" clears it; anything else must be a number. */
+function numOrNull(value: unknown): number | null | undefined {
+  if (value === undefined) return undefined;
+  if (value === null || value === "") return null;
+  const n = Number(value);
+  return Number.isFinite(n) ? n : undefined;
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -80,12 +88,20 @@ export async function PATCH(
       anchor: body.anchor,
       place: body.place,
       sortOrder: body.sortOrder,
+      focusX: numOrNull(body.focusX),
+      focusY: numOrNull(body.focusY),
+      zoom: numOrNull(body.zoom),
     });
 
     return NextResponse.json(visual);
   } catch (error) {
+    const message = error instanceof Error ? error.message : "Ralat tidak diketahui.";
+    // The crop columns come with migration 022; until it has run, say so instead of showing a database error.
+    if (/column .*(focus_x|focus_y|zoom|section_slug).* does not exist/i.test(message)) {
+      return NextResponse.json({ error: "Pilihan bahagian gambar (crop) memerlukan migration 022 pada pangkalan data. Hubungi pentadbir untuk menjalankannya." }, { status: 409 });
+    }
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Ralat tidak diketahui." },
+      { error: message },
       { status: 500 }
     );
   }

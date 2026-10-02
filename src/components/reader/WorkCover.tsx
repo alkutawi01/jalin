@@ -1,10 +1,11 @@
 import Image from "next/image";
-import type { WorkType } from "../../lib/content/types";
+import type { ImageCrop, WorkType } from "../../lib/content/types";
+import { cropStyle } from "../../lib/reader/crop";
 
 type WorkCoverProps = {
   type: WorkType | string;
   title: string;
-  hero?: { src: string; alt: string };
+  hero?: { src: string; alt: string; crop?: ImageCrop };
   sizes?: string;
   quality?: number;
   rightsYear?: string;
@@ -18,7 +19,7 @@ export function WorkCover({ type, title, hero, sizes = "(max-width: 640px) 50vw,
     >
       {hero?.src ? (
         <>
-          <Image src={hero.src} alt={hero.alt} fill sizes={sizes} quality={quality} />
+          <Image src={hero.src} alt={hero.alt} fill sizes={sizes} quality={quality} style={cropStyle(hero.crop)} />
           {rightsYear ? (
             <div className="image-rights" aria-hidden="true">{`© ADJUNG ${rightsYear}`}</div>
           ) : null}

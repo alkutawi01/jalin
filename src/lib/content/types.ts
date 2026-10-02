@@ -38,6 +38,18 @@ export interface VisualRef {
 
   anchor?: string;
   place?: "before" | "after";
+
+  /** Which part of the image to show; absent means centred. */
+  crop?: ImageCrop;
+  /** Novela chapter this image belongs to. */
+  sectionSlug?: string;
+}
+
+/** The point of interest (percent from left/top) and the zoom (percent, 100 = whole image). */
+export interface ImageCrop {
+  x: number;
+  y: number;
+  zoom: number;
 }
 
 export interface SourceWorkRef {

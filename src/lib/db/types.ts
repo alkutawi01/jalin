@@ -93,6 +93,12 @@ export interface Visuals {
   place: VisualPlace;
   sort_order: number;
   is_asset_finalized: boolean;
+  /** Crop (migration 022). Optional until it has run. */
+  focus_x?: number | null;
+  focus_y?: number | null;
+  zoom?: number | null;
+  /** Novela chapter this image belongs to; null for the work's own images. */
+  section_slug?: string | null;
   created_at: ColumnType<Date, string | Date, string | Date>;
 }
 

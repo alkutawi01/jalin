@@ -27,6 +27,11 @@ export interface VisualInput {
   anchor?: string;
   place?: VisualPlace;
   sortOrder: number;
+  /** Crop: point of interest (0-100) and zoom (100-300). null clears. */
+  focusX?: number | null;
+  focusY?: number | null;
+  zoom?: number | null;
+  sectionSlug?: string | null;
 }
 
 export interface VisualRecord {
@@ -124,6 +129,10 @@ export async function updateVisual(
   if (input.anchor !== undefined) updateData.anchor = input.anchor || null;
   if (input.place !== undefined) updateData.place = input.place;
   if (input.sortOrder !== undefined) updateData.sort_order = input.sortOrder;
+  if (input.focusX !== undefined) updateData.focus_x = input.focusX === null ? null : Math.round(Math.min(100, Math.max(0, input.focusX)));
+  if (input.focusY !== undefined) updateData.focus_y = input.focusY === null ? null : Math.round(Math.min(100, Math.max(0, input.focusY)));
+  if (input.zoom !== undefined) updateData.zoom = input.zoom === null ? null : Math.round(Math.min(300, Math.max(100, input.zoom)));
+  if (input.sectionSlug !== undefined) updateData.section_slug = input.sectionSlug || null;
 
   await db
     .updateTable("visuals")
