@@ -186,7 +186,7 @@ interface SectionData {
 const isSourced = (type: string, origin: string) => isSourcedWork(type, { origin });
 
 const TAB_NAMES: Record<Tab, string> = {
-  content: "Kandungan", metadata: "Maklumat", sections: "Bahagian", credits: "Kredit", glossary: "Glosari", characters: "Watak", source: "Sumber & Hak"
+  content: "Kandungan", metadata: "Maklumat", sections: "Bab", credits: "Kredit", glossary: "Glosari", characters: "Watak", source: "Sumber & Hak"
 };
 
 const HISTORY_ACTIONS: Record<string, string> = {
@@ -284,7 +284,7 @@ export default function EditWorkPage() {
       : activeTab === "glossary" ? "cadangkan istilah yang benar-benar hadir dalam manuskrip serta maksud ringkas"
       : activeTab === "characters" ? "senaraikan watak yang benar-benar hadir, peranan, dan kemunculan pertama tanpa spoiler"
       : activeTab === "source" ? "susun maklumat sumber dan bukti hak yang editor berikan; jangan mendakwa status domain awam tanpa bukti"
-      : "semak struktur bahagian tanpa mengubah urutan cerita";
+      : "semak struktur bab tanpa mengubah urutan cerita";
     const prompt = `Anda pembantu editorial Jalin. Jenis karya: ${form.type}. Tugas: ${focus}. Jawab dalam bahasa Melayu dengan butiran yang mudah dipindahkan ke tab ${activeTab}. Jangan mereka fakta, kredit, sumber atau peristiwa. Tanda maklumat yang tidak dapat disahkan sebagai 'perlu semakan editor'. ${form.type === "bersiri" ? "Episod ini sebahagian siri; minta ringkasan episod terdahulu dan nota canon jika belum diberi. Jangan anggap episod berdiri sendiri." : ""}\n\nMANUSKRIP:\n${form.body.trim() || "[Editor akan tampal manuskrip]"}`;
     try {
       await navigator.clipboard.writeText(prompt);
@@ -760,7 +760,7 @@ export default function EditWorkPage() {
         });
         if (!res.ok) {
           const data = await res.json();
-          throw new Error(data.error || "Gagal menyimpan bahagian.");
+          throw new Error(data.error || "Gagal menyimpan bab.");
         }
       } else {
         const res = await fetch(`/api/admin/works/${workId}/sections`, {
@@ -770,11 +770,11 @@ export default function EditWorkPage() {
         });
         if (!res.ok) {
           const data = await res.json();
-          throw new Error(data.error || "Gagal mencipta bahagian.");
+          throw new Error(data.error || "Gagal mencipta bab.");
         }
       }
       setEditingSection(null);
-      setSectionSuccess("Bahagian disimpan.");
+      setSectionSuccess("Bab disimpan.");
       await loadSections();
       await loadReadiness();
       setTimeout(() => setSectionSuccess(null), 4000);
@@ -784,13 +784,13 @@ export default function EditWorkPage() {
   }
 
   async function handleDeleteSection(id: number) {
-    if (!(await confirmAction("Pasti ingin memadam bahagian ini? Susunan selebihnya akan dirapatkan.", { danger: true, confirmLabel: "Ya, teruskan" }))) return;
+    if (!(await confirmAction("Pasti ingin memadam bab ini? Susunan selebihnya akan dirapatkan.", { danger: true, confirmLabel: "Ya, teruskan" }))) return;
     setSectionError(null);
     try {
       const res = await fetch(`/api/admin/works/${workId}/sections/${id}`, { method: "DELETE" });
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error || "Gagal memadam bahagian.");
+        throw new Error(data.error || "Gagal memadam bab.");
       }
       await loadSections();
       await loadReadiness();
@@ -1685,7 +1685,7 @@ export default function EditWorkPage() {
           </button>
         </div>
       </div>
-      <p className="admin-form-hint a-work-save-help">Gambar, kredit, glosari dan bahagian disimpan melalui tindakan masing-masing — tidak memerlukan butang ini.</p>
+      <p className="admin-form-hint a-work-save-help">Gambar, kredit, glosari dan bab disimpan melalui tindakan masing-masing — tidak memerlukan butang ini.</p>
 
       <section className="a-assistant" aria-label="Isi maklumat dengan chatbot">
         <h2>Isi maklumat dengan chatbot (sekali salin, sekali tampal)</h2>
@@ -1726,7 +1726,7 @@ export default function EditWorkPage() {
             aria-pressed={activeTab === "sections"}
             onClick={() => selectTab("sections")}
           >
-            Bahagian ({sections.length})
+            Bab ({sections.length})
           </button>
         )}
         <button
@@ -1800,10 +1800,10 @@ export default function EditWorkPage() {
             <div className="admin-alert admin-alert-info" role="note">
               <strong>Teks Novela ini disunting bab demi bab.</strong>
               <p style={{ margin: "6px 0 10px" }}>
-                Novela menyimpan teksnya dalam {sections.length} bahagian, bukan dalam satu kotak manuskrip, jadi tiada teks di sini. Teks sebenar tidak hilang dan pembaca melihatnya seperti biasa.
+                Novela menyimpan teksnya dalam {sections.length} bab, bukan dalam satu kotak manuskrip, jadi tiada teks di sini. Teks sebenar tidak hilang dan pembaca melihatnya seperti biasa.
               </p>
               <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={() => selectTab("sections")}>
-                Buka Bahagian ({sections.length})
+                Buka Bab ({sections.length})
               </button>
             </div>
           ) : (
@@ -1985,18 +1985,18 @@ export default function EditWorkPage() {
           {sectionSuccess && <div className="admin-alert admin-alert-success">{sectionSuccess}</div>}
 
           <div className="admin-credits-header">
-            <h3>Bahagian Novela</h3>
+            <h3>Bab Novela</h3>
             <button
               type="button"
               className="admin-btn admin-btn-sm admin-btn-primary"
               onClick={() => setEditingSection({ slug: "", title: "", body: "" })}
             >
-              + Tambah Bahagian
+              + Tambah Bab
             </button>
           </div>
           <p className="admin-form-hint">
-            Novela kekal satu Work. Bahagian ialah struktur dalaman — bukan karya berasingan.
-            Apabila bahagian wujud, ia menjadi struktur kanonik pembaca.
+            Novela kekal satu Work. Bab ialah struktur dalaman — bukan karya berasingan.
+            Apabila bab wujud, ia menjadi struktur kanonik pembaca.
           </p>
 
           {editingSection && (
@@ -2012,7 +2012,7 @@ export default function EditWorkPage() {
                   />
                 </div>
                 <div className="admin-form-group">
-                  <label>Tajuk bahagian</label>
+                  <label>Tajuk bab</label>
                   <input
                     type="text"
                     value={editingSection.title || ""}
@@ -2043,7 +2043,7 @@ export default function EditWorkPage() {
                   className="admin-btn admin-btn-primary"
                   onClick={handleSaveSection}
                 >
-                  Simpan Bahagian
+                  Simpan Bab
                 </button>
               </div>
             </div>
@@ -2051,7 +2051,7 @@ export default function EditWorkPage() {
 
           {sections.length === 0 ? (
             <p className="admin-table-empty">
-              Tiada bahagian — Novela menggunakan works.body sahaja sehingga bahagian ditambah.
+              Tiada bab — Novela menggunakan works.body sahaja sehingga bab ditambah.
             </p>
           ) : (
             <div className="admin-table-wrap">
@@ -2069,7 +2069,7 @@ export default function EditWorkPage() {
                 <tbody>
                   {sections.map((section, index) => (
                     <tr key={section.id}>
-                      <td>Bahagian {section.position}</td>
+                      <td>Bab {section.position}</td>
                       <td><code>{section.slug}</code></td>
                       <td>{section.title || "—"}</td>
                       <td>{section.body.length} aksara</td>
@@ -2080,7 +2080,7 @@ export default function EditWorkPage() {
                             className="admin-btn admin-btn-sm"
                             onClick={() => handleMoveSection(index, -1)}
                             disabled={index === 0}
-                            aria-label={`Naikkan Bahagian ${section.position}`}
+                            aria-label={`Naikkan Bab ${section.position}`}
                           >
                             ↑
                           </button>
@@ -2089,7 +2089,7 @@ export default function EditWorkPage() {
                             className="admin-btn admin-btn-sm"
                             onClick={() => handleMoveSection(index, 1)}
                             disabled={index === sections.length - 1}
-                            aria-label={`Turunkan Bahagian ${section.position}`}
+                            aria-label={`Turunkan Bab ${section.position}`}
                           >
                             ↓
                           </button>

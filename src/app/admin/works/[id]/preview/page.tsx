@@ -263,7 +263,7 @@ export default function PreviewWorkPage() {
                 gap: "0.5rem",
                 marginBottom: "1rem",
                 fontSize: "0.9rem"
-              }} aria-label="Navigasi bahagian pratonton">
+              }} aria-label="Navigasi bab pratonton">
                 {sections.map((s) => (
                   <button
                     key={s.id}

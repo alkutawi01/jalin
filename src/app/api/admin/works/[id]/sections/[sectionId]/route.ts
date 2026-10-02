@@ -14,7 +14,7 @@ export async function GET(
     const { sectionId } = await params;
     const section = await getSection(parseInt(sectionId, 10));
     if (!section) {
-      return NextResponse.json({ error: "Bahagian tidak ditemui." }, { status: 404 });
+      return NextResponse.json({ error: "Bab tidak ditemui." }, { status: 404 });
     }
     return NextResponse.json(section);
   } catch (error) {
@@ -43,7 +43,7 @@ export async function PATCH(
 
     const existing = await getSection(id);
     if (!existing) {
-      return NextResponse.json({ error: "Bahagian tidak ditemui." }, { status: 404 });
+      return NextResponse.json({ error: "Bab tidak ditemui." }, { status: 404 });
     }
 
     const body = await request.json();
@@ -85,7 +85,7 @@ export async function DELETE(
 
     const existing = await getSection(id);
     if (!existing) {
-      return NextResponse.json({ error: "Bahagian tidak ditemui." }, { status: 404 });
+      return NextResponse.json({ error: "Bab tidak ditemui." }, { status: 404 });
     }
 
     await deleteSection(id);

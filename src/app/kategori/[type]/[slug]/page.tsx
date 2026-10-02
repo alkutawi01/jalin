@@ -157,9 +157,9 @@ function originalTitleOf(work: { title: string; sourceWork?: { title?: string } 
 function SectionIndexDetails({ items }: { items: { label: string; href: string }[] }) {
   if (items.length === 0) return null;
   return (
-    <details>
+    <details className="chapter-index">
       <summary style={{ cursor: "pointer", fontSize: "0.78rem", letterSpacing: "0.06em", textTransform: "uppercase", opacity: 1, color: "#4b5f64" }}>
-        Bab ({items.length})
+        Senarai Bab ({items.length})
       </summary>
       <ol style={{ margin: "0.5rem 0 0", paddingLeft: "1.1rem", fontSize: "0.85rem", lineHeight: 1.55 }}>
         {items.map((item) => (
@@ -344,7 +344,7 @@ export default async function WorkPage({
               typeLabel,
               displayableGenre(work.genre),
               // Where the reader is in a novela, since there is no bar above the story any more.
-              sectionIndex >= 0 ? `Bahagian ${sectionIndex + 1} daripada ${publicSections.length}` : ""
+              sectionIndex >= 0 ? `Bab ${sectionIndex + 1} daripada ${publicSections.length}` : ""
             ]
               .filter(Boolean)
               .join(" · ")
@@ -397,9 +397,9 @@ export default async function WorkPage({
 
         {sections.length > 0 ? (
           <ContinueNav
-            name="Selepas bahagian ini"
-            next={nextSection ? { href: `/kategori/novela/${work.slug}/${nextSection.slug}`, label: `Bahagian ${sectionIndex + 2}`, title: nextSection.title || nextSection.slug } : undefined}
-            prev={prevSection ? { href: `/kategori/novela/${work.slug}/${prevSection.slug}`, label: `Bahagian ${sectionIndex}`, title: prevSection.title || prevSection.slug } : undefined}
+            name="Selepas bab ini"
+            next={nextSection ? { href: `/kategori/novela/${work.slug}/${nextSection.slug}`, label: `Bab ${sectionIndex + 2}`, title: nextSection.title || nextSection.slug } : undefined}
+            prev={prevSection ? { href: `/kategori/novela/${work.slug}/${prevSection.slug}`, label: `Bab ${sectionIndex}`, title: prevSection.title || prevSection.slug } : undefined}
           />
         ) : null}
 
