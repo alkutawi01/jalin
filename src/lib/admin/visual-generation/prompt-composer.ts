@@ -8,7 +8,7 @@
  */
 
 import type { AspectRatio, VisualRole } from "../../db/types";
-import { JALIN_HOUSE_STYLE } from "./house-style";
+import { JALIN_HOUSE_STYLE, JALIN_VISUAL_STANDARDS } from "./house-style";
 
 export interface VisualPromptInput {
   sceneInstruction: string;
@@ -48,6 +48,13 @@ export function composeVisualPrompt(input: VisualPromptInput): ComposedVisualPro
     `Prioritize: ${JALIN_HOUSE_STYLE.prioritize.join(", ")}.`
   );
   parts.push(`Avoid: ${JALIN_HOUSE_STYLE.avoid.join(", ")}.`);
+
+  // 1b. Jalin standards: always present, whatever the chatbot wrote
+  parts.push(JALIN_VISUAL_STANDARDS.faces);
+  parts.push(JALIN_VISUAL_STANDARDS.sceneTruth);
+  parts.push(JALIN_VISUAL_STANDARDS.anatomy);
+  parts.push(JALIN_VISUAL_STANDARDS.continuity);
+  parts.push(JALIN_VISUAL_STANDARDS.setting);
 
   // 2. Work/submission context
   if (input.workTitle) {

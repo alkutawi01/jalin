@@ -10,7 +10,7 @@
 
 import { DEFAULT_GLOBAL_RULES, DEFAULT_RECIPE_TEXT } from "./default-prompts";
 import { buildFormatBlock } from "./output-format";
-import { getRecipe, type RecipeKey } from "./recipes";
+import { getRecipe, type OutputSection, type RecipeKey } from "./recipes";
 
 export type SeriesContext =
   | { kind: "baharu" }
@@ -24,6 +24,10 @@ export interface ComposeInput {
   recipeText?: string | null;
   series?: SeriesContext | null;
   specialInstruction?: string | null;
+  /** Fill-all-tabs for a work that already has its text: leave these sections out of the answer. */
+  omitSections?: OutputSection[];
+  /** The work's text and what it already has; replaces the usual "text will be pasted" note. */
+  material?: string | null;
 }
 
 function seriesBlock(series: SeriesContext | null | undefined): string | null {
@@ -43,7 +47,9 @@ function seriesBlock(series: SeriesContext | null | undefined): string | null {
 }
 
 export function composeAiPrompt(input: ComposeInput): string {
-  const recipe = getRecipe(input.recipe);
+  const base = getRecipe(input.recipe);
+  const omit = new Set(input.omitSections ?? []);
+  const recipe = omit.size ? { ...base, sections: base.sections.filter((section) => !omit.has(section)) } : base;
   const globalRules = (input.globalRules ?? "").trim() || DEFAULT_GLOBAL_RULES;
   const recipeText = (input.recipeText ?? "").trim() || DEFAULT_RECIPE_TEXT[input.recipe];
   const special = (input.specialInstruction ?? "").trim();
@@ -54,7 +60,9 @@ export function composeAiPrompt(input: ComposeInput): string {
     seriesBlock(input.series),
     special ? `ARAHAN KHAS EDITOR (untuk karya ini sahaja)\n${special}` : null,
     buildFormatBlock(recipe, { newSeries: input.series?.kind === "baharu" }),
-    recipe.needsManuscript
+    input.material
+      ? `BAHAN\n${input.material}`
+      : recipe.needsManuscript
       ? "BAHAN\nTeks karya yang lengkap akan ditampal atau dilampirkan oleh editor selepas arahan ini."
       : "BAHAN\nMaklumat karya sumber akan diberi oleh editor selepas arahan ini."
   ].filter((part): part is string => Boolean(part));

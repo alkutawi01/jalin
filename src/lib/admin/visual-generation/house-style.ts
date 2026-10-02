@@ -52,6 +52,23 @@ export const JALIN_HOUSE_STYLE: HouseStyleProfile = {
   ],
 };
 
+/**
+ * Jalin's own standards (docs/VISUAL_GENERATION_GUARDRAILS.md, AGENTS.md). They are added to EVERY image
+ * prompt by the system, so a chatbot's scene description can be short or incomplete and the image still follows them.
+ */
+export const JALIN_VISUAL_STANDARDS = {
+  version: "1.1",
+  faces:
+    "Faces: no human face is clearly visible. Show people from behind, in silhouette, in partial profile, obscured by a foreground object, or cropped at the shoulders, hands or torso; use depth of field so no face can be identified.",
+  sceneTruth:
+    "Scene truth: show only what the scene describes, at that exact moment of the story. Do not add people, objects, places, weather or events that are not described.",
+  anatomy:
+    "Anatomy: natural hands and limbs, correct number of fingers, no extra or merged limbs, objects held naturally and never fused with the body.",
+  continuity:
+    "Continuity: recurring characters, clothing and symbolic objects keep one consistent appearance across images, exactly as the story describes them; do not invent ethnicity, age, hairstyle or body type that the story does not state.",
+  setting: "Setting: realistic Malaysian context where the story implies it. Do not name any art style or artist."
+} as const;
+
 export const SUPPORTED_ASPECT_RATIOS = ["1:1", "3:2", "2:3", "16:9", "9:16", "4:3", "3:4"] as const;
 
 export function aspectRatioToDimensions(aspectRatio: string): { width: number; height: number } {

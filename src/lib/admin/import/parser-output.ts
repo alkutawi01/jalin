@@ -27,6 +27,8 @@ export interface ParsedCharacter {
 export interface ParsedGlossaryTerm {
   term: string;
   meaning: string;
+  /** Foreign words the chatbot listed; the system italicises exactly these. */
+  foreign: string[];
   firstAppearanceSection: string | null;
 }
 
@@ -355,7 +357,11 @@ function normaliseParserOutput(
         warnings.push(parseIssue("glossary_incomplete", `Glosari #${index + 1} tiada term atau meaning; dilangkau.`, `glossary[${index}]`));
         return;
       }
-      glossary.push({ term, meaning, firstAppearanceSection: text(item.firstAppearanceSection) });
+      const foreign = (text(item.foreign) ?? "")
+        .split(/[,;，]/)
+        .map((part) => part.trim())
+        .filter((part) => part && !/^(tiada|tidak ada|-|—|n\/a)$/i.test(part));
+      glossary.push({ term, meaning, foreign, firstAppearanceSection: text(item.firstAppearanceSection) });
     });
   }
 

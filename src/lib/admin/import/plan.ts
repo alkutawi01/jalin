@@ -5,6 +5,7 @@
  */
 
 import { composeVisualPrompt } from "../visual-generation/prompt-composer";
+import { italicise } from "../authoring/glossary-paste";
 import {
   prepareSingleBody,
   resolveAnchor,
@@ -278,7 +279,7 @@ export function buildImportPlan(answer: string, manuscript: string, options: Imp
       });
       continue;
     }
-    glossary.push({ term: g.term, meaning: g.meaning, source: "", sortOrder: glossary.length + 1 });
+    glossary.push({ term: italicise(g.term, g.foreign), meaning: italicise(g.meaning, g.foreign), source: "", sortOrder: glossary.length + 1 });
   }
 
   const visuals: PlannedVisual[] = [];

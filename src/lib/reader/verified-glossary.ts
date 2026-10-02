@@ -1,5 +1,6 @@
 import type { GlossaryMap } from "../../components/reader/types";
 import type { GlossaryEntry, Work } from "../content/types";
+import { stripItalicMarks } from "./inline-italics";
 
 /**
  * Glossary projection for the public reader.
@@ -20,7 +21,9 @@ export function buildVerifiedGlossary(work: Pick<Work, "glossary">): GlossaryMap
   const glossary: GlossaryMap = {};
   for (const entry of work.glossary ?? []) {
     if (isVerifiedGlossaryEntry(entry)) {
-      glossary[entry.term] = { meaning: entry.meaning };
+      // Matching uses the plain term; the editor's *italic* marks are only for display.
+      const plain = stripItalicMarks(entry.term).trim();
+      glossary[plain] = plain === entry.term ? { meaning: entry.meaning } : { meaning: entry.meaning, termDisplay: entry.term };
     }
   }
   return glossary;
