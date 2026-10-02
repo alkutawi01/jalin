@@ -242,8 +242,21 @@ async function flowBersiri() {
   if (mine) {
     const page = await waitForPublic(`/kategori/bersiri/${mine.slug}/${slug}`, (h) => h.includes("Episod pertama siri ujian"), 90000);
     check(page.status === 200 && page.html.includes("Episod pertama siri ujian"), "halaman episod awam memaparkan episod");
-    const seriesPage = await publicHtml(`/kategori/bersiri/${mine.slug}`);
+    // Two more episodes in the same series, so the title page has a first and a latest episode.
+    for (const n of [2, 3]) {
+      const eid = await newDraft("bersiri", { seriesId: mine.id });
+      await api("PATCH", `/api/admin/works/${eid}`, { title: `Episod ${n} ${suffix}`, slug: `uji-e2e-episod-${n}-${suffix}`, body: `Isi episod ${n} siri ujian.`, dek: `Dek episod ${n}.`, genre: "Misteri", audience: "remaja", readingMinutes: 2 });
+      await addCredit(eid, "initial_draft", "Aina Zulaikha", true, 0);
+      await upload(eid, { role: "hero", alt: "Lorong sunyi.", tool: "Ujian" }, { r: 60, g: 60, b: 90 });
+      await simulateDurableStorage(eid);
+      await api("PATCH", `/api/admin/works/${eid}`, { status: "ready" });
+      const pr = await api("POST", `/api/admin/works/${eid}/publish`);
+      check(pr.ok, `episod ${n} diterbitkan (${pr.status} ${pr.data?.error ?? ""})`);
+    }
+    const seriesPage = await waitForPublic(`/kategori/bersiri/${mine.slug}`, (h) => h.includes(`Episod 3 ${suffix}`) || h.includes(`Episod 3`), 90000);
     check(seriesPage.status === 200 && seriesPage.html.includes(`Episod Satu ${suffix}`), "halaman siri menyenaraikan episod");
+    check(seriesPage.html.replace(/<!-- -->/g, "").includes("Mula Episod 1") && seriesPage.html.includes("Episod terkini"), "halaman siri ada dua laluan: Mula Episod 1 dan Episod terkini");
+    check(seriesPage.html.includes(`/${mine.slug}/uji-e2e-episod-3-${suffix}`), "Episod terkini menuju episod terakhir");
     const home = await publicHtml("/");
     check(home.html.includes(`/kategori/bersiri/${mine.slug}`), "halaman utama menyorot siri dengan pautan ke halaman siri");
   }
