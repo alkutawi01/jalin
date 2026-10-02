@@ -14,6 +14,7 @@ import StoryMarkdown from "../../../../components/reader/StoryMarkdown";
 import { stripImageMarkers } from "../../../../lib/reader/image-markers";
 import { classifyFragmen, isIndonesianLanguage, isMalayLanguage } from "../../../../lib/content/fragmen-kind";
 import { buildGlossaryPrompt, parseGlossaryPaste } from "../../../../lib/admin/authoring/glossary-paste";
+import { buildWorkFillPrompt, parseWorkFill } from "../../../../lib/admin/authoring/work-fill";
 import { renderItalics, toggleItalicSelection } from "../../../../lib/reader/inline-italics";
 import VisualManuscriptEditor, { canEditVisually } from "../../../../components/admin/VisualManuscriptEditor";
 
@@ -239,6 +240,8 @@ export default function EditWorkPage() {
   const [manuscriptMode, setManuscriptMode] = useState<"markdown" | "visual">("visual");
   const [assistantNote, setAssistantNote] = useState("");
   const [glossaryBusy, setGlossaryBusy] = useState(false);
+  const [fillBusy, setFillBusy] = useState(false);
+  const [fillNote, setFillNote] = useState<string[]>([]);
   const [selectedTerms, setSelectedTerms] = useState<number[]>([]);
   const [glossaryNote, setGlossaryNote] = useState("");
   useEffect(() => {
@@ -307,6 +310,150 @@ export default function EditWorkPage() {
       setGlossaryBusy(false);
       await loadGlossary();
       await loadReadiness();
+    }
+  }
+
+  /** One copy: everything a chatbot may suggest, with the manuscript. */
+  async function copyFillPrompt() {
+    const prompt = buildWorkFillPrompt({
+      type: form.type,
+      body: form.body,
+      glossaryTerms: glossaryTerms.map((term) => term.term),
+      characterNames: characters.map((c) => c.name),
+      chapterSlugs: form.type === "novela" ? sections.map((section) => section.slug) : []
+    });
+    try {
+      await navigator.clipboard.writeText(prompt);
+      setFillNote(["Arahan disalin. Tampal ke chatbot, kemudian salin seluruh jawapannya dan tekan Tampal & isi."]);
+      toast("Arahan disalin.", "success");
+    } catch {
+      setFillNote(["Salin gagal. Benarkan akses papan keratan dalam pelayar dan cuba lagi."]);
+    }
+  }
+
+  /**
+   * One paste: read the chatbot's whole answer and fill the empty parts of the work. The chatbot only
+   * helps: nothing the editor already wrote is overwritten, and credits, images, rights and the
+   * manuscript are never touched.
+   */
+  async function pasteFillFromClipboard() {
+    let text = "";
+    try {
+      text = await navigator.clipboard.readText();
+    } catch {
+      setFillNote(["Pelayar menyekat bacaan papan keratan. Klik ikon tetapan di sebelah alamat laman, benarkan \"Papan keratan\" untuk laman ini, kemudian tekan Tampal & isi semula."]);
+      return;
+    }
+    if (!text.trim()) {
+      setFillNote(["Papan keratan kosong. Salin jawapan chatbot dahulu."]);
+      return;
+    }
+    const result = parseWorkFill(text);
+    if (result.sections.length === 0) {
+      setFillNote(["Tiada bahagian [MAKLUMAT], [WATAK], [GLOSARI] atau [SUMBER] ditemui. Pastikan anda menyalin seluruh jawapan chatbot."]);
+      return;
+    }
+    setFillBusy(true);
+    const notes: string[] = [];
+    try {
+      // 1) dek and genre: only into empty fields
+      const patch: Record<string, string> = {};
+      if (result.dek) {
+        if (form.dek.trim()) notes.push("Dek: sudah ada, tidak diganti.");
+        else patch.dek = result.dek;
+      }
+      if (result.genre) {
+        if (form.genre.trim()) notes.push("Genre: sudah ada, tidak diganti.");
+        else patch.genre = result.genre;
+      }
+      if (Object.keys(patch).length > 0) {
+        const res = await fetch(`/api/admin/works/${workId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(patch)
+        });
+        if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || "Gagal menyimpan maklumat.");
+        setForm((prev) => ({ ...prev, ...patch }));
+        notes.push(`Maklumat: ${Object.keys(patch).map((k) => (k === "dek" ? "dek" : "genre")).join(" dan ")} diisi.`);
+      }
+
+      // 2) characters: add new names, keep every existing one
+      if (result.sections.includes("WATAK")) {
+        const have = new Set(characters.map((c) => c.name.toLocaleLowerCase("ms")));
+        const slugs = new Set(sections.map((section) => section.slug));
+        const fresh = result.characters.filter((c) => !have.has(c.name.toLocaleLowerCase("ms")));
+        if (fresh.length > 0) {
+          const res = await fetch(`/api/admin/works/${workId}/characters`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              characters: [
+                ...characters,
+                ...fresh.map((c) => ({ name: c.name, role: c.role, firstAppearanceSection: form.type === "novela" && slugs.has(c.first) ? c.first : null }))
+              ]
+            })
+          });
+          if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || "Gagal menyimpan watak.");
+          notes.push(`Watak: ${fresh.length} ditambah${result.characters.length > fresh.length ? `, ${result.characters.length - fresh.length} sudah ada` : ""}.`);
+        } else {
+          notes.push(result.characters.length ? "Watak: semua sudah ada." : "Watak: tiada cadangan.");
+        }
+      }
+
+      // 3) glossary: same rules as the glossary tab
+      if (result.sections.includes("GLOSARI")) {
+        const g = parseGlossaryPaste(result.glossaryText, form.body, glossaryTerms.map((term) => term.term));
+        if (g.none) {
+          notes.push("Glosari: chatbot menilai tiada istilah sukar.");
+        } else {
+          let added = 0;
+          for (const [index, item] of g.items.entries()) {
+            const res = await fetch("/api/admin/glossary", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ workId, term: item.term, meaning: item.meaning, source: "", sortOrder: glossaryTerms.length + index + 1 })
+            });
+            if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || `Gagal menambah istilah "${item.term}".`);
+            added += 1;
+          }
+          const skipped = [
+            g.existing.length ? `${g.existing.length} sudah ada` : "",
+            g.notInText.length ? `${g.notInText.length} tiada dalam manuskrip` : "",
+            g.unreadable ? `${g.unreadable} tidak dapat dibaca` : ""
+          ].filter(Boolean).join(", ");
+          notes.push(`Glosari: ${added} istilah ditambah${skipped ? ` (dilangkau: ${skipped})` : ""}.`);
+        }
+      }
+
+      // 4) source (fragmen, sinopsis): only empty fields; rights are never filled
+      if (result.source && (form.type === "fragmen" || form.type === "sinopsis")) {
+        const cur = await fetch(`/api/admin/works/${workId}/source-rights`).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+        const sw = cur?.sourceWork ?? {};
+        const body: Record<string, string> = {};
+        if (result.source.title && !sw.originalTitle) body.originalTitle = result.source.title;
+        if (result.source.author && !sw.author) body.author = result.source.author;
+        if (result.source.language && !sw.originalLanguage) body.originalLanguage = result.source.language;
+        if (result.source.basis && !sw.sourceTextBasis) body.sourceTextBasis = result.source.basis;
+        if (Object.keys(body).length > 0) {
+          const res = await fetch(`/api/admin/works/${workId}/source-rights`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body)
+          });
+          if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || "Gagal menyimpan sumber.");
+          notes.push(`Sumber: ${Object.keys(body).length} medan diisi. Hak dan bukti tidak diisi; semak di tab Sumber & Hak.`);
+        } else {
+          notes.push("Sumber: tiada medan kosong untuk diisi.");
+        }
+      }
+      notes.push("Tidak disentuh: teks karya, kredit, imej dan hak. Semak semua isi sebelum menerbitkan.");
+      toast("Maklumat daripada chatbot telah diisi.", "success");
+    } catch (err) {
+      notes.push(`Berhenti kerana ralat: ${err instanceof Error ? err.message : "ralat tidak diketahui"}. Bahagian sebelumnya sudah disimpan.`);
+    } finally {
+      setFillNote(notes);
+      setFillBusy(false);
+      await Promise.all([loadGlossary(), loadCharacters(), loadSourceRights(), loadReadiness()]);
     }
   }
 
@@ -1472,6 +1619,24 @@ export default function EditWorkPage() {
         </div>
       </div>
       <p className="admin-form-hint a-work-save-help">Gambar, kredit, glosari dan bahagian disimpan melalui tindakan masing-masing — tidak memerlukan butang ini.</p>
+
+      <section className="a-assistant" aria-label="Isi maklumat dengan chatbot">
+        <h2>Isi maklumat dengan chatbot (sekali salin, sekali tampal)</h2>
+        <p className="admin-form-hint">
+          Chatbot hanya membantu; editor yang memutuskan. Satu jawapan mengisi dek, genre, watak, glosari{form.type === "fragmen" || form.type === "sinopsis" ? " dan maklumat sumber" : ""} yang masih kosong. Teks karya, kredit, imej dan hak tidak diisi, dan apa yang sudah anda tulis tidak diganti.
+        </p>
+        <div className="admin-form-actions">
+          <button type="button" className="admin-btn admin-btn-outline" onClick={() => void copyFillPrompt()} disabled={fillBusy}>1. Salin arahan</button>
+          <button type="button" className="admin-btn admin-btn-primary" onClick={() => void pasteFillFromClipboard()} disabled={fillBusy}>
+            {fillBusy ? "Mengisi…" : "2. Tampal & isi"}
+          </button>
+        </div>
+        {fillNote.length > 0 ? (
+          <ul className="admin-form-hint" role="status">
+            {fillNote.map((line, i) => (<li key={i}>{line}</li>))}
+          </ul>
+        ) : null}
+      </section>
 
       <div className="admin-tabs">
         <button
