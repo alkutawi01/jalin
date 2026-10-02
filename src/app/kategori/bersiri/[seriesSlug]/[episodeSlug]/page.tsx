@@ -176,7 +176,8 @@ export default async function EpisodePage({
 
         <EditorNote note={work.metadata?.editorNote} />
 
-        <StoryEnd title={work.title} />
+        {/* "Tamat" marks the end of the work, so an episode that has a next episode does not show it. */}
+        {!nextEpisode ? <StoryEnd title={work.title} /> : null}
       </main>
 
       <SiteFooter />
