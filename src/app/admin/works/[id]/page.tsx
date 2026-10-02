@@ -2054,7 +2054,7 @@ export default function EditWorkPage() {
             </p>
           ) : (
             <div className="admin-table-wrap">
-              <table className="admin-table">
+              <table className="admin-table a-sections-table">
                 <thead>
                   <tr>
                     <th>#</th>

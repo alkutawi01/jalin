@@ -513,3 +513,8 @@
 .a-shell .a-glossary-table td:first-child, .a-shell .a-glossary-table th:first-child { min-width: 0; width: 44px; padding-right: 0; }
 .a-shell .a-glossary-table td:nth-child(n+3) { white-space: normal; }
 .a-shell .a-glossary-table td:last-child { white-space: nowrap; }
+
+/* Chapters table: the first column is a short label, so it must not inherit the works-list title width. */
+.a-shell .a-sections-table td:first-child, .a-shell .a-sections-table th:first-child { min-width: 0; white-space: nowrap; }
+.a-shell .a-sections-table td:nth-child(3) { white-space: normal; }
+.a-shell .a-sections-table .admin-table-actions { justify-content: flex-start; }
