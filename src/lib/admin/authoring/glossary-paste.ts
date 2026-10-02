@@ -27,14 +27,8 @@ export interface GlossaryPasteResult {
 const MAX_TERM = 80;
 const MAX_MEANING = 600;
 
-export function buildGlossaryPrompt(input: { type: string; body: string; existingTerms: string[] }): string {
-  const existing = input.existingTerms.length
-    ? `\nIstilah yang SUDAH ada (jangan ulang): ${input.existingTerms.map((t) => t.replace(/\*/g, "")).join(", ")}.\n`
-    : "";
-  return `Anda pembantu editorial Jalin (platform bacaan sastera berilustrasi untuk remaja 13–17 tahun). Tugas anda: cadangkan glosari untuk karya ${input.type} di bawah.
-
-PERATURAN
-- UJIAN KESUKARAN: masukkan sesuatu perkataan atau frasa hanya jika seorang pelajar Tingkatan 2 yang biasa akan terhenti membaca kerana tidak tahu maknanya. Jika pelajar itu faham, JANGAN masukkan. Perkataan harian dan perkataan yang lazim didengar (cth. rumah, kereta, pintu, jam, sekolah) tidak perlu dimasukkan.
+/** Shared with the all-in-one fill prompt (work-fill.ts). */
+export const GLOSSARY_RULES = `- UJIAN KESUKARAN: masukkan sesuatu perkataan atau frasa hanya jika seorang pelajar Tingkatan 2 yang biasa akan terhenti membaca kerana tidak tahu maknanya. Jika pelajar itu faham, JANGAN masukkan. Perkataan harian dan perkataan yang lazim didengar (cth. rumah, kereta, pintu, jam, sekolah) tidak perlu dimasukkan.
 - Yang layak: istilah teknikal khusus, kata Melayu sastera atau kurang lazim, simpulan bahasa dan pepatah, pinjaman asing yang jarang, dan istilah kerja yang khusus. Semak juga kata sastera dalam dialog dan naratif.
 - Tiada had bilangan. Jangan cuba mencukupkan bilangan. Jika tiada perkataan yang sukar, jawab hanya dengan [GLOSARI] dan satu baris: Tiada istilah sukar.
 - Setiap istilah MESTI wujud dalam manuskrip, dieja tepat seperti dalam teks. Jangan reka istilah.
@@ -43,8 +37,9 @@ PERATURAN
 - Jika tidak pasti tentang maksud, tulis "perlu semakan editor" pada Maksud.
 - PERKATAAN ASING: pada baris Asing, senaraikan SEMUA perkataan atau frasa yang bukan Bahasa Melayu (Inggeris, Arab, dan lain-lain, termasuk istilah teknikal Inggeris) yang terdapat dalam Istilah atau Maksud anda, dipisahkan koma, ditulis tepat seperti dalam Istilah/Maksud. Jika tiada, tulis: Asing: tiada. Sistem akan mencondongkannya; jangan guna asterisk atau tanda markdown lain (tiada tebal, tiada tanda petikan).
 - SEMAKAN AKHIR sebelum menjawab: (1) buang setiap istilah yang pelajar Tingkatan 2 sudah faham; (2) pastikan baris Asing menyenaraikan setiap perkataan asing; (3) pastikan setiap istilah ada dalam manuskrip.
-${existing}
-FORMAT JAWAPAN (ikut tepat; tiada pengenalan, tiada penutup, tiada nombor, tiada tanda markdown)
+`;
+
+export const GLOSSARY_FORMAT = `FORMAT JAWAPAN (ikut tepat; tiada pengenalan, tiada penutup, tiada nombor, tiada tanda markdown)
 [GLOSARI]
 Istilah: (perkataan seperti dieja dalam teks)
 Maksud: (maksud ringkas)
@@ -64,7 +59,17 @@ Istilah: pit stop
 Maksud: Perhentian singkat untuk membaiki atau mengisi minyak kereta, juga digunakan dalam motorsport.
 Asing: pit stop, motorsport
 
-MANUSKRIP
+`;
+
+export function buildGlossaryPrompt(input: { type: string; body: string; existingTerms: string[] }): string {
+  const existing = input.existingTerms.length
+    ? `\nIstilah yang SUDAH ada (jangan ulang): ${input.existingTerms.map((t) => t.replace(/\*/g, "")).join(", ")}.\n`
+    : "";
+  return `Anda pembantu editorial Jalin (platform bacaan sastera berilustrasi untuk remaja 13–17 tahun). Tugas anda: cadangkan glosari untuk karya ${input.type} di bawah.
+
+PERATURAN
+${GLOSSARY_RULES}${existing}
+${GLOSSARY_FORMAT}MANUSKRIP
 ${input.body.trim() || "[Manuskrip belum diisi. Tampal manuskrip di sini sebelum menghantar kepada chatbot.]"}`;
 }
 
