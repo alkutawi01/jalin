@@ -12,8 +12,10 @@ const body = "Roslan membuka bonet dan melihat fan belt yang putus. Hujan menimp
 console.log("\n=== Prompt ===");
 const prompt = buildGlossaryPrompt({ type: "cerpen", body, existingTerms: ["starter"] });
 assert(prompt.includes("[GLOSARI]") && prompt.includes("Istilah:") && prompt.includes("Maksud:") && prompt.includes("____"), "prompt states the exact output format");
-assert(prompt.includes("CONTOH") && prompt.includes("fan belt"), "prompt has a filled example");
+assert(prompt.includes("CONTOH") && prompt.includes("Asing: pit stop, motorsport"), "prompt has a filled example");
 assert(prompt.includes("starter") && prompt.includes("jangan ulang"), "prompt lists terms that already exist");
+assert(!/6 hingga 12|minimum|sekurang-kurangnya/i.test(prompt) && prompt.includes("Tiada had bilangan"), "prompt sets no minimum or maximum");
+assert(prompt.includes("Asing:") && prompt.includes("PERKATAAN ASING") && prompt.includes("SEMAKAN AKHIR"), "prompt asks for an Asing line listing foreign words, and a final self-check");
 assert(prompt.includes(body), "prompt carries the manuscript");
 assert(buildGlossaryPrompt({ type: "cerpen", body: "", existingTerms: [] }).includes("Manuskrip belum diisi"), "empty manuscript is flagged");
 
@@ -51,6 +53,21 @@ r = parseGlossaryPaste("Istilah: zink\n____\nMaksud: tiada istilah", body, []);
 assert(r.items.length === 0 && r.unreadable === 2, "blocks missing the term or the meaning are counted, not imported");
 r = parseGlossaryPaste("Istilah: zink\nMaksud: A\n____\nIstilah: ZINK\nMaksud: B", body, []);
 assert(r.items.length === 1, "the same term twice is imported once");
+r = parseGlossaryPaste("[GLOSARI]\nTiada istilah sukar.", body, []);
+assert(r.none && r.items.length === 0 && r.unreadable === 0, '"Tiada istilah sukar" is a valid empty answer');
+r = parseGlossaryPaste("Istilah: *fan belt*\nMaksud: Tali getah, juga disebut *timing belt*.", body, ["Fan Belt"]);
+assert(r.items.length === 0 && r.existing.length === 1, "italic marks do not hide an existing term");
+r = parseGlossaryPaste("Istilah: *fan belt*\nMaksud: Tali getah, juga disebut *timing belt*.", body, []);
+assert(r.items[0]!.term === "*fan belt*" && r.items[0]!.meaning.includes("*timing belt*"), "the chatbot's italic marks are kept");
+r = parseGlossaryPaste("Istilah: fan belt\nMaksud: Tali getah dalam enjin, juga disebut timing belt.\nAsing: fan belt, timing belt\n____\nIstilah: zink\nMaksud: Logam nipis.\nAsing: tiada", body, []);
+assert(r.items[0]!.term === "*fan belt*" && r.items[0]!.meaning === "Tali getah dalam enjin, juga disebut *timing belt*.", "foreign words listed in Asing are italicised in the term and in the meaning");
+assert(r.items[1]!.term === "zink" && r.items[1]!.meaning === "Logam nipis.", "'Asing: tiada' leaves the text upright");
+r = parseGlossaryPaste("Istilah: fan belt\nMaksud: Tali getah.\nAsing: belt", body, []);
+assert(r.items[0]!.term === "fan *belt*", "only whole listed words are italicised (a listed word inside a longer term does not touch Malay words)");
+r = parseGlossaryPaste("Istilah: *fan belt*\nMaksud: Tali getah.\nAsing: fan belt", body, []);
+assert(r.items[0]!.term === "*fan belt*", "a term already marked is not marked twice");
+r = parseGlossaryPaste("Istilah: zink\nMaksud: Logam nipis.\nAsing: logam", body, []);
+assert(r.items[0]!.meaning === "*Logam* nipis.", "what the chatbot lists is what gets italicised, nothing else");
 r = parseGlossaryPaste("", body, []);
 assert(r.items.length === 0, "empty paste gives nothing");
 

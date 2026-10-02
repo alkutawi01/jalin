@@ -14,6 +14,7 @@ import StoryMarkdown from "../../../../components/reader/StoryMarkdown";
 import { stripImageMarkers } from "../../../../lib/reader/image-markers";
 import { classifyFragmen, isIndonesianLanguage, isMalayLanguage } from "../../../../lib/content/fragmen-kind";
 import { buildGlossaryPrompt, parseGlossaryPaste } from "../../../../lib/admin/authoring/glossary-paste";
+import { renderItalics, toggleItalicSelection } from "../../../../lib/reader/inline-italics";
 import VisualManuscriptEditor, { canEditVisually } from "../../../../components/admin/VisualManuscriptEditor";
 
 const WORK_TYPES = [
@@ -238,6 +239,7 @@ export default function EditWorkPage() {
   const [manuscriptMode, setManuscriptMode] = useState<"markdown" | "visual">("visual");
   const [assistantNote, setAssistantNote] = useState("");
   const [glossaryBusy, setGlossaryBusy] = useState(false);
+  const [selectedTerms, setSelectedTerms] = useState<number[]>([]);
   const [glossaryNote, setGlossaryNote] = useState("");
   useEffect(() => {
     const restoreTab = () => {
@@ -269,6 +271,45 @@ export default function EditWorkPage() {
       setAssistantNote("Salin gagal. Benarkan akses papan keratan dalam pelayar dan cuba lagi.");
     }
   }
+  /** Ctrl+I (or Cmd+I) italicises the selection with *asterisks*; nothing is italicised automatically. */
+  function italicShortcut(event: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>, field: "term" | "meaning") {
+    if (!(event.ctrlKey || event.metaKey) || event.key.toLowerCase() !== "i") return;
+    event.preventDefault();
+    const el = event.currentTarget;
+    const next = toggleItalicSelection(el.value, el.selectionStart ?? 0, el.selectionEnd ?? 0);
+    setEditingGlossary((prev) => (prev ? { ...prev, [field]: next.value } : prev));
+    requestAnimationFrame(() => {
+      el.setSelectionRange(next.selectionStart, next.selectionEnd);
+    });
+  }
+
+  async function deleteSelectedGlossary() {
+    const ids = selectedTerms;
+    if (ids.length === 0) return;
+    if (!(await confirmAction(`Padam ${ids.length} istilah glosari yang dipilih? Tindakan ini tidak boleh dibatalkan.`, { danger: true, confirmLabel: `Padam ${ids.length} istilah` }))) return;
+    setGlossaryBusy(true);
+    setGlossaryError(null);
+    let removed = 0;
+    try {
+      for (const id of ids) {
+        const res = await fetch(`/api/admin/glossary/${id}`, { method: "DELETE" });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.error || "Gagal memadam istilah glosari.");
+        }
+        removed += 1;
+      }
+      toast(`${removed} istilah glosari dipadam.`, "success");
+    } catch (err) {
+      setGlossaryError(`${err instanceof Error ? err.message : "Ralat tidak diketahui."} (${removed} daripada ${ids.length} sempat dipadam.)`);
+    } finally {
+      setSelectedTerms([]);
+      setGlossaryBusy(false);
+      await loadGlossary();
+      await loadReadiness();
+    }
+  }
+
   async function copyGlossaryPrompt() {
     const prompt = buildGlossaryPrompt({
       type: form.type,
@@ -292,6 +333,10 @@ export default function EditWorkPage() {
       return;
     }
     const result = parseGlossaryPaste(answer, form.body, glossaryTerms.map((term) => term.term));
+    if (result.none) {
+      setGlossaryNote("Chatbot menilai tiada istilah sukar dalam karya ini. Tiada apa-apa ditambah.");
+      return;
+    }
     if (result.items.length === 0) {
       const why = [
         result.existing.length ? `${result.existing.length} sudah ada` : "",
@@ -2182,6 +2227,8 @@ export default function EditWorkPage() {
                     term: e.target.value,
                   }))}
                   placeholder="Istilah"
+                  onKeyDown={(e) => italicShortcut(e, "term")}
+                  aria-describedby="glossary-italic-hint"
                 />
               </div>
 
@@ -2196,7 +2243,12 @@ export default function EditWorkPage() {
                   rows={5}
                   className="admin-textarea"
                   placeholder="Maksud istilah"
+                  onKeyDown={(e) => italicShortcut(e, "meaning")}
+                  aria-describedby="glossary-italic-hint"
                 />
+                <span id="glossary-italic-hint" className="admin-form-hint">
+                  Untuk mencondongkan perkataan (cth. perkataan asing): pilih teks dan tekan Ctrl+I, atau tulis *teks*. Tiada yang dicondongkan secara automatik.
+                </span>
               </div>
 
               <div className="admin-form-group">
@@ -2231,6 +2283,16 @@ export default function EditWorkPage() {
             </div>
           )}
 
+          {selectedTerms.length > 0 ? (
+            <div className="admin-form-actions" role="region" aria-label="Tindakan istilah dipilih">
+              <span className="admin-form-hint">{selectedTerms.length} istilah dipilih</span>
+              <button type="button" className="admin-btn admin-btn-sm admin-btn-danger" disabled={glossaryBusy} onClick={() => void deleteSelectedGlossary()}>
+                Padam yang dipilih ({selectedTerms.length})
+              </button>
+              <button type="button" className="admin-btn admin-btn-sm admin-btn-outline" onClick={() => setSelectedTerms([])}>Batal pilihan</button>
+            </div>
+          ) : null}
+
           {glossaryTerms.length === 0 ? (
             <p className="admin-table-empty">Tiada glosari untuk karya ini.</p>
           ) : (
@@ -2238,6 +2300,14 @@ export default function EditWorkPage() {
               <table className="admin-table">
                 <thead>
                   <tr>
+                    <th scope="col">
+                      <input
+                        type="checkbox"
+                        aria-label="Pilih semua istilah"
+                        checked={glossaryTerms.length > 0 && selectedTerms.length === glossaryTerms.length}
+                        onChange={(e) => setSelectedTerms(e.target.checked ? glossaryTerms.map((term) => term.id) : [])}
+                      />
+                    </th>
                     <th>Istilah</th>
                     <th>Maksud</th>
                     <th>Sumber</th>
@@ -2247,8 +2317,16 @@ export default function EditWorkPage() {
                 <tbody>
                   {glossaryTerms.map((term) => (
                     <tr key={term.id}>
-                      <td className="admin-table-title">{term.term}</td>
-                      <td>{term.meaning}</td>
+                      <td>
+                        <input
+                          type="checkbox"
+                          aria-label={`Pilih istilah ${term.term.replace(/\*/g, "")}`}
+                          checked={selectedTerms.includes(term.id)}
+                          onChange={(e) => setSelectedTerms((prev) => e.target.checked ? [...prev, term.id] : prev.filter((id) => id !== term.id))}
+                        />
+                      </td>
+                      <td className="admin-table-title">{renderItalics(term.term)}</td>
+                      <td>{renderItalics(term.meaning)}</td>
                       <td>{term.source || "—"}</td>
                       <td>
                         <div className="admin-table-actions">
