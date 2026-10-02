@@ -1008,6 +1008,7 @@ export default function EditWorkPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Gagal menerbitkan semula.");
       setPublishSuccess(data.changed ? "Versi baharu diterbitkan. Pembaca kini melihatnya." : "Tiada perubahan untuk diterbitkan.");
+      toast(data.changed ? "Versi baharu diterbitkan. Pembaca kini melihatnya." : "Tiada perubahan untuk diterbitkan.", "success");
       await loadReadiness();
       setTimeout(() => setPublishSuccess(null), 5000);
     } catch (err) {
@@ -1035,6 +1036,7 @@ export default function EditWorkPage() {
           ? "Karya ini sudah pun diterbitkan (idempoten)."
           : `Berjaya diterbitkan pada ${data.publishedAt ?? "—"}.`
       );
+      toast("Karya diterbitkan. Pembaca kini boleh membacanya.", "success");
       const workRes = await fetch(`/api/admin/works/${workId}`);
       if (workRes.ok) {
         const work: WorkData = await workRes.json();
@@ -1078,6 +1080,7 @@ export default function EditWorkPage() {
   }
 
   async function loadVisuals() {
+    void loadReadiness();
     try {
       const res = await fetch(`/api/admin/visuals?workId=${workId}`);
       if (res.ok) {
@@ -1632,7 +1635,7 @@ export default function EditWorkPage() {
         <div className="admin-alert admin-alert-success">{publishSuccess}</div>
       )}
 
-      {publishPreview?.slugCollision && (
+      {publishPreview?.slugCollision && isLocalHost && (
         <div className="admin-alert admin-alert-error">
           Alamat pautan (slug) &quot;{form.slug}&quot; sudah digunakan oleh
           fail Markdown lain yang bukan kepunyaan karya ini. Menerbitkan

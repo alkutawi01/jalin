@@ -12,6 +12,7 @@ import {
 } from "../../../lib/reader/public-projection";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { renderAttribution } from "@/components/reader/Attribution";
 
 const CATEGORY_META: Record<string, { title: string; intro: string; headerLabel: string }> = {
   cerpen: {
@@ -59,18 +60,6 @@ function formatDate(date: string | undefined): string {
     "Julai", "Ogos", "September", "Oktober", "November", "Disember"
   ];
   return `${day} ${months[(month ?? 1) - 1]} ${year}`;
-}
-
-function renderAttribution(text: string) {
-  const match = text.match(/^Berdasarkan (.+?)(?: karya (.+))?$/);
-  if (!match) return text;
-  const [, sourceTitle, sourceAuthor] = match;
-  return (
-    <>
-      Berdasarkan <cite>{sourceTitle}</cite>
-      {sourceAuthor ? <> karya {sourceAuthor}</> : null}
-    </>
-  );
 }
 
 function WorkCard({ work, type }: { work: PublicWorkSummary; type: string }) {

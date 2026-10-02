@@ -11,6 +11,7 @@ import {
   type PublicFeaturedSummary,
   type PublicWorkSummary
 } from "../lib/reader/public-projection";
+import { renderAttribution } from "@/components/reader/Attribution";
 
 export const dynamic = "force-dynamic";
 
@@ -49,18 +50,6 @@ const CATEGORIES: { type: string; label: string }[] = [
   { type: "fragmen", label: "Fragmen" },
   { type: "sinopsis", label: "Sinopsis" },
 ];
-
-function renderAttribution(text: string) {
-  const match = text.match(/^Berdasarkan (.+?)(?: karya (.+))?$/);
-  if (!match) return text;
-  const [, sourceTitle, sourceAuthor] = match;
-  return (
-    <>
-      Berdasarkan <cite>{sourceTitle}</cite>
-      {sourceAuthor ? <> karya {sourceAuthor}</> : null}
-    </>
-  );
-}
 
 function FeaturedHero({ work }: { work: PublicFeaturedSummary }) {
   const hero = work.hero;

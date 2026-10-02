@@ -126,7 +126,7 @@ function sourceRows(source: { title?: string; author?: string; language?: string
     ["ISBN", source.isbn],
     ["Lokasi petikan", source.locator]
   ];
-  return rows.filter((r): r is [string, string] => Boolean(r[1])).map(([label, value]) => ({ label, value }));
+  return rows.filter((r): r is [string, string] => Boolean(r[1])).map(([label, value]) => ({ label, value, ...(label === "Karya asal" ? { italic: true } : {}) }));
 }
 
 function buildMetaRows(work: Awaited<ReturnType<typeof getWork>>): WorkMetaRow[] {

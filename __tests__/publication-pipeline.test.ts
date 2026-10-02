@@ -944,7 +944,6 @@ console.log("\n=== Source public serializer & URL validation (4D-7) ===");
     publication_year: 1957,
     source_edition: "Cetakan 1957",
     source_locator: "ms. 12",
-    publication_year: 1957,
     rights_status: "public_domain",
   });
   assert(Boolean(safe), "public provenance present for reader");
