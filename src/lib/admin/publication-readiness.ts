@@ -562,11 +562,8 @@ export function evaluatePublicationReadinessFromData(
     }
     if (!visual.alt || !visual.alt.trim()) {
       const msg = `${label}: alt text kosong.`;
-      if (grandfatherVisuals) {
-        visualWarnings.push(issue("visual_alt_missing_grandfathered", `${msg} (grandfather).`));
-      } else {
-        visualBlockers.push(issue("visual_alt_missing", msg));
-      }
+      // Alt text is encouraged, never required: a missing one is a note for the editor, not a blocker.
+      visualWarnings.push(issue("visual_alt_missing", `${msg} Disyorkan untuk pembaca yang menggunakan pembaca skrin.`));
     }
     const validRoles = ["hero", "inline", "section", "decorative"];
     if (!validRoles.includes(visual.role)) {

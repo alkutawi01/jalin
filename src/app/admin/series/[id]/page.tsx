@@ -286,11 +286,11 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
           <input id="series-hero-file" type="file" accept="image/png,image/jpeg,image/webp" onChange={(e) => setHeroFile(e.target.files?.[0] ?? null)} />
         </div>
         <div className="admin-form-group">
-          <label htmlFor="series-hero-alt">Teks alternatif *</label>
+          <label htmlFor="series-hero-alt">Teks alternatif (pilihan)</label>
           <input id="series-hero-alt" type="text" value={heroAlt} onChange={(e) => setHeroAlt(e.target.value)} placeholder="Satu ayat yang menerangkan gambar kepada pembaca yang tidak dapat melihatnya" />
         </div>
         <div className="admin-form-actions">
-          <button type="button" className="admin-btn admin-btn-primary" disabled={heroBusy || !heroFile || !heroAlt.trim()} onClick={() => void uploadHero()}>
+          <button type="button" className="admin-btn admin-btn-primary" disabled={heroBusy || !heroFile} onClick={() => void uploadHero()}>
             {heroBusy ? "Memuat naik…" : series.hero_src ? "Ganti gambar" : "Muat naik gambar"}
           </button>
           {series.hero_src ? (

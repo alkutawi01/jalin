@@ -16,7 +16,6 @@ function isMissingColumn(error: unknown): boolean {
 }
 
 export async function setSeriesHero(seriesId: string, bytes: Buffer, alt: string): Promise<SeriesHeroResult> {
-  if (!alt.trim()) return { ok: false, status: 400, error: "Teks alternatif diperlukan (satu ayat yang menerangkan gambar)." };
   if (bytes.length === 0) return { ok: false, status: 400, error: "Fail imej diperlukan." };
   if (bytes.length > MAX_MANUAL_UPLOAD_BYTES) return { ok: false, status: 413, error: "Imej melebihi 10 MB." };
   const type = detectImageType(bytes);

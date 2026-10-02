@@ -2386,11 +2386,10 @@ export default function EditWorkPage() {
               </div>
 
               <div className="admin-form-group">
-                <label htmlFor="visual-edit-alt">Teks alternatif *</label>
+                <label htmlFor="visual-edit-alt">Teks alternatif (pilihan)</label>
                 <input
                   id="visual-edit-alt"
                   type="text"
-                  required
                   value={editingVisual.alt || ""}
                   onChange={(e) => setEditingVisual((prev) => ({
                     ...prev,

@@ -2506,22 +2506,26 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 .crumbs li + li::before { content: "/"; margin-right: 6px; opacity: .5; }
 .crumbs a { color: inherit; border-bottom: 1px solid transparent; transition: border-color .18s ease; }
 .crumbs a:hover, .crumbs a:focus-visible { border-bottom-color: currentColor; }
-.continue-nav { max-width: 42rem; margin: 40px auto 0; padding: 0 1.25rem; display: grid; gap: 14px; }
+.continue-nav { width: min(700px, calc(100% - 64px)); margin: 56px auto 0; padding: 0; display: grid; gap: 16px; }
+/* Same card language as the other Jalin cards: white card, 14px radius, clay label, serif title. */
 .continue-next {
-  display: grid; gap: 4px; padding: 22px 24px; border: 1px solid var(--line); border-radius: 14px; background: var(--white);
-  transition: border-color .18s ease, background-color .18s ease;
+  display: flex; align-items: center; justify-content: space-between; gap: 24px;
+  padding: 22px 26px; border: 1px solid var(--line); border-radius: 14px; background: var(--white); color: var(--ink);
+  transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
 }
-.continue-next:hover, .continue-next:focus-visible { border-color: var(--clay); background: rgba(167, 100, 80, .04); }
-.continue-label { font-family: Arial, sans-serif; font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--clay-text); }
-.continue-title { font-size: 1.4rem; line-height: 1.3; font-style: normal; }
-.continue-arrow { display: inline-block; transition: transform .18s ease; }
-.continue-next:hover .continue-arrow, .continue-next:focus-visible .continue-arrow { transform: translateX(3px); }
+.continue-next:hover, .continue-next:focus-visible { border-color: var(--clay); box-shadow: 0 18px 44px -20px rgba(24,52,60,.28); transform: translateY(-2px); }
+.continue-text { display: grid; gap: 6px; min-width: 0; }
+.continue-label { font-family: Inter, ui-sans-serif, sans-serif; font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--clay); }
+.continue-title { font-size: 1.35rem; line-height: 1.3; font-style: normal; font-weight: 500; color: var(--ink); }
+.continue-arrow { flex: none; font-size: 1.5rem; color: var(--clay); transition: transform .18s ease; }
+.continue-next:hover .continue-arrow, .continue-next:focus-visible .continue-arrow { transform: translateX(4px); }
 .continue-end { margin: 0; padding: 18px 20px; border: 1px dashed var(--line); border-radius: 14px; color: var(--ink-soft); text-align: center; }
 .continue-secondary { display: flex; flex-wrap: wrap; gap: 8px 22px; justify-content: space-between; font-family: Arial, sans-serif; font-size: 14px; }
 .continue-secondary a { color: var(--ink-soft); }
 .continue-secondary a:hover, .continue-secondary a:focus-visible { color: var(--ink); }
 @media (prefers-reduced-motion: reduce) {
   .crumbs a, .continue-next, .continue-arrow { transition: none; }
+  .continue-next:hover, .continue-next:focus-visible { transform: none; }
   .continue-next:hover .continue-arrow, .continue-next:focus-visible .continue-arrow { transform: none; }
 }
 
