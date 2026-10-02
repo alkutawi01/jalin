@@ -46,7 +46,7 @@ export default function WorkVisualUpload({ workId, onDone, hasHero, published, s
       const res = await fetch(`/api/admin/works/${workId}/visuals/upload`, { method: "POST", body });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Gagal memuat naik imej.");
-      setSuccess(published ? "Gambar disimpan. Semak pratonton dan halaman awam; perubahan mungkin mengambil masa sehingga 30 saat untuk muncul." : "Gambar disimpan. Semak pratonton sebelum menerbitkan karya.");
+      setSuccess(published ? "Gambar disimpan dalam draf. Pembaca belum melihatnya: tekan Terbitkan semula di atas karya." : "Gambar disimpan. Semak pratonton sebelum menerbitkan karya.");
       setFile(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
       setAlt("");
