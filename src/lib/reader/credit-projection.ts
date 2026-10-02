@@ -100,8 +100,10 @@ export function hasVirtualCredit(credits: ContributorRef[]): boolean {
   });
 }
 
-/** The disclosure note for one work: only when a virtual contributor is credited (or the editor wrote one). */
+/**
+ * The note shown in the "Tentang karya" card: only one the editor wrote. The standard Maya sentence is no
+ * longer printed on every work; a Maya is still marked beside her name in the byline and on her author page.
+ */
 export function disclosureNoteFor(work: { credits: ContributorRef[]; reader?: { note?: string } }): string | undefined {
-  if (work.reader?.note) return work.reader.note;
-  return hasVirtualCredit(work.credits) ? VIRTUAL_WRITER_NOTE : undefined;
+  return work.reader?.note || undefined;
 }

@@ -28,7 +28,8 @@ const virtual = [{ slug: "nara-zahin", role: "initial_draft", byline: true, disp
 assert(!hasVirtualCredit(human), "a human-only work has no virtual credit");
 assert(disclosureNoteFor({ credits: human }) === undefined, "no disclosure note for a human-only work");
 assert(hasVirtualCredit(virtual), "a Maya credit is detected");
-assert(disclosureNoteFor({ credits: virtual }) === VIRTUAL_WRITER_NOTE, "disclosure shown when a Maya is credited");
+assert(disclosureNoteFor({ credits: virtual }) === undefined, "the standard Maya sentence is not printed on the work page");
+assert(VIRTUAL_WRITER_NOTE.length > 0, "the sentence itself is still defined (used elsewhere)");
 assert(disclosureNoteFor({ credits: human, reader: { note: "Nota khas editor." } }) === "Nota khas editor.", "an editor-written note wins");
 
 console.log(`\n${passed} passed, ${failed} failed`);
