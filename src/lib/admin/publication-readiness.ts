@@ -468,10 +468,11 @@ export function evaluatePublicationReadinessFromData(
     }
   }
   if (bylineCredits.length === 0 && credits.length > 0) {
-    creditBlockers.push(
+    // A work that is already public is not locked out of republishing over this; it stays a warning.
+    (alreadyPublished ? creditWarnings : creditBlockers).push(
       issue(
         "byline_missing",
-        "Tiada kredit awam bertanda byline — byline awam diperlukan sebelum terbit."
+        "Tiada kredit awam bertanda byline — tambah kredit penulis karya ini (bukan pengarang asal) dan tandakan byline."
       )
     );
   }

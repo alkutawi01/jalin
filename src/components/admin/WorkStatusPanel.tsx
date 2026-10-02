@@ -202,10 +202,10 @@ export default function WorkStatusPanel({
       </ol>
       {next?.hint ? <p className="a-status-hint">{next.hint}</p> : null}
 
-      {status !== "published" && status !== "archived" ? (
+      {status !== "archived" && (status !== "published" || issueCount > 0) ? (
         <div className="a-check">
           <div className="a-check-head">
-            <strong>Sedia untuk diterbitkan?</strong>
+            <strong>{status === "published" ? "Perlu dibetulkan sebelum boleh diterbitkan semula" : "Sedia untuk diterbitkan?"}</strong>
             {loading ? (
               <span className="a-check-state">Menyemak…</span>
             ) : readiness ? (
@@ -237,7 +237,7 @@ export default function WorkStatusPanel({
                 })}
               </div>
               {issueCount + readiness.warnings.length > 0 ? (
-                <details className="a-check-details">
+                <details className="a-check-details" open={status === "published" && issueCount > 0}>
                   <summary>
                     Lihat butiran ({issueCount} perlu dibetulkan, {readiness.warnings.length} amaran)
                   </summary>
