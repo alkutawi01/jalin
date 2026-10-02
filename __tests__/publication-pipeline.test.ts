@@ -287,8 +287,8 @@ console.log("\n=== Readiness: visuals ===");
   const missingAlt = evaluatePublicationReadinessFromData(
     validInput({ visuals: [baseVisual({ alt: "" })] })
   );
-  assert(missingAlt.ready === false, "Missing alt is not ready");
-  assert(missingAlt.blockers.some((b) => b.code === "visual_alt_missing"), "visual_alt_missing blocker");
+  assert(!missingAlt.blockers.some((b) => b.code === "visual_alt_missing"), "missing alt does not block publication");
+  assert(missingAlt.warnings.some((w) => w.code === "visual_alt_missing"), "missing alt is only a warning");
 
   const noHero = evaluatePublicationReadinessFromData(
     validInput({ visuals: [baseVisual({ role: "inline" })] })
@@ -505,8 +505,8 @@ console.log("\n=== Readiness: grandfather existing published Works ===");
     "Transient src downgraded to grandfather warning"
   );
   assert(
-    legacy.warnings.some((w) => w.code === "visual_alt_missing_grandfathered"),
-    "Missing alt downgraded to grandfather warning"
+    legacy.warnings.some((w) => w.code === "visual_alt_missing"),
+    "Missing alt is a warning for legacy works too"
   );
 
   const legacyNoHero = evaluatePublicationReadinessFromData(

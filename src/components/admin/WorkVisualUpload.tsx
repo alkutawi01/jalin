@@ -27,7 +27,7 @@ export default function WorkVisualUpload({ workId, onDone, hasHero, published, s
     }
   }, [suggestedAnchor, markers]);
 
-  const canSubmit = !!file && alt.trim().length > 0 && (role === "hero" || markers.includes(anchor)) && !busy;
+  const canSubmit = !!file && (role === "hero" || markers.includes(anchor)) && !busy;
 
   async function submit() {
     if (!file) return;
@@ -90,7 +90,7 @@ export default function WorkVisualUpload({ workId, onDone, hasHero, published, s
       </div>
 
       <div className="admin-form-group">
-        <label htmlFor="wvu-alt">Teks alternatif * (satu ayat menerangkan gambar untuk pembaca yang tidak nampak gambar)</label>
+        <label htmlFor="wvu-alt">Teks alternatif (pilihan; satu ayat untuk pembaca yang tidak nampak gambar)</label>
         <input id="wvu-alt" value={alt} onChange={(e) => setAlt(e.target.value)} placeholder="cth. Seorang penyelidik berniqab menghadap skrin komputer…" />
       </div>
 

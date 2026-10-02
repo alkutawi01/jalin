@@ -54,10 +54,11 @@ export function ContinueNav({
     <nav className="continue-nav" aria-label={name}>
       {next ? (
         <a className="continue-next" href={next.href} rel="next">
-          <span className="continue-label">Seterusnya · {next.label}</span>
-          <span className="continue-title">
-            {next.title} <span className="continue-arrow" aria-hidden="true">→</span>
+          <span className="continue-text">
+            <span className="continue-label">Seterusnya · {next.label}</span>
+            <span className="continue-title">{next.title}</span>
           </span>
+          <span className="continue-arrow" aria-hidden="true">→</span>
         </a>
       ) : endNote ? (
         <p className="continue-end">{endNote}</p>

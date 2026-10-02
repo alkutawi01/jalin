@@ -42,9 +42,6 @@ export async function uploadVisualForWork(
   if (!ROLES.has(input.role as VisualRole)) {
     return { ok: false, status: 400, error: "Role mesti hero, inline atau section." };
   }
-  if (!input.altText.trim()) {
-    return { ok: false, status: 400, error: "Alt text diperlukan (penerangan gambar untuk pembaca)." };
-  }
   if (input.role !== "hero" && !input.anchor?.trim()) {
     return { ok: false, status: 400, error: "Imej dalam teks memerlukan penanda yang wujud dalam karya." };
   }
