@@ -73,7 +73,7 @@ export default function EditorPicksManager({ initial }: { initial: { picks: Pick
       {error ? <div className="admin-alert admin-alert-error" role="alert">{error}</div> : null}
 
       <section className="admin-section" aria-labelledby="picks-now">
-        <h2 id="picks-now" className="admin-form-section-title">Dalam karusel laman utama ({picks.length}/{LIMIT})</h2>
+        <h2 id="picks-now" className="admin-form-section-title">Dipaparkan di laman utama ({picks.length}/{LIMIT})</h2>
         {picks.length === 0 ? (
           <p className="admin-table-empty">Belum ada pilihan. Laman utama tidak memaparkan bahagian Pilihan Editor.</p>
         ) : (
