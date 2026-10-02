@@ -190,11 +190,11 @@ export default function PreviewWorkPage() {
       <header className="admin-page-header">
         <div className="admin-page-header-row">
           <div>
-            <h1>Preview: {work.title}</h1>
+            <h1>Pratonton: {work.title}</h1>
             <p className="admin-page-sub">
               {TYPE_LABELS[work.type] ?? work.type} · {work.version} ·{" "}
               <span className={`admin-status admin-status-${work.status}`}>
-                {work.status}
+                {({ draft: "Draf", review: "Semakan", ready: "Sedia", published: "Diterbitkan", archived: "Arkib" } as Record<string, string>)[work.status] ?? work.status}
               </span>
             </p>
           </div>
@@ -203,6 +203,11 @@ export default function PreviewWorkPage() {
           </a>
         </div>
       </header>
+
+      <p className="admin-form-hint" role="note">
+        Pratonton ini menunjukkan versi yang <strong>tersimpan</strong>. Perubahan teks atau maklumat yang belum disimpan tidak kelihatan di sini.
+        {work.status === "published" ? " Karya ini sudah terbit: pembaca hanya melihat versi yang diterbitkan, bukan draf ini, sehingga anda menerbitkannya semula." : ""}
+      </p>
 
       <article className="admin-preview-content">
         <div className="admin-preview-meta">

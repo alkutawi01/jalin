@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { publishWorkExplicit } from "../../../../../../lib/admin/publication-service";
+import { publishWorkExplicit, republishWork } from "../../../../../../lib/admin/publication-service";
 import { getCurrentAdmin } from "../../../../../../lib/admin/auth";
 
 export async function POST(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -13,7 +13,15 @@ export async function POST(
     }
 
     const { id } = await params;
-    
+    const body = await request.json().catch(() => ({}));
+    if (body?.republish) {
+      const result = await republishWork(id, { id: admin.id, email: admin.email }, {
+        summary: typeof body.summary === "string" ? body.summary : undefined,
+        changeType: ["major", "minor", "patch"].includes(body.changeType) ? body.changeType : undefined,
+      });
+      return NextResponse.json(result);
+    }
+
     // The publication service owns the authoritative readiness check, including
     // a fresh recheck in the same transaction as the status update.
     const result = await publishWorkExplicit(id, {

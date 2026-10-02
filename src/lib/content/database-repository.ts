@@ -90,7 +90,7 @@ export class DatabaseContentRepository implements ContentRepository {
   private seriesEpisodes: Map<string, SeriesEpisodeRef[]> = new Map();
   private workIdBySlug: Map<string, string> = new Map();
   private seriesIdByWorkId: Map<string, string> = new Map();
-  private revisionSnapshots: Map<string, Work> = new Map();
+  private revisionSnapshots: Map<string, any> = new Map();
   private loaded = false;
 
   constructor() {
@@ -106,10 +106,10 @@ export class DatabaseContentRepository implements ContentRepository {
 
     const db = getDb();
 
-    const dbWorks = await db.selectFrom("works").selectAll().execute();
-    const dbCredits = await db.selectFrom("credits").orderBy("sort_order", "asc").selectAll().execute();
-    const dbVisuals = await db.selectFrom("visuals").orderBy("sort_order", "asc").selectAll().execute();
-    const dbGlossary = await db.selectFrom("glossary_terms").orderBy("sort_order", "asc").selectAll().execute();
+    let dbWorks = await db.selectFrom("works").selectAll().execute();
+    let dbCredits = await db.selectFrom("credits").orderBy("sort_order", "asc").orderBy("id", "asc").selectAll().execute();
+    let dbVisuals = await db.selectFrom("visuals").orderBy("sort_order", "asc").orderBy("id", "asc").selectAll().execute();
+    let dbGlossary = await db.selectFrom("glossary_terms").orderBy("sort_order", "asc").orderBy("id", "asc").selectAll().execute();
     const dbContributors = await db.selectFrom("contributors").selectAll().execute();
     const publicContributorBySlug = new Map(dbContributors
       .filter((c) => c.is_visible)
@@ -117,8 +117,8 @@ export class DatabaseContentRepository implements ContentRepository {
         displayName: String(c.display_name),
         kind: c.kind === "virtual" ? "virtual" as const : "human" as const,
       }]));
-    const dbSources = await db.selectFrom("source_works").selectAll().execute();
-    const dbSections = await db.selectFrom("reading_sections").orderBy("position", "asc").selectAll().execute();
+    let dbSources = await db.selectFrom("source_works").selectAll().execute();
+    let dbSections = await db.selectFrom("reading_sections").orderBy("position", "asc").selectAll().execute();
     const dbSeries = await db.selectFrom("series").selectAll().execute();
     const dbEntries = await db.selectFrom("series_entries").orderBy("position", "asc").selectAll().execute();
     const dbRevisions = await db.selectFrom("work_revisions").selectAll().execute();
@@ -138,6 +138,34 @@ export class DatabaseContentRepository implements ContentRepository {
           this.revisionSnapshots.set(wid, snapshot);
         }
       }
+    }
+
+    // A published work is read from the version frozen when it was published, not from its working
+    // copy, so edits stay in draft until the work is published again. The frozen rows go through the
+    // same mapping as live rows. Works published before versions were frozen keep using live rows.
+    const frozen = new Map<string, any>();
+    for (const [wid, snap] of this.revisionSnapshots) {
+      if (snap && snap.raw && snap.raw.work) frozen.set(wid, snap.raw);
+    }
+    if (frozen.size > 0) {
+      const isFrozen = (id: unknown) => frozen.has(String(id));
+      dbWorks = dbWorks.map((r) =>
+        String(r.status) === "published" && isFrozen(r.id)
+          ? ({ ...frozen.get(String(r.id)).work, status: "published" } as typeof r)
+          : r
+      );
+      const take = <T,>(live: T[], key: string, pick: (raw: any) => any[], order: string): T[] =>
+        [...live.filter((r) => !isFrozen((r as any)[key])), ...[...frozen.values()].flatMap((raw) => pick(raw) as T[])].sort(
+          (a: any, b: any) => Number(a[order] ?? 0) - Number(b[order] ?? 0) || Number(a.id ?? 0) - Number(b.id ?? 0)
+        );
+      dbCredits = take(dbCredits, "work_id", (raw) => raw.credits ?? [], "sort_order");
+      dbVisuals = take(dbVisuals, "work_id", (raw) => raw.visuals ?? [], "sort_order");
+      dbGlossary = take(dbGlossary, "work_id", (raw) => raw.glossary ?? [], "sort_order");
+      dbSections = take(dbSections, "work_id", (raw) => raw.readingSections ?? [], "position");
+      dbSources = [
+        ...dbSources.filter((r) => !isFrozen(r.work_id)),
+        ...[...frozen.values()].map((raw) => raw.sourceWork).filter(Boolean)
+      ] as typeof dbSources;
     }
 
     const sourcesByWork = new Map<string, SourceWorkRef>();
@@ -241,7 +269,7 @@ export class DatabaseContentRepository implements ContentRepository {
         : undefined;
 
       // Check if we have a published revision snapshot for this work
-      const snapshot = this.revisionSnapshots.get(wid);
+      const snapshot = frozen.has(wid) ? undefined : this.revisionSnapshots.get(wid);
       if (snapshot) {
         // Use the published revision snapshot for public view
         const revisionWork = this.buildSnapshotWork(snapshot, wid);

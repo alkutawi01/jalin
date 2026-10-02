@@ -72,6 +72,7 @@ interface ReadinessData {
   warnings: ReadinessIssue[];
   gates: Record<"content" | "credits" | "visuals" | "privacy" | "rights" | "structure" | "workflow", ReadinessGate>;
   checkedAt: string;
+  unpublished?: { snapshotMissing: boolean; changed: boolean } | null;
 }
 
 interface CreditData {
@@ -643,8 +644,38 @@ export default function EditWorkPage() {
   }
 
   async function handleExplicitPublish() {
+    if (dirty) {
+      setPublishError("Ada perubahan teks atau maklumat yang belum disimpan. Tekan Simpan teks & maklumat dahulu, kemudian terbitkan.");
+      return;
+    }
     if (!(await confirmAction("Terbitkan karya ini kepada pembaca? Karya akan kelihatan di laman awam."))) return;
     await doPublish();
+  }
+
+  async function republishNow() {
+    if (dirty) {
+      setPublishError("Ada perubahan teks atau maklumat yang belum disimpan. Tekan Simpan teks & maklumat dahulu, kemudian terbitkan semula.");
+      return;
+    }
+    if (!(await confirmAction("Terbitkan semula? Pembaca akan terus melihat versi draf ini."))) return;
+    setPublishing(true);
+    setPublishError(null);
+    try {
+      const res = await fetch(`/api/admin/works/${workId}/publish`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ republish: true, summary: "Kemas kini diterbitkan", changeType: "minor" })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Gagal menerbitkan semula.");
+      setPublishSuccess(data.changed ? "Versi baharu diterbitkan. Pembaca kini melihatnya." : "Tiada perubahan untuk diterbitkan.");
+      await loadReadiness();
+      setTimeout(() => setPublishSuccess(null), 5000);
+    } catch (err) {
+      setPublishError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+    } finally {
+      setPublishing(false);
+    }
   }
 
   async function doPublish() {
@@ -1172,6 +1203,10 @@ export default function EditWorkPage() {
   }
 
   async function publishNow() {
+    if (dirty) {
+      setPublishError("Ada perubahan teks atau maklumat yang belum disimpan. Tekan Simpan teks & maklumat dahulu, kemudian terbitkan.");
+      return;
+    }
     if (!(await confirmAction("Terbitkan karya ini kepada pembaca? Karya akan kelihatan di laman awam."))) return;
     if (form.status !== "ready") {
       setSaving(true);
@@ -1238,6 +1273,8 @@ export default function EditWorkPage() {
         onChangeStatus={changeStatus}
         onPublish={handleExplicitPublish}
         onPublishNow={publishNow}
+        onRepublish={republishNow}
+        dirty={dirty}
         onGoTab={(tab) => selectTab(tab === "visuals" ? "content" : tab as Tab)}
       />
 
@@ -1285,6 +1322,9 @@ export default function EditWorkPage() {
         <div>
           <strong>Teks &amp; maklumat karya</strong>
           <span className="a-savebar-note" role="status">{dirty ? "Ada perubahan belum disimpan" : "Tiada perubahan tertunggak"}</span>
+          <span className="admin-form-hint" style={{ display: "block", margin: 0 }}>
+            Teks dan maklumat hanya disimpan apabila anda menekan butang ini. Kredit, gambar, glosari dan watak disimpan serta-merta apabila anda menyimpannya sendiri di tab masing-masing.
+          </span>
         </div>
         <div className="a-work-savebar-actions">
           <a href="/admin/works" className="admin-btn admin-btn-outline">Kembali</a>
