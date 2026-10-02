@@ -6,11 +6,12 @@ import { displayableGenre } from "../lib/reader/genre-display";
 import { getAllWorks } from "../lib/content/workLoader";
 import { getEditorPickSummaries } from "../lib/reader/editor-picks";
 import {
+  projectPublicFeaturedSummary,
   projectPublicWorkSummary,
+  type PublicFeaturedSummary,
   type PublicWorkSummary
 } from "../lib/reader/public-projection";
 import { renderAttribution } from "@/components/reader/Attribution";
-import HeroCarousel, { type HeroSlide } from "@/components/reader/HeroCarousel";
 
 export const dynamic = "force-dynamic";
 
@@ -49,6 +50,41 @@ const CATEGORIES: { type: string; label: string }[] = [
   { type: "fragmen", label: "Fragmen" },
   { type: "sinopsis", label: "Sinopsis" },
 ];
+
+function FeaturedHero({ work }: { work: PublicFeaturedSummary }) {
+  const hero = work.hero;
+  const label = TYPE_LABELS[work.type] ?? work.type;
+  const genre = displayableGenre(work.genre);
+  const reading = work.readingMinutes ? `± ${work.readingMinutes} min membaca` : null;
+
+  return (
+    <section className="hero-featured">
+      <div className="site-shell">
+        <div className={`hero-featured-inner${hero?.src ? "" : " hero-featured-text-only"}`}>
+          <div className="hero-featured-text">
+            <p className="hero-featured-kicker">{genre ? `${label} · ${genre}` : label}</p>
+            <h1 className="hero-featured-title" style={{ fontStyle: "normal" }}>{work.title}</h1>
+            {work.attribution ? <p className="work-attribution hero-featured-attribution">{renderAttribution(work.attribution.primary)}</p> : null}
+            {work.dek ? <p className="hero-featured-dek">{work.dek}</p> : null}
+            <div className="hero-featured-meta">
+              {reading ? <span>{reading}</span> : null}
+              <span>{formatDate(work.publishedAt)}</span>
+            </div>
+            <a className="hero-featured-cta" href={`/kategori/${work.type}/${work.slug}`}>
+              Baca Sekarang
+            </a>
+          </div>
+          {hero?.src ? (
+            <div className="hero-featured-visual">
+              <Image src={hero.src} alt={hero.alt} fill sizes="(max-width: 900px) 100vw, 640px" quality={85} priority />
+              <div className="image-rights" aria-hidden="true">{`© ADJUNG ${(work.updatedAt ?? work.publishedAt ?? "2026").slice(0, 4)}`}</div>
+            </div>
+          ) : null}
+        </div>
+      </div>
+    </section>
+  );
+}
 
 function yearOf(work: { updatedAt?: string; publishedAt?: string }): string {
   return (work.updatedAt ?? work.publishedAt ?? "2026").slice(0, 4);
@@ -119,6 +155,38 @@ function CategoryCard({
         <span className="category-explorer-card-arrow" aria-hidden="true">→</span>
       </div>
     </a>
+  );
+}
+
+function EditorialSelection({ works }: { works: PublicWorkSummary[] }) {
+  if (works.length === 0) return null;
+
+  return (
+    <section className="editorial-selection">
+      <div className="site-shell">
+        <header className="section-head">
+          <h2>Pilihan Editor</h2>
+          <p className="section-sub">Karya-karya yang diketengahkan oleh pasukan editorial</p>
+        </header>
+        <div className="editorial-grid">
+          {works.map((work) => (
+            <a key={work.slug} href={`/kategori/${work.type}/${work.slug}`} className="editorial-pick">
+              <WorkCover type={work.type} title={work.title} hero={work.hero} rightsYear={yearOf(work)} sizes="(max-width: 680px) 100vw, 360px" quality={85} />
+              <div className="editorial-pick-body">
+                <span className="editorial-pick-type">
+                  {TYPE_LABELS[work.type] ?? work.type}
+                  {work.readingMinutes ? ` · ± ${work.readingMinutes} min` : ""}
+                </span>
+                <h3 style={{ fontStyle: "normal" }}>{work.title}</h3>
+                {work.attribution ? <p className="work-attribution">{renderAttribution(work.attribution.primary)}</p> : null}
+                {work.dek ? <p>{work.dek}</p> : null}
+                <span className="editorial-pick-cta">Baca</span>
+              </div>
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -209,25 +277,9 @@ export default async function Home() {
   const editorialPicks = await getEditorPickSummaries(standalone);
   const seriesHighlight = await getSeriesHighlight();
 
-  // The hero is the editor's picks (a carousel, newest first). With no picks there is no hero at all.
-  const slides: HeroSlide[] = editorialPicks.map((work) => {
-    const genre = displayableGenre(work.genre);
-    const label = TYPE_LABELS[work.type] ?? work.type;
-    return {
-      slug: work.slug,
-      type: work.type,
-      title: work.title,
-      kicker: genre ? `${label} · ${genre}` : label,
-      ...(work.attribution ? { attribution: work.attribution.primary } : {}),
-      ...(work.dek ? { dek: work.dek } : {}),
-      ...(work.readingMinutes ? { reading: `± ${work.readingMinutes} min membaca` } : {}),
-      date: formatDate(work.publishedAt),
-      ...(work.hero ? { hero: { src: work.hero.src, alt: work.hero.alt ?? "" } } : {}),
-      rights: `© ADJUNG ${yearOf(work)}`
-    };
-  });
-  // A work appears once: not again among the latest if it is already in the carousel.
-  const alreadyShown = new Set<string>(editorialPicks.map((pick) => pick.slug));
+  const featured = sorted[0] ?? null;
+  // A work appears once: not again as an editor's pick or as the featured work.
+  const alreadyShown = new Set<string>([featured?.slug ?? "", ...editorialPicks.map((pick) => pick.slug)]);
   const latest = sorted.filter((work) => !alreadyShown.has(work.slug)).slice(0, 6);
 
   const categoryImages = new Map<string, { src: string; alt: string; year: string }>();
@@ -247,14 +299,17 @@ export default async function Home() {
       <SiteHeader active="home" />
 
       <main>
-        <h1 className="sr-only">Jalin</h1>
-        {slides.length > 0 ? <HeroCarousel slides={slides} /> : null}
+        {featured ? (
+          <FeaturedHero work={projectPublicFeaturedSummary(featured)} />
+        ) : null}
 
         {allWorks.length === 0 ? (
           <section className="site-shell">
             <p className="section-sub">Karya pertama sedang disediakan. Kembali tidak lama lagi.</p>
           </section>
         ) : null}
+
+        <EditorialSelection works={editorialPicks} />
 
         {seriesHighlight ? <SeriesHighlight data={seriesHighlight} /> : null}
 
