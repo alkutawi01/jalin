@@ -13,6 +13,7 @@ import LoadingBlock from "../../../../components/admin/LoadingBlock";
 import StoryMarkdown from "../../../../components/reader/StoryMarkdown";
 import { stripImageMarkers } from "../../../../lib/reader/image-markers";
 import { classifyFragmen, isIndonesianLanguage, isMalayLanguage } from "../../../../lib/content/fragmen-kind";
+import { buildGlossaryPrompt, parseGlossaryPaste } from "../../../../lib/admin/authoring/glossary-paste";
 import VisualManuscriptEditor, { canEditVisually } from "../../../../components/admin/VisualManuscriptEditor";
 
 const WORK_TYPES = [
@@ -236,6 +237,9 @@ export default function EditWorkPage() {
   const [showManuscriptPreview, setShowManuscriptPreview] = useState(false);
   const [manuscriptMode, setManuscriptMode] = useState<"markdown" | "visual">("visual");
   const [assistantNote, setAssistantNote] = useState("");
+  const [glossaryBusy, setGlossaryBusy] = useState(false);
+  const [glossaryNote, setGlossaryNote] = useState("");
+  const [glossaryManual, setGlossaryManual] = useState("");
   useEffect(() => {
     const restoreTab = () => {
       const hash = window.location.hash.slice(1);
@@ -266,6 +270,86 @@ export default function EditWorkPage() {
       setAssistantNote("Salin gagal. Benarkan akses papan keratan dalam pelayar dan cuba lagi.");
     }
   }
+  async function copyGlossaryPrompt() {
+    const prompt = buildGlossaryPrompt({
+      type: form.type,
+      body: form.body,
+      existingTerms: glossaryTerms.map((term) => term.term)
+    });
+    try {
+      await navigator.clipboard.writeText(prompt);
+      setGlossaryNote("Arahan glosari sudah disalin. Tampal ke chatbot, kemudian salin jawapannya dan tekan Tampal & import.");
+      toast("Arahan glosari disalin.", "success");
+    } catch {
+      setGlossaryNote("Salin gagal. Benarkan akses papan keratan dalam pelayar dan cuba lagi.");
+    }
+  }
+
+  /** Parse the chatbot's answer and add every new term in one go. */
+  async function importGlossaryText(answer: string) {
+    setGlossaryError(null);
+    if (!answer.trim()) {
+      setGlossaryNote("Tiada teks untuk dibaca. Salin jawapan chatbot dahulu.");
+      return;
+    }
+    const result = parseGlossaryPaste(answer, form.body, glossaryTerms.map((term) => term.term));
+    if (result.items.length === 0) {
+      const why = [
+        result.existing.length ? `${result.existing.length} sudah ada` : "",
+        result.notInText.length ? `${result.notInText.length} tiada dalam manuskrip (${result.notInText.join(", ")})` : "",
+        result.unreadable ? `${result.unreadable} tidak dapat dibaca` : ""
+      ].filter(Boolean).join("; ");
+      setGlossaryNote(`Tiada istilah baharu untuk ditambah${why ? `: ${why}` : "."}`);
+      return;
+    }
+    setGlossaryBusy(true);
+    let added = 0;
+    try {
+      for (const [index, item] of result.items.entries()) {
+        const res = await fetch("/api/admin/glossary", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ workId, term: item.term, meaning: item.meaning, source: "", sortOrder: glossaryTerms.length + index + 1 })
+        });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.error || `Gagal menambah "${item.term}".`);
+        }
+        added += 1;
+      }
+      const skipped = [
+        result.existing.length ? `${result.existing.length} sudah ada` : "",
+        result.notInText.length ? `${result.notInText.length} tiada dalam manuskrip (${result.notInText.join(", ")})` : "",
+        result.unreadable ? `${result.unreadable} tidak dapat dibaca` : ""
+      ].filter(Boolean).join("; ");
+      setGlossaryNote(`${added} istilah ditambah${skipped ? `. Dilangkau: ${skipped}` : ""}. Semak maksudnya dalam jadual dan edit jika perlu.`);
+      setGlossaryManual("");
+      toast(`${added} istilah glosari ditambah.`, "success");
+    } catch (err) {
+      setGlossaryError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      if (added > 0) setGlossaryNote(`${added} istilah sempat ditambah sebelum ralat.`);
+    } finally {
+      setGlossaryBusy(false);
+      await loadGlossary();
+      await loadReadiness();
+    }
+  }
+
+  async function pasteGlossaryFromClipboard() {
+    let text = "";
+    try {
+      text = await navigator.clipboard.readText();
+    } catch {
+      setGlossaryNote("Pelayar tidak membenarkan tampal automatik. Buka \"Tampal secara manual\" di bawah dan tampal jawapan chatbot di situ.");
+      return;
+    }
+    if (!text.trim()) {
+      setGlossaryNote("Papan keratan kosong. Salin jawapan chatbot dahulu.");
+      return;
+    }
+    await importGlossaryText(text);
+  }
+
   function chooseImagePosition() {
     const textarea = manuscriptRef.current;
     if (!textarea) return;
@@ -1351,12 +1435,12 @@ export default function EditWorkPage() {
         )}
       </div>
 
-      <details className="admin-advanced-field">
+      {activeTab !== "glossary" && <details className="admin-advanced-field">
         <summary>Bantuan chatbot untuk tab {activeTab === "metadata" ? "Maklumat" : activeTab === "content" ? "Kandungan" : activeTab}</summary>
         <p className="admin-form-hint">Salin arahan bersama manuskrip semasa, kemudian tampal ke chatbot pilihan anda. Cadangan tidak diimport atau disimpan secara automatik; editor kekal bertanggungjawab menyemaknya.</p>
         <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={() => void copyAssistantPrompt()}>Salin arahan tab ini</button>
         {assistantNote && <p className="admin-form-hint" role="status">{assistantNote}</p>}
-      </details>
+      </details>}
 
       {activeTab === "content" && (
         <form onSubmit={handleSubmit} onChange={() => setDirty(true)} className="admin-form">
@@ -2051,6 +2135,38 @@ export default function EditWorkPage() {
 
       {activeTab === "glossary" && (
         <div className="admin-glossary">
+          <section className="a-assistant" aria-label="Glosari dengan chatbot">
+            <h3>Glosari dengan chatbot</h3>
+            <ol className="admin-form-hint">
+              <li>Tekan <strong>Salin arahan</strong>. Arahan, format jawapan dan manuskrip disalin sekali gus.</li>
+              <li>Tampal ke chatbot pilihan anda dan tunggu jawapannya.</li>
+              <li>Salin jawapan chatbot, kemudian tekan <strong>Tampal &amp; import</strong>. Semua istilah dibaca dan ditambah terus.</li>
+            </ol>
+            <div className="admin-form-actions">
+              <button type="button" className="admin-btn admin-btn-outline" onClick={() => void copyGlossaryPrompt()} disabled={glossaryBusy}>
+                1. Salin arahan
+              </button>
+              <button type="button" className="admin-btn admin-btn-primary" onClick={() => void pasteGlossaryFromClipboard()} disabled={glossaryBusy}>
+                {glossaryBusy ? "Mengimport…" : "2. Tampal & import"}
+              </button>
+            </div>
+            {glossaryNote && <p className="admin-form-hint" role="status">{glossaryNote}</p>}
+            <details className="admin-advanced-field">
+              <summary>Tampal secara manual</summary>
+              <p className="admin-form-hint">Jika pelayar tidak membenarkan tampal automatik, tampal jawapan chatbot di sini.</p>
+              <textarea
+                aria-label="Jawapan chatbot untuk glosari"
+                rows={6}
+                value={glossaryManual}
+                onChange={(e) => setGlossaryManual(e.target.value)}
+                placeholder={"[GLOSARI]\nIstilah: ...\nMaksud: ..."}
+              />
+              <button type="button" className="admin-btn admin-btn-sm admin-btn-primary" disabled={glossaryBusy || !glossaryManual.trim()} onClick={() => void importGlossaryText(glossaryManual)}>
+                Import glosari
+              </button>
+            </details>
+          </section>
+
           {glossaryError && (
             <div className="admin-alert admin-alert-error">{glossaryError}</div>
           )}
