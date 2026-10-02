@@ -85,7 +85,7 @@ async function main() {
       work_id: TEST_ID,
       contributor_slug: null,
       guest_name: "Uji Editorial",
-      role_label: "Editor",
+      role_label: "Penulis",
       byline: true,
       is_public: true,
       sort_order: 0,
@@ -235,6 +235,16 @@ async function main() {
   r = await evaluatePublicationReadiness(TEST_ID);
   if (!r?.ready) fail(`ready expected before publish; blockers=${r?.blockers.map((b) => b.code).join(",")}`);
 
+  // 9a. Changing only the rights notes or evidence after approval withdraws the approval.
+  const up4 = await upsertSourceProvenance(TEST_ID, { rightsEvidence: "Bukti baharu: surat kebenaran penerbit." }, { id: "admin", email: "editor@jalin.local" });
+  if (!up4.invalidatedApproval) fail("evidence edit after PASS must invalidate approval");
+  r = await evaluatePublicationReadiness(TEST_ID);
+  if (r?.gates.rights.pass) fail("rights must fail after evidence change");
+  ok("Evidence/notes change invalidates approval");
+  await performRightsReview(TEST_ID, { rights_status: "public_domain", rights_notes: "Domain awam disahkan semula selepas bukti dikemas kini." }, { id: "admin", email: "rights@jalin.local" });
+  r = await evaluatePublicationReadiness(TEST_ID);
+  if (!r?.ready) fail("ready expected again after re-review");
+
   // 9b. Concurrent rights mutation: T2 UPDATE source_works must block on FOR UPDATE
   //     while publish trx holds locks (safe outcome A — stable snapshot publish).
   let t2RightsDone = false;
@@ -355,6 +365,7 @@ async function main() {
   const production = await db
     .selectFrom("works")
     .where("status", "=", "published")
+    .where("type", "in", ["cerpen", "novela", "bersiri"]) // derivative works (sinopsis, fragmen) legitimately carry source rows
     .where("id", "not like", "JLN-TER-9997%")
     .where("id", "!=", TEST_ID)
     .select(["id", "slug"])

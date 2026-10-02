@@ -10,10 +10,17 @@ export default function AddWorkPage() {
   const router = useRouter();
   const [series, setSeries] = useState<SeriesChoice[]>([]);
   const [chooseSeries, setChooseSeries] = useState(false);
+  /** The kind the editor picked; the next question is how to start it. */
+  const [picked, setPicked] = useState<WorkKind | null>(null);
   const [seriesId, setSeriesId] = useState("");
   const [newSeriesTitle, setNewSeriesTitle] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    const kind = new URLSearchParams(window.location.search).get("jenis");
+    if (kind && (WORK_KINDS as string[]).includes(kind)) setPicked(kind as WorkKind);
+  }, []);
 
   useEffect(() => {
     fetch("/api/admin/series").then((res) => res.ok ? res.json() : []).then(setSeries).catch(() => setSeries([]));
@@ -45,14 +52,26 @@ export default function AddWorkPage() {
     <div className="admin-form-page">
       <header className="admin-page-header">
         <h1>Tambah Karya</h1>
-        <p className="admin-page-sub">Pilih jenis karya untuk membuka editor lengkap. Draf tidak diterbitkan secara automatik.</p>
+        <p className="admin-page-sub">{picked ? `Bagaimana mahu memulakan ${KIND_LABELS[picked]}?` : "Pilih jenis karya. Jenis yang dipilih dikekalkan sehingga draf siap dan tidak boleh ditukar senyap oleh chatbot. Draf tidak diterbitkan secara automatik."}</p>
       </header>
       {error && <div className="admin-alert admin-alert-error" role="alert">{error}</div>}
-      {!chooseSeries ? <div className="admin-choice-grid">
-        {WORK_KINDS.map((kind) => <button key={kind} type="button" className="admin-choice" disabled={busy} onClick={() => void start(kind)}>
+      {!chooseSeries && picked ? <div className="admin-choice-grid">
+        <button type="button" className="admin-choice" disabled={busy} onClick={() => void start(picked)}>
+          <strong>Tulis sendiri</strong>
+          <span>Buka editor kosong. Anda menaip teks, kemudian menambah kredit, gambar dan glosari sendiri. Tiada chatbot terlibat.</span>
+        </button>
+        <a className="admin-choice" href={`/admin/works/add/${picked}`}>
+          <strong>Guna chatbot</strong>
+          <span>Salin arahan, tampal jawapan chatbot. Sistem mengisi tajuk, glosari, watak dan permintaan gambar. Hasilnya draf yang sama seperti &quot;Tulis sendiri&quot;, tetapi sudah berisi dan boleh disunting.</span>
+        </a>
+        <button type="button" className="admin-btn admin-btn-outline" onClick={() => setPicked(null)}>← Tukar jenis</button>
+      </div> : null}
+      {!chooseSeries && !picked ? <div className="admin-choice-grid">
+        {WORK_KINDS.map((kind) => <button key={kind} type="button" className="admin-choice" disabled={busy} onClick={() => setPicked(kind)}>
           <strong>{KIND_LABELS[kind]}</strong><span>{KIND_DESCRIPTIONS[kind]}</span>
         </button>)}
-      </div> : <div className="admin-form">
+      </div> : null}
+      {chooseSeries ? <div className="admin-form">
         <h2 className="admin-form-section-title">Siri untuk episod baharu</h2>
         <p className="admin-form-hint">Setiap episod ialah karya sendiri tetapi mesti dipautkan kepada siri yang sama. Pilih satu siri sedia ada atau namakan siri baharu.</p>
         <div className="admin-form-group">
@@ -67,8 +86,7 @@ export default function AddWorkPage() {
           <button type="button" className="admin-btn admin-btn-outline" disabled={busy} onClick={() => setChooseSeries(false)}>Kembali</button>
           <button type="button" className="admin-btn admin-btn-primary" disabled={busy || (!seriesId && !newSeriesTitle.trim())} onClick={() => void start("bersiri")}>{busy ? "Membuka draf…" : "Buka editor episod"}</button>
         </div>
-      </div>}
-      <details className="admin-advanced-field"><summary>Import karya menggunakan chatbot</summary><p className="admin-form-hint">Aliran ini membuat draf baharu daripada jawapan chatbot; ia tidak mengisi draf yang sedang terbuka.</p><div className="admin-form-actions">{WORK_KINDS.map((kind) => <a key={kind} className="admin-btn admin-btn-outline admin-btn-sm" href={`/admin/works/add/${kind}`}>{KIND_LABELS[kind]}</a>)}</div></details>
+      </div> : null}
     </div>
   );
 }

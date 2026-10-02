@@ -9,7 +9,7 @@ import { isRecipeKey } from "../../../../../lib/admin/authoring/recipes";
  */
 export async function POST(request: NextRequest) {
   const admin = await getCurrentAdmin();
-  if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!admin) return NextResponse.json({ error: "Sesi anda telah tamat. Log masuk semula." }, { status: 401 });
 
   const body = (await request.json().catch(() => ({}))) as { target?: unknown; text?: unknown; reset?: unknown };
   const target = body.target;

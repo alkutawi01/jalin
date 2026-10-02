@@ -6,6 +6,21 @@ import { splitCommunicationBlocks } from "../../lib/reader/communication-blocks"
 
 const MARKER = /^\[\[gambar:[1-9]\d*\]\]$/;
 
+type ToolbarIconName = "bold" | "italic" | "paragraph" | "heading" | "scene" | "image" | "message" | "email";
+
+function ToolbarIcon({ name }: { name: ToolbarIconName }) {
+  if (name === "bold") return <span className="visual-manuscript-glyph visual-manuscript-glyph-bold" aria-hidden="true">B</span>;
+  if (name === "italic") return <span className="visual-manuscript-glyph visual-manuscript-glyph-italic" aria-hidden="true">I</span>;
+  if (name === "heading") return <span className="visual-manuscript-glyph visual-manuscript-glyph-heading" aria-hidden="true">H₂</span>;
+  return <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+    {name === "paragraph" && <><path d="M8 6h12M8 12h12M8 18h8"/><path d="M3 6h1m-1 6h1m-1 6h1"/></>}
+    {name === "scene" && <><path d="M3 12h7m4 0h7"/><path d="M12 10v4"/></>}
+    {name === "image" && <><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8" cy="9" r="1.4"/><path d="m4 17 5-5 3 3 3-3 5 5"/></>}
+    {name === "message" && <path d="M4 5h16v11H9l-5 4V5Z"/>}
+    {name === "email" && <><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></>}
+  </svg>;
+}
+
 function escapeHtml(value: string): string {
   return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
@@ -151,14 +166,16 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
 
   return <div className="visual-manuscript">
     <div className="visual-manuscript-toolbar" role="toolbar" aria-label="Pemformatan manuskrip">
-      <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => format("bold")} aria-label="Tebalkan teks terpilih"><strong>Tebal</strong></button>
-      <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => format("italic")} aria-label="Condongkan teks terpilih"><em>Condong</em></button>
-      <button type="button" onClick={() => insertBlock("paragraph")}>Perenggan</button>
-      <button type="button" onClick={() => insertBlock("heading")}>Tajuk bahagian</button>
-      <button type="button" onClick={() => insertBlock("scene")}>Pemisah adegan</button>
-      <button type="button" onClick={() => insertBlock("image")}>Penanda gambar</button>
-      <button type="button" onClick={() => insertBlock("mesej")}>Kotak mesej</button>
-      <button type="button" onClick={() => insertBlock("emel")}>Kotak e-mel</button>
+      <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => format("bold")} aria-label="Tebalkan teks terpilih" data-label="Tebal"><ToolbarIcon name="bold" /></button>
+      <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => format("italic")} aria-label="Condongkan teks terpilih" data-label="Condong"><ToolbarIcon name="italic" /></button>
+      <span className="visual-manuscript-toolbar-divider" aria-hidden="true" />
+      <button type="button" onClick={() => insertBlock("paragraph")} aria-label="Sisip perenggan" data-label="Perenggan"><ToolbarIcon name="paragraph" /></button>
+      <button type="button" onClick={() => insertBlock("heading")} aria-label="Sisip tajuk bahagian" data-label="Tajuk bahagian"><ToolbarIcon name="heading" /></button>
+      <button type="button" onClick={() => insertBlock("scene")} aria-label="Sisip pemisah adegan" data-label="Pemisah adegan"><ToolbarIcon name="scene" /></button>
+      <span className="visual-manuscript-toolbar-divider" aria-hidden="true" />
+      <button type="button" onClick={() => insertBlock("image")} aria-label="Sisip penanda gambar" data-label="Penanda gambar"><ToolbarIcon name="image" /></button>
+      <button type="button" onClick={() => insertBlock("mesej")} aria-label="Sisip kotak mesej" data-label="Kotak mesej"><ToolbarIcon name="message" /></button>
+      <button type="button" onClick={() => insertBlock("emel")} aria-label="Sisip kotak e-mel" data-label="Kotak e-mel"><ToolbarIcon name="email" /></button>
     </div>
     <div ref={editorRef} className="visual-manuscript-surface" contentEditable role="textbox" aria-label="Manuskrip visual" aria-multiline="true" suppressContentEditableWarning onInput={sync} onKeyUp={rememberSelection} onMouseUp={rememberSelection} onBlur={rememberSelection} onPaste={(event) => {
       event.preventDefault();

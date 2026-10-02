@@ -112,7 +112,7 @@ export function EditorialImage({
 
 export function LeftRail({ rows, note, children }: { rows: WorkMetaRow[]; note?: string; children?: ReactNode }) {
   return (
-    <aside className="left-rail">
+    <aside className="left-rail" aria-label="Tentang karya">
       <div className="rail-card sticky">
         <div className="rail-label">Tentang karya</div>
         <dl>
@@ -133,7 +133,7 @@ export function LeftRail({ rows, note, children }: { rows: WorkMetaRow[]; note?:
 export function RightRail({ characters, editorial }: { characters: CharacterMeta[]; editorial: EditorialCredit[] }) {
   if (characters.length === 0 && editorial.length === 0) return null;
   return (
-    <aside className="right-rail">
+    <aside className="right-rail" aria-label="Watak dan kredit editorial">
       <div className="rail-card sticky">
         {characters.length > 0 && (
           <>

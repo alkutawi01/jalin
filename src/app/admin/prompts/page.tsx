@@ -47,7 +47,7 @@ export default async function AdminPromptsPage() {
         <div className="admin-page-header-row">
           <div>
             <h1>Templat Arahan</h1>
-            <p className="admin-page-sub">{templates.length} template dalam database</p>
+            <p className="admin-page-sub">{templates.length} templat dalam pangkalan data</p>
           </div>
           <a href="/admin/prompts/new" className="admin-btn admin-btn-primary">
             + Template Baharu
@@ -73,7 +73,7 @@ export default async function AdminPromptsPage() {
             {templates.length === 0 ? (
               <tr>
                 <td colSpan={8} className="admin-table-empty">
-                  Tiada prompt template dalam database.
+                  Tiada prompt templat dalam pangkalan data.
                 </td>
               </tr>
             ) : (

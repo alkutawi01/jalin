@@ -12,6 +12,7 @@ export default function GlossaryTerm({ term, termDisplay, meaning, children }: {
   const pointerType = useRef<string | null>(null);
   const wasOpenOnPointerDown = useRef(false);
   const tooltipId = useId();
+  const descriptionId = useId();
   const [open, setOpen] = useState(false);
   const [position, setPosition] = useState<Position | null>(null);
 
@@ -79,7 +80,8 @@ export default function GlossaryTerm({ term, termDisplay, meaning, children }: {
         ref={triggerRef}
         type="button"
         className="glossary-term"
-        aria-describedby={open ? tooltipId : undefined}
+        aria-expanded={open}
+        aria-describedby={descriptionId}
         onPointerDown={(event) => {
           pointerType.current = event.pointerType;
           wasOpenOnPointerDown.current = open;
@@ -97,6 +99,8 @@ export default function GlossaryTerm({ term, termDisplay, meaning, children }: {
       >
         {children}
       </button>
+      {/* Always present for screen readers; the floating tooltip is the visual version. */}
+      <span id={descriptionId} className="sr-only">{meaning}</span>
       {open ? createPortal(
         <span
           ref={tooltipRef}

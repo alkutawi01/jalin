@@ -8,6 +8,7 @@ import { EditorialAuditHistory } from "../../components/admin/EditorialAuditHist
 import { EditorialIssueQueue } from "../../components/admin/EditorialIssueQueue";
 import { EditorialWorkflowDashboard } from "../../components/admin/EditorialWorkflowDashboard";
 import { listWorks } from "../../lib/admin/work-service";
+import { summarizeReadiness } from "../../lib/admin/publication-service";
 
 export const dynamic = "force-dynamic";
 
@@ -64,7 +65,8 @@ const TYPE_LABELS: Record<string, string> = { cerpen: "Cerpen", novela: "Novela"
 const TODO_GROUPS: { status: string; title: string; hint: string }[] = [
   { status: "draft", title: "Draf untuk disiapkan", hint: "Lengkapkan gambar dan kredit, kemudian hantar untuk semakan." },
   { status: "review", title: "Menunggu semakan", hint: "Semak, kemudian tandakan sedia." },
-  { status: "ready", title: "Sedia diterbitkan", hint: "Semua semakan lulus. Tekan Terbitkan bila anda bersedia." }
+  { status: "ready", title: "Sedia diterbitkan", hint: "Semua semakan lulus. Tekan Terbitkan bila anda bersedia." },
+  { status: "blocked", title: "Bertanda sedia tetapi disekat", hint: "Status Sedia, tetapi satu semakan masih gagal. Buka untuk melihat puncanya." }
 ];
 
 async function getTodo() {
@@ -79,6 +81,12 @@ async function getTodo() {
 export default async function AdminDashboard() {
   const stats = await getStats();
   const works = await getTodo();
+  // The same readiness service the Terbitkan button uses decides who is really ready.
+  const verdicts = works ? await summarizeReadiness(works.filter((w) => w.status === "ready").map((w) => w.id)) : new Map();
+  const inGroup = (w: { id: string; status: string }, g: string) =>
+    g === "ready" ? w.status === "ready" && verdicts.get(w.id)?.ready !== false
+    : g === "blocked" ? w.status === "ready" && verdicts.get(w.id)?.ready === false
+    : w.status === g;
 
   return (
     <div className="admin-dashboard">
@@ -91,14 +99,14 @@ export default async function AdminDashboard() {
         <h2>Yang perlu dibuat</h2>
         {works === null ? (
           <p className="admin-form-hint">Senarai kerja belum tersedia.</p>
-        ) : TODO_GROUPS.every((g) => !works.some((w) => w.status === g.status)) ? (
+        ) : TODO_GROUPS.every((g) => !works.some((w) => inGroup(w, g.status))) ? (
           <div className="a-empty">
             <strong>Tiada kerja tertunggak.</strong>
             Mulakan dengan butang Tambah Karya di sebelah kiri.
           </div>
         ) : (
           TODO_GROUPS.map((group) => {
-            const items = works.filter((w) => w.status === group.status);
+            const items = works.filter((w) => inGroup(w, group.status));
             if (items.length === 0) return null;
             return (
               <div key={group.status} style={{ marginBottom: 18 }}>
@@ -111,10 +119,17 @@ export default async function AdminDashboard() {
                     <tbody>
                       {items.slice(0, 6).map((w) => (
                         <tr key={w.id}>
-                          <td className="admin-table-title">{w.title}</td>
+                          <td className="admin-table-title">
+                            {w.title}
+                            {group.status === "blocked" && verdicts.get(w.id)?.firstBlocker ? (
+                              <span className="admin-form-hint" style={{ display: "block", margin: 0 }}>
+                                {verdicts.get(w.id)?.firstBlocker}
+                              </span>
+                            ) : null}
+                          </td>
                           <td>{TYPE_LABELS[w.type] ?? w.type}</td>
                           <td style={{ textAlign: "right" }}>
-                            <a href={`/admin/works/${w.id}`} className="admin-btn admin-btn-sm admin-btn-primary">
+                            <a href={`/admin/works/${w.id}${group.status === "blocked" ? "#" + (verdicts.get(w.id)?.firstTab ?? "content") : ""}`} className="admin-btn admin-btn-sm admin-btn-primary">
                               Buka
                             </a>
                           </td>

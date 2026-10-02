@@ -15,7 +15,7 @@
   --a-line-strong: #cfc7b8;
   --a-ink: #18343c;
   --a-ink-soft: #52656a;
-  --a-muted: #7a898d;
+  --a-muted: #5d6e72;
   --a-accent: #a76450;
   --a-accent-soft: #f3e5df;
   --a-focus: rgba(167, 100, 80, 0.28);
@@ -475,3 +475,31 @@
 .a-assistant h3 { margin: 0 0 8px; font-size: 16px; }
 .a-assistant ol { margin: 0 0 12px; padding-left: 20px; }
 .a-assistant textarea { width: 100%; margin: 8px 0; }
+/* Links inside running text are underlined, so they are not told apart from the text by colour alone. */
+.a-shell p a:not(.a-btn):not(.admin-btn),
+.a-shell li a:not(.a-btn):not(.admin-btn),
+.a-shell .admin-form-hint a {
+  color: #8f503e; /* accent as text colour: 6:1 on the surface */
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Touch screens: every control is at least 44px so it can be hit reliably. */
+@media (pointer: coarse) {
+  .admin-btn-sm,
+  .a-btn-quiet,
+  .a-nav-link,
+  .admin-tab {
+    min-height: 44px;
+  }
+  .a-filterbar input,
+  .a-filterbar select {
+    min-height: 44px;
+  }
+  .admin-form input[type="checkbox"],
+  .admin-form input[type="radio"],
+  .admin-checkbox-label input {
+    width: 22px;
+    height: 22px;
+  }
+}

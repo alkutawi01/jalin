@@ -8,7 +8,7 @@ export async function POST(
 ) {
   try {
     const admin = await getCurrentAdmin();
-    if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!admin) return NextResponse.json({ error: "Sesi anda telah tamat. Log masuk semula." }, { status: 401 });
 
     const { id, revisionId } = await params;
     const result = await revertRevision(id, revisionId, { id: admin.id, email: admin.email });

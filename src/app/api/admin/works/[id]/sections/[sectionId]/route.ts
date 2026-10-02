@@ -32,7 +32,7 @@ export async function PATCH(
   try {
     const admin = await getCurrentAdmin();
     if (!admin) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: "Sesi anda telah tamat. Log masuk semula." }, { status: 401 });
     }
 
     const { sectionId } = await params;
@@ -74,7 +74,7 @@ export async function DELETE(
   try {
     const admin = await getCurrentAdmin();
     if (!admin) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: "Sesi anda telah tamat. Log masuk semula." }, { status: 401 });
     }
 
     const { sectionId } = await params;

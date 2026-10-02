@@ -5,6 +5,8 @@
   --white: #fffefa;
   --line: #ddd7cc;
   --clay: #a76450;
+  /* Text version of the clay accent: 4.5:1 on the paper background (the plain clay is 4.3:1). */
+  --clay-text: #9a5a47;
   --beige: #d8b9a6;
   --max: 1180px;
 }
@@ -80,7 +82,7 @@ nav a.active { color: var(--ink); border-bottom: 1px solid var(--clay); padding-
 }
 .story-kicker {
   font-family: Arial, sans-serif;
-  color: var(--clay);
+  color: var(--clay-text);
   text-transform: uppercase;
   letter-spacing: .16em;
   font-size: 11px;
@@ -126,14 +128,14 @@ nav a.active { color: var(--ink); border-bottom: 1px solid var(--clay); padding-
   gap: 8px;
   font-family: Arial, sans-serif;
   font-size: 13px;
-  color: #697678;
+  color: #5a6b6f;
 }
 .byline a { color: var(--ink); font-weight: 600; }
 .byline .byline-name { color: var(--ink); font-weight: 600; }
 .byline-credit { display: contents; }
 .maya-label {
   margin-left: 2px;
-  color: #879093;
+  color: #5f7074;
   font-size: 11px;
   font-weight: 500;
   letter-spacing: .02em;
@@ -177,7 +179,7 @@ nav a.active { color: var(--ink); border-bottom: 1px solid var(--clay); padding-
 }
 dl { margin: 0; }
 dl > div { display: grid; grid-template-columns: 78px minmax(0, 1fr); column-gap: 12px; row-gap: 2px; padding: 8px 0; border-bottom: 1px solid rgba(24,52,60,.08); align-items: baseline; }
-dt { color: #8a9597; }
+dt { color: #5f7074; }
 dd { margin: 0; color: var(--ink); text-align: left; }
 .rail-rule { height: 1px; background: var(--line); margin: 24px 0; }
 .maya-note { line-height: 1.55; margin: 0; }
@@ -197,7 +199,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 .rail-person span,
 .editorial-meta span {
   display: block;
-  color: #7d8a8d;
+  color: #5f7074;
   font-size: 11px;
   line-height: 1.45;
 }
@@ -276,7 +278,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
   max-width: 700px;
   padding: 64px 0 100px;
   text-align: center;
-  color: #859092;
+  color: #5f7074;
   font-family: Arial, sans-serif;
   font-size: 11px;
   text-transform: uppercase;
@@ -316,7 +318,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: .18em;
-  color: var(--clay);
+  color: var(--clay-text);
   font-weight: 700;
 }
 .hero-featured-title {
@@ -815,7 +817,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: .13em;
-  color: var(--clay);
+  color: var(--clay-text);
 }
 .category-head h1 { margin: 0; font-size: 44px; line-height: 1.1; }
 .category-intro { color: var(--ink-soft); margin: 12px 0 0; font-size: 17px; }
@@ -994,7 +996,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 }
 .glossary-tooltip small {
   margin-top: 8px;
-  color: #8a9597;
+  color: #5f7074;
   font-size: 11px;
 }
 .editorial-image {
@@ -1770,25 +1772,72 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 .visual-manuscript-toolbar {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
-  padding: 8px;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 10px;
   border-bottom: 1px solid var(--line);
   background: #faf8f4;
 }
 .visual-manuscript-toolbar button {
-  min-height: 36px;
-  padding: 6px 10px;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  min-width: 40px;
+  min-height: 40px;
+  padding: 7px;
   border: 1px solid transparent;
   border-radius: 4px;
   background: transparent;
   color: var(--ink);
   cursor: pointer;
 }
+.visual-manuscript-toolbar button svg {
+  width: 21px;
+  height: 21px;
+}
+.visual-manuscript-glyph {
+  font-family: Arial, sans-serif;
+  font-size: 20px;
+  line-height: 1;
+}
+.visual-manuscript-glyph-bold { font-weight: 800; }
+.visual-manuscript-glyph-italic { font-family: Georgia, serif; font-style: italic; font-weight: 700; }
+.visual-manuscript-glyph-heading { font-size: 17px; font-weight: 700; }
+.visual-manuscript-toolbar-divider {
+  width: 1px;
+  height: 22px;
+  margin: 0 3px;
+  background: var(--line);
+}
 .visual-manuscript-toolbar button:hover,
 .visual-manuscript-toolbar button:focus-visible {
   border-color: var(--line);
   background: #fff;
 }
+.visual-manuscript-toolbar button:focus-visible { outline: 2px solid var(--clay); outline-offset: 1px; }
+.visual-manuscript-toolbar button:hover::after,
+.visual-manuscript-toolbar button:focus-visible::after {
+  content: attr(data-label);
+  position: absolute;
+  z-index: 5;
+  top: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: 180px;
+  padding: 5px 8px;
+  border-radius: 4px;
+  background: var(--ink);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.visual-manuscript-toolbar button:first-child::after { left: 0; transform: none; }
+.visual-manuscript-toolbar button:last-child::after { left: auto; right: 0; transform: none; }
 .visual-manuscript-surface {
   min-height: 360px;
   max-height: min(70vh, 900px);
@@ -1827,7 +1876,8 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 .visual-manuscript > .admin-form-hint { display: block; padding: 0 12px 10px; }
 @media (max-width: 600px) {
   .visual-manuscript-surface { padding: 16px; font-size: 17px; }
-  .visual-manuscript-toolbar button { flex: 1 1 auto; }
+  .visual-manuscript-toolbar { gap: 3px; padding: 6px; }
+  .visual-manuscript-toolbar button { width: 40px; min-width: 40px; }
 }
 
 .admin-status-notice {
@@ -2270,7 +2320,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 }
 .admin-choice span {
   font-size: 0.875rem;
-  opacity: 0.75;
+  opacity: 1;
 }
 .admin-step-num {
   display: inline-block;
@@ -2343,4 +2393,27 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 }
 @media (max-width: 680px) {
   .category-grid { grid-template-columns: 1fr; }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Very narrow phones (320–360px): keep text columns readable and nothing clipped. */
+@media (max-width: 360px) {
+  .latest-card a { gap: 10px; padding: 12px; }
+  .latest-card-cover { flex-basis: 112px; width: 112px; }
+  .latest-card-meta { flex-wrap: wrap; white-space: normal; }
+  .latest-card-title { font-size: 15px; overflow-wrap: anywhere; }
+  .category-explorer-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .category-explorer-card-body h3 { overflow-wrap: anywhere; }
+  .header-mobile-nav .header-mobile-nav-links { min-width: min(210px, calc(100vw - 32px)); }
 }

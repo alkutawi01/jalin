@@ -70,7 +70,7 @@ async function main() {
   // Add credits + visual to make publishable
   await db.insertInto("credits").values({
     work_id: TEST_ID, contributor_slug: null, guest_name: "Uji Editorial",
-    role_label: "Editor", byline: true, is_public: true, sort_order: 0,
+    role_label: "Penulis", byline: true, is_public: true, sort_order: 0,
   } as never).execute();
   await db.insertInto("visuals").values({
     work_id: TEST_ID, role: "hero",
