@@ -1,7 +1,7 @@
 import { getDb } from "../db";
 
-/** The homepage shows at most this many picks. */
-export const EDITOR_PICK_LIMIT = 3;
+/** The homepage carousel shows at most this many picks, newest first. */
+export const EDITOR_PICK_LIMIT = 5;
 
 export interface PickWork {
   id: string;
@@ -23,7 +23,7 @@ export async function getPickState(): Promise<PickState> {
   const rows = await getDb()
     .selectFrom("works")
     .where("status", "=", "published")
-    .select(["id", "title", "type", "slug", "editor_pick", "editor_pick_rank", "editor_pick_reason", "updated_at"])
+    .select(["id", "title", "type", "slug", "editor_pick", "editor_pick_rank", "editor_pick_reason", "updated_at", "published_at"])
     .execute();
   const toWork = (r: (typeof rows)[number]): PickWork => ({
     id: String(r.id),
@@ -35,12 +35,12 @@ export async function getPickState(): Promise<PickState> {
   });
   const picked = rows
     .filter((r) => r.editor_pick)
-    .sort((a, b) => (a.editor_pick_rank ?? 99) - (b.editor_pick_rank ?? 99))
+    .sort((a, b) => String(b.published_at ?? "").localeCompare(String(a.published_at ?? "")))
     .map(toWork)
     .map((work, index) => ({ ...work, rank: index + 1 }));
   const others = rows
     .filter((r) => !r.editor_pick)
-    .sort((a, b) => String(b.updated_at ?? "").localeCompare(String(a.updated_at ?? "")))
+    .sort((a, b) => String(b.published_at ?? b.updated_at ?? "").localeCompare(String(a.published_at ?? a.updated_at ?? "")))
     .map(toWork);
   return { picks: picked, others };
 }

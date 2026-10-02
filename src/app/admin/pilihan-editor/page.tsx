@@ -20,7 +20,7 @@ export default async function EditorPicksPage() {
         <p className="admin-form-hint"><a href="/admin/works">← Karya</a></p>
         <h1>Pilihan Editor</h1>
         <p className="admin-page-sub">
-          Karya yang diketengahkan di laman utama. Maksimum 3, disusun mengikut kedudukan. Hanya karya yang sudah terbit boleh dipilih.
+          Karya yang diketengahkan di laman utama sebagai karusel. Maksimum 5, disusun daripada yang terbaharu diterbitkan. Hanya karya yang sudah terbit boleh dipilih. Jika tiada pilihan, bahagian ini tidak dipaparkan.
         </p>
       </header>
       <EditorPicksManager initial={state} />
