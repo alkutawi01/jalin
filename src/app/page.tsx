@@ -76,7 +76,7 @@ function FeaturedHero({ work }: { work: PublicFeaturedSummary }) {
           </div>
           {hero?.src ? (
             <div className="hero-featured-visual">
-              <Image src={hero.src} alt={hero.alt} fill sizes="(max-width: 900px) 100vw, 640px" priority />
+              <Image src={hero.src} alt={hero.alt} fill sizes="(max-width: 900px) 100vw, 640px" quality={85} priority />
               <div className="image-rights" aria-hidden="true">{`© ADJUNG ${(work.updatedAt ?? work.publishedAt ?? "2026").slice(0, 4)}`}</div>
             </div>
           ) : null}
