@@ -2506,7 +2506,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 .crumbs li + li::before { content: "/"; margin-right: 6px; opacity: .5; }
 .crumbs a { color: inherit; border-bottom: 1px solid transparent; transition: border-color .18s ease; }
 .crumbs a:hover, .crumbs a:focus-visible { border-bottom-color: currentColor; }
-.continue-nav { width: min(700px, calc(100% - 64px)); margin: 56px auto 0; padding: 0; display: grid; gap: 16px; }
+.continue-nav { width: min(700px, calc(100% - 64px)); margin: 56px auto 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); justify-content: stretch; gap: 16px; }
 /* Same card language as the other Jalin cards: white card, 14px radius, clay label, serif title. */
 .continue-next {
   display: flex; align-items: center; justify-content: space-between; gap: 24px;
