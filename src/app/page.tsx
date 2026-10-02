@@ -298,7 +298,7 @@ export default async function Home() {
     <>
       <SiteHeader active="home" />
 
-      <main>
+      <main id="kandungan" tabIndex={-1}>
         {featured ? (
           <FeaturedHero work={projectPublicFeaturedSummary(featured)} />
         ) : null}

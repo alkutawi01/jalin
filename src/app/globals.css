@@ -2591,3 +2591,47 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 /* The chapter list under the facts table needs air between it and the last row's rule. */
 .chapter-index { margin-top: 18px; }
 .chapter-index summary { padding: 4px 0; }
+
+/* Skip link: first thing a keyboard user reaches, visible only on focus. */
+.skip-link { position: absolute; left: 12px; top: -48px; z-index: 100; padding: 10px 16px; border-radius: 8px; background: var(--ink); color: #fff; font-family: Inter, ui-sans-serif, sans-serif; font-size: 14px; transition: top .15s ease; }
+.skip-link:focus { top: 12px; }
+main:focus { outline: none; }
+
+/* Tap targets: links in the header and the byline get a 40px-tall hit area without changing how they look. */
+.header-nav a { display: inline-flex; align-items: center; min-height: 40px; }
+.byline-credit a { display: inline-block; padding: 10px 0; margin: -10px 0; }
+.continue-secondary a { display: inline-block; padding: 10px 0; }
+
+/* A chapter's head is short: breadcrumb, which chapter, its title, and a way to move around. */
+.chapter-column { min-width: 0; }
+.chapter-head { padding: 0 0 8px; margin-bottom: 28px; text-align: left; }
+.chapter-head .crumbs ol { justify-content: flex-start; }
+.chapter-head .crumbs { margin-bottom: 18px; }
+.chapter-head .story-kicker { margin: 0 0 10px; }
+.chapter-head h1 { margin: 0 0 18px; font-size: clamp(1.9rem, 4.6vw, 2.8rem); line-height: 1.15; font-weight: 500; font-style: normal; }
+.chapter-head-nav { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); font-family: Inter, ui-sans-serif, sans-serif; font-size: 14px; }
+.chapter-head-nav > a { display: inline-flex; align-items: center; min-height: 40px; padding: 0 4px; color: var(--ink); }
+.chapter-head-nav > a:hover, .chapter-head-nav > a:focus-visible { color: var(--clay); }
+.chapter-picker summary { display: inline-flex; align-items: center; min-height: 40px; padding: 0 14px; border: 1px solid var(--line); border-radius: 999px; background: var(--white); cursor: pointer; list-style: none; }
+.chapter-picker summary::-webkit-details-marker { display: none; }
+.chapter-picker[open] summary { border-color: var(--clay); }
+.chapter-picker ol { position: absolute; left: 50%; transform: translateX(-50%); top: calc(100% + 6px); z-index: 20; width: min(420px, 100%); max-height: 60vh; overflow-y: auto; margin: 0; padding: 6px; list-style: none; border: 1px solid var(--line); border-radius: 12px; background: var(--white); box-shadow: 0 18px 44px -20px rgba(24,52,60,.28); }
+.chapter-picker li a, .chapter-list li a { display: grid; grid-template-columns: 2.2rem 1fr auto; align-items: baseline; gap: 10px; padding: 12px 14px; border-radius: 8px; color: var(--ink); }
+.chapter-picker li a:hover, .chapter-picker li a:focus-visible, .chapter-list li a:hover, .chapter-list li a:focus-visible { background: rgba(167, 100, 80, .06); }
+.chapter-picker li a[aria-current="page"] { background: rgba(167, 100, 80, .1); font-weight: 600; }
+.chapter-num { font-family: Inter, ui-sans-serif, sans-serif; font-size: 13px; color: var(--clay); font-weight: 700; }
+.chapter-ttl { font-family: Georgia, "Times New Roman", serif; font-size: 1.05rem; }
+.chapter-min { font-family: Inter, ui-sans-serif, sans-serif; font-size: 12px; color: var(--ink-soft); white-space: nowrap; }
+
+/* The novela's own page: start button and the list of chapters. */
+.novela-intro .hero-featured-cta { display: inline-block; margin: 0 0 32px; }
+.novela-intro h2 { margin: 0 0 12px; font-size: 1.25rem; }
+.chapter-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+.chapter-list li { border-bottom: 1px solid var(--line); }
+.chapter-list li a { padding: 16px 8px; }
+@media (max-width: 640px) {
+  .chapter-head-nav { font-size: 13px; }
+  .chapter-picker ol { left: 0; transform: none; width: 100%; }
+}
+.chapter-head { padding-top: 24px; }
+.chapter-head .crumbs { justify-content: flex-start; text-align: left; }

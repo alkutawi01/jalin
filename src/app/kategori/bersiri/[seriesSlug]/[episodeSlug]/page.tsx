@@ -116,7 +116,7 @@ export default async function EpisodePage({
     <>
       <SiteHeader active="bersiri" />
 
-      <main>
+      <main id="kandungan" tabIndex={-1}>
         <StoryHead
           kicker={
             <Crumbs
