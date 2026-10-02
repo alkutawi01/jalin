@@ -117,6 +117,8 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
   const [genre, setGenre] = useState("");
   const [seriesTitle, setSeriesTitle] = useState("");
   const [busy, setBusy] = useState<"idle" | "prompt" | "check" | "save">("idle");
+  /** Set when the draft was created but something was lost on the way; the editor must see it before leaving. */
+  const [saved, setSaved] = useState<{ workId: string; problems: string[] } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [copyNote, setCopyNote] = useState<string | null>(null);
   const [result, setResult] = useState<CheckResponse | null>(null);
@@ -151,6 +153,7 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
       answer: overrideAnswer ?? answer,
       manuscript: mode === "data" ? material : "",
       mode,
+      expectedType: recipeKey.split(".")[0],
       dryRun,
       writerName: writer || undefined,
       overrides: { title: title || undefined, slug: slug || undefined, dek: dek || undefined, genre: genre || undefined },
@@ -266,6 +269,11 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error ?? data.errors?.[0]?.message ?? "Gagal menyimpan draf.");
+      if (Array.isArray(data.postWarnings) && data.postWarnings.length > 0) {
+        setSaved({ workId: data.workId, problems: data.postWarnings });
+        setBusy("idle");
+        return;
+      }
       window.location.href = `/admin/works/${data.workId}`;
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
@@ -402,6 +410,20 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
       </section>
 
       {error ? <div className="admin-alert admin-alert-error">{error}</div> : null}
+
+      {saved ? (
+        <div className="admin-alert admin-alert-warning" role="alert">
+          <strong>Draf sudah dicipta, tetapi ada perkara yang tidak berjaya disimpan:</strong>
+          <ul>
+            {saved.problems.map((p, i) => (
+              <li key={i}>{p}</li>
+            ))}
+          </ul>
+          <a className="admin-btn admin-btn-primary" href={`/admin/works/${saved.workId}`}>
+            Buka karya dan betulkan
+          </a>
+        </div>
+      ) : null}
 
       {result ? (
         <section className="admin-section">

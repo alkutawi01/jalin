@@ -70,7 +70,7 @@ async function createEpisode(db: ReturnType<typeof getDb>, id: string, slug: str
   } as never).execute();
   await db.insertInto("credits").values({
     work_id: id, contributor_slug: null, guest_name: "Uji Editorial",
-    role_label: "Editor", byline: true, is_public: true, sort_order: 0,
+    role_label: "Penulis", byline: true, is_public: true, sort_order: 0,
   } as never).execute();
   await db.insertInto("visuals").values({
     work_id: id, role: "hero",

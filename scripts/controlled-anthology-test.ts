@@ -98,7 +98,7 @@ async function ensureEpisode(
         work_id: id,
         contributor_slug: null,
         guest_name: "Uji Editorial",
-        role_label: "Editor",
+        role_label: "Penulis",
         byline: true,
         is_public: true,
         sort_order: 0,

@@ -14,7 +14,7 @@ import {
   isPassRightsStatus,
 } from "./publication-readiness";
 import { evaluatePublicationReadiness } from "./publication-service";
-import { classifyFragmen } from "../content/fragmen-kind";
+import { classifyFragmen, fragmenTextHash, readFragmenTextReview } from "../content/fragmen-kind";
 
 /** Rights states that block publication (BLOCK). */
 export const RIGHTS_BLOCK_STATUSES: ReadonlySet<string> = new Set([
@@ -79,6 +79,8 @@ export interface SourceRightsAdminView {
   workId: string;
   isDerivative: boolean;
   fragmenTextLanguage: string | null;
+  /** Human confirmation that the displayed fragment text is Bahasa Melayu (null = not confirmed). */
+  fragmenTextReview: { reviewedBy: string; reviewedAt: string; current: boolean } | null;
   sourceWork: {
     id: number;
     originalTitle: string | null;
@@ -196,6 +198,10 @@ export async function getSourceRightsView(
     isDerivative,
     fragmenTextLanguage: typeof work.metadata?.fragmenTextLanguage === "string"
       ? work.metadata.fragmenTextLanguage : null,
+    fragmenTextReview: (() => {
+      const r = readFragmenTextReview(work.metadata);
+      return r ? { reviewedBy: r.reviewedBy, reviewedAt: r.reviewedAt, current: r.textHash === fragmenTextHash(work.body) } : null;
+    })(),
     sourceWork: source
       ? {
           id: Number(source.id),
@@ -256,7 +262,7 @@ async function saveFragmenTextLanguage(
     const metadata = (work.metadata ?? {}) as Record<string, unknown>;
     if (metadata.fragmenTextLanguage === next) return false;
     await trx.updateTable("works").where("id", "=", workId)
-      .set({ metadata: { ...metadata, fragmenTextLanguage: next }, updated_at: new Date().toISOString() })
+      .set({ metadata: { ...metadata, fragmenTextLanguage: next, fragmenTextReview: undefined }, updated_at: new Date().toISOString() })
       .execute();
     const source = await loadSourceWork(trx, workId, { lock: true });
     if (!source || !isPassRightsStatus(source.rights_status)) return false;
@@ -339,7 +345,13 @@ export async function upsertSourceProvenance(
       Boolean(existing.reviewed_by)
     : false;
   const materialChanged = existing ? computeMaterialHash(existing) !== nextHash : false;
-  const invalidatedApproval = invalidatedByLanguage || (wasPass && materialChanged);
+  // The material hash covers the source identity; the rights notes and evidence are what the approval
+  // actually rested on, so changing them after approval also withdraws the approval.
+  const norm = (v: string | null | undefined) => (v ?? "").trim();
+  const evidenceChanged = existing
+    ? norm(existing.rights_notes) !== norm(next.rights_notes) || norm(existing.rights_evidence) !== norm(next.rights_evidence)
+    : false;
+  const invalidatedApproval = invalidatedByLanguage || (wasPass && (materialChanged || evidenceChanged));
 
   const history = parseRightsHistory(existing?.rights_history ?? null);
   if (existing) {
@@ -350,7 +362,9 @@ export async function upsertSourceProvenance(
       rights_status: invalidatedApproval ? "needs_review" : String(existing.rights_status),
       material_hash: nextHash,
       note: invalidatedApproval
-        ? "Material provenance berubah selepas kelulusan — semakan hak perlu diulang."
+        ? evidenceChanged && !materialChanged
+          ? "Catatan atau bukti hak berubah selepas kelulusan — semakan hak perlu diulang."
+          : "Material provenance berubah selepas kelulusan — semakan hak perlu diulang."
         : undefined,
     });
   }
@@ -600,4 +614,37 @@ export function toPublicSourceProvenance(
     locator: row.source_locator ? String(row.source_locator) : undefined,
     rightsLabel,
   };
+}
+
+/**
+ * Human confirmation that the displayed text of a Fragmen is Bahasa Melayu. The reviewer and time come
+ * from the admin session, and the confirmation is tied to the exact text, so editing the text withdraws it.
+ */
+export async function confirmFragmenMalayText(
+  workId: string,
+  confirmed: boolean,
+  actor: { id: string; email?: string }
+): Promise<SourceRightsAdminView> {
+  const db = getDbOrThrow();
+  await db.transaction().execute(async (trx) => {
+    const work = await trx.selectFrom("works").where("id", "=", workId).selectAll().forUpdate().executeTakeFirst();
+    if (!work) throw new Error("Work tidak ditemui.");
+    if (work.type !== "fragmen") throw new Error("Pengesahan bahasa hanya untuk Fragmen.");
+    const metadata = { ...((work.metadata ?? {}) as Record<string, unknown>) };
+    if (confirmed) {
+      metadata.fragmenTextReview = {
+        reviewedBy: actor.email || actor.id,
+        reviewedAt: new Date().toISOString(),
+        textHash: fragmenTextHash(work.body),
+      };
+    } else {
+      delete metadata.fragmenTextReview;
+    }
+    await trx.updateTable("works").where("id", "=", workId)
+      .set({ metadata: metadata as never, updated_at: new Date().toISOString() })
+      .execute();
+  });
+  const view = await getSourceRightsView(workId);
+  if (!view) throw new Error("Work tidak ditemui.");
+  return view;
 }

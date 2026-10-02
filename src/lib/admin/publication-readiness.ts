@@ -7,7 +7,7 @@
  */
 
 import type { WorkStatus, WorkType } from "../db/types";
-import { classifyFragmen, isIndonesianLanguage, isMalayLanguage } from "../content/fragmen-kind";
+import { classifyFragmen, fragmenTextHash, isIndonesianLanguage, isMalayLanguage, readFragmenTextReview } from "../content/fragmen-kind";
 
 export type ReadinessGateName =
   | "content"
@@ -156,12 +156,13 @@ export interface EvaluatePublicationReadinessInput {
   knownContributorSlugs: Set<string>;
   /** True when another Work already owns this slug. */
   slugTakenByOther?: boolean;
-  /** Other published works derived from the same original source. */
-  publishedSourcePeers?: { id: string; title: string; type: string; original_title: string | null; author: string | null }[];
+  /** Other live works (published or still being prepared) that carry a source record. */
+  publishedSourcePeers?: { id: string; title: string; type: string; status?: string; original_title: string | null; author: string | null }[];
 }
 
+/** Same source regardless of case, punctuation and diacritics ("Café" = "Cafe"). */
 function sourceIdentity(value: string | null | undefined): string {
-  return (value ?? "").normalize("NFKC").toLocaleLowerCase("ms-MY")
+  return (value ?? "").normalize("NFKD").replace(/\p{M}+/gu, "").toLocaleLowerCase("ms-MY")
     .replace(/[^\p{L}\p{N}]+/gu, " ").trim().replace(/\s+/g, " ");
 }
 
@@ -466,6 +467,19 @@ export function evaluatePublicationReadinessFromData(
       )
     );
   }
+  // Someone must actually be credited as a writer (AGENTS.md: an editor or fact-checker is not a "Penulis").
+  const WRITING_ROLES = new Set(["initial_draft", "co_writer", "story_editor", "author", "translated_by", "penterjemah"]);
+  const isWritingRole = (role: string) => {
+    const r = (role ?? "").trim().toLowerCase();
+    return WRITING_ROLES.has(r) || /^(penulis|pengarang|penterjemah|author|writer|translator)\b/.test(r);
+  };
+  if (credits.length > 0 && !publicCredits.some((c) => isWritingRole(c.role_label))) {
+    const noWriter = issue(
+      "writer_credit_missing",
+      "Tiada kredit awam sebagai penulis. Tambah kredit Penulis, Penulis bersama atau Pengarang asal di tab Kredit. Editor dan penyemak tidak boleh dikreditkan sebagai penulis jika mereka tidak menulis."
+    );
+    (alreadyPublished ? creditWarnings : creditBlockers).push(noWriter);
+  }
   if (publicCredits.length > 0) {
     const orders = publicCredits.map((c) => c.sort_order);
     const sorted = [...orders].sort((a, b) => a - b);
@@ -576,6 +590,10 @@ export function evaluatePublicationReadinessFromData(
       fragmentIssue("fragmen_text_language_missing", "Isi bahasa petikan yang diterbitkan dalam tab Sumber sebelum menerbitkan Fragmen.");
     } else if (!isMalayLanguage(textLanguage) && !(kind === "asal" && isIndonesianLanguage(textLanguage))) {
       fragmentIssue("fragmen_language_unsupported", "Fragmen asal bahasa Indonesia boleh diterbitkan tanpa terjemahan. Untuk bahasa lain, sediakan petikan terjemahan Melayu, asas teks dan kredit penterjemah sebenar.");
+    } else if (!readFragmenTextReview(work.metadata)) {
+      fragmentIssue("fragmen_text_unreviewed", `Seorang editor perlu membaca teks Fragmen dan mengesahkan ia benar-benar ditulis dalam ${textLanguage} seperti yang dinyatakan di tab Sumber.`);
+    } else if (readFragmenTextReview(work.metadata)?.textHash !== fragmenTextHash(work.body)) {
+      fragmentIssue("fragmen_text_changed_after_review", "Teks Fragmen berubah selepas disahkan. Baca dan sahkan semula bahasanya di tab Sumber.");
     } else if (kind === "terjemahan") {
       if (!input.sourceWork?.source_text_basis?.trim()) {
         fragmentIssue("fragmen_translation_basis_missing", "Fragmen terjemahan memerlukan asas teks/terjemahan yang jelas dalam tab Sumber.");
@@ -595,16 +613,30 @@ export function evaluatePublicationReadinessFromData(
         )
       );
     } else {
-      const sameSourceOtherType = (input.publishedSourcePeers ?? []).find((peer) =>
-        peer.id !== work.id && peer.type !== work.type &&
-        sourceIdentity(peer.original_title) === sourceIdentity(src.original_title) &&
-        sourceIdentity(peer.author) === sourceIdentity(src.author) &&
-        Boolean(sourceIdentity(src.original_title)) && Boolean(sourceIdentity(src.author))
-      );
-      if (sameSourceOtherType) {
+      // Same source = same author and the same title in either direction: original title, or the
+      // Jalin/translated title of the other work (so an alias is caught too).
+      const srcAuthor = sourceIdentity(src.author);
+      const srcTitles = new Set([sourceIdentity(src.original_title), sourceIdentity(work.title)].filter(Boolean));
+      const sameSource = (input.publishedSourcePeers ?? []).filter((peer) => {
+        if (peer.id === work.id || !srcAuthor || sourceIdentity(peer.author) !== srcAuthor) return false;
+        return [sourceIdentity(peer.original_title), sourceIdentity(peer.title)].some((t) => t && srcTitles.has(t));
+      });
+      const typeLabel = (t: string) => ({ cerpen: "Cerpen", novela: "Novela", bersiri: "Bersiri", fragmen: "Fragmen", sinopsis: "Sinopsis", terjemahan: "Terjemahan" } as Record<string, string>)[t] ?? t;
+      const publishedPeer = sameSource.find((p) => p.type !== work.type && (p.status ?? "published") === "published");
+      if (publishedPeer) {
         const conflict = issue("source_cross_type_duplicate",
-          `Karya asal ini sudah diterbitkan sebagai ${sameSourceOtherType.type} (${sameSourceOtherType.title}). Pilih satu jenis penerbitan untuk sumber yang sama.`);
+          `Karya asal ini sudah diterbitkan sebagai ${typeLabel(publishedPeer.type)} "${publishedPeer.title}" (${publishedPeer.id}). Satu karya sumber hanya boleh diterbitkan dalam satu jenis. Buka karya itu dan arkibkannya, atau pilih jenis yang lain untuk karya ini.`);
         (alreadyPublished ? rightsWarnings : rightsBlockers).push(conflict);
+      }
+      const pendingPeer = sameSource.find((p) => p.type !== work.type && (p.status ?? "published") !== "published");
+      if (pendingPeer) {
+        rightsWarnings.push(issue("source_cross_type_pending",
+          `Karya asal yang sama sedang disediakan sebagai ${typeLabel(pendingPeer.type)} "${pendingPeer.title}" (${pendingPeer.id}). Hanya satu daripada kedua-duanya boleh diterbitkan; putuskan yang mana sebelum menerbitkan.`));
+      }
+      const sameTypePeer = sameSource.find((p) => p.type === work.type);
+      if (sameTypePeer) {
+        rightsWarnings.push(issue("source_same_type_duplicate",
+          `Sumber ini sudah digunakan oleh ${typeLabel(sameTypePeer.type)} "${sameTypePeer.title}" (${sameTypePeer.id}). Pastikan petikan atau bahagian yang dipilih berbeza.`));
       }
       const missing: string[] = [];
       if (!src.original_title || !src.original_title.trim()) missing.push("Tajuk asal");

@@ -66,6 +66,7 @@ export async function POST(request: NextRequest) {
       writerName?: unknown;
       edits?: unknown;
       series?: unknown;
+      expectedType?: unknown;
     };
     const answer = typeof body.answer === "string" ? body.answer : "";
     const manuscript = typeof body.manuscript === "string" ? body.manuscript : "";
@@ -97,6 +98,15 @@ export async function POST(request: NextRequest) {
     };
     const result = buildImportPlan(answer, manuscript, options);
     const errors: ImportIssue[] = [...result.errors];
+    // The kind is chosen when the editor starts; the chatbot's answer may not change it silently.
+    const expectedType = typeof body.expectedType === "string" ? body.expectedType : null;
+    if (result.plan && expectedType && result.plan.work.type !== expectedType) {
+      errors.push({
+        code: "type_mismatch",
+        message: `Anda memilih jenis ${expectedType}, tetapi jawapan chatbot menyebut ${result.plan.work.type}. Jenis tidak ditukar secara senyap. Minta chatbot menjawab semula untuk ${expectedType}, atau mulakan semula dengan jenis yang betul.`,
+        path: "type"
+      });
+    }
     const warnings: ImportIssue[] = [...result.warnings];
 
     if (result.plan && hasDb()) {
@@ -110,7 +120,7 @@ export async function POST(request: NextRequest) {
     } else if (result.plan && !hasDb()) {
       warnings.push({
         code: "db_unavailable",
-        message: "Pangkalan data tidak tersedia (DATABASE_URL). Semakan berfungsi, tetapi draf tidak boleh dicipta."
+        message: "Pangkalan data tidak tersedia. Semakan berfungsi, tetapi draf tidak boleh dicipta."
       });
     }
 
@@ -148,6 +158,8 @@ export async function POST(request: NextRequest) {
         workId: created.workId,
         slug: created.slug,
         warnings: [...warnings.map((w) => w.message), ...created.postWarnings],
+        // Only the problems found while saving; the rest were already shown during the check.
+        postWarnings: created.postWarnings,
         visualRequests: created.visualRequests
       },
       { status: 201 }
