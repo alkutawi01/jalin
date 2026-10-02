@@ -21,8 +21,9 @@ export async function POST(
       });
       return NextResponse.json(result);
     }
-    
-    // The readiness service (inside publishWorkExplicit) is the single source of truth for what blocks publishing.
+
+    // The publication service owns the authoritative readiness check, including
+    // a fresh recheck in the same transaction as the status update.
     const result = await publishWorkExplicit(id, {
       id: admin.id,
       email: admin.email,
