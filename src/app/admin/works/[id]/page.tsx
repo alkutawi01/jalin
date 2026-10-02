@@ -1397,7 +1397,7 @@ export default function EditWorkPage() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Gagal mengganti imej.");
       await loadVisuals();
-      toast(form.status === "published" ? "Gambar diganti. Semak halaman awam sebentar lagi." : "Gambar diganti. Semak pratonton sebelum menerbitkan.", "success");
+      toast(form.status === "published" ? "Gambar diganti dalam draf. Pembaca belum melihatnya: tekan Terbitkan semula di atas karya." : "Gambar diganti. Semak pratonton sebelum menerbitkan.", "success");
     } catch (err) {
       setVisualError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
     }
