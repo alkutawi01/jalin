@@ -2491,7 +2491,7 @@ export default function EditWorkPage() {
             <p className="admin-table-empty">Tiada glosari untuk karya ini.</p>
           ) : (
             <div className="admin-table-wrap">
-              <table className="admin-table">
+              <table className="admin-table a-glossary-table">
                 <thead>
                   <tr>
                     <th scope="col">

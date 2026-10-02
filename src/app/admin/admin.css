@@ -508,3 +508,8 @@
 .a-pick { padding: 14px 16px; border: 1px solid var(--a-line); border-radius: var(--a-radius-lg); background: var(--a-surface); display: grid; gap: 8px; }
 .a-pick-head { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 .a-pick input[type="text"] { width: 100%; }
+
+/* Glossary table: the first column is a narrow checkbox, and long meanings wrap instead of forcing a sideways scroll. */
+.a-shell .a-glossary-table td:first-child, .a-shell .a-glossary-table th:first-child { min-width: 0; width: 44px; padding-right: 0; }
+.a-shell .a-glossary-table td:nth-child(n+3) { white-space: normal; }
+.a-shell .a-glossary-table td:last-child { white-space: nowrap; }
