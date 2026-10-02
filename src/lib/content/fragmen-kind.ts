@@ -45,3 +45,7 @@ export function readFragmenTextReview(metadata: unknown): FragmenTextReview | nu
   if (!r || typeof r.reviewedBy !== "string" || typeof r.reviewedAt !== "string" || typeof r.textHash !== "string") return null;
   return { reviewedBy: r.reviewedBy, reviewedAt: r.reviewedAt, textHash: r.textHash };
 }
+
+export function isIndonesianLanguage(value: string | null | undefined): boolean {
+  return canonicalLanguage(value) === "indonesia";
+}

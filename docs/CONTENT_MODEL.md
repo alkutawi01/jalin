@@ -134,11 +134,11 @@ Cadangan field:
 
 Tiada content derivative berasaskan karya lama boleh READY tanpa provenance yang mencukupi.
 
-### Dua bentuk Fragmen (keputusan editorial 1 Oktober 2026)
+### Dua bentuk Fragmen (keputusan editorial dikemas kini 2 Oktober 2026)
 
-- **Fragmen asal**: bahasa petikan yang diterbitkan sama dengan bahasa karya sumber dan kedua-duanya bahasa Melayu. “Asal” tidak bermaksud karya milik Jalin atau automatik domain awam.
+- **Fragmen asal**: bahasa petikan yang diterbitkan sama dengan bahasa karya sumber. Petikan asal bahasa Melayu **atau bahasa Indonesia** boleh diterbitkan tanpa diterjemah. “Asal” tidak bermaksud karya milik Jalin atau automatik domain awam.
 - **Fragmen terjemahan**: bahasa petikan yang diterbitkan berbeza daripada bahasa karya sumber. Rekod asas teks/terjemahan dan kredit penterjemah sebenar sebelum terbit.
-- Jalin menerbitkan teks bahasa Melayu sahaja. Petikan asal bahasa Indonesia, Inggeris atau bahasa lain tidak diterbitkan terus; untuk menggunakannya, sediakan terjemahan Melayu, asas teks dan kredit penterjemah. Pengelasan linguistik “asal” bagi petikan Indonesia yang tidak diterjemah tidak menjadikannya layak diterbitkan di Jalin.
+- Pengecualian bahasa Indonesia ini khusus untuk **Fragmen asal yang tidak diterjemah**. Fragmen asal bahasa Inggeris atau bahasa lain masih memerlukan terjemahan Melayu sebelum diterbitkan. Fragmen terjemahan diterbitkan dalam bahasa Melayu dan tetap memerlukan asas teks serta kredit penterjemah sebenar.
 - Satu karya sumber asal (tajuk asal + penulis asal) tidak boleh diterbitkan serentak dalam dua jenis Jalin yang berbeza. Semakan penerbitan menyekat pertindihan dengan karya yang sudah diterbitkan.
 - Simpan bahasa petikan diterbitkan dalam `works.metadata.fragmenTextLanguage`; bahasa karya sumber kekal dalam `source_works.original_language`. Jenis Fragmen diterbitkan sebagai hasil perbandingan kedua-duanya, bukan pilihan bebas yang boleh bercanggah dengan data.
 - Kedua-duanya tetap melalui semakan hak sumber oleh editor manusia. Perubahan bahasa petikan selepas kelulusan membatalkan kelulusan hak supaya semakan dibuat semula.

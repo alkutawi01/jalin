@@ -12,7 +12,8 @@ import { toast, confirmAction } from "../../../../lib/admin/dialogs";
 import LoadingBlock from "../../../../components/admin/LoadingBlock";
 import StoryMarkdown from "../../../../components/reader/StoryMarkdown";
 import { stripImageMarkers } from "../../../../lib/reader/image-markers";
-import { classifyFragmen, isMalayLanguage } from "../../../../lib/content/fragmen-kind";
+import { classifyFragmen, isIndonesianLanguage, isMalayLanguage } from "../../../../lib/content/fragmen-kind";
+import VisualManuscriptEditor, { canEditVisually } from "../../../../components/admin/VisualManuscriptEditor";
 
 const WORK_TYPES = [
   { value: "cerpen", label: "Cerpen" },
@@ -234,6 +235,7 @@ export default function EditWorkPage() {
   const [savedBody, setSavedBody] = useState("");
   const [positionError, setPositionError] = useState("");
   const [showManuscriptPreview, setShowManuscriptPreview] = useState(false);
+  const [manuscriptMode, setManuscriptMode] = useState<"markdown" | "visual">("visual");
   const [assistantNote, setAssistantNote] = useState("");
   useEffect(() => {
     const restoreTab = () => {
@@ -385,6 +387,7 @@ export default function EditWorkPage() {
         const res = await fetch(`/api/admin/works/${workId}`);
         if (!res.ok) throw new Error("Karya tidak ditemui.");
         const work: WorkData = await res.json();
+        setManuscriptMode(canEditVisually(work.body || "") ? "visual" : "markdown");
 
         setForm({
           title: work.title,
@@ -1402,26 +1405,46 @@ export default function EditWorkPage() {
           </div>
 
           <div className="admin-form-group">
-            <label htmlFor="body">Manuskrip (Markdown) *</label>
-            <textarea
-              id="body"
-              ref={manuscriptRef}
+            <label htmlFor={manuscriptMode === "visual" ? undefined : "body"}>Manuskrip *</label>
+            <div className="admin-manuscript-mode" role="group" aria-label="Mod penyuntingan manuskrip">
+              <button type="button" className={manuscriptMode === "visual" ? "is-active" : ""} aria-pressed={manuscriptMode === "visual"} disabled={manuscriptMode === "markdown" && !canEditVisually(form.body)} onClick={() => setManuscriptMode("visual")}>Visual</button>
+              <button type="button" className={manuscriptMode === "markdown" ? "is-active" : ""} aria-pressed={manuscriptMode === "markdown"} onClick={() => setManuscriptMode("markdown")}>Markdown</button>
+            </div>
+            {manuscriptMode === "visual" ? <VisualManuscriptEditor
               value={form.body}
-              onChange={(e) => setForm((prev) => ({ ...prev, body: e.target.value }))}
-              rows={25}
-              className="admin-textarea"
-            />
-            <span className="admin-form-hint">Gunakan Markdown. Ganti baris kosong untuk perenggan baharu.</span>
+              onChange={(body) => { setForm((prev) => ({ ...prev, body })); setDirty(true); }}
+              existingAnchors={visuals.map((visual) => visual.anchor)}
+              onMarkerInserted={(marker) => { setSelectedImageAnchor(marker); toast(`Penanda ${marker} disisipkan. Simpan teks & maklumat sebelum memuat naik gambar.`, "success"); }}
+            /> : <>
+              <textarea
+                id="body"
+                ref={manuscriptRef}
+                value={form.body}
+                onChange={(e) => setForm((prev) => ({ ...prev, body: e.target.value }))}
+                rows={25}
+                className="admin-textarea"
+              />
+              <span className="admin-form-hint">Gunakan Markdown. Ganti baris kosong untuk perenggan baharu.</span>
+            </>}
+            {manuscriptMode === "markdown" && !canEditVisually(form.body) && <span className="admin-form-hint">Manuskrip ini menggunakan sintaks yang belum disokong oleh mod Visual. Teruskan dalam Markdown supaya format asal tidak berubah.</span>}
             <details className="admin-advanced-field">
-              <summary>Panduan Markdown ringkas</summary>
-              <p><code>**tebal**</code> → <strong>tebal</strong> · <code>*condong*</code> → <em>condong</em> · <code>## Tajuk bahagian</code> → tajuk kecil · <code>---</code> → pemisah adegan.</p>
-              <p>Letak satu baris kosong antara perenggan. Gunakan <code>[[gambar:1]]</code> pada baris sendiri untuk kedudukan gambar; alihkan baris itu tanpa mengubah teks perenggan.</p>
+              <summary>Panduan penulisan &amp; Markdown</summary>
+              <p>Dalam mod Visual, pilih teks dan gunakan butang pemformatan. Mod Markdown memberi kawalan penuh. Kedua-duanya menyimpan manuskrip yang sama.</p>
+              <ul>
+                <li>Perenggan baharu: tinggalkan satu baris kosong.</li>
+                <li><code>**tebal**</code> → <strong>tebal</strong>; <code>*condong*</code> → <em>condong</em>. Gunakan condong untuk judul karya yang disebut dalam prosa.</li>
+                <li><code>## Tajuk bahagian</code> pada baris sendiri → tajuk bahagian; <code>---</code> pada baris sendiri → pemisah adegan.</li>
+                <li><code>&gt; Petikan</code> → petikan; <code>[teks pautan](https://contoh.com)</code> → pautan; <code>- Butiran</code> → senarai. Format ini disunting dalam mod Markdown.</li>
+                <li><code>[[gambar:1]]</code> pada baris sendiri → lokasi gambar dalam teks. Alihkan baris penanda untuk mengalihkan gambar.</li>
+                <li>Kotak mesej: <code>:::mesej</code>, isi mesej, kemudian <code>:::</code> pada baris sendiri. Untuk e-mel, gunakan <code>:::emel</code>. Tiada nombor telefon atau alamat diperlukan.</li>
+              </ul>
+              <p>Isi tajuk utama dalam medan Tajuk—<code># Tajuk</code> di dalam manuskrip tidak dipaparkan kepada pembaca. Semak hasil melalui Pratonton bacaan sebelum menyimpan.</p>
             </details>
             <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={() => setShowManuscriptPreview((value) => !value)}>{showManuscriptPreview ? "Tutup pratonton bacaan" : "Pratonton bacaan"}</button>
             {showManuscriptPreview && <div className="admin-markdown-preview"><StoryMarkdown glossary={{}}>{stripImageMarkers(form.body)}</StoryMarkdown></div>}
-            <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={chooseImagePosition}>
+            {manuscriptMode === "markdown" && <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={chooseImagePosition}>
               Sisip penanda gambar selepas perenggan ini
-            </button>
+            </button>}
             <span className="admin-form-hint">Penanda seperti [[gambar:1]] tidak dipaparkan kepada pembaca. Pindahkan baris penanda untuk mengalihkan gambar, kemudian simpan teks &amp; maklumat.</span>
             {dirty ? <span className="admin-form-hint">Simpan manuskrip sebelum memautkan gambar pada penanda baharu.</span> : null}
             {positionError ? <span className="admin-alert admin-alert-error" role="alert">{positionError}</span> : null}
@@ -2350,18 +2373,18 @@ export default function EditWorkPage() {
                       type="text"
                       value={sourceForm.fragmenTextLanguage}
                       onChange={(e) => setSourceForm((p) => ({ ...p, fragmenTextLanguage: e.target.value }))}
-                      placeholder="Bahasa Melayu"
+                      placeholder="Bahasa Melayu atau Bahasa Indonesia"
                     />
                     <span className="admin-form-hint">
-                      {sourceForm.fragmenTextLanguage.trim() && !isMalayLanguage(sourceForm.fragmenTextLanguage)
-                        ? "Jalin hanya menerbitkan teks bahasa Melayu. Terjemahkan petikan sebelum diterbitkan; bahan asal Indonesia atau Inggeris tidak diterbitkan terus."
+                      {sourceForm.fragmenTextLanguage.trim() && !isMalayLanguage(sourceForm.fragmenTextLanguage) && !(isIndonesianLanguage(sourceForm.fragmenTextLanguage) && classifyFragmen(sourceForm.originalLanguage, sourceForm.fragmenTextLanguage) === "asal")
+                        ? "Fragmen asal Indonesia boleh diterbitkan. Untuk bahasa lain, sediakan terjemahan Melayu serta kredit penterjemah dan asas teks."
                         : classifyFragmen(sourceForm.originalLanguage, sourceForm.fragmenTextLanguage) === "asal"
-                        ? "Fragmen asal: petikan dikekalkan dalam bahasa karya sumber. Hak sumber tetap perlu disemak."
+                        ? "Fragmen asal: petikan Melayu atau Indonesia dikekalkan dalam bahasa sumber. Hak sumber tetap perlu disemak."
                         : classifyFragmen(sourceForm.originalLanguage, sourceForm.fragmenTextLanguage) === "terjemahan"
                           ? "Fragmen terjemahan: jelaskan asas terjemahan di bawah dan tambah kredit Penterjemah sebenar. Hak sumber tetap perlu disemak."
                           : "Isi bahasa asal dan bahasa petikan. Jenis Fragmen ditentukan daripada perbandingan kedua-duanya."}
                     </span>
-                    {isMalayLanguage(sourceForm.fragmenTextLanguage) ? (
+                    {(isMalayLanguage(sourceForm.fragmenTextLanguage) || sourceForm.fragmenTextLanguage.trim() !== "") ? (
                       <label className="admin-checkbox-label" style={{ marginTop: 8 }}>
                         <input
                           type="checkbox"
@@ -2370,7 +2393,7 @@ export default function EditWorkPage() {
                           onChange={(e) => void confirmMalayText(e.target.checked)}
                         />
                         <span>
-                          Saya sudah membaca teks Fragmen ini dan mengesahkan ia ditulis dalam Bahasa Melayu (bukan Indonesia atau Inggeris).
+                          Saya sudah membaca teks Fragmen ini dan mengesahkan teksnya benar-benar ditulis dalam bahasa yang dinyatakan di atas.
                         </span>
                       </label>
                     ) : null}

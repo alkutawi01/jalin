@@ -7,7 +7,7 @@
  */
 
 import type { WorkStatus, WorkType } from "../db/types";
-import { classifyFragmen, fragmenTextHash, isMalayLanguage, readFragmenTextReview } from "../content/fragmen-kind";
+import { classifyFragmen, fragmenTextHash, isIndonesianLanguage, isMalayLanguage, readFragmenTextReview } from "../content/fragmen-kind";
 
 export type ReadinessGateName =
   | "content"
@@ -588,12 +588,12 @@ export function evaluatePublicationReadinessFromData(
     };
     if (!textLanguage) {
       fragmentIssue("fragmen_text_language_missing", "Isi bahasa petikan yang diterbitkan dalam tab Sumber sebelum menerbitkan Fragmen.");
-    } else if (isMalayLanguage(textLanguage) && !readFragmenTextReview(work.metadata)) {
-      fragmentIssue("fragmen_text_unreviewed", "Seorang editor perlu membaca teks Fragmen dan mengesahkan ia Bahasa Melayu (bukan Indonesia atau Inggeris) di tab Sumber.");
-    } else if (isMalayLanguage(textLanguage) && readFragmenTextReview(work.metadata)?.textHash !== fragmenTextHash(work.body)) {
-      fragmentIssue("fragmen_text_changed_after_review", "Teks Fragmen berubah selepas disahkan Bahasa Melayu. Baca dan sahkan semula di tab Sumber.");
-    } else if (!isMalayLanguage(textLanguage)) {
-      fragmentIssue("fragmen_not_malay", "Jalin menerbitkan teks dalam bahasa Melayu sahaja. Sediakan petikan terjemahan Melayu, nyatakan asas teks dan kredit penterjemah jika karya asal bukan bahasa Melayu.");
+    } else if (!isMalayLanguage(textLanguage) && !(kind === "asal" && isIndonesianLanguage(textLanguage))) {
+      fragmentIssue("fragmen_language_unsupported", "Fragmen asal bahasa Indonesia boleh diterbitkan tanpa terjemahan. Untuk bahasa lain, sediakan petikan terjemahan Melayu, asas teks dan kredit penterjemah sebenar.");
+    } else if (!readFragmenTextReview(work.metadata)) {
+      fragmentIssue("fragmen_text_unreviewed", `Seorang editor perlu membaca teks Fragmen dan mengesahkan ia benar-benar ditulis dalam ${textLanguage} seperti yang dinyatakan di tab Sumber.`);
+    } else if (readFragmenTextReview(work.metadata)?.textHash !== fragmenTextHash(work.body)) {
+      fragmentIssue("fragmen_text_changed_after_review", "Teks Fragmen berubah selepas disahkan. Baca dan sahkan semula bahasanya di tab Sumber.");
     } else if (kind === "terjemahan") {
       if (!input.sourceWork?.source_text_basis?.trim()) {
         fragmentIssue("fragmen_translation_basis_missing", "Fragmen terjemahan memerlukan asas teks/terjemahan yang jelas dalam tab Sumber.");

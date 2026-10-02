@@ -407,15 +407,34 @@ console.log("\n=== Readiness: visuals ===");
     work: baseWork({ type: "fragmen", metadata: { fragmenTextLanguage: "English" } }),
     sourceWork: { ...approvedSourceForVisualPolicy, original_language: "Inggeris" },
   }));
-  assert(englishOriginal.blockers.some((b) => b.code === "fragmen_not_malay"),
+  assert(englishOriginal.blockers.some((b) => b.code === "fragmen_language_unsupported"),
     "English original fragment requires a Malay translation for Jalin");
 
+  const indonesianSource = { ...approvedSourceForVisualPolicy, original_language: "Bahasa Indonesia" };
+  indonesianSource.approved_material_hash = computeMaterialHash(indonesianSource);
   const indonesianOriginal = evaluatePublicationReadinessFromData(validInput({
-    work: baseWork({ type: "fragmen", metadata: { fragmenTextLanguage: "Bahasa Indonesia" } }),
-    sourceWork: { ...approvedSourceForVisualPolicy, original_language: "Bahasa Indonesia" },
+    work: baseWork({ type: "fragmen", metadata: fragmenMeta("Bahasa Indonesia") }),
+    sourceWork: indonesianSource,
   }));
-  assert(indonesianOriginal.blockers.some((b) => b.code === "fragmen_not_malay"),
-    "Indonesian original fragment also requires Malay translation");
+  assert(indonesianOriginal.ready === true,
+    "Indonesian original fragment can publish without translation once a human confirmed its language");
+  const indonesianUnreviewed = evaluatePublicationReadinessFromData(validInput({
+    work: baseWork({ type: "fragmen", metadata: { fragmenTextLanguage: "Bahasa Indonesia" } }),
+    sourceWork: indonesianSource,
+  }));
+  assert(indonesianUnreviewed.blockers.some((b) => b.code === "fragmen_text_unreviewed"),
+    "an Indonesian original fragment also needs the human language confirmation");
+  assert(!indonesianOriginal.blockers.some((b) => ["fragmen_translation_basis_missing", "fragmen_translator_missing"].includes(b.code)),
+    "Indonesian original fragment does not require translator metadata");
+
+  const indonesianDuplicate = evaluatePublicationReadinessFromData(validInput({
+    work: baseWork({ type: "fragmen", metadata: { fragmenTextLanguage: "Bahasa Indonesia" } }),
+    sourceWork: indonesianSource,
+    publishedSourcePeers: [{ id: "JLN-SIN-0099", title: "Hikayat Visual", type: "sinopsis",
+      original_title: "Hikayat Visual", author: "Siti Aminah" }],
+  }));
+  assert(indonesianDuplicate.blockers.some((b) => b.code === "source_cross_type_duplicate"),
+    "Indonesian original fragment still respects cross-type source uniqueness");
 
   assert(VISUAL_POLICY.cerpen.hero === "required", "VISUAL_POLICY cerpen hero required");
   assert(VISUAL_POLICY.novela.hero === "required", "VISUAL_POLICY novela hero required");

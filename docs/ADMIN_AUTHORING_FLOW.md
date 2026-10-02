@@ -40,3 +40,23 @@ Draf baharu bermula dengan tajuk dan slug sementara. Kedua-duanya mesti diganti 
 Pembantu chatbot dalam editor menyalin arahan mengikut tab bersama manuskrip semasa. Ia tidak mengimport hasil AI ke dalam draf tanpa semakan manusia. Aliran import AI lama masih tersedia untuk jawapan chatbot berstruktur yang sudah siap dan akan mencipta draf berasingan.
 
 Penukaran anchor gambar lama ialah tindakan opt-in per karya: pratonton menunjukkan anchor yang dapat dipadankan secara unik dan yang perlu semakan manual; pengesahan menyimpan manuskrip dan anchor baru bersama-sama dalam satu transaksi. Sandaran sebelum/selepas berada dalam metadata Work untuk pemulihan selagi manuskrip dan penanda belum diubah lagi. Karya terbitan tidak berubah pada halaman pembaca sehingga aliran penerbitan eksplisit dijalankan semula. Anchor dalam Bahagian Novela yang tidak ditemui dalam `works.body` dilangkau, bukan diteka.
+
+## Manuskrip: mod Visual dan Markdown
+
+Manuskrip masih disimpan sebagai Markdown. Editor bertab menawarkan mod Visual untuk perenggan, tebal, condong, tajuk bahagian `##`, pemisah adegan dan penanda gambar `[[gambar:N]]`; mod Markdown kekal untuk kawalan penuh. Apabila manuskrip mengandungi sintaks yang belum boleh ditukar dengan selamat (contohnya pautan, senarai, petikan, kod atau tajuk `#` lama), mod Visual dinyahaktifkan supaya teks asal tidak diratakan. Kedua-dua mod berkongsi tindakan simpan yang sama.
+
+Kotak komunikasi hanya mengandungi isi; identiti pengirim, nombor telefon, alamat e-mel dan masa tidak diwajibkan. Sintaks kanonik ialah blok berasingan berikut:
+
+```text
+:::mesej
+Aku sudah sampai.
+:::
+
+:::emel
+Salam,
+
+Saya akan datang esok.
+:::
+```
+
+Butang “Kotak mesej” dan “Kotak e-mel” menyisipkannya dalam mod Visual. Pembaca dan pratonton admin menggunakan `StoryMarkdown` yang sama; penanda `:::` tidak dipaparkan apabila blok sah. Penanda yang tidak lengkap kekal sebagai teks biasa untuk dibaiki editor, bukan ditafsir secara senyap.
