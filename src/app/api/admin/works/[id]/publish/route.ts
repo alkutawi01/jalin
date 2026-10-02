@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { publishWorkExplicit } from "../../../../../../lib/admin/publication-service";
 import { getCurrentAdmin } from "../../../../../../lib/admin/auth";
-import { validateWorkForPublish } from "../../../../../../lib/admin/publish-validator";
 
 export async function POST(
   _request: NextRequest,
@@ -15,17 +14,8 @@ export async function POST(
 
     const { id } = await params;
     
-    // Run publish validation
-    const validation = await validateWorkForPublish(id);
-    const failures = validation.filter(r => r.status === "FAIL");
-    
-    if (failures.length > 0) {
-      return NextResponse.json({ 
-        error: "Publish blocked",
-        issues: failures.map(f => f.message)
-      }, { status: 422 });
-    }
-    
+    // The publication service owns the authoritative readiness check, including
+    // a fresh recheck in the same transaction as the status update.
     const result = await publishWorkExplicit(id, {
       id: admin.id,
       email: admin.email,
