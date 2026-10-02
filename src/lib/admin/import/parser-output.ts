@@ -370,14 +370,14 @@ function normaliseParserOutput(
       let sectionSlug = text(item.slug) ?? (sectionTitle ? slugify(sectionTitle) : `bab-${order}`);
       if (!SECTION_SLUG_PATTERN.test(sectionSlug)) sectionSlug = slugify(sectionSlug) || `bab-${order}`;
       if (seenSlugs.has(sectionSlug)) {
-        errors.push(parseIssue("section_slug_duplicate", `Slug bahagian "${sectionSlug}" berulang.`, `sections[${index}].slug`));
+        errors.push(parseIssue("section_slug_duplicate", `Slug bab "${sectionSlug}" berulang.`, `sections[${index}].slug`));
         return;
       }
       seenSlugs.add(sectionSlug);
       sections.push({
         order,
         slug: sectionSlug,
-        title: sectionTitle ?? `Bahagian ${order}`,
+        title: sectionTitle ?? `Bab ${order}`,
         headingText: text(item.headingText),
         summary: text(item.summary)
       });
@@ -385,7 +385,7 @@ function normaliseParserOutput(
     sections.sort((a, b) => a.order - b.order);
   }
   if (type === "novela" && sections.length === 0) {
-    errors.push(parseIssue("sections_missing", "Novela mesti mempunyai senarai bahagian (sections) daripada parser.", "sections"));
+    errors.push(parseIssue("sections_missing", "Novela mesti mempunyai senarai bab (sections) daripada parser.", "sections"));
   }
 
   let source: ParsedSource | null = null;

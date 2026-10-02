@@ -738,7 +738,7 @@ export function evaluatePublicationReadinessFromData(
         structureBlockers.push(
           issue(
             "novela_no_structure",
-            "Novela tiada reading_section dan body kosong — sediakan body atau sekurang-kurangnya satu bahagian."
+            "Novela tiada reading_section dan body kosong — sediakan body atau sekurang-kurangnya satu bab."
           )
         );
       }

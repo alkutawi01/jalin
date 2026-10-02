@@ -59,15 +59,15 @@ function validateSectionPayload(input: Partial<SectionInput>) {
   if (input.slug !== undefined) {
     if (!input.slug || !SLUG_RE.test(input.slug)) {
       throw new Error(
-        `Slug bahagian "${input.slug}" tidak sah (huruf kecil, nombor, tanda hubung sahaja).`
+        `Slug bab "${input.slug}" tidak sah (huruf kecil, nombor, tanda hubung sahaja).`
       );
     }
   }
   if (input.body !== undefined && (!input.body || !input.body.trim())) {
-    throw new Error("Body bahagian tidak boleh kosong.");
+    throw new Error("Body bab tidak boleh kosong.");
   }
   if (input.position !== undefined && (!Number.isInteger(input.position) || input.position < 1)) {
-    throw new Error("Position bahagian mesti integer >= 1.");
+    throw new Error("Posisi bab mesti integer >= 1.");
   }
 }
 
@@ -94,7 +94,7 @@ export async function createSection(input: SectionInput): Promise<SectionRecord>
   const db = getAdminDb();
   validateSectionPayload(input);
   if (!input.body || !input.body.trim()) {
-    throw new Error("Body bahagian tidak boleh kosong.");
+    throw new Error("Body bab tidak boleh kosong.");
   }
 
   await assertNovelaWork(db, input.workId);
@@ -137,12 +137,12 @@ export async function createSection(input: SectionInput): Promise<SectionRecord>
     .executeTakeFirst();
 
   if (!result) {
-    throw new Error("Gagal mencipta bahagian.");
+    throw new Error("Gagal mencipta bab.");
   }
 
   const section = await getSection(result.id);
   if (!section) {
-    throw new Error("Bahagian tidak ditemui selepas penciptaan.");
+    throw new Error("Bab tidak ditemui selepas penciptaan.");
   }
   return section;
 }
@@ -156,7 +156,7 @@ export async function updateSection(
 
   const existing = await getSection(id);
   if (!existing) {
-    throw new Error("Bahagian tidak ditemui.");
+    throw new Error("Bab tidak ditemui.");
   }
   await assertNovelaWork(db, existing.work_id);
 
@@ -216,7 +216,7 @@ export async function updateSection(
 
   const section = await getSection(id);
   if (!section) {
-    throw new Error("Bahagian tidak ditemui selepas kemas kini.");
+    throw new Error("Bab tidak ditemui selepas kemas kini.");
   }
   return section;
 }
@@ -225,7 +225,7 @@ export async function deleteSection(id: number): Promise<void> {
   const db = getAdminDb();
   const existing = await getSection(id);
   if (!existing) {
-    throw new Error("Bahagian tidak ditemui.");
+    throw new Error("Bab tidak ditemui.");
   }
 
   await db.transaction().execute(async (trx) => {
@@ -268,19 +268,19 @@ export async function reorderSections(
 
   if (existingIds.length !== submittedIds.length) {
     throw new Error(
-      `Jangkaan ${existingIds.length} ID bahagian, terima ${submittedIds.length}.`
+      `Jangkaan ${existingIds.length} ID bab, terima ${submittedIds.length}.`
     );
   }
   for (let i = 0; i < existingIds.length; i++) {
     if (existingIds[i] !== submittedIds[i]) {
       throw new Error(
-        `ID bahagian tidak sepadan: jangkaan ${existingIds[i]}, terima ${submittedIds[i]}.`
+        `ID bab tidak sepadan: jangkaan ${existingIds[i]}, terima ${submittedIds[i]}.`
       );
     }
   }
   const unique = new Set(sectionIds);
   if (unique.size !== sectionIds.length) {
-    throw new Error("ID bahagian berulang dalam permintaan reorder.");
+    throw new Error("ID bab berulang dalam permintaan reorder.");
   }
 
   await db.transaction().execute(async (trx) => {
