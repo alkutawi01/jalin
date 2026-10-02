@@ -239,6 +239,9 @@ export default function EditWorkPage() {
   const [manuscriptMode, setManuscriptMode] = useState<"markdown" | "visual">("visual");
   const [assistantNote, setAssistantNote] = useState("");
   const [glossaryBusy, setGlossaryBusy] = useState(false);
+  const [fillBusy, setFillBusy] = useState(false);
+  const [fillLines, setFillLines] = useState<string[]>([]);
+  const [fillError, setFillError] = useState("");
   const [selectedTerms, setSelectedTerms] = useState<number[]>([]);
   const [glossaryNote, setGlossaryNote] = useState("");
   useEffect(() => {
@@ -307,6 +310,70 @@ export default function EditWorkPage() {
       setGlossaryBusy(false);
       await loadGlossary();
       await loadReadiness();
+    }
+  }
+
+  /** One prompt for the whole work: rules, answer format, the text, and what the work already has. */
+  async function copyFillPrompt() {
+    setFillError("");
+    setFillBusy(true);
+    try {
+      const res = await fetch(`/api/admin/works/${workId}/fill-prompt`, { method: "POST" });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Gagal menyediakan arahan.");
+      await navigator.clipboard.writeText(data.prompt);
+      setFillLines(["Arahan penuh sudah disalin. Tampal ke chatbot, kemudian salin jawapannya dan tekan Tampal & isi semua."]);
+      toast("Arahan penuh disalin.", "success");
+    } catch (err) {
+      setFillError(err instanceof Error ? err.message : "Salin gagal. Benarkan akses papan keratan dalam pelayar dan cuba lagi.");
+    } finally {
+      setFillBusy(false);
+    }
+  }
+
+  /** Read the chatbot's answer from the clipboard and fill every tab in one go. */
+  async function pasteFillAnswer() {
+    setFillError("");
+    let text = "";
+    try {
+      text = await navigator.clipboard.readText();
+    } catch {
+      setFillError("Pelayar menyekat bacaan papan keratan. Klik ikon tetapan di sebelah alamat laman, benarkan \"Papan keratan\" untuk laman ini, kemudian tekan Tampal & isi semua semula.");
+      return;
+    }
+    if (!text.trim()) {
+      setFillError("Papan keratan kosong. Salin jawapan chatbot dahulu.");
+      return;
+    }
+    setFillBusy(true);
+    try {
+      const res = await fetch(`/api/admin/works/${workId}/apply-answer`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ answer: text })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        const messages: string[] = Array.isArray(data.errors) && data.errors.length ? data.errors : [data.error || "Jawapan tidak dapat digunakan."];
+        throw new Error(messages.join(" "));
+      }
+      setFillLines([...(data.lines as string[]), ...((data.warnings as string[]) ?? []).map((w) => `Amaran: ${w}`)]);
+      toast("Tab diisi daripada jawapan chatbot.", "success");
+      // Show what was added; never overwrite text the editor is typing.
+      await Promise.all([loadGlossary(), loadCharacters(), loadVisuals(), loadReadiness(), loadSourceRights()]);
+      const w = await fetch(`/api/admin/works/${workId}`).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+      if (w) {
+        setForm((prev) => ({
+          ...prev,
+          dek: prev.dek || w.dek || "",
+          genre: prev.genre || w.genre || "",
+          readingMinutes: prev.readingMinutes || (w.reading_minutes ? String(w.reading_minutes) : "")
+        }));
+      }
+    } catch (err) {
+      setFillError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+    } finally {
+      setFillBusy(false);
     }
   }
 
@@ -1421,6 +1488,27 @@ export default function EditWorkPage() {
         </div>
       </div>
       <p className="admin-form-hint a-work-save-help">Gambar, kredit, glosari dan bahagian disimpan melalui tindakan masing-masing — tidak memerlukan butang ini.</p>
+
+      <section className="a-assistant" aria-label="Isi semua tab dengan chatbot">
+        <h3>Isi semua tab dengan chatbot</h3>
+        <p className="admin-form-hint">
+          Salin sekali, tampal sekali. Maklumat, glosari, watak, sumber (Fragmen dan Sinopsis) dan permintaan imej diisi sekali gus. Teks karya, kredit dan hak tidak diubah.
+        </p>
+        <div className="admin-form-actions">
+          <button type="button" className="admin-btn admin-btn-outline" disabled={fillBusy} onClick={() => void copyFillPrompt()}>
+            1. Salin arahan penuh
+          </button>
+          <button type="button" className="admin-btn admin-btn-primary" disabled={fillBusy} onClick={() => void pasteFillAnswer()}>
+            {fillBusy ? "Sebentar…" : "2. Tampal & isi semua"}
+          </button>
+        </div>
+        {fillError ? <div className="admin-alert admin-alert-error" role="alert">{fillError}</div> : null}
+        {fillLines.length > 0 ? (
+          <ul className="admin-form-hint" role="status">
+            {fillLines.map((line, i) => <li key={i}>{line}</li>)}
+          </ul>
+        ) : null}
+      </section>
 
       <div className="admin-tabs">
         <button

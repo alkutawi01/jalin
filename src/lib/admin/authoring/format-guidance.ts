@@ -88,12 +88,14 @@ export function exampleBlock(recipe: Recipe, sections: OutputSection[]): string 
     blocks.push(
       lines(
         "[GLOSARI]",
-        "Istilah: arwah",
-        "Maksud: gelaran bagi orang yang sudah meninggal dunia.",
+        "Istilah: gundah-gulana",
+        "Maksud: berasa bimbang dan resah yang berpanjangan.",
+        "Asing: tiada",
         novela ? "Muncul di: bab-1" : null,
         "____",
-        "Istilah: berkarat",
-        "Maksud: ditutupi lapisan perang pada besi yang lama terdedah kepada lembap.",
+        "Istilah: pit stop",
+        "Maksud: perhentian singkat untuk membaiki atau mengisi minyak kereta, juga digunakan dalam motorsport.",
+        "Asing: pit stop, motorsport",
         novela ? "Muncul di: bab-1" : null
       )
     );

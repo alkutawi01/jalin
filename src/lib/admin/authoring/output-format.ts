@@ -79,9 +79,9 @@ function watak(recipe: Recipe): string {
 }
 
 function glosari(recipe: Recipe): string {
-  const lines = ["[GLOSARI]", "Istilah: (perkataan seperti dieja dalam teks)", "Maksud: (maksud berdasarkan konteks dalam teks)"];
+  const lines = ["[GLOSARI]", "Istilah: (perkataan seperti dieja dalam teks)", "Maksud: (maksud berdasarkan konteks dalam teks)", "Asing: (perkataan asing dalam Istilah atau Maksud, dipisahkan koma, atau tiada)"];
   if (recipe.kind === "novela") lines.push("Muncul di: (slug bab pertama istilah ini digunakan)");
-  lines.push("____", "(ulang untuk setiap istilah, sehingga 8 sahaja; kosongkan jika tiada perkataan sesuai)");
+  lines.push("____", "(ulang untuk setiap istilah yang benar-benar sukar; tiada had bilangan; tulis \"Tiada istilah sukar.\" jika tiada)");
   return lines.join("\n");
 }
 
