@@ -405,6 +405,8 @@ export default async function WorkPage({
           {landing ? <NovelaIntro rows={chapterRows} /> : sectionIndex >= 0 ? (
             <div className="chapter-column">
               <ChapterHead workTitle={work.title} workHref={`/kategori/${work.type}/${work.slug}`} rows={chapterRows} index={sectionIndex} />
+              {/* A chapter shows its own hero when it has one; until then the novela's hero stands in. */}
+              {hero?.src ? <EditorialImage src={hero.src} alt={hero.alt ?? ""} rights={rights} kind="hero" /> : null}
               {articleNode}
             </div>
           ) : articleNode}
