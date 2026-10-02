@@ -30,4 +30,8 @@ for (const category of categories) {
 }
 assert.ok(categoryPage.includes("Belum ada karya diterbitkan dalam kategori ini."), "empty category state missing");
 
+const publishRoute = fs.readFileSync(path.join(root, "src/app/api/admin/works/[id]/publish/route.ts"), "utf8");
+assert.ok(publishRoute.includes("publishWorkExplicit(id"), "publish route must use the transactional publication service");
+assert.ok(!publishRoute.includes("validateWorkForPublish"), "publish route must not use a second validator that disagrees with readiness");
+
 console.log("production regression tests: PASS");
