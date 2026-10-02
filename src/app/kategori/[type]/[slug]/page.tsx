@@ -1,3 +1,4 @@
+import { ContinueNav } from "../../../../components/reader/ReadingNav";
 import { visibleCharacters } from "../../../../lib/reader/visible-characters";
 import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
@@ -136,63 +137,6 @@ function originalTitleOf(work: { title: string; sourceWork?: { title?: string } 
   return source.title;
 }
 
-function SectionNav({
-  workSlug,
-  sections,
-  activeSlug,
-  position
-}: {
-  workSlug: string;
-  sections: PublicSectionRef[];
-  activeSlug?: string;
-  /** Two of these appear on a chapter page; each landmark needs its own name. */
-  position: "atas" | "bawah";
-}) {
-  const currentIndex = activeSlug
-    ? sections.findIndex((s) => s.slug === activeSlug)
-    : 0;
-  const current = sections[currentIndex];
-  const prev = currentIndex > 0 ? sections[currentIndex - 1] : undefined;
-  const next = currentIndex < sections.length - 1 ? sections[currentIndex + 1] : undefined;
-
-  if (!current) return null;
-
-  return (
-    <nav className="site-shell section-nav" aria-label={`Navigasi bahagian (${position})`} style={{
-      maxWidth: "42rem",
-      margin: "0 auto 1.5rem",
-      padding: "0 1.25rem",
-      display: "flex",
-      flexWrap: "wrap",
-      gap: "0.75rem",
-      alignItems: "center",
-      justifyContent: "space-between",
-      fontSize: "0.9rem"
-    }}>
-      <span style={{ opacity: 0.75 }}>
-        Bahagian {currentIndex + 1} / {sections.length}
-        {current.title ? ` · ${current.title}` : ""}
-      </span>
-      <span style={{ display: "flex", gap: "0.75rem" }}>
-        {prev ? (
-          <a href={`/kategori/novela/${workSlug}/${prev.slug}`} rel="prev">
-            ← Sebelumnya
-          </a>
-        ) : (
-          <span style={{ opacity: 0.4 }} aria-disabled="true">← Sebelumnya</span>
-        )}
-        {next ? (
-          <a href={`/kategori/novela/${workSlug}/${next.slug}`} rel="next">
-            Seterusnya →
-          </a>
-        ) : (
-          <span style={{ opacity: 0.4 }} aria-disabled="true">Seterusnya →</span>
-        )}
-      </span>
-    </nav>
-  );
-}
-
 function SectionIndexDetails({ items }: { items: { label: string; href: string }[] }) {
   if (items.length === 0) return null;
   return (
@@ -320,6 +264,9 @@ export default async function WorkPage({
   const segmentGlossaries = firstGlossaryBySegment(segmentNodes, glossary);
 
   const publicSections = projectPublicSections(sections);
+  const sectionIndex = activeSection ? publicSections.findIndex((section) => section.slug === activeSection.slug) : -1;
+  const prevSection = sectionIndex > 0 ? publicSections[sectionIndex - 1] : undefined;
+  const nextSection = sectionIndex >= 0 && sectionIndex < publicSections.length - 1 ? publicSections[sectionIndex + 1] : undefined;
   // A chapter only introduces the characters who have appeared so far, so early chapters do not spoil later ones.
   const characters = visibleCharacters(allCharacters, sections.map((section) => section.slug), activeSection?.slug)
     .map(({ name, role }) => ({ name, role }));
@@ -376,9 +323,14 @@ export default async function WorkPage({
       <main>
         <StoryHead
           kicker={
-            displayableGenre(work.genre)
-              ? `${typeLabel} · ${displayableGenre(work.genre)}`
-              : typeLabel
+            [
+              typeLabel,
+              displayableGenre(work.genre),
+              // Where the reader is in a novela, since there is no bar above the story any more.
+              sectionIndex >= 0 ? `Bahagian ${sectionIndex + 1} daripada ${publicSections.length}` : ""
+            ]
+              .filter(Boolean)
+              .join(" · ")
           }
           title={work.title}
           dek={work.dek ?? ""}
@@ -386,16 +338,6 @@ export default async function WorkPage({
           originalTitle={originalTitle}
           hero={hero?.src ? { src: hero.src, alt: hero.alt ?? "", rights } : undefined}
         />
-
-
-        {sections.length > 0 && (
-          <SectionNav
-            workSlug={work.slug}
-            sections={publicSections}
-            activeSlug={activeSection?.slug}
-            position="atas"
-          />
-        )}
 
         <div className="site-shell reading-grid">
           <LeftRail
@@ -436,14 +378,13 @@ export default async function WorkPage({
           <RightRail characters={characters} editorial={editorial} />
         </div>
 
-        {sections.length > 0 && (
-          <SectionNav
-            workSlug={work.slug}
-            sections={publicSections}
-            activeSlug={activeSection?.slug}
-            position="bawah"
+        {sections.length > 0 ? (
+          <ContinueNav
+            name="Selepas bahagian ini"
+            next={nextSection ? { href: `/kategori/novela/${work.slug}/${nextSection.slug}`, label: `Bahagian ${sectionIndex + 2}`, title: nextSection.title || nextSection.slug } : undefined}
+            prev={prevSection ? { href: `/kategori/novela/${work.slug}/${prevSection.slug}`, label: `Bahagian ${sectionIndex}`, title: prevSection.title || prevSection.slug } : undefined}
           />
-        )}
+        ) : null}
 
         {/* On a novela the note closes the last chapter only. */}
         {sections.length === 0 || activeSection?.slug === sections[sections.length - 1]?.slug ? (

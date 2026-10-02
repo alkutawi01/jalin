@@ -345,6 +345,9 @@ export interface Series {
   audience: string | null;
   mode: SeriesMode | string;
   status: SeriesStatus | string;
+  /** Optional until migration 020 has run; always treat as possibly undefined. */
+  hero_src?: string | null;
+  hero_alt?: string | null;
   created_at: ColumnType<Date, string | Date, string | Date>;
   updated_at: ColumnType<Date, string | Date, string | Date>;
 }

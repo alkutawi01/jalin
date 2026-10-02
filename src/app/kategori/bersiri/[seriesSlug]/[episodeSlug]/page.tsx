@@ -1,3 +1,4 @@
+import { ContinueNav, Crumbs } from "../../../../../components/reader/ReadingNav";
 import { notFound } from "next/navigation";
 import { displayableGenre } from "../../../../../lib/reader/genre-display";
 import {
@@ -40,78 +41,6 @@ const TYPE_LABELS: Record<string, string> = {
   sinopsis: "Sinopsis"
 };
 
-function EpisodeNav({
-  seriesSlug,
-  episodes,
-  currentSlug,
-  position
-}: {
-  seriesSlug: string;
-  episodes: SeriesEpisodeRef[];
-  currentSlug: string;
-  /** Two of these appear on an episode page; each landmark needs its own name. */
-  position: "atas" | "bawah";
-}) {
-  const index = episodes.findIndex((e) => e.slug === currentSlug);
-  const prev = index > 0 ? episodes[index - 1] : undefined;
-  const next = index >= 0 && index < episodes.length - 1 ? episodes[index + 1] : undefined;
-
-  if (index < 0) return null;
-
-  return (
-    <nav className="site-shell episode-nav" aria-label={`Navigasi episod (${position})`} style={{
-      maxWidth: "42rem",
-      margin: "0 auto 1.5rem",
-      padding: "0 1.25rem",
-      display: "flex",
-      flexWrap: "wrap",
-      gap: "0.75rem",
-      alignItems: "center",
-      justifyContent: "space-between",
-      fontSize: "0.9rem"
-    }}>
-      <span style={{ opacity: 0.75 }}>
-        Episod {index + 1} / {episodes.length}
-      </span>
-      <details className="episode-picker">
-        <summary>Semua episod</summary>
-        <ol>
-          {episodes.map((episode) => (
-            <li key={episode.slug}>
-              <a
-                href={`/kategori/bersiri/${seriesSlug}/${episode.slug}`}
-                aria-current={episode.slug === currentSlug ? "page" : undefined}
-                className={episode.slug === currentSlug ? "is-current" : undefined}
-              >
-                <span className="episode-picker-num">{String(episode.position).padStart(2, "0")}</span> {episode.title}
-              </a>
-            </li>
-          ))}
-        </ol>
-      </details>
-      <span style={{ display: "flex", gap: "0.75rem" }}>
-        <a href={`/kategori/bersiri/${seriesSlug}`} rel="back">
-          ← Siri
-        </a>
-        {prev ? (
-          <a href={`/kategori/bersiri/${seriesSlug}/${prev.slug}`} rel="prev">
-            ← Sebelumnya
-          </a>
-        ) : (
-          <span style={{ opacity: 0.4 }} aria-disabled="true">← Sebelumnya</span>
-        )}
-        {next ? (
-          <a href={`/kategori/bersiri/${seriesSlug}/${next.slug}`} rel="next">
-            Seterusnya →
-          </a>
-        ) : (
-          <span style={{ opacity: 0.4 }} aria-disabled="true">Seterusnya →</span>
-        )}
-      </span>
-    </nav>
-  );
-}
-
 export default async function EpisodePage({
   params
 }: {
@@ -150,6 +79,8 @@ export default async function EpisodePage({
   const byline = projectBylineCredits(work.credits);
 
   const episodeIndex = episodes.findIndex((e) => e.slug === work.slug);
+  const prevEpisode = episodeIndex > 0 ? episodes[episodeIndex - 1] : undefined;
+  const nextEpisode = episodeIndex >= 0 && episodeIndex < episodes.length - 1 ? episodes[episodeIndex + 1] : undefined;
   const typeLabel = TYPE_LABELS["bersiri"];
   const genre = displayableGenre(work.genre) ?? displayableGenre(series.genre);
 
@@ -186,27 +117,22 @@ export default async function EpisodePage({
       <SiteHeader active="bersiri" />
 
       <main>
-        <div className="site-shell" style={{ maxWidth: "42rem", margin: "0 auto 0.5rem", padding: "1rem 1.25rem 0" }}>
-          <a href={`/kategori/bersiri/${series.slug}`} style={{ fontSize: "0.85rem", opacity: 0.75 }}>
-            ← Kembali ke {series.title}
-          </a>
-        </div>
-
         <StoryHead
-          kicker={`${typeLabel} · ${series.title}${episodeIndex >= 0 ? ` · Episod ${episodeIndex + 1}` : ""}`}
+          kicker={
+            <Crumbs
+              items={[
+                { label: "Bersiri", href: "/kategori/bersiri" },
+                { label: series.title, href: `/kategori/bersiri/${series.slug}` },
+                { label: episodeIndex >= 0 ? `Episod ${episodeIndex + 1} daripada ${episodes.length}` : "Episod" }
+              ]}
+            />
+          }
           title={work.title}
           dek={work.dek ?? ""}
           byline={byline}
           hero={hero?.src ? { src: hero.src, alt: hero.alt ?? "", rights } : undefined}
         />
 
-
-        <EpisodeNav
-          seriesSlug={series.slug}
-          episodes={episodes}
-          currentSlug={work.slug}
-          position="atas"
-        />
 
         <div className="site-shell reading-grid">
           <LeftRail
@@ -240,11 +166,12 @@ export default async function EpisodePage({
           <RightRail characters={characters} editorial={editorial} />
         </div>
 
-        <EpisodeNav
-          seriesSlug={series.slug}
-          episodes={episodes}
-          currentSlug={work.slug}
-          position="bawah"
+        <ContinueNav
+          name="Selepas episod ini"
+          next={nextEpisode ? { href: `/kategori/bersiri/${series.slug}/${nextEpisode.slug}`, label: `Episod ${episodeIndex + 2}`, title: nextEpisode.title } : undefined}
+          prev={prevEpisode ? { href: `/kategori/bersiri/${series.slug}/${prevEpisode.slug}`, label: `Episod ${episodeIndex}`, title: prevEpisode.title } : undefined}
+          back={{ href: `/kategori/bersiri/${series.slug}`, label: "Semua episod" }}
+          endNote={series.status === "completed" ? "Ini episod terakhir siri ini." : "Ini episod terkini. Episod seterusnya belum diterbitkan."}
         />
 
         <EditorNote note={work.metadata?.editorNote} />

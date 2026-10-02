@@ -2479,14 +2479,6 @@ dd { margin: 0; color: var(--ink); text-align: left; }
   .episode-row-arrow { display: none; }
 }
 
-/* Episode picker on an episode page: the current episode is clearly marked */
-.episode-picker { position: relative; font-family: Arial, sans-serif; }
-.episode-picker summary { cursor: pointer; color: var(--ink-soft); }
-.episode-picker ol { list-style: none; margin: 8px 0 0; padding: 8px 0; left: 0; width: min(320px, calc(100vw - 40px)); background: var(--white); border: 1px solid var(--line); border-radius: 12px; position: absolute; z-index: 20; box-shadow: 0 12px 32px -16px rgba(24, 52, 60, .35); }
-.episode-picker a { display: block; padding: 8px 16px; transition: background-color .15s ease; }
-.episode-picker a:hover, .episode-picker a:focus-visible { background: rgba(167, 100, 80, .08); }
-.episode-picker a.is-current { background: rgba(24, 52, 60, .07); font-weight: 700; box-shadow: inset 3px 0 0 var(--clay); }
-.episode-picker-num { color: var(--clay-text); font-variant-numeric: tabular-nums; margin-right: 6px; }
 
 /* ---- Quiet motion: only where it helps the reader see what happened ---- */
 @keyframes jalin-fade-in { from { opacity: 0; } to { opacity: 1; } }
@@ -2500,15 +2492,60 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 /* Motion is never required to understand anything, and can be switched off. */
 @media (prefers-reduced-motion: reduce) {
   .glossary-tooltip, .work-cover img, .hero-featured-visual img { animation: none; }
-  .series-action, .episode-row a, .episode-row-arrow, .episode-picker a,
+  .series-action, .episode-row a, .episode-row-arrow,
   .latest-card, .editorial-pick, .work-card, .category-explorer-card, .latest-card-cta, .editorial-pick-cta { transition: none; }
   .episode-row a:hover .episode-row-arrow, .episode-row a:focus-visible .episode-row-arrow,
   .latest-card a:hover .latest-card-cta, .latest-card a:focus-visible .latest-card-cta,
   .editorial-pick:hover .editorial-pick-cta, .editorial-pick:focus-within .editorial-pick-cta { transform: none; }
 }
 
-@media (max-width: 560px) {
-  /* On a phone the episode list opens in the flow of the page instead of floating over it. */
-  .episode-picker { flex-basis: 100%; }
-  .episode-picker ol { position: static; width: auto; box-shadow: none; }
+
+/* ---- Breadcrumb in the head and the continue block after the story ---- */
+.crumbs ol { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; margin: 0; padding: 0; }
+.crumbs li + li::before { content: "/"; margin-right: 6px; opacity: .5; }
+.crumbs a { color: inherit; border-bottom: 1px solid transparent; transition: border-color .18s ease; }
+.crumbs a:hover, .crumbs a:focus-visible { border-bottom-color: currentColor; }
+.continue-nav { max-width: 42rem; margin: 40px auto 0; padding: 0 1.25rem; display: grid; gap: 14px; }
+.continue-next {
+  display: grid; gap: 4px; padding: 22px 24px; border: 1px solid var(--line); border-radius: 14px; background: var(--white);
+  transition: border-color .18s ease, background-color .18s ease;
 }
+.continue-next:hover, .continue-next:focus-visible { border-color: var(--clay); background: rgba(167, 100, 80, .04); }
+.continue-label { font-family: Arial, sans-serif; font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--clay-text); }
+.continue-title { font-size: 1.4rem; line-height: 1.3; font-style: italic; }
+.continue-arrow { display: inline-block; transition: transform .18s ease; }
+.continue-next:hover .continue-arrow, .continue-next:focus-visible .continue-arrow { transform: translateX(3px); }
+.continue-end { margin: 0; padding: 18px 20px; border: 1px dashed var(--line); border-radius: 14px; color: var(--ink-soft); text-align: center; }
+.continue-secondary { display: flex; flex-wrap: wrap; gap: 8px 22px; justify-content: space-between; font-family: Arial, sans-serif; font-size: 14px; }
+.continue-secondary a { color: var(--ink-soft); }
+.continue-secondary a:hover, .continue-secondary a:focus-visible { color: var(--ink); }
+@media (prefers-reduced-motion: reduce) {
+  .crumbs a, .continue-next, .continue-arrow { transition: none; }
+  .continue-next:hover .continue-arrow, .continue-next:focus-visible .continue-arrow { transform: none; }
+}
+
+/* ---- Series title page: hero beside the masthead, episodes as cards ---- */
+.series-masthead--hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 520px); gap: 40px; align-items: center; max-width: none; }
+.series-hero { position: relative; margin: 0; aspect-ratio: 3 / 2; border-radius: 18px; overflow: hidden; background: #e8dfd2; box-shadow: 0 24px 60px -28px rgba(24, 52, 60, .45); }
+.series-hero img { object-fit: cover; }
+@media (max-width: 900px) { .series-masthead--hero { grid-template-columns: 1fr; gap: 28px; } }
+.episode-grid { list-style: none; margin: 18px 0 0; padding: 0 0 72px; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 28px 24px; }
+.episode-card a { display: block; }
+.episode-card-cover { position: relative; border-radius: 14px; overflow: hidden; border: 1px solid var(--line); transition: border-color .18s ease, box-shadow .18s ease; }
+.episode-card-cover .work-cover { width: 100%; aspect-ratio: 3 / 2; height: auto; border-radius: 0; }
+.episode-card-num { position: absolute; left: 12px; top: 10px; padding: 2px 10px; border-radius: 999px; background: rgba(251, 248, 242, .92); color: var(--clay-text); font-family: Arial, sans-serif; font-size: 13px; font-variant-numeric: tabular-nums; }
+.episode-card a:hover .episode-card-cover, .episode-card a:focus-visible .episode-card-cover { border-color: var(--clay); box-shadow: 0 14px 30px -22px rgba(24, 52, 60, .6); }
+.episode-card-body { padding: 14px 2px 0; display: grid; gap: 6px; }
+.episode-card-title { margin: 0; font-size: 1.25rem; line-height: 1.3; font-style: italic; }
+.episode-card-dek { margin: 0; color: var(--ink-soft); line-height: 1.5; font-size: 15px; }
+.episode-card-meta { margin: 0; font-family: Arial, sans-serif; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-soft); }
+.episode-card-arrow { display: inline-block; color: var(--clay-text); transition: transform .18s ease; }
+.episode-card a:hover .episode-card-arrow, .episode-card a:focus-visible .episode-card-arrow { transform: translateX(3px); }
+@media (max-width: 560px) { .episode-grid { grid-template-columns: 1fr; } }
+@media (prefers-reduced-motion: reduce) {
+  .episode-card-cover, .episode-card-arrow { transition: none; }
+  .episode-card a:hover .episode-card-arrow, .episode-card a:focus-visible .episode-card-arrow { transform: none; }
+}
+
+/* Links in a crumb line are underlined so they are not told apart from the text by colour alone. */
+.series-crumb a, .crumbs a { text-decoration: underline; text-underline-offset: 3px; border-bottom: 0; }

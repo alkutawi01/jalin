@@ -31,7 +31,7 @@ export function StoryHead({
   originalTitle,
   hero
 }: {
-  kicker: string;
+  kicker: ReactNode;
   title: string;
   dek: string;
   byline: BylineCredit[];
