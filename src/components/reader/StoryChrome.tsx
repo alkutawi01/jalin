@@ -1,3 +1,4 @@
+import { renderItalics } from "../../lib/reader/inline-italics";
 import type { ReactNode } from "react";
 import Image from "next/image";
 import type { BylineCredit, CharacterMeta, EditorialCredit, WorkMetaRow } from "./types";
@@ -157,6 +158,20 @@ export function RightRail({ characters, editorial }: { characters: CharacterMeta
           </>
         )}
       </div>
+    </aside>
+  );
+}
+
+/** The editor's free-form note at the end of a work. Paragraphs are separated by blank lines; *italic* is honoured. */
+export function EditorNote({ note }: { note?: string }) {
+  const paragraphs = (note ?? "").split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
+  if (paragraphs.length === 0) return null;
+  return (
+    <aside className="site-shell editor-note" aria-labelledby="editor-note-title">
+      <h2 id="editor-note-title">Catatan Editor</h2>
+      {paragraphs.map((paragraph, index) => (
+        <p key={index}>{renderItalics(paragraph)}</p>
+      ))}
     </aside>
   );
 }

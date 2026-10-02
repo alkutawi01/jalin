@@ -52,9 +52,7 @@ interface WorkData {
   published_at: string | null;
   published_by?: string | null;
   updated_at: string;
-  editor_pick: boolean | null;
-  editor_pick_rank: number | null;
-  editor_pick_reason: string | null;
+  metadata?: { editorNote?: string } | null;
 }
 
 interface ReadinessIssue {
@@ -435,9 +433,7 @@ export default function EditWorkPage() {
     readingMinutes: "",
     version: "v0.1",
     publishedAt: "",
-    editorPick: false,
-    editorPickRank: "",
-    editorPickReason: "",
+    editorNote: "",
   });
 
   const [credits, setCredits] = useState<CreditData[]>([]);
@@ -529,9 +525,7 @@ export default function EditWorkPage() {
           readingMinutes: work.reading_minutes?.toString() || "",
           version: work.version_label || work.version,
           publishedAt: work.published_at ? work.published_at.split("T")[0] : "",
-          editorPick: work.editor_pick ?? false,
-          editorPickRank: work.editor_pick_rank?.toString() || "",
-          editorPickReason: work.editor_pick_reason ?? "",
+          editorNote: work.metadata?.editorNote ?? "",
         });
         setSavedBody(work.body || "");
       } catch (err) {
@@ -1018,7 +1012,6 @@ export default function EditWorkPage() {
         body: JSON.stringify({
           ...editableForm,
           readingMinutes: form.readingMinutes ? Number(form.readingMinutes) : undefined,
-          editorPickRank: form.editorPickRank === "" ? null : Number(form.editorPickRank),
         }),
       });
 
@@ -1702,46 +1695,22 @@ export default function EditWorkPage() {
           </div>
 
           <div className="admin-form-group">
-            <label>Pilihan Editor</label>
-            <label className="admin-checkbox-label">
-              <input
-                type="checkbox"
-                checked={form.editorPick}
-                onChange={(e) => setForm((prev) => ({ ...prev, editorPick: e.target.checked }))}
-              />
-              Paparkan di seksyen "Pilihan Editor" laman utama
-            </label>
-          </div>
-
-          <div className="admin-form-row">
-            <div className="admin-form-group">
-              <label htmlFor="editorPickRank">Kedudukan Pilihan Editor</label>
-              <input
-                id="editorPickRank"
-                type="number"
-                min={1}
-                max={99}
-                value={form.editorPickRank}
-                onChange={(e) => setForm((prev) => ({ ...prev, editorPickRank: e.target.value }))}
-              />
-            </div>
-
-            <div className="admin-form-group">
-              <label htmlFor="editorPickReason">Sebab Pilihan (admin sahaja)</label>
-              <input
-                id="editorPickReason"
-                type="text"
-                maxLength={300}
-                value={form.editorPickReason}
-                onChange={(e) => setForm((prev) => ({ ...prev, editorPickReason: e.target.value }))}
-              />
-            </div>
+            <label htmlFor="editorNote">Catatan editor</label>
+            <textarea
+              id="editorNote"
+              className="admin-textarea"
+              rows={8}
+              maxLength={5000}
+              value={form.editorNote}
+              onChange={(e) => setForm((prev) => ({ ...prev, editorNote: e.target.value }))}
+              placeholder="Cerita asal usul karya ini, apa yang menarik tentangnya, atau apa-apa yang editor mahu kongsi dengan pembaca."
+            />
+            <span className="admin-form-hint">
+              Dipaparkan kepada pembaca di hujung karya, bawah tajuk &quot;Catatan Editor&quot;. Bebas ditulis; baris kosong memulakan perenggan baharu. Biarkan kosong jika tiada catatan. Karya terbit hanya menunjukkan catatan baharu selepas diterbitkan semula.
+            </span>
           </div>
           <p className="admin-form-hint">
-            Pilihan Editor dibaca terus daripada database pada setiap kunjungan laman utama —
-            tiada publish semula diperlukan. Hanya karya berstatus terbit dipaparkan (maksimum 3,
-            susun mengikut kedudukan). Sebab tidak dipaparkan kepada pembaca dan tidak dieksport
-            ke Markdown.
+            Memilih karya untuk laman utama dibuat di halaman <a href="/admin/pilihan-editor">Pilihan Editor</a>, bukan di sini.
           </p>
 
         </form>

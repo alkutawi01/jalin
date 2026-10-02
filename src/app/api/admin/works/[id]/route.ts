@@ -94,41 +94,13 @@ export async function PATCH(
       }
     }
 
-    // Editor Pick: live homepage curation controls.
-    let editorPick: boolean | undefined;
-    if (body.editorPick !== undefined) {
-      if (typeof body.editorPick !== "boolean") {
-        return NextResponse.json({ error: "Pilihan Editor tidak sah." }, { status: 400 });
+    // The editor's note is free text shown at the end of the work.
+    let editorNote: string | undefined;
+    if (body.editorNote !== undefined) {
+      editorNote = String(body.editorNote ?? "");
+      if (editorNote.length > 5000) {
+        return NextResponse.json({ error: "Catatan editor terlalu panjang (maksimum 5000 aksara)." }, { status: 400 });
       }
-      editorPick = body.editorPick;
-    }
-
-    let editorPickRank: number | null | undefined;
-    if (body.editorPickRank !== undefined) {
-      if (body.editorPickRank === null || body.editorPickRank === "") {
-        editorPickRank = null;
-      } else {
-        const rank = Number(body.editorPickRank);
-        if (!Number.isInteger(rank) || rank < 1 || rank > 99) {
-          return NextResponse.json(
-            { error: "Kedudukan Pilihan Editor mesti antara 1 dan 99." },
-            { status: 400 }
-          );
-        }
-        editorPickRank = rank;
-      }
-    }
-
-    let editorPickReason: string | null | undefined;
-    if (body.editorPickReason !== undefined) {
-      const reason = String(body.editorPickReason ?? "").trim();
-      if (reason.length > 300) {
-        return NextResponse.json(
-          { error: "Sebab Pilihan Editor maksimum 300 aksara." },
-          { status: 400 }
-        );
-      }
-      editorPickReason = reason || null;
     }
 
     const work = await updateWork(id, {
@@ -143,9 +115,7 @@ export async function PATCH(
       // publishedAt is only meaningful alongside published status; ignore raw sets.
       publishedAt:
         body.status === "published" ? body.publishedAt : undefined,
-      editorPick,
-      editorPickRank,
-      editorPickReason,
+      editorNote,
     });
 
     return NextResponse.json(work);

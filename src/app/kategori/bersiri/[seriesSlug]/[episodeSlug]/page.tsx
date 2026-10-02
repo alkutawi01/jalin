@@ -6,6 +6,7 @@ import {
   RightRail,
   SiteFooter,
   SiteHeader,
+  EditorNote,
   StoryEnd,
   StoryHead
 } from "../../../../../components/reader/StoryChrome";
@@ -224,6 +225,8 @@ export default async function EpisodePage({
           episodes={episodes}
           currentSlug={work.slug}
         />
+
+        <EditorNote note={work.metadata?.editorNote} />
 
         <StoryEnd title={work.title} />
       </main>

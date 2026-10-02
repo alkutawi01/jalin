@@ -102,6 +102,9 @@ export default async function AdminWorksPage({
             <a href="/admin/visual-requests" className="admin-btn admin-btn-outline">
               Permintaan gambar
             </a>
+            <a href="/admin/pilihan-editor" className="admin-btn admin-btn-outline">
+              Pilihan Editor
+            </a>
             <a href="/admin/works/add" className="admin-btn admin-btn-primary">
               + Tambah Karya
             </a>
