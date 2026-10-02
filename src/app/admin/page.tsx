@@ -134,7 +134,7 @@ export default async function AdminDashboard() {
         )}
       </section>
 
-      <div className="admin-stats-grid">
+      <div className="admin-stats-grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))" }}>
         <div className="admin-stat-card">
           <div className="admin-stat-label">Jumlah Karya</div>
           <div className="admin-stat-value">{stats.totalWorks}</div>
@@ -150,6 +150,14 @@ export default async function AdminDashboard() {
         <div className="admin-stat-card">
           <div className="admin-stat-label">Bersiri</div>
           <div className="admin-stat-value">{stats.worksByType.bersiri}</div>
+        </div>
+        <div className="admin-stat-card">
+          <div className="admin-stat-label">Fragmen</div>
+          <div className="admin-stat-value">{stats.worksByType.fragmen}</div>
+        </div>
+        <div className="admin-stat-card">
+          <div className="admin-stat-label">Sinopsis</div>
+          <div className="admin-stat-value">{stats.worksByType.sinopsis}</div>
         </div>
       </div>
 
