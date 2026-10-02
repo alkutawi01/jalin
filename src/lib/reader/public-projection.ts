@@ -1,4 +1,5 @@
 import type {
+  ImageCrop,
   ReadingSection,
   SeriesMeta,
   Work,
@@ -26,7 +27,7 @@ export interface PublicWorkSummary {
   readingMinutes?: number;
   publishedAt?: string;
   updatedAt?: string;
-  hero?: { src: string; alt: string };
+  hero?: { src: string; alt: string; crop?: ImageCrop };
   attribution?: CardAttribution;
 }
 
@@ -58,7 +59,7 @@ export function projectPublicWorkSummary(work: Work): PublicWorkSummary {
     ...(work.readingMinutes ? { readingMinutes: work.readingMinutes } : {}),
     ...(work.publishedAt ? { publishedAt: work.publishedAt } : {}),
     ...(work.updatedAt ? { updatedAt: work.updatedAt } : {}),
-    ...(hero ? { hero: { src: hero.src, alt: hero.alt } } : {}),
+    ...(hero ? { hero: { src: hero.src, alt: hero.alt, ...(hero.crop ? { crop: hero.crop } : {}) } } : {}),
     ...(attribution ? { attribution } : {})
   };
 }

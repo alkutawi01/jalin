@@ -39,6 +39,7 @@ export async function POST(
       anchor: text("anchor") || null,
       place: text("place") === "before" ? "before" : "after",
       toolName: text("tool").slice(0, 80) || null,
+      sectionSlug: text("sectionSlug") || null,
       bytes: Buffer.from(await file.arrayBuffer()),
       actor: admin.email || admin.id
     });

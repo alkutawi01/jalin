@@ -2,6 +2,8 @@
 
 import { isSourcedWork } from "@/lib/content/source-origin";
 import { dashChange } from "@/lib/admin/auto-dash";
+import ImageFocusPicker from "@/components/admin/ImageFocusPicker";
+import ChapterImages from "@/components/admin/ChapterImages";
 import { useState, useEffect, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import WorkVisualUpload from "../../../../components/admin/WorkVisualUpload";
@@ -106,6 +108,10 @@ interface VisualData {
   anchor: string | null;
   place: string;
   sort_order: number;
+  focus_x?: number | null;
+  focus_y?: number | null;
+  zoom?: number | null;
+  section_slug?: string | null;
 }
 
 function WorkImageCard({ visual, body, onEdit, onReplace, onDelete }: {
@@ -122,9 +128,11 @@ function WorkImageCard({ visual, body, onEdit, onReplace, onDelete }: {
         <img src={visual.src} alt={visual.alt || ""} />
       </a>
       <div className="work-image-card-detail">
-        <strong>{visual.role === "hero" ? "Gambar utama" : "Gambar dalam teks"}</strong>
+        <strong>{visual.role === "hero" ? "Gambar utama" : visual.section_slug && !visual.anchor ? `Hero bab (${visual.section_slug})` : visual.section_slug ? `Gambar dalam teks, bab ${visual.section_slug}` : "Gambar dalam teks"}</strong>
         <p>{visual.alt || "Teks alternatif belum diisi."}</p>
-        {visual.role !== "hero" ? (
+        {visual.section_slug && !visual.anchor ? (
+          <p className="admin-form-hint">Dipaparkan di kepala bab itu.</p>
+        ) : visual.role !== "hero" ? (
           <p className="admin-form-hint">
             {!visual.anchor ? "Tiada penanda — gambar tidak muncul dalam karya."
               : isImageMarker(visual.anchor)
@@ -632,6 +640,7 @@ export default function EditWorkPage() {
   const [markerMigrationBusy, setMarkerMigrationBusy] = useState(false);
   const [markerMigrationError, setMarkerMigrationError] = useState("");
   const [editingVisual, setEditingVisual] = useState<Partial<VisualData> | null>(null);
+  const [chapterImagesFor, setChapterImagesFor] = useState<string | null>(null);
   const [visualError, setVisualError] = useState<string | null>(null);
 
   const [glossaryTerms, setGlossaryTerms] = useState<GlossaryData[]>([]);
@@ -1324,11 +1333,12 @@ export default function EditWorkPage() {
     if (!editingVisual) return;
 
     setVisualError(null);
-    if (editingVisual.role !== "hero" && !editingVisual.anchor?.trim()) {
+    const chapterHero = editingVisual.role === "section" && Boolean(editingVisual.section_slug) && !editingVisual.anchor;
+    if (editingVisual.role !== "hero" && !chapterHero && !editingVisual.anchor?.trim()) {
       setVisualError("Pilih penanda dalam manuskrip sebelum menyimpan gambar dalam teks.");
       return;
     }
-    if (editingVisual.role !== "hero" && isImageMarker(editingVisual.anchor)) {
+    if (editingVisual.role !== "hero" && !editingVisual.section_slug && isImageMarker(editingVisual.anchor)) {
       const marker = editingVisual.anchor!.trim();
       if (savedBody.split(marker).length !== 2) {
         setVisualError("Penanda mesti muncul tepat sekali dalam manuskrip yang telah disimpan.");
@@ -1343,7 +1353,15 @@ export default function EditWorkPage() {
     // Same read/write naming split as credits (see handleSaveCredit): the
     // GET response and editingVisual use the DB column name creation_id,
     // but the API expects creationId — translate it here.
-    const payload = { ...editingVisual, anchor: editingVisual.role === "hero" ? null : editingVisual.anchor, creationId: editingVisual.creation_id };
+    const payload = {
+      ...editingVisual,
+      anchor: editingVisual.role === "hero" ? null : editingVisual.anchor,
+      creationId: editingVisual.creation_id,
+      // Only sent when the editor chose a crop, so saving other details never needs migration 022.
+      ...(editingVisual.focus_x != null || editingVisual.focus_y != null || editingVisual.zoom != null
+        ? { focusX: editingVisual.focus_x ?? 50, focusY: editingVisual.focus_y ?? 50, zoom: editingVisual.zoom ?? 100 }
+        : {})
+    };
 
     try {
       if (editingVisual.id) {
@@ -1999,6 +2017,19 @@ export default function EditWorkPage() {
             Apabila bab wujud, ia menjadi struktur kanonik pembaca.
           </p>
 
+          {chapterImagesFor ? (() => {
+            const section = sections.find((item) => item.slug === chapterImagesFor);
+            return section ? (
+              <ChapterImages
+                workId={workId}
+                section={{ slug: section.slug, title: section.title, body: section.body }}
+                visuals={visuals}
+                published={form.status === "published"}
+                onChanged={() => { void loadVisuals(); void loadReadiness(); }}
+              />
+            ) : null;
+          })() : null}
+
           {editingSection && (
             <div className="admin-credit-form">
               <div className="admin-form-row">
@@ -2103,6 +2134,14 @@ export default function EditWorkPage() {
                             onClick={() => setEditingSection(section)}
                           >
                             Edit
+                          </button>
+                          <button
+                            type="button"
+                            className="admin-btn admin-btn-sm"
+                            aria-pressed={chapterImagesFor === section.slug}
+                            onClick={() => setChapterImagesFor((current) => (current === section.slug ? null : section.slug))}
+                          >
+                            Gambar{visuals.some((visual) => visual.section_slug === section.slug) ? ` (${visuals.filter((visual) => visual.section_slug === section.slug).length})` : ""}
                           </button>
                           <button
                             type="button"
@@ -2412,6 +2451,14 @@ export default function EditWorkPage() {
                 <span className="admin-form-hint">Untuk memindahkan gambar: sisip penanda di manuskrip, simpan teks &amp; maklumat, kemudian pilih penanda itu di sini. Gambar sedia ada tidak diganti.</span>
               </div>}
 
+              {editingVisual.id && editingVisual.src ? (
+                <ImageFocusPicker
+                  src={editingVisual.src}
+                  value={{ x: editingVisual.focus_x ?? 50, y: editingVisual.focus_y ?? 50, zoom: editingVisual.zoom ?? 100 }}
+                  onChange={(next) => setEditingVisual((prev) => ({ ...prev, focus_x: next.x, focus_y: next.y, zoom: next.zoom }))}
+                />
+              ) : null}
+
               <div className="admin-form-actions">
                 <button
                   type="button"
@@ -2444,7 +2491,7 @@ export default function EditWorkPage() {
               ))}
             </div>
           )}
-          {visuals.some((visual) => visual.role === "inline") && (
+          {visuals.some((visual) => visual.role === "inline" && !visual.section_slug) && (
             <div className="admin-form-group">
               <h4>Urus penanda gambar</h4>
               <p className="admin-form-hint">Jika ada penanda lama, semak kedudukannya sebelum menukar kepada [[gambar:N]]. Petikan yang tidak jelas akan dilangkau. Penukaran boleh dipulihkan selagi manuskrip belum disunting lagi.</p>

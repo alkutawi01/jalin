@@ -110,7 +110,11 @@ export function materialHashOf(input: NonNullable<Awaited<ReturnType<typeof load
     // The editor note is shown to readers, so changing it is an unpublished change.
     editorNote: ((w.metadata ?? {}) as { editorNote?: string }).editorNote ?? null,
     credits: input.credits.map((c) => [c.contributor_slug, c.guest_name, c.role_label, c.byline, c.is_public, c.sort_order]),
-    visuals: input.visuals.map((v) => [v.role, v.src, v.alt, v.anchor, v.place, v.sort_order, v.provider]),
+    // The crop and the chapter join the hash only once set, so works published before they existed keep their hash.
+    visuals: input.visuals.map((v) => {
+      const extra = [v.focus_x ?? null, v.focus_y ?? null, v.zoom ?? null, v.section_slug ?? null];
+      return [v.role, v.src, v.alt, v.anchor, v.place, v.sort_order, v.provider, ...(extra.some((e) => e !== null) ? extra : [])];
+    }),
     glossary: input.glossary.map((g) => [g.term, g.meaning, g.source, g.sort_order]),
     sections: input.readingSections.map((r) => [r.slug, r.title, r.body, r.position]),
     source: input.sourceWork
@@ -176,6 +180,10 @@ function buildSnapshot(input: Awaited<ReturnType<typeof loadWorkForRevision>>) {
       place: v.place,
       sort_order: v.sort_order,
       is_asset_finalized: v.is_asset_finalized,
+      focus_x: v.focus_x ?? null,
+      focus_y: v.focus_y ?? null,
+      zoom: v.zoom ?? null,
+      section_slug: v.section_slug ?? null,
     })),
     glossary: input.glossary.map((g) => ({
       term: g.term,

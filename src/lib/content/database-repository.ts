@@ -3,6 +3,7 @@ import type { ContributorMeta } from "./contributors";
 import type { ContentRepository } from "./repository";
 import { getDb, hasDb } from "../db";
 import { isSourcedWork } from "./source-origin";
+import { cropFromRow } from "../reader/crop";
 
 /** Reader-safe public source provenance — never includes rights_notes/evidence/history/reviewed_by/reviewed_at/source_url. */
 function mapPublicSourceWork(row: any): SourceWorkRef | undefined {
@@ -229,6 +230,8 @@ export class DatabaseContentRepository implements ContentRepository {
         creationId: v.creation_id ? String(v.creation_id) : undefined,
         anchor: v.anchor ? String(v.anchor) : undefined,
         place: (v.place === "before" ? "before" : "after") as "before" | "after",
+        ...(cropFromRow(v) ? { crop: cropFromRow(v)! } : {}),
+        ...(v.section_slug ? { sectionSlug: String(v.section_slug) } : {}),
       });
     }
 
@@ -491,6 +494,8 @@ export class DatabaseContentRepository implements ContentRepository {
           creationId: v.creation_id ? String(v.creation_id) : v.creationId ? String(v.creationId) : undefined,
           anchor: v.anchor ? String(v.anchor) : undefined,
           place: v.place === "before" ? "before" : "after",
+          ...(cropFromRow(v) ? { crop: cropFromRow(v)! } : {}),
+          ...(v.section_slug || v.sectionSlug ? { sectionSlug: String(v.section_slug ?? v.sectionSlug) } : {}),
         })),
         glossary: (snapshot.glossary || []).map((g: any) => ({ term: String(g.term || ""), meaning: String(g.meaning || ""), source: String(g.source || "") })),
         editorialHistory: snapshot.editorialHistory || [],
