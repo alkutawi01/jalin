@@ -1,3 +1,4 @@
+import { visibleCharacters } from "../../../../lib/reader/visible-characters";
 import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { displayableGenre } from "../../../../lib/reader/genre-display";
@@ -21,6 +22,7 @@ import MobileStoryInfo from "../../../../components/reader/MobileStoryInfo";
 import { initContentRepository } from "../../../../lib/content";
 import { getWorkBySlug, getWorksByType } from "../../../../lib/content/workLoader";
 import {
+  disclosureNoteFor,
   projectBylineCredits,
   projectEditorialCredits
 } from "../../../../lib/reader/credit-projection";
@@ -281,9 +283,10 @@ export default async function WorkPage({
   const byline = projectBylineCredits(work.credits);
   const typeLabel = TYPE_LABELS[type] ?? type;
   const workMeta = buildMetaRows(work);
-  const characters: CharacterMeta[] = (work.metadata?.characters ?? []).map(({ name, role }) => ({
+  const allCharacters: CharacterMeta[] = (work.metadata?.characters ?? []).map(({ name, role, firstAppearanceSection }) => ({
     name,
-    role
+    role,
+    firstAppearanceSection
   }));
   const editorial = projectEditorialCredits(work.credits);
   const originalTitle = originalTitleOf(work);
@@ -313,6 +316,10 @@ export default async function WorkPage({
   const segmentGlossaries = firstGlossaryBySegment(segmentNodes, glossary);
 
   const publicSections = projectPublicSections(sections);
+  // A chapter only introduces the characters who have appeared so far, so early chapters do not spoil later ones.
+  const characters = visibleCharacters(allCharacters, sections.map((section) => section.slug), activeSection?.slug)
+    .map(({ name, role }) => ({ name, role }));
+  const disclosureNote = disclosureNoteFor(work);
 
   const sameTypeWorks = await getWorksByTypeUnified(type as WorkType);
   const relatedWorks = sameTypeWorks
@@ -354,7 +361,7 @@ export default async function WorkPage({
     work: workMeta,
     characters,
     editorial,
-    note: work.reader?.note ?? "Penulis Maya bekerja di bawah kawal selia editorial manusia.",
+    note: disclosureNote,
     ...(chapterItems.length > 0 ? { bab: chapterItems } : {})
   };
 
@@ -388,7 +395,7 @@ export default async function WorkPage({
         <div className="site-shell reading-grid">
           <LeftRail
             rows={workMeta}
-            note="Penulis Maya bekerja di bawah kawal selia editorial manusia."
+            note={disclosureNote}
           >
             <SectionIndexDetails items={chapterItems} />
           </LeftRail>

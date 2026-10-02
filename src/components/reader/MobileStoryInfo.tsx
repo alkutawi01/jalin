@@ -11,6 +11,26 @@ export default function MobileStoryInfo({ data }: { data: StoryInfoData }) {
   const [dragY, setDragY] = useState(0);
   const startY = useRef<number | null>(null);
   const edgeStart = useRef<{ x: number; y: number } | null>(null);
+  const handleRef = useRef<HTMLButtonElement>(null);
+  const wasOpen = useRef(false);
+
+  // The sheet behaves as a dialog: focus moves in, the page behind does not scroll, and focus returns to Info on close.
+  useEffect(() => {
+    if (open) {
+      const previousOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      document.getElementById(`sheet-tab-${tab}`)?.focus();
+      wasOpen.current = true;
+      return () => {
+        document.body.style.overflow = previousOverflow;
+      };
+    }
+    if (wasOpen.current) {
+      wasOpen.current = false;
+      handleRef.current?.focus();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) { if (event.key === "Escape") setOpen(false); }
@@ -52,10 +72,10 @@ export default function MobileStoryInfo({ data }: { data: StoryInfoData }) {
   }
 
   return <>
-    <button type="button" className="mobile-info-handle" onClick={() => setOpen(true)} aria-expanded={open} aria-controls="mobile-story-info">Info</button>
+    <button ref={handleRef} type="button" className="mobile-info-handle" onClick={() => setOpen(true)} aria-expanded={open} aria-controls="mobile-story-info">Info</button>
     {open && <div className="mobile-info-layer">
       <button type="button" className="mobile-info-backdrop" aria-label="Tutup maklumat karya" onClick={() => setOpen(false)} />
-      <section id="mobile-story-info" className="mobile-info-sheet" style={{ transform: "translateY(" + dragY + "px)" }} aria-label="Maklumat karya">
+      <section id="mobile-story-info" role="dialog" aria-modal="true" className="mobile-info-sheet" style={{ transform: "translateY(" + dragY + "px)" }} aria-label="Maklumat karya">
         <div className="sheet-drag-zone" onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={onPointerUp}>
           <span className="sheet-grabber" />
         </div>
