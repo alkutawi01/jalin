@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import { displayableGenre } from "../../../../lib/reader/genre-display";
 import { classifyFragmen } from "../../../../lib/content/fragmen-kind";
 import { absoluteUrl } from "../../../../lib/seo";
+import { jsonLdString, workJsonLd } from "../../../../lib/seo-jsonld";
 import {
   EditorialImage,
   LeftRail,
@@ -68,27 +69,33 @@ export async function generateMetadata({
   const hero = work.visuals.find((visual) => visual.role === "hero");
 
   const sections = work.sections && work.sections.length > 0 ? work.sections : [];
-  const primarySlug = sections.length > 0 ? sectionSlug ?? sections[0]!.slug : undefined;
-  const canonicalPath =
-    type === "novela" && primarySlug
-      ? `/kategori/${type}/${slug}/${primarySlug}`
-      : `/kategori/${type}/${slug}`;
+  const sectionIndex = sectionSlug ? sections.findIndex((section) => section.slug === sectionSlug) : -1;
+  const chapter = sectionIndex >= 0 ? sections[sectionIndex] : undefined;
+  const canonicalPath = chapter
+    ? `/kategori/${type}/${slug}/${chapter.slug}`
+    : `/kategori/${type}/${slug}`;
+  // A chapter has its own title and description, so a search result or a shared link says which chapter it is.
+  const chapterLabel = chapter ? `Bab ${sectionIndex + 1}${chapter.title ? `: ${chapter.title}` : ""}` : "";
+  const pageTitle = chapter ? `${chapterLabel} · ${work.title}` : work.title;
+  const pageDescription = chapter
+    ? `Bab ${sectionIndex + 1} daripada ${sections.length} · ${work.title}. ${description}`
+    : description;
 
   return {
-    title: work.title,
-    description,
+    title: pageTitle,
+    description: pageDescription,
     alternates: { canonical: canonicalPath },
     openGraph: {
       type: "article",
-      title: work.title,
-      description,
+      title: pageTitle,
+      description: pageDescription,
       url: canonicalPath,
       images: hero?.src ? [{ url: absoluteUrl(hero.src) }] : undefined
     },
     twitter: {
       card: hero?.src ? "summary_large_image" : "summary",
-      title: work.title,
-      description,
+      title: pageTitle,
+      description: pageDescription,
       images: hero?.src ? [absoluteUrl(hero.src)] : undefined
     }
   };
@@ -414,6 +421,29 @@ export default async function WorkPage({
         <RelatedWorks works={relatedWorks} typeLabel={typeLabel} />
 
         <MobileStoryInfo data={mobileInfo} />
+
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: jsonLdString(
+              workJsonLd(
+                {
+                  slug: work.slug,
+                  title: work.title,
+                  type: work.type,
+                  dek: work.dek,
+                  genre: displayableGenre(work.genre),
+                  publishedAt: work.publishedAt,
+                  updatedAt: work.updatedAt,
+                  heroSrc: hero?.src,
+                  authors: byline.map((person) => person.name),
+                  sections: sections.map((section) => ({ slug: section.slug, title: section.title ?? undefined }))
+                },
+                activeSection?.slug
+              )
+            )
+          }}
+        />
       </main>
 
       <SiteFooter />
