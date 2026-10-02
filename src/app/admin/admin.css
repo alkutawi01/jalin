@@ -518,3 +518,12 @@
 .a-shell .a-sections-table td:first-child, .a-shell .a-sections-table th:first-child { min-width: 0; white-space: nowrap; }
 .a-shell .a-sections-table td:nth-child(3) { white-space: normal; }
 .a-shell .a-sections-table .admin-table-actions { justify-content: flex-start; }
+
+/* Editor picks: chosen works and the search to add one. */
+.a-shell .a-pick-chips { list-style: none; margin: 0 0 16px; padding: 0; display: grid; gap: 8px; }
+.a-shell .a-pick-chip { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 14px; border: 1px solid var(--a-line, #e4dccd); border-radius: 10px; background: var(--a-surface, #fff); }
+.a-shell .a-pick-search { position: relative; max-width: 560px; }
+.a-shell .a-pick-results { list-style: none; margin: 6px 0 0; padding: 4px; border: 1px solid var(--a-line, #e4dccd); border-radius: 10px; background: var(--a-surface, #fff); }
+.a-shell .a-pick-results button { display: flex; width: 100%; justify-content: space-between; gap: 12px; padding: 9px 12px; border: 0; border-radius: 8px; background: transparent; text-align: left; font: inherit; color: inherit; cursor: pointer; }
+.a-shell .a-pick-results button:hover, .a-shell .a-pick-results button:focus-visible { background: #f4efe4; }
+.a-shell .a-pick-none { padding: 8px 12px; }
