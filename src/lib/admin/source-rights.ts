@@ -15,6 +15,7 @@ import {
 } from "./publication-readiness";
 import { evaluatePublicationReadiness } from "./publication-service";
 import { classifyFragmen, fragmenTextHash, readFragmenTextReview } from "../content/fragmen-kind";
+import { isSourcedWork } from "../content/source-origin";
 
 /** Rights states that block publication (BLOCK). */
 export const RIGHTS_BLOCK_STATUSES: ReadonlySet<string> = new Set([
@@ -55,6 +56,12 @@ export interface SourceWorkRow {
   source_url: string | null;
   source_locator: string | null;
   source_text_basis: string | null;
+  publisher?: string | null;
+  edition_year?: number | null;
+  printing?: string | null;
+  editor_name?: string | null;
+  translator_name?: string | null;
+  isbn?: string | null;
   rights_status: string;
   rights_notes: string | null;
   rights_evidence: string | null;
@@ -79,6 +86,8 @@ export interface SourceRightsAdminView {
   workId: string;
   isDerivative: boolean;
   fragmenTextLanguage: string | null;
+  /** Source fields the chatbot filled in that no editor has reviewed yet. */
+  chatbotFilledFields: string[];
   /** Human confirmation that the displayed fragment text is Bahasa Melayu (null = not confirmed). */
   fragmenTextReview: { reviewedBy: string; reviewedAt: string; current: boolean } | null;
   sourceWork: {
@@ -91,6 +100,12 @@ export interface SourceRightsAdminView {
     sourceUrl: string | null;
     sourceLocator: string | null;
     sourceTextBasis: string | null;
+    publisher: string | null;
+    editionYear: number | null;
+    printing: string | null;
+    editorName: string | null;
+    translatorName: string | null;
+    isbn: string | null;
     rightsStatus: string;
     rightsNotes: string | null;
     rightsEvidence: string | null;
@@ -182,7 +197,7 @@ export async function getSourceRightsView(
     .executeTakeFirst();
   if (!work) return null;
 
-  const isDerivative = isDerivativeWorkType(String(work.type));
+  const isDerivative = isSourcedWork(String(work.type), work.metadata);
   const source = await loadSourceWork(db, workId);
 
   // Compute rights blockers via central readiness for a single source of truth.
@@ -198,6 +213,8 @@ export async function getSourceRightsView(
     isDerivative,
     fragmenTextLanguage: typeof work.metadata?.fragmenTextLanguage === "string"
       ? work.metadata.fragmenTextLanguage : null,
+    chatbotFilledFields: Array.isArray((work.metadata as { sourceChatbotFields?: unknown } | null)?.sourceChatbotFields)
+      ? ((work.metadata as { sourceChatbotFields: unknown[] }).sourceChatbotFields.map(String)) : [],
     fragmenTextReview: (() => {
       const r = readFragmenTextReview(work.metadata);
       return r ? { reviewedBy: r.reviewedBy, reviewedAt: r.reviewedAt, current: r.textHash === fragmenTextHash(work.body) } : null;
@@ -213,6 +230,12 @@ export async function getSourceRightsView(
           sourceUrl: source.source_url,
           sourceLocator: source.source_locator,
           sourceTextBasis: source.source_text_basis,
+          publisher: source.publisher ?? null,
+          editionYear: source.edition_year ?? null,
+          printing: source.printing ?? null,
+          editorName: source.editor_name ?? null,
+          translatorName: source.translator_name ?? null,
+          isbn: source.isbn ?? null,
           rightsStatus: String(source.rights_status),
           rightsNotes: source.rights_notes,
           rightsEvidence: source.rights_evidence,
@@ -227,6 +250,20 @@ export async function getSourceRightsView(
   };
 }
 
+const EDITION_KEYS = ["publisher", "edition_year", "printing", "editor_name", "translator_name", "isbn"] as const;
+
+/**
+ * The edition columns exist only after migration 021. Until then they are left out of every write, so
+ * saving a source keeps working; if an editor does fill one in before the migration, the database says so.
+ */
+function withoutUnusedEdition<T extends Record<string, unknown>>(values: T, existing: unknown, touched: boolean): T {
+  const hasColumns = Boolean(existing) && typeof existing === "object" && "publisher" in (existing as object);
+  if (hasColumns || touched) return values;
+  const copy: Record<string, unknown> = { ...values };
+  for (const key of EDITION_KEYS) delete copy[key];
+  return copy as T;
+}
+
 export interface SourceProvenanceInput {
   fragmenTextLanguage?: string | null;
   originalTitle?: string | null;
@@ -237,6 +274,14 @@ export interface SourceProvenanceInput {
   sourceUrl?: string | null;
   sourceLocator?: string | null;
   sourceTextBasis?: string | null;
+  publisher?: string | null;
+  editionYear?: number | null;
+  printing?: string | null;
+  editorName?: string | null;
+  translatorName?: string | null;
+  isbn?: string | null;
+  /** Fields the chatbot filled in; shown to the editor until the next rights review. */
+  chatbotFields?: string[];
   rightsNotes?: string | null;
   rightsEvidence?: string | null;
 }
@@ -304,9 +349,9 @@ export async function upsertSourceProvenance(
   if (!work) throw new Error("Work tidak ditemui.");
 
   const type = String(work.type);
-  if (!isDerivativeWorkType(type)) {
+  if (!isSourcedWork(type, work.metadata)) {
     throw new Error(
-      `Source provenance hanya untuk karya derivative (terjemahan/fragmen/sinopsis) — Work ini jenis "${type}".`
+      `Maklumat sumber hanya untuk karya bersumber (terjemahan, fragmen, sinopsis, atau cerpen/novela yang ditanda "daripada sumber lain") — karya ini jenis "${type}".`
     );
   }
 
@@ -330,11 +375,18 @@ export async function upsertSourceProvenance(
     source_locator: input.sourceLocator !== undefined ? input.sourceLocator : existing?.source_locator ?? null,
     source_text_basis:
       input.sourceTextBasis !== undefined ? input.sourceTextBasis : existing?.source_text_basis ?? null,
+    publisher: input.publisher !== undefined ? input.publisher : existing?.publisher ?? null,
+    edition_year: input.editionYear !== undefined ? input.editionYear : existing?.edition_year ?? null,
+    printing: input.printing !== undefined ? input.printing : existing?.printing ?? null,
+    editor_name: input.editorName !== undefined ? input.editorName : existing?.editor_name ?? null,
+    translator_name: input.translatorName !== undefined ? input.translatorName : existing?.translator_name ?? null,
+    isbn: input.isbn !== undefined ? input.isbn : existing?.isbn ?? null,
     rights_notes: input.rightsNotes !== undefined ? input.rightsNotes : existing?.rights_notes ?? null,
     rights_evidence:
       input.rightsEvidence !== undefined ? input.rightsEvidence : existing?.rights_evidence ?? null,
   };
 
+  const editionTouched = [input.publisher, input.editionYear, input.printing, input.editorName, input.translatorName, input.isbn].some((v) => v !== undefined);
   const nextHash = computeMaterialHash(next);
   const actorId = actor.email || actor.id;
   const nowIso = new Date().toISOString();
@@ -351,7 +403,15 @@ export async function upsertSourceProvenance(
   const evidenceChanged = existing
     ? norm(existing.rights_notes) !== norm(next.rights_notes) || norm(existing.rights_evidence) !== norm(next.rights_evidence)
     : false;
-  const invalidatedApproval = invalidatedByLanguage || (wasPass && (materialChanged || evidenceChanged));
+  // Edition details (publisher, printing year, editor, translator, ISBN) are part of what the approval
+  // rested on. They are compared here rather than added to the material hash, so approvals given before
+  // these fields existed stay valid until someone actually changes one.
+  const editionChanged = existing
+    ? (["publisher", "edition_year", "printing", "editor_name", "translator_name", "isbn"] as const).some(
+        (key) => String(existing[key] ?? "").trim() !== String(next[key] ?? "").trim()
+      )
+    : false;
+  const invalidatedApproval = invalidatedByLanguage || (wasPass && (materialChanged || evidenceChanged || editionChanged));
 
   const history = parseRightsHistory(existing?.rights_history ?? null);
   if (existing) {
@@ -362,8 +422,8 @@ export async function upsertSourceProvenance(
       rights_status: invalidatedApproval ? "needs_review" : String(existing.rights_status),
       material_hash: nextHash,
       note: invalidatedApproval
-        ? evidenceChanged && !materialChanged
-          ? "Catatan atau bukti hak berubah selepas kelulusan — semakan hak perlu diulang."
+        ? (evidenceChanged || editionChanged) && !materialChanged
+          ? "Catatan, bukti hak atau butiran naskhah berubah selepas kelulusan — semakan hak perlu diulang."
           : "Material provenance berubah selepas kelulusan — semakan hak perlu diulang."
         : undefined,
     });
@@ -373,7 +433,7 @@ export async function upsertSourceProvenance(
     await db
       .updateTable("source_works")
       .set({
-        ...next,
+        ...withoutUnusedEdition(next, existing, editionTouched),
         rights_status: invalidatedApproval ? "needs_review" : existing.rights_status,
         reviewed_at: invalidatedApproval ? null : existing.reviewed_at,
         reviewed_by: invalidatedApproval ? null : existing.reviewed_by,
@@ -388,7 +448,7 @@ export async function upsertSourceProvenance(
       .insertInto("source_works")
       .values({
         work_id: workId,
-        ...next,
+        ...withoutUnusedEdition(next, existing, editionTouched),
         rights_status: "unknown",
         rights_history: JSON.stringify([
           {
@@ -409,6 +469,14 @@ export async function upsertSourceProvenance(
       .execute();
   }
 
+  if (input.chatbotFields && input.chatbotFields.length > 0) {
+    const fresh = await db.selectFrom("works").where("id", "=", workId).select("metadata").executeTakeFirst();
+    const metadata = { ...((fresh?.metadata ?? {}) as Record<string, unknown>) };
+    const have = Array.isArray(metadata.sourceChatbotFields) ? (metadata.sourceChatbotFields as unknown[]).map(String) : [];
+    metadata.sourceChatbotFields = [...new Set([...have, ...input.chatbotFields])];
+    await db.updateTable("works").where("id", "=", workId).set({ metadata: metadata as never }).execute();
+  }
+
   const view = await getSourceRightsView(workId);
   if (!view) throw new Error("Work tidak ditemui.");
   return { view, invalidatedApproval };
@@ -427,6 +495,12 @@ export interface RightsReviewInput {
   sourceUrl?: string | null;
   sourceLocator?: string | null;
   sourceTextBasis?: string | null;
+  publisher?: string | null;
+  editionYear?: number | null;
+  printing?: string | null;
+  editorName?: string | null;
+  translatorName?: string | null;
+  isbn?: string | null;
 }
 
 /**
@@ -448,9 +522,9 @@ export async function performRightsReview(
   if (!work) throw new Error("Work tidak ditemui.");
 
   const type = String(work.type);
-  if (!isDerivativeWorkType(type)) {
+  if (!isSourcedWork(type, work.metadata)) {
     throw new Error(
-      `Rights review hanya untuk karya derivative — Work ini jenis "${type}".`
+      `Semakan hak hanya untuk karya bersumber — karya ini jenis "${type}" dan tidak ditanda "daripada sumber lain".`
     );
   }
 
@@ -500,6 +574,12 @@ export async function performRightsReview(
       input.sourceLocator !== undefined ? input.sourceLocator : existing?.source_locator ?? null,
     source_text_basis:
       input.sourceTextBasis !== undefined ? input.sourceTextBasis : existing?.source_text_basis ?? null,
+    publisher: input.publisher !== undefined ? input.publisher : existing?.publisher ?? null,
+    edition_year: input.editionYear !== undefined ? input.editionYear : existing?.edition_year ?? null,
+    printing: input.printing !== undefined ? input.printing : existing?.printing ?? null,
+    editor_name: input.editorName !== undefined ? input.editorName : existing?.editor_name ?? null,
+    translator_name: input.translatorName !== undefined ? input.translatorName : existing?.translator_name ?? null,
+    isbn: input.isbn !== undefined ? input.isbn : existing?.isbn ?? null,
     rights_status: status,
     rights_notes:
       input.rights_notes !== undefined ? input.rights_notes : existing?.rights_notes ?? null,
@@ -513,6 +593,7 @@ export async function performRightsReview(
     updated_at: nowIso,
   };
 
+  const editionTouchedReview = [input.publisher, input.editionYear, input.printing, input.editorName, input.translatorName, input.isbn].some((v) => v !== undefined);
   const materialHash = computeMaterialHash(merged);
   const pass = isPassRightsStatus(status);
 
@@ -549,6 +630,12 @@ export async function performRightsReview(
     source_url: merged.source_url,
     source_locator: merged.source_locator,
     source_text_basis: merged.source_text_basis,
+    publisher: merged.publisher ?? null,
+    edition_year: merged.edition_year ?? null,
+    printing: merged.printing ?? null,
+    editor_name: merged.editor_name ?? null,
+    translator_name: merged.translator_name ?? null,
+    isbn: merged.isbn ?? null,
     rights_status: status,
     rights_notes: merged.rights_notes,
     rights_evidence: merged.rights_evidence,
@@ -563,17 +650,27 @@ export async function performRightsReview(
   if (existing) {
     await db
       .updateTable("source_works")
-      .set(values)
+      .set(withoutUnusedEdition(values, existing, editionTouchedReview))
       .where("work_id", "=", workId)
       .execute();
   } else {
     await db
       .insertInto("source_works")
       .values({
-        ...values,
+        ...withoutUnusedEdition(values, existing, editionTouchedReview),
         created_at: nowIso,
       } as never)
       .execute();
+  }
+
+  // The editor has now looked at these fields, so they are no longer "suggested by the chatbot".
+  {
+    const fresh = await db.selectFrom("works").where("id", "=", workId).select("metadata").executeTakeFirst();
+    const metadata = { ...((fresh?.metadata ?? {}) as Record<string, unknown>) };
+    if (metadata.sourceChatbotFields) {
+      delete metadata.sourceChatbotFields;
+      await db.updateTable("works").where("id", "=", workId).set({ metadata: metadata as never }).execute();
+    }
   }
 
   const view = await getSourceRightsView(workId);

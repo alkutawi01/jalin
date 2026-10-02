@@ -1,5 +1,6 @@
 "use client";
 
+import { isSourcedWork } from "@/lib/content/source-origin";
 import { useState, useEffect, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import WorkVisualUpload from "../../../../components/admin/WorkVisualUpload";
@@ -53,7 +54,7 @@ interface WorkData {
   published_at: string | null;
   published_by?: string | null;
   updated_at: string;
-  metadata?: { editorNote?: string } | null;
+  metadata?: { editorNote?: string; origin?: string } | null;
 }
 
 interface ReadinessIssue {
@@ -181,7 +182,7 @@ interface SectionData {
   reading_minutes: number | null;
 }
 
-const DERIVATIVE_TYPES = new Set(["terjemahan", "fragmen", "sinopsis"]);
+const isSourced = (type: string, origin: string) => isSourcedWork(type, { origin });
 
 const RIGHTS_STATUS_OPTIONS = [
   { value: "unknown", label: "Belum diketahui" },
@@ -196,6 +197,7 @@ const RIGHTS_STATUS_OPTIONS = [
 interface SourceRightsData {
   workId: string;
   isDerivative: boolean;
+  chatbotFilledFields?: string[];
   fragmenTextLanguage: string | null;
   fragmenTextReview?: { reviewedBy: string; reviewedAt: string; current: boolean } | null;
   sourceWork: {
@@ -208,6 +210,12 @@ interface SourceRightsData {
     sourceUrl: string | null;
     sourceLocator: string | null;
     sourceTextBasis: string | null;
+    publisher: string | null;
+    editionYear: number | null;
+    printing: string | null;
+    editorName: string | null;
+    translatorName: string | null;
+    isbn: string | null;
     rightsStatus: string;
     rightsNotes: string | null;
     rightsEvidence: string | null;
@@ -320,7 +328,8 @@ export default function EditWorkPage() {
       body: form.body,
       glossaryTerms: glossaryTerms.map((term) => term.term),
       characterNames: characters.map((c) => c.name),
-      chapterSlugs: form.type === "novela" ? sections.map((section) => section.slug) : []
+      chapterSlugs: form.type === "novela" ? sections.map((section) => section.slug) : [],
+      origin: form.origin
     });
     try {
       await navigator.clipboard.writeText(prompt);
@@ -426,22 +435,37 @@ export default function EditWorkPage() {
       }
 
       // 4) source (fragmen, sinopsis): only empty fields; rights are never filled
-      if (result.source && (form.type === "fragmen" || form.type === "sinopsis")) {
+      if (result.source && isSourced(form.type, form.origin)) {
         const cur = await fetch(`/api/admin/works/${workId}/source-rights`).then((r) => (r.ok ? r.json() : null)).catch(() => null);
         const sw = cur?.sourceWork ?? {};
-        const body: Record<string, string> = {};
-        if (result.source.title && !sw.originalTitle) body.originalTitle = result.source.title;
-        if (result.source.author && !sw.author) body.author = result.source.author;
-        if (result.source.language && !sw.originalLanguage) body.originalLanguage = result.source.language;
-        if (result.source.basis && !sw.sourceTextBasis) body.sourceTextBasis = result.source.basis;
+        const body: Record<string, string | number> = {};
+        const filled: string[] = [];
+        const put = (key: string, value: string | number | null | undefined, current: unknown) => {
+          if (value === null || value === undefined || value === "") return;
+          if (current !== null && current !== undefined && String(current).trim() !== "") return;
+          body[key] = value;
+          filled.push(key);
+        };
+        put("originalTitle", result.source.title, sw.originalTitle);
+        put("author", result.source.author, sw.author);
+        put("originalLanguage", result.source.language, sw.originalLanguage);
+        put("sourceTextBasis", result.source.basis, sw.sourceTextBasis);
+        put("publicationYear", result.source.firstPublished, sw.publicationYear);
+        put("publisher", result.source.publisher, sw.publisher);
+        put("editionYear", result.source.editionYear, sw.editionYear);
+        put("printing", result.source.printing, sw.printing);
+        put("editorName", result.source.editor, sw.editorName);
+        put("translatorName", result.source.translator, sw.translatorName);
+        put("isbn", result.source.isbn, sw.isbn);
+        put("sourceLocator", result.source.locator, sw.sourceLocator);
         if (Object.keys(body).length > 0) {
           const res = await fetch(`/api/admin/works/${workId}/source-rights`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(body)
+            body: JSON.stringify({ ...body, chatbotFields: filled })
           });
           if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || "Gagal menyimpan sumber.");
-          notes.push(`Sumber: ${Object.keys(body).length} medan diisi. Hak dan bukti tidak diisi; semak di tab Sumber & Hak.`);
+          notes.push(`Sumber: ${Object.keys(body).length} medan diisi. Medan yang chatbot tidak tahu dibiarkan kosong. Hak dan bukti tidak diisi; semak di tab Sumber & Hak.`);
         } else {
           notes.push("Sumber: tiada medan kosong untuk diisi.");
         }
@@ -581,6 +605,7 @@ export default function EditWorkPage() {
     version: "v0.1",
     publishedAt: "",
     editorNote: "",
+    origin: "asli",
   });
 
   const [credits, setCredits] = useState<CreditData[]>([]);
@@ -647,6 +672,12 @@ export default function EditWorkPage() {
     sourceUrl: "",
     sourceLocator: "",
     sourceTextBasis: "",
+    publisher: "",
+    editionYear: "",
+    printing: "",
+    editorName: "",
+    translatorName: "",
+    isbn: "",
     rightsNotes: "",
     rightsEvidence: "",
     rightsStatus: "needs_review",
@@ -673,6 +704,7 @@ export default function EditWorkPage() {
           version: work.version_label || work.version,
           publishedAt: work.published_at ? work.published_at.split("T")[0] : "",
           editorNote: work.metadata?.editorNote ?? "",
+          origin: work.metadata?.origin === "sumber" ? "sumber" : "asli",
         });
         setSavedBody(work.body || "");
       } catch (err) {
@@ -818,6 +850,12 @@ export default function EditWorkPage() {
           sourceUrl: data.sourceWork.sourceUrl || "",
           sourceLocator: data.sourceWork.sourceLocator || "",
           sourceTextBasis: data.sourceWork.sourceTextBasis || "",
+          publisher: data.sourceWork.publisher || "",
+          editionYear: data.sourceWork.editionYear?.toString() || "",
+          printing: data.sourceWork.printing || "",
+          editorName: data.sourceWork.editorName || "",
+          translatorName: data.sourceWork.translatorName || "",
+          isbn: data.sourceWork.isbn || "",
           rightsNotes: data.sourceWork.rightsNotes || "",
           rightsEvidence: data.sourceWork.rightsEvidence || "",
           rightsStatus: data.sourceWork.rightsStatus || "needs_review",
@@ -829,6 +867,9 @@ export default function EditWorkPage() {
       setSourceLoading(false);
     }
   }
+
+  /** Small tag beside a field the chatbot filled in and no editor has reviewed yet. */
+  const tagFor = (key: string) => ((sourceRights?.chatbotFilledFields ?? []).includes(key) ? <em className="admin-form-hint">(dicadangkan chatbot)</em> : null);
 
   async function handleSaveProvenance() {
     setSourceSaving(true);
@@ -848,6 +889,12 @@ export default function EditWorkPage() {
           sourceUrl: sourceForm.sourceUrl || null,
           sourceLocator: sourceForm.sourceLocator || null,
           sourceTextBasis: sourceForm.sourceTextBasis || null,
+          publisher: sourceForm.publisher || null,
+          editionYear: sourceForm.editionYear ? Number(sourceForm.editionYear) : null,
+          printing: sourceForm.printing || null,
+          editorName: sourceForm.editorName || null,
+          translatorName: sourceForm.translatorName || null,
+          isbn: sourceForm.isbn || null,
           rightsNotes: sourceForm.rightsNotes || null,
           rightsEvidence: sourceForm.rightsEvidence || null,
         }),
@@ -895,6 +942,12 @@ export default function EditWorkPage() {
           sourceUrl: sourceForm.sourceUrl || null,
           sourceLocator: sourceForm.sourceLocator || null,
           sourceTextBasis: sourceForm.sourceTextBasis || null,
+          publisher: sourceForm.publisher || null,
+          editionYear: sourceForm.editionYear ? Number(sourceForm.editionYear) : null,
+          printing: sourceForm.printing || null,
+          editorName: sourceForm.editorName || null,
+          translatorName: sourceForm.translatorName || null,
+          isbn: sourceForm.isbn || null,
         }),
       });
       const data = await res.json();
@@ -1683,7 +1736,7 @@ export default function EditWorkPage() {
         >
           Watak ({characters.length})
         </button>
-        {DERIVATIVE_TYPES.has(form.type) && (
+        {isSourced(form.type, form.origin) && (
           <button
             className={`admin-tab ${activeTab === "source" ? "admin-tab-active" : ""}`}
             aria-pressed={activeTab === "source"}
@@ -1796,6 +1849,25 @@ export default function EditWorkPage() {
               <input id="type" value={WORK_TYPES.find((t) => t.value === form.type)?.label ?? form.type} readOnly aria-describedby="type-hint" />
               <span id="type-hint" className="admin-form-hint">Jenis ditetapkan semasa karya dicipta supaya struktur dan pautannya kekal tepat.</span>
             </div>
+            {(form.type === "cerpen" || form.type === "novela") && (
+              <div className="admin-form-group">
+                <label htmlFor="origin">Asal-usul karya</label>
+                <select
+                  id="origin"
+                  value={form.origin}
+                  onChange={(e) => setForm((prev) => ({ ...prev, origin: e.target.value }))}
+                  disabled={form.status === "published"}
+                >
+                  <option value="asli">Asli Jalin</option>
+                  <option value="sumber">Daripada sumber lain</option>
+                </select>
+                <span className="admin-form-hint">
+                  {form.origin === "sumber"
+                    ? "Tab Sumber & Hak dibuka: isi butiran naskhah dan rekod semakan hak. Simpan dahulu supaya tab itu muncul."
+                    : "Karya asli Jalin tidak memerlukan butiran sumber atau semakan hak."}
+                </span>
+              </div>
+            )}
 
             <div className="admin-form-group">
               <label htmlFor="status">Status</label>
@@ -2647,7 +2719,7 @@ export default function EditWorkPage() {
           </div>
         </div>
       )}
-      {activeTab === "source" && DERIVATIVE_TYPES.has(form.type) && (
+      {activeTab === "source" && isSourced(form.type, form.origin) && (
         <div className="admin-source-rights">
           <div className="admin-credits-header">
             <h3>Sumber karya &amp; semakan hak</h3>
@@ -2710,7 +2782,7 @@ export default function EditWorkPage() {
                     />
                   </div>
                   <div className="admin-form-group">
-                    <label htmlFor="src-year">Tahun terbit</label>
+                    <label htmlFor="src-year">Tahun terbit pertama *</label>
                     <input
                       id="src-year"
                       type="number"
@@ -2763,7 +2835,7 @@ export default function EditWorkPage() {
                 )}
                 <div className="admin-form-row">
                   <div className="admin-form-group">
-                    <label htmlFor="src-edition">Edisi/cetakan sumber</label>
+                    <label htmlFor="src-edition">Edisi (nama edisi, jika ada)</label>
                     <input
                       id="src-edition"
                       type="text"
@@ -2772,7 +2844,7 @@ export default function EditWorkPage() {
                     />
                   </div>
                   <div className="admin-form-group">
-                    <label htmlFor="src-url">URL sumber (http/https)</label>
+                    <label htmlFor="src-url">URL sumber (http/https); wajib jika tiada penerbit</label>
                     <input
                       id="src-url"
                       type="url"
@@ -2782,9 +2854,48 @@ export default function EditWorkPage() {
                     />
                   </div>
                 </div>
+                <fieldset className="admin-form-group" style={{ border: "1px solid #d8dee0", borderRadius: 6, padding: "0.75rem 1rem" }}>
+                  <legend>Naskhah yang digunakan</legend>
+                  <span className="admin-form-hint">
+                    Ini dipaparkan kepada pembaca dalam jadual &quot;Tentang karya&quot;. Tahun terbit pertama ialah tahun karya itu mula diterbitkan; tahun cetakan ialah tahun naskhah di tangan anda dicetak. Jangan campurkan keduanya. Penerbit atau URL sumber mesti ada.
+                  </span>
+                  {(sourceRights?.chatbotFilledFields ?? []).length > 0 && (
+                    <span className="admin-alert admin-alert-info" style={{ display: "block", margin: "0.5rem 0" }}>
+                      Chatbot mengisi: {(sourceRights?.chatbotFilledFields ?? []).join(", ")}. Semak setiap satu dengan naskhah sebenar; tanda ini hilang selepas anda merekod semakan hak.
+                    </span>
+                  )}
+                  <div className="admin-form-row">
+                    <div className="admin-form-group">
+                      <label htmlFor="src-publisher">Penerbit {tagFor("publisher")}</label>
+                      <input id="src-publisher" type="text" value={sourceForm.publisher} onChange={(e) => setSourceForm((p) => ({ ...p, publisher: e.target.value }))} />
+                    </div>
+                    <div className="admin-form-group">
+                      <label htmlFor="src-edition-year">Tahun cetakan {tagFor("editionYear")}</label>
+                      <input id="src-edition-year" type="number" value={sourceForm.editionYear} onChange={(e) => setSourceForm((p) => ({ ...p, editionYear: e.target.value }))} />
+                    </div>
+                    <div className="admin-form-group">
+                      <label htmlFor="src-printing">Cetakan ke {tagFor("printing")}</label>
+                      <input id="src-printing" type="text" value={sourceForm.printing} onChange={(e) => setSourceForm((p) => ({ ...p, printing: e.target.value }))} placeholder="Contoh: Cetakan ketiga" />
+                    </div>
+                  </div>
+                  <div className="admin-form-row">
+                    <div className="admin-form-group">
+                      <label htmlFor="src-editor">Penyunting {tagFor("editorName")}</label>
+                      <input id="src-editor" type="text" value={sourceForm.editorName} onChange={(e) => setSourceForm((p) => ({ ...p, editorName: e.target.value }))} />
+                    </div>
+                    <div className="admin-form-group">
+                      <label htmlFor="src-translator">Penterjemah {tagFor("translatorName")}</label>
+                      <input id="src-translator" type="text" value={sourceForm.translatorName} onChange={(e) => setSourceForm((p) => ({ ...p, translatorName: e.target.value }))} />
+                    </div>
+                    <div className="admin-form-group">
+                      <label htmlFor="src-isbn">ISBN {tagFor("isbn")}</label>
+                      <input id="src-isbn" type="text" value={sourceForm.isbn} onChange={(e) => setSourceForm((p) => ({ ...p, isbn: e.target.value }))} />
+                    </div>
+                  </div>
+                </fieldset>
                 <div className="admin-form-row">
                   <div className="admin-form-group">
-                    <label htmlFor="src-locator">Lokasi (muka surat/bab)</label>
+                    <label htmlFor="src-locator">Lokasi petikan (muka surat/bab)</label>
                     <input
                       id="src-locator"
                       type="text"

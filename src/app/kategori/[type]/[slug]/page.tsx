@@ -110,6 +110,25 @@ async function getWorksByTypeUnified(type: WorkType) {
   return getWorksByType(type);
 }
 
+/** The "Tentang karya" table: which edition the work came from. Rows with nothing to show are left out. */
+function sourceRows(source: { title?: string; author?: string; language?: string; firstPublished?: number; publisher?: string; editionYear?: number; printing?: string; editor?: string; translator?: string; isbn?: string; locator?: string } | undefined): WorkMetaRow[] {
+  if (!source) return [];
+  const printing = [source.editionYear ? `${source.editionYear}` : "", source.printing ?? ""].filter(Boolean).join(", ");
+  const rows: Array<[string, string | undefined]> = [
+    ["Karya asal", source.title],
+    ["Pengarang asal", source.author],
+    ["Bahasa asal", source.language],
+    ["Terbit pertama", source.firstPublished ? String(source.firstPublished) : undefined],
+    ["Penerbit", source.publisher],
+    ["Cetakan", printing || undefined],
+    ["Penyunting", source.editor],
+    ["Penterjemah", source.translator],
+    ["ISBN", source.isbn],
+    ["Lokasi petikan", source.locator]
+  ];
+  return rows.filter((r): r is [string, string] => Boolean(r[1])).map(([label, value]) => ({ label, value }));
+}
+
 function buildMetaRows(work: Awaited<ReturnType<typeof getWork>>): WorkMetaRow[] {
   if (!work) return [];
   const genre = displayableGenre(work.genre);
@@ -123,9 +142,7 @@ function buildMetaRows(work: Awaited<ReturnType<typeof getWork>>): WorkMetaRow[]
     { label: "Bentuk", value: formLabel },
     ...(genre ? [{ label: "Genre", value: genre }] : []),
     { label: "Bacaan", value: work.readingMinutes ? `± ${work.readingMinutes} min` : "—" },
-    ...(work.sourceWork?.language
-      ? [{ label: "Bahasa asal", value: work.sourceWork.language }]
-      : []),
+    ...sourceRows(work.sourceWork),
     ...(work.version ? [{ label: "Versi", value: work.version }] : [])
   ];
 }

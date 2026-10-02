@@ -45,6 +45,15 @@ export interface SourceWorkRef {
   author?: string;
   language?: string;
   rightsStatus?: string;
+  /** Which edition the work was taken from: shown to readers as the "Tentang karya" table. */
+  firstPublished?: number;
+  publisher?: string;
+  editionYear?: number;
+  printing?: string;
+  editor?: string;
+  translator?: string;
+  isbn?: string;
+  locator?: string;
 }
 
 export interface EditorialRevision {

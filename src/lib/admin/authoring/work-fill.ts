@@ -6,6 +6,7 @@
  * and it never overwrites something the editor has already written.
  */
 import { GLOSSARY_FORMAT, GLOSSARY_RULES } from "./glossary-paste";
+import { isSourcedWork } from "../../content/source-origin";
 
 export interface WorkFillPromptInput {
   type: string;
@@ -16,10 +17,12 @@ export interface WorkFillPromptInput {
   characterNames: string[];
   /** Chapter slugs (novela), so the chatbot can say where a character first appears. */
   chapterSlugs: string[];
+  /** Cerpen/Novela only: "sumber" when the editor marked the work as taken from another source. */
+  origin?: string;
 }
 
 export function buildWorkFillPrompt(input: WorkFillPromptInput): string {
-  const derivative = input.type === "fragmen" || input.type === "sinopsis";
+  const derivative = input.type !== "terjemahan" ? isSourcedWork(input.type, { origin: input.origin }) : true;
   const novela = input.chapterSlugs.length > 0;
   const existingChars = input.characterNames.length
     ? `Watak yang SUDAH ada (jangan ulang): ${input.characterNames.join(", ")}.\n`
@@ -53,10 +56,19 @@ Format glosari:
 ${GLOSSARY_FORMAT.replace(/^FORMAT JAWAPAN[^\n]*\n\[GLOSARI\]\n/, "").replace(/\nCONTOH[\s\S]*$/, "")}
 ${derivative ? `
 [SUMBER]
-Tajuk asal: (tajuk karya asal, hanya jika disebut atau jelas daripada teks)
-Pengarang asal: (hanya jika disebut atau jelas)
-Bahasa asal: (bahasa karya asal, hanya jika jelas)
-Asas teks: (edisi atau terjemahan yang menjadi asas, hanya jika disebut)
+Isi SEMUA yang anda tahu dengan yakin tentang naskhah sumber. Jika anda tidak tahu atau tidak pasti, TINGGALKAN baris itu kosong; jangan meneka tahun, penerbit atau ISBN. Editor akan menyemak setiap baris yang anda isi.
+Tajuk asal: (tajuk karya asal)
+Pengarang asal: (nama pengarang asal)
+Bahasa asal: (bahasa karya asal)
+Tahun terbit pertama: (tahun karya itu mula-mula diterbitkan, 4 digit)
+Penerbit: (penerbit naskhah yang digunakan)
+Tahun cetakan: (tahun cetakan naskhah yang digunakan, 4 digit; boleh berbeza daripada tahun terbit pertama)
+Cetakan ke: (cetakan yang ke berapa, contoh: Cetakan ketiga)
+Penyunting: (nama penyunting naskhah itu)
+Penterjemah: (hanya jika naskhah itu terjemahan)
+ISBN: (hanya jika anda pasti)
+Lokasi petikan: (muka surat atau bab petikan ini dalam naskhah itu)
+Asas teks: (edisi atau terjemahan yang menjadi asas)
 ` : ""}
 MANUSKRIP
 ${input.body.trim() || "[Manuskrip belum diisi. Tampal manuskrip di sini sebelum menghantar kepada chatbot.]"}`;
@@ -68,7 +80,20 @@ export interface WorkFillResult {
   characters: { name: string; role: string; first: string }[];
   /** Raw [GLOSARI] section, handed to the glossary parser. */
   glossaryText: string;
-  source: { title: string; author: string; language: string; basis: string } | null;
+  source: {
+    title: string;
+    author: string;
+    language: string;
+    basis: string;
+    firstPublished: number | null;
+    publisher: string;
+    editionYear: number | null;
+    printing: string;
+    editor: string;
+    translator: string;
+    isbn: string;
+    locator: string;
+  } | null;
   /** Section names that were present in the answer. */
   sections: string[];
 }
@@ -85,6 +110,16 @@ function field(block: string[], names: RegExp): string {
 
 const EMPTY = /^(tiada|tidak ada|-|—|n\/a|perlu semakan editor|\.\.\.)\.?$/i;
 const clean = (v: string) => (EMPTY.test(v.trim()) ? "" : v.trim());
+const yearIn = (v: string): number | null => {
+  const m = /(?<![0-9])(1[5-9][0-9]{2}|20[0-9]{2})(?![0-9])/.exec(v);
+  return m ? Number(m[1]) : null;
+};
+/** An ISBN is only kept when it looks like one; a chatbot that invents a number is dropped. */
+const isbnOf = (v: string): string => {
+  const t = v.trim();
+  const digits = t.replace(/[^0-9Xx]/g, "");
+  return /^[0-9Xx\- ]+$/.test(t) && (digits.length === 10 || digits.length === 13) ? t : "";
+};
 
 export function parseWorkFill(answer: string): WorkFillResult {
   const lines = answer.replace(/\r\n/g, "\n").replace(/^```[a-z]*\s*$/gim, "").split("\n");
@@ -118,7 +153,15 @@ export function parseWorkFill(answer: string): WorkFillResult {
         title: clean(field(src, /tajuk asal|tajuk/)),
         author: clean(field(src, /pengarang asal|pengarang|penulis asal/)),
         language: clean(field(src, /bahasa asal|bahasa/)),
-        basis: clean(field(src, /asas teks|asas/))
+        basis: clean(field(src, /asas teks|asas/)),
+        firstPublished: yearIn(clean(field(src, /tahun terbit pertama|terbit pertama|tahun terbit/))),
+        publisher: clean(field(src, /penerbit/)),
+        editionYear: yearIn(clean(field(src, /tahun cetakan/))),
+        printing: clean(field(src, /cetakan ke|cetakan/)),
+        editor: clean(field(src, /penyunting/)),
+        translator: clean(field(src, /penterjemah|penerjemah/)),
+        isbn: isbnOf(clean(field(src, /isbn/))),
+        locator: clean(field(src, /lokasi petikan|lokasi/))
       }
     : null;
 
@@ -127,7 +170,7 @@ export function parseWorkFill(answer: string): WorkFillResult {
     genre: clean(field(info, /genre/)),
     characters,
     glossaryText: ["[GLOSARI]", ...(sections.GLOSARI ?? [])].join("\n"),
-    source: source && (source.title || source.author || source.language || source.basis) ? source : null,
+    source: source && Object.values(source).some((v) => v !== "" && v !== null) ? source : null,
     sections: Object.keys(sections)
   };
 }

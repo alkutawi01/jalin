@@ -83,5 +83,40 @@ assert(rr.dek.startsWith("Nadia menyangka") && rr.genre === "Drama remaja", "rea
 assert(rr.characters.map((c) => c.name).join() === "Nadia,Puan Rohana,seorang tua", "real answer: three characters split on blank lines");
 assert(parseGlossaryPaste(rr.glossaryText, "x", []).none, "real answer: 'Tiada istilah sukar' is recognised");
 
+console.log("\n=== Source edition ===");
+const sourcedCerpen = buildWorkFillPrompt({ type: "cerpen", body, glossaryTerms: [], characterNames: [], chapterSlugs: [], origin: "sumber" });
+assert(sourcedCerpen.includes("[SUMBER]"), "a cerpen marked 'daripada sumber lain' is asked for the source");
+const ownCerpen = buildWorkFillPrompt({ type: "cerpen", body, glossaryTerms: [], characterNames: [], chapterSlugs: [], origin: "asli" });
+assert(!ownCerpen.includes("[SUMBER]"), "an original cerpen is not");
+for (const label of ["Tahun terbit pertama:", "Penerbit:", "Tahun cetakan:", "Cetakan ke:", "Penyunting:", "Penterjemah:", "ISBN:", "Lokasi petikan:"]) {
+  assert(sourcedCerpen.includes(label), `asks for ${label}`);
+}
+assert(/TINGGALKAN/.test(sourcedCerpen) && /jangan meneka/.test(sourcedCerpen), "tells the chatbot to leave blank what it does not know");
+
+const sourceAnswer = `[SUMBER]
+Tajuk asal: Salina
+Pengarang asal: A. Samad Said
+Bahasa asal: Bahasa Melayu
+Tahun terbit pertama: 1961
+Penerbit: Dewan Bahasa dan Pustaka
+Tahun cetakan: 1991
+Cetakan ke: Cetakan ketiga
+Penyunting:
+Penterjemah: tiada
+ISBN: 983-62-1234-5
+Lokasi petikan: ms. 12-14
+Asas teks:`;
+const sr = parseWorkFill(sourceAnswer).source!;
+assert(sr.firstPublished === 1961 && sr.editionYear === 1991, "first publication year and printing year are kept apart");
+assert(sr.publisher === "Dewan Bahasa dan Pustaka" && sr.printing === "Cetakan ketiga" && sr.locator === "ms. 12-14", "publisher, printing and locator are read");
+assert(sr.editor === "" && sr.translator === "" && sr.basis === "", "what the chatbot left blank stays blank ('tiada' too)");
+assert(sr.isbn === "983-62-1234-5", "a well-formed ISBN is kept");
+const badIsbn = parseWorkFill("[SUMBER]\nTajuk asal: X\nISBN: pasti ada tapi saya lupa").source!;
+assert(badIsbn.isbn === "", "text that is not an ISBN is dropped");
+const yearText = parseWorkFill("[SUMBER]\nTajuk asal: X\nTahun terbit pertama: sekitar 1961 (anggaran)").source!;
+assert(yearText.firstPublished === 1961, "a year inside words is found");
+const emptySource = parseWorkFill("[SUMBER]\nTajuk asal:\nPenerbit:");
+assert(emptySource.source === null, "an all-blank source section produces nothing to fill");
+
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);

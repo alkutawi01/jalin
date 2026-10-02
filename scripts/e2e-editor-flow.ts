@@ -152,6 +152,7 @@ async function flowCerpen() {
   const path = `/kategori/cerpen/${slug}`;
   let pub = await waitForPublic(path, (h) => h.includes(`Versi satu ujian ${suffix}`));
   check(pub.status === 200 && pub.html.includes(`Versi satu ujian ${suffix}`), `laman awam memaparkan versi terbit (status ${pub.status}, ${pub.html.length} bait, ${path})`);
+  check(!pub.html.includes("Pengarang asal"), "cerpen asli tidak memaparkan jadual sumber");
 
   const v2 = `Versi dua ujian ${suffix}, draf baharu yang belum diterbitkan.`;
   r = await api("PATCH", `/api/admin/works/${id}`, { body: body("akhir", v2), dek: "Dek draf baharu." });
@@ -181,7 +182,8 @@ async function fragmenBase(label: string, originalLanguage: string) {
   const r = await api("PUT", `/api/admin/works/${id}/source-rights`, {
     fragmenTextLanguage: "Bahasa Melayu",
     originalTitle: `Karya Asal ${label} ${suffix}`, author: "Pengarang Klasik", originalLanguage,
-    sourceUrl: "https://example.org/sumber", sourceLocator: "Bab 1", sourceTextBasis: originalLanguage.includes("Melayu") ? "" : "Terjemahan editor Jalin daripada edisi 1910."
+    sourceUrl: "https://example.org/sumber", sourceLocator: "Bab 1", sourceTextBasis: originalLanguage.includes("Melayu") ? "" : "Terjemahan editor Jalin daripada edisi 1910.",
+    publicationYear: 1910
   });
   check(r.ok, `maklumat sumber disimpan (${r.status} ${r.data?.error ?? ""})`);
   return { id, slug };
@@ -286,6 +288,61 @@ async function flowBersiri() {
   }
 }
 
+async function flowSumber() {
+  console.log("\n=== Cerpen daripada sumber lain: jadual naskhah ===");
+  const id = await newDraft("cerpen");
+  const slug = `uji-e2e-sumber-${suffix}`;
+  let r = await api("PATCH", `/api/admin/works/${id}`, { title: `Cerpen Sumber ${suffix}`, slug, body: `Isi cerpen daripada sumber lain ${suffix}.`, dek: "Dek.", genre: "Klasik", audience: "remaja", readingMinutes: 1 });
+  check(r.ok, "cerpen disimpan");
+  await addCredit(id, "initial_draft", "Aina Zulaikha", true, 0);
+  const hero = await upload(id, { role: "hero", alt: "Ilustrasi cerpen.", tool: "Ujian" }, { r: 90, g: 40, b: 40 });
+  check(hero.ok, "gambar utama dimuat naik");
+  await simulateDurableStorage(id);
+
+  let s = await readiness(id);
+  check(s.codes.length === 0, `cerpen asli tidak memerlukan sumber (${s.codes.join(",")})`);
+  r = await api("PUT", `/api/admin/works/${id}/source-rights`, { originalTitle: "Salina" });
+  check(!r.ok, "cerpen asli tidak boleh menyimpan maklumat sumber");
+
+  r = await api("PATCH", `/api/admin/works/${id}`, { origin: "sumber" });
+  check(r.ok, "cerpen ditanda 'daripada sumber lain'");
+  s = await readiness(id);
+  check(s.codes.includes("source_missing"), "sekat: cerpen daripada sumber lain memerlukan rekod sumber");
+
+  r = await api("PUT", `/api/admin/works/${id}/source-rights`, {
+    originalTitle: `Salina ${suffix}`, author: "A. Samad Said", originalLanguage: "Bahasa Melayu",
+    publicationYear: 1961, publisher: "Dewan Bahasa dan Pustaka", editionYear: 1991, printing: "Cetakan ketiga",
+    editorName: "Penyunting Ujian", sourceLocator: "ms. 12-14", chatbotFields: ["publisher", "editionYear"]
+  });
+  check(r.ok, `butiran naskhah disimpan (${r.status} ${r.data?.error ?? ""})`);
+  let view = (await api("GET", `/api/admin/works/${id}/source-rights`)).data;
+  check(view?.chatbotFilledFields?.includes("publisher") && view.chatbotFilledFields.includes("editionYear"), "medan yang diisi chatbot ditanda");
+  r = await api("PUT", `/api/admin/works/${id}/source-rights`, { isbn: "978-967-0000-00-0" });
+  view = (await api("GET", `/api/admin/works/${id}/source-rights`)).data;
+  check(r.ok && view?.sourceWork?.originalTitle === `Salina ${suffix}` && view.sourceWork.publisher === "Dewan Bahasa dan Pustaka" && view.sourceWork.isbn === "978-967-0000-00-0", "menyimpan satu medan tidak mengosongkan medan lain");
+
+  r = await api("POST", `/api/admin/works/${id}/source-rights/rights-review`, { rights_status: "public_domain", rights_notes: "Domain awam: pengarang meninggal lebih 70 tahun lalu.", rights_evidence: "Rekod perpustakaan negara." });
+  check(r.ok, `semakan hak direkod (${r.status} ${r.data?.error ?? ""})`);
+  view = (await api("GET", `/api/admin/works/${id}/source-rights`)).data;
+  check((view?.chatbotFilledFields ?? []).length === 0, "tanda chatbot hilang selepas semakan hak oleh editor");
+  s = await readiness(id);
+  check(s.codes.length === 0, `siap diterbitkan (${s.codes.join(",")})`);
+  await api("PATCH", `/api/admin/works/${id}`, { status: "ready" });
+  r = await api("POST", `/api/admin/works/${id}/publish`);
+  check(r.ok, `diterbitkan (${r.status} ${r.data?.error ?? ""})`);
+
+  const path = `/kategori/cerpen/${slug}`;
+  const pub = await waitForPublic(path, (h) => h.includes("Pengarang asal"), 90000);
+  const text = pub.html.replace(/<!-- -->/g, "");
+  for (const needle of ["Karya asal", `Salina ${suffix}`, "Pengarang asal", "A. Samad Said", "Terbit pertama", "1961", "Penerbit", "Dewan Bahasa dan Pustaka", "Cetakan", "1991, Cetakan ketiga", "Penyunting", "Penyunting Ujian", "Lokasi petikan", "ms. 12-14"]) {
+    check(text.includes(needle), `jadual 'Tentang karya' memaparkan: ${needle}`);
+  }
+  check(!text.includes("Penterjemah"), "baris tanpa nilai (Penterjemah) tidak dipaparkan");
+
+  r = await api("PUT", `/api/admin/works/${id}/source-rights`, { publisher: "Penerbit Lain" });
+  check(r.ok && r.data?.invalidatedApproval === true, "menukar penerbit menarik balik kelulusan hak");
+}
+
 async function cleanup() {
   if (process.env.E2E_KEEP) { console.log("  · dikekalkan:", created.join(",")); return; }
   for (const id of created) await api("PATCH", `/api/admin/works/${id}`, { status: "archived" }).catch(() => undefined);
@@ -297,6 +354,7 @@ async function main() {
   try {
     if (which === "cerpen" || which === "all") await flowCerpen();
     if (which === "fragmen" || which === "all") await flowFragmen();
+    if (which === "sumber" || which === "all") await flowSumber();
     if (which === "bersiri" || which === "all") await flowBersiri();
   } finally {
     await cleanup();
