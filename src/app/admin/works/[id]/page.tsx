@@ -1795,6 +1795,17 @@ export default function EditWorkPage() {
             />
           </div>
 
+          {form.type === "novela" && sections.length > 0 ? (
+            <div className="admin-alert admin-alert-info" role="note">
+              <strong>Teks Novela ini disunting bab demi bab.</strong>
+              <p style={{ margin: "6px 0 10px" }}>
+                Novela menyimpan teksnya dalam {sections.length} bahagian, bukan dalam satu kotak manuskrip, jadi tiada teks di sini. Teks sebenar tidak hilang dan pembaca melihatnya seperti biasa.
+              </p>
+              <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={() => selectTab("sections")}>
+                Buka Bahagian ({sections.length})
+              </button>
+            </div>
+          ) : (
           <div className="admin-form-group">
             <label htmlFor={manuscriptMode === "visual" ? undefined : "body"}>Manuskrip *</label>
             <div className="admin-manuscript-mode" role="group" aria-label="Mod penyuntingan manuskrip">
@@ -1840,6 +1851,7 @@ export default function EditWorkPage() {
             {dirty ? <span className="admin-form-hint">Simpan manuskrip sebelum memautkan gambar pada penanda baharu.</span> : null}
             {positionError ? <span className="admin-alert admin-alert-error" role="alert">{positionError}</span> : null}
           </div>
+          )}
         </form>
       )}
 
