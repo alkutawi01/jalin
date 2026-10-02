@@ -1,5 +1,7 @@
 import { notFound, redirect } from "next/navigation";
+import Image from "next/image";
 import { SiteFooter, SiteHeader } from "../../../../components/reader/StoryChrome";
+import { WorkCover } from "../../../../components/reader/WorkCover";
 import { initContentRepository } from "../../../../lib/content";
 import { displayableGenre } from "../../../../lib/reader/genre-display";
 
@@ -72,7 +74,8 @@ export default async function SeriesLandingPage({
         <SiteHeader active="bersiri" />
         <main>
           <div className="site-shell">
-            <header className="series-masthead">
+            <header className={`series-masthead${series.hero ? " series-masthead--hero" : ""}`}>
+              <div className="series-masthead-text">
               <p className="series-crumb">
                 <a href="/kategori/bersiri">Bersiri</a> <span aria-hidden="true">/</span> <span>{series.title}</span>
               </p>
@@ -89,31 +92,52 @@ export default async function SeriesLandingPage({
                   </a>
                 ) : null}
               </div>
+              </div>
+              {series.hero ? (
+                <figure className="series-hero">
+                  <Image src={series.hero.src} alt={series.hero.alt} fill sizes="(max-width: 900px) 100vw, 520px" priority />
+                  <div className="image-rights" aria-hidden="true">{`© ADJUNG ${(updated || "2026").slice(0, 4)}`}</div>
+                </figure>
+              ) : null}
             </header>
 
             <section aria-labelledby="series-episodes">
               <h2 id="series-episodes" className="series-section-title">Episod</h2>
-              <ol className="episode-index">
-                {byPosition.map((episode) => (
-                  <li key={episode.slug} className="episode-row">
-                    <a href={`${base}/${episode.slug}`}>
-                      <span className="episode-row-num" aria-hidden="true">{String(episode.position).padStart(2, "0")}</span>
-                      <span className="episode-row-body">
-                        <span className="episode-row-title">
-                          <span className="sr-only">Episod {episode.position}: </span>
-                          {episode.title}
-                        </span>
-                        {episode.dek ? <span className="episode-row-dek">{episode.dek}</span> : null}
-                        <span className="episode-row-meta">
-                          {[episode.readingMinutes ? `± ${episode.readingMinutes} min` : "", episode.publishedAt ? formatDate(episode.publishedAt) : ""]
-                            .filter(Boolean)
-                            .join(" · ")}
-                        </span>
-                      </span>
-                      <span className="episode-row-arrow" aria-hidden="true">→</span>
-                    </a>
-                  </li>
-                ))}
+              <ol className="episode-grid">
+                {byPosition.map((episode) => {
+                  const hero = repo.getWork(episode.slug)?.visuals.find((visual) => visual.role === "hero");
+                  const year = (episode.publishedAt ?? "2026").slice(0, 4);
+                  return (
+                    <li key={episode.slug} className="episode-card">
+                      <a href={`${base}/${episode.slug}`}>
+                        <div className="episode-card-cover">
+                          <WorkCover
+                            type="bersiri"
+                            title={episode.title}
+                            hero={hero?.src ? { src: hero.src, alt: hero.alt ?? "" } : undefined}
+                            rightsYear={year}
+                            sizes="(max-width: 640px) 100vw, 320px"
+                            quality={85}
+                          />
+                          <span className="episode-card-num" aria-hidden="true">{String(episode.position).padStart(2, "0")}</span>
+                        </div>
+                        <div className="episode-card-body">
+                          <h3 className="episode-card-title">
+                            <span className="sr-only">Episod {episode.position}: </span>
+                            {episode.title}
+                          </h3>
+                          {episode.dek ? <p className="episode-card-dek">{episode.dek}</p> : null}
+                          <p className="episode-card-meta">
+                            {[episode.readingMinutes ? `± ${episode.readingMinutes} min` : "", episode.publishedAt ? formatDate(episode.publishedAt) : ""]
+                              .filter(Boolean)
+                              .join(" · ")}
+                            <span className="episode-card-arrow" aria-hidden="true"> →</span>
+                          </p>
+                        </div>
+                      </a>
+                    </li>
+                  );
+                })}
               </ol>
             </section>
           </div>

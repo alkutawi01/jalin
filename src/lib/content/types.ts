@@ -84,6 +84,8 @@ export interface SeriesMeta {
   audience?: string;
   mode: "continuous" | "anthology";
   status: "ongoing" | "completed";
+  /** Illustration made for the series (not a scene from an episode). Absent until one is uploaded. */
+  hero?: { src: string; alt: string };
 }
 
 /** Public series episode entry (only published episodes are exposed). */

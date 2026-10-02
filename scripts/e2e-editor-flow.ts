@@ -257,6 +257,30 @@ async function flowBersiri() {
     check(seriesPage.status === 200 && seriesPage.html.includes(`Episod Satu ${suffix}`), "halaman siri menyenaraikan episod");
     check(seriesPage.html.replace(/<!-- -->/g, "").includes("Mula Episod 1") && seriesPage.html.includes("Episod terkini"), "halaman siri ada dua laluan: Mula Episod 1 dan Episod terkini");
     check(seriesPage.html.includes(`/${mine.slug}/uji-e2e-episod-3-${suffix}`), "Episod terkini menuju episod terakhir");
+    const plain = (h: string) => h.replace(/<!-- -->/g, "");
+    check(plain(seriesPage.html).includes("episode-card"), "episod dipaparkan sebagai kad");
+    check(!seriesPage.html.includes("series-hero"), "tanpa gambar siri, halaman kekal bertipografi");
+
+    // Series illustration (needs migration 020 on the database; skipped with a note when it has not run).
+    const heroForm = new FormData();
+    heroForm.set("file", new File([new Uint8Array(await png({ r: 90, g: 60, b: 50 }))], "siri.png", { type: "image/png" }));
+    heroForm.set("alt", "Ilustrasi siri ujian.");
+    const heroRes = await api("POST", `/api/admin/series/${mine.id}/hero`, undefined, heroForm);
+    if (heroRes.status === 409) {
+      console.log("  · gambar siri dilangkau: migrasi 020 belum dijalankan pada pangkalan data ini");
+    } else {
+      check(heroRes.ok, `gambar siri dimuat naik (${heroRes.status} ${heroRes.data?.error ?? ""})`);
+      const withHero = await waitForPublic(`/kategori/bersiri/${mine.slug}`, (h) => h.includes("series-hero"), 90000);
+      check(withHero.html.includes("series-hero"), "halaman siri memaparkan gambar siri");
+    }
+
+    const ep2 = await publicHtml(`/kategori/bersiri/${mine.slug}/uji-e2e-episod-2-${suffix}`);
+    const ep2Text = plain(ep2.html);
+    check(ep2Text.includes("Episod 2 daripada 3") && ep2Text.includes(`href="/kategori/bersiri/${mine.slug}"`) && ep2Text.includes('href="/kategori/bersiri"'), "halaman episod ada jejak undur: Bersiri / siri / episod");
+    check(ep2Text.includes("continue-next") && ep2Text.includes(`Episod 3 ${suffix}`) && ep2Text.includes("Semua episod"), "bar bawah: Seterusnya dengan tajuk, dan Semua episod");
+    check(!ep2Text.includes("episode-nav"), "tiada bar navigasi di atas cerita");
+    const ep3 = plain((await publicHtml(`/kategori/bersiri/${mine.slug}/uji-e2e-episod-3-${suffix}`)).html);
+    check(ep3.includes("episod terkini") || ep3.includes("Ini episod terkini"), "episod terakhir menyatakan ia episod terkini");
     const home = await publicHtml("/");
     check(home.html.includes(`/kategori/bersiri/${mine.slug}`), "halaman utama menyorot siri dengan pautan ke halaman siri");
   }

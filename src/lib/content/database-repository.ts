@@ -245,6 +245,7 @@ export class DatabaseContentRepository implements ContentRepository {
         audience: se.audience ? String(se.audience) : undefined,
         mode: (String(se.mode) === "anthology" ? "anthology" : "continuous"),
         status: (String(se.status) === "completed" ? "completed" : "ongoing"),
+        ...(se.hero_src ? { hero: { src: String(se.hero_src), alt: se.hero_alt ? String(se.hero_alt) : "" } } : {}),
       };
       this.seriesCache.set(meta.id, meta);
       this.seriesBySlug.set(meta.slug, meta);
