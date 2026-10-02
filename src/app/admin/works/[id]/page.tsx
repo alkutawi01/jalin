@@ -184,6 +184,16 @@ interface SectionData {
 
 const isSourced = (type: string, origin: string) => isSourcedWork(type, { origin });
 
+const TAB_NAMES: Record<Tab, string> = {
+  content: "Kandungan", metadata: "Maklumat", sections: "Bahagian", credits: "Kredit", glossary: "Glosari", characters: "Watak", source: "Sumber & Hak"
+};
+
+const HISTORY_ACTIONS: Record<string, string> = {
+  review: "Semakan hak",
+  provenance_edit: "Butiran sumber diubah",
+  text_review: "Pengesahan bahasa teks"
+};
+
 const RIGHTS_STATUS_OPTIONS = [
   { value: "unknown", label: "Belum diketahui" },
   { value: "needs_review", label: "Perlu semakan" },
@@ -1751,7 +1761,7 @@ export default function EditWorkPage() {
       </div>
 
       {activeTab !== "glossary" && <details className="admin-advanced-field">
-        <summary>Bantuan chatbot untuk tab {activeTab === "metadata" ? "Maklumat" : activeTab === "content" ? "Kandungan" : activeTab}</summary>
+        <summary>Bantuan chatbot untuk tab {TAB_NAMES[activeTab as Tab] ?? activeTab}</summary>
         <p className="admin-form-hint">Salin arahan bersama manuskrip semasa, kemudian tampal ke chatbot pilihan anda. Cadangan tidak diimport atau disimpan secara automatik; editor kekal bertanggungjawab menyemaknya.</p>
         <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={() => void copyAssistantPrompt()}>Salin arahan tab ini</button>
         {assistantNote && <p className="admin-form-hint" role="status">{assistantNote}</p>}
@@ -2764,7 +2774,7 @@ export default function EditWorkPage() {
                     />
                   </div>
                   <div className="admin-form-group">
-                    <label htmlFor="src-author">Penulis asal *</label>
+                    <label htmlFor="src-author">Pengarang asal *</label>
                     <input
                       id="src-author"
                       type="text"
@@ -2933,7 +2943,7 @@ export default function EditWorkPage() {
                   <span className="admin-form-hint">Wajib untuk kelulusan. Nyatakan alasan dan sumber semakan; memilih status sahaja tidak mengesahkan hak.</span>
                 </div>
                 <div className="admin-form-group">
-                  <label htmlFor="src-evidence">Bukti/rujukan (rights_evidence — teks)</label>
+                  <label htmlFor="src-evidence">Bukti/rujukan hak (teks)</label>
                   <textarea
                     id="src-evidence"
                     className="admin-textarea"
@@ -3005,8 +3015,8 @@ export default function EditWorkPage() {
                           <tr key={`${h.at}-${i}`}>
                             <td>{new Date(h.at).toLocaleString("ms-MY")}</td>
                             <td>{h.actor}</td>
-                            <td>{h.action}</td>
-                            <td>{h.rights_status}</td>
+                            <td>{HISTORY_ACTIONS[h.action] ?? h.action}</td>
+                            <td>{RIGHTS_STATUS_OPTIONS.find((o) => o.value === h.rights_status)?.label ?? h.rights_status}</td>
                             <td>{h.note || "—"}</td>
                           </tr>
                         ))}

@@ -77,7 +77,7 @@ export function StoryHead({
     <div className="site-shell work-head">
       <div className="story-head work-head-text">{text}</div>
       <figure className="work-head-visual editorial-image">
-        <Image src={hero.src} alt={hero.alt} fill sizes="(max-width: 900px) 100vw, 560px" priority />
+        <Image src={hero.src} alt={hero.alt} fill sizes="(max-width: 900px) 100vw, 560px" quality={85} priority />
         <div className="image-rights" aria-hidden="true">{hero.rights}</div>
       </figure>
     </div>
@@ -104,6 +104,7 @@ export function EditorialImage({
         alt={alt}
         fill
         sizes={kind === "hero" ? "(max-width: 720px) 100vw, 1180px" : "(max-width: 720px) 100vw, 800px"}
+        quality={85}
         priority={kind === "hero"}
       />
       <div className="image-rights" aria-hidden="true">{rights}</div>
