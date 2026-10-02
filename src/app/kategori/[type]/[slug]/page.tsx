@@ -408,7 +408,8 @@ export default async function WorkPage({
           <EditorNote note={work.metadata?.editorNote} />
         ) : null}
 
-        <StoryEnd title={work.title} />
+        {/* "Tamat" marks the end of the work, so a chapter that has a next chapter does not show it. */}
+        {sections.length === 0 || !nextSection ? <StoryEnd title={work.title} /> : null}
 
         <RelatedWorks works={relatedWorks} typeLabel={typeLabel} />
 
