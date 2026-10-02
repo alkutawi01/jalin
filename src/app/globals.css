@@ -1770,25 +1770,72 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 .visual-manuscript-toolbar {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
-  padding: 8px;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 10px;
   border-bottom: 1px solid var(--line);
   background: #faf8f4;
 }
 .visual-manuscript-toolbar button {
-  min-height: 36px;
-  padding: 6px 10px;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  min-width: 40px;
+  min-height: 40px;
+  padding: 7px;
   border: 1px solid transparent;
   border-radius: 4px;
   background: transparent;
   color: var(--ink);
   cursor: pointer;
 }
+.visual-manuscript-toolbar button svg {
+  width: 21px;
+  height: 21px;
+}
+.visual-manuscript-glyph {
+  font-family: Arial, sans-serif;
+  font-size: 20px;
+  line-height: 1;
+}
+.visual-manuscript-glyph-bold { font-weight: 800; }
+.visual-manuscript-glyph-italic { font-family: Georgia, serif; font-style: italic; font-weight: 700; }
+.visual-manuscript-glyph-heading { font-size: 17px; font-weight: 700; }
+.visual-manuscript-toolbar-divider {
+  width: 1px;
+  height: 22px;
+  margin: 0 3px;
+  background: var(--line);
+}
 .visual-manuscript-toolbar button:hover,
 .visual-manuscript-toolbar button:focus-visible {
   border-color: var(--line);
   background: #fff;
 }
+.visual-manuscript-toolbar button:focus-visible { outline: 2px solid var(--clay); outline-offset: 1px; }
+.visual-manuscript-toolbar button:hover::after,
+.visual-manuscript-toolbar button:focus-visible::after {
+  content: attr(data-label);
+  position: absolute;
+  z-index: 5;
+  top: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: 180px;
+  padding: 5px 8px;
+  border-radius: 4px;
+  background: var(--ink);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.visual-manuscript-toolbar button:first-child::after { left: 0; transform: none; }
+.visual-manuscript-toolbar button:last-child::after { left: auto; right: 0; transform: none; }
 .visual-manuscript-surface {
   min-height: 360px;
   max-height: min(70vh, 900px);
@@ -1827,7 +1874,8 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 .visual-manuscript > .admin-form-hint { display: block; padding: 0 12px 10px; }
 @media (max-width: 600px) {
   .visual-manuscript-surface { padding: 16px; font-size: 17px; }
-  .visual-manuscript-toolbar button { flex: 1 1 auto; }
+  .visual-manuscript-toolbar { gap: 3px; padding: 6px; }
+  .visual-manuscript-toolbar button { width: 40px; min-width: 40px; }
 }
 
 .admin-status-notice {
