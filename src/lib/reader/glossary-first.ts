@@ -1,4 +1,4 @@
-export type GlossaryEntries = Record<string, { meaning: string }>;
+export type GlossaryEntries = Record<string, { meaning: string; termDisplay?: string }>;
 
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^$()|[\]\\{}]/g, "\\$&");

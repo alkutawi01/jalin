@@ -33,7 +33,7 @@ function decorateGlossary(text: string, glossary: GlossaryMap, used: Set<string>
     const key = terms.find((term) => term.toLocaleLowerCase("ms") === match[1]!.toLocaleLowerCase("ms"));
     if (key && !used.has(key)) {
       used.add(key);
-      result.push(<GlossaryTerm key={`${key}-${start}`} term={key} meaning={glossary[key].meaning}>{match[0]}</GlossaryTerm>);
+      result.push(<GlossaryTerm key={`${key}-${start}`} term={key} termDisplay={glossary[key].termDisplay} meaning={glossary[key].meaning}>{match[0]}</GlossaryTerm>);
     } else {
       result.push(match[0]);
     }

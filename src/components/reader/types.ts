@@ -1,5 +1,7 @@
 export type GlossaryEntry = {
   meaning: string;
+  /** The term as the editor wrote it, with *italic* marks; set only when it differs from the plain key. */
+  termDisplay?: string;
 };
 
 export type GlossaryMap = Record<string, GlossaryEntry>;

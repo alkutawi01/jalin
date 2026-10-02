@@ -471,6 +471,10 @@
 .a-tech > summary { cursor: pointer; font-weight: 700; font-size: 15px; color: var(--a-ink-soft); }
 .a-tech[open] > summary { margin-bottom: 16px; }
 
+.a-assistant { margin: 0 0 20px; padding: 16px 18px; border: 1px solid var(--a-line); border-radius: var(--a-radius-lg); background: var(--a-surface); }
+.a-assistant h3 { margin: 0 0 8px; font-size: 16px; }
+.a-assistant ol { margin: 0 0 12px; padding-left: 20px; }
+.a-assistant textarea { width: 100%; margin: 8px 0; }
 /* Links inside running text are underlined, so they are not told apart from the text by colour alone. */
 .a-shell p a:not(.a-btn):not(.admin-btn),
 .a-shell li a:not(.a-btn):not(.admin-btn),

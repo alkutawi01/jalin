@@ -2,10 +2,11 @@
 
 import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
+import { renderItalics } from "../../lib/reader/inline-italics";
 
 type Position = { left: number; top: number };
 
-export default function GlossaryTerm({ term, meaning, children }: { term: string; meaning: string; children: ReactNode }) {
+export default function GlossaryTerm({ term, termDisplay, meaning, children }: { term: string; termDisplay?: string; meaning: string; children: ReactNode }) {
   const triggerRef = useRef<HTMLButtonElement>(null);
   const tooltipRef = useRef<HTMLSpanElement>(null);
   const pointerType = useRef<string | null>(null);
@@ -108,8 +109,8 @@ export default function GlossaryTerm({ term, meaning, children }: { term: string
           role="tooltip"
           style={{ left: position?.left ?? 0, top: position?.top ?? 0, visibility: position ? "visible" : "hidden" }}
         >
-          <strong>{term}</strong>
-          <span>{meaning}</span>
+          <strong>{renderItalics(termDisplay ?? term)}</strong>
+          <span>{renderItalics(meaning)}</span>
         </span>,
         document.body
       ) : null}
