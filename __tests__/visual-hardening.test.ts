@@ -533,7 +533,7 @@ async function main() {
       visual_role: "hero",
       alt_text: "  ",
     });
-    assert(gateAlt.ok === false, "Missing alt text cannot attach");
+    assert(gateAlt.ok === true, "Missing alt text can attach (alt is encouraged, never required)");
 
     // empty path with finalized true (inconsistent) → FAIL
     const gateEmpty = validateAttachGate({
