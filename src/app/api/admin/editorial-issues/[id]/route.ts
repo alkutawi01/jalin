@@ -9,7 +9,7 @@ export async function PATCH(
   try {
     const admin = await getCurrentAdmin();
     if (!admin) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: "Sesi anda telah tamat. Log masuk semula." }, { status: 401 });
     }
     
     const { id } = await params;
@@ -17,14 +17,14 @@ export async function PATCH(
     
     const validStatuses = ["open", "ignored", "resolved"];
     if (!validStatuses.includes(body.status)) {
-      return NextResponse.json({ error: "Invalid status" }, { status: 400 });
+      return NextResponse.json({ error: "Status tidak sah." }, { status: 400 });
     }
     
     const db = getDb();
     const issue = await db.selectFrom("editorial_issues").where("id", "=", id).selectAll().executeTakeFirst();
     
     if (!issue) {
-      return NextResponse.json({ error: "Issue not found" }, { status: 404 });
+      return NextResponse.json({ error: "Isu tidak ditemui." }, { status: 404 });
     }
     
     const updateData: any = {

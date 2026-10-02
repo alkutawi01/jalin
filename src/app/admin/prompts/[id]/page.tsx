@@ -74,7 +74,7 @@ export default function EditPromptPage() {
           status: t.status,
         });
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Ralat memuatkan template.");
+        setError(err instanceof Error ? err.message : "Ralat memuatkan templat.");
       } finally {
         setLoading(false);
       }
@@ -111,7 +111,7 @@ export default function EditPromptPage() {
   }
 
   async function handleDelete() {
-    if (!(await confirmAction("Pasti ingin memadam template ini?", { danger: true, confirmLabel: "Ya, teruskan" }))) return;
+    if (!(await confirmAction("Pasti ingin memadam templat ini?", { danger: true, confirmLabel: "Ya, teruskan" }))) return;
     setDeleting(true);
 
     try {

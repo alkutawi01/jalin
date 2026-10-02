@@ -3,8 +3,8 @@ import AdminShell from "../../components/admin/AdminShell";
 import "./admin.css";
 
 export const metadata: Metadata = {
-  title: "Jalin Admin",
-  description: "Admin panel for Jalin literary publication platform",
+  title: "Jalin · Pentadbiran",
+  description: "Panel pentadbiran untuk editor Jalin",
 };
 
 export default function AdminLayout({

@@ -53,6 +53,14 @@ export default async function SettingsPage() {
       </section>
 
       <section className="admin-section">
+        <h2 className="admin-form-section-title">Alat lain</h2>
+        <ul>
+          <li><a href="/admin/submissions">Penghantaran karya</a> — karya yang dihantar untuk disemak dan dinaikkan menjadi karya.</li>
+          <li><a href="/admin/prompts">Templat arahan lama</a> — templat arahan terdahulu; arahan semasa disunting di atas.</li>
+        </ul>
+      </section>
+
+      <section className="admin-section">
         <h2 className="admin-form-section-title">Status sistem</h2>
         <ul>
           <li>Pangkalan data: {hasDb() ? "bersambung" : "tidak tersedia"}</li>

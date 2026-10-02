@@ -327,6 +327,8 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
             <label>
               Atau pilih fail: <input type="file" accept=".txt,.md,text/plain,text/markdown" onChange={(e) => loadFile(e.target.files?.[0])} />
             </label>
+            <br />
+            Fail teks sahaja (.txt atau .md), maksimum 2 MB. Fail Word (.docx) dan PDF tidak boleh dibaca terus: salin teksnya dan tampal di atas.
           </p>
         ) : null}
         <details>
@@ -467,7 +469,7 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
                 />
               </div>
               <div className="admin-form-group">
-                <label htmlFor="f-slug">Slug (alamat URL)</label>
+                <label htmlFor="f-slug">Alamat pautan</label>
                 <input id="f-slug" value={slug} onChange={(e) => setSlug(e.target.value)} placeholder="(dijana daripada tajuk)" />
               </div>
               <div className="admin-form-group">

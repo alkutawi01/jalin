@@ -27,11 +27,10 @@ export default async function AddWorkKindPage({ params, searchParams }: PageProp
   const header = (sub: string) => (
     <header className="admin-page-header">
       <p className="admin-form-hint">
-        <a href="/admin/works/add">← Jenis karya</a>
+        <a href={`/admin/works/add?jenis=${kind}`}>← Cara bermula</a>
       </p>
       <h1>Tambah {KIND_LABELS[kind]}</h1>
       <p className="admin-page-sub">{sub}</p>
-      {kind === "cerpen" && <div className="admin-page-header-actions" style={{ marginTop: 14 }}><a className="admin-btn admin-btn-outline" href="/admin/works/add">Buka editor lengkap →</a></div>}
     </header>
   );
 

@@ -1,5 +1,5 @@
 import { listWorks } from "../../../lib/admin/work-service";
-import { hasDb } from "../../../lib/db";
+import { getDb, hasDb } from "../../../lib/db";
 import { summarizeReadiness } from "../../../lib/admin/publication-service";
 
 export const dynamic = "force-dynamic";
@@ -44,20 +44,39 @@ export default async function AdminWorksPage({
           <p className="admin-page-sub">Pengurusan karya</p>
         </header>
         <div className="admin-placeholder-content">
-          <p>Database tidak tersedia. Set <code>DATABASE_URL</code> untuk mengaktifkan ciri admin.</p>
+          <p>Pangkalan data tidak tersedia. Ciri admin tidak dapat digunakan buat masa ini; hubungi pentadbir teknikal.</p>
         </div>
       </div>
     );
   }
 
   const allWorks = await listWorks();
+  // Credited names per work (registered contributors and guests), so a work can be found by its author.
+  const authorsByWork = new Map<string, string>();
+  try {
+    const db = getDb();
+    const rows = await db
+      .selectFrom("credits")
+      .leftJoin("contributors", "contributors.slug", "credits.contributor_slug")
+      .select(["credits.work_id as work_id", "credits.guest_name as guest_name", "contributors.display_name as display_name"])
+      .execute();
+    for (const row of rows) {
+      const name = row.display_name || row.guest_name;
+      if (!name) continue;
+      const key = String(row.work_id);
+      authorsByWork.set(key, `${authorsByWork.get(key) ?? ""} ${name}`.trim());
+    }
+  } catch {
+    /* the list still works without author search */
+  }
   const filter = status && ["draft", "review", "ready", "published", "archived"].includes(status) ? status : "";
   const query = (q ?? "").trim().toLowerCase();
   const typeFilter = type && TYPE_LABELS[type] ? type : "";
   const matchingWorks = allWorks.filter(
     (w) =>
       (!typeFilter || w.type === typeFilter) &&
-      (!query || w.title.toLowerCase().includes(query) || w.slug.toLowerCase().includes(query))
+      (!query ||
+        [w.id, w.title, w.slug, authorsByWork.get(w.id) ?? ""].some((field) => field.toLowerCase().includes(query)))
   );
   const works = matchingWorks.filter((w) => !filter || w.status === filter);
   const verdicts = await summarizeReadiness(works.filter((w) => w.status === "ready").map((w) => w.id));
@@ -80,6 +99,9 @@ export default async function AdminWorksPage({
             <p className="admin-page-sub">{works.length} karya{filter ? ` (${STATUS_LABELS[filter]})` : ""}</p>
           </div>
           <div className="admin-page-header-actions">
+            <a href="/admin/visual-requests" className="admin-btn admin-btn-outline">
+              Permintaan gambar
+            </a>
             <a href="/admin/works/add" className="admin-btn admin-btn-primary">
               + Tambah Karya
             </a>
@@ -89,7 +111,7 @@ export default async function AdminWorksPage({
 
       <form method="get" action="/admin/works" className="a-filterbar">
         {filter ? <input type="hidden" name="status" value={filter} /> : null}
-        <input type="search" name="q" defaultValue={q ?? ""} placeholder="Cari tajuk atau slug…" aria-label="Cari karya" />
+        <input type="search" name="q" defaultValue={q ?? ""} placeholder="Cari ID, tajuk, alamat pautan atau pengarang…" aria-label="Cari karya" />
         <select name="type" defaultValue={typeFilter} aria-label="Jenis karya">
           <option value="">Semua jenis</option>
           {Object.entries(TYPE_LABELS).map(([value, label]) => (
@@ -97,8 +119,14 @@ export default async function AdminWorksPage({
           ))}
         </select>
         <button type="submit" className="a-btn a-btn-primary">Cari</button>
-        {query || typeFilter ? <a href={resetHref} className="a-btn">Kosongkan carian &amp; jenis</a> : null}
+        {query || typeFilter || filter ? <a href="/admin/works" className="a-btn">Kosongkan semua penapis</a> : null}
       </form>
+
+      {query || typeFilter || filter ? (
+        <p className="admin-form-hint" role="status">
+          Penapis aktif:{filter ? ` status ${STATUS_LABELS[filter]}` : ""}{typeFilter ? `${filter ? "," : ""} jenis ${TYPE_LABELS[typeFilter]}` : ""}{query ? `${filter || typeFilter ? "," : ""} carian "${q}"` : ""}.
+        </p>
+      ) : null}
 
       <nav className="admin-form-actions" aria-label="Tapis status">
         {tabs.map((t) => (
@@ -136,7 +164,10 @@ export default async function AdminWorksPage({
             ) : (
               works.map((work) => (
                 <tr key={work.id}>
-                  <td className="admin-table-title"><a href={`/admin/works/${work.id}`} className="a-work-title-link">{work.title}</a></td>
+                  <td className="admin-table-title">
+                    <a href={`/admin/works/${work.id}`} className="a-work-title-link">{work.title}</a>
+                    <span className="admin-form-hint" style={{ display: "block", margin: 0 }}>{work.id}{authorsByWork.get(work.id) ? ` · ${authorsByWork.get(work.id)}` : ""}</span>
+                  </td>
                   <td><code>{work.slug}</code></td>
                   <td>{TYPE_LABELS[work.type] ?? work.type}</td>
                   <td>

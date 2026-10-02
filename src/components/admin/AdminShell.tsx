@@ -19,6 +19,7 @@ const ICONS: Record<string, ReactNode> = {
   home: <path d="M3 11.5 12 4l9 7.5M5.5 10v9.5h13V10" />,
   works: <path d="M6 3.5h9l3 3V20.5H6zM14.5 3.5V7H18M9 12h6M9 15.5h6" />,
   people: <path d="M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M16.5 5a3 3 0 0 1 0 6M18 14.5c1.8.7 3 2.4 3 4.5" />,
+  series: <path d="M5 8.5h12v11H5zM8 5.5h12v11" />,
   settings: <path d="M4 7h10M18 7h2M4 17h2M10 17h10M14 4.5v5M8 14.5v5" />,
   plus: <path d="M12 5v14M5 12h14" />
 };
@@ -37,9 +38,10 @@ const NAV: { href: string; label: string; icon: keyof typeof ICONS; match: (p: s
     href: "/admin/works",
     label: "Karya",
     icon: "works",
-    match: (p) => p.startsWith("/admin/works") && !p.startsWith("/admin/works/add")
+    match: (p) => (p.startsWith("/admin/works") && !p.startsWith("/admin/works/add")) || p.startsWith("/admin/visual-requests")
   },
-  { href: "/admin/contributors", label: "Editorial", icon: "people", match: (p) => p.startsWith("/admin/contributors") },
+  { href: "/admin/series", label: "Siri", icon: "series", match: (p) => p.startsWith("/admin/series") },
+  { href: "/admin/contributors", label: "Penyumbang", icon: "people", match: (p) => p.startsWith("/admin/contributors") },
   { href: "/admin/settings", label: "Tetapan", icon: "settings", match: (p) => p.startsWith("/admin/settings") }
 ];
 

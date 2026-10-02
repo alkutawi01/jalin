@@ -154,7 +154,7 @@ export default function EditSubmissionPage() {
           resultWorkId: sub.result_work_id || "",
         });
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Ralat memuatkan submission.");
+        setError(err instanceof Error ? err.message : "Ralat memuatkan penghantaran.");
       } finally {
         setLoading(false);
       }
@@ -256,7 +256,7 @@ export default function EditSubmissionPage() {
   }
 
   async function handlePromote() {
-    if (!(await confirmAction("Pasti ingin mempromosikan submission ini ke Work? Tindakan ini tidak boleh dibatalkan."))) {
+    if (!(await confirmAction("Pasti ingin menaikkan penghantaran ini menjadi karya? Tindakan ini tidak boleh dibatalkan."))) {
       return;
     }
 
@@ -878,7 +878,7 @@ export default function EditSubmissionPage() {
         {form.resultWorkId ? (
           <div className="admin-section" style={{ padding: "1rem", background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: "6px" }}>
             <p style={{ margin: 0, fontSize: "0.9rem", color: "#166534" }}>
-              Submission ini sudah dipromosikan ke <strong>{form.resultWorkId}</strong>.
+              Penghantaran ini sudah dinaikkan menjadi karya <strong>{form.resultWorkId}</strong>.
             </p>
             <a href={`/admin/works/${form.resultWorkId}`} className="admin-btn admin-btn-sm" style={{ marginTop: "0.5rem" }}>
               Lihat Work
