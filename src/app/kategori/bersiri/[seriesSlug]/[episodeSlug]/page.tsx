@@ -43,11 +43,14 @@ const TYPE_LABELS: Record<string, string> = {
 function EpisodeNav({
   seriesSlug,
   episodes,
-  currentSlug
+  currentSlug,
+  position
 }: {
   seriesSlug: string;
   episodes: SeriesEpisodeRef[];
   currentSlug: string;
+  /** Two of these appear on an episode page; each landmark needs its own name. */
+  position: "atas" | "bawah";
 }) {
   const index = episodes.findIndex((e) => e.slug === currentSlug);
   const prev = index > 0 ? episodes[index - 1] : undefined;
@@ -56,7 +59,7 @@ function EpisodeNav({
   if (index < 0) return null;
 
   return (
-    <nav className="site-shell episode-nav" aria-label="Navigasi episod" style={{
+    <nav className="site-shell episode-nav" aria-label={`Navigasi episod (${position})`} style={{
       maxWidth: "42rem",
       margin: "0 auto 1.5rem",
       padding: "0 1.25rem",
@@ -70,6 +73,22 @@ function EpisodeNav({
       <span style={{ opacity: 0.75 }}>
         Episod {index + 1} / {episodes.length}
       </span>
+      <details className="episode-picker">
+        <summary>Semua episod</summary>
+        <ol>
+          {episodes.map((episode) => (
+            <li key={episode.slug}>
+              <a
+                href={`/kategori/bersiri/${seriesSlug}/${episode.slug}`}
+                aria-current={episode.slug === currentSlug ? "page" : undefined}
+                className={episode.slug === currentSlug ? "is-current" : undefined}
+              >
+                <span className="episode-picker-num">{String(episode.position).padStart(2, "0")}</span> {episode.title}
+              </a>
+            </li>
+          ))}
+        </ol>
+      </details>
       <span style={{ display: "flex", gap: "0.75rem" }}>
         <a href={`/kategori/bersiri/${seriesSlug}`} rel="back">
           ← Siri
@@ -186,6 +205,7 @@ export default async function EpisodePage({
           seriesSlug={series.slug}
           episodes={episodes}
           currentSlug={work.slug}
+          position="atas"
         />
 
         <div className="site-shell reading-grid">
@@ -224,6 +244,7 @@ export default async function EpisodePage({
           seriesSlug={series.slug}
           episodes={episodes}
           currentSlug={work.slug}
+          position="bawah"
         />
 
         <EditorNote note={work.metadata?.editorNote} />

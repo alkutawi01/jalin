@@ -208,7 +208,6 @@ interface SeriesHighlightData {
   episodeCount: number;
   first: { slug: string; position: number };
   latest: { slug: string; position: number; title: string };
-  hero?: { src: string; alt: string };
   year: string;
 }
 
@@ -223,7 +222,6 @@ async function getSeriesHighlight(): Promise<SeriesHighlightData | null> {
     const latest = [...episodes].sort((a, b) => (b.publishedAt ?? "").localeCompare(a.publishedAt ?? ""))[0]!;
     const at = latest.publishedAt ?? "";
     if (best && best.at >= at) continue;
-    const cover = repo.getWork(ordered[0]!.slug)?.visuals.find((visual) => visual.role === "hero");
     best = {
       slug: series.slug,
       title: series.title,
@@ -231,7 +229,6 @@ async function getSeriesHighlight(): Promise<SeriesHighlightData | null> {
       episodeCount: episodes.length,
       first: { slug: ordered[0]!.slug, position: ordered[0]!.position },
       latest: { slug: latest.slug, position: latest.position, title: latest.title },
-      hero: cover?.src ? { src: cover.src, alt: cover.alt ?? "" } : undefined,
       year: (at || "2026").slice(0, 4),
       at
     };
@@ -250,7 +247,7 @@ function SeriesHighlight({ data }: { data: SeriesHighlightData }) {
         </header>
         <div className="editorial-pick">
           <a href={base} aria-label={`Buka siri ${data.title}`}>
-            <WorkCover type="bersiri" title={data.title} hero={data.hero} rightsYear={data.year} sizes="(max-width: 680px) 100vw, 360px" quality={85} />
+            <WorkCover type="bersiri" title={data.title} />
           </a>
           <div className="editorial-pick-body">
             <span className="editorial-pick-type">Bersiri · {data.episodeCount} episod</span>
