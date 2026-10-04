@@ -30,3 +30,20 @@ export function characterProblems(characters: Array<{ name: string; firstAppeara
   });
   return problems;
 }
+
+/**
+ * A credit repeats another when the same person (the same contributor, or a guest of the same name) has the same role
+ * on the same work. The reader would show the line twice. "existing" is the credits of that one work.
+ */
+export function findDuplicateCredit<T extends { id: number; contributor_slug: string | null; guest_name: string | null; role_label: string }>(
+  existing: T[],
+  candidate: { contributorSlug?: string | null; guestName?: string | null; roleLabel: string },
+  ignoreId?: number
+): T | undefined {
+  return existing.find((entry) => {
+    if (entry.id === ignoreId || !sameTerm(entry.role_label, candidate.roleLabel)) return false;
+    if (candidate.contributorSlug) return entry.contributor_slug === candidate.contributorSlug;
+    if (candidate.guestName) return !!entry.guest_name && sameTerm(entry.guest_name, candidate.guestName);
+    return false;
+  });
+}

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { listCreditsForWork, createCredit, reorderCredits } from "../../../../lib/admin/credit-service";
+import { findDuplicateCredit } from "../../../../lib/admin/metadata-rules";
 
 export async function GET(request: NextRequest) {
   try {
@@ -33,6 +34,15 @@ export async function POST(request: NextRequest) {
     }
     if (!body.contributorSlug && !body.guestName) {
       return NextResponse.json({ error: "contributor atau guestName diperlukan." }, { status: 400 });
+    }
+
+    const duplicate = findDuplicateCredit(await listCreditsForWork(body.workId), {
+      contributorSlug: body.contributorSlug || undefined,
+      guestName: body.guestName || undefined,
+      roleLabel: body.roleLabel.trim(),
+    });
+    if (duplicate) {
+      return NextResponse.json({ error: `Kredit ini sudah ada: ${duplicate.contributor_slug ?? duplicate.guest_name} sebagai ${duplicate.role_label}. Ubah yang sedia ada, atau pilih peranan lain.` }, { status: 409 });
     }
 
     const credit = await createCredit({

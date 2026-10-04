@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getCredit, updateCredit, deleteCredit } from "../../../../../lib/admin/credit-service";
+import { getCredit, updateCredit, deleteCredit, listCreditsForWork } from "../../../../../lib/admin/credit-service";
+import { findDuplicateCredit } from "../../../../../lib/admin/metadata-rules";
 import { parseDbId } from "../../../../../lib/admin/ids";
 
 export async function GET(
@@ -48,6 +49,18 @@ export async function PATCH(
     }
 
     const body = await request.json();
+
+    // What the credit will be after this change, to be sure it does not repeat another credit of the same work.
+    const nextSlug = body.contributorSlug !== undefined ? body.contributorSlug || null : body.guestName ? null : existing.contributor_slug;
+    const nextGuest = body.guestName !== undefined ? body.guestName || null : body.contributorSlug ? null : existing.guest_name;
+    const duplicate = findDuplicateCredit(await listCreditsForWork(existing.work_id), {
+      contributorSlug: nextSlug,
+      guestName: nextGuest,
+      roleLabel: String(body.roleLabel ?? existing.role_label).trim(),
+    }, creditId);
+    if (duplicate) {
+      return NextResponse.json({ error: `Kredit ini sudah ada: ${duplicate.contributor_slug ?? duplicate.guest_name} sebagai ${duplicate.role_label}.` }, { status: 409 });
+    }
 
     const credit = await updateCredit(creditId, {
       contributorSlug: body.contributorSlug,
