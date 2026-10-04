@@ -2672,3 +2672,26 @@ main:focus { outline: none; }
 .not-found-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 10px; margin-top: 28px; font-family: Inter, ui-sans-serif, sans-serif; font-size: 14px; }
 .not-found-links a { display: inline-flex; align-items: center; min-height: 40px; padding: 0 14px; border: 1px solid var(--line); border-radius: 999px; color: var(--ink); background: var(--white); transition: border-color .18s ease; }
 .not-found-links a:hover, .not-found-links a:focus-visible { border-color: var(--clay); }
+
+/* ── Theme presence: the logo's deep teal, terracotta and peach, kept in step with the quiet cream pages ── */
+.section-head { position: relative; }
+.section-head::after { content: ""; position: absolute; left: 0; bottom: -1px; width: 56px; height: 3px; border-radius: 3px; background: var(--clay); }
+.category-explorer { background: #f7ece4; border-top-color: #ecd9cc; border-bottom-color: #ecd9cc; }
+.category-explorer .section-head { border-bottom-color: #ecd9cc; }
+.site-footer { background: #0b2935; border-top: 0; color: #f3e9df; }
+.site-footer .footer-logo { width: 170px; }
+
+/* ── Phones: the desktop spacing was carried over unchanged. Tighter, so the page reads as one flow. ── */
+@media (max-width: 680px) {
+  .hero-featured { padding-top: 16px; }
+  .hero-featured-inner { gap: 18px; }
+  .hero-featured-visual { margin-top: 0; }
+  .hero-featured-text { padding: 4px 0 28px; }
+  .latest-works { padding: 40px 0; }
+  .editorial-selection { padding: 40px 0; }
+  .category-explorer { padding: 36px 0; }
+  .section-head { margin-bottom: 20px; padding-bottom: 12px; }
+  .section-head h2 { font-size: 24px; }
+  .site-footer { padding: 36px 0 40px; }
+  .site-footer .footer-logo { width: 140px; }
+}

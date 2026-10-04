@@ -198,7 +198,7 @@ export function SiteFooter() {
   return (
     <footer className="site-footer">
       <div className="site-shell footer-inner">
-        <img className="footer-logo" src="/brand/jalin-logo-primary.svg" alt="Jalin — oleh Adjung" />
+        <img className="footer-logo" src="/brand/jalin-logo-reversed.svg" alt="Jalin — oleh Adjung" />
       </div>
     </footer>
   );
