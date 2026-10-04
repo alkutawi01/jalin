@@ -603,16 +603,25 @@ export default function EditWorkPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
-  useEffect(() => {
-    if (!dirty) return;
-    const warn = (e: BeforeUnloadEvent) => {
-      e.preventDefault();
-    };
-    window.addEventListener("beforeunload", warn);
-    return () => window.removeEventListener("beforeunload", warn);
-  }, [dirty]);
+  /** The characters as last loaded or saved, to tell whether the editor has unsaved character edits. */
+  const charactersBaseline = useRef<string>("[]");
+  /** The latest form, so a save can tell whether the editor kept typing while it was in flight. */
+  const formRef = useRef<typeof form | null>(null);
+  /** Which side lists failed to load (so an empty list is never mistaken for "nothing here"). */
+  const [loadFailures, setLoadFailures] = useState<Record<string, string>>({});
+  function noteLoad(key: string, label: string, ok: boolean) {
+    setLoadFailures((prev) => {
+      if (ok) {
+        if (!(key in prev)) return prev;
+        const { [key]: _gone, ...rest } = prev;
+        return rest;
+      }
+      return prev[key] === label ? prev : { ...prev, [key]: label };
+    });
+  }
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
 
   const [form, setForm] = useState({
     title: "",
@@ -657,6 +666,17 @@ export default function EditWorkPage() {
 
   const [sections, setSections] = useState<SectionData[]>([]);
   const [editingSection, setEditingSection] = useState<Partial<SectionData> | null>(null);
+  formRef.current = form;
+  const unsavedElsewhere = !!(editingCredit || editingVisual || editingGlossary || editingSection)
+    || JSON.stringify(characters) !== charactersBaseline.current;
+  useEffect(() => {
+    if (!dirty && !unsavedElsewhere) return;
+    const warn = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+    };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [dirty, unsavedElsewhere]);
   const [sectionError, setSectionError] = useState<string | null>(null);
   const [sectionSuccess, setSectionSuccess] = useState<string | null>(null);
 
@@ -754,8 +774,9 @@ export default function EditWorkPage() {
       if (res.ok) {
         setSections(await res.json());
       }
+      noteLoad("sections", "bahagian", res.ok);
     } catch {
-      // Ignore section loading errors
+      noteLoad("sections", "bahagian", false);
     }
   }
 
@@ -1081,8 +1102,9 @@ export default function EditWorkPage() {
       if (res.ok) {
         setCredits(await res.json());
       }
+      noteLoad("credits", "kredit", res.ok);
     } catch {
-      // Ignore credit loading errors
+      noteLoad("credits", "kredit", false);
     }
   }
 
@@ -1097,8 +1119,9 @@ export default function EditWorkPage() {
           kind: c.kind,
         })));
       }
+      noteLoad("contributors", "senarai penyumbang", res.ok);
     } catch {
-      // Ignore contributor loading errors
+      noteLoad("contributors", "senarai penyumbang", false);
     }
   }
 
@@ -1109,8 +1132,9 @@ export default function EditWorkPage() {
       if (res.ok) {
         setVisuals(await res.json());
       }
+      noteLoad("visuals", "gambar", res.ok);
     } catch {
-      // Ignore visual loading errors
+      noteLoad("visuals", "gambar", false);
     }
   }
 
@@ -1165,8 +1189,9 @@ export default function EditWorkPage() {
       if (res.ok) {
         setGlossaryTerms(await res.json());
       }
+      noteLoad("glossary", "glosari", res.ok);
     } catch {
-      // Ignore glossary loading errors
+      noteLoad("glossary", "glosari", false);
     }
   }
 
@@ -1174,10 +1199,13 @@ export default function EditWorkPage() {
     try {
       const res = await fetch(`/api/admin/works/${workId}/characters`);
       if (res.ok) {
-        setCharacters(await res.json());
+        const loaded = await res.json();
+        charactersBaseline.current = JSON.stringify(loaded);
+        setCharacters(loaded);
       }
+      noteLoad("characters", "watak", res.ok);
     } catch {
-      // Ignore character loading errors
+      noteLoad("characters", "watak", false);
     }
   }
 
@@ -1210,6 +1238,7 @@ export default function EditWorkPage() {
         throw new Error(data.error || "Gagal menyimpan watak.");
       }
 
+      charactersBaseline.current = JSON.stringify(data);
       setCharacters(data);
       setCharactersSuccess("Watak disimpan.");
       setTimeout(() => setCharactersSuccess(null), 3000);
@@ -1229,6 +1258,7 @@ export default function EditWorkPage() {
     setSaving(true);
     setError(null);
     setSuccess(null);
+    const sentForm = form;
 
     try {
       const { version: _displayVersion, type: _fixedType, ...editableForm } = form;
@@ -1247,8 +1277,9 @@ export default function EditWorkPage() {
       }
 
       setSuccess("Teks & maklumat karya disimpan.");
-      setSavedBody(form.body);
-      setDirty(false);
+      setSavedBody(sentForm.body);
+      // If the editor kept typing while this was saving, those edits are not saved yet: stay dirty.
+      if (JSON.stringify(formRef.current) === JSON.stringify(sentForm)) setDirty(false);
       setTimeout(() => setSuccess(null), 3000);
       await loadReadiness();
     } catch (err) {
@@ -1650,6 +1681,20 @@ export default function EditWorkPage() {
         dirty={dirty}
         onGoTab={(tab) => selectTab(tab === "visuals" ? "content" : tab as Tab)}
       />
+
+      {Object.entries(loadFailures).map(([key, label]) => (
+        <div key={key} className="admin-alert admin-alert-error" role="alert">
+          Gagal memuatkan {label}. Senarai di bawah mungkin kelihatan kosong walaupun ada data.{" "}
+          <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={() => {
+            if (key === "sections") void loadSections();
+            else if (key === "credits") void loadCredits();
+            else if (key === "contributors") void loadContributors();
+            else if (key === "visuals") void loadVisuals();
+            else if (key === "glossary") void loadGlossary();
+            else if (key === "characters") void loadCharacters();
+          }}>Cuba semula</button>
+        </div>
+      ))}
 
       {error && (
         <div className="admin-alert admin-alert-error" role="alert">{error}</div>
