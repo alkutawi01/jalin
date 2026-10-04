@@ -221,6 +221,18 @@ export async function getSeriesEntryForWork(workId: string): Promise<SeriesEntry
  * Attach a Work (must type=bersiri) to a Series.
  * Prevents: non-bersiri type, duplicate membership, Work already in another Series.
  */
+/** Episodes (type bersiri) that belong to no series at all: the only ones that can be attached to a series. */
+export async function listUnattachedEpisodes() {
+  const db = getAdminDb();
+  return db
+    .selectFrom("works")
+    .where("type", "=", "bersiri")
+    .where((eb) => eb.not(eb.exists(eb.selectFrom("series_entries").select("series_entries.work_id").whereRef("series_entries.work_id", "=", "works.id"))))
+    .selectAll()
+    .orderBy("updated_at", "desc")
+    .execute();
+}
+
 export async function attachEpisode(
   seriesId: string,
   workId: string,

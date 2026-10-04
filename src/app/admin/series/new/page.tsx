@@ -2,11 +2,14 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { slugify } from "../../../../lib/admin/import/text-utils";
 
 export default function NewSeriesPage() {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  /** Until the editor types an address themselves, it follows the title. */
+  const [slugEdited, setSlugEdited] = useState(false);
   const [form, setForm] = useState({
     title: "",
     slug: "",
@@ -55,7 +58,7 @@ export default function NewSeriesPage() {
             type="text"
             required
             value={form.title}
-            onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))}
+            onChange={(e) => setForm((p) => ({ ...p, title: e.target.value, ...(slugEdited ? {} : { slug: slugify(e.target.value) }) }))}
           />
         </div>
         <div className="admin-form-group">
@@ -65,7 +68,7 @@ export default function NewSeriesPage() {
             type="text"
             required
             value={form.slug}
-            onChange={(e) => setForm((p) => ({ ...p, slug: e.target.value }))}
+            onChange={(e) => { setSlugEdited(e.target.value !== ""); setForm((p) => ({ ...p, slug: e.target.value })); }}
             placeholder="siri-contoh"
           />
         </div>

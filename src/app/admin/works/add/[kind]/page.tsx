@@ -40,18 +40,22 @@ export default async function AddWorkKindPage({ params, searchParams }: PageProp
     return (
       <div className="admin-form-page">
         {header("Episod ini bagi siri yang mana?")}
-        <div className="admin-choice-grid">
-          <a href={`${base}?siri=baharu`} className="admin-choice">
-            <strong>Buat siri baharu</strong>
-            <span>Episod pertama bagi sebuah siri baharu.</span>
-          </a>
-          {options.map((s) => (
-            <a key={s.id} href={`${base}?siri=${encodeURIComponent(s.id)}`} className="admin-choice">
-              <strong>Sambung: {s.title}</strong>
-              <span>{s.episodes} episod setakat ini</span>
-            </a>
-          ))}
-        </div>
+        {options.length === 0 ? (
+          <div className="a-empty-state">
+            <strong>Belum ada siri.</strong>
+            <p>Siri dicipta di tab Siri. Selepas itu, tambah episod pertamanya dari halaman siri itu.</p>
+            <a className="admin-btn admin-btn-primary" href="/admin/series/new">Cipta siri baharu</a>
+          </div>
+        ) : (
+          <div className="admin-choice-grid">
+            {options.map((s) => (
+              <a key={s.id} href={`${base}?siri=${encodeURIComponent(s.id)}`} className="admin-choice">
+                <strong>{s.title}</strong>
+                <span>{s.episodes === 0 ? "Belum ada episod: ini akan menjadi episod pertama" : `${s.episodes} episod setakat ini`}</span>
+              </a>
+            ))}
+          </div>
+        )}
       </div>
     );
   }
