@@ -82,7 +82,8 @@ export function StoryHead({
     <div className="site-shell work-head">
       <div className="story-head work-head-text">{text}</div>
       <figure className="work-head-visual editorial-image">
-        <Image src={hero.src} alt={hero.alt} fill sizes="(max-width: 900px) 100vw, 560px" quality={85} priority style={cropStyle(hero.crop)} />
+        {/* The 4:3 box crops a wider picture, so the picture is drawn about 1.33 times the box width: sizes says so. */}
+        <Image src={hero.src} alt={hero.alt} fill sizes="(max-width: 900px) 135vw, 760px" quality={85} priority style={cropStyle(hero.crop)} />
         <div className="image-rights" aria-hidden="true">{hero.rights}</div>
       </figure>
     </div>

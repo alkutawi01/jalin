@@ -81,7 +81,9 @@ function FeaturedHero({ work }: { work: PublicFeaturedSummary }) {
           </div>
           {hero?.src ? (
             <div className="hero-featured-visual">
-              <Image src={hero.src} alt={hero.alt} fill sizes="(max-width: 900px) 100vw, 640px" quality={85} priority style={cropStyle(hero.crop)} />
+              <Image src={hero.src} alt={hero.alt} fill // The picture fills a taller, narrower box than its own shape (object-fit: cover), so it is drawn wider than the box:
+                // about 1.5 times the box on desktop and over twice on a phone. sizes states the drawn width, not the box width.
+                sizes="(max-width: 680px) 750px, (max-width: 1050px) 100vw, 1000px" quality={85} priority style={cropStyle(hero.crop)} />
               <div className="image-rights" aria-hidden="true">{`© ADJUNG ${(work.updatedAt ?? work.publishedAt ?? "2026").slice(0, 4)}`}</div>
             </div>
           ) : null}
