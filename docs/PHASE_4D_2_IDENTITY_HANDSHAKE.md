@@ -98,7 +98,7 @@ Identity/provenance layer for AI-assisted submissions. Implemented BEFORE any ge
 - `verifyPrivacyBoundary(projection)` → runtime check for field leakage
 
 ### Public API
-`GET /api/public/contributions?submissionId=X` — returns ONLY public projections with runtime privacy verification.
+**Removed (4 Oct 2026).** `GET /api/public/contributions` was unauthenticated and answered for any submission id, including unpublished ones, so suggested credits of draft submissions could be read by enumerating ids. Nothing in the site used it. Public credits are shown only through the published work's own credits. `toPublicProjection` and `verifyPrivacyBoundary` stay (they are covered by `identity-privacy.test.ts`) for any future public surface.
 
 ## Suggested Credit ≠ Final Credit
 
@@ -135,7 +135,6 @@ Work Credit (final)
 | Method | Path | Description |
 |--------|------|-------------|
 | POST | `/api/admin/contributions/[id]/handshake` | Register identity handshake |
-| GET | `/api/public/contributions?submissionId=X` | Public-safe contribution projection |
 
 ## Tests
 
@@ -163,7 +162,6 @@ Work Credit (final)
 - `src/lib/admin/persona-mapping.ts` — canonical persona registry
 - `src/lib/admin/identity-handshake.ts` — handshake validation & projection
 - `src/app/api/admin/contributions/[id]/handshake/route.ts` — handshake API
-- `src/app/api/public/contributions/route.ts` — public-safe API
 - `__tests__/identity-privacy.test.ts` — 64 privacy/identity tests
 - `docs/PHASE_4D_2_IDENTITY_HANDSHAKE.md` — this document
 
