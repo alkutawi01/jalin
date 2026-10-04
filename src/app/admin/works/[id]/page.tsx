@@ -2,6 +2,7 @@
 
 import { isSourcedWork } from "@/lib/content/source-origin";
 import { dashChange } from "@/lib/admin/auto-dash";
+import { pasteAsMarkdown } from "@/components/admin/pasteMarkdown";
 import ImageFocusPicker from "@/components/admin/ImageFocusPicker";
 import ChapterImages from "@/components/admin/ChapterImages";
 import { useState, useEffect, useRef } from "react";
@@ -1844,6 +1845,7 @@ export default function EditWorkPage() {
                 ref={manuscriptRef}
                 value={form.body}
                 onChange={(e) => dashChange(e, (value) => setForm((prev) => ({ ...prev, body: value })))}
+                onPaste={pasteAsMarkdown}
                 rows={25}
                 className="admin-textarea"
               />
@@ -2059,6 +2061,7 @@ export default function EditWorkPage() {
                 <textarea
                   value={editingSection.body || ""}
                   onChange={(e) => dashChange(e, (value) => setEditingSection((prev) => ({ ...prev, body: value })))}
+                  onPaste={pasteAsMarkdown}
                   rows={12}
                   className="admin-textarea"
                 />
