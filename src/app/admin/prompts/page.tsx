@@ -80,7 +80,7 @@ export default async function AdminPromptsPage() {
               templates.map((t) => (
                 <tr key={t.id}>
                   <td>{t.id}</td>
-                  <td className="admin-table-title">{t.name}</td>
+                  <td className="admin-table-title"><a href={`/admin/prompts/${t.id}`} className="a-work-title-link">{t.name}</a></td>
                   <td>{SCOPE_LABELS[t.scope] ?? t.scope}</td>
                   <td>{t.work_type || "—"}</td>
                   <td>{t.version}</td>
