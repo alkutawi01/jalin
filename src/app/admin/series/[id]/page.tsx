@@ -38,6 +38,8 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [attachWorkId, setAttachWorkId] = useState("");
+  /** One episode action at a time: a second click while the first is still running is ignored. */
+  const [actionBusy, setActionBusy] = useState(false);
   const [heroFile, setHeroFile] = useState<File | null>(null);
   const [heroAlt, setHeroAlt] = useState("");
   const [heroBusy, setHeroBusy] = useState(false);
@@ -51,34 +53,34 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
     status: "ongoing",
   });
 
-  const loadSeries = useCallback(async () => {
+  /**
+   * Reads the series and its episodes. The form is filled from the server only when asked (the first load): adding,
+   * removing or moving an episode, or changing the picture, must not replace what the editor has typed and not yet saved.
+   */
+  const loadSeries = useCallback(async (fillForm = false) => {
     try {
       const res = await fetch(`/api/admin/series/${id}`);
       if (!res.ok) throw new Error("Siri tidak ditemui.");
       const data: SeriesData = await res.json();
       setSeries(data);
-      setForm({
-        title: data.title,
-        slug: data.slug,
-        dek: data.dek || "",
-        genre: data.genre || "",
-        audience: data.audience || "",
-        mode: data.mode,
-        status: data.status,
-      });
-      // Load entry work details
+      if (fillForm) {
+        setForm({
+          title: data.title,
+          slug: data.slug,
+          dek: data.dek || "",
+          genre: data.genre || "",
+          audience: data.audience || "",
+          mode: data.mode,
+          status: data.status,
+        });
+      }
+      // The titles and statuses of all episodes in ONE request (not one request per episode).
       const map = new Map<string, WorkOption>();
-      for (const entry of data.entries) {
-        const wr = await fetch(`/api/admin/works/${entry.work_id}`);
+      if (data.entries.length > 0) {
+        const wr = await fetch(`/api/admin/works?ids=${encodeURIComponent(data.entries.map((e) => e.work_id).join(","))}`);
         if (wr.ok) {
-          const w = await wr.json();
-          map.set(entry.work_id, {
-            id: w.id,
-            slug: w.slug,
-            title: w.title,
-            type: w.type,
-            status: w.status,
-          });
+          const list: Array<{ id: string; slug: string; title: string; type: string; status: string }> = await wr.json();
+          for (const w of list) map.set(w.id, { id: w.id, slug: w.slug, title: w.title, type: w.type, status: w.status });
         }
       }
       setEntryWorks(map);
@@ -108,7 +110,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
   }, []);
 
   useEffect(() => {
-    loadSeries();
+    void loadSeries(true);
     void loadUnattached();
   }, [loadSeries, loadUnattached]);
 
@@ -136,7 +138,8 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
   }
 
   async function handleAttach() {
-    if (!attachWorkId) return;
+    if (!attachWorkId || actionBusy) return;
+    setActionBusy(true);
     setError(null);
     try {
       const res = await fetch(`/api/admin/series/${id}/entries`, {
@@ -153,11 +156,15 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
       setTimeout(() => setSuccess(null), 4000);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+    } finally {
+      setActionBusy(false);
     }
   }
 
   async function handleDetach(workId: string) {
+    if (actionBusy) return;
     if (!(await confirmAction("Keluarkan episod ini daripada Siri? Karya tidak akan dipadam.", { danger: true, confirmLabel: "Ya, teruskan" }))) return;
+    setActionBusy(true);
     setError(null);
     try {
       const res = await fetch(`/api/admin/series/${id}/entries/${workId}`, { method: "DELETE" });
@@ -167,11 +174,13 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
       await loadUnattached();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+    } finally {
+      setActionBusy(false);
     }
   }
 
   async function handleMove(index: number, direction: -1 | 1) {
-    if (!series) return;
+    if (!series || actionBusy) return;
     const ids = series.entries.map((e) => e.work_id);
     const target = index + direction;
     if (target < 0 || target >= ids.length) return;
@@ -183,6 +192,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
       if (!(await confirmAction("Susunan semula melibatkan episod terbit. Teruskan?"))) return;
     }
 
+    setActionBusy(true);
     setError(null);
     try {
       const res = await fetch(`/api/admin/series/${id}/entries/reorder`, {
@@ -195,6 +205,8 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
       await loadSeries();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+    } finally {
+      setActionBusy(false);
     }
   }
 
@@ -412,15 +424,16 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
                       <td>
                         <div className="admin-table-actions">
                           <button type="button" className="admin-btn admin-btn-sm"
-                            onClick={() => handleMove(index, -1)} disabled={index === 0}
+                            onClick={() => handleMove(index, -1)} disabled={index === 0 || actionBusy}
                             aria-label={`Naikkan episod ${entry.position}`}>↑</button>
                           <button type="button" className="admin-btn admin-btn-sm"
-                            onClick={() => handleMove(index, 1)} disabled={index === series.entries.length - 1}
+                            onClick={() => handleMove(index, 1)} disabled={index === series.entries.length - 1 || actionBusy}
                             aria-label={`Turunkan episod ${entry.position}`}>↓</button>
                         </div>
                       </td>
                       <td>
                         <button type="button" className="admin-btn admin-btn-sm admin-btn-danger"
+                          disabled={actionBusy}
                           onClick={() => handleDetach(entry.work_id)}>
                           Keluarkan
                         </button>
@@ -449,7 +462,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
                   ))}
                 </select>
               </div>
-              <button type="button" className="admin-btn admin-btn-outline" onClick={handleAttach} disabled={!attachWorkId}>
+              <button type="button" className="admin-btn admin-btn-outline" onClick={handleAttach} disabled={!attachWorkId || actionBusy}>
                 Sertakan
               </button>
             </div>

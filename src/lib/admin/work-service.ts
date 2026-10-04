@@ -68,6 +68,17 @@ export interface WorkRecord {
 /**
  * List all works from database.
  */
+/** Just what a list needs for the given works, in one query. */
+export async function listWorksByIds(ids: string[]) {
+  if (ids.length === 0) return [];
+  const db = getAdminDb();
+  return db
+    .selectFrom("works")
+    .where("id", "in", ids)
+    .select(["id", "slug", "title", "type", "status"])
+    .execute();
+}
+
 export async function listWorks(): Promise<WorkRecord[]> {
   const db = getAdminDb();
   return db
