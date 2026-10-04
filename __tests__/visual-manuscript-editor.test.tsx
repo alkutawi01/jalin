@@ -12,6 +12,16 @@ assert.equal(canEditVisually("- Senarai\n- Lagi"), false);
 assert.equal(canEditVisually(":::mesej\nIsi sahaja.\n:::"), true);
 assert.equal(canEditVisually(":::emel\nSalam,\n\nSaya akan datang.\n:::"), true);
 assert.equal(canEditVisually(":::mesej\nTidak ditutup"), false);
+// Plain characters an editor can type in the visual editor must not lock it out (messages and e-mails use them a lot).
+assert.equal(canEditVisually("[10:32] Ali <ali@x.com> kata_a | 5 \\* 3 > 2 dan 1. satu"), true);
+assert.equal(canEditVisually(":::mesej\n[10:32] Ali: Dah sampai?\n:::"), true);
+assert.equal(canEditVisually(":::emel\nDaripada: Ali <ali@x.com>\nKepada: Siti\n:::"), true);
+assert.equal(canEditVisually("fail C:\\\\data dan 2 \\* 3"), true);
+// Syntax that would be flattened still stays in the source editor.
+assert.equal(canEditVisually("![gambar](a.png)"), false);
+assert.equal(canEditVisually("kod `x` di sini"), false);
+assert.equal(canEditVisually("garis \\_ condong"), false);
+assert.equal(canEditVisually("> petikan blok"), false);
 assert.deepEqual(splitCommunicationBlocks("Sebelum.\n\n:::mesej\nIsi sahaja.\n:::\n\nSelepas."), [
   { kind: "prose", content: "Sebelum." },
   { kind: "mesej", content: "Isi sahaja." },
