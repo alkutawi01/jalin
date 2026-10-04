@@ -27,11 +27,16 @@ function escapeHtml(value: string): string {
   return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 
+/** The editor writes a literal "*" as "\*" and a literal "\" as "\\"; reading it back undoes that, so a round trip is stable. */
+function unescapeLiteral(value: string): string {
+  return value.replace(/\\([\\*])/g, "$1");
+}
+
 function inlineHtml(value: string): string {
-  return value.split(/(\*\*[^*\n]+\*\*|\*[^*\n]+\*)/g).map((part) => {
-    if (part.startsWith("**") && part.endsWith("**")) return `<strong>${escapeHtml(part.slice(2, -2))}</strong>`;
-    if (part.startsWith("*") && part.endsWith("*")) return `<em>${escapeHtml(part.slice(1, -1))}</em>`;
-    return escapeHtml(part).replace(/\n/g, "<br>");
+  return value.split(/((?<!\\)\*\*[^*\n]+?(?<!\\)\*\*|(?<!\\)\*[^*\n]+?(?<!\\)\*)/g).map((part) => {
+    if (part.startsWith("**") && part.endsWith("**") && part.length > 4) return `<strong>${escapeHtml(unescapeLiteral(part.slice(2, -2)))}</strong>`;
+    if (part.startsWith("*") && part.endsWith("*") && part.length > 2) return `<em>${escapeHtml(unescapeLiteral(part.slice(1, -1)))}</em>`;
+    return escapeHtml(unescapeLiteral(part)).replace(/\n/g, "<br>");
   }).join("");
 }
 
@@ -44,10 +49,15 @@ export function canEditVisually(markdown: string): boolean {
   const lines = blocks.flatMap((block) => block.split("\n"));
   return lines.every((line) => {
     if (!line.trim() || MARKER.test(line.trim()) || /^(---|\*\*\*)$/.test(line.trim())) return true;
-    if (/^## (?!#)/.test(line)) return !/[`\[\]<>\\_|]/.test(line);
+    // "\*" and "\\" are what this editor itself writes for a literal * or \, so they are not unsupported syntax.
+    const text = line.replace(/\\[\\*]/g, "");
+    // Ordinary characters such as [10:32], <a@b.com>, _ and | are plain text in the visual editor and survive the round
+    // trip; what stays in the source editor is syntax that would be flattened: code, links, images, other escapes.
+    const unsupportedInline = /[`\\]|\]\(|!\[/;
+    if (/^## (?!#)/.test(line)) return !unsupportedInline.test(text);
     if (/^#{1,6}\s|^>\s|^[-+*]\s|^\d+\.\s|^\s{4}|^\||^:::/.test(line)) return false;
-    if (/[`\[\]<>\\_|]/.test(line)) return false;
-    return !line.replace(/\*\*[^*\n]+\*\*|\*[^*\n]+\*/g, "").includes("*");
+    if (unsupportedInline.test(text)) return false;
+    return !text.replace(/\*\*[^*\n]+\*\*|\*[^*\n]+\*/g, "").includes("*");
   });
 }
 
@@ -133,38 +143,52 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
   function insertBlock(kind: "paragraph" | "heading" | "scene" | "image" | "mesej" | "emel") {
     const editor = editorRef.current;
     if (!editor) return;
-    const selection = window.getSelection();
     const saved = selectionRef.current;
     const anchor = saved && editor.contains(saved.startContainer)
       ? (saved.startContainer.nodeType === Node.ELEMENT_NODE ? saved.startContainer as Element : saved.startContainer.parentElement)?.closest("p,h2,div,hr")
       : null;
-    const block = kind === "heading" ? document.createElement("h2") : kind === "scene" ? document.createElement("hr") : document.createElement("p");
-    if (kind === "heading") block.textContent = "Tajuk bahagian";
-    if (kind === "paragraph") block.appendChild(document.createElement("br"));
-    if (kind === "image") {
+    let html: string;
+    if (kind === "heading") html = "<h2>Tajuk bahagian</h2>";
+    else if (kind === "scene") html = '<hr class="visual-manuscript-break">';
+    else if (kind === "paragraph") html = "<p><br></p>";
+    else if (kind === "image") {
       const marker = nextImageMarker(value, existingAnchors);
-      block.className = "visual-manuscript-marker";
-      block.contentEditable = "false";
-      block.dataset.marker = marker;
-      block.textContent = `Gambar ${marker.match(/\d+/)?.[0]}`;
+      html = `<div class="visual-manuscript-marker" contenteditable="false" data-marker="${marker}">Gambar ${marker.match(/\d+/)?.[0]}</div>`;
       onMarkerInserted(marker);
+    } else html = `<div class="visual-manuscript-communication visual-manuscript-communication-${kind}" data-communication="${kind}">Tulis kandungan di sini.</div>`;
+    // Inserted through the browser's own editing command, so Ctrl+Z (and Edit > Undo) takes the block away again.
+    editor.focus();
+    const selection = window.getSelection();
+    // The block goes after the paragraph or heading the caret was in. Next to a break, a picture marker or another box
+    // (where a new paragraph cannot be started), it goes at the end of the manuscript instead.
+    const textBlock = anchor && anchor.parentElement === editor && /^(P|H2)$/.test(anchor.tagName) ? anchor : null;
+    let target: Element | null = textBlock;
+    if (!target) {
+      const last = editor.lastElementChild;
+      if (!(last && last.tagName === "P" && !last.textContent?.trim())) editor.insertAdjacentHTML("beforeend", "<p><br></p>");
+      target = editor.lastElementChild;
     }
-    if (kind === "mesej" || kind === "emel") {
-      block.className = `visual-manuscript-communication visual-manuscript-communication-${kind}`;
-      block.dataset.communication = kind;
-      block.textContent = "Tulis kandungan di sini.";
-    }
-    if (anchor?.parentElement === editor) anchor.after(block);
-    else editor.appendChild(block);
+    const range = document.createRange();
+    range.selectNodeContents(target!);
+    range.collapse(false);
+    selection?.removeAllRanges();
+    selection?.addRange(range);
+    // A browser puts a block inserted at the end of a paragraph inside that paragraph, so start a new, empty one first
+    // (unless the caret is already in an empty one); the block then replaces it.
+    if (!(target!.tagName === "P" && !target!.textContent?.trim())) document.execCommand("insertParagraph");
+    if (kind !== "paragraph") document.execCommand("insertHTML", false, html);
     sync();
-    if (kind === "paragraph" || kind === "heading" || kind === "mesej" || kind === "emel") {
-      const range = document.createRange();
-      range.selectNodeContents(block);
-      if (kind === "paragraph" || kind === "heading") range.collapse(true);
-      selection?.removeAllRanges();
-      selection?.addRange(range);
-      editor.focus();
+    if (kind === "mesej" || kind === "emel") {
+      // Select the placeholder text so the editor can type over it.
+      const box = (window.getSelection()?.anchorNode?.parentElement ?? null)?.closest("[data-communication]");
+      if (box) {
+        const inner = document.createRange();
+        inner.selectNodeContents(box);
+        selection?.removeAllRanges();
+        selection?.addRange(inner);
+      }
     }
+    rememberSelection();
   }
 
   return <div className="visual-manuscript">
