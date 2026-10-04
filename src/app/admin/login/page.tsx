@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { safeReturnTo } from "../../../lib/admin/return-to";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -27,7 +28,8 @@ export default function LoginPage() {
         throw new Error(data.error || "Login gagal.");
       }
 
-      router.push("/admin");
+      // Back to the page the editor was on when the session ended (a path inside the admin only).
+      router.push(safeReturnTo(new URLSearchParams(window.location.search).get("returnTo")));
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");

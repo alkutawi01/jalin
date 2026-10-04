@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { listWorks, createWork } from "../../../../lib/admin/work-service";
+import { listWorks, listWorksByIds, createWork } from "../../../../lib/admin/work-service";
 import { listUnattachedEpisodes } from "../../../../lib/admin/series-service";
 
-/** GET /api/admin/works, or ?tanpaSiri=1 for the Bersiri episodes that belong to no series yet. */
+/** GET /api/admin/works; ?tanpaSiri=1 for the Bersiri episodes that belong to no series yet; ?ids=a,b,c for just those works. */
 export async function GET(request: NextRequest) {
   try {
-    const works = request.nextUrl.searchParams.get("tanpaSiri") ? await listUnattachedEpisodes() : await listWorks();
+    const ids = request.nextUrl.searchParams.get("ids");
+    const works = ids !== null
+      ? await listWorksByIds(ids.split(",").map((id) => id.trim()).filter(Boolean).slice(0, 500))
+      : request.nextUrl.searchParams.get("tanpaSiri") ? await listUnattachedEpisodes() : await listWorks();
     return NextResponse.json(works);
   } catch (error) {
     return NextResponse.json(
