@@ -396,8 +396,8 @@ export default function EditSubmissionPage() {
         </div>
       </header>
 
-      {error && <div className="admin-alert admin-alert-error">{error}</div>}
-      {success && <div className="admin-alert admin-alert-success">{success}</div>}
+      {error && <div className="admin-alert admin-alert-error" role="alert">{error}</div>}
+      {success && <div className="admin-alert admin-alert-success" role="status">{success}</div>}
 
       <form onSubmit={handleSubmit} className="admin-form">
         <div className="admin-form-row">
@@ -536,7 +536,7 @@ export default function EditSubmissionPage() {
           </button>
         </div>
 
-        {contribError && <div className="admin-alert admin-alert-error">{contribError}</div>}
+        {contribError && <div className="admin-alert admin-alert-error" role="alert">{contribError}</div>}
 
         {editingContribution && (
           <div className="admin-credit-form">
@@ -762,8 +762,8 @@ export default function EditSubmissionPage() {
           </p>
         </div>
 
-        {genError && <div className="admin-alert admin-alert-error">{genError}</div>}
-        {genSuccess && <div className="admin-alert admin-alert-success">{genSuccess}</div>}
+        {genError && <div className="admin-alert admin-alert-error" role="alert">{genError}</div>}
+        {genSuccess && <div className="admin-alert admin-alert-success" role="status">{genSuccess}</div>}
 
         <div className="admin-form-row">
           <div className="admin-form-group">
@@ -909,8 +909,8 @@ export default function EditSubmissionPage() {
               </p>
             </div>
 
-            {promoteError && <div className="admin-alert admin-alert-error">{promoteError}</div>}
-            {promoteSuccess && <div className="admin-alert admin-alert-success">{promoteSuccess}</div>}
+            {promoteError && <div className="admin-alert admin-alert-error" role="alert">{promoteError}</div>}
+            {promoteSuccess && <div className="admin-alert admin-alert-success" role="status">{promoteSuccess}</div>}
 
             <div className="admin-form-group">
               <label>Alamat pautan karya</label>

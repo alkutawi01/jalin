@@ -82,7 +82,7 @@ export default function NewVisualRequestPage() {
         </div>
       </header>
 
-      {error && <div className="admin-alert admin-alert-error">{error}</div>}
+      {error && <div className="admin-alert admin-alert-error" role="alert">{error}</div>}
 
       <form onSubmit={handleSubmit} className="admin-form">
         <div className="admin-form-row">

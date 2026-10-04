@@ -105,7 +105,7 @@ export default function EditContributorPage() {
   if (error && !form.slug) {
     return (
       <div className="admin-form-page">
-        <div className="admin-alert admin-alert-error">{error} Alamat pautan penyumbang mungkin sudah bertukar.</div>
+        <div className="admin-alert admin-alert-error" role="alert">{error} Alamat pautan penyumbang mungkin sudah bertukar.</div>
         <a href="/admin/contributors" className="admin-btn admin-btn-outline">Lihat senarai penyumbang</a>
       </div>
     );
@@ -119,11 +119,11 @@ export default function EditContributorPage() {
       </header>
 
       {error && (
-        <div className="admin-alert admin-alert-error">{error}</div>
+        <div className="admin-alert admin-alert-error" role="alert">{error}</div>
       )}
 
       {success && (
-        <div className="admin-alert admin-alert-success">{success}</div>
+        <div className="admin-alert admin-alert-success" role="status">{success}</div>
       )}
 
       <form onSubmit={handleSubmit} className="admin-form">

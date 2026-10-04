@@ -497,8 +497,8 @@ export default function EditVisualRequestPage() {
         </div>
       </header>
 
-      {error && <div className="admin-alert admin-alert-error">{error}</div>}
-      {success && <div className="admin-alert admin-alert-success">{success}</div>}
+      {error && <div className="admin-alert admin-alert-error" role="alert">{error}</div>}
+      {success && <div className="admin-alert admin-alert-success" role="status">{success}</div>}
 
       {/* Generation Status vs Editorial Approval — clearly separated */}
       {record && (

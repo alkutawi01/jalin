@@ -148,8 +148,8 @@ export default function EditPromptPage() {
         </div>
       </header>
 
-      {error && <div className="admin-alert admin-alert-error">{error}</div>}
-      {success && <div className="admin-alert admin-alert-success">{success}</div>}
+      {error && <div className="admin-alert admin-alert-error" role="alert">{error}</div>}
+      {success && <div className="admin-alert admin-alert-success" role="status">{success}</div>}
 
       <form onSubmit={handleSubmit} className="admin-form">
         <div className="admin-form-group">

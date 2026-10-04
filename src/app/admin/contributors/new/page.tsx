@@ -72,7 +72,7 @@ export default function NewContributorPage() {
       </header>
 
       {error && (
-        <div className="admin-alert admin-alert-error">{error}</div>
+        <div className="admin-alert admin-alert-error" role="alert">{error}</div>
       )}
 
       <form onSubmit={handleSubmit} className="admin-form">
