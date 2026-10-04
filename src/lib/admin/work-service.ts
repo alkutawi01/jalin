@@ -230,25 +230,28 @@ export async function updateWork(
   }
 
   if (input.editorNote !== undefined || input.origin !== undefined) {
-    const current = await db.selectFrom("works").where("id", "=", id).select("metadata").executeTakeFirst();
-    const metadata: Record<string, unknown> = { ...((current?.metadata ?? {}) as Record<string, unknown>) };
-    if (input.editorNote !== undefined) {
-      const note = String(input.editorNote ?? "").trim();
-      if (note) metadata.editorNote = note;
-      else delete metadata.editorNote;
-    }
-    if (input.origin !== undefined) {
-      if (input.origin === "sumber") metadata.origin = "sumber";
-      else delete metadata.origin;
-    }
-    updateData.metadata = metadata;
+    // Read-modify-write under a row lock, so a character save at the same moment cannot be overwritten.
+    await db.transaction().execute(async (trx) => {
+      const current = await trx.selectFrom("works").where("id", "=", id).select("metadata").forUpdate().executeTakeFirst();
+      const metadata: Record<string, unknown> = { ...((current?.metadata ?? {}) as Record<string, unknown>) };
+      if (input.editorNote !== undefined) {
+        const note = String(input.editorNote ?? "").trim();
+        if (note) metadata.editorNote = note;
+        else delete metadata.editorNote;
+      }
+      if (input.origin !== undefined) {
+        if (input.origin === "sumber") metadata.origin = "sumber";
+        else delete metadata.origin;
+      }
+      await trx.updateTable("works").where("id", "=", id).set({ ...updateData, metadata }).execute();
+    });
+  } else {
+    await db
+      .updateTable("works")
+      .where("id", "=", id)
+      .set(updateData)
+      .execute();
   }
-
-  await db
-    .updateTable("works")
-    .where("id", "=", id)
-    .set(updateData)
-    .execute();
 
   const work = await getWork(id);
   if (!work) {
@@ -338,13 +341,12 @@ export async function updateWorkCharacters(
   const chapterSlugs = (await db.selectFrom("reading_sections").where("work_id", "=", id).select("slug").execute()).map((row) => String(row.slug));
   const problems = characterProblems(validated, chapterSlugs);
   if (problems.length > 0) throw new Error(problems.join(" "));
-  const metadata = { ...(existing.metadata ?? {}), characters: validated };
-
-  await db
-    .updateTable("works")
-    .where("id", "=", id)
-    .set({ metadata, updated_at: new Date().toISOString() })
-    .execute();
+  // Merge into the freshest metadata under a row lock (a note/origin save at the same moment must survive).
+  await db.transaction().execute(async (trx) => {
+    const current = await trx.selectFrom("works").where("id", "=", id).select("metadata").forUpdate().executeTakeFirst();
+    const metadata = { ...((current?.metadata ?? {}) as Record<string, unknown>), characters: validated };
+    await trx.updateTable("works").where("id", "=", id).set({ metadata, updated_at: new Date().toISOString() }).execute();
+  });
 
   const work = await getWork(id);
   if (!work) {
