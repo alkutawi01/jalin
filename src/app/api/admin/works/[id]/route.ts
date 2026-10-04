@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getWork, updateWork, archiveWork } from "../../../../../lib/admin/work-service";
+import { getWork, updateWork, archiveWork, deleteUnpublishedWork } from "../../../../../lib/admin/work-service";
+import { getCurrentAdmin } from "../../../../../lib/admin/auth";
 import { getDb, hasDb } from "../../../../../lib/db";
 import { imageMarkers, isImageMarker } from "../../../../../lib/reader/image-markers";
 
@@ -123,6 +124,26 @@ export async function PATCH(
   } catch (error) {
     const message = error instanceof Error ? error.message : "Ralat tidak diketahui.";
     const status = message.includes("already exists") ? 409 : 500;
+    return NextResponse.json({ error: message }, { status });
+  }
+}
+
+/** Permanently deletes a work that was never published; anything that has been public can only be archived. */
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const admin = await getCurrentAdmin();
+    if (!admin) {
+      return NextResponse.json({ error: "Sesi anda telah tamat. Log masuk semula." }, { status: 401 });
+    }
+    const { id } = await params;
+    await deleteUnpublishedWork(id);
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Ralat tidak diketahui.";
+    const status = message.includes("tidak ditemui") ? 404 : message.includes("pernah diterbitkan") ? 409 : 500;
     return NextResponse.json({ error: message }, { status });
   }
 }

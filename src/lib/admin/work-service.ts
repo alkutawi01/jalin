@@ -269,6 +269,26 @@ export async function archiveWork(id: string): Promise<WorkRecord> {
 }
 
 /**
+ * Permanently delete a work that was never published (a test draft, a mistake). A work that has ever been public keeps
+ * its history and can only be archived. Credits, glossary and pictures have no cascade in the database, so they go first.
+ */
+export async function deleteUnpublishedWork(id: string): Promise<void> {
+  const db = getAdminDb();
+  await db.transaction().execute(async (trx) => {
+    const work = await trx.selectFrom("works").where("id", "=", id).select(["status", "published_at", "published_revision_id"]).forUpdate().executeTakeFirst();
+    if (!work) throw new Error("Karya tidak ditemui.");
+    if (work.status === "published" || work.published_at || work.published_revision_id) {
+      throw new Error("Karya yang pernah diterbitkan tidak boleh dipadam, hanya diarkibkan.");
+    }
+    await trx.deleteFrom("visual_requests").where("work_id", "=", id).execute();
+    await trx.deleteFrom("visuals").where("work_id", "=", id).execute();
+    await trx.deleteFrom("credits").where("work_id", "=", id).execute();
+    await trx.deleteFrom("glossary_terms").where("work_id", "=", id).execute();
+    await trx.deleteFrom("works").where("id", "=", id).execute();
+  });
+}
+
+/**
  * Character metadata (Content Model Readiness audit,
  * docs/JALIN_CONTENT_MODEL_READINESS_AUDIT.md).
  *
