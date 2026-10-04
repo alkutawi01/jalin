@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { listContributionsForSubmission, createContribution } from "../../../../lib/admin/contribution-service";
+import { parseDbId } from "../../../../lib/admin/ids";
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,7 +11,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "submissionId diperlukan." }, { status: 400 });
     }
 
-    const numId = parseInt(submissionId, 10);
+    const numId = parseDbId(submissionId);
     if (isNaN(numId)) {
       return NextResponse.json({ error: "submissionId tidak sah." }, { status: 400 });
     }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCurrentAdmin } from "../../../../../../lib/admin/auth";
 import { getDb, hasDb } from "../../../../../../lib/db";
 import { replaceVisualImage } from "../../../../../../lib/admin/visual-generation/work-visual-upload";
+import { parseDbId } from "../../../../../../lib/admin/ids";
 
 /**
  * POST /api/admin/visuals/[id]/replace  (multipart/form-data)
@@ -15,7 +16,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     if (!hasDb()) return NextResponse.json({ error: "Pangkalan data tidak tersedia." }, { status: 503 });
 
     const { id } = await params;
-    const visualId = parseInt(id, 10);
+    const visualId = parseDbId(id);
     if (Number.isNaN(visualId)) return NextResponse.json({ error: "ID tidak sah." }, { status: 400 });
 
     const form = await request.formData();

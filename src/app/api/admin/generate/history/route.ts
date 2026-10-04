@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "../../../../../lib/db";
+import { parseDbId } from "../../../../../lib/admin/ids";
 
 /**
  * GET /api/admin/generate/history?submissionId=X
@@ -16,7 +17,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "submissionId diperlukan." }, { status: 400 });
     }
 
-    const numId = parseInt(submissionId, 10);
+    const numId = parseDbId(submissionId);
     if (isNaN(numId)) {
       return NextResponse.json({ error: "submissionId tidak sah." }, { status: 400 });
     }

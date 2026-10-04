@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getGlossaryTerm, updateGlossaryTerm, deleteGlossaryTerm } from "../../../../../lib/admin/glossary-service";
+import { parseDbId } from "../../../../../lib/admin/ids";
 
 export async function GET(
   request: NextRequest,
@@ -7,7 +8,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const termId = parseInt(id, 10);
+    const termId = parseDbId(id);
 
     if (isNaN(termId)) {
       return NextResponse.json({ error: "ID tidak sah." }, { status: 400 });
@@ -34,7 +35,7 @@ export async function PATCH(
 ) {
   try {
     const { id } = await params;
-    const termId = parseInt(id, 10);
+    const termId = parseDbId(id);
 
     if (isNaN(termId)) {
       return NextResponse.json({ error: "ID tidak sah." }, { status: 400 });
@@ -70,7 +71,7 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    const termId = parseInt(id, 10);
+    const termId = parseDbId(id);
 
     if (isNaN(termId)) {
       return NextResponse.json({ error: "ID tidak sah." }, { status: 400 });

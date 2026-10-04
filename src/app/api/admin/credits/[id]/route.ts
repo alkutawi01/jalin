@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCredit, updateCredit, deleteCredit } from "../../../../../lib/admin/credit-service";
+import { parseDbId } from "../../../../../lib/admin/ids";
 
 export async function GET(
   request: NextRequest,
@@ -7,7 +8,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const creditId = parseInt(id, 10);
+    const creditId = parseDbId(id);
 
     if (isNaN(creditId)) {
       return NextResponse.json({ error: "ID tidak sah." }, { status: 400 });
@@ -34,7 +35,7 @@ export async function PATCH(
 ) {
   try {
     const { id } = await params;
-    const creditId = parseInt(id, 10);
+    const creditId = parseDbId(id);
 
     if (isNaN(creditId)) {
       return NextResponse.json({ error: "ID tidak sah." }, { status: 400 });
@@ -71,7 +72,7 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    const creditId = parseInt(id, 10);
+    const creditId = parseDbId(id);
 
     if (isNaN(creditId)) {
       return NextResponse.json({ error: "ID tidak sah." }, { status: 400 });

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "../../../../../../lib/db";
 import { promoteSubmissionToWork } from "../../../../../../lib/admin/promotion-service";
 import type { PromotionCreditConfig } from "../../../../../../lib/admin/promotion-service";
+import { parseDbId } from "../../../../../../lib/admin/ids";
 
 /**
  * POST /api/admin/submissions/[id]/promote
@@ -17,7 +18,7 @@ export async function POST(
 ) {
   try {
     const { id } = await params;
-    const numId = parseInt(id, 10);
+    const numId = parseDbId(id);
     if (isNaN(numId)) {
       return NextResponse.json({ error: "ID tidak sah." }, { status: 400 });
     }
