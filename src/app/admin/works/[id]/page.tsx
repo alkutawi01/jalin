@@ -2,6 +2,7 @@
 
 import { isSourcedWork } from "@/lib/content/source-origin";
 import { dashChange } from "@/lib/admin/auto-dash";
+import { clearDraft, draftDiffers, pickDraftFields, readDraft, saveDraft, type StoredDraft } from "@/lib/admin/local-draft";
 import { pasteAsMarkdown } from "@/components/admin/pasteMarkdown";
 import ImageFocusPicker from "@/components/admin/ImageFocusPicker";
 import ChapterImages from "@/components/admin/ChapterImages";
@@ -603,6 +604,8 @@ export default function EditWorkPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
+  /** A copy of unsaved text found in this browser from an earlier visit, waiting for the editor's choice. */
+  const [restoreOffer, setRestoreOffer] = useState<StoredDraft | null>(null);
   /** The characters as last loaded or saved, to tell whether the editor has unsaved character edits. */
   const charactersBaseline = useRef<string>("[]");
   /** The latest form, so a save can tell whether the editor kept typing while it was in flight. */
@@ -660,6 +663,12 @@ export default function EditWorkPage() {
   const [glossaryError, setGlossaryError] = useState<string | null>(null);
 
   const [characters, setCharacters] = useState<CharacterEntry[]>([]);
+  // While there are unsaved changes, keep a copy in this browser (shortly after the last keystroke), so a refresh does not lose them.
+  useEffect(() => {
+    if (!dirty || restoreOffer) return;
+    const timer = window.setTimeout(() => saveDraft(window.localStorage, workId, form), 700);
+    return () => window.clearTimeout(timer);
+  }, [dirty, form, restoreOffer, workId]);
   const [charactersError, setCharactersError] = useState<string | null>(null);
   const [charactersSuccess, setCharactersSuccess] = useState<string | null>(null);
   const [charactersSaving, setCharactersSaving] = useState(false);
@@ -739,6 +748,17 @@ export default function EditWorkPage() {
           origin: work.metadata?.origin === "sumber" ? "sumber" : "asli",
         });
         setSavedBody(work.body || "");
+        // Text typed in an earlier visit that never reached "Simpan" (refresh, closed tab, crash): offer it back.
+        const kept = readDraft(window.localStorage, workId);
+        if (kept) {
+          const onServer = pickDraftFields({
+            title: work.title, dek: work.dek || "", body: work.body || "", genre: work.genre || "", audience: work.audience || "",
+            readingMinutes: work.reading_minutes?.toString() || "", editorNote: work.metadata?.editorNote ?? "",
+            origin: work.metadata?.origin === "sumber" ? "sumber" : "asli",
+          });
+          if (draftDiffers(kept.fields, onServer)) setRestoreOffer(kept);
+          else clearDraft(window.localStorage, workId);
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : "Ralat memuatkan karya.");
       } finally {
@@ -1286,13 +1306,40 @@ export default function EditWorkPage() {
       setSuccess("Teks & maklumat karya disimpan.");
       setSavedBody(sentForm.body);
       // If the editor kept typing while this was saving, those edits are not saved yet: stay dirty.
-      if (JSON.stringify(formRef.current) === JSON.stringify(sentForm)) setDirty(false);
+      if (JSON.stringify(formRef.current) === JSON.stringify(sentForm)) {
+        setDirty(false);
+        clearDraft(window.localStorage, workId);
+      }
       setTimeout(() => setSuccess(null), 3000);
       await loadReadiness();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
     } finally {
       setSaving(false);
+    }
+  }
+
+  /** The "Nama di bawah tajuk" and "Awam" ticks in the credits table save at once, so the editor need not open Edit for them. */
+  const [creditToggleBusy, setCreditToggleBusy] = useState<number | null>(null);
+  async function toggleCreditFlag(credit: CreditData, flag: "byline" | "isPublic", value: boolean) {
+    setCreditError(null);
+    setCreditToggleBusy(credit.id);
+    try {
+      const res = await fetch(`/api/admin/credits/${credit.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ [flag]: value }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Gagal menyimpan kredit.");
+      }
+      await loadCredits();
+      await loadReadiness();
+    } catch (err) {
+      setCreditError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+    } finally {
+      setCreditToggleBusy(null);
     }
   }
 
@@ -1464,7 +1511,16 @@ export default function EditWorkPage() {
   }
 
   async function handleDeleteVisual(id: number) {
-    if (!(await confirmAction("Pasti ingin memadam visual ini?", { danger: true, confirmLabel: "Ya, teruskan" }))) return;
+    // Deleting a picture does not touch the manuscript, so say so when its marker is still written in the text.
+    const doomed = visuals.find((v) => v.id === id);
+    const marker = doomed?.anchor && isImageMarker(doomed.anchor) ? doomed.anchor.trim() : null;
+    const markerInText = Boolean(marker && form.body.includes(marker));
+    if (!(await confirmAction(
+      markerInText
+        ? `Pasti ingin memadam gambar ini? Penanda ${marker} masih ada dalam teks dan tidak dibuang; selepas ini penanda itu tidak menunjuk kepada apa-apa gambar.`
+        : "Pasti ingin memadam visual ini?",
+      { danger: true, confirmLabel: "Ya, teruskan" }
+    ))) return;
 
     try {
       const res = await fetch(`/api/admin/visuals/${id}`, {
@@ -1477,6 +1533,7 @@ export default function EditWorkPage() {
       }
 
       loadVisuals();
+      if (markerInText) toast(`Penanda ${marker} masih ada dalam teks. Buang barisnya dalam manuskrip, atau pautkan gambar baharu padanya.`, "success");
     } catch (err) {
       setVisualError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
     }
@@ -1613,6 +1670,26 @@ export default function EditWorkPage() {
     }
   }
 
+  async function handleDeleteWork() {
+    if (!(await confirmAction("Padam karya ini selama-lamanya? Teks, kredit, gambar dan glosarinya turut hilang dan tidak boleh dipulihkan. Hanya karya yang tidak pernah diterbitkan boleh dipadam.", { danger: true, confirmLabel: "Ya, padam selama-lamanya" }))) return;
+
+    setSaving(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/admin/works/${workId}`, { method: "DELETE" });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Gagal memadam karya.");
+      }
+      clearDraft(window.localStorage, workId);
+      setDirty(false);
+      router.push("/admin/works");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setSaving(false);
+    }
+  }
+
   async function publishNow() {
     if (dirty) {
       setPublishError("Ada perubahan teks atau maklumat yang belum disimpan. Tekan Simpan teks & maklumat dahulu, kemudian terbitkan.");
@@ -1688,6 +1765,19 @@ export default function EditWorkPage() {
         dirty={dirty}
         onGoTab={(tab) => selectTab(tab === "visuals" ? "content" : tab as Tab)}
       />
+
+      {restoreOffer && (
+        <div className="admin-alert admin-alert-error" role="alert">
+          <strong>Ada teks yang belum disimpan.</strong> Pelayar ini menyimpan salinan yang anda taip pada {new Date(restoreOffer.savedAt).toLocaleString("ms-MY")}, tetapi ia tidak pernah ditekan Simpan.{" "}
+          <button type="button" className="admin-btn admin-btn-sm" onClick={() => {
+            setForm((prev) => ({ ...prev, ...restoreOffer.fields }));
+            setManuscriptMode(canEditVisually(restoreOffer.fields.body) ? "visual" : "markdown");
+            setDirty(true);
+            setRestoreOffer(null);
+          }}>Pulihkan teks itu</button>{" "}
+          <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={() => { clearDraft(window.localStorage, workId); setRestoreOffer(null); }}>Buang salinan</button>
+        </div>
+      )}
 
       {Object.entries(loadFailures).map(([key, label]) => (
         <div key={key} className="admin-alert admin-alert-error" role="alert">
@@ -2399,8 +2489,30 @@ export default function EditWorkPage() {
                       </td>
                       <td>{isAiSlug(credit.contributor_slug) ? "AI" : "Manusia"}</td>
                       <td>{roleDisplay(credit.role_label)}</td>
-                      <td>{credit.byline ? "Ya" : "Tidak"}</td>
-                      <td>{credit.is_public ? "Ya" : "Tidak"}</td>
+                      <td>
+                        <label className="admin-inline-toggle">
+                          <input
+                            type="checkbox"
+                            checked={credit.byline}
+                            disabled={creditToggleBusy === credit.id}
+                            onChange={(e) => void toggleCreditFlag(credit, "byline", e.target.checked)}
+                            aria-label={`Papar nama ${credit.contributor_slug ? contributors.find((c) => c.slug === credit.contributor_slug)?.display_name || credit.contributor_slug : credit.guest_name || "ini"} di bawah tajuk`}
+                          />
+                          <span>{credit.byline ? "Ya" : "Tidak"}</span>
+                        </label>
+                      </td>
+                      <td>
+                        <label className="admin-inline-toggle">
+                          <input
+                            type="checkbox"
+                            checked={credit.is_public}
+                            disabled={creditToggleBusy === credit.id}
+                            onChange={(e) => void toggleCreditFlag(credit, "isPublic", e.target.checked)}
+                            aria-label="Kredit ini dipaparkan kepada pembaca"
+                          />
+                          <span>{credit.is_public ? "Ya" : "Tidak"}</span>
+                        </label>
+                      </td>
                       <td>{credit.sort_order}</td>
                       <td>
                         <div className="admin-table-actions">
@@ -3153,6 +3265,17 @@ export default function EditWorkPage() {
           </div>
           <button type="button" className="a-btn a-btn-danger-outline" onClick={handleArchive} disabled={saving}>
             Arkibkan
+          </button>
+        </div>
+      ) : null}
+      {form.status !== "published" ? (
+        <div className="a-danger-zone">
+          <div>
+            <strong>Padam karya ini</strong>
+            <p className="admin-form-hint">Padam terus karya yang tidak pernah diterbitkan (cth. karya ujian). Tidak boleh dipulihkan.</p>
+          </div>
+          <button type="button" className="a-btn a-btn-danger-outline" onClick={handleDeleteWork} disabled={saving}>
+            Padam
           </button>
         </div>
       ) : null}

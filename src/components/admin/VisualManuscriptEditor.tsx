@@ -204,7 +204,16 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
       <button type="button" onClick={() => insertBlock("mesej")} aria-label="Sisip kotak mesej" data-label="Kotak mesej"><ToolbarIcon name="message" /></button>
       <button type="button" onClick={() => insertBlock("emel")} aria-label="Sisip kotak e-mel" data-label="Kotak e-mel"><ToolbarIcon name="email" /></button>
     </div>
-    <div ref={editorRef} className="visual-manuscript-surface" contentEditable role="textbox" aria-label="Manuskrip visual" aria-multiline="true" suppressContentEditableWarning onInput={sync} onKeyUp={rememberSelection} onMouseUp={rememberSelection} onBlur={rememberSelection} onPaste={(event) => {
+    <div ref={editorRef} className="visual-manuscript-surface" contentEditable role="textbox" aria-label="Manuskrip visual" aria-multiline="true" suppressContentEditableWarning onInput={sync} onKeyDown={(event) => {
+      // Enter inside a message or e-mail box starts a new line in that box (the browser would split it into a second box).
+      if (event.key !== "Enter" || event.shiftKey || event.nativeEvent.isComposing) return;
+      const anchor = window.getSelection()?.anchorNode;
+      const element = anchor instanceof Element ? anchor : anchor?.parentElement;
+      if (!element?.closest("[data-communication]")) return;
+      event.preventDefault();
+      document.execCommand("insertLineBreak");
+      sync();
+    }} onKeyUp={rememberSelection} onMouseUp={rememberSelection} onBlur={rememberSelection} onPaste={(event) => {
       event.preventDefault();
       // Text from Word or Google Docs keeps its italics and bold; anything else goes in as plain text, as before.
       const html = event.clipboardData.getData("text/html");

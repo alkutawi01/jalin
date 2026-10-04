@@ -312,6 +312,9 @@
 .a-shell .a-work-title-link { color: var(--a-ink); text-decoration: underline; text-decoration-color: var(--a-line-strong); text-underline-offset: 3px; }
 .a-shell .a-work-title-link:hover, .a-shell .a-work-title-link:focus-visible { color: var(--a-accent); text-decoration-color: currentColor; }
 .a-shell .admin-table-actions { display: flex; gap: 6px; justify-content: flex-end; }
+.a-shell .admin-inline-toggle { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+.a-shell .admin-inline-toggle input { width: 18px; height: 18px; accent-color: var(--a-ink); cursor: pointer; }
+.a-shell .admin-inline-toggle input:disabled { cursor: progress; }
 .a-shell .admin-table-empty { text-align: center; color: var(--a-muted); padding: 32px; }
 .a-shell .work-image-list { display: grid; gap: 18px; margin: 20px 0 28px; }
 .a-shell .work-image-list h4 { margin: 12px 0 0; }

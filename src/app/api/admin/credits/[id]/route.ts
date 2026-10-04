@@ -67,6 +67,7 @@ export async function PATCH(
       guestName: body.guestName,
       roleLabel: body.roleLabel,
       byline: body.byline,
+      isPublic: body.isPublic,
       sortOrder: body.sortOrder,
     });
 

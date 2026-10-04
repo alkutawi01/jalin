@@ -13,7 +13,7 @@ for (const key of ["sections", "credits", "contributors", "visuals", "glossary",
   assert(src.includes(`noteLoad("${key}"`), `the ${key} loader reports failure`);
 }
 assert(src.includes("Cuba semula"), "a failed load offers a retry");
-assert(/JSON\.stringify\(formRef\.current\) === JSON\.stringify\(sentForm\)\) setDirty\(false\)/.test(src), "saving only clears 'unsaved' when nothing was typed meanwhile");
+assert(/JSON\.stringify\(formRef\.current\) === JSON\.stringify\(sentForm\)\) \{\s*setDirty\(false\);\s*clearDraft\(window\.localStorage, workId\);/.test(src), "saving only clears 'unsaved' (and the browser copy) when nothing was typed meanwhile");
 assert(/setSavedBody\(sentForm\.body\)/.test(src), "the saved body is the one that was sent");
 assert(/editingCredit \|\| editingVisual \|\| editingGlossary \|\| editingSection/.test(src), "closing the tab warns while a credit/image/glossary/section editor is open");
 assert(src.includes("charactersBaseline.current"), "closing the tab warns about unsaved character edits");
