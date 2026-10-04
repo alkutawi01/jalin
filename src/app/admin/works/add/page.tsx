@@ -18,8 +18,15 @@ export default function AddWorkPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const kind = new URLSearchParams(window.location.search).get("jenis");
+    const params = new URLSearchParams(window.location.search);
+    const kind = params.get("jenis");
+    const fromSeries = params.get("siri");
     if (kind && (WORK_KINDS as string[]).includes(kind)) setPicked(kind as WorkKind);
+    // Coming from a series page: go straight to the step that asks about the series, with that series chosen.
+    if (kind === "bersiri" && fromSeries) {
+      setChooseSeries(true);
+      setSeriesId(fromSeries);
+    }
   }, []);
 
   useEffect(() => {

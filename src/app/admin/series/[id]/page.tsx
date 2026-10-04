@@ -366,23 +366,32 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
           <h3>Episod ({series.entries.length})</h3>
         </div>
         <p className="admin-form-hint">
-          Hanya Work type=bersiri boleh disertai. Setiap episod ialah Work berasingan (ID, slug, kredit, visual, status sendiri).
-          Penerbitan kekal mengikut pipeline Work eksplisit.
+          Setiap episod ialah karya berasingan (ID, slug, kredit, visual, status sendiri). Penerbitan kekal mengikut aliran
+          karya itu sendiri.
         </p>
+
+        <div className="admin-form-actions" style={{ marginBottom: "1rem" }}>
+          <a className="admin-btn admin-btn-primary" href={`/admin/works/add?jenis=bersiri&siri=${encodeURIComponent(String(id))}`}>
+            + Cipta episod baharu untuk siri ini
+          </a>
+        </div>
 
         <div className="admin-form-row" style={{ alignItems: "flex-end" }}>
           <div className="admin-form-group" style={{ flex: 1 }}>
-            <label>Sertakan episod</label>
-            <select value={attachWorkId} onChange={(e) => setAttachWorkId(e.target.value)}>
-              <option value="">-- Pilih karya bersiri --</option>
+            <label htmlFor="attach-existing">Atau sertakan episod sedia ada</label>
+            <select id="attach-existing" value={attachWorkId} onChange={(e) => setAttachWorkId(e.target.value)} disabled={attachable.length === 0}>
+              <option value="">{attachable.length === 0 ? "Tiada episod lain yang belum bersiri" : "-- Pilih episod yang belum dalam mana-mana siri --"}</option>
               {attachable.map((w) => (
                 <option key={w.id} value={w.id}>
                   {w.title} ({w.status})
                 </option>
               ))}
             </select>
+            <span className="admin-form-hint">
+              Senarai ini hanya memaparkan karya jenis Bersiri yang belum dimasukkan ke dalam sebarang siri. Ia tidak memaparkan nama siri.
+            </span>
           </div>
-          <button type="button" className="admin-btn admin-btn-primary" onClick={handleAttach} disabled={!attachWorkId}>
+          <button type="button" className="admin-btn admin-btn-outline" onClick={handleAttach} disabled={!attachWorkId}>
             Sertakan
           </button>
         </div>
