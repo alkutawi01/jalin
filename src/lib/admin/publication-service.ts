@@ -231,6 +231,7 @@ async function loadSeriesRow(
     title: String(row.title),
     mode: String(row.mode),
     status: String(row.status),
+    hero_src: row.hero_src ? String(row.hero_src) : null,
   };
 }
 

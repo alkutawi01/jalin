@@ -230,7 +230,7 @@ export function buildImportPlan(answer: string, manuscript: string, options: Imp
   if (!credits.some((c) => c.byline)) {
     warnings.push({
       code: "byline_missing",
-      message: "Belum ada penulis dikreditkan. Isi nama penulis sebenar (kredit awam) sebelum terbit; gate penerbitan menuntut sekurang-kurangnya satu byline."
+      message: "Belum ada penulis dikreditkan. Isi nama penulis sebenar (kredit awam) sebelum terbit; penerbitan memerlukan sekurang-kurangnya satu kredit yang ditanda ‘Nama di bawah tajuk’."
     });
   }
 

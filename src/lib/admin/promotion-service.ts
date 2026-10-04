@@ -79,7 +79,7 @@ export function validatePromotionEligibility(submission: {
     errors.push("Slug diperlukan.");
   }
   if (!submission.manuscript?.trim()) {
-    errors.push("Manuskrip/body diperlukan.");
+    errors.push("Manuskrip diperlukan.");
   }
   if (submission.result_work_id) {
     errors.push(`Submission ini sudah dipromosikan ke Work ${submission.result_work_id}.`);
