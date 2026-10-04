@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { listWorks, createWork } from "../../../../lib/admin/work-service";
+import { listUnattachedEpisodes } from "../../../../lib/admin/series-service";
 
-export async function GET() {
+/** GET /api/admin/works, or ?tanpaSiri=1 for the Bersiri episodes that belong to no series yet. */
+export async function GET(request: NextRequest) {
   try {
-    const works = await listWorks();
+    const works = request.nextUrl.searchParams.get("tanpaSiri") ? await listUnattachedEpisodes() : await listWorks();
     return NextResponse.json(works);
   } catch (error) {
     return NextResponse.json(

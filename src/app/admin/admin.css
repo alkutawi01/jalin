@@ -547,3 +547,8 @@
 .a-shell .a-chapter-row { display: flex; gap: 14px; align-items: flex-start; }
 .a-shell .a-chapter-row img { width: 140px; height: auto; border-radius: 6px; }
 .a-shell .a-chapter-add { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+/* An empty list that says what to do next. */
+.a-shell .a-empty-state { display: grid; gap: 6px; justify-items: start; padding: 22px 24px; border: 1px dashed var(--a-line, #d9cfc0); border-radius: 12px; background: var(--a-surface, #fffefa); }
+.a-shell .a-empty-state strong { font-size: 15px; }
+.a-shell .a-empty-state p { margin: 0 0 6px; color: var(--a-muted, #52656a); font-size: 14px; line-height: 1.5; }

@@ -89,9 +89,9 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
     }
   }, [id]);
 
-  useEffect(() => {
-    loadSeries();
-    fetch("/api/admin/works")
+  /** Only episodes that belong to no series at all can be attached; the list is read again after every change. */
+  const loadUnattached = useCallback(() => {
+    return fetch("/api/admin/works?tanpaSiri=1")
       .then((r) => (r.ok ? r.json() : []))
       .then((list) => {
         if (Array.isArray(list)) {
@@ -105,7 +105,12 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
         }
       })
       .catch(() => {});
-  }, [loadSeries]);
+  }, []);
+
+  useEffect(() => {
+    loadSeries();
+    void loadUnattached();
+  }, [loadSeries, loadUnattached]);
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
@@ -144,6 +149,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
       setAttachWorkId("");
       setSuccess("Episod disertai.");
       await loadSeries();
+      await loadUnattached();
       setTimeout(() => setSuccess(null), 4000);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
@@ -158,6 +164,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Gagal mengeluarkan episod.");
       await loadSeries();
+      await loadUnattached();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
     }
@@ -364,40 +371,16 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
       <section className="admin-credits" style={{ marginTop: "1.5rem" }}>
         <div className="admin-credits-header">
           <h3>Episod ({series.entries.length})</h3>
-        </div>
-        <p className="admin-form-hint">
-          Setiap episod ialah karya berasingan (ID, slug, kredit, visual, status sendiri). Penerbitan kekal mengikut aliran
-          karya itu sendiri.
-        </p>
-
-        <div className="admin-form-actions" style={{ marginBottom: "1rem" }}>
           <a className="admin-btn admin-btn-primary" href={`/admin/works/add?jenis=bersiri&siri=${encodeURIComponent(String(id))}`}>
-            + Cipta episod baharu untuk siri ini
+            {series.entries.length === 0 ? "+ Cipta episod pertama" : "+ Cipta episod seterusnya"}
           </a>
         </div>
 
-        <div className="admin-form-row" style={{ alignItems: "flex-end" }}>
-          <div className="admin-form-group" style={{ flex: 1 }}>
-            <label htmlFor="attach-existing">Atau sertakan episod sedia ada</label>
-            <select id="attach-existing" value={attachWorkId} onChange={(e) => setAttachWorkId(e.target.value)} disabled={attachable.length === 0}>
-              <option value="">{attachable.length === 0 ? "Tiada episod lain yang belum bersiri" : "-- Pilih episod yang belum dalam mana-mana siri --"}</option>
-              {attachable.map((w) => (
-                <option key={w.id} value={w.id}>
-                  {w.title} ({w.status})
-                </option>
-              ))}
-            </select>
-            <span className="admin-form-hint">
-              Senarai ini hanya memaparkan karya jenis Bersiri yang belum dimasukkan ke dalam sebarang siri. Ia tidak memaparkan nama siri.
-            </span>
-          </div>
-          <button type="button" className="admin-btn admin-btn-outline" onClick={handleAttach} disabled={!attachWorkId}>
-            Sertakan
-          </button>
-        </div>
-
         {series.entries.length === 0 ? (
-          <p className="admin-table-empty">Tiada episod lagi.</p>
+          <div className="a-empty-state">
+            <strong>Siri ini belum mempunyai episod.</strong>
+            <p>Siri hanya kelihatan kepada pembaca selepas satu episodnya diterbitkan. Mulakan dengan episod pertama.</p>
+          </div>
         ) : (
           <div className="admin-table-wrap">
             <table className="admin-table">
@@ -449,6 +432,29 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
             </table>
           </div>
         )}
+
+        {attachable.length > 0 ? (
+          <details className="admin-advanced-field" style={{ marginTop: "1.25rem" }}>
+            <summary>Sertakan episod sedia ada ({attachable.length})</summary>
+            <p className="admin-form-hint">Karya jenis Bersiri yang belum dimasukkan ke dalam sebarang siri.</p>
+            <div className="admin-form-row" style={{ alignItems: "flex-end" }}>
+              <div className="admin-form-group" style={{ flex: 1 }}>
+                <label htmlFor="attach-existing">Pilih episod</label>
+                <select id="attach-existing" value={attachWorkId} onChange={(e) => setAttachWorkId(e.target.value)}>
+                  <option value="">-- Pilih episod --</option>
+                  {attachable.map((w) => (
+                    <option key={w.id} value={w.id}>
+                      {w.title} ({w.status})
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <button type="button" className="admin-btn admin-btn-outline" onClick={handleAttach} disabled={!attachWorkId}>
+                Sertakan
+              </button>
+            </div>
+          </details>
+        ) : null}
       </section>
     </div>
   );
