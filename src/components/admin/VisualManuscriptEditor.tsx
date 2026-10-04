@@ -1,6 +1,6 @@
 "use client";
 
-import { dashInSelection } from "../../lib/admin/auto-dash";
+import { dashInSelection, quotesInAllBlocks } from "../../lib/admin/auto-dash";
 import { pastedHtmlToMarkdown } from "../../lib/admin/paste-format";
 import { useEffect, useRef } from "react";
 import { nextImageMarker } from "../../lib/reader/image-markers";
@@ -191,6 +191,7 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
       } else {
         document.execCommand("insertText", false, event.clipboardData.getData("text/plain"));
       }
+      if (editorRef.current) quotesInAllBlocks(editorRef.current);
       sync();
     }} />
     <p className="admin-form-hint">Sunting terus pada halaman. Pilih teks untuk Tebal atau Condong; gunakan butang untuk menambah blok. Tukar ke Markdown untuk kawalan penuh.</p>
