@@ -65,7 +65,7 @@ nav {
   display: flex;
   justify-content: center;
   gap: 24px;
-  font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: var(--font-inter), Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-size: 16px;
   line-height: 1.2;
   font-weight: 500;
@@ -314,7 +314,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 }
 .hero-featured-kicker {
   margin: 0 0 18px;
-  font-family: Inter, ui-sans-serif, sans-serif;
+  font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif;
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: .18em;
@@ -340,7 +340,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
   flex-wrap: wrap;
   gap: 10px;
   margin-bottom: 32px;
-  font-family: Inter, ui-sans-serif, sans-serif;
+  font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif;
   font-size: 12px;
   color: var(--ink-soft);
 }
@@ -361,7 +361,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
   background: var(--ink);
   color: var(--paper);
   border-radius: 999px;
-  font-family: Inter, ui-sans-serif, sans-serif;
+  font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif;
   font-size: 14px;
   font-weight: 600;
   letter-spacing: .02em;
@@ -471,7 +471,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
   display: flex;
   gap: 10px;
   align-items: center;
-  font-family: Inter, ui-sans-serif, sans-serif;
+  font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif;
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: .08em;
@@ -490,7 +490,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 .work-attribution-source {
   margin: 0 0 7px;
   color: var(--ink-soft);
-  font-family: Inter, ui-sans-serif, sans-serif;
+  font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif;
   font-size: 12px;
   line-height: 1.45;
   text-wrap: pretty;
@@ -513,13 +513,13 @@ dd { margin: 0; color: var(--ink); text-align: left; }
   border-top: 1px solid var(--line);
 }
 .latest-card-cta {
-  font-family: Inter, ui-sans-serif, sans-serif;
+  font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif;
   font-size: 13px;
   font-weight: 700;
   color: var(--clay-text);
 }
 .latest-card-date {
-  font-family: Inter, ui-sans-serif, sans-serif;
+  font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif;
   font-size: 12px;
   color: var(--ink-soft);
 }
@@ -692,7 +692,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
   padding: 22px 22px 24px;
 }
 .editorial-pick-type {
-  font-family: Inter, ui-sans-serif, sans-serif;
+  font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif;
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: .14em;
@@ -713,7 +713,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 .editorial-pick-cta {
   display: inline-block;
   margin-top: 16px;
-  font-family: Inter, ui-sans-serif, sans-serif;
+  font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif;
   font-size: 13px;
   font-weight: 700;
   letter-spacing: .06em;
@@ -834,7 +834,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
   gap: 14px;
   margin-top: 16px;
   flex-wrap: wrap;
-  font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: var(--font-inter), Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: .1em;
@@ -883,7 +883,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
     border-radius: 999px;
     background: transparent;
     color: var(--ink);
-    font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-family: var(--font-inter), Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     font-size: 14px;
     font-weight: 600;
     letter-spacing: .03em;
@@ -1013,7 +1013,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
   background: rgba(0,0,0,.4);
   border-radius: 4px;
   color: rgba(255,255,255,.92);
-  font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: var(--font-inter), Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-size: 9px;
   font-weight: 600;
   letter-spacing: .08em;
@@ -1050,7 +1050,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
     background: rgba(251,248,242,.96);
     color: var(--ink);
     box-shadow: 0 4px 18px rgba(24,52,60,.08);
-    font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-family: var(--font-inter), Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     font-size: 11px;
     font-weight: 600;
     letter-spacing: .04em;
@@ -1114,7 +1114,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
     padding: 10px 8px;
     background: transparent;
     color: #718083;
-    font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-family: var(--font-inter), Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     font-size: 12px;
     font-weight: 600;
   }
@@ -1156,7 +1156,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
   .sheet-stack span,
   .sheet-note {
     color: #748184;
-    font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-family: var(--font-inter), Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     font-size: 13px;
     line-height: 1.5;
   }
@@ -1183,7 +1183,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 }
 .contributor-kicker {
   color: var(--clay-text);
-  font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: var(--font-inter), Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: .14em;
@@ -1203,7 +1203,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
   border-radius: 999px;
   padding: 5px 10px;
   color: var(--clay-text);
-  font-family: Inter, ui-sans-serif, sans-serif;
+  font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif;
   font-size: 11px;
   font-weight: 700;
 }
@@ -1220,7 +1220,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
   padding-top: 20px;
   border-top: 1px solid var(--line);
   color: var(--ink-soft);
-  font-family: Inter, ui-sans-serif, sans-serif;
+  font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif;
   font-size: 12px;
   line-height: 1.6;
 }
@@ -2180,7 +2180,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
     border-radius: 6px;
     padding: 7px 12px;
     color: var(--white);
-    font-family: Inter, ui-sans-serif, sans-serif;
+    font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif;
     font-size: 13px;
     cursor: pointer;
   }
@@ -2271,7 +2271,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
   line-height: 1.5;
 }
 .related-work-card span {
-  font-family: Inter, ui-sans-serif, sans-serif;
+  font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif;
   font-size: 12px;
   color: var(--clay-text);
   font-weight: 600;
@@ -2288,7 +2288,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 .category-empty-links a {
   padding: 8px 16px;
   border: 1px solid var(--line);
-  font-family: Inter, ui-sans-serif, sans-serif;
+  font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif;
   font-size: 13px;
 }
 .category-empty-links a:hover {
@@ -2516,7 +2516,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 }
 .continue-next:hover, .continue-next:focus-visible { border-color: var(--clay); box-shadow: 0 18px 44px -20px rgba(24,52,60,.28); transform: translateY(-2px); }
 .continue-text { display: grid; gap: 8px; min-width: 0; }
-.continue-label { font-family: Inter, ui-sans-serif, sans-serif; font-size: 10.5px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--clay-text); }
+.continue-label { font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 10.5px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--clay-text); }
 .continue-title { font-family: Georgia, "Times New Roman", serif; font-size: 1.15rem; line-height: 1.35; font-style: normal; font-weight: 500; color: var(--ink); }
 .continue-arrow { flex: none; font-size: 1.25rem; color: var(--clay-text); transition: transform .18s ease; }
 .continue-next:hover .continue-arrow, .continue-next:focus-visible .continue-arrow { transform: translateX(4px); }
@@ -2577,7 +2577,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 .hero-carousel-stack { display: grid; }
 .hero-carousel-slide { grid-area: 1 / 1; opacity: 0; visibility: hidden; transition: opacity .35s ease, visibility 0s linear .35s; }
 .hero-carousel-slide.is-active { opacity: 1; visibility: visible; transition: opacity .35s ease; }
-.hero-carousel-controls { display: flex; align-items: center; justify-content: flex-start; gap: 14px; padding: 4px 0 24px; font-family: Inter, ui-sans-serif, sans-serif; }
+.hero-carousel-controls { display: flex; align-items: center; justify-content: flex-start; gap: 14px; padding: 4px 0 24px; font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; }
 .hero-carousel-btn { min-width: 40px; height: 40px; padding: 0 12px; border: 1px solid var(--line); border-radius: 999px; background: var(--white); color: var(--ink); font: inherit; font-size: 14px; cursor: pointer; transition: border-color .18s ease; }
 .hero-carousel-btn:hover, .hero-carousel-btn:focus-visible { border-color: var(--clay); }
 .hero-carousel-dots { display: flex; gap: 4px; }
@@ -2593,7 +2593,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 .chapter-index summary { padding: 4px 0; }
 
 /* Skip link: first thing a keyboard user reaches, visible only on focus. */
-.skip-link { position: absolute; left: 12px; top: -48px; z-index: 100; padding: 10px 16px; border-radius: 8px; background: var(--ink); color: #fff; font-family: Inter, ui-sans-serif, sans-serif; font-size: 14px; transition: top .15s ease; }
+.skip-link { position: absolute; left: 12px; top: -48px; z-index: 100; padding: 10px 16px; border-radius: 8px; background: var(--ink); color: #fff; font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 14px; transition: top .15s ease; }
 .skip-link:focus { top: 12px; }
 main:focus { outline: none; }
 
@@ -2609,7 +2609,7 @@ main:focus { outline: none; }
 .chapter-head .crumbs { margin-bottom: 18px; }
 .chapter-head .story-kicker { margin: 0 0 10px; }
 .chapter-head h1 { margin: 0 0 18px; font-size: clamp(1.9rem, 4.6vw, 2.8rem); line-height: 1.15; font-weight: 500; font-style: normal; }
-.chapter-head-nav { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); font-family: Inter, ui-sans-serif, sans-serif; font-size: 14px; }
+.chapter-head-nav { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 14px; }
 .chapter-head-nav > a { display: inline-flex; align-items: center; min-height: 40px; padding: 0 4px; color: var(--ink); }
 .chapter-head-nav > a:hover, .chapter-head-nav > a:focus-visible { color: var(--clay-text); }
 .chapter-picker summary { display: inline-flex; align-items: center; min-height: 40px; padding: 0 14px; border: 1px solid var(--line); border-radius: 999px; background: var(--white); cursor: pointer; list-style: none; }
@@ -2619,9 +2619,9 @@ main:focus { outline: none; }
 .chapter-picker li a, .chapter-list li a { display: grid; grid-template-columns: 2.2rem 1fr auto; align-items: baseline; gap: 10px; padding: 12px 14px; border-radius: 8px; color: var(--ink); }
 .chapter-picker li a:hover, .chapter-picker li a:focus-visible, .chapter-list li a:hover, .chapter-list li a:focus-visible { background: rgba(167, 100, 80, .06); }
 .chapter-picker li a[aria-current="page"] { background: rgba(167, 100, 80, .1); font-weight: 600; }
-.chapter-num { font-family: Inter, ui-sans-serif, sans-serif; font-size: 13px; color: var(--clay-text); font-weight: 700; }
+.chapter-num { font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 13px; color: var(--clay-text); font-weight: 700; }
 .chapter-ttl { font-family: Georgia, "Times New Roman", serif; font-size: 1.05rem; }
-.chapter-min { font-family: Inter, ui-sans-serif, sans-serif; font-size: 12px; color: var(--ink-soft); white-space: nowrap; }
+.chapter-min { font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 12px; color: var(--ink-soft); white-space: nowrap; }
 
 /* The novela's own page: start button and the list of chapters. */
 .novela-intro .hero-featured-cta { display: inline-block; margin: 0 0 32px; }
@@ -2669,7 +2669,7 @@ main:focus { outline: none; }
 .not-found { max-width: 640px; padding-top: 72px; padding-bottom: 88px; text-align: center; }
 .not-found h1 { margin: 10px 0 14px; font-size: clamp(2rem, 5vw, 3rem); font-weight: 500; font-style: normal; }
 .not-found .dek { margin: 0 auto 28px; }
-.not-found-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 10px; margin-top: 28px; font-family: Inter, ui-sans-serif, sans-serif; font-size: 14px; }
+.not-found-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 10px; margin-top: 28px; font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 14px; }
 .not-found-links a { display: inline-flex; align-items: center; min-height: 40px; padding: 0 14px; border: 1px solid var(--line); border-radius: 999px; color: var(--ink); background: var(--white); transition: border-color .18s ease; }
 .not-found-links a:hover, .not-found-links a:focus-visible { border-color: var(--clay); }
 
@@ -2702,11 +2702,11 @@ main:focus { outline: none; }
 .footer-brand { display: grid; gap: 14px; justify-items: start; }
 .site-footer .footer-logo { width: 150px; }
 .footer-tagline { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: 1.15rem; font-style: italic; color: #e9d3c5; }
-.footer-col h2 { margin: 0 0 14px; font-family: Inter, ui-sans-serif, sans-serif; font-size: 11px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: #d7ae96; }
+.footer-col h2 { margin: 0 0 14px; font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 11px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: #d7ae96; }
 .footer-col ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
-.footer-col a { display: inline-flex; align-items: center; min-height: 36px; font-family: Inter, ui-sans-serif, sans-serif; font-size: 14px; color: #f3e9df; opacity: .92; transition: color .18s ease; }
+.footer-col a { display: inline-flex; align-items: center; min-height: 36px; font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 14px; color: #f3e9df; opacity: .92; transition: color .18s ease; }
 .footer-col a:hover, .footer-col a:focus-visible { color: #e9b9a0; opacity: 1; }
-.footer-base { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 24px; padding: 18px 0 26px; border-top: 1px solid rgba(243, 233, 223, .14); font-family: Inter, ui-sans-serif, sans-serif; font-size: 12.5px; color: #c9b8ab; }
+.footer-base { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 24px; padding: 18px 0 26px; border-top: 1px solid rgba(243, 233, 223, .14); font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 12.5px; color: #c9b8ab; }
 .footer-base p { margin: 0; }
 @media (max-width: 680px) {
   .site-footer { padding: 36px 0 0; }
@@ -2727,7 +2727,7 @@ main:focus { outline: none; }
 .info-body ul { padding-left: 1.2rem; }
 .info-body li { margin-bottom: 6px; }
 .info-body a { color: var(--clay-text); text-decoration: underline; text-underline-offset: 3px; }
-.info-updated { margin: 40px 0 0; padding-top: 16px; border-top: 1px solid var(--line); font-family: Inter, ui-sans-serif, sans-serif; font-size: 13px; color: var(--ink-soft); }
+.info-updated { margin: 40px 0 0; padding-top: 16px; border-top: 1px solid var(--line); font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 13px; color: var(--ink-soft); }
 @media (max-width: 680px) { .info-page { padding-top: 36px; padding-bottom: 48px; } .info-body { font-size: 1.05rem; } }
 .site-footer .footer-col { display: block; }
 /* The logo file has empty margin inside its canvas; pull it back so it lines up with the text beneath it. */

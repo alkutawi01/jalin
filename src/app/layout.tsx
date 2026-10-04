@@ -1,6 +1,13 @@
 import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { SITE_URL } from "../lib/seo";
+
+/**
+ * The sans-serif the stylesheet has always named (Inter) is now actually loaded, self-hosted by Next at build time, with a
+ * size-adjusted fallback so the page does not jump when it arrives. The stylesheet reads it through --font-inter.
+ */
+const inter = Inter({ subsets: ["latin", "latin-ext"], display: "swap", variable: "--font-inter" });
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -30,7 +37,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="ms">
+    <html lang="ms" className={inter.variable}>
       <body>{children}</body>
     </html>
   );
