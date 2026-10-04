@@ -101,6 +101,36 @@ function editionDetailsOf(source: object): Array<string | number | null> {
   });
 }
 
+/**
+ * What the reader's character list is made of: name, role and the chapter where each first appears. It is compared
+ * next to the content hash instead of inside it, so the hash of every work published before this existed stays valid
+ * and works with characters do not suddenly look changed. A work with no characters gives "".
+ */
+export function charactersFingerprint(metadata: unknown): string {
+  let meta = metadata;
+  if (typeof meta === "string") {
+    try { meta = JSON.parse(meta); } catch { meta = null; }
+  }
+  const list = (meta as { characters?: unknown } | null | undefined)?.characters;
+  if (!Array.isArray(list) || list.length === 0) return "";
+  return JSON.stringify(
+    list.map((c) => {
+      const row = (c ?? {}) as { name?: unknown; role?: unknown; firstAppearanceSection?: unknown };
+      return [String(row.name ?? ""), String(row.role ?? ""), String(row.firstAppearanceSection ?? "")];
+    })
+  );
+}
+
+/** The characters that were frozen into a stored revision. */
+function snapshotCharacters(snapshot: unknown): string {
+  let snap = snapshot;
+  if (typeof snap === "string") {
+    try { snap = JSON.parse(snap); } catch { return ""; }
+  }
+  const s = snap as { raw?: { work?: { metadata?: unknown } }; metadata?: unknown } | null | undefined;
+  return charactersFingerprint(s?.raw?.work?.metadata ?? s?.metadata);
+}
+
 /** Hash of only what readers can see; timestamps and bookkeeping are left out so "no changes" is detectable. */
 export function materialHashOf(input: NonNullable<Awaited<ReturnType<typeof loadWorkForRevision>>>): string {
   const w = input.work;
@@ -272,12 +302,16 @@ export async function createRevisionTx(
     const contentHash = snapshot.materialHash;
 
     // Same visible content as an existing revision: reuse it, but make sure it is the public one.
-    const existing = await trx
+    const liveCharacters = charactersFingerprint(input?.work.metadata);
+    const sameHash = await trx
       .selectFrom("work_revisions")
       .where("work_id", "=", workId)
       .where("content_hash", "=", contentHash)
-      .select(["id", "revision_no"])
-      .executeTakeFirst();
+      .select(["id", "revision_no", "snapshot"])
+      .orderBy("revision_no", "desc")
+      .execute();
+    // Same visible content AND the same character list; otherwise it is a new version.
+    const existing = sameHash.find((row) => snapshotCharacters(row.snapshot) === liveCharacters);
     if (existing) {
       await trx
         .updateTable("works")
@@ -359,11 +393,14 @@ export async function getUnpublishedChanges(workId: string): Promise<Unpublished
   const db = getDbOrThrow();
   const work = await db.selectFrom("works").where("id", "=", workId).select(["published_revision_id"]).executeTakeFirst();
   if (!work?.published_revision_id) return { snapshotMissing: true, changed: false };
-  const rev = await db.selectFrom("work_revisions").where("id", "=", work.published_revision_id).select(["content_hash"]).executeTakeFirst();
+  const rev = await db.selectFrom("work_revisions").where("id", "=", work.published_revision_id).select(["content_hash", "snapshot"]).executeTakeFirst();
   if (!rev) return { snapshotMissing: true, changed: false };
   const live = await loadWorkForRevision(db, workId);
   if (!live) return { snapshotMissing: false, changed: false };
-  return { snapshotMissing: false, changed: materialHashOf(live) !== rev.content_hash };
+  return {
+    snapshotMissing: false,
+    changed: materialHashOf(live) !== rev.content_hash || charactersFingerprint(live.work.metadata) !== snapshotCharacters(rev.snapshot)
+  };
 }
 
 export async function getRevisions(workId: string) {

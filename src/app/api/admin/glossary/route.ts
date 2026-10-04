@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { listGlossaryForWork, createGlossaryTerm } from "../../../../lib/admin/glossary-service";
+import { findDuplicateTerm } from "../../../../lib/admin/metadata-rules";
 
 export async function GET(request: NextRequest) {
   try {
@@ -33,6 +34,11 @@ export async function POST(request: NextRequest) {
     }
     if (!body.meaning?.trim()) {
       return NextResponse.json({ error: "meaning diperlukan." }, { status: 400 });
+    }
+
+    const duplicate = findDuplicateTerm(await listGlossaryForWork(body.workId), body.term);
+    if (duplicate) {
+      return NextResponse.json({ error: `Istilah "${duplicate.term}" sudah ada dalam glosari karya ini. Ubah yang sedia ada.` }, { status: 409 });
     }
 
     const term = await createGlossaryTerm({
