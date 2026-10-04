@@ -21,6 +21,7 @@ import StoryMarkdown from "../../../../components/reader/StoryMarkdown";
 import { WorkCover } from "../../../../components/reader/WorkCover";
 import { extractInlineChapters } from "../../../../lib/reader/inline-chapters";
 import { placeVisuals } from "../../../../lib/reader/place-visuals";
+import { visualsForPage } from "../../../../lib/reader/chapter-visuals";
 import { firstGlossaryBySegment } from "../../../../lib/reader/glossary-first";
 import MobileStoryInfo from "../../../../components/reader/MobileStoryInfo";
 import { initContentRepository } from "../../../../lib/content";
@@ -283,7 +284,7 @@ export default async function WorkPage({
   }
 
   // A chapter's own images (hero and inline) belong to that chapter; the work's other images stay with the work.
-  const visualsForBody = work.visuals.filter((visual) => (activeSection ? visual.sectionSlug === activeSection.slug : !visual.sectionSlug));
+  const visualsForBody = visualsForPage(work.visuals, activeSection?.slug, bodyToRender);
   const segmentNodes = placeVisuals(bodyToRender, visualsForBody);
   const chapterHero = activeSection ? work.visuals.find((visual) => visual.role === "section" && visual.sectionSlug === activeSection.slug && !visual.anchor) : undefined;
   const segmentGlossaries = firstGlossaryBySegment(segmentNodes, glossary);
@@ -449,6 +450,7 @@ export default async function WorkPage({
                   type: work.type,
                   dek: work.dek,
                   genre: displayableGenre(work.genre),
+                  audience: work.audience,
                   publishedAt: work.publishedAt,
                   updatedAt: work.updatedAt,
                   heroSrc: hero?.src,

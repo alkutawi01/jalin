@@ -8,11 +8,23 @@ export interface JsonLdWork {
   type: string;
   dek?: string;
   genre?: string;
+  /** The work's own audience note, e.g. "13-17". Only a stated age range is published. */
+  audience?: string;
   publishedAt?: string;
   updatedAt?: string;
   heroSrc?: string;
   authors: string[];
   sections: { slug: string; title?: string }[];
+}
+
+/** An age range written in the work's audience field, or nothing: no age is assumed. */
+export function audienceOf(text?: string): { audience?: Record<string, unknown> } {
+  const match = text?.match(/(\d{1,2})\s*[-\u2013]\s*(\d{1,2})/);
+  if (!match) return {};
+  const min = Number(match[1]);
+  const max = Number(match[2]);
+  if (!(min >= 0 && max >= min && max <= 99)) return {};
+  return { audience: { "@type": "PeopleAudience", suggestedMinAge: min, suggestedMaxAge: max } };
 }
 
 const publisher = { "@type": "Organization", name: "Jalin", url: SITE_URL };
@@ -48,7 +60,7 @@ export function workJsonLd(work: JsonLdWork, sectionSlug?: string): Record<strin
     ...(work.authors.length > 0 ? { author: people(work.authors) } : {}),
     publisher,
     isAccessibleForFree: true,
-    audience: { "@type": "PeopleAudience", suggestedMinAge: 13, suggestedMaxAge: 17 }
+    ...audienceOf(work.audience)
   };
   const crumbs = [
     { name: "Jalin", path: "/" },
