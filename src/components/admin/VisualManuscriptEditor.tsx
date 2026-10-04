@@ -1,6 +1,7 @@
 "use client";
 
 import { dashInSelection } from "../../lib/admin/auto-dash";
+import { pastedHtmlToMarkdown } from "../../lib/admin/paste-format";
 import { useEffect, useRef } from "react";
 import { nextImageMarker } from "../../lib/reader/image-markers";
 import { splitCommunicationBlocks } from "../../lib/reader/communication-blocks";
@@ -181,7 +182,15 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
     </div>
     <div ref={editorRef} className="visual-manuscript-surface" contentEditable role="textbox" aria-label="Manuskrip visual" aria-multiline="true" suppressContentEditableWarning onInput={sync} onKeyUp={rememberSelection} onMouseUp={rememberSelection} onBlur={rememberSelection} onPaste={(event) => {
       event.preventDefault();
-      document.execCommand("insertText", false, event.clipboardData.getData("text/plain"));
+      // Text from Word or Google Docs keeps its italics and bold; anything else goes in as plain text, as before.
+      const html = event.clipboardData.getData("text/html");
+      const pasted = html ? pastedHtmlToMarkdown(html) : null;
+      if (pasted?.formatted) {
+        const paragraphs = pasted.markdown.split(/\n{2,}/);
+        document.execCommand("insertHTML", false, paragraphs.length === 1 ? inlineHtml(paragraphs[0]!) : paragraphs.map((p) => `<p>${inlineHtml(p)}</p>`).join(""));
+      } else {
+        document.execCommand("insertText", false, event.clipboardData.getData("text/plain"));
+      }
       sync();
     }} />
     <p className="admin-form-hint">Sunting terus pada halaman. Pilih teks untuk Tebal atau Condong; gunakan butang untuk menambah blok. Tukar ke Markdown untuk kawalan penuh.</p>

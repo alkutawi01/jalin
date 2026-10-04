@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import CopyButton from "./CopyButton";
+import { pasteAsMarkdown } from "./pasteMarkdown";
 
 type SeriesProp = { kind: "baharu" } | { kind: "sambung"; seriesId: string; title: string } | null;
 
@@ -328,6 +329,7 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
           rows={needsManuscript ? 10 : 4}
           value={material}
           onChange={(e) => setMaterial(e.target.value)}
+          onPaste={needsManuscript ? pasteAsMarkdown : undefined}
           placeholder={needsManuscript ? "Tampal teks karya di sini…" : "cth. Kafka, Metamorfosis (bahasa Jerman)"}
         />
         {needsManuscript ? (
