@@ -381,7 +381,7 @@ export function evaluatePublicationReadinessFromData(
   if (!work.slug || !work.slug.trim()) {
     contentBlockers.push(issue("slug_missing", "Alamat pautan kosong."));
   } else if (work.slug.startsWith("draf-")) {
-    contentBlockers.push(issue("slug_placeholder", "Ganti alamat pautan draf sebelum menerbitkan karya."));
+    contentBlockers.push(issue("slug_placeholder", "Ganti alamat pautan sebelum menerbitkan karya."));
   } else if (!SLUG_RE.test(work.slug)) {
     contentBlockers.push(
       issue(
