@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { listContributionsForSubmission } from "../../../../lib/admin/contribution-service";
 import { toPublicProjection, verifyPrivacyBoundary } from "../../../../lib/admin/identity-handshake";
+import { parseDbId } from "../../../../lib/admin/ids";
 
 /**
  * GET /api/public/contributions?submissionId=X
@@ -23,7 +24,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "submissionId diperlukan." }, { status: 400 });
     }
 
-    const numId = parseInt(submissionId, 10);
+    const numId = parseDbId(submissionId);
     if (isNaN(numId)) {
       return NextResponse.json({ error: "submissionId tidak sah." }, { status: 400 });
     }

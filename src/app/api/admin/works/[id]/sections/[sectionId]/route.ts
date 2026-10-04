@@ -5,6 +5,7 @@ import {
   deleteSection,
 } from "../../../../../../../lib/admin/section-service";
 import { getCurrentAdmin } from "../../../../../../../lib/admin/auth";
+import { parseDbId } from "../../../../../../../lib/admin/ids";
 
 export async function GET(
   request: NextRequest,
@@ -12,7 +13,11 @@ export async function GET(
 ) {
   try {
     const { sectionId } = await params;
-    const section = await getSection(parseInt(sectionId, 10));
+    const sectionKey = parseDbId(sectionId);
+    if (Number.isNaN(sectionKey)) {
+      return NextResponse.json({ error: "ID bab tidak sah." }, { status: 400 });
+    }
+    const section = await getSection(sectionKey);
     if (!section) {
       return NextResponse.json({ error: "Bab tidak ditemui." }, { status: 404 });
     }
@@ -36,7 +41,10 @@ export async function PATCH(
     }
 
     const { sectionId } = await params;
-    const id = parseInt(sectionId, 10);
+    const id = parseDbId(sectionId);
+    if (Number.isNaN(id)) {
+      return NextResponse.json({ error: "ID bab tidak sah." }, { status: 400 });
+    }
     if (isNaN(id)) {
       return NextResponse.json({ error: "ID tidak sah." }, { status: 400 });
     }
@@ -78,7 +86,10 @@ export async function DELETE(
     }
 
     const { sectionId } = await params;
-    const id = parseInt(sectionId, 10);
+    const id = parseDbId(sectionId);
+    if (Number.isNaN(id)) {
+      return NextResponse.json({ error: "ID bab tidak sah." }, { status: 400 });
+    }
     if (isNaN(id)) {
       return NextResponse.json({ error: "ID tidak sah." }, { status: 400 });
     }

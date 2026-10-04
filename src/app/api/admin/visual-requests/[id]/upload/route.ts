@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCurrentAdmin } from "../../../../../../lib/admin/auth";
 import { getDb, hasDb } from "../../../../../../lib/db";
 import { applyManualUpload } from "../../../../../../lib/admin/visual-generation/manual-upload";
+import { parseDbId } from "../../../../../../lib/admin/ids";
 
 /**
  * POST /api/admin/visual-requests/[id]/upload  (multipart/form-data)
@@ -25,7 +26,7 @@ export async function POST(
     }
 
     const { id } = await params;
-    const numId = parseInt(id, 10);
+    const numId = parseDbId(id);
     if (Number.isNaN(numId)) {
       return NextResponse.json({ error: "ID tidak sah." }, { status: 400 });
     }

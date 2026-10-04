@@ -5,6 +5,7 @@ import {
   createMagnificAdapter,
   createMockVisualAdapter,
 } from "../../../../../../lib/admin/visual-generation";
+import { parseDbId } from "../../../../../../lib/admin/ids";
 
 /**
  * POST /api/admin/visual-requests/[id]/generate
@@ -24,7 +25,7 @@ export async function POST(
 ) {
   try {
     const { id } = await params;
-    const numId = parseInt(id, 10);
+    const numId = parseDbId(id);
 
     if (isNaN(numId)) {
       return NextResponse.json({ error: "ID tidak sah." }, { status: 400 });

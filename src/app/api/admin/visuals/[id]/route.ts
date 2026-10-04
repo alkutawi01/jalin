@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getVisual, updateVisual, deleteVisual } from "../../../../../lib/admin/visual-service";
 import { getDb } from "../../../../../lib/db";
 import { isImageMarker } from "../../../../../lib/reader/image-markers";
+import { parseDbId } from "../../../../../lib/admin/ids";
 
 /** undefined leaves the field alone; null or "" clears it; anything else must be a number. */
 function numOrNull(value: unknown): number | null | undefined {
@@ -17,7 +18,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const visualId = parseInt(id, 10);
+    const visualId = parseDbId(id);
 
     if (isNaN(visualId)) {
       return NextResponse.json({ error: "ID tidak sah." }, { status: 400 });
@@ -44,7 +45,7 @@ export async function PATCH(
 ) {
   try {
     const { id } = await params;
-    const visualId = parseInt(id, 10);
+    const visualId = parseDbId(id);
 
     if (isNaN(visualId)) {
       return NextResponse.json({ error: "ID tidak sah." }, { status: 400 });
@@ -113,7 +114,7 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    const visualId = parseInt(id, 10);
+    const visualId = parseDbId(id);
 
     if (isNaN(visualId)) {
       return NextResponse.json({ error: "ID tidak sah." }, { status: 400 });
