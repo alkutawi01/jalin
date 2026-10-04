@@ -11,10 +11,24 @@ export default function GlossaryTerm({ term, termDisplay, meaning, children }: {
   const tooltipRef = useRef<HTMLSpanElement>(null);
   const pointerType = useRef<string | null>(null);
   const wasOpenOnPointerDown = useRef(false);
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const tooltipId = useId();
   const descriptionId = useId();
   const [open, setOpen] = useState(false);
   const [position, setPosition] = useState<Position | null>(null);
+
+  /**
+   * The tooltip stays while the pointer travels from the word to it (and while it is over it), so the meaning can be
+   * read steadily and its text selected. It closes a moment after the pointer leaves both.
+   */
+  function cancelClose() {
+    if (closeTimer.current) { clearTimeout(closeTimer.current); closeTimer.current = null; }
+  }
+  function scheduleClose() {
+    cancelClose();
+    closeTimer.current = setTimeout(() => setOpen(false), 220);
+  }
+  useEffect(() => cancelClose, []);
 
   useLayoutEffect(() => {
     if (!open) return;
@@ -56,7 +70,8 @@ export default function GlossaryTerm({ term, termDisplay, meaning, children }: {
     if (!open) return;
 
     function dismissOnOutsidePointer(event: PointerEvent) {
-      if (!triggerRef.current?.contains(event.target as Node)) setOpen(false);
+      const target = event.target as Node;
+      if (!triggerRef.current?.contains(target) && !tooltipRef.current?.contains(target)) setOpen(false);
     }
 
     function dismissOnEscape(event: KeyboardEvent) {
@@ -86,12 +101,12 @@ export default function GlossaryTerm({ term, termDisplay, meaning, children }: {
           pointerType.current = event.pointerType;
           wasOpenOnPointerDown.current = open;
         }}
-        onPointerEnter={(event) => { if (event.pointerType === "mouse") setOpen(true); }}
+        onPointerEnter={(event) => { if (event.pointerType === "mouse") { cancelClose(); setOpen(true); } }}
         onPointerLeave={(event) => {
-          if (event.pointerType === "mouse" && !event.currentTarget.matches(":focus-visible")) setOpen(false);
+          if (event.pointerType === "mouse" && !event.currentTarget.matches(":focus-visible")) scheduleClose();
         }}
         onFocus={(event) => { if (event.currentTarget.matches(":focus-visible")) setOpen(true); }}
-        onBlur={() => setOpen(false)}
+        onBlur={() => { cancelClose(); setOpen(false); }}
         onKeyDown={() => { pointerType.current = null; }}
         onClick={() => {
           setOpen(pointerType.current === "touch" || pointerType.current === "pen" ? !wasOpenOnPointerDown.current : true);
@@ -107,6 +122,8 @@ export default function GlossaryTerm({ term, termDisplay, meaning, children }: {
           id={tooltipId}
           className="glossary-tooltip"
           role="tooltip"
+          onPointerEnter={(event) => { if (event.pointerType === "mouse") cancelClose(); }}
+          onPointerLeave={(event) => { if (event.pointerType === "mouse" && !triggerRef.current?.matches(":focus-visible")) scheduleClose(); }}
           style={{ left: position?.left ?? 0, top: position?.top ?? 0, visibility: position ? "visible" : "hidden" }}
         >
           <strong>{renderItalics(termDisplay ?? term)}</strong>

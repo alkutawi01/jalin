@@ -981,7 +981,8 @@ dd { margin: 0; color: var(--ink); text-align: left; }
   font-family: Arial, sans-serif;
   font-size: 13px;
   line-height: 1.5;
-  pointer-events: none;
+  /* The pointer can move onto the tooltip to read it steadily or select its text. */
+  pointer-events: auto;
   overflow-wrap: break-word;
 }
 .glossary-tooltip strong,
