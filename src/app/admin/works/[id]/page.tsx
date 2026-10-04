@@ -132,6 +132,8 @@ function WorkImageCard({ visual, body, onEdit, onReplace, onDelete }: {
         <p>{visual.alt || "Teks alternatif belum diisi."}</p>
         {visual.section_slug && !visual.anchor ? (
           <p className="admin-form-hint">Dipaparkan di kepala bab itu.</p>
+        ) : visual.section_slug ? (
+          <p className="admin-form-hint">Penanda {visual.anchor} dalam teks bab {visual.section_slug}. Urus di butang Gambar pada jadual Bab.</p>
         ) : visual.role !== "hero" ? (
           <p className="admin-form-hint">
             {!visual.anchor ? "Tiada penanda — gambar tidak muncul dalam karya."
@@ -793,7 +795,7 @@ export default function EditWorkPage() {
   }
 
   async function handleDeleteSection(id: number) {
-    if (!(await confirmAction("Pasti ingin memadam bab ini? Susunan selebihnya akan dirapatkan.", { danger: true, confirmLabel: "Ya, teruskan" }))) return;
+    if (!(await confirmAction("Pasti ingin memadam bab ini? Gambar bab ini turut dikeluarkan dan susunan selebihnya akan dirapatkan.", { danger: true, confirmLabel: "Ya, teruskan" }))) return;
     setSectionError(null);
     try {
       const res = await fetch(`/api/admin/works/${workId}/sections/${id}`, { method: "DELETE" });

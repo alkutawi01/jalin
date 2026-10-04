@@ -6,7 +6,7 @@
  * Reorder uses exact-set validation (same pattern as credits).
  */
 
-import { Kysely, Transaction } from "kysely";
+import { Kysely, Transaction, sql } from "kysely";
 import { getDb, hasDb } from "../db";
 import type { Database } from "../db/types";
 
@@ -214,6 +214,20 @@ export async function updateSection(
     .set(updateData)
     .execute();
 
+  // The chapter's images are tied to its slug, so they follow it when the slug changes.
+  if (input.slug !== undefined && input.slug !== existing.slug) {
+    try {
+      await db
+        .updateTable("visuals")
+        .where("work_id", "=", existing.work_id)
+        .where("section_slug" as never, "=", existing.slug as never)
+        .set({ section_slug: input.slug } as never)
+        .execute();
+    } catch {
+      // Migration 022 not applied yet: there are no chapter images to move.
+    }
+  }
+
   const section = await getSection(id);
   if (!section) {
     throw new Error("Bab tidak ditemui selepas kemas kini.");
@@ -230,6 +244,15 @@ export async function deleteSection(id: number): Promise<void> {
 
   await db.transaction().execute(async (trx) => {
     await trx.deleteFrom("reading_sections").where("id", "=", id).execute();
+    // Images that belonged to this chapter go with it (a failed delete must not abort the chapter delete).
+    await sql`SAVEPOINT chapter_images`.execute(trx);
+    try {
+      await trx.deleteFrom("visuals").where("work_id", "=", existing.work_id).where("section_slug" as never, "=", existing.slug as never).execute();
+      await sql`RELEASE SAVEPOINT chapter_images`.execute(trx);
+    } catch {
+      // Migration 022 not applied yet: there are no chapter images.
+      await sql`ROLLBACK TO SAVEPOINT chapter_images`.execute(trx);
+    }
     // Close the gap: renumber remaining positions contiguously 1..N.
     const remaining = await trx
       .selectFrom("reading_sections")

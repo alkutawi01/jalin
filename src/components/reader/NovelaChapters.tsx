@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Crumbs } from "./ReadingNav";
+import ChapterPicker from "./ChapterPicker";
 
 export interface ChapterRow {
   slug: string;
@@ -13,25 +14,6 @@ export interface ChapterRow {
 export function readingMinutesOf(body: string): number {
   const words = body.trim() ? body.trim().split(/\s+/).length : 0;
   return Math.max(1, Math.round(words / 200));
-}
-
-function ChapterPicker({ rows, currentSlug }: { rows: ChapterRow[]; currentSlug?: string }) {
-  return (
-    <details className="chapter-picker">
-      <summary>Senarai Bab ({rows.length})</summary>
-      <ol>
-        {rows.map((row, index) => (
-          <li key={row.slug}>
-            <a href={row.href} aria-current={row.slug === currentSlug ? "page" : undefined}>
-              <span className="chapter-num">{index + 1}</span>
-              <span className="chapter-ttl">{row.title}</span>
-              <span className="chapter-min">± {row.minutes} min</span>
-            </a>
-          </li>
-        ))}
-      </ol>
-    </details>
-  );
 }
 
 /** The head of a chapter page: where the reader is, the chapter's own title and a way to move around. Short on purpose. */
