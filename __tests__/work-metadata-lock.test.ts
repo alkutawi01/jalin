@@ -18,5 +18,9 @@ assert(/transaction\(\)[\s\S]*\.forUpdate\(\)/.test(update), "note/origin save r
 assert(/transaction\(\)[\s\S]*\.forUpdate\(\)/.test(chars), "character save reads metadata under a row lock");
 assert(!/\.\.\.\(existing\.metadata/.test(chars), "character save no longer merges into a stale copy");
 
+const sr = fs.readFileSync(path.join(__dirname, "../src/lib/admin/source-rights.ts"), "utf8");
+const unlocked = sr.split("\n").filter((l) => /selectFrom\("works"\)[^\n]*select\("metadata"\)/.test(l) && !/forUpdate\(\)/.test(l));
+assert(unlocked.length === 0, "source-rights never reads works.metadata for a rewrite without a row lock");
+
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);

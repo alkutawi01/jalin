@@ -470,11 +470,15 @@ export async function upsertSourceProvenance(
   }
 
   if (input.chatbotFields && input.chatbotFields.length > 0) {
-    const fresh = await db.selectFrom("works").where("id", "=", workId).select("metadata").executeTakeFirst();
-    const metadata = { ...((fresh?.metadata ?? {}) as Record<string, unknown>) };
-    const have = Array.isArray(metadata.sourceChatbotFields) ? (metadata.sourceChatbotFields as unknown[]).map(String) : [];
-    metadata.sourceChatbotFields = [...new Set([...have, ...input.chatbotFields])];
-    await db.updateTable("works").where("id", "=", workId).set({ metadata: metadata as never }).execute();
+    const chatbotFields = input.chatbotFields;
+    // Under a row lock, so a character or note save at the same moment is not overwritten.
+    await db.transaction().execute(async (trx) => {
+      const fresh = await trx.selectFrom("works").where("id", "=", workId).select("metadata").forUpdate().executeTakeFirst();
+      const metadata = { ...((fresh?.metadata ?? {}) as Record<string, unknown>) };
+      const have = Array.isArray(metadata.sourceChatbotFields) ? (metadata.sourceChatbotFields as unknown[]).map(String) : [];
+      metadata.sourceChatbotFields = [...new Set([...have, ...chatbotFields])];
+      await trx.updateTable("works").where("id", "=", workId).set({ metadata: metadata as never }).execute();
+    });
   }
 
   const view = await getSourceRightsView(workId);
@@ -664,14 +668,14 @@ export async function performRightsReview(
   }
 
   // The editor has now looked at these fields, so they are no longer "suggested by the chatbot".
-  {
-    const fresh = await db.selectFrom("works").where("id", "=", workId).select("metadata").executeTakeFirst();
+  await db.transaction().execute(async (trx) => {
+    const fresh = await trx.selectFrom("works").where("id", "=", workId).select("metadata").forUpdate().executeTakeFirst();
     const metadata = { ...((fresh?.metadata ?? {}) as Record<string, unknown>) };
     if (metadata.sourceChatbotFields) {
       delete metadata.sourceChatbotFields;
-      await db.updateTable("works").where("id", "=", workId).set({ metadata: metadata as never }).execute();
+      await trx.updateTable("works").where("id", "=", workId).set({ metadata: metadata as never }).execute();
     }
-  }
+  });
 
   const view = await getSourceRightsView(workId);
   if (!view) throw new Error("Work tidak ditemui.");
