@@ -17,6 +17,7 @@ assert(/JSON\.stringify\(formRef\.current\) === JSON\.stringify\(sentForm\)\) se
 assert(/setSavedBody\(sentForm\.body\)/.test(src), "the saved body is the one that was sent");
 assert(/editingCredit \|\| editingVisual \|\| editingGlossary \|\| editingSection/.test(src), "closing the tab warns while a credit/image/glossary/section editor is open");
 assert(src.includes("charactersBaseline.current"), "closing the tab warns about unsaved character edits");
+assert(src.includes("JSON.stringify(sourceForm) !== sourceBaseline.current") && src.includes("sourceBaseline.current = JSON.stringify(loadedForm)"), "closing the tab warns about an unsaved source/rights form");
 
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);

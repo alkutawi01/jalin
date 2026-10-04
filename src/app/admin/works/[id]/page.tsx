@@ -666,17 +666,6 @@ export default function EditWorkPage() {
 
   const [sections, setSections] = useState<SectionData[]>([]);
   const [editingSection, setEditingSection] = useState<Partial<SectionData> | null>(null);
-  formRef.current = form;
-  const unsavedElsewhere = !!(editingCredit || editingVisual || editingGlossary || editingSection)
-    || JSON.stringify(characters) !== charactersBaseline.current;
-  useEffect(() => {
-    if (!dirty && !unsavedElsewhere) return;
-    const warn = (e: BeforeUnloadEvent) => {
-      e.preventDefault();
-    };
-    window.addEventListener("beforeunload", warn);
-    return () => window.removeEventListener("beforeunload", warn);
-  }, [dirty, unsavedElsewhere]);
   const [sectionError, setSectionError] = useState<string | null>(null);
   const [sectionSuccess, setSectionSuccess] = useState<string | null>(null);
 
@@ -767,6 +756,22 @@ export default function EditWorkPage() {
     loadSourceRights();
     loadSections();
   }, [workId]);
+
+  /** The source/rights form as last loaded from the server (null until the first render sets it to the empty form). */
+  const sourceBaseline = useRef<string | null>(null);
+  if (sourceBaseline.current === null) sourceBaseline.current = JSON.stringify(sourceForm);
+  formRef.current = form;
+  const unsavedElsewhere = !!(editingCredit || editingVisual || editingGlossary || editingSection)
+    || JSON.stringify(characters) !== charactersBaseline.current
+    || JSON.stringify(sourceForm) !== sourceBaseline.current;
+  useEffect(() => {
+    if (!dirty && !unsavedElsewhere) return;
+    const warn = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+    };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [dirty, unsavedElsewhere]);
 
   async function loadSections() {
     try {
@@ -884,7 +889,7 @@ export default function EditWorkPage() {
       const data: SourceRightsData = await res.json();
       setSourceRights(data);
       if (data.sourceWork) {
-        setSourceForm({
+        const loadedForm = {
           fragmenTextLanguage: data.fragmenTextLanguage || "",
           originalTitle: data.sourceWork.originalTitle || "",
           author: data.sourceWork.author || "",
@@ -903,7 +908,9 @@ export default function EditWorkPage() {
           rightsNotes: data.sourceWork.rightsNotes || "",
           rightsEvidence: data.sourceWork.rightsEvidence || "",
           rightsStatus: data.sourceWork.rightsStatus || "needs_review",
-        });
+        };
+        sourceBaseline.current = JSON.stringify(loadedForm);
+        setSourceForm(loadedForm);
       }
     } catch (err) {
       setSourceError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
