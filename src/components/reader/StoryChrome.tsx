@@ -194,11 +194,42 @@ export function StoryEnd({ title }: { title: string }) {
   );
 }
 
+const FOOTER_EXPLORE = NAV_LINKS.filter((link) => link.match && link.match !== "home");
+const FOOTER_ABOUT = [
+  { label: "Tentang Jalin", href: "/tentang" },
+  { label: "Dasar Privasi", href: "/privasi" },
+  { label: "Terma Penggunaan", href: "/terma" }
+];
+
 export function SiteFooter() {
+  const year = new Date().getFullYear();
   return (
     <footer className="site-footer">
-      <div className="site-shell footer-inner">
-        <img className="footer-logo" src="/brand/jalin-logo-reversed.svg" alt="Jalin — oleh Adjung" />
+      <div className="site-shell footer-grid">
+        <div className="footer-brand">
+          <img className="footer-logo" src="/brand/jalin-logo-reversed.svg" alt="Jalin — oleh Adjung" />
+          <p className="footer-tagline">Cerita untuk kita.</p>
+        </div>
+        <nav className="footer-col" aria-label="Terokai karya">
+          <h2>Terokai</h2>
+          <ul>
+            {FOOTER_EXPLORE.map((link) => (
+              <li key={link.href}><a href={link.href}>{link.label}</a></li>
+            ))}
+          </ul>
+        </nav>
+        <nav className="footer-col" aria-label="Tentang tapak">
+          <h2>Jalin</h2>
+          <ul>
+            {FOOTER_ABOUT.map((link) => (
+              <li key={link.href}><a href={link.href}>{link.label}</a></li>
+            ))}
+          </ul>
+        </nav>
+      </div>
+      <div className="site-shell footer-base">
+        <p>© {year} Adjung Press. Hak cipta terpelihara.</p>
+        <p>Karya dan ilustrasi dalam Jalin dilindungi hak cipta.</p>
       </div>
     </footer>
   );

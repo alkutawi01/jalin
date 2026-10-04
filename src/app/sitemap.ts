@@ -18,6 +18,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "daily" as const,
       priority: 0.7
     })),
+    ...["tentang", "privasi", "terma"].map((page) => ({
+      url: `${SITE_URL}/${page}`,
+      changeFrequency: "yearly" as const,
+      priority: 0.3
+    })),
     ...CONTRIBUTOR_SLUGS.map((slug) => ({
       url: `${SITE_URL}/penulis/${slug}`,
       changeFrequency: "monthly" as const,
