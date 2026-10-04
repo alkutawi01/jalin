@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import { SiteFooter, SiteHeader } from "../components/reader/StoryChrome";
 import { WorkCover } from "../components/reader/WorkCover";
@@ -15,6 +16,9 @@ import { renderAttribution } from "@/components/reader/Attribution";
 import { cropStyle } from "../lib/reader/crop";
 
 export const dynamic = "force-dynamic";
+
+// Only the home page says it is the home page; every other page sets its own canonical.
+export const metadata: Metadata = { alternates: { canonical: "/" } };
 
 function formatDate(date: string | undefined): string {
   if (!date) return "—";

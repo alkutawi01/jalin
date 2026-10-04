@@ -2664,3 +2664,11 @@ main:focus { outline: none; }
 /* The open chapter list sits above the floating Info tab on phones (that tab is z-index 35). */
 .chapter-head-nav { z-index: 40; }
 .chapter-picker ol { z-index: 41; }
+
+/* Page for an address that does not exist. */
+.not-found { max-width: 640px; padding-top: 72px; padding-bottom: 88px; text-align: center; }
+.not-found h1 { margin: 10px 0 14px; font-size: clamp(2rem, 5vw, 3rem); font-weight: 500; font-style: normal; }
+.not-found .dek { margin: 0 auto 28px; }
+.not-found-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 10px; margin-top: 28px; font-family: Inter, ui-sans-serif, sans-serif; font-size: 14px; }
+.not-found-links a { display: inline-flex; align-items: center; min-height: 40px; padding: 0 14px; border: 1px solid var(--line); border-radius: 999px; color: var(--ink); background: var(--white); transition: border-color .18s ease; }
+.not-found-links a:hover, .not-found-links a:focus-visible { border-color: var(--clay); }
