@@ -1,9 +1,12 @@
+import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import Image from "next/image";
 import { SiteFooter, SiteHeader } from "../../../../components/reader/StoryChrome";
 import { WorkCover } from "../../../../components/reader/WorkCover";
 import { initContentRepository } from "../../../../lib/content";
 import { displayableGenre } from "../../../../lib/reader/genre-display";
+import { absoluteUrl } from "../../../../lib/seo";
+import { jsonLdString, seriesJsonLd } from "../../../../lib/seo-jsonld";
 
 export const dynamic = "force-dynamic";
 export const dynamicParams = true;
@@ -26,6 +29,25 @@ function formatDate(date: string | undefined): string {
     "Julai", "Ogos", "September", "Oktober", "November", "Disember"
   ];
   return `${day} ${months[(month ?? 1) - 1]} ${year}`;
+}
+
+/** Title, description, canonical and share card for a series, so it is not just "Jalin" in a tab or a search result. */
+export async function generateMetadata({ params }: { params: Promise<{ seriesSlug: string }> }): Promise<Metadata> {
+  const { seriesSlug } = await params;
+  const repo = await initContentRepository();
+  if (repo.source !== "database") return {};
+  const series = repo.getSeriesBySlug(seriesSlug);
+  if (!series || repo.getPublishedSeriesEpisodes(series.id).length === 0) return {};
+  const description = series.dek ?? `Siri ${series.title} di Jalin.`;
+  const path = `/kategori/bersiri/${series.slug}`;
+  const image = series.hero?.src ? [{ url: absoluteUrl(series.hero.src) }] : undefined;
+  return {
+    title: series.title,
+    description,
+    alternates: { canonical: path },
+    openGraph: { type: "website", title: series.title, description, url: path, images: image },
+    twitter: { card: image ? "summary_large_image" : "summary", title: series.title, description, images: image?.map((i) => i.url) }
+  };
 }
 
 export default async function SeriesLandingPage({
@@ -142,6 +164,21 @@ export default async function SeriesLandingPage({
             </section>
           </div>
         </main>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: jsonLdString(
+              seriesJsonLd({
+                slug: series.slug,
+                title: series.title,
+                dek: series.dek,
+                genre: displayableGenre(series.genre),
+                heroSrc: series.hero?.src,
+                episodes: byPosition.map((episode) => ({ slug: episode.slug, title: episode.title, position: episode.position }))
+              })
+            )
+          }}
+        />
         <SiteFooter />
       </>
     );

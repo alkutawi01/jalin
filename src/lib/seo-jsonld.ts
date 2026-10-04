@@ -118,6 +118,83 @@ export function workJsonLd(work: JsonLdWork, sectionSlug?: string): Record<strin
   };
 }
 
+export interface JsonLdSeries {
+  slug: string;
+  title: string;
+  dek?: string;
+  genre?: string;
+  heroSrc?: string;
+  episodes: { slug: string; title: string; position: number }[];
+}
+
+/** A series page: the series with its published episodes, and where it sits on the site. */
+export function seriesJsonLd(series: JsonLdSeries): Record<string, unknown> {
+  const path = `/kategori/bersiri/${series.slug}`;
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "CreativeWorkSeries",
+        "@id": absoluteUrl(path) + "#series",
+        name: series.title,
+        url: absoluteUrl(path),
+        inLanguage: "ms",
+        ...(series.dek ? { description: series.dek } : {}),
+        ...(series.genre ? { genre: series.genre } : {}),
+        ...(series.heroSrc ? { image: absoluteUrl(series.heroSrc) } : {}),
+        publisher,
+        isAccessibleForFree: true,
+        hasPart: series.episodes.map((episode) => ({
+          "@type": "CreativeWork",
+          name: episode.title,
+          position: episode.position,
+          url: absoluteUrl(`${path}/${episode.slug}`)
+        }))
+      },
+      breadcrumb([
+        { name: "Jalin", path: "/" },
+        { name: "Bersiri", path: "/kategori/bersiri" },
+        { name: series.title, path }
+      ])
+    ]
+  };
+}
+
+/** An episode page: the episode as part of its series. */
+export function episodeJsonLd(work: JsonLdWork, series: { slug: string; title: string }, position: number): Record<string, unknown> {
+  const seriesPath = `/kategori/bersiri/${series.slug}`;
+  const path = `${seriesPath}/${work.slug}`;
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "CreativeWork",
+        "@id": absoluteUrl(path) + "#episode",
+        name: work.title,
+        url: absoluteUrl(path),
+        position,
+        inLanguage: "ms",
+        ...(work.genre ? { genre: work.genre } : {}),
+        ...(work.dek ? { description: work.dek } : {}),
+        ...(work.publishedAt ? { datePublished: work.publishedAt } : {}),
+        ...(work.updatedAt ? { dateModified: work.updatedAt } : {}),
+        ...(work.heroSrc ? { image: absoluteUrl(work.heroSrc) } : {}),
+        ...(work.authors.length > 0 ? { author: people(work.authors) } : {}),
+        publisher,
+        isAccessibleForFree: true,
+        ...audienceOf(work.audience),
+        isPartOf: { "@type": "CreativeWorkSeries", "@id": absoluteUrl(seriesPath) + "#series", name: series.title, url: absoluteUrl(seriesPath) }
+      },
+      breadcrumb([
+        { name: "Jalin", path: "/" },
+        { name: "Bersiri", path: "/kategori/bersiri" },
+        { name: series.title, path: seriesPath },
+        { name: work.title, path }
+      ])
+    ]
+  };
+}
+
 /** Serialises JSON-LD for a <script> tag: "<" is escaped so the data can never close the tag. */
 export function jsonLdString(data: unknown): string {
   return JSON.stringify(data).replace(/</g, "\\u003c");

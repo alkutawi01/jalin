@@ -1,5 +1,8 @@
+import type { Metadata } from "next";
 import { ContinueNav, Crumbs } from "../../../../../components/reader/ReadingNav";
 import { notFound } from "next/navigation";
+import { absoluteUrl } from "../../../../../lib/seo";
+import { episodeJsonLd, jsonLdString } from "../../../../../lib/seo-jsonld";
 import { displayableGenre } from "../../../../../lib/reader/genre-display";
 import {
   EditorialImage,
@@ -41,13 +44,7 @@ const TYPE_LABELS: Record<string, string> = {
   sinopsis: "Sinopsis"
 };
 
-export default async function EpisodePage({
-  params
-}: {
-  params: Promise<{ seriesSlug: string; episodeSlug: string }>;
-}) {
-  const { seriesSlug, episodeSlug } = await params;
-
+async function resolveEpisode(seriesSlug: string, episodeSlug: string) {
   const repo = await initContentRepository();
   const isDb = repo.source === "database";
 
@@ -65,6 +62,39 @@ export default async function EpisodePage({
     work = getWorkBySlug(episodeSlug);
     if (work && work.series?.slug !== seriesSlug) work = undefined;
   }
+  return { repo, isDb, work };
+}
+
+/** Each episode gets its own title ("Episod 2: Tajuk · Siri"), description, canonical and share card. */
+export async function generateMetadata({ params }: { params: Promise<{ seriesSlug: string; episodeSlug: string }> }): Promise<Metadata> {
+  const { seriesSlug, episodeSlug } = await params;
+  const { repo, isDb, work } = await resolveEpisode(seriesSlug, episodeSlug);
+  if (!work || work.type !== "bersiri" || !work.series) return {};
+  const episodes = isDb ? repo.getPublishedSeriesEpisodes(work.series.id) : [];
+  const index = episodes.findIndex((e) => e.slug === work.slug);
+  const label = index >= 0 ? `Episod ${index + 1}: ` : "";
+  const title = `${label}${work.title} · ${work.series.title}`;
+  const description = work.dek ?? `${work.title}, ${work.series.title}. Siri Jalin.`;
+  const path = `/kategori/bersiri/${work.series.slug}/${work.slug}`;
+  const hero = work.visuals.find((visual) => visual.role === "hero");
+  const image = hero?.src ? [{ url: absoluteUrl(hero.src) }] : undefined;
+  return {
+    title,
+    description,
+    alternates: { canonical: path },
+    openGraph: { type: "article", title, description, url: path, images: image },
+    twitter: { card: image ? "summary_large_image" : "summary", title, description, images: image?.map((i) => i.url) }
+  };
+}
+
+export default async function EpisodePage({
+  params
+}: {
+  params: Promise<{ seriesSlug: string; episodeSlug: string }>;
+}) {
+  const { seriesSlug, episodeSlug } = await params;
+
+  const { repo, isDb, work } = await resolveEpisode(seriesSlug, episodeSlug);
 
   if (!work || work.type !== "bersiri") notFound();
   if (!work.series) notFound();
@@ -179,6 +209,31 @@ export default async function EpisodePage({
         {/* "Tamat" marks the end of the work, so an episode that has a next episode does not show it. */}
         {!nextEpisode ? <StoryEnd title={work.title} /> : null}
       </main>
+
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: jsonLdString(
+            episodeJsonLd(
+              {
+                slug: work.slug,
+                title: work.title,
+                type: work.type,
+                dek: work.dek,
+                genre: genre,
+                audience: work.audience,
+                publishedAt: work.publishedAt,
+                updatedAt: work.updatedAt,
+                heroSrc: hero?.src,
+                authors: byline.map((person) => person.name),
+                sections: []
+              },
+              { slug: series.slug, title: series.title },
+              episodeIndex >= 0 ? episodeIndex + 1 : 1
+            )
+          )
+        }}
+      />
 
       <SiteFooter />
     </>
