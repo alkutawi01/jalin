@@ -266,8 +266,8 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
         </div>
       </header>
 
-      {error && <div className="admin-alert admin-alert-error">{error}</div>}
-      {success && <div className="admin-alert admin-alert-success">{success}</div>}
+      {error && <div className="admin-alert admin-alert-error" role="alert">{error}</div>}
+      {success && <div className="admin-alert admin-alert-success" role="status">{success}</div>}
 
       <section className="admin-section" aria-labelledby="series-hero-title">
         <h2 id="series-hero-title" className="admin-form-section-title">Gambar siri</h2>

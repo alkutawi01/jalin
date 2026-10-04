@@ -1651,23 +1651,23 @@ export default function EditWorkPage() {
       />
 
       {error && (
-        <div className="admin-alert admin-alert-error">{error}</div>
+        <div className="admin-alert admin-alert-error" role="alert">{error}</div>
       )}
 
       {success && (
-        <div className="admin-alert admin-alert-success">{success}</div>
+        <div className="admin-alert admin-alert-success" role="status">{success}</div>
       )}
 
       {publishError && (
-        <div className="admin-alert admin-alert-error">{publishError}</div>
+        <div className="admin-alert admin-alert-error" role="alert">{publishError}</div>
       )}
 
       {publishSuccess && (
-        <div className="admin-alert admin-alert-success">{publishSuccess}</div>
+        <div className="admin-alert admin-alert-success" role="status">{publishSuccess}</div>
       )}
 
       {publishPreview?.slugCollision && isLocalHost && (
-        <div className="admin-alert admin-alert-error">
+        <div className="admin-alert admin-alert-error" role="alert">
           Alamat pautan (slug) &quot;{form.slug}&quot; sudah digunakan oleh
           fail Markdown lain yang bukan kepunyaan karya ini. Menerbitkan
           karya ini akan ditolak sehingga konflik slug diselesaikan
@@ -2001,8 +2001,8 @@ export default function EditWorkPage() {
 
       {activeTab === "sections" && form.type === "novela" && (
         <div className="admin-sections">
-          {sectionError && <div className="admin-alert admin-alert-error">{sectionError}</div>}
-          {sectionSuccess && <div className="admin-alert admin-alert-success">{sectionSuccess}</div>}
+          {sectionError && <div className="admin-alert admin-alert-error" role="alert">{sectionError}</div>}
+          {sectionSuccess && <div className="admin-alert admin-alert-success" role="status">{sectionSuccess}</div>}
 
           <div className="admin-credits-header">
             <h3>Bab Novela</h3>
@@ -2166,7 +2166,7 @@ export default function EditWorkPage() {
       {activeTab === "credits" && (
         <div className="admin-credits">
           {creditError && (
-            <div className="admin-alert admin-alert-error">{creditError}</div>
+            <div className="admin-alert admin-alert-error" role="alert">{creditError}</div>
           )}
 
           <div className="admin-credits-header">
@@ -2380,7 +2380,7 @@ export default function EditWorkPage() {
       {activeTab === "content" && (
         <div className="admin-visuals">
           {visualError && (
-            <div className="admin-alert admin-alert-error">{visualError}</div>
+            <div className="admin-alert admin-alert-error" role="alert">{visualError}</div>
           )}
 
           {visuals.length > 0 && !visuals.some((v) => v.role === "hero") ? (
@@ -2537,7 +2537,7 @@ export default function EditWorkPage() {
           </section>
 
           {glossaryError && (
-            <div className="admin-alert admin-alert-error">{glossaryError}</div>
+            <div className="admin-alert admin-alert-error" role="alert">{glossaryError}</div>
           )}
 
           <div className="admin-credits-header">
@@ -2697,10 +2697,10 @@ export default function EditWorkPage() {
       {activeTab === "characters" && (
         <div className="admin-characters">
           {charactersError && (
-            <div className="admin-alert admin-alert-error">{charactersError}</div>
+            <div className="admin-alert admin-alert-error" role="alert">{charactersError}</div>
           )}
           {charactersSuccess && (
-            <div className="admin-alert admin-alert-success">{charactersSuccess}</div>
+            <div className="admin-alert admin-alert-success" role="status">{charactersSuccess}</div>
           )}
 
           <div className="admin-credits-header">
@@ -2804,8 +2804,8 @@ export default function EditWorkPage() {
             )}
           </div>
 
-          {sourceError && <div className="admin-alert admin-alert-error">{sourceError}</div>}
-          {sourceSuccess && <div className="admin-alert admin-alert-success">{sourceSuccess}</div>}
+          {sourceError && <div className="admin-alert admin-alert-error" role="alert">{sourceError}</div>}
+          {sourceSuccess && <div className="admin-alert admin-alert-success" role="status">{sourceSuccess}</div>}
           {sourceLoading && <LoadingBlock label="asal-usul" />}
 
           {sourceRights && !sourceLoading && (
@@ -2816,7 +2816,7 @@ export default function EditWorkPage() {
                 </p>
               )}
               {sourceRights.rightsBlockers.length > 0 && (
-                <ul className="admin-alert admin-alert-error" style={{ marginBottom: "0.75rem" }}>
+                <ul className="admin-alert admin-alert-error" role="alert" style={{ marginBottom: "0.75rem" }}>
                   {sourceRights.rightsBlockers.map((b) => (
                     <li key={b.code + b.message}>[HAK] {b.message}</li>
                   ))}

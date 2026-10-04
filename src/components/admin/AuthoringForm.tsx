@@ -311,7 +311,7 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
   return (
     <>
       {series?.kind === "sambung" ? (
-        <div className="admin-alert admin-alert-success">Episod ini menyambung siri: {series.title}</div>
+        <div className="admin-alert admin-alert-success" role="status">Episod ini menyambung siri: {series.title}</div>
       ) : null}
 
       <section className="admin-section">
@@ -368,7 +368,7 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
             {busy === "prompt" ? "Menyediakan…" : "Salin Arahan AI"}
           </button>
         </div>
-        {copyNote ? <div className="admin-alert admin-alert-success">{copyNote}</div> : null}
+        {copyNote ? <div className="admin-alert admin-alert-success" role="status">{copyNote}</div> : null}
       </section>
 
       <section className="admin-section">
@@ -409,7 +409,7 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
         </details>
       </section>
 
-      {error ? <div className="admin-alert admin-alert-error">{error}</div> : null}
+      {error ? <div className="admin-alert admin-alert-error" role="alert">{error}</div> : null}
 
       {saved ? (
         <div className="admin-alert admin-alert-warning" role="alert">
@@ -431,7 +431,7 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
             <span className="admin-step-num">4</span>Semak dan simpan
           </h2>
           {result.errors.map((issue, i) => (
-            <div key={`e${i}`} className="admin-alert admin-alert-error">
+            <div key={`e${i}`} className="admin-alert admin-alert-error" role="alert">
               {issue.message}
             </div>
           ))}

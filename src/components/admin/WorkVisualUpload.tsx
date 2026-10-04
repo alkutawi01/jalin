@@ -66,8 +66,8 @@ export default function WorkVisualUpload({ workId, onDone, hasHero, published, s
         Pilih imej (PNG/JPEG/WebP, maksimum 10 MB; disyorkan bawah 4 MB). Muat naik menyimpan dan memautkan gambar terus; tidak perlu tekan “Simpan teks &amp; maklumat” selepasnya.
       </p>
 
-      {error ? <div className="admin-alert admin-alert-error">{error}</div> : null}
-      {success ? <div className="admin-alert admin-alert-success">{success}</div> : null}
+      {error ? <div className="admin-alert admin-alert-error" role="alert">{error}</div> : null}
+      {success ? <div className="admin-alert admin-alert-success" role="status">{success}</div> : null}
 
       <div className="admin-form-row">
         <div className="admin-form-group">
