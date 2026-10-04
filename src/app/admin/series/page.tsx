@@ -65,7 +65,7 @@ export default async function AdminSeriesPage() {
             ) : (
               series.map((s) => (
                 <tr key={s.id}>
-                  <td className="admin-table-title">{s.title}</td>
+                  <td className="admin-table-title"><a href={`/admin/series/${s.id}`} className="a-work-title-link">{s.title}</a></td>
                   <td><code>{s.slug}</code></td>
                   <td>{MODE_LABELS[s.mode] ?? s.mode}</td>
                   <td>

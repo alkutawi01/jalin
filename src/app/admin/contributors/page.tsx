@@ -73,7 +73,7 @@ export default async function AdminContributorsPage() {
             ) : (
               contributors.map((contributor) => (
                 <tr key={contributor.slug}>
-                  <td className="admin-table-title">{contributor.display_name}</td>
+                  <td className="admin-table-title"><a href={`/admin/contributors/${contributor.slug}`} className="a-work-title-link">{contributor.display_name}</a></td>
                   <td><code>{contributor.slug}</code></td>
                   <td>
                     <span className={`admin-kind admin-kind-${contributor.kind}`}>

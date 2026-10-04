@@ -84,7 +84,7 @@ export default async function AdminSubmissionsPage() {
               submissions.map((sub) => (
                 <tr key={sub.id}>
                   <td>{sub.id}</td>
-                  <td className="admin-table-title">{sub.proposed_title || "—"}</td>
+                  <td className="admin-table-title"><a href={`/admin/submissions/${sub.id}`} className="a-work-title-link">{sub.proposed_title || "—"}</a></td>
                   <td>{sub.proposed_type || "—"}</td>
                   <td>
                     <span className={`admin-status admin-status-${sub.status === "approved" ? "published" : sub.status === "rejected" ? "archived" : "review"}`}>
