@@ -1858,7 +1858,7 @@ export default function EditWorkPage() {
               <ul>
                 <li>Perenggan baharu: tinggalkan satu baris kosong.</li>
                 <li><code>**tebal**</code> → <strong>tebal</strong>; <code>*condong*</code> → <em>condong</em>. Gunakan condong untuk judul karya yang disebut dalam prosa.</li>
-                <li><code>## Tajuk bahagian</code> pada baris sendiri → tajuk bahagian; <code>---</code> pada baris sendiri → pemisah adegan.</li>
+                <li><code>## Tajuk bahagian</code> pada baris sendiri → tajuk bahagian; <code>---</code> (atau <code>***</code>, <code>* * *</code>, <code>___</code>) pada baris sendiri → pemisah adegan.</li>
                 <li><code>&gt; Petikan</code> → petikan; <code>[teks pautan](https://contoh.com)</code> → pautan; <code>- Butiran</code> → senarai. Format ini disunting dalam mod Markdown.</li>
                 <li><code>[[gambar:1]]</code> pada baris sendiri → lokasi gambar dalam teks. Alihkan baris penanda untuk mengalihkan gambar.</li>
                 <li>Kotak mesej: <code>:::mesej</code>, isi mesej, kemudian <code>:::</code> pada baris sendiri. Untuk e-mel, gunakan <code>:::emel</code>. Tiada nombor telefon atau alamat diperlukan.</li>

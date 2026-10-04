@@ -5,6 +5,7 @@ import { headingId } from "../../lib/reader/inline-chapters";
 import GlossaryTerm from "./GlossaryTerm";
 import { glossaryPattern } from "../../lib/reader/glossary-first";
 import { splitCommunicationBlocks } from "../../lib/reader/communication-blocks";
+import { normalizeSceneBreaks } from "../../lib/reader/scene-breaks";
 
 function plainText(node: ReactNode): string {
   if (typeof node === "string" || typeof node === "number") return String(node);
@@ -17,7 +18,7 @@ function normalizeMarkdown(markdown: string): string {
   // Preserve editorial paragraph boundaries exactly as authored.
   // Markdown uses blank lines (\n\n) to delimit paragraphs; collapsing them
   // here would turn an entire scene into a single paragraph.
-  return markdown.replace(/\r\n/g, "\n");
+  return normalizeSceneBreaks(markdown.replace(/\r\n/g, "\n"));
 }
 
 function decorateGlossary(text: string, glossary: GlossaryMap, used: Set<string>): ReactNode[] {
