@@ -9,6 +9,7 @@ import { Kysely } from "kysely";
 import { getDb, hasDb } from "../db";
 import type { Database } from "../db/types";
 import type { WorkType, WorkStatus } from "../db/types";
+import { characterProblems } from "./metadata-rules";
 
 function getAdminDb(): Kysely<Database> {
   if (!hasDb()) {
@@ -323,6 +324,9 @@ export async function updateWorkCharacters(
   }
 
   const validated = validateCharacterEntries(characters);
+  const chapterSlugs = (await db.selectFrom("reading_sections").where("work_id", "=", id).select("slug").execute()).map((row) => String(row.slug));
+  const problems = characterProblems(validated, chapterSlugs);
+  if (problems.length > 0) throw new Error(problems.join(" "));
   const metadata = { ...(existing.metadata ?? {}), characters: validated };
 
   await db

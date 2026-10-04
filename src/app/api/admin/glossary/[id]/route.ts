@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getGlossaryTerm, updateGlossaryTerm, deleteGlossaryTerm } from "../../../../../lib/admin/glossary-service";
+import { getGlossaryTerm, updateGlossaryTerm, deleteGlossaryTerm, listGlossaryForWork } from "../../../../../lib/admin/glossary-service";
+import { findDuplicateTerm } from "../../../../../lib/admin/metadata-rules";
 import { parseDbId } from "../../../../../lib/admin/ids";
 
 export async function GET(
@@ -48,6 +49,13 @@ export async function PATCH(
     }
 
     const body = await request.json();
+
+    if (typeof body.term === "string" && body.term.trim()) {
+      const duplicate = findDuplicateTerm(await listGlossaryForWork(existing.work_id), body.term, termId);
+      if (duplicate) {
+        return NextResponse.json({ error: `Istilah "${duplicate.term}" sudah ada dalam glosari karya ini.` }, { status: 409 });
+      }
+    }
 
     const term = await updateGlossaryTerm(termId, {
       term: body.term,
