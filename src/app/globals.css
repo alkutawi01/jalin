@@ -2635,3 +2635,32 @@ main:focus { outline: none; }
 }
 .chapter-head { padding-top: 24px; }
 .chapter-head .crumbs { justify-content: flex-start; text-align: left; }
+
+/* Chapter dropdown, in Jalin's own manner: quiet hairline card, clay marker for where you are, a thin scrollbar. */
+.chapter-picker ol {
+  width: min(440px, 100%);
+  max-height: min(78vh, 720px);
+  padding: 8px;
+  border-radius: 14px;
+  border-color: var(--line);
+  box-shadow: 0 24px 48px -28px rgba(24, 52, 60, .34), 0 2px 6px rgba(24, 52, 60, .05);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(167, 100, 80, .35) transparent;
+  overscroll-behavior: contain;
+}
+.chapter-picker ol::-webkit-scrollbar { width: 8px; }
+.chapter-picker ol::-webkit-scrollbar-track { background: transparent; margin: 10px 0; }
+.chapter-picker ol::-webkit-scrollbar-thumb { background: rgba(167, 100, 80, .32); border-radius: 999px; border: 2px solid var(--white); }
+.chapter-picker ol::-webkit-scrollbar-thumb:hover { background: rgba(167, 100, 80, .55); }
+.chapter-picker li + li { border-top: 1px solid rgba(221, 215, 204, .55); }
+.chapter-picker li a { grid-template-columns: 1.8rem 1fr auto; padding: 11px 12px; border-radius: 10px; position: relative; transition: background-color .18s ease; }
+.chapter-picker li a .chapter-ttl { font-size: 1rem; line-height: 1.35; }
+.chapter-picker li a .chapter-num { font-variant-numeric: tabular-nums; }
+.chapter-picker li a[aria-current="page"] { background: rgba(167, 100, 80, .07); font-weight: 400; }
+.chapter-picker li a[aria-current="page"] .chapter-ttl { color: var(--clay-text); }
+.chapter-picker li a[aria-current="page"]::before { content: ""; position: absolute; left: 0; top: 10px; bottom: 10px; width: 3px; border-radius: 3px; background: var(--clay); }
+.chapter-picker li:has(a[aria-current="page"]) + li, .chapter-picker li:has(a[aria-current="page"]) { border-top-color: transparent; }
+@media (prefers-reduced-motion: reduce) { .chapter-picker li a { transition: none; } }
+/* The open chapter list sits above the floating Info tab on phones (that tab is z-index 35). */
+.chapter-head-nav { z-index: 40; }
+.chapter-picker ol { z-index: 41; }
