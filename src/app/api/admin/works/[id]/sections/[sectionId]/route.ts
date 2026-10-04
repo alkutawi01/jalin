@@ -12,13 +12,14 @@ export async function GET(
   { params }: { params: Promise<{ id: string; sectionId: string }> }
 ) {
   try {
-    const { sectionId } = await params;
+    const { id: workId, sectionId } = await params;
     const sectionKey = parseDbId(sectionId);
     if (Number.isNaN(sectionKey)) {
       return NextResponse.json({ error: "ID bab tidak sah." }, { status: 400 });
     }
     const section = await getSection(sectionKey);
-    if (!section) {
+    // A chapter is only reachable through the work it belongs to.
+    if (!section || section.work_id !== workId) {
       return NextResponse.json({ error: "Bab tidak ditemui." }, { status: 404 });
     }
     return NextResponse.json(section);
@@ -40,7 +41,7 @@ export async function PATCH(
       return NextResponse.json({ error: "Sesi anda telah tamat. Log masuk semula." }, { status: 401 });
     }
 
-    const { sectionId } = await params;
+    const { id: workId, sectionId } = await params;
     const id = parseDbId(sectionId);
     if (Number.isNaN(id)) {
       return NextResponse.json({ error: "ID bab tidak sah." }, { status: 400 });
@@ -50,7 +51,8 @@ export async function PATCH(
     }
 
     const existing = await getSection(id);
-    if (!existing) {
+    // A chapter is only reachable through the work it belongs to (a wrong pair of IDs must not touch another work).
+    if (!existing || existing.work_id !== workId) {
       return NextResponse.json({ error: "Bab tidak ditemui." }, { status: 404 });
     }
 
@@ -85,7 +87,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Sesi anda telah tamat. Log masuk semula." }, { status: 401 });
     }
 
-    const { sectionId } = await params;
+    const { id: workId, sectionId } = await params;
     const id = parseDbId(sectionId);
     if (Number.isNaN(id)) {
       return NextResponse.json({ error: "ID bab tidak sah." }, { status: 400 });
@@ -95,7 +97,8 @@ export async function DELETE(
     }
 
     const existing = await getSection(id);
-    if (!existing) {
+    // A chapter is only reachable through the work it belongs to (a wrong pair of IDs must not touch another work).
+    if (!existing || existing.work_id !== workId) {
       return NextResponse.json({ error: "Bab tidak ditemui." }, { status: 404 });
     }
 

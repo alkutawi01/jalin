@@ -51,7 +51,9 @@ export function pastedHtmlToMarkdown(html: string): PasteResult {
   const paragraphs: Run[][] = [[]];
   const stack: Array<{ tag: string; italic: boolean; bold: boolean; skip: boolean }> = [{ tag: "", italic: false, bold: false, skip: false }];
   const top = () => stack[stack.length - 1]!;
-  const newParagraph = () => { if (paragraphs[paragraphs.length - 1]!.length > 0) paragraphs.push([]); };
+  /** True once the clipboard holds real paragraphs; a selection from inside a sentence has none. */
+  let sawBlock = false;
+  const newParagraph = () => { sawBlock = true; if (paragraphs[paragraphs.length - 1]!.length > 0) paragraphs.push([]); };
 
   for (const token of source.match(/<\/?[a-zA-Z][^>]*>|[^<]+/g) ?? []) {
     if (token[0] === "<") {
@@ -107,8 +109,12 @@ export function pastedHtmlToMarkdown(html: string): PasteResult {
       if (run.italic || run.bold) formatted = true;
       line += `${lead}${marked}${trail}`;
     }
+    // A phrase copied from inside a sentence may begin or end with the space that separates it from its neighbour
+    // ("condong " after "Awal "): that space belongs to the text and is kept, unlike the padding around whole paragraphs.
+    const keepLead = !sawBlock && /^\s/.test(line);
+    const keepTrail = !sawBlock && /\s$/.test(line);
     line = line.replace(/ *\n */g, "\n").replace(/ {2,}/g, " ").trim();
-    if (line) lines.push(line);
+    if (line) lines.push(`${keepLead ? " " : ""}${line}${keepTrail ? " " : ""}`);
   }
   return { markdown: lines.join("\n\n"), formatted };
 }

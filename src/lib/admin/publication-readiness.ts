@@ -144,6 +144,8 @@ export interface ReadinessSeriesInput {
   title: string;
   mode: string;
   status: string;
+  /** The series' own picture; an episode without a hero of its own shows this one. */
+  hero_src?: string | null;
 }
 
 export interface EvaluatePublicationReadinessInput {
@@ -377,7 +379,7 @@ export function evaluatePublicationReadinessFromData(
     contentBlockers.push(issue("title_placeholder", "Ganti tajuk sementara sebelum menerbitkan karya."));
   }
   if (!work.slug || !work.slug.trim()) {
-    contentBlockers.push(issue("slug_missing", "Slug kosong."));
+    contentBlockers.push(issue("slug_missing", "Alamat pautan kosong."));
   } else if (work.slug.startsWith("draf-")) {
     contentBlockers.push(issue("slug_placeholder", "Ganti alamat pautan draf sebelum menerbitkan karya."));
   } else if (!SLUG_RE.test(work.slug)) {
@@ -390,7 +392,7 @@ export function evaluatePublicationReadinessFromData(
   }
   if (input.slugTakenByOther) {
     contentBlockers.push(
-      issue("slug_duplicate", `Slug "${work.slug}" sudah digunakan Work lain.`)
+      issue("slug_duplicate", `Alamat pautan "${work.slug}" sudah digunakan karya lain.`)
     );
   }
   if (!VALID_TYPES.has(String(work.type))) {
@@ -402,11 +404,11 @@ export function evaluatePublicationReadinessFromData(
   const novelaWithSections =
     String(work.type) === "novela" && (input.readingSections?.length ?? 0) > 0;
   if (bodyEmpty && !novelaWithSections) {
-    contentBlockers.push(issue("body_missing", "Manuskrip/body kosong."));
+    contentBlockers.push(issue("body_missing", "Manuskrip masih kosong."));
   }
   if (!work.dek || !work.dek.trim()) {
     contentWarnings.push(
-      issue("dek_missing", "Dek/summary tiada — disyorkan untuk senarai awam.")
+      issue("dek_missing", "Dek (ringkasan) belum diisi — disyorkan untuk senarai awam.")
     );
   }
   if (isSourcedWork(String(work.type), work.metadata)) {
@@ -472,7 +474,7 @@ export function evaluatePublicationReadinessFromData(
     (alreadyPublished ? creditWarnings : creditBlockers).push(
       issue(
         "byline_missing",
-        "Tiada kredit awam bertanda byline — tambah kredit penulis karya ini (bukan pengarang asal) dan tandakan byline."
+        "Tiada kredit awam yang ditanda ‘Nama di bawah tajuk’. Tambah kredit penulis karya ini (bukan pengarang asal) dan tandakan ‘Nama di bawah tajuk’."
       )
     );
   }
@@ -511,18 +513,22 @@ export function evaluatePublicationReadinessFromData(
   // --- Visuals ---
   const policy = VISUAL_POLICY[work.type] ?? { hero: "recommended", inline: "optional" };
   const heroVisuals = visuals.filter((v) => v.role === "hero");
+  // An episode of a series may rely on the series' picture instead of having a hero of its own.
+  const heroFromSeries = work.type === "bersiri" && Boolean(input.series?.hero_src?.trim());
 
-  if (visuals.length === 0) {
+  if (heroFromSeries && heroVisuals.length === 0) {
+    // The series' picture is this episode's hero, so there is nothing to ask for.
+  } else if (visuals.length === 0) {
     if (policy.hero === "required") {
-      const msg = `Jenis "${work.type}" memerlukan visual hero.`;
+      const msg = `Jenis "${work.type}" memerlukan gambar utama (hero).`;
       if (grandfatherVisuals) {
-        visualWarnings.push(issue("hero_missing_grandfathered", `${msg} (grandfather — Work sudah terbit).`));
+        visualWarnings.push(issue("hero_missing_grandfathered", `${msg} (dikecualikan kerana karya sudah terbit).`));
       } else {
         visualBlockers.push(issue("hero_missing", msg));
       }
     } else {
       visualWarnings.push(
-        issue("hero_missing", `Tiada visual hero (disyorkan untuk jenis "${work.type}").`)
+        issue("hero_missing", `Tiada gambar utama (hero) (disyorkan untuk jenis "${work.type}").`)
       );
     }
   } else {
@@ -535,7 +541,7 @@ export function evaluatePublicationReadinessFromData(
           visualBlockers.push(issue("hero_role_missing", msg));
         }
       } else {
-        visualWarnings.push(issue("hero_role_missing", "Tiada visual hero (disyorkan)."));
+        visualWarnings.push(issue("hero_role_missing", "Tiada gambar utama (hero) (disyorkan)."));
       }
     }
   }

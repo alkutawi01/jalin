@@ -1161,6 +1161,24 @@ console.log("\n=== Structure gate (4D-8) ===");
     assert(r.gates.structure.pass, "Valid continuous membership passes structure");
   }
 
+  // An episode does not need a hero of its own when its series has a picture; with neither, it is still blocked
+  {
+    const episode = (heroSrc: string | null) => evaluatePublicationReadinessFromData(
+      validInput({
+        work: baseWork({ id: "JLN-BER-9991", slug: "ep-uji", type: "bersiri" }),
+        glossary: [],
+        visuals: [],
+        seriesEntry: { id: 1, series_id: "SER-1", work_id: "JLN-BER-9991", position: 1 },
+        series: { id: "SER-1", slug: "siri-uji", title: "Siri Uji", mode: "continuous", status: "ongoing", hero_src: heroSrc },
+      })
+    );
+    const withSeriesPicture = episode("/assets/siri.png");
+    assert(!withSeriesPicture.blockers.some((b) => b.code === "hero_missing"), "episode without a hero is fine when the series has a picture");
+    assert(!withSeriesPicture.warnings.some((w) => w.code === "hero_missing"), "and it is not even warned about the hero");
+    assert(episode(null).blockers.some((b) => b.code === "hero_missing"), "episode with no hero and no series picture is still blocked");
+    assert(episode("   ").blockers.some((b) => b.code === "hero_missing"), "an empty series picture does not count");
+  }
+
   // Invalid series mode → series_mode_invalid
   {
     const r = evaluatePublicationReadinessFromData(

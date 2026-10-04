@@ -1,5 +1,5 @@
 /** Which images a chapter page shows, and what structured data says about the audience. */
-import { visualsForPage } from "../src/lib/reader/chapter-visuals";
+import { chapterHeroOf, visualsForPage } from "../src/lib/reader/chapter-visuals";
 import { audienceOf } from "../src/lib/seo-jsonld";
 
 let passed = 0;
@@ -22,6 +22,12 @@ assert(ids(visualsForPage(v, "bab-2", "teks [[gambar:1]]")) === "2,3", "a chapte
 assert(ids(visualsForPage(v, "bab-3", "teks")) === "4", "another chapter shows only its own");
 assert(ids(visualsForPage(v, "bab-2", "ada Petikan lama di sini")) === "2,3,5", "an older image whose marker is in this chapter is still shown");
 assert(ids(visualsForPage(v, "bab-2", "tiada")) === "2,3", "an older image whose marker is not in the chapter is not shown");
+
+// The link preview and the page share one rule for a chapter's heading picture
+assert(chapterHeroOf(v, "bab-2")?.id === 2, "a chapter's own hero is its heading picture");
+assert(chapterHeroOf(v, "bab-3") === undefined, "a chapter without its own hero has none (the work's hero is the fallback)");
+assert(chapterHeroOf(v, undefined) === undefined, "outside a chapter there is no chapter hero");
+assert(chapterHeroOf([{ id: 9, role: "section", sectionSlug: "bab-1", anchor: "[[gambar:1]]" }], "bab-1") === undefined, "a picture tied to a marker is not the heading picture");
 
 assert(JSON.stringify(audienceOf(undefined)) === "{}", "no audience stated: no age is published");
 assert(JSON.stringify(audienceOf("Remaja")) === "{}", "words without an age range: nothing published");

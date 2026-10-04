@@ -39,5 +39,11 @@ assert(plain.formatted === false && plain.markdown === "Hanya teks biasa.\n\nPer
 assert(md("<p>x</p><script>alert(1)</script><style>p{}</style>") === "x", "script and style content is dropped");
 assert(md("<p>a &lt;b&gt; c</p>") === "a <b> c", "angle brackets typed as text come through as text");
 
+// A phrase copied from inside a sentence keeps the space that joins it to its neighbour ("Awal" + " condong" must not become "Awalcondong")
+assert(md("<!--StartFragment--><i> condong</i><!--EndFragment-->") === " *condong*", "a leading space on an inline paste is kept");
+assert(md("<!--StartFragment--><i>condong </i><!--EndFragment-->") === "*condong* ", "a trailing space on an inline paste is kept");
+assert(md("<span>Awal </span><i>condong</i>") === "Awal *condong*", "the space between normal and italic text stays");
+assert(md("<p> Satu </p><p>Dua </p>") === "Satu\n\nDua", "padding around whole pasted paragraphs is still trimmed");
+
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);

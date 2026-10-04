@@ -70,8 +70,12 @@ export async function PATCH(
     const role = body.role ?? existing.role;
     if (role !== "hero" && isImageMarker(body.anchor)) {
       const marker = String(body.anchor).trim();
-      const work = await getDb().selectFrom("works").where("id", "=", existing.work_id).select("body").executeTakeFirst();
-      if (work?.body?.split(marker).length !== 2) {
+      // A picture that belongs to a chapter keeps its marker in that chapter's text, not in the work's main text.
+      const sectionSlug: string | null = (existing as { section_slug?: string | null }).section_slug ?? null;
+      const text = sectionSlug
+        ? (await getDb().selectFrom("reading_sections").where("work_id", "=", existing.work_id).where("slug", "=", sectionSlug).select("body").executeTakeFirst())?.body
+        : (await getDb().selectFrom("works").where("id", "=", existing.work_id).select("body").executeTakeFirst())?.body;
+      if (text?.split(marker).length !== 2) {
         return NextResponse.json({ error: "Penanda gambar mesti muncul tepat sekali dalam manuskrip tersimpan." }, { status: 400 });
       }
       const assigned = await getDb().selectFrom("visuals")

@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { absoluteUrl } from "../../../../../lib/seo";
 import { episodeJsonLd, jsonLdString } from "../../../../../lib/seo-jsonld";
 import { displayableGenre } from "../../../../../lib/reader/genre-display";
+import { episodeHeroOf } from "../../../../../lib/reader/chapter-visuals";
 import {
   EditorialImage,
   LeftRail,
@@ -76,7 +77,8 @@ export async function generateMetadata({ params }: { params: Promise<{ seriesSlu
   const title = `${label}${work.title} · ${work.series.title}`;
   const description = work.dek ?? `${work.title}, ${work.series.title}. Siri Jalin.`;
   const path = `/kategori/bersiri/${work.series.slug}/${work.slug}`;
-  const hero = work.visuals.find((visual) => visual.role === "hero");
+  // An episode without a picture of its own shares the series' picture.
+  const hero = episodeHeroOf(work.visuals.find((visual) => visual.role === "hero"), work.series.hero);
   const image = hero?.src ? [{ url: absoluteUrl(hero.src) }] : undefined;
   return {
     title,
@@ -138,7 +140,7 @@ export default async function EpisodePage({
   };
 
   const rights = `© ADJUNG ${(work.publishedAt ?? "2026").slice(0, 4)}`;
-  const hero = work.visuals.find((visual) => visual.role === "hero");
+  const hero = episodeHeroOf(work.visuals.find((visual) => visual.role === "hero"), series.hero);
   const segmentNodes = placeVisuals(work.body, work.visuals);
   const segmentGlossaries = firstGlossaryBySegment(segmentNodes, glossary);
 
