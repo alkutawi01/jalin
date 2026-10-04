@@ -380,6 +380,15 @@ export class DatabaseContentRepository implements ContentRepository {
       }
     }
 
+    // A series with no episode entries at all never went through the loop above, so it must be dropped here:
+    // a series is public only once it has at least one publicly eligible episode.
+    for (const [seriesId, meta] of Array.from(this.seriesCache.entries())) {
+      if ((this.seriesEpisodes.get(seriesId)?.length ?? 0) === 0) {
+        this.seriesCache.delete(seriesId);
+        this.seriesBySlug.delete(meta.slug);
+      }
+    }
+
     // Remove published episode Works that are not publicly eligible via their Series.
     // (They remain reachable only if not type=bersiri; bersiri episodes require Series context.)
     for (const [slug, work] of Array.from(this.worksCache.entries())) {
