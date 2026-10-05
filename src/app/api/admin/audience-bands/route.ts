@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentAdmin } from "../../../../lib/admin/auth";
-import { DEFAULT_AUDIENCE_BANDS, loadAudienceBands, saveAudienceBands } from "../../../../lib/audience";
+import { DEFAULT_AUDIENCE_BANDS } from "../../../../lib/audience";
+import { loadAudienceBands, saveAudienceBands } from "../../../../lib/audience-store";
 import { hasDb } from "../../../../lib/db";
 
 /** GET: the audience bands (what an editor ticks on a work) and the default ones. */
