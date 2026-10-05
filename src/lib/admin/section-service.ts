@@ -147,6 +147,24 @@ export async function createSection(input: SectionInput): Promise<SectionRecord>
   return section;
 }
 
+/**
+ * The chapter addresses readers can use right now: those in the version of the work that is published. A chapter's address is
+ * /kategori/novela/[work]/[chapter], so one of these cannot change or disappear without the link readers hold turning into a 404 at the next
+ * "Terbitkan semula".
+ */
+export async function publicChapterSlugs(
+  db: { selectFrom: (table: never) => any },
+  workId: string
+): Promise<Set<string>> {
+  const work = await db.selectFrom("works" as never).where("id" as never, "=", workId as never).select(["published_revision_id"] as never).executeTakeFirst();
+  const revisionId = (work as { published_revision_id?: string | null } | undefined)?.published_revision_id;
+  if (!revisionId) return new Set();
+  const revision = await db.selectFrom("work_revisions" as never).where("id" as never, "=", revisionId as never).select(["snapshot"] as never).executeTakeFirst();
+  const raw = (revision as { snapshot?: unknown } | undefined)?.snapshot;
+  const snapshot = (typeof raw === "string" ? JSON.parse(raw) : raw) as { sections?: Array<{ slug?: unknown }> } | null | undefined;
+  return new Set((snapshot?.sections ?? []).map((section) => String(section.slug ?? "")).filter(Boolean));
+}
+
 export async function updateSection(
   id: number,
   input: Partial<SectionInput>
@@ -171,6 +189,9 @@ export async function updateSection(
     throw new Error("Kedudukan bab tidak sah: nombor bulat bermula 1.");
   }
   const renamed = input.slug !== undefined && input.slug !== existing.slug;
+  if (renamed && (await publicChapterSlugs(db as never, existing.work_id)).has(existing.slug)) {
+    throw new Error("Alamat bab yang sudah awam tidak boleh ditukar: pautan bab yang sudah dikongsi akan terputus selepas Terbitkan semula. Tajuk dan isi bab boleh disunting.");
+  }
   const moved = input.position !== undefined && input.position !== existing.position;
 
   // One transaction: a request that fails (a slug another chapter already has) changes nothing, not even the chapter's position.
@@ -232,14 +253,26 @@ export async function updateSection(
   return section;
 }
 
-export async function deleteSection(id: number): Promise<void> {
+export async function deleteSection(id: number, options: { confirmPublic?: boolean } = {}): Promise<void> {
   const db = getAdminDb();
   const existing = await getSection(id);
   if (!existing) {
     throw new Error("Bab tidak ditemui.");
   }
+  if (options.confirmPublic !== true && (await publicChapterSlugs(db as never, existing.work_id)).has(existing.slug)) {
+    throw new Error("Bab ini sedang dibaca pembaca: selepas Terbitkan semula, pautannya menjadi 404. Perlu disahkan.");
+  }
 
   await db.transaction().execute(async (trx) => {
+    // A character remembers the chapter where they first appear by its slug. Deleting that chapter would leave the reference pointing at
+    // nothing (and the character form itself rejects such a reference), so the editor is told which characters to move first.
+    // Checked under the same lock on the work that saving characters takes.
+    const work = await trx.selectFrom("works").where("id", "=", existing.work_id).select("metadata").forUpdate().executeTakeFirst();
+    const characters = ((work?.metadata ?? null) as { characters?: Array<Record<string, unknown>> } | null)?.characters;
+    const using = Array.isArray(characters) ? characters.filter((c) => c.firstAppearanceSection === existing.slug).map((c) => String(c.name ?? "")) : [];
+    if (using.length > 0) {
+      throw new Error(`Bab ini masih dirujuk sebagai kemunculan pertama watak: ${using.join(", ")}. Pindahkan atau kosongkan kemunculan pertama watak itu dahulu (tab Watak), kemudian padam bab.`);
+    }
     await trx.deleteFrom("reading_sections").where("id", "=", id).execute();
     // Images that belonged to this chapter go with it (a failed delete must not abort the chapter delete).
     await sql`SAVEPOINT chapter_images`.execute(trx);

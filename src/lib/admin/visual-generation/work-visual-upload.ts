@@ -166,6 +166,33 @@ export async function uploadVisualForWork(
   return { ok: true, visualRequestId: created.id, visualId: attach.visualId, assetPath: upload.assetPath };
 }
 
+/**
+ * The last step of a replacement: the new visual takes the old one's order and crop, and the old one is deleted, in one transaction that
+ * first locks the old row. Two replacements of the same picture at once (a double click) would otherwise both attach a new visual and both
+ * delete the old, leaving two pictures in one place; the one that finds the old row already gone removes its own new visual and returns false.
+ */
+export async function swapReplacedVisual(
+  db: Kysely<Database>,
+  old: { id: number; work_id: string; sort_order: number },
+  newVisualId: number
+): Promise<boolean> {
+  return db.transaction().execute(async (trx) => {
+    const stillThere = await trx.selectFrom("visuals").where("id", "=", old.id).where("work_id", "=", old.work_id).selectAll().forUpdate().executeTakeFirst();
+    if (!stillThere) {
+      await trx.deleteFrom("visuals").where("id", "=", newVisualId).execute();
+      return false;
+    }
+    const keep = stillThere as { focus_x?: number | null; focus_y?: number | null; zoom?: number | null };
+    const crop = keep.focus_x != null || keep.focus_y != null || keep.zoom != null
+      ? { focus_x: keep.focus_x ?? null, focus_y: keep.focus_y ?? null, zoom: keep.zoom ?? null }
+      : {};
+    // The crop belongs to the place the image has, so a replacement starts with the same crop.
+    await trx.updateTable("visuals").set({ sort_order: old.sort_order, ...crop } as never).where("id", "=", newVisualId).execute();
+    await trx.deleteFrom("visuals").where("id", "=", old.id).where("work_id", "=", old.work_id).execute();
+    return true;
+  });
+}
+
 export type ReplaceVisualResult =
   | { ok: true; visualId: number; assetPath: string }
   | { ok: false; status: number; error: string };
@@ -198,14 +225,11 @@ export async function replaceVisualImage(
   });
   if (!result.ok) return { ok: false, status: result.status, error: result.error };
 
-  await db.transaction().execute(async (trx) => {
-    const keep = old as { focus_x?: number | null; focus_y?: number | null; zoom?: number | null };
-    const crop = keep.focus_x != null || keep.focus_y != null || keep.zoom != null
-      ? { focus_x: keep.focus_x ?? null, focus_y: keep.focus_y ?? null, zoom: keep.zoom ?? null }
-      : {};
-    // The crop belongs to the place the image has, so a replacement starts with the same crop.
-    await trx.updateTable("visuals").set({ sort_order: old.sort_order, ...crop } as never).where("id", "=", result.visualId).execute();
-    await trx.deleteFrom("visuals").where("id", "=", input.visualId).where("work_id", "=", old.work_id).execute();
-  });
+  const swapped = await swapReplacedVisual(db, old, result.visualId);
+  if (!swapped) {
+    // The request that produced the removed picture must not stay marked as attached. The stored file is kept as its provenance.
+    await db.updateTable("visual_requests").set({ status: "failed", updated_at: new Date().toISOString() } as never).where("id", "=", result.visualRequestId).execute();
+    return { ok: false, status: 409, error: "Gambar ini sudah diganti oleh permintaan lain. Muat semula halaman untuk melihat gambar semasa." };
+  }
   return { ok: true, visualId: result.visualId, assetPath: result.assetPath };
 }

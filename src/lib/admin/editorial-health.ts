@@ -43,6 +43,38 @@ interface EditorialReport {
   issues: string[];
 }
 
+/**
+ * Who the readers see as the author of a published work. Readers are served the frozen version, so when the work has one the credits and the
+ * original author are read from IT, not from the working rows (which an editor may already have changed without republishing). A work with
+ * no frozen version is served from the working rows, so those are used.
+ */
+export function publicAuthorEvidence(
+  work: { id: string; published_revision_id?: string | null },
+  revisions: Array<{ id: string; snapshot: unknown }>,
+  liveCredits: Array<{ work_id: string; contributor_slug: string | null; is_public: boolean }>,
+  liveSources: Array<{ work_id: string; author?: string | null }>
+): { hasPublicWriter: boolean; originalAuthor: string } {
+  const frozen = work.published_revision_id ? revisions.find((r) => r.id === work.published_revision_id) : undefined;
+  if (frozen) {
+    try {
+      const snapshot = (typeof frozen.snapshot === "string" ? JSON.parse(frozen.snapshot) : frozen.snapshot) as {
+        credits?: Array<{ contributor_slug?: string | null; is_public?: boolean }>;
+        sourceWork?: { author?: string | null } | null;
+      } | null;
+      return {
+        hasPublicWriter: (snapshot?.credits ?? []).some((c) => Boolean(c.contributor_slug) && Boolean(c.is_public)),
+        originalAuthor: String(snapshot?.sourceWork?.author ?? "").trim(),
+      };
+    } catch {
+      /* an unreadable snapshot falls back to the working rows below */
+    }
+  }
+  return {
+    hasPublicWriter: liveCredits.some((c) => c.work_id === work.id && Boolean(c.contributor_slug) && c.is_public),
+    originalAuthor: String(liveSources.find((x) => x.work_id === work.id)?.author ?? "").trim(),
+  };
+}
+
 export async function getEditorialHealth(): Promise<EditorialHealth> {
   const db = getDb();
   
@@ -63,17 +95,19 @@ export async function getEditorialHealth(): Promise<EditorialHealth> {
   
   // Check authors
   for (const work of works) {
-    const workCredits = credits.filter(c => c.work_id === work.id);
+    const evidence = publicAuthorEvidence(work, revisions, credits, sources);
     // Sinopsis and fragmen are taken from a real work published elsewhere: the author shown is the original author (the source
     // record), and Jalin's contributors are only in the editorial block. Every other type needs a public writer credit.
     const derivative = isDerivativeType(work.type);
-    const hasAuthor = derivative
-      ? Boolean(sources.find((s) => s.work_id === work.id)?.author?.trim())
-      : workCredits.some(c => c.contributor_slug && c.is_public);
+    const hasAuthor = derivative ? Boolean(evidence.originalAuthor) : evidence.hasPublicWriter;
     if (!hasAuthor) {
-      const message = derivative ? `${work.title || work.id} tiada pengarang asal` : `${work.title || work.id} tiada penulis awam`;
+      // The working rows may already have the author (added after publishing): then the missing step is "Terbitkan semula".
+      const live = publicAuthorEvidence({ id: work.id, published_revision_id: null }, [], credits, sources);
+      const waitingForRepublish = derivative ? Boolean(live.originalAuthor) : live.hasPublicWriter;
+      const base = derivative ? `${work.title || work.id} tiada pengarang asal` : `${work.title || work.id} tiada penulis awam`;
+      const message = waitingForRepublish ? `${base} dalam versi terbit (ada dalam salinan kerja, belum diterbitkan semula)` : base;
       health.authors.issues.push(message);
-      health.authors.items.push({ workId: work.id, title: work.title || work.id, message, tab: derivative ? "source" : "credits", ...(derivative ? { fix: "Isi pengarang asal" } : {}) });
+      health.authors.items.push({ workId: work.id, title: work.title || work.id, message, tab: derivative ? "source" : "credits", ...(waitingForRepublish ? { fix: "Terbitkan semula" } : derivative ? { fix: "Isi pengarang asal" } : {}) });
       health.authors.status = "fail";
     }
   }
@@ -89,6 +123,12 @@ export async function getEditorialHealth(): Promise<EditorialHealth> {
         health.revisions.items.push({ workId: work.id, title: work.title || work.id, message, tab: "content" });
         health.revisions.status = "fail";
       }
+    } else {
+      // Published with no frozen version: readers are served the live working copy, so every edit shows at once, without "Terbitkan semula".
+      const message = `${work.title || work.id} belum dibekukan: pembaca melihat salinan kerja semasa`;
+      health.revisions.issues.push(message);
+      health.revisions.items.push({ workId: work.id, title: work.title || work.id, message, tab: "content", fix: "Terbitkan semula" });
+      health.revisions.status = "fail";
     }
   }
   

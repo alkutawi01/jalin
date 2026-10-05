@@ -405,12 +405,14 @@ export async function updateWorkCharacters(
   }
 
   const validated = validateCharacterEntries(characters);
-  const chapterSlugs = (await db.selectFrom("reading_sections").where("work_id", "=", id).select("slug").execute()).map((row) => String(row.slug));
-  const problems = characterProblems(validated, chapterSlugs);
-  if (problems.length > 0) throw new Error(problems.join(" "));
-  // Merge into the freshest metadata under a row lock (a note/origin save at the same moment must survive).
+  // Merge into the freshest metadata under a row lock (a note/origin save at the same moment must survive). The chapters are read and judged
+  // AFTER taking the lock, in the same transaction: renaming or deleting a chapter takes the same lock, so a chapter cannot vanish between the
+  // check and the write (which used to leave a character pointing at a chapter that no longer exists).
   await db.transaction().execute(async (trx) => {
     const current = await trx.selectFrom("works").where("id", "=", id).select("metadata").forUpdate().executeTakeFirst();
+    const chapterSlugs = (await trx.selectFrom("reading_sections").where("work_id", "=", id).select("slug").execute()).map((row) => String(row.slug));
+    const problems = characterProblems(validated, chapterSlugs);
+    if (problems.length > 0) throw new Error(problems.join(" "));
     const metadata = { ...((current?.metadata ?? {}) as Record<string, unknown>), characters: validated };
     await trx.updateTable("works").where("id", "=", id).set({ metadata, updated_at: new Date().toISOString() }).execute();
   });

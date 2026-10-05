@@ -78,10 +78,6 @@ export async function PATCH(
       if (text?.split(marker).length !== 2) {
         return NextResponse.json({ error: "Penanda gambar mesti muncul tepat sekali dalam manuskrip tersimpan." }, { status: 400 });
       }
-      const assigned = await getDb().selectFrom("visuals")
-        .where("work_id", "=", existing.work_id).where("anchor", "=", marker).where("id", "!=", visualId)
-        .select("id").executeTakeFirst();
-      if (assigned) return NextResponse.json({ error: "Penanda ini sudah digunakan oleh gambar lain." }, { status: 409 });
     }
 
     const visual = await updateVisual(visualId, {
@@ -105,6 +101,8 @@ export async function PATCH(
     if (/column .*(focus_x|focus_y|zoom|section_slug).* does not exist/i.test(message)) {
       return NextResponse.json({ error: "Pilihan bahagian gambar (crop) memerlukan migration 022 pada pangkalan data. Hubungi pentadbir untuk menjalankannya." }, { status: 409 });
     }
+    // The service refuses a second hero or a marker already used (checked under a lock on the work).
+    if (message.includes("sudah mempunyai hero") || message.includes("sudah digunakan")) return NextResponse.json({ error: message }, { status: 409 });
     return NextResponse.json(
       { error: message },
       { status: 500 }

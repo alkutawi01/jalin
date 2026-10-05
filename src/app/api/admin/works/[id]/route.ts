@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getWork, updateWork, archiveWork, deleteUnpublishedWork } from "../../../../../lib/admin/work-service";
+import { samePublishedDay } from "../../../../../lib/admin/published-day";
 import { conflictMessage, reconcileEdit, storedFormValues } from "../../../../../lib/admin/stale-write";
 import { episodesHiddenByArchiving } from "../../../../../lib/admin/series-hidden-by-archive";
 import { getCurrentAdmin } from "../../../../../lib/admin/auth";
@@ -151,8 +152,9 @@ export async function PATCH(
       dek: body.dek,
       readingMinutes: body.readingMinutes,
       // publishedAt is only meaningful alongside published status; ignore raw sets.
-      publishedAt:
-        body.status === "published" ? body.publishedAt : undefined,
+      // The form sends back the date it was shown (the day part of the stored time). Writing that back would reset the time to midnight
+      // UTC, and for a time late in the UTC day move the date by one in Malaysia, on every ordinary save: only a different day is a change.
+      publishedAt: body.status === "published" && !samePublishedDay(body.publishedAt, existing.published_at) ? body.publishedAt : undefined,
       editorNote,
       readerNote,
       origin: body.origin === undefined ? undefined : body.origin === "sumber" ? "sumber" : "asli",

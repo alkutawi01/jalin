@@ -50,6 +50,15 @@ export async function PATCH(
 
     const body = await request.json();
 
+    // A term and its meaning are never blank: a blank one would show as an empty glossary entry to readers.
+    for (const [field, label] of [["term", "Istilah"], ["meaning", "Maksud"]] as const) {
+      if (body[field] !== undefined && (typeof body[field] !== "string" || !body[field].trim())) {
+        return NextResponse.json({ error: `${label} tidak boleh kosong.` }, { status: 400 });
+      }
+    }
+    if (typeof body.term === "string") body.term = body.term.trim();
+    if (typeof body.meaning === "string") body.meaning = body.meaning.trim();
+
     if (typeof body.term === "string" && body.term.trim()) {
       const duplicate = findDuplicateTerm(await listGlossaryForWork(existing.work_id), body.term, termId);
       if (duplicate) {
