@@ -1,5 +1,6 @@
 import PromptEditor from "../../../components/admin/PromptEditor";
 import AiPersonaSettings from "../../../components/admin/AiPersonaSettings";
+import SiteCopySettings from "../../../components/admin/SiteCopySettings";
 import { loadPrompts } from "../../../lib/admin/authoring/prompt-store";
 import { RECIPE_KEYS, getRecipe, KIND_LABELS } from "../../../lib/admin/authoring/recipes";
 import { hasDb } from "../../../lib/db";
@@ -18,8 +19,8 @@ export default async function SettingsPage() {
       <header className="admin-page-header">
         <h1>Tetapan</h1>
         <p className="admin-page-sub">
-          Arahan AI yang disalin oleh butang &quot;Salin Arahan AI&quot;. Format jawapan dikawal oleh sistem dan tidak boleh
-          disunting di sini.
+          Arahan AI yang disalin oleh butang &quot;Salin Arahan AI&quot;, nama samaran AI dan ayat pengenalan halaman senarai awam.
+          Format jawapan dikawal oleh sistem dan tidak boleh disunting di sini.
         </p>
       </header>
 
@@ -50,6 +51,11 @@ export default async function SettingsPage() {
       <section className="admin-section">
         <h2 className="admin-form-section-title">Nama samaran AI</h2>
         <AiPersonaSettings />
+      </section>
+
+      <section className="admin-section">
+        <h2 className="admin-form-section-title">Teks halaman senarai awam</h2>
+        <SiteCopySettings />
       </section>
 
       <section className="admin-section">
