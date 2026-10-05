@@ -122,6 +122,11 @@ export default function EpisodeView({
         />
 
 
+        {/* On a narrow screen the side columns are gone; this is where a reader opens "Tentang karya" (and the characters, places and editorial). */}
+        <div className="site-shell mobile-info-row">
+          <MobileStoryInfo data={mobileInfo} />
+        </div>
+
         <div className="site-shell reading-grid">
           <LeftRail
             rows={workMeta}

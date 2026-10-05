@@ -76,14 +76,8 @@ export default async function SeriesLandingPage({
     const episodes = repo.getPublishedSeriesEpisodes(series.id);
     if (episodes.length === 0) notFound();
 
-    // First = lowest position. Latest: the last position of a continuous story, the most recent
-    // publication of an anthology (where position says nothing about when it came out).
+    // Episodes in reading order. A reader starts by choosing an episode from the list, so there is no separate read button.
     const byPosition = [...episodes].sort((x, y) => x.position - y.position);
-    const first = byPosition[0]!;
-    const latest =
-      series.mode === "anthology"
-        ? [...episodes].sort((x, y) => (y.publishedAt ?? "").localeCompare(x.publishedAt ?? ""))[0]!
-        : byPosition[byPosition.length - 1]!;
     const updated = episodes.map((e) => e.publishedAt ?? "").sort().pop() ?? "";
     const base = `/kategori/bersiri/${series.slug}`;
     // Who wrote it first; the rest is one quiet line. (Episode count and last update are in the episode list below.)
@@ -113,16 +107,6 @@ export default async function SeriesLandingPage({
               {series.dek ? <p className="series-premise">{smartQuotes(series.dek)}</p> : null}
               <BylineRow byline={authors} />
               <p className="series-meta">{meta.join(" · ")}</p>
-              <div className="series-actions">
-                <a className="series-action series-action--primary" href={`${base}/${first.slug}`}>
-                  Mula Episod {first.position}
-                </a>
-                {latest.slug !== first.slug ? (
-                  <a className="series-action" href={`${base}/${latest.slug}`}>
-                    Episod terkini <span className="series-action-sub">Episod {latest.position}</span>
-                  </a>
-                ) : null}
-              </div>
               </div>
               {series.hero ? (
                 <figure className="series-hero">

@@ -359,6 +359,11 @@ export default async function WorkView({
           </div>
         ) : null}
 
+        {/* On a narrow screen the side columns are gone; this is where a reader opens "Tentang karya" (and the characters, places and editorial). */}
+        <div className="site-shell mobile-info-row">
+          <MobileStoryInfo data={mobileInfo} />
+        </div>
+
         <div className="site-shell reading-grid">
           <LeftRail
             rows={workMeta}
@@ -391,8 +396,6 @@ export default async function WorkView({
         {sections.length === 0 || (!landing && !nextSection) ? <StoryEnd title={work.title} /> : null}
 
         <RelatedWorks works={relatedWorks} typeLabel={typeLabel} />
-
-        <MobileStoryInfo data={mobileInfo} />
 
         {preview ? null : <script
           type="application/ld+json"
