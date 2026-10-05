@@ -1,20 +1,14 @@
 import type { Metadata } from "next";
-import { smartQuotes } from "../lib/admin/smart-quotes";
 import Image from "next/image";
 import { SiteFooter, SiteHeader } from "../components/reader/StoryChrome";
+import HeroCarousel, { type HeroSlide } from "../components/reader/HeroCarousel";
 import { WorkCover } from "../components/reader/WorkCover";
 import { initContentRepository } from "../lib/content";
 import { displayableGenre } from "../lib/reader/genre-display";
 import { getAllWorks } from "../lib/content/workLoader";
 import { getEditorPickSummaries } from "../lib/reader/editor-picks";
-import {
-  projectPublicFeaturedSummary,
-  projectPublicWorkSummary,
-  type PublicFeaturedSummary,
-  type PublicWorkSummary
-} from "../lib/reader/public-projection";
+import { projectPublicWorkSummary, type PublicWorkSummary } from "../lib/reader/public-projection";
 import { renderAttribution } from "@/components/reader/Attribution";
-import { cropStyle } from "../lib/reader/crop";
 
 export const dynamic = "force-dynamic";
 
@@ -87,37 +81,6 @@ function WorkMeta({
   );
 }
 
-function FeaturedHero({ work }: { work: PublicFeaturedSummary }) {
-  const hero = work.hero;
-
-  return (
-    <section className="hero-featured">
-      <div className="site-shell">
-        <div className={`hero-featured-inner${hero?.src ? "" : " hero-featured-text-only"}`}>
-          <div className="hero-featured-text">
-            <p className="home-eyebrow hero-featured-kicker">{workEyebrow(work)}</p>
-            <h1 className="hero-featured-title" style={{ fontStyle: "normal" }}>{work.title}</h1>
-            {work.attribution ? <p className="work-attribution hero-featured-attribution">{renderAttribution(work.attribution.primary)}</p> : null}
-            {work.dek ? <p className="hero-featured-dek">{smartQuotes(work.dek)}</p> : null}
-            <WorkMeta work={work} variant="pills" />
-            <a className="home-action-primary hero-featured-cta" href={`/kategori/${work.type}/${work.slug}`}>
-              Baca sekarang
-            </a>
-          </div>
-          {hero?.src ? (
-            <div className="hero-featured-visual">
-              <Image src={hero.src} alt={hero.alt} fill // The picture fills a taller, narrower box than its own shape (object-fit: cover), so it is drawn wider than the box:
-                // about 1.5 times the box on desktop and over twice on a phone. sizes states the drawn width, not the box width.
-                sizes="(max-width: 680px) 750px, (max-width: 1050px) 100vw, 1000px" quality={85} priority style={cropStyle(hero.crop)} />
-              <div className="image-rights" aria-hidden="true">{`© ADJUNG ${(work.updatedAt ?? work.publishedAt ?? "2026").slice(0, 4)}`}</div>
-            </div>
-          ) : null}
-        </div>
-      </div>
-    </section>
-  );
-}
-
 function yearOf(work: { updatedAt?: string; publishedAt?: string }): string {
   return (work.updatedAt ?? work.publishedAt ?? "2026").slice(0, 4);
 }
@@ -180,36 +143,6 @@ function CategoryCard({
         <span className="category-explorer-card-arrow" aria-hidden="true">→</span>
       </div>
     </a>
-  );
-}
-
-function EditorialSelection({ works }: { works: PublicWorkSummary[] }) {
-  if (works.length === 0) return null;
-
-  return (
-    <section className="editorial-selection">
-      <div className="site-shell">
-        <header className="section-head">
-          <h2>Pilihan Editor</h2>
-          <p className="section-sub">Karya-karya yang diketengahkan oleh pasukan editorial</p>
-        </header>
-        <div className="editorial-grid">
-          {works.map((work) => (
-            <a key={work.slug} href={`/kategori/${work.type}/${work.slug}`} className="editorial-pick">
-              <WorkCover type={work.type} title={work.title} hero={work.hero} rightsYear={yearOf(work)} sizes="(max-width: 680px) 100vw, 360px" quality={85} />
-              <div className="editorial-pick-body">
-                <span className="home-eyebrow editorial-pick-type">{workEyebrow(work)}</span>
-                <h3 style={{ fontStyle: "normal" }}>{work.title}</h3>
-                {work.attribution ? <p className="work-attribution">{renderAttribution(work.attribution.primary)}</p> : null}
-                {work.dek ? <p>{work.dek}</p> : null}
-                <WorkMeta work={work} />
-                <span className="home-action-text editorial-pick-cta">Baca sekarang</span>
-              </div>
-            </a>
-          ))}
-        </div>
-      </div>
-    </section>
   );
 }
 
@@ -321,9 +254,21 @@ export default async function Home() {
   const editorialPicks = await getEditorPickSummaries(standalone);
   const seriesHighlight = await getSeriesHighlight();
 
-  const featured = sorted[0] ?? null;
-  // A work appears once: not again as an editor's pick or as the featured work.
-  const alreadyShown = new Set<string>([featured?.slug ?? "", ...editorialPicks.map((pick) => pick.slug)]);
+  // The hero is an editorial decision, never an automatic "newest work" slot.
+  // Selected works rotate in the same hero presentation; everything else remains eligible for Karya Terbaru.
+  const heroSlides: HeroSlide[] = editorialPicks.map((work) => ({
+    slug: work.slug,
+    type: work.type,
+    title: work.title,
+    kicker: `Pilihan Editor · ${workEyebrow(work)}`,
+    attribution: work.attribution?.primary,
+    dek: work.dek,
+    reading: readingLabel(work.readingMinutes) ?? undefined,
+    date: formatDate(work.publishedAt),
+    hero: work.hero,
+    rights: `© ADJUNG ${yearOf(work)}`,
+  }));
+  const alreadyShown = new Set<string>(editorialPicks.map((pick) => pick.slug));
   const latest = sorted.filter((work) => !alreadyShown.has(work.slug)).slice(0, 6);
 
   const categoryImages = new Map<string, { src: string; alt: string; year: string }>();
@@ -346,9 +291,7 @@ export default async function Home() {
       <SiteHeader active="home" />
 
       <main id="kandungan" className="homepage" tabIndex={-1}>
-        {featured ? (
-          <FeaturedHero work={projectPublicFeaturedSummary(featured)} />
-        ) : null}
+        {heroSlides.length > 0 ? <HeroCarousel slides={heroSlides} /> : null}
 
         {allWorks.length === 0 ? (
           <section className="site-shell">
@@ -373,8 +316,6 @@ export default async function Home() {
             </div>
           </div>
         </section> : null}
-
-        <EditorialSelection works={editorialPicks} />
 
         <section className="category-explorer">
           <div className="site-shell">
