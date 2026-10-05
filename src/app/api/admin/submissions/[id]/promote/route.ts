@@ -26,6 +26,11 @@ export async function POST(
     const body = await request.json();
     const { slug, status, credits, promotedBy } = body;
 
+    // A promoted work starts as a draft, in review or ready; it is published only by the publish button, after the readiness and rights checks.
+    if (status !== undefined && status !== null && !["draft", "review", "ready"].includes(String(status))) {
+      return NextResponse.json({ error: "Status tidak sah: karya yang dinaikkan hanya boleh bermula sebagai draf, semakan atau sedia. Penerbitan dibuat melalui butang Terbitkan." }, { status: 400 });
+    }
+
     if (!credits || !Array.isArray(credits)) {
       return NextResponse.json(
         { error: "credits diperlukan (array)." },
@@ -74,6 +79,6 @@ export async function POST(
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Ralat tidak diketahui.";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: message }, { status: message.startsWith("Status tidak sah") ? 400 : 500 });
   }
 }

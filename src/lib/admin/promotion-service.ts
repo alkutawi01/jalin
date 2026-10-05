@@ -168,6 +168,9 @@ export async function promoteSubmissionToWork(
       },
     ];
 
+    if (options.status === "published" || options.status === "archived") {
+      throw new Error("Status tidak sah: karya yang dinaikkan tidak boleh terus diterbitkan atau diarkibkan.");
+    }
     const workStatus: WorkStatus = options.status || "ready";
 
     await trx
