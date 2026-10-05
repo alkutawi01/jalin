@@ -98,11 +98,38 @@ export interface WorkFillResult {
   sections: string[];
 }
 
-const SECTION = /^\s*\[(MAKLUMAT|WATAK|GLOSARI|SUMBER)\]\s*$/i;
+/**
+ * A section heading as chatbots really write it: [MAKLUMAT], **[MAKLUMAT]**, ### [MAKLUMAT], [MAKLUMAT]:, MAKLUMAT,
+ * **MAKLUMAT**, ## Maklumat. Only a line that is nothing but the heading counts, so ordinary text is never mistaken for one.
+ */
+const SECTION = /^\s*(?:[#>*_\-•]+\s*)*(?:\d+[.)]\s*)?\[?\s*(MAKLUMAT|WATAK|GLOSARI|SUMBER)\s*\]?\s*[:：]?\s*[*_]*\s*[:：]?\s*$/i;
+
+const NAME_LINE = /^[\s*_\-•>]*(?:\d+[.)]\s*)?[*_]*(?:nama|watak)[*_]*\s*[:：]/i;
+
+/** Splits the character section into one list of lines per character: by separators, blank lines, or a new "Nama:". */
+function characterBlocks(text: string): string[][] {
+  const blocks: string[][] = [];
+  for (const chunk of text.split(/\n\s*(?:_{3,}|-{3,}|={3,})\s*\n|\n\s*\n/)) {
+    let current: string[] = [];
+    let hasName = false;
+    for (const line of chunk.split("\n")) {
+      if (NAME_LINE.test(line)) {
+        if (hasName) {
+          blocks.push(current);
+          current = [];
+        }
+        hasName = true;
+      }
+      current.push(line);
+    }
+    blocks.push(current);
+  }
+  return blocks;
+}
 
 function field(block: string[], names: RegExp): string {
   for (const line of block) {
-    const m = new RegExp(`^[\\s*_\\-•>]*(?:${names.source})\\s*[:：]\\s*(.*)$`, "i").exec(line);
+    const m = new RegExp(`^[\\s*_\\-•>]*(?:\\d+[.)]\\s*)?[*_]*(?:${names.source})[*_]*\\s*[:：]\\s*[*_]*\\s*(.*)$`, "i").exec(line);
     if (m) return (m[1] ?? "").replace(/\*\*|__/g, "").trim().replace(/^["“”']+|["“”']+$/g, "");
   }
   return "";
@@ -139,8 +166,7 @@ export function parseWorkFill(answer: string): WorkFillResult {
   const characters: WorkFillResult["characters"] = [];
   const watak = (sections.WATAK ?? []).join("\n");
   if (!/^\s*tiada watak\.?\s*$/im.test(watak)) {
-    for (const block of watak.split(/\n\s*(?:_{3,}|-{3,}|={3,})\s*\n|\n\s*\n/)) {
-      const rows = block.split("\n");
+    for (const rows of characterBlocks(watak)) {
       const name = clean(field(rows, /nama|watak/));
       const role = clean(field(rows, /peranan|peranan watak/));
       if (name && role) characters.push({ name, role, first: clean(field(rows, /muncul|kemunculan pertama|bab/)) });
