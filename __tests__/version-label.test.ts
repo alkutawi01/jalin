@@ -41,7 +41,7 @@ import path from "node:path";
 const revisionService = fs.readFileSync(path.join(__dirname, "../src/lib/admin/revision-service.ts"), "utf8");
 eq(/raw: \{ \.\.\.frozenRaw, work: \{ \.\.\.frozenRaw\.work, version_label: options\.versionLabel \}/.test(revisionService), true, "a publication writes its label into the frozen row readers are served from");
 const publication = fs.readFileSync(path.join(__dirname, "../src/lib/admin/publication-service.ts"), "utf8");
-eq(publication.includes("versionLabel: FIRST_VERSION_LABEL") && publication.includes("nextVersionLabel(existing.version_label, existing.published_at"), true, "first publication and republication both set the label by the rule");
+eq(publication.includes(": FIRST_VERSION_LABEL") && publication.includes("nextVersionLabel(existing.version_label, existing.published_at"), true, "first publication and republication both set the label by the rule");
 
 // a draft never shows v0: new drafts start at v1.0 and an old stored v0.x reads as v1.0
 eq(displayVersion("v0.1"), "v1.0", "an old draft label v0.1 is shown as v1.0");
