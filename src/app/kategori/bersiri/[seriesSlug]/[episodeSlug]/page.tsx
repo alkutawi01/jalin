@@ -16,6 +16,8 @@ import {
   StoryHead
 } from "../../../../../components/reader/StoryChrome";
 import StoryMarkdown from "../../../../../components/reader/StoryMarkdown";
+import FootnoteList from "../../../../../components/reader/FootnoteList";
+import { extractFootnotes, markFootnoteReferences } from "../../../../../lib/reader/footnotes";
 import MobileStoryInfo from "../../../../../components/reader/MobileStoryInfo";
 import { initContentRepository } from "../../../../../lib/content";
 import { getWorkBySlug, getWorksByType } from "../../../../../lib/content/workLoader";
@@ -142,7 +144,8 @@ export default async function EpisodePage({
 
   const rights = `© ADJUNG ${(work.publishedAt ?? "2026").slice(0, 4)}`;
   const hero = episodeHeroOf(work.visuals.find((visual) => visual.role === "hero"), series.hero);
-  const segmentNodes = placeVisuals(work.body, work.visuals);
+  const footnotes = extractFootnotes(work.body);
+  const segmentNodes = placeVisuals(markFootnoteReferences(footnotes.body, footnotes.numbers), work.visuals);
   const segmentGlossaries = firstGlossaryBySegment(segmentNodes, glossary);
 
   return (
@@ -176,7 +179,7 @@ export default async function EpisodePage({
             {segmentNodes.map((node, index) => {
               if (typeof node === "string") {
                 return (
-                  <StoryMarkdown key={index} glossary={segmentGlossaries[index]}>
+                  <StoryMarkdown key={index} glossary={segmentGlossaries[index]} footnoteNumbers={footnotes.numbers}>
                     {node}
                   </StoryMarkdown>
                 );
@@ -193,6 +196,7 @@ export default async function EpisodePage({
               }
               return null;
             })}
+            <FootnoteList notes={footnotes.notes} />
           </article>
 
           <RightRail characters={characters} editorial={editorial} />

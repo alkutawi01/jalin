@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import StoryMarkdown from "../../../../../components/reader/StoryMarkdown";
+import FootnoteList from "../../../../../components/reader/FootnoteList";
+import { extractFootnotes, markFootnoteReferences } from "../../../../../lib/reader/footnotes";
 import { placeVisuals } from "../../../../../lib/reader/place-visuals";
 import { firstGlossaryBySegment } from "../../../../../lib/reader/glossary-first";
 
@@ -171,11 +173,12 @@ export default function PreviewWorkPage() {
 
   const glossaryMap = Object.fromEntries(glossary.map((g) => [g.term, { meaning: g.meaning }]));
   const renderBody = (body: string) => {
-    const segments = placeVisuals(body, visuals);
+    const footnotes = extractFootnotes(body);
+    const segments = placeVisuals(markFootnoteReferences(footnotes.body, footnotes.numbers), visuals);
     const segmentGlossaries = firstGlossaryBySegment(segments, glossaryMap);
-    return segments.map((node, index) =>
+    const nodes = segments.map((node, index) =>
     typeof node === "string" ? (
-      <StoryMarkdown key={index} glossary={segmentGlossaries[index]}>{node}</StoryMarkdown>
+      <StoryMarkdown key={index} glossary={segmentGlossaries[index]} footnoteNumbers={footnotes.numbers}>{node}</StoryMarkdown>
     ) : (
       <figure key={`visual-${index}`} style={{ margin: "1.5rem 0" }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -183,6 +186,7 @@ export default function PreviewWorkPage() {
       </figure>
     )
     );
+    return <>{nodes}<FootnoteList notes={footnotes.notes} /></>;
   };
 
   return (

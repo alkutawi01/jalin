@@ -17,6 +17,8 @@ import WorkStatusPanel from "../../../../components/admin/WorkStatusPanel";
 import { toast, confirmAction } from "../../../../lib/admin/dialogs";
 import LoadingBlock from "../../../../components/admin/LoadingBlock";
 import StoryMarkdown from "../../../../components/reader/StoryMarkdown";
+import FootnoteList from "../../../../components/reader/FootnoteList";
+import { extractFootnotes, markFootnoteReferences } from "../../../../lib/reader/footnotes";
 import { stripImageMarkers } from "../../../../lib/reader/image-markers";
 import { classifyFragmen, isIndonesianLanguage, isMalayLanguage } from "../../../../lib/content/fragmen-kind";
 import { buildGlossaryPrompt, parseGlossaryPaste } from "../../../../lib/admin/authoring/glossary-paste";
@@ -2036,7 +2038,10 @@ export default function EditWorkPage() {
               <p>Isi tajuk utama dalam medan Tajuk—<code># Tajuk</code> di dalam manuskrip tidak dipaparkan kepada pembaca. Semak hasil melalui Pratonton bacaan sebelum menyimpan.</p>
             </details>
             <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={() => setShowManuscriptPreview((value) => !value)}>{showManuscriptPreview ? "Tutup pratonton bacaan" : "Pratonton bacaan"}</button>
-            {showManuscriptPreview && <div className="admin-markdown-preview"><StoryMarkdown glossary={{}}>{stripImageMarkers(form.body)}</StoryMarkdown></div>}
+            {showManuscriptPreview && (() => {
+              const footnotes = extractFootnotes(stripImageMarkers(form.body));
+              return <div className="admin-markdown-preview"><StoryMarkdown glossary={{}} footnoteNumbers={footnotes.numbers}>{markFootnoteReferences(footnotes.body, footnotes.numbers)}</StoryMarkdown><FootnoteList notes={footnotes.notes} /></div>;
+            })()}
             {manuscriptMode === "markdown" && <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={chooseImagePosition}>
               Sisip penanda gambar selepas perenggan ini
             </button>}
