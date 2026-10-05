@@ -45,9 +45,9 @@ console.log("reader credit projection tests\n");
   const kerusi = getWorkBySlug("kerusi-di-beranda");
   const editorial = projectEditorialCredits(kerusi?.credits ?? []);
   assert(json(editorial) === json([
-    { role: "Penulis", name: "Nara Zahin · Maya" },
-    { role: "Penulis & penyemak", name: "Rafiq Naim · Maya" },
-    { role: "Editor", name: "Izzat Anas" }
+    { role: "Penulis", names: ["Nara Zahin · Maya"] },
+    { role: "Penulis & penyemak", names: ["Rafiq Naim · Maya"] },
+    { role: "Editor", names: ["Izzat Anas"] }
   ]), "Existing cerpen editorial credit display is unchanged");
 
   const byline = projectBylineCredits(kerusi?.credits ?? []);
@@ -63,7 +63,7 @@ console.log("reader credit projection tests\n");
   // The original author is distinct from the people who wrote the Jalin sinopsis.
   const original = editorial.filter((credit) => credit.role === "Pengarang asal");
   assert(original.length === 1, "Sinopsis has exactly one 'Pengarang asal' credit");
-  assert(original[0]?.name === "Naguib Mahfouz", "Sinopsis source author name preserved");
+  assert(original[0]?.names[0] === "Naguib Mahfouz", "Sinopsis source author name preserved");
   assert(
     editorial.some((credit) => credit.role === "Penulis") && editorial.some((credit) => credit.role === "Editor"),
     "Sinopsis also credits the Jalin writers/editor under their own labels"
@@ -79,7 +79,7 @@ console.log("reader credit projection tests\n");
   const editorial = projectEditorialCredits(gatsby?.credits ?? []);
   const original = editorial.filter((credit) => credit.role === "Pengarang asal");
   assert(original.length === 1, "Second real derivative source author labelled Pengarang asal");
-  assert(original[0]?.name === "F. Scott Fitzgerald", "Second real derivative source author name preserved");
+  assert(original[0]?.names[0] === "F. Scott Fitzgerald", "Second real derivative source author name preserved");
   assert(!json(projectBylineCredits(gatsby?.credits ?? [])).includes("Fitzgerald"), "Second derivative's source author stays out of the byline");
 }
 
@@ -107,10 +107,9 @@ console.log("reader credit projection tests\n");
   ];
   const editorial = projectEditorialCredits(coWriter);
   assert(json(editorial) === json([
-    { role: "Penulis bersama", name: "Rafiq Naim · Maya" },
-    { role: "Penulis bersama", name: "Amir Syafiq · Maya" },
-    { role: "Editor", name: "Izzat Anas" }
-  ]), "co_writer maps to a Malay label instead of the raw role key");
+    { role: "Penulis bersama", names: ["Rafiq Naim · Maya", "Amir Syafiq · Maya"] },
+    { role: "Editor", names: ["Izzat Anas"] }
+  ]), "co_writer maps to a Malay label, written once with both co-writers listed under it");
 }
 
 {
@@ -120,7 +119,7 @@ console.log("reader credit projection tests\n");
 
 {
   const custom: ContributorRef[] = [{ slug: "izzat-anas", role: "Penterjemah", byline: false }];
-  assert(json(projectEditorialCredits(custom)) === json([{ role: "Penterjemah", name: "Izzat Anas" }]), "A role added by an editor is shown as written");
+  assert(json(projectEditorialCredits(custom)) === json([{ role: "Penterjemah", names: ["Izzat Anas"] }]), "A role added by an editor is shown as written");
 }
 
 {
@@ -142,7 +141,7 @@ console.log("reader credit projection tests\n");
   const dbLabel: ContributorRef[] = [{ slug: "izzat-anas", role: "Penyunting akhir", byline: false }];
   assert(projectEditorialCredits(dbLabel).length === 1, "A role label chosen or added in admin (capitalised text) is shown; lowercase internal keys stay hidden");
   const approvedLabel: ContributorRef[] = [{ slug: "izzat-anas", role: "Editor", byline: false }];
-  assert(json(projectEditorialCredits(approvedLabel)) === json([{ role: "Editor", name: "Izzat Anas" }]), "Already-projected approved labels pass through");
+  assert(json(projectEditorialCredits(approvedLabel)) === json([{ role: "Editor", names: ["Izzat Anas"] }]), "Already-projected approved labels pass through");
 }
 
 // One person with several roles: shown once, roles joined by commas
@@ -155,10 +154,31 @@ console.log("reader credit projection tests\n");
     { slug: "rafiq-naim", role: "Penulis bersama", byline: false, ...rafiq }
   ];
   assert(json(projectEditorialCredits(credits)) === json([
-    { role: "Penulis bersama, Penterjemah", name: "Rafiq Naim · Maya" },
-    { role: "Editor", name: "Izzat Anas" }
+    { role: "Penulis bersama, Penterjemah", names: ["Rafiq Naim · Maya"] },
+    { role: "Editor", names: ["Izzat Anas"] }
   ]), "The same person with two roles appears once, roles separated by a comma, in order, without repeating a role");
   assert(projectEditorialCredits(credits.slice(0, 2)).length === 2, "Different people stay on their own lines");
+}
+
+// The case Izzat pointed at: three co-writers under one "Penulis bersama", not three labels
+{
+  const maya = (slug: string, displayName: string, role: string): ContributorRef => ({ slug, role, byline: false, displayName, kind: "virtual" });
+  const credits: ContributorRef[] = [
+    { slug: "izzat-anas", role: "Pengarah", byline: false, displayName: "Izzat Anas", kind: "human" },
+    maya("mimo", "Mimo", "Penulis bersama"),
+    maya("nara-zahin", "Nara Zahin", "Penulis bersama"),
+    maya("rafiq-naim", "Rafiq Naim", "Penulis bersama")
+  ];
+  assert(json(projectEditorialCredits(credits)) === json([
+    { role: "Pengarah", names: ["Izzat Anas"] },
+    { role: "Penulis bersama", names: ["Mimo · Maya", "Nara Zahin · Maya", "Rafiq Naim · Maya"] }
+  ]), "three co-writers share one 'Penulis bersama' label with the names listed under it");
+  const withExtra = [...credits, maya("rafiq-naim", "Rafiq Naim", "Penterjemah")];
+  assert(json(projectEditorialCredits(withExtra)) === json([
+    { role: "Pengarah", names: ["Izzat Anas"] },
+    { role: "Penulis bersama", names: ["Mimo · Maya", "Nara Zahin · Maya"] },
+    { role: "Penulis bersama, Penterjemah", names: ["Rafiq Naim · Maya"] }
+  ]), "a person with two roles keeps both roles together on one line, apart from those who hold only one");
 }
 
 console.log(`\n${passed} passed, ${failed} failed`);
