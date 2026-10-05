@@ -145,5 +145,21 @@ console.log("reader credit projection tests\n");
   assert(json(projectEditorialCredits(approvedLabel)) === json([{ role: "Editor", name: "Izzat Anas" }]), "Already-projected approved labels pass through");
 }
 
+// One person with several roles: shown once, roles joined by commas
+{
+  const rafiq = { displayName: "Rafiq Naim", kind: "virtual" as const };
+  const credits: ContributorRef[] = [
+    { slug: "rafiq-naim", role: "Penulis bersama", byline: false, ...rafiq },
+    { slug: "izzat-anas", role: "Editor", byline: false, displayName: "Izzat Anas", kind: "human" },
+    { slug: "rafiq-naim", role: "Penterjemah", byline: false, ...rafiq },
+    { slug: "rafiq-naim", role: "Penulis bersama", byline: false, ...rafiq }
+  ];
+  assert(json(projectEditorialCredits(credits)) === json([
+    { role: "Penulis bersama, Penterjemah", name: "Rafiq Naim · Maya" },
+    { role: "Editor", name: "Izzat Anas" }
+  ]), "The same person with two roles appears once, roles separated by a comma, in order, without repeating a role");
+  assert(projectEditorialCredits(credits.slice(0, 2)).length === 2, "Different people stay on their own lines");
+}
+
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed > 0) process.exit(1);
