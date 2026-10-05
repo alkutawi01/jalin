@@ -33,6 +33,7 @@ Jalin bukan platform novel penuh. Novel dan Novel Pendek tidak berada dalam taxo
 22. Karya asli Jalin ialah **living text**. Simpan tarikh terbit, tarikh kemas kini dan versi; rekod perubahan bermakna dalam Sejarah editorial.
 23. Kredit mesti berdasarkan sumbangan sebenar. Jangan menyamakan penyunting, penyemak fakta atau penyelidik dengan “Penulis” jika mereka tidak menulis karya.
 24. Novela ialah satu Work lengkap long-form, bukan Bersiri dan bukan Novel penuh.
+25. **Sinopsis dan fragmen hanya diambil daripada karya (novel) sebenar yang sudah diterbitkan di tempat lain**, bukan pertama kali terbit dalam Jalin (arahan Izzat, 5 Okt 2026). Nama di bawah tajuk bagi kedua-dua jenis ini hanyalah pengarang karya asal, dipaparkan automatik daripada rekod Sumber; "Nama di bawah tajuk" tidak terpakai pada mana-mana kredit mereka. Nama penyumbang Jalin disebut di blok Editorial sahaja.
 
 ## Working style
 

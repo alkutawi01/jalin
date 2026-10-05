@@ -22,7 +22,7 @@ import { initContentRepository } from "../../lib/content";
 import { getWorkBySlug, getWorksByType } from "../../lib/content/workLoader";
 import {
   disclosureNoteFor,
-  projectBylineCredits,
+  bylineFor,
   projectEditorialCredits
 } from "../../lib/reader/credit-projection";
 import { buildVerifiedGlossary } from "../../lib/reader/verified-glossary";
@@ -61,7 +61,7 @@ export default function EpisodeView({
 
   const glossary = buildVerifiedGlossary(work);
 
-  const byline = projectBylineCredits(work.credits);
+  const byline = bylineFor(work);
 
   const episodeIndex = episodes.findIndex((e) => e.slug === work.slug);
   const prevEpisode = episodeIndex > 0 ? episodes[episodeIndex - 1] : undefined;

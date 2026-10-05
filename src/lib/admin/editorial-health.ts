@@ -1,11 +1,14 @@
 import { getDb } from "../db";
+import { isDerivativeType } from "../credit-roles";
 
 /** One work that a check is about, with the tab of its editor page where the problem is fixed. */
 export interface HealthItem {
   workId: string;
   title: string;
   message: string;
-  tab: "content" | "metadata" | "credits";
+  tab: "content" | "metadata" | "credits" | "source";
+  /** The button's own words when the usual one for this check does not fit this work. */
+  fix?: string;
 }
 
 export interface HealthCategory {
@@ -47,17 +50,23 @@ export async function getEditorialHealth(): Promise<EditorialHealth> {
   // Get published works
   const works = await db.selectFrom("works").where("status", "=", "published").selectAll().execute();
   const credits = await db.selectFrom("credits").selectAll().execute();
+  const sources = await db.selectFrom("source_works").select(["work_id", "author"]).execute();
   const revisions = await db.selectFrom("work_revisions").selectAll().execute();
   const visuals = await db.selectFrom("visuals").selectAll().execute();
   
   // Check authors
   for (const work of works) {
     const workCredits = credits.filter(c => c.work_id === work.id);
-    const hasAuthor = workCredits.some(c => c.contributor_slug && c.is_public);
+    // Sinopsis and fragmen are taken from a real work published elsewhere: the author shown is the original author (the source
+    // record), and Jalin's contributors are only in the editorial block. Every other type needs a public writer credit.
+    const derivative = isDerivativeType(work.type);
+    const hasAuthor = derivative
+      ? Boolean(sources.find((s) => s.work_id === work.id)?.author?.trim())
+      : workCredits.some(c => c.contributor_slug && c.is_public);
     if (!hasAuthor) {
-      const message = `${work.title || work.id} tiada penulis awam`;
+      const message = derivative ? `${work.title || work.id} tiada pengarang asal` : `${work.title || work.id} tiada penulis awam`;
       health.authors.issues.push(message);
-      health.authors.items.push({ workId: work.id, title: work.title || work.id, message, tab: "credits" });
+      health.authors.items.push({ workId: work.id, title: work.title || work.id, message, tab: derivative ? "source" : "credits", ...(derivative ? { fix: "Isi pengarang asal" } : {}) });
       health.authors.status = "fail";
     }
   }

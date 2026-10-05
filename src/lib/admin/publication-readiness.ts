@@ -8,6 +8,7 @@
 
 import { isSourcedWork } from "../content/source-origin";
 import type { WorkStatus, WorkType } from "../db/types";
+import { isDerivativeType } from "../credit-roles";
 import { classifyFragmen, fragmenTextHash, isIndonesianLanguage, isMalayLanguage, readFragmenTextReview } from "../content/fragmen-kind";
 
 export type ReadinessGateName =
@@ -427,6 +428,9 @@ export function evaluatePublicationReadinessFromData(
 
   // --- Credits ---
   const publicCredits = credits.filter((c) => c.is_public);
+  // Sinopsis and fragmen have no "Nama di bawah tajuk": the name there is the original author, taken from the source record,
+  // which the rights gate below already requires. Jalin's contributors appear in the editorial block only (credit-roles.ts).
+  const derivativeType = isDerivativeType(String(work.type));
   const bylineCredits = publicCredits.filter((c) => c.byline);
 
   if (credits.length === 0) {
@@ -469,7 +473,7 @@ export function evaluatePublicationReadinessFromData(
       }
     }
   }
-  if (bylineCredits.length === 0 && credits.length > 0) {
+  if (!derivativeType && bylineCredits.length === 0 && credits.length > 0) {
     // A work that is already public is not locked out of republishing over this; it stays a warning.
     (alreadyPublished ? creditWarnings : creditBlockers).push(
       issue(

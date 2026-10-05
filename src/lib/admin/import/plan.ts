@@ -225,9 +225,10 @@ export function buildImportPlan(answer: string, manuscript: string, options: Imp
   }
   const writer = present(options.writerName) ?? (mode === "data" ? present(data.authorName) : undefined);
   if (writer && !(isDerivative && sourceAuthor && foldText(writer) === foldText(sourceAuthor))) {
-    credits.push({ guestName: writer, roleLabel: "initial_draft", byline: true, isPublic: true, sortOrder: credits.length + 1 });
+    // The name under a sinopsis' or fragmen's title is the original author, shown automatically; their writer is only in the editorial block.
+    credits.push({ guestName: writer, roleLabel: "initial_draft", byline: !isDerivative, isPublic: true, sortOrder: credits.length + 1 });
   }
-  if (!credits.some((c) => c.byline)) {
+  if (!isDerivative && !credits.some((c) => c.byline)) {
     warnings.push({
       code: "byline_missing",
       message: "Belum ada penulis dikreditkan. Isi nama penulis sebenar (kredit awam) sebelum terbit; penerbitan memerlukan sekurang-kurangnya satu kredit yang ditanda ‘Nama di bawah tajuk’."

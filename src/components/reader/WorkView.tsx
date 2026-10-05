@@ -30,7 +30,7 @@ import { initContentRepository } from "../../lib/content";
 import { getWorkBySlug, getWorksByType } from "../../lib/content/workLoader";
 import {
   disclosureNoteFor,
-  projectBylineCredits,
+  bylineFor,
   projectEditorialCredits
 } from "../../lib/reader/credit-projection";
 import { buildVerifiedGlossary } from "../../lib/reader/verified-glossary";
@@ -196,7 +196,7 @@ export default async function WorkView({
   const workHref = preview ? preview.base : `/kategori/${work.type}/${work.slug}`;
 
   const glossary = buildVerifiedGlossary(work);
-  const byline = projectBylineCredits(work.credits);
+  const byline = bylineFor(work);
   const typeLabel = TYPE_LABELS[type] ?? type;
   const workMeta = buildMetaRows(work);
   const allCharacters: CharacterMeta[] = (work.metadata?.characters ?? []).map(({ name, role, firstAppearanceSection }) => ({
