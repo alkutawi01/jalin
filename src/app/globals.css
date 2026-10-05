@@ -2871,7 +2871,7 @@ main:focus { outline: none; }
 /* ── Footer: brand, where to go, the small print ── */
 .site-footer { padding: 56px 0 0; }
 .footer-grid { display: grid; grid-template-columns: minmax(220px, .8fr) minmax(420px, 1.35fr); align-items: center; gap: clamp(64px, 9vw, 128px); padding-bottom: 36px; }
-.footer-brand { display: grid; justify-items: center; gap: 2px; text-align: center; }
+.footer-brand { display: grid; justify-items: center; gap: 8px; text-align: center; }
 .site-footer .footer-logo { display: block; width: 124px; margin: 0; }
 .footer-tagline { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: .98rem; font-style: italic; color: #e9d3c5; }
 .footer-nav-grid { display: grid; grid-template-columns: repeat(2, minmax(150px, 1fr)); align-items: start; gap: clamp(48px, 7vw, 96px); width: 100%; }
@@ -2906,9 +2906,9 @@ main:focus { outline: none; }
 .info-updated { margin: 40px 0 0; padding-top: 16px; border-top: 1px solid var(--line); font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 13px; color: var(--ink-soft); }
 @media (max-width: 680px) { .info-page { padding-top: 36px; padding-bottom: 48px; } .info-body { font-size: 1.05rem; } }
 .site-footer .footer-col { display: block; }
-/* The logo file has empty margin inside its canvas; pull it back so it lines up with the text beneath it. */
-.site-footer .footer-brand .footer-logo { margin: -22px 0 -14px -30px; }
-@media (max-width: 680px) { .site-footer .footer-brand .footer-logo { margin: -18px 0 -12px -26px; } }
+/* Compensate only for the logo canvas's vertical whitespace. Never shift it off the centre axis. */
+.site-footer .footer-brand .footer-logo { margin: -22px 0 -10px; }
+@media (max-width: 680px) { .site-footer .footer-brand .footer-logo { margin: -18px 0 -8px; } }
 
 /* Which series and episode a story belongs to: a quiet line under the dek, like the byline, not a trail of capitals. */
 .story-context-line { margin: 14px 0 0; font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 14px; color: var(--ink-soft); }
