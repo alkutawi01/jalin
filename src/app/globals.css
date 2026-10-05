@@ -3005,3 +3005,6 @@ main:focus { outline: none; }
 body { overflow-wrap: break-word; }
 .story-end p, .editor-note p, .related-work-body h3, .related-work-body p, .chapter-head h1, .series-masthead h1, .series-list-body h2 { overflow-wrap: anywhere; }
 .story-body pre { max-width: 100%; overflow-x: auto; }
+
+/* The main menu is set in Figtree (Izzat's choice); the footer navigation and every other label stay Inter. */
+.header-nav, .header-nav a, .header-mobile-nav summary, .header-mobile-nav .header-mobile-nav-links a { font-family: var(--font-figtree), var(--font-inter), Inter, ui-sans-serif, sans-serif; }

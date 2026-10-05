@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Figtree } from "next/font/google";
 import "./globals.css";
 import { SITE_URL } from "../lib/seo";
 
@@ -8,6 +8,8 @@ import { SITE_URL } from "../lib/seo";
  * size-adjusted fallback so the page does not jump when it arrives. The stylesheet reads it through --font-inter.
  */
 const inter = Inter({ subsets: ["latin", "latin-ext"], display: "swap", variable: "--font-inter" });
+/** The typeface of the main menu (Izzat chose Figtree, 5 Oct 2026). Only the menu uses it; labels and buttons stay Inter. */
+const figtree = Figtree({ subsets: ["latin", "latin-ext"], display: "swap", variable: "--font-figtree" });
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -37,7 +39,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="ms" className={inter.variable}>
+    <html lang="ms" className={`${inter.variable} ${figtree.variable}`}>
       <body>{children}</body>
     </html>
   );

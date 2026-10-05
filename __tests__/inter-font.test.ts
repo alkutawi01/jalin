@@ -13,7 +13,7 @@ const layout = fs.readFileSync(path.join(root, "layout.tsx"), "utf8");
 const css = fs.readFileSync(path.join(root, "globals.css"), "utf8");
 
 assert(/from "next\/font\/google"/.test(layout) && /Inter\(/.test(layout), "the root layout loads Inter through next/font");
-assert(/variable:\s*"--font-inter"/.test(layout) && /className=\{inter\.variable\}/.test(layout), "the font is exposed as --font-inter on <html>");
+assert(/variable:\s*"--font-inter"/.test(layout) && /className=\{`\$\{inter\.variable\}/.test(layout), "the font is exposed as --font-inter on <html>");
 const declared = (css.match(/font-family:[^;}]*\bInter\b/g) ?? []);
 const wired = declared.filter((d) => d.includes("var(--font-inter)"));
 assert(declared.length > 10, `the stylesheet names Inter in many places (${declared.length})`);

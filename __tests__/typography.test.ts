@@ -18,9 +18,10 @@ function assert(cond: boolean, msg: string) {
 
 assert(!/font-family:\s*Arial/.test(css), "no rule names Arial any more: the sans-serif is Inter everywhere");
 const families = new Set([...css.matchAll(/font-family:\s*([^;}]*)/g)].map((m) => m[1]!.trim().split(",")[0]!.replace(/"/g, "")));
-const known = ["var(--font-inter)", "Georgia", "SFMono-Regular", "inherit"];
+// Figtree is the main menu's typeface (Izzat's choice, 5 Oct 2026); see menu-font.test.ts.
+const known = ["var(--font-inter)", "var(--font-figtree)", "Georgia", "SFMono-Regular", "inherit"];
 const unknown = [...families].filter((family) => !known.includes(family));
-assert(unknown.length === 0, `only the known families are used (Inter, Georgia, a monospace)${unknown.length ? ": " + unknown.join(", ") : ""}`);
+assert(unknown.length === 0, `only the known families are used (Inter, Figtree for the menu, Georgia, a monospace)${unknown.length ? ": " + unknown.join(", ") : ""}`);
 
 const crumbs = css.split("\n").find((line) => line.startsWith(".crumbs, .series-crumb {")) ?? "";
 assert(crumbs.includes("--font-inter") && crumbs.includes("text-transform: uppercase") && crumbs.includes("font-size: 12px"), "one breadcrumb style (small capitals, Inter) for chapters and series");
