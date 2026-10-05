@@ -18,47 +18,55 @@ export default async function SettingsPage() {
     <div className="admin-form-page">
       <header className="admin-page-header">
         <h1>Tetapan</h1>
-        <p className="admin-page-sub">
-          Arahan AI yang disalin oleh butang &quot;Salin Arahan AI&quot;, nama samaran AI dan ayat pengenalan halaman senarai awam.
-          Format jawapan dikawal oleh sistem dan tidak boleh disunting di sini.
-        </p>
+        <p className="admin-page-sub">Pilih bahagian di bawah. Apa yang paling kerap diubah ada di atas; arahan AI yang panjang dilipat.</p>
+        <nav className="a-settings-nav" aria-label="Bahagian Tetapan">
+          <a href="#teks-awam">Teks halaman awam</a>
+          <a href="#nama-samaran">Nama samaran AI</a>
+          <a href="#arahan-ai">Arahan AI</a>
+          <a href="#alat-lain">Alat lain</a>
+          <a href="#status-sistem">Status sistem</a>
+        </nav>
       </header>
 
-      <section className="admin-section">
-        <h2 className="admin-form-section-title">Peraturan am (semua jenis karya)</h2>
-        <PromptEditor
-          target="global"
-          label="Peraturan am dan peraturan gambar"
-          initial={first.globalRules}
-          customised={first.globalCustomised}
-        />
-      </section>
-
-      <section className="admin-section">
-        <h2 className="admin-form-section-title">Arahan ikut jenis karya</h2>
-        {recipes.map(({ recipe, prompts }) => (
-          <PromptEditor
-            key={recipe.key}
-            target={recipe.key}
-            label={`${KIND_LABELS[recipe.kind]} — ${recipe.mode === "tulis" ? "chatbot menulis" : "data sahaja"}`}
-            description={recipe.description}
-            initial={prompts.recipeText}
-            customised={prompts.recipeCustomised}
-          />
-        ))}
-      </section>
-
-      <section className="admin-section">
-        <h2 className="admin-form-section-title">Nama samaran AI</h2>
-        <AiPersonaSettings />
-      </section>
-
-      <section className="admin-section">
-        <h2 className="admin-form-section-title">Teks halaman senarai awam</h2>
+      <section className="admin-section" id="teks-awam">
+        <h2 className="admin-form-section-title">Teks halaman awam</h2>
+        <p className="admin-form-hint">Ayat pengenalan yang pembaca lihat di atas setiap halaman senarai (Cerpen, Novela, Bersiri dan lain-lain).</p>
         <SiteCopySettings />
       </section>
 
-      <section className="admin-section">
+      <section className="admin-section" id="nama-samaran">
+        <h2 className="admin-form-section-title">Nama samaran AI</h2>
+        <p className="admin-form-hint">Nama yang dipaparkan kepada pembaca bagi penulis AI.</p>
+        <AiPersonaSettings />
+      </section>
+
+      <section className="admin-section" id="arahan-ai">
+        <h2 className="admin-form-section-title">Arahan AI</h2>
+        <p className="admin-form-hint">Teks yang disalin oleh butang &quot;Salin arahan AI&quot; apabila menambah karya. Format jawapan dikawal oleh sistem dan tidak boleh disunting di sini.</p>
+        <details className="a-settings-fold">
+          <summary>Peraturan am (semua jenis karya)</summary>
+          <PromptEditor
+            target="global"
+            label="Peraturan am dan peraturan gambar"
+            initial={first.globalRules}
+            customised={first.globalCustomised}
+          />
+        </details>
+        {recipes.map(({ recipe, prompts }) => (
+          <details className="a-settings-fold" key={recipe.key}>
+            <summary>{KIND_LABELS[recipe.kind]} — {recipe.mode === "tulis" ? "chatbot menulis" : "data sahaja"}{prompts.recipeCustomised ? " · diubah suai" : ""}</summary>
+            <PromptEditor
+              target={recipe.key}
+              label={`${KIND_LABELS[recipe.kind]} — ${recipe.mode === "tulis" ? "chatbot menulis" : "data sahaja"}`}
+              description={recipe.description}
+              initial={prompts.recipeText}
+              customised={prompts.recipeCustomised}
+            />
+          </details>
+        ))}
+      </section>
+
+      <section className="admin-section" id="alat-lain">
         <h2 className="admin-form-section-title">Alat lain</h2>
         <ul>
           <li><a href="/admin/submissions">Penghantaran karya</a> — karya yang dihantar untuk disemak dan dinaikkan menjadi karya.</li>
@@ -66,7 +74,7 @@ export default async function SettingsPage() {
         </ul>
       </section>
 
-      <section className="admin-section">
+      <section className="admin-section" id="status-sistem">
         <h2 className="admin-form-section-title">Status sistem</h2>
         <ul>
           <li>Pangkalan data: {hasDb() ? "bersambung" : "tidak tersedia"}</li>
