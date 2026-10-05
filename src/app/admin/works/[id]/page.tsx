@@ -10,7 +10,7 @@ import ChapterImages from "@/components/admin/ChapterImages";
 import { useState, useEffect, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import WorkVisualUpload from "../../../../components/admin/WorkVisualUpload";
-import { imageMarkers, insertImageMarker, isImageMarker } from "../../../../lib/reader/image-markers";
+import { imageMarkerLabel, imageMarkers, insertImageMarker, isImageMarker } from "../../../../lib/reader/image-markers";
 import CreditRoleSelect from "../../../../components/admin/CreditRoleSelect";
 import AiCreditPicker from "../../../../components/admin/AiCreditPicker";
 import { roleDisplay } from "../../../../lib/credit-roles";
@@ -128,6 +128,7 @@ function WorkImageCard({ visual, body, onEdit, onReplace, onDelete }: {
   onReplace: (id: number, file: File) => void;
   onDelete: (id: number) => void;
 }) {
+  const numbered = !visual.section_slug && visual.role !== "hero" && isImageMarker(visual.anchor);
   return (
     <article className="work-image-card">
       <a className="work-image-card-preview" href={visual.src} target="_blank" rel="noreferrer" title="Buka gambar saiz penuh">
@@ -135,7 +136,7 @@ function WorkImageCard({ visual, body, onEdit, onReplace, onDelete }: {
         <img src={visual.src} alt={visual.alt || ""} />
       </a>
       <div className="work-image-card-detail">
-        <strong>{visual.role === "hero" ? "Gambar utama" : visual.section_slug && !visual.anchor ? `Hero bab (${visual.section_slug})` : visual.section_slug ? `Gambar dalam teks, bab ${visual.section_slug}` : "Gambar dalam teks"}</strong>
+        <strong>{visual.role === "hero" ? "Gambar utama" : visual.section_slug && !visual.anchor ? `Hero bab (${visual.section_slug})` : visual.section_slug ? `Gambar dalam teks, bab ${visual.section_slug}` : numbered ? `${imageMarkerLabel(visual.anchor!)} · dalam teks` : `Gambar belum bernombor · ID imej #${visual.id}`}</strong>
         <p>{visual.alt || "Teks alternatif belum diisi."}</p>
         {visual.section_slug && !visual.anchor ? (
           <p className="admin-form-hint">Dipaparkan di kepala bab itu.</p>
@@ -145,8 +146,8 @@ function WorkImageCard({ visual, body, onEdit, onReplace, onDelete }: {
           <p className="admin-form-hint">
             {!visual.anchor ? "Tiada penanda — gambar tidak muncul dalam karya."
               : isImageMarker(visual.anchor)
-                ? body.includes(visual.anchor) ? `Penanda ${visual.anchor} · alihkan penanda dalam manuskrip untuk memindahkan gambar.` : `Penanda ${visual.anchor} tiada dalam manuskrip tersimpan — gambar tidak muncul.`
-                : body.includes(visual.anchor) ? `Penanda lama pada petikan: “${visual.anchor.slice(0, 90)}${visual.anchor.length > 90 ? "…" : ""}”. Tukar kepada penanda supaya suntingan teks tidak mengalihkan gambar.` : "Petikan anchor lama tidak ditemui — pilih penanda gambar baharu."}
+                ? body.includes(visual.anchor) ? `${imageMarkerLabel(visual.anchor)} dipautkan. Alihkan penanda dalam manuskrip untuk memindahkan gambar.` : `${imageMarkerLabel(visual.anchor)} tiada dalam manuskrip tersimpan — gambar tidak muncul.`
+                : body.includes(visual.anchor) ? `Anchor petikan lama: “${visual.anchor.slice(0, 90)}${visual.anchor.length > 90 ? "…" : ""}”. Gambar ini belum dipautkan kepada nombor Gambar N; pilih penanda melalui Ubah butiran.` : "Anchor petikan lama tidak ditemui. Gambar ini belum dipautkan kepada nombor Gambar N; pilih penanda melalui Ubah butiran."}
           </p>
         ) : <p className="admin-form-hint">Dipaparkan pada kad dan kepala halaman karya.</p>}
         <div className="work-image-card-actions">
@@ -159,7 +160,7 @@ function WorkImageCard({ visual, body, onEdit, onReplace, onDelete }: {
               if (file) onReplace(visual.id, file);
             }} />
           </label>
-          <button type="button" className="admin-btn admin-btn-sm admin-btn-danger" onClick={() => onDelete(visual.id)}>Padam</button>
+          <button type="button" className="admin-btn admin-btn-sm admin-btn-danger" onClick={() => onDelete(visual.id)}>Padam gambar</button>
         </div>
       </div>
     </article>
@@ -1547,11 +1548,12 @@ export default function EditWorkPage() {
     const doomed = visuals.find((v) => v.id === id);
     const marker = doomed?.anchor && isImageMarker(doomed.anchor) ? doomed.anchor.trim() : null;
     const markerInText = Boolean(marker && form.body.includes(marker));
+    const label = doomed?.role === "hero" ? "gambar utama" : marker ? imageMarkerLabel(marker) : "gambar ini";
     if (!(await confirmAction(
       markerInText
-        ? `Pasti ingin memadam gambar ini? Penanda ${marker} masih ada dalam teks dan tidak dibuang; selepas ini penanda itu tidak menunjuk kepada apa-apa gambar.`
-        : "Pasti ingin memadam visual ini?",
-      { danger: true, confirmLabel: "Ya, teruskan" }
+        ? `Padam ${label}? Penanda ${imageMarkerLabel(marker!)} kekal dalam manuskrip untuk gambar pengganti; tekan Buang pada penanda itu jika tidak diperlukan.`
+        : `Padam ${label}?`,
+      { danger: true, confirmLabel: "Padam gambar" }
     ))) return;
 
     try {
@@ -1564,8 +1566,8 @@ export default function EditWorkPage() {
         throw new Error(data.error || "Gagal memadam visual.");
       }
 
-      loadVisuals();
-      if (markerInText) toast(`Penanda ${marker} masih ada dalam teks. Buang barisnya dalam manuskrip, atau pautkan gambar baharu padanya.`, "success");
+      await loadVisuals();
+      toast(markerInText ? `${label} dipadam. Penanda ${imageMarkerLabel(marker!)} masih ada dalam manuskrip.` : `${label} dipadam.`, "success");
     } catch (err) {
       setVisualError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
     }
@@ -2665,7 +2667,7 @@ export default function EditWorkPage() {
                   <option value="">Pilih penanda…</option>
                   {editingVisual.anchor && !isImageMarker(editingVisual.anchor) && <option value={editingVisual.anchor}>Anchor lama — kekalkan sementara</option>}
                   {imageMarkers(savedBody).map((marker) => (
-                    <option key={marker} value={marker} disabled={visuals.some((visual) => visual.id !== editingVisual.id && visual.anchor === marker)}>{marker}</option>
+                    <option key={marker} value={marker} disabled={visuals.some((visual) => visual.id !== editingVisual.id && visual.anchor === marker)}>{imageMarkerLabel(marker)}</option>
                   ))}
                 </select>
                 <span className="admin-form-hint">Untuk memindahkan gambar: sisip penanda di manuskrip, simpan teks &amp; maklumat, kemudian pilih penanda itu di sini. Gambar sedia ada tidak diganti.</span>

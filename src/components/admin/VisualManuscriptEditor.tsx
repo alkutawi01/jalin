@@ -5,6 +5,7 @@ import { pastedHtmlToMarkdown } from "../../lib/admin/paste-format";
 import { useEffect, useRef } from "react";
 import { nextImageMarker } from "../../lib/reader/image-markers";
 import { splitCommunicationBlocks } from "../../lib/reader/communication-blocks";
+import { confirmAction } from "../../lib/admin/dialogs";
 
 const MARKER = /^\[\[gambar:[1-9]\d*\]\]$/;
 
@@ -66,7 +67,10 @@ function toHtml(markdown: string): string {
   return splitCommunicationBlocks(markdown).map((segment) => segment.kind === "prose" ? segment.content.split(/\n{2,}/).map((block) => {
     const trimmed = block.trim();
     if (!trimmed) return "";
-    if (MARKER.test(trimmed)) return `<div class="visual-manuscript-marker" contenteditable="false" data-marker="${trimmed}">Gambar ${trimmed.match(/\d+/)?.[0]}</div>`;
+    if (MARKER.test(trimmed)) {
+      const number = trimmed.match(/\d+/)?.[0];
+      return `<div class="visual-manuscript-marker" contenteditable="false" data-marker="${trimmed}"><span data-marker-label>Gambar ${number}</span><button type="button" data-remove-marker aria-label="Buang penanda Gambar ${number}" title="Buang penanda Gambar ${number}">Buang</button></div>`;
+    }
     if (/^(---|\*\*\*)$/.test(trimmed)) return '<hr class="visual-manuscript-break">';
     if (trimmed.startsWith("## ")) return `<h2>${inlineHtml(trimmed.slice(3))}</h2>`;
     return `<p>${inlineHtml(block)}</p>`;
@@ -112,7 +116,12 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
   useEffect(() => {
     const editor = editorRef.current;
     if (editor && value !== emittedRef.current) editor.innerHTML = toHtml(value);
-  }, [value]);
+    editor?.querySelectorAll<HTMLElement>("[data-marker]").forEach((block) => {
+      const marker = block.dataset.marker;
+      const label = block.querySelector<HTMLElement>("[data-marker-label]");
+      if (marker && label) label.textContent = `Gambar ${marker.match(/\d+/)?.[0]} · ${existingAnchors.includes(marker) ? "imej dipautkan" : "belum dipautkan"}`;
+    });
+  }, [value, existingAnchors]);
 
   function sync() {
     const editor = editorRef.current;
@@ -203,7 +212,8 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
     else if (kind === "paragraph") html = "<p><br></p>";
     else if (kind === "image") {
       const marker = nextImageMarker(value, existingAnchors);
-      html = `<div class="visual-manuscript-marker" contenteditable="false" data-marker="${marker}">Gambar ${marker.match(/\d+/)?.[0]}</div>`;
+      const number = marker.match(/\d+/)?.[0];
+      html = `<div class="visual-manuscript-marker" contenteditable="false" data-marker="${marker}"><span data-marker-label>Gambar ${number} · belum dipautkan</span><button type="button" data-remove-marker aria-label="Buang penanda Gambar ${number}" title="Buang penanda Gambar ${number}">Buang</button></div>`;
       onMarkerInserted(marker);
     } else html = `<div class="visual-manuscript-communication visual-manuscript-communication-${kind}" data-communication="${kind}">Tulis kandungan di sini.</div>`;
     // Inserted through the browser's own editing command, so Ctrl+Z (and Edit > Undo) takes the block away again.
@@ -276,7 +286,25 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
       }
       if (editorRef.current) quotesInAllBlocks(editorRef.current);
       sync();
+    }} onClick={(event) => {
+      const button = (event.target as HTMLElement).closest<HTMLButtonElement>("[data-remove-marker]");
+      const markerElement = button?.closest<HTMLElement>("[data-marker]");
+      const marker = markerElement?.dataset.marker;
+      if (!marker || !markerElement || !editorRef.current?.contains(markerElement)) return;
+      event.preventDefault();
+      void (async () => {
+        const linked = existingAnchors.includes(marker);
+        const confirmed = await confirmAction(
+          linked
+            ? `Buang penanda ${marker} daripada manuskrip? Gambar yang dipautkan kekal dalam senarai tetapi tidak akan muncul dalam karya selepas teks disimpan. Padam gambar daripada kadnya jika mahu membuangnya sepenuhnya.`
+            : `Buang penanda ${marker} daripada manuskrip?`,
+          { danger: linked, confirmLabel: "Buang penanda" }
+        );
+        if (!confirmed || !editorRef.current?.contains(markerElement)) return;
+        markerElement.remove();
+        sync();
+      })();
     }} />
-    <p className="admin-form-hint">Sunting terus pada halaman. Pilih teks untuk Tebal atau Condong; gunakan butang untuk menambah blok. Tukar ke Markdown untuk kawalan penuh.</p>
+    <p className="admin-form-hint">Pilih teks untuk Tebal atau Condong. Penanda gambar boleh dibuang di sini; simpan teks untuk menerapkan perubahan. Gambar yang sudah dimuat naik dipadam secara berasingan melalui kadnya.</p>
   </div>;
 }

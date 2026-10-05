@@ -6,7 +6,7 @@ import { toast } from "../../lib/admin/dialogs";
 export interface AdminWorkRow {
   id: string; title: string; slug: string; type: string; status: string;
   version: string; updatedAt: string | null; authors: string;
-  readiness?: { ready: boolean; firstTab?: string; firstBlocker?: string };
+  readiness?: { ready: boolean; firstTab?: string; firstBlocker?: string | null };
 }
 
 interface PickWork {
@@ -113,7 +113,7 @@ export default function AdminWorksTable({ works, initialPicks }: { works: AdminW
                   </td>
                   <td className="admin-table-title"><a href={`/admin/works/${work.id}`} className="a-work-title-link">{work.title}</a><span className="admin-form-hint admin-work-byline">{work.id}{work.authors ? ` · ${work.authors}` : ""}</span></td>
                   <td><code>{work.slug}</code></td><td>{TYPE_LABELS[work.type] ?? work.type}</td>
-                  <td><span className={`admin-status admin-status-${work.status}`}>{STATUS_LABELS[work.status] ?? work.status}</span>{work.status === "ready" && work.readiness?.ready === false ? <a href={`/admin/works/${work.id}#${work.readiness.firstTab ?? "content"}`} className="admin-form-hint admin-work-blocker" title={work.readiness.firstBlocker}>Disekat: {work.readiness.firstBlocker}</a> : null}</td>
+                  <td><span className={`admin-status admin-status-${work.status}`}>{STATUS_LABELS[work.status] ?? work.status}</span>{work.status === "ready" && work.readiness?.ready === false ? <a href={`/admin/works/${work.id}#${work.readiness.firstTab ?? "content"}`} className="admin-form-hint admin-work-blocker" title={work.readiness.firstBlocker ?? undefined}>Disekat: {work.readiness.firstBlocker}</a> : null}</td>
                   <td>{work.version}</td><td>{formatDate(work.updatedAt)}</td>
                   <td><div className="admin-table-actions"><a href={`/admin/works/${work.id}`} className="admin-btn admin-btn-sm">Sunting</a><a href={`/pratonton/${work.id}`} className="admin-btn admin-btn-sm admin-btn-outline">Pratonton</a></div></td>
                 </tr>

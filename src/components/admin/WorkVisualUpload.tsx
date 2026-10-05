@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { imageMarkerLabel } from "../../lib/reader/image-markers";
 
 /**
  * Upload an image straight from a work. One step: the file is
@@ -99,7 +100,7 @@ export default function WorkVisualUpload({ workId, onDone, hasHero, published, s
           <label htmlFor="wvu-anchor">Penanda gambar dalam manuskrip *</label>
           <select id="wvu-anchor" value={markers.includes(anchor) ? anchor : ""} onChange={(e) => setAnchor(e.target.value)}>
             <option value="">Pilih penanda yang belum digunakan…</option>
-            {markers.map((marker) => <option key={marker} value={marker}>{marker}</option>)}
+            {markers.map((marker) => <option key={marker} value={marker}>{imageMarkerLabel(marker)}</option>)}
           </select>
           <span className="admin-form-hint">{markers.length === 0 ? "Tiada penanda kosong. Sisip penanda baharu dalam manuskrip dan simpan teks & maklumat dahulu." : "Gambar muncul di tempat penanda ini. Alihkan baris penanda dalam manuskrip untuk mengubah kedudukannya."}</span>
         </div>

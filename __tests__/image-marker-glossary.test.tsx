@@ -2,7 +2,7 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import StoryMarkdown from "../src/components/reader/StoryMarkdown";
 import { firstGlossaryBySegment } from "../src/lib/reader/glossary-first";
-import { imageMarkers, insertImageMarker, stripImageMarkers } from "../src/lib/reader/image-markers";
+import { imageMarkerLabel, imageMarkers, insertImageMarker, stripImageMarkers } from "../src/lib/reader/image-markers";
 import { placeVisuals } from "../src/lib/reader/place-visuals";
 import { materializeImportImageMarkers } from "../src/lib/admin/import/image-markers";
 import type { ImportPlan } from "../src/lib/admin/import/plan";
@@ -15,6 +15,7 @@ const insertion = insertImageMarker("Awal cerita.\n\nAkhir cerita.", 4);
 check(insertion?.marker === "[[gambar:1]]", "First marker should be numbered 1");
 check(insertion!.body === "Awal cerita.\n\n[[gambar:1]]\n\nAkhir cerita.", "Marker should sit between paragraphs");
 check(imageMarkers(insertion!.body).length === 1, "Inserted marker should be discoverable");
+check(imageMarkerLabel("[[gambar:12]]") === "Gambar 12", "Image marker should have a human-readable number");
 check(insertImageMarker(insertion!.body, 45, ["[[gambar:3]]"])?.marker === "[[gambar:4]]", "Marker number should not reuse existing anchors");
 
 const image = { role: "inline", anchor: "[[gambar:1]]", place: "after", src: "test" };

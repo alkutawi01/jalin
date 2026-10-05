@@ -9,6 +9,11 @@ export function imageMarkers(body: string): string[] {
   return [...new Set([...body.matchAll(MARKER_PATTERN)].map((match) => match[0]))];
 }
 
+export function imageMarkerLabel(marker: string): string {
+  const number = /^\[\[gambar:([1-9]\d*)\]\]$/.exec(marker.trim())?.[1];
+  return number ? `Gambar ${number}` : marker;
+}
+
 export function nextImageMarker(body: string, existingAnchors: (string | null)[] = []): string {
   const numbers = [...imageMarkers(body), ...existingAnchors.filter(isImageMarker)]
     .map((marker) => Number(marker!.match(/\d+/)?.[0] ?? 0));

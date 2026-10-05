@@ -37,5 +37,6 @@ const editorMarkup = renderToStaticMarkup(<VisualManuscriptEditor value="" onCha
 assert.equal((editorMarkup.match(/data-label=/g) ?? []).length, 8, "all editor controls have visible tooltip labels");
 assert.match(editorMarkup, /aria-label="Sisip kotak e-mel"/, "icon-only editor controls have accessible names");
 assert.match(editorMarkup, /<svg/, "toolbar uses symbols rather than text-only actions");
+assert.match(editorMarkup, /Penanda gambar boleh dibuang di sini/, "visual editor explains marker removal");
 
 console.log("visual-manuscript-editor: passed");
