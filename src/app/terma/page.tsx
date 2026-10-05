@@ -4,7 +4,9 @@ import { InfoPage } from "../../components/reader/InfoPage";
 export const metadata: Metadata = {
   title: "Terma Penggunaan",
   description: "Cara karya dan ilustrasi di Jalin boleh digunakan.",
-  alternates: { canonical: "/terma" }
+  alternates: { canonical: "/terma" },
+  openGraph: { type: "website", siteName: "Jalin — oleh Adjung", title: "Terma Penggunaan", description: "Cara karya dan ilustrasi di Jalin boleh digunakan.", url: "/terma", locale: "ms_MY" },
+  twitter: { card: "summary_large_image", title: "Terma Penggunaan", description: "Cara karya dan ilustrasi di Jalin boleh digunakan." }
 };
 
 export default function TermsPage() {

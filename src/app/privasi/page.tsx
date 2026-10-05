@@ -4,7 +4,9 @@ import { InfoPage } from "../../components/reader/InfoPage";
 export const metadata: Metadata = {
   title: "Dasar Privasi",
   description: "Apa yang Jalin kumpul dan tidak kumpul tentang pembaca.",
-  alternates: { canonical: "/privasi" }
+  alternates: { canonical: "/privasi" },
+  openGraph: { type: "website", siteName: "Jalin — oleh Adjung", title: "Dasar Privasi", description: "Apa yang Jalin kumpul dan tidak kumpul tentang pembaca.", url: "/privasi", locale: "ms_MY" },
+  twitter: { card: "summary_large_image", title: "Dasar Privasi", description: "Apa yang Jalin kumpul dan tidak kumpul tentang pembaca." }
 };
 
 export default function PrivacyPage() {

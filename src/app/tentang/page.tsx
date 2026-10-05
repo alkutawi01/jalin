@@ -4,7 +4,9 @@ import { InfoPage } from "../../components/reader/InfoPage";
 export const metadata: Metadata = {
   title: "Tentang Jalin",
   description: "Jalin ialah tempat cerita berilustrasi untuk jiwa muda, terbitan Adjung Press.",
-  alternates: { canonical: "/tentang" }
+  alternates: { canonical: "/tentang" },
+  openGraph: { type: "website", siteName: "Jalin — oleh Adjung", title: "Tentang Jalin", description: "Jalin ialah tempat cerita berilustrasi untuk jiwa muda, terbitan Adjung Press.", url: "/tentang", locale: "ms_MY" },
+  twitter: { card: "summary_large_image", title: "Tentang Jalin", description: "Jalin ialah tempat cerita berilustrasi untuk jiwa muda, terbitan Adjung Press." }
 };
 
 export default function AboutPage() {
