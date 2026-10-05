@@ -8,6 +8,7 @@
  * Uses insideTransactionAfterReadiness hook to pause T1 after locks held.
  * T2 attempts detachEpisode while T1 is paused → T2 blocks on FOR UPDATE.
  */
+import { assertDisposableFixtures } from "./lib/disposable-fixture";
 import "dotenv/config";
 import { config } from "dotenv";
 config({ path: ".env.local", override: true });
@@ -35,6 +36,7 @@ function ok(msg: string) {
 }
 
 async function cleanup(db: ReturnType<typeof getDb>) {
+  await assertDisposableFixtures(db, { ids: EP_IDS, slugs: [...EP_SLUGS, SERIES_SLUG] });
   for (const slug of [SERIES_SLUG]) {
     const s = await db.selectFrom("series").where("slug", "=", slug).select("id").executeTakeFirst();
     if (s) {

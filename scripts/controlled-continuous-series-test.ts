@@ -8,6 +8,7 @@
  * completed status retains public Series, membership/order race protected.
  * Archives/cleans controlled fixtures only.
  */
+import { assertDisposableFixtures } from "./lib/disposable-fixture";
 import "dotenv/config";
 import { config } from "dotenv";
 config({ path: ".env.local", override: true });
@@ -40,6 +41,7 @@ function ok(msg: string) {
 }
 
 async function cleanup(db: ReturnType<typeof getDb>) {
+  await assertDisposableFixtures(db, { ids: EP_IDS, slugs: [...EP_SLUGS, SERIES_SLUG] });
   // Remove membership first (series_entries unique work_id)
   for (const slug of [SERIES_SLUG, "uji-siri-lain-4d8"]) {
     const series = await db.selectFrom("series").where("slug", "=", slug).select("id").executeTakeFirst();

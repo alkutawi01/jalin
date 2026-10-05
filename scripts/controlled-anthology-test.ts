@@ -6,6 +6,7 @@
  * Navigation follows published positions. No leakage of Episode 2 metadata.
  * Archives/cleans controlled fixtures only.
  */
+import { assertDisposableFixtures } from "./lib/disposable-fixture";
 import "dotenv/config";
 import { config } from "dotenv";
 config({ path: ".env.local", override: true });
@@ -36,6 +37,7 @@ function ok(msg: string) {
 }
 
 async function cleanup(db: ReturnType<typeof getDb>) {
+  await assertDisposableFixtures(db, { ids: EP_IDS, slugs: [...EP_SLUGS, SERIES_SLUG] });
   const series = await db.selectFrom("series").where("slug", "=", SERIES_SLUG).select("id").executeTakeFirst();
   if (series) {
     await db.deleteFrom("series_entries").where("series_id", "=", series.id).execute();
