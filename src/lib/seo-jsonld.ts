@@ -133,6 +133,8 @@ export interface JsonLdSeries {
   dek?: string;
   genre?: string;
   heroSrc?: string;
+  /** The writers shown under the series title (the page's byline). */
+  authors?: string[];
   episodes: { slug: string; title: string; position: number }[];
 }
 
@@ -151,6 +153,7 @@ export function seriesJsonLd(series: JsonLdSeries): Record<string, unknown> {
         ...(series.dek ? { description: series.dek } : {}),
         ...(series.genre ? { genre: series.genre } : {}),
         ...(series.heroSrc ? { image: shareImageUrl(series.heroSrc) } : {}),
+        ...(series.authors && series.authors.length > 0 ? { author: people(series.authors) } : {}),
         publisher,
         isAccessibleForFree: true,
         hasPart: series.episodes.map((episode) => ({

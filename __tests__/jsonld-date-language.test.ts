@@ -4,7 +4,7 @@
  */
 import fs from "node:fs";
 import path from "node:path";
-import { laterOf, workJsonLd, type JsonLdWork } from "../src/lib/seo-jsonld";
+import { laterOf, seriesJsonLd, workJsonLd, type JsonLdWork } from "../src/lib/seo-jsonld";
 
 let passed = 0;
 let failed = 0;

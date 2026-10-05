@@ -167,6 +167,7 @@ export default async function SeriesLandingPage({
                 dek: series.dek ? smartQuotes(series.dek) : series.dek,
                 genre: displayableGenre(series.genre),
                 heroSrc: series.hero?.src,
+                authors: authors.map((author) => author.name),
                 episodes: byPosition.map((episode) => ({ slug: episode.slug, title: episode.title, position: episode.position }))
               })
             )
