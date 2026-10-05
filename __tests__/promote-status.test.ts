@@ -16,7 +16,7 @@ const route = read("src/app/api/admin/submissions/[id]/promote/route.ts");
 assert(route.includes('["draft", "review", "ready"].includes(String(status))') && route.includes("status: 400"), "the route refuses any status but draft, review or ready");
 assert(route.includes('message.startsWith("Status tidak sah") ? 400 : 500'), "a refusal from the service is also a 400");
 const service = read("src/lib/admin/promotion-service.ts");
-assert(service.includes('options.status === "published" || options.status === "archived"') && service.indexOf("tidak boleh terus diterbitkan") < service.indexOf('.insertInto("works")'), "the service refuses it too, before the work is created");
+assert(service.includes('!["draft", "review", "ready"].includes(options.status)') && service.indexOf("tidak boleh terus diterbitkan") < service.indexOf('.insertInto("works")'), "the service refuses it too, before the work is created");
 
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);
