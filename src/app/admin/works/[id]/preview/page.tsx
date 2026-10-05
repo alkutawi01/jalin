@@ -213,7 +213,7 @@ export default function PreviewWorkPage() {
         <div className="admin-preview-meta">
           {work.genre && <span>Genre: {work.genre}</span>}
           {work.audience && <span>Audiens: {work.audience}</span>}
-          {work.reading_minutes && <span>± {work.reading_minutes} min</span>}
+          {work.reading_minutes && <span>± {work.reading_minutes} minit</span>}
         </div>
 
         {work.dek && (

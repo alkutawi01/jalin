@@ -120,7 +120,7 @@ export default async function EpisodePage({
     { label: "Bentuk", value: `${typeLabel} · Episod ${episodeIndex >= 0 ? episodeIndex + 1 : "—"}` },
     { label: "Siri", value: series.title },
     ...(genre ? [{ label: "Genre", value: genre }] : []),
-    { label: "Bacaan", value: work.readingMinutes ? `± ${work.readingMinutes} min` : "—" },
+    { label: "Bacaan", value: work.readingMinutes ? `± ${work.readingMinutes} minit` : "—" },
     {
       label: "Status",
       value: series.status === "completed" ? "Siri tamat" : "Siri berterusan"

@@ -469,7 +469,7 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
                         {plan.work.type}
                         {genre ? ` · ${genre}` : ""}
                       </span>
-                      <span className="latest-card-reading">± {review.readingMinutes || "?"} min</span>
+                      <span className="latest-card-reading">± {review.readingMinutes || "?"} minit</span>
                     </div>
                     <h3 className="latest-card-title">{title || "(belum bertajuk)"}</h3>
                     {dek ? <p className="latest-card-dek">{dek}</p> : null}
