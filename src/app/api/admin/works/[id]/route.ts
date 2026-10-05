@@ -46,7 +46,9 @@ export async function PATCH(
           return NextResponse.json({ error: `Penanda ${marker} berulang. Setiap penanda gambar mesti unik.` }, { status: 400 });
         }
       }
-      const attached = await getDb().selectFrom("visuals").where("work_id", "=", id).select("anchor").execute();
+      // A chapter's picture has its marker in that chapter's text, not in this body (a novela's body is empty), so only the
+      // work's own pictures are checked here. Before, saving a novela's details failed as soon as one chapter had a picture.
+      const attached = await getDb().selectFrom("visuals").where("work_id", "=", id).where("section_slug", "is", null).select("anchor").execute();
       for (const visual of attached) {
         if (isImageMarker(visual.anchor) && !markers.includes(visual.anchor!)) {
           return NextResponse.json({ error: `Penanda ${visual.anchor} masih digunakan oleh gambar. Alihkannya, jangan padam; atau padam gambar itu dahulu.` }, { status: 400 });
