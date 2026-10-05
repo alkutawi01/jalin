@@ -16,14 +16,10 @@ async function resolveEpisode(seriesSlug: string, episodeSlug: string) {
 
   let work;
   if (isDb) {
+    // Only an episode in the series' public run. A continuous series shows an unbroken run from episode 1, so an episode after a gap
+    // (an earlier one archived or not yet published) is not public; it used to answer 200 through a lookup by episode slug alone,
+    // although the series page, its navigation and the sitemap leave it out.
     work = repo.getEpisodeBySeriesAndSlug(seriesSlug, episodeSlug);
-    if (!work) {
-      // Fallback: resolve via flat work then verify series context.
-      const flat = repo.getWork(episodeSlug);
-      if (flat && flat.series?.slug === seriesSlug && flat.type === "bersiri") {
-        work = flat;
-      }
-    }
   } else {
     work = getWorkBySlug(episodeSlug);
     if (work && work.series?.slug !== seriesSlug) work = undefined;
