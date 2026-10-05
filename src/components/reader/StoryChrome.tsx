@@ -34,12 +34,15 @@ export function StoryHead({
   dek,
   byline,
   originalTitle,
+  contextLine,
   hero
 }: {
   kicker: ReactNode;
   title: string;
   dek: string;
   byline: BylineCredit[];
+  /** A quiet line under the dek, e.g. which episode of which series this is. */
+  contextLine?: ReactNode;
   originalTitle?: string;
   /** Hero image shown as a card beside the title (below it on narrow screens). */
   hero?: { src: string; alt: string; rights: string; crop?: ImageCrop };
@@ -50,6 +53,7 @@ export function StoryHead({
       <h1 style={{ fontStyle: "normal" }}>{title}</h1>
       {originalTitle ? <p className="story-original-title"><cite>{originalTitle}</cite></p> : null}
       <p className="dek">{dek}</p>
+      {contextLine ? <p className="story-context-line">{contextLine}</p> : null}
       {byline.length > 0 && (
         <div className="byline">
           <span>Oleh</span>
