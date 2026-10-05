@@ -629,8 +629,9 @@ export default function EditWorkPage() {
   const formRef = useRef<typeof form | null>(null);
   /** What this page last loaded or saved of the fields that two tabs can fight over; sent with every save (see stale-write.ts). */
   const baseRef = useRef<Record<string, string> | null>(null);
-  const baseOf = (f: { title: string; body: string; dek: string; genre: string; audience: string }) => ({
-    title: f.title.trim() ? f.title : UNTITLED_DRAFT, body: f.body, dek: f.dek, genre: f.genre, audience: f.audience,
+  const baseOf = (f: { title: string; slug: string; body: string; dek: string; genre: string; audience: string; readingMinutes: string; editorNote: string; readerNote: string; origin: string }) => ({
+    title: f.title.trim() ? f.title : UNTITLED_DRAFT, slug: f.slug, body: f.body, dek: f.dek, genre: f.genre, audience: f.audience,
+    readingMinutes: f.readingMinutes, editorNote: f.editorNote, readerNote: f.readerNote, origin: f.origin,
   });
   /** Which side lists failed to load (so an empty list is never mistaken for "nothing here"). */
   const [loadFailures, setLoadFailures] = useState<Record<string, string>>({});
@@ -792,7 +793,11 @@ export default function EditWorkPage() {
           origin: work.metadata?.origin === "sumber" ? "sumber" : "asli",
         });
         setSavedBody(work.body || "");
-        baseRef.current = { title: work.title, body: work.body || "", dek: work.dek || "", genre: work.genre || "", audience: work.audience || "" };
+        baseRef.current = baseOf({
+          title: work.title, slug: work.slug, body: work.body || "", dek: work.dek || "", genre: work.genre || "", audience: work.audience || "",
+          readingMinutes: work.reading_minutes?.toString() || "", editorNote: work.metadata?.editorNote ?? "", readerNote: work.reader?.note ?? "",
+          origin: work.metadata?.origin === "sumber" ? "sumber" : "asli",
+        });
         // Text typed in an earlier visit that never reached "Simpan" (refresh, closed tab, crash): offer it back.
         const kept = readDraft(window.localStorage, workId);
         if (kept) {

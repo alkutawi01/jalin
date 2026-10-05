@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getWork, updateWork, archiveWork, deleteUnpublishedWork } from "../../../../../lib/admin/work-service";
-import { conflictMessage, reconcileEdit } from "../../../../../lib/admin/stale-write";
+import { conflictMessage, reconcileEdit, storedFormValues } from "../../../../../lib/admin/stale-write";
 import { getCurrentAdmin } from "../../../../../lib/admin/auth";
 import { getDb, hasDb } from "../../../../../lib/db";
 import { imageMarkers, isImageMarker } from "../../../../../lib/reader/image-markers";
@@ -41,7 +41,7 @@ export async function PATCH(
     }
 
     // A form that loaded an older copy must not wipe what another tab saved since (see stale-write.ts).
-    const stale = reconcileEdit(body.base, body, existing);
+    const stale = reconcileEdit(body.base, body, storedFormValues(existing));
     if (stale.conflicts.length > 0) {
       return NextResponse.json({ error: conflictMessage(stale.conflicts), conflict: stale.conflicts }, { status: 409 });
     }

@@ -3,7 +3,7 @@
  */
 import fs from "node:fs";
 import path from "node:path";
-import { conflictMessage, reconcileEdit } from "../src/lib/admin/stale-write";
+import { conflictMessage, reconcileEdit, storedFormValues } from "../src/lib/admin/stale-write";
 
 let passed = 0;
 let failed = 0;
@@ -43,10 +43,21 @@ assert(r.conflicts.length === 0 && r.skip.length === 0, "a field not sent is not
 
 assert(conflictMessage(["body", "genre"]).includes("teks, genre") && conflictMessage(["body"]).includes("Tiada apa-apa disimpan"), "the message names the fields and says nothing was saved");
 
+// Every field the Simpan button sends is guarded, not only the text.
+const work = { slug: "s", title: "T", body: null, dek: null, genre: null, audience: null, reading_minutes: 7, metadata: { editorNote: "cat", origin: "sumber" }, reader: { note: "nota" } };
+const stored = storedFormValues(work);
+assert(stored.readingMinutes === "7" && stored.editorNote === "cat" && stored.readerNote === "nota" && stored.origin === "sumber" && stored.body === "" && stored.slug === "s", "the stored work is read the way the form shows it");
+assert(storedFormValues({ ...work, reading_minutes: null, metadata: null, reader: null }).origin === "asli", "no origin stored means asli, like the form");
+const formBase = { ...stored, editorNote: "lama" };
+r = reconcileEdit(formBase, { ...formBase, genre: "X" }, stored);
+assert(r.skip.includes("editorNote") && r.skip.includes("readerNote") && r.skip.includes("slug") && r.conflicts.length === 0, "a note another tab changed is not put back to its old text");
+r = reconcileEdit(formBase, { ...formBase, editorNote: "versi B", readingMinutes: 7 }, stored);
+assert(r.conflicts.join() === "editorNote" && !r.conflicts.includes("readingMinutes"), "both edited the note differently: refused; a number sent for the minutes is compared as text");
+
 const route = fs.readFileSync(path.join(__dirname, "../src/app/api/admin/works/[id]/route.ts"), "utf8").replace(/\r\n/g, "\n");
-assert(route.includes("reconcileEdit(body.base, body, existing)") && route.includes("status: 409") && route.indexOf("reconcileEdit") < route.indexOf("imageMarkers(body.body)"), "the route reconciles before it validates or writes, and answers 409");
+assert(route.includes("reconcileEdit(body.base, body, storedFormValues(existing))") && route.includes("status: 409") && route.indexOf("reconcileEdit") < route.indexOf("imageMarkers(body.body)"), "the route reconciles before it validates or writes, and answers 409");
 const page = fs.readFileSync(path.join(__dirname, "../src/app/admin/works/[id]/page.tsx"), "utf8").replace(/\r\n/g, "\n");
-assert(page.includes("base: baseRef.current ?? undefined") && page.includes("baseRef.current = baseOf(sentForm)") && page.includes("baseRef.current = { title: work.title"), "the editor sends what it loaded and moves the base after each save");
+assert(page.includes("base: baseRef.current ?? undefined") && page.includes("baseRef.current = baseOf(sentForm)") && page.includes("readerNote: f.readerNote, origin: f.origin"), "the editor sends what it loaded and moves the base after each save");
 
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);
