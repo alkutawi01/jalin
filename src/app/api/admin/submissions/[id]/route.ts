@@ -89,9 +89,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Ralat tidak diketahui." },
-      { status: 500 }
-    );
+    const message = error instanceof Error ? error.message : "Ralat tidak diketahui.";
+    return NextResponse.json({ error: message }, { status: message.includes("tidak boleh dipadam") ? 409 : 500 });
   }
 }

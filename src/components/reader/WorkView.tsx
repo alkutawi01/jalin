@@ -5,7 +5,7 @@ import { visibleCharacters } from "../../lib/reader/visible-characters";
 import { publicPlaces } from "../../lib/reader/places";
 import { notFound } from "next/navigation";
 import { displayableGenre } from "../../lib/reader/genre-display";
-import { classifyFragmen } from "../../lib/content/fragmen-kind";
+import { classifyFragmen, isIndonesianLanguage } from "../../lib/content/fragmen-kind";
 import { jsonLdString, workJsonLd } from "../../lib/seo-jsonld";
 import {
   EditorialImage,
@@ -216,6 +216,10 @@ export default async function WorkView({
   // Each chapter has its own address, so there is one canonical URL per chapter and one for the whole novela.
   const landing = sections.length > 0 && !sectionSlug;
 
+  // A work without chapters has one address. Any extra path segment (/kategori/cerpen/kerusi-di-beranda/apa-apa) used to show the whole
+  // work again at that address: unlimited duplicate pages for a search engine.
+  if (sections.length === 0 && sectionSlug) notFound();
+
   let activeSection: ReadingSection | undefined;
   let bodyToRender = work.body;
 
@@ -395,7 +399,8 @@ export default async function WorkView({
         {/* "Tamat" marks the end of the work, so a chapter that has a next chapter does not show it. */}
         {sections.length === 0 || (!landing && !nextSection) ? <StoryEnd title={work.title} /> : null}
 
-        <RelatedWorks works={relatedWorks} typeLabel={typeLabel} />
+        {/* Other works are offered where the reader has finished or is choosing, not between two chapters of a novela (whose next step is the next chapter). */}
+        {activeSection && nextSection ? null : <RelatedWorks works={relatedWorks} typeLabel={typeLabel} />}
 
         {preview ? null : <script
           type="application/ld+json"
@@ -412,6 +417,7 @@ export default async function WorkView({
                   publishedAt: work.publishedAt,
                   updatedAt: work.updatedAt,
                   heroSrc: hero?.src,
+                  inLanguage: isIndonesianLanguage(work.metadata?.fragmenTextLanguage) ? "id" : "ms",
                   authors: byline.map((person) => person.name),
                   sections: sections.map((section) => ({ slug: section.slug, title: section.title ?? undefined }))
                 },

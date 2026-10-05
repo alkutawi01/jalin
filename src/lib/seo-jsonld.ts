@@ -14,8 +14,18 @@ export interface JsonLdWork {
   publishedAt?: string;
   updatedAt?: string;
   heroSrc?: string;
+  /** The language the text is published in ("ms" unless it is a work published in Indonesian, "id"). */
+  inLanguage?: string;
   authors: string[];
   sections: { slug: string; title?: string }[];
+}
+
+/** The modified date can never be before the published date (an older import left some works that way): the later of the two. */
+export function laterOf(modified: string, published?: string): string {
+  if (!published) return modified;
+  const m = Date.parse(modified);
+  const p = Date.parse(published);
+  return Number.isFinite(m) && Number.isFinite(p) && m < p ? published : modified;
 }
 
 /** An age range written in the work's audience field, or nothing: no age is assumed. */
@@ -50,11 +60,11 @@ const TYPE_LABEL: Record<string, string> = { cerpen: "Cerpen", novela: "Novela",
 export function workJsonLd(work: JsonLdWork, sectionSlug?: string): Record<string, unknown> {
   const workPath = `/kategori/${work.type}/${work.slug}`;
   const common = {
-    inLanguage: "ms",
+    inLanguage: work.inLanguage ?? "ms",
     ...(work.genre ? { genre: work.genre } : {}),
     ...(work.dek ? { description: work.dek } : {}),
     ...(work.publishedAt ? { datePublished: work.publishedAt } : {}),
-    ...(work.updatedAt ? { dateModified: work.updatedAt } : {}),
+    ...(work.updatedAt ? { dateModified: laterOf(work.updatedAt, work.publishedAt) } : {}),
     ...(work.heroSrc ? { image: shareImageUrl(work.heroSrc) } : {}),
     ...(work.authors.length > 0 ? { author: people(work.authors) } : {}),
     publisher,
@@ -95,7 +105,7 @@ export function workJsonLd(work: JsonLdWork, sectionSlug?: string): Record<strin
             name: section.title || `Bab ${index + 1}`,
             position: index + 1,
             url: absoluteUrl(chapterPath),
-            inLanguage: "ms",
+            inLanguage: work.inLanguage ?? "ms",
             isPartOf: { "@id": absoluteUrl(workPath) + "#book" },
             isAccessibleForFree: true
           },
@@ -123,6 +133,8 @@ export interface JsonLdSeries {
   dek?: string;
   genre?: string;
   heroSrc?: string;
+  /** The writers shown under the series title (the page's byline). */
+  authors?: string[];
   episodes: { slug: string; title: string; position: number }[];
 }
 
@@ -141,6 +153,7 @@ export function seriesJsonLd(series: JsonLdSeries): Record<string, unknown> {
         ...(series.dek ? { description: series.dek } : {}),
         ...(series.genre ? { genre: series.genre } : {}),
         ...(series.heroSrc ? { image: shareImageUrl(series.heroSrc) } : {}),
+        ...(series.authors && series.authors.length > 0 ? { author: people(series.authors) } : {}),
         publisher,
         isAccessibleForFree: true,
         hasPart: series.episodes.map((episode) => ({
@@ -176,7 +189,7 @@ export function episodeJsonLd(work: JsonLdWork, series: { slug: string; title: s
         ...(work.genre ? { genre: work.genre } : {}),
         ...(work.dek ? { description: work.dek } : {}),
         ...(work.publishedAt ? { datePublished: work.publishedAt } : {}),
-        ...(work.updatedAt ? { dateModified: work.updatedAt } : {}),
+        ...(work.updatedAt ? { dateModified: laterOf(work.updatedAt, work.publishedAt) } : {}),
         ...(work.heroSrc ? { image: shareImageUrl(work.heroSrc) } : {}),
         ...(work.authors.length > 0 ? { author: people(work.authors) } : {}),
         publisher,

@@ -96,7 +96,17 @@ export async function POST(request: NextRequest) {
             ? { kind: "baharu", title: str(sr.title), dek: str(sr.dek), mode: sr.mode === "anthology" ? "anthology" : undefined }
             : undefined
     };
-    const result = buildImportPlan(answer, manuscript, options);
+    // "edits" comes from the review screen and is only cast above; a wrong shape threw a TypeError that came back as a 500 with the
+    // JavaScript error text. Whatever the shape, a failure of the plan builder on this input is a 400 with a Malay message.
+    let result: ReturnType<typeof buildImportPlan>;
+    try {
+      result = buildImportPlan(answer, manuscript, options);
+    } catch (error) {
+      if (error instanceof TypeError || error instanceof RangeError) {
+        return NextResponse.json({ error: "Suntingan pada skrin semakan tidak sah. Muat semula halaman semakan dan cuba lagi." }, { status: 400 });
+      }
+      throw error;
+    }
     const errors: ImportIssue[] = [...result.errors];
     // The kind is chosen when the editor starts; the chatbot's answer may not change it silently.
     const expectedType = typeof body.expectedType === "string" ? body.expectedType : null;
