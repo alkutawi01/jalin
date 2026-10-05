@@ -9,17 +9,25 @@ import { getDb, hasDb } from "../../../lib/db";
 
 const allowed = new Set(["nara-zahin", "rafiq-naim"]);
 
+/**
+ * Older credits (e.g. Waktu Sebenar) and published versions use the address "nara-zahin"; the editor's record for that person is
+ * "claude" (Admin > Penyumbang). The page reads the editor's record, so what the editor writes there is what readers see at both addresses.
+ */
+const EDITOR_RECORD: Record<string, string> = { "nara-zahin": "claude" };
+
 async function readContributor(slug: string) {
   if (process.env.CONTENT_SOURCE === "database" && hasDb()) {
     const row = await getDb().selectFrom("contributors")
       .select(["display_name", "bio", "disclosure", "kind"])
-      .where("slug", "=", slug)
+      .where("slug", "in", [slug, EDITOR_RECORD[slug] ?? slug])
       .where("is_visible", "=", true)
+      .orderBy("slug", slug === EDITOR_RECORD[slug] ? "asc" : "desc")
       .executeTakeFirst();
     if (row) {
       return {
         name: row.display_name,
-        body: (row.bio || "").trim().replace(/^# .+\n+/, "").trim(),
+        // A bio saved from the admin text box ends its lines with CRLF; without this its "# Name" title line is not removed and the name shows twice.
+        body: (row.bio || "").replace(/\r\n/g, "\n").trim().replace(/^# .+\n+/, "").trim(),
         disclosure: row.disclosure,
         kind: row.kind,
       };
