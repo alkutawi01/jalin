@@ -26,6 +26,7 @@ import { buildGlossaryPrompt, parseGlossaryPaste } from "../../../../lib/admin/a
 import { buildWorkFillPrompt, parseWorkFill } from "../../../../lib/admin/authoring/work-fill";
 import { renderItalics, toggleItalicSelection } from "../../../../lib/reader/inline-italics";
 import VisualManuscriptEditor, { canEditVisually } from "../../../../components/admin/VisualManuscriptEditor";
+import PlacesEditor from "../../../../components/admin/PlacesEditor";
 
 const WORK_TYPES = [
   { value: "cerpen", label: "Cerpen" },
@@ -202,7 +203,7 @@ interface SectionData {
 const isSourced = (type: string, origin: string) => isSourcedWork(type, { origin });
 
 const TAB_NAMES: Record<Tab, string> = {
-  content: "Kandungan", metadata: "Maklumat", sections: "Bab", credits: "Kredit", glossary: "Glosari", characters: "Watak", source: "Sumber & Hak"
+  content: "Kandungan", metadata: "Maklumat", sections: "Bab", credits: "Kredit", glossary: "Glosari", characters: "Watak & latar", source: "Sumber & Hak"
 };
 
 const HISTORY_ACTIONS: Record<string, string> = {
@@ -1942,7 +1943,7 @@ export default function EditWorkPage() {
           aria-pressed={activeTab === "characters"}
           onClick={() => selectTab("characters")}
         >
-          Watak ({characters.length})
+          Watak &amp; latar ({characters.length})
         </button>
         {isSourced(form.type, form.origin) && (
           <button
@@ -3008,6 +3009,8 @@ export default function EditWorkPage() {
               {charactersSaving ? "Menyimpan..." : "Simpan Watak"}
             </button>
           </div>
+
+          <PlacesEditor workId={workId} />
         </div>
       )}
       {activeTab === "source" && isSourced(form.type, form.origin) && (

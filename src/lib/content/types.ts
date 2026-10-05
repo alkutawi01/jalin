@@ -155,6 +155,8 @@ export interface Work {
 
   metadata?: {
     characters?: CharacterMeta[];
+    /** Where the story happens (Latar tempat): shown in the reader's right column beside the characters. */
+    places?: Array<{ name: string; description?: string }>;
     fragmenTextLanguage?: string;
     /** Free-form note from the editor, shown at the end of the work (origin, what is interesting, ...). */
     editorNote?: string;
