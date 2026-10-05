@@ -294,6 +294,13 @@ function buildSnapshot(input: Awaited<ReturnType<typeof loadWorkForRevision>>) {
   return snapshot;
 }
 
+/** The editor's live draft in the same shape as a frozen revision, so it can be shown the way a reader would see it (preview). Null if the work does not exist. */
+export async function buildLiveSnapshot(workId: string) {
+  const input = await loadWorkForRevision(getDb(), workId);
+  // A frozen revision is stored as JSON (dates become text); the draft goes through the same round trip so both have one shape.
+  return input ? (JSON.parse(JSON.stringify(buildSnapshot(input))) as ReturnType<typeof buildSnapshot>) : null;
+}
+
 export async function createRevision(
   workId: string,
   actor: RevisionActor,

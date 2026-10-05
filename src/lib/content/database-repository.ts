@@ -470,54 +470,62 @@ export class DatabaseContentRepository implements ContentRepository {
   }
 
   private buildSnapshotWork(snapshot: any, workId: string): Work | undefined {
-    if (!snapshot) return undefined;
-    try {
-      const work: Work = {
-        id: String(snapshot.id || workId),
-        slug: snapshot.slug,
-        title: snapshot.title,
-        type: snapshot.type,
-        status: "published",
-        genre: snapshot.genre,
-        audience: snapshot.audience,
-        dek: snapshot.dek,
-        readingMinutes: snapshot.readingMinutes,
-        version: snapshot.version,
-        versionLabel: snapshot.versionLabel,
-        revisionCount: snapshot.revisionCount,
-        publishedAt: snapshot.publishedAt,
-        publishedBy: snapshot.publishedBy,
-        firstPublishedAt: snapshot.firstPublishedAt,
-        publishedRevisionId: snapshot.publishedRevisionId,
-        body: snapshot.body,
-        credits: (snapshot.credits || []).filter((c: any) => c.is_public !== false).map((c: any) => ({
-          slug: String(c.contributor_slug || (c.guest_name ? `guest:${c.guest_name}` : c.slug || "")),
-          role: String(c.role_label || c.role || ""),
-          byline: Boolean(c.byline),
-        })),
-        visuals: (snapshot.visuals || []).map((v: any) => ({
-          role: String(v.role || "inline"),
-          src: String(v.src || ""),
-          alt: String(v.alt || ""),
-          provider: v.provider ? String(v.provider) : undefined,
-          creationId: v.creation_id ? String(v.creation_id) : v.creationId ? String(v.creationId) : undefined,
-          anchor: v.anchor ? String(v.anchor) : undefined,
-          place: v.place === "before" ? "before" : "after",
-          ...(cropFromRow(v) ? { crop: cropFromRow(v)! } : {}),
-          ...(v.section_slug || v.sectionSlug ? { sectionSlug: String(v.section_slug ?? v.sectionSlug) } : {}),
-        })),
-        glossary: (snapshot.glossary || []).map((g: any) => ({ term: String(g.term || ""), meaning: String(g.meaning || ""), source: String(g.source || "") })),
-        editorialHistory: snapshot.editorialHistory || [],
-        metadata: snapshot.metadata,
-        reader: snapshot.reader,
-        sourceWork: sourceFor(snapshot.type, snapshot.metadata, mapPublicSourceWork(snapshot.sourceWork)),
-        sections: snapshot.sections,
-        series: snapshot.series,
-        publishedRevision: snapshot.publishedRevision,
-      };
-      return work;
-    } catch {
-      return undefined;
-    }
+    return workFromSnapshot(snapshot, workId);
+  }
+}
+
+/**
+ * A Work as readers see it, built from a snapshot (the frozen copy of a published version, or the editor's live draft in the
+ * preview). One function for both, so a preview is the page a reader would get.
+ */
+export function workFromSnapshot(snapshot: any, workId: string): Work | undefined {
+  if (!snapshot) return undefined;
+  try {
+    const work: Work = {
+      id: String(snapshot.id || workId),
+      slug: snapshot.slug,
+      title: snapshot.title,
+      type: snapshot.type,
+      status: "published",
+      genre: snapshot.genre,
+      audience: snapshot.audience,
+      dek: snapshot.dek,
+      readingMinutes: snapshot.readingMinutes,
+      version: snapshot.version,
+      versionLabel: snapshot.versionLabel,
+      revisionCount: snapshot.revisionCount,
+      publishedAt: snapshot.publishedAt,
+      publishedBy: snapshot.publishedBy,
+      firstPublishedAt: snapshot.firstPublishedAt,
+      publishedRevisionId: snapshot.publishedRevisionId,
+      body: snapshot.body,
+      credits: (snapshot.credits || []).filter((c: any) => c.is_public !== false).map((c: any) => ({
+        slug: String(c.contributor_slug || (c.guest_name ? `guest:${c.guest_name}` : c.slug || "")),
+        role: String(c.role_label || c.role || ""),
+        byline: Boolean(c.byline),
+      })),
+      visuals: (snapshot.visuals || []).map((v: any) => ({
+        role: String(v.role || "inline"),
+        src: String(v.src || ""),
+        alt: String(v.alt || ""),
+        provider: v.provider ? String(v.provider) : undefined,
+        creationId: v.creation_id ? String(v.creation_id) : v.creationId ? String(v.creationId) : undefined,
+        anchor: v.anchor ? String(v.anchor) : undefined,
+        place: v.place === "before" ? "before" : "after",
+        ...(cropFromRow(v) ? { crop: cropFromRow(v)! } : {}),
+        ...(v.section_slug || v.sectionSlug ? { sectionSlug: String(v.section_slug ?? v.sectionSlug) } : {}),
+      })),
+      glossary: (snapshot.glossary || []).map((g: any) => ({ term: String(g.term || ""), meaning: String(g.meaning || ""), source: String(g.source || "") })),
+      editorialHistory: snapshot.editorialHistory || [],
+      metadata: snapshot.metadata,
+      reader: snapshot.reader,
+      sourceWork: sourceFor(snapshot.type, snapshot.metadata, mapPublicSourceWork(snapshot.sourceWork)),
+      sections: snapshot.sections,
+      series: snapshot.series,
+      publishedRevision: snapshot.publishedRevision,
+    };
+    return work;
+  } catch {
+    return undefined;
   }
 }

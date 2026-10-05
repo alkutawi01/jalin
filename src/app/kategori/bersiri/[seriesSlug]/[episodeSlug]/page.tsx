@@ -1,52 +1,14 @@
-import { displayVersion } from "@/lib/admin/version-label";
 import type { Metadata } from "next";
-import { ContinueNav } from "../../../../../components/reader/ReadingNav";
 import { notFound } from "next/navigation";
 import { absoluteUrl } from "../../../../../lib/seo";
-import { episodeJsonLd, jsonLdString } from "../../../../../lib/seo-jsonld";
-import { displayableGenre } from "../../../../../lib/reader/genre-display";
 import { episodeHeroOf } from "../../../../../lib/reader/chapter-visuals";
-import {
-  EditorialImage,
-  LeftRail,
-  RightRail,
-  SiteFooter,
-  SiteHeader,
-  EditorNote,
-  StoryEnd,
-  StoryHead
-} from "../../../../../components/reader/StoryChrome";
-import StoryMarkdown from "../../../../../components/reader/StoryMarkdown";
-import FootnoteList from "../../../../../components/reader/FootnoteList";
-import { extractFootnotes, markFootnoteReferences } from "../../../../../lib/reader/footnotes";
-import MobileStoryInfo from "../../../../../components/reader/MobileStoryInfo";
 import { initContentRepository } from "../../../../../lib/content";
-import { getWorkBySlug, getWorksByType } from "../../../../../lib/content/workLoader";
-import {
-  disclosureNoteFor,
-  projectBylineCredits,
-  projectEditorialCredits
-} from "../../../../../lib/reader/credit-projection";
-import { buildVerifiedGlossary } from "../../../../../lib/reader/verified-glossary";
-import { placeVisuals } from "../../../../../lib/reader/place-visuals";
-import { firstGlossaryBySegment } from "../../../../../lib/reader/glossary-first";
-import type {
-  CharacterMeta,
-  StoryInfoData,
-  WorkMetaRow
-} from "../../../../../components/reader/types";
-import type { SeriesEpisodeRef, WorkType } from "../../../../../lib/content/types";
+import { getWorkBySlug } from "../../../../../lib/content/workLoader";
+import EpisodeView from "../../../../../components/reader/EpisodeView";
+import type { SeriesEpisodeRef } from "../../../../../lib/content/types";
 
 export const dynamic = "force-dynamic";
 export const dynamicParams = true;
-
-const TYPE_LABELS: Record<string, string> = {
-  cerpen: "Cerpen",
-  novela: "Novela",
-  bersiri: "Bersiri",
-  fragmen: "Fragmen",
-  sinopsis: "Sinopsis"
-};
 
 async function resolveEpisode(seriesSlug: string, episodeSlug: string) {
   const repo = await initContentRepository();
@@ -104,146 +66,7 @@ export default async function EpisodePage({
   if (!work || work.type !== "bersiri") notFound();
   if (!work.series) notFound();
 
-  const series = work.series;
-  const episodes: SeriesEpisodeRef[] = isDb
-    ? repo.getPublishedSeriesEpisodes(series.id)
-    : [];
+  const episodes: SeriesEpisodeRef[] = isDb ? repo.getPublishedSeriesEpisodes(work.series.id) : [];
 
-  const glossary = buildVerifiedGlossary(work);
-
-  const byline = projectBylineCredits(work.credits);
-
-  const episodeIndex = episodes.findIndex((e) => e.slug === work.slug);
-  const prevEpisode = episodeIndex > 0 ? episodes[episodeIndex - 1] : undefined;
-  const nextEpisode = episodeIndex >= 0 && episodeIndex < episodes.length - 1 ? episodes[episodeIndex + 1] : undefined;
-  const typeLabel = TYPE_LABELS["bersiri"];
-  const genre = displayableGenre(work.genre) ?? displayableGenre(series.genre);
-
-  const workMeta: WorkMetaRow[] = [
-    { label: "Bentuk", value: typeLabel },
-    { label: "Siri", value: series.title },
-    { label: "Episod", value: episodeIndex >= 0 ? `${episodeIndex + 1} daripada ${episodes.length}` : "—" },
-    ...(genre ? [{ label: "Genre", value: genre }] : []),
-    { label: "Bacaan", value: work.readingMinutes ? `± ${work.readingMinutes} minit` : "—" },
-    {
-      label: "Status",
-      value: series.status === "completed" ? "Siri tamat" : "Siri berterusan"
-    },
-    { label: "Versi", value: displayVersion(work.versionLabel || work.version) }
-  ];
-
-  const characters: CharacterMeta[] = work.metadata?.characters ?? [];
-
-  const editorial = projectEditorialCredits(work.credits);
-
-  const mobileInfo: StoryInfoData = {
-    work: workMeta,
-    characters,
-    editorial,
-    note: disclosureNoteFor(work)
-  };
-
-  const rights = `© ADJUNG ${(work.publishedAt ?? "2026").slice(0, 4)}`;
-  const hero = episodeHeroOf(work.visuals.find((visual) => visual.role === "hero"), series.hero);
-  const footnotes = extractFootnotes(work.body);
-  const segmentNodes = placeVisuals(markFootnoteReferences(footnotes.body, footnotes.numbers), work.visuals);
-  const segmentGlossaries = firstGlossaryBySegment(segmentNodes, glossary);
-
-  return (
-    <>
-      <SiteHeader active="bersiri" />
-
-      <main id="kandungan" tabIndex={-1}>
-        <StoryHead
-          // The same quiet kicker as a cerpen ("Cerpen · Keluarga"); which series and episode this is goes in a line under the dek.
-          kicker={[typeLabel, genre].filter(Boolean).join(" · ")}
-          title={work.title}
-          dek={work.dek ?? ""}
-          contextLine={
-            <>
-              {episodeIndex >= 0 ? `Episod ${episodeIndex + 1} daripada ${episodes.length} · ` : ""}
-              <a href={`/kategori/bersiri/${series.slug}`}>{series.title}</a>
-            </>
-          }
-          byline={byline}
-          hero={hero?.src ? { src: hero.src, alt: hero.alt ?? "", rights } : undefined}
-        />
-
-
-        <div className="site-shell reading-grid">
-          <LeftRail
-            rows={workMeta}
-            note={disclosureNoteFor(work)}
-            editorial={editorial}
-          />
-
-          <article className="story-body">
-            {segmentNodes.map((node, index) => {
-              if (typeof node === "string") {
-                return (
-                  <StoryMarkdown key={index} glossary={segmentGlossaries[index]} footnoteNumbers={footnotes.numbers}>
-                    {node}
-                  </StoryMarkdown>
-                );
-              }
-              if (typeof node !== "string") {
-                return (
-                  <EditorialImage
-                    key={index}
-                    src={node.src}
-                    alt={node.alt}
-                    rights={rights}
-                  />
-                );
-              }
-              return null;
-            })}
-            <FootnoteList notes={footnotes.notes} />
-          </article>
-
-          <RightRail characters={characters} />
-        </div>
-
-        <ContinueNav
-          name="Selepas episod ini"
-          next={nextEpisode ? { href: `/kategori/bersiri/${series.slug}/${nextEpisode.slug}`, label: `Episod ${episodeIndex + 2}`, title: nextEpisode.title } : undefined}
-          prev={prevEpisode ? { href: `/kategori/bersiri/${series.slug}/${prevEpisode.slug}`, label: `Episod ${episodeIndex}`, title: prevEpisode.title } : undefined}
-          back={{ href: `/kategori/bersiri/${series.slug}`, label: "Semua episod" }}
-          endNote={series.status === "completed" ? "Ini episod terakhir siri ini." : "Ini episod terkini. Episod seterusnya belum diterbitkan."}
-        />
-
-        <EditorNote note={work.metadata?.editorNote} />
-
-        {/* "Tamat" marks the end of the work, so an episode that has a next episode does not show it. */}
-        {!nextEpisode ? <StoryEnd title={work.title} /> : null}
-      </main>
-
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: jsonLdString(
-            episodeJsonLd(
-              {
-                slug: work.slug,
-                title: work.title,
-                type: work.type,
-                dek: work.dek,
-                genre: genre,
-                audience: work.audience,
-                publishedAt: work.publishedAt,
-                updatedAt: work.updatedAt,
-                heroSrc: hero?.src,
-                authors: byline.map((person) => person.name),
-                sections: []
-              },
-              { slug: series.slug, title: series.title },
-              episodeIndex >= 0 ? episodeIndex + 1 : 1
-            )
-          )
-        }}
-      />
-
-      <SiteFooter />
-    </>
-  );
+  return <EpisodeView work={work} episodes={episodes} />;
 }

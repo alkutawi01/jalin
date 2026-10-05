@@ -2981,3 +2981,10 @@ main:focus { outline: none; }
     transform: none;
   }
 }
+
+/* The editor's preview: a quiet bar above the real page saying it is a preview and what the reader sees. */
+.preview-banner { background: var(--ink); color: #f4ecdf; font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 13px; line-height: 1.45; }
+.preview-banner-inner { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 10px; }
+.preview-banner p { margin: 0; }
+.preview-banner a { flex: none; color: #fff; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+@media (max-width: 680px) { .preview-banner-inner { flex-direction: column; align-items: flex-start; gap: 6px; } }

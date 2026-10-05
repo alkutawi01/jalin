@@ -5,7 +5,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const page = fs.readFileSync(path.join(__dirname, "../src/app/kategori/bersiri/[seriesSlug]/[episodeSlug]/page.tsx"), "utf8");
+const page = fs.readFileSync(path.join(__dirname, "../src/components/reader/EpisodeView.tsx"), "utf8");
 const chrome = fs.readFileSync(path.join(__dirname, "../src/components/reader/StoryChrome.tsx"), "utf8");
 let passed = 0;
 let failed = 0;
