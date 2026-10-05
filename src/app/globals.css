@@ -2999,3 +2999,9 @@ main:focus { outline: none; }
 
 /* The row that holds the "Tentang karya" trigger on a narrow screen (hidden above 820px, where the side columns show it). */
 @media (max-width: 820px) { .mobile-info-row { display: block; margin: 0 auto 20px; padding-top: 4px; } }
+
+/* A very long unbroken word (a long title, a web address, a line of code) must never widen the page. Found with an edge-case draft:
+   a 120-character word in the title and a 200-character line of code made the page 2400px wide on a phone. */
+body { overflow-wrap: break-word; }
+.story-end p, .editor-note p, .related-work-body h3, .related-work-body p, .chapter-head h1, .series-masthead h1, .series-list-body h2 { overflow-wrap: anywhere; }
+.story-body pre { max-width: 100%; overflow-x: auto; }
