@@ -20,5 +20,9 @@ const route = read("../src/app/api/admin/series/[id]/route.ts");
 assert(route.includes("confirmModeChange: body.confirmModeChange === true") && route.includes('message.includes("Perlu disahkan")') && route.includes('message.includes("tidak boleh ditukar")'), "the API answers 409 for the confirmation and 400 for the locked address");
 const page = read("../src/app/admin/series/[id]/page.tsx");
 assert(page.includes("confirmModeChange: true") && page.includes("Ya, tukar mod"), "the series page asks and repeats the request");
+// An episode that was public (even if archived now) cannot be moved to another series: its address contains the series' address.
+const detach = service.slice(service.indexOf("export async function detachEpisode"), service.indexOf("export async function reorderSeriesEntries"));
+assert(detach.includes('.select(["status", "published_at", "published_revision_id"])') && detach.includes("work.published_at || work.published_revision_id") && detach.includes("pernah terbit tidak boleh dikeluarkan"), "a once-public episode cannot be detached, archived or not");
+assert(detach.indexOf("pernah terbit tidak boleh") < detach.indexOf(".deleteFrom(\"series_entries\")"), "checked before anything is deleted");
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);

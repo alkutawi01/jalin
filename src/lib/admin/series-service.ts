@@ -364,11 +364,17 @@ export async function detachEpisode(seriesId: string, workId: string): Promise<v
   const work = await db
     .selectFrom("works")
     .where("id", "=", workId)
-    .select(["status"])
+    .select(["status", "published_at", "published_revision_id"])
     .executeTakeFirst();
   if (work && String(work.status) === "published") {
     throw new Error(
       "Episod yang sudah terbit tidak boleh dikeluarkan terus. Arkib/ubah status terbit mengikut aliran editorial selamat terlebih dahulu."
+    );
+  }
+  // An episode's public address contains its series' address: one that has been public (even if archived now) cannot move to another series.
+  if (work && (work.published_at || work.published_revision_id)) {
+    throw new Error(
+      "Episod yang pernah terbit tidak boleh dikeluarkan daripada siri ini: alamat awamnya mengandungi alamat siri, dan pautan yang sudah dikongsi akan terputus."
     );
   }
 
