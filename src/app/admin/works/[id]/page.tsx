@@ -627,6 +627,11 @@ export default function EditWorkPage() {
   const charactersBaseline = useRef<string>("[]");
   /** The latest form, so a save can tell whether the editor kept typing while it was in flight. */
   const formRef = useRef<typeof form | null>(null);
+  /** What this page last loaded or saved of the fields that two tabs can fight over; sent with every save (see stale-write.ts). */
+  const baseRef = useRef<Record<string, string> | null>(null);
+  const baseOf = (f: { title: string; body: string; dek: string; genre: string; audience: string }) => ({
+    title: f.title.trim() ? f.title : UNTITLED_DRAFT, body: f.body, dek: f.dek, genre: f.genre, audience: f.audience,
+  });
   /** Which side lists failed to load (so an empty list is never mistaken for "nothing here"). */
   const [loadFailures, setLoadFailures] = useState<Record<string, string>>({});
   function noteLoad(key: string, label: string, ok: boolean) {
@@ -787,6 +792,7 @@ export default function EditWorkPage() {
           origin: work.metadata?.origin === "sumber" ? "sumber" : "asli",
         });
         setSavedBody(work.body || "");
+        baseRef.current = { title: work.title, body: work.body || "", dek: work.dek || "", genre: work.genre || "", audience: work.audience || "" };
         // Text typed in an earlier visit that never reached "Simpan" (refresh, closed tab, crash): offer it back.
         const kept = readDraft(window.localStorage, workId);
         if (kept) {
@@ -1239,6 +1245,7 @@ export default function EditWorkPage() {
       const work = await workRes.json();
       setForm((prev) => ({ ...prev, body: work.body || "" }));
       setSavedBody(work.body || "");
+      if (baseRef.current) baseRef.current = { ...baseRef.current, body: work.body || "" };
       await loadVisuals();
       await loadReadiness();
       setMarkerMigration(null);
@@ -1339,6 +1346,7 @@ export default function EditWorkPage() {
           ...editableForm,
           title: form.title.trim() ? editableForm.title : UNTITLED_DRAFT,
           readingMinutes: form.readingMinutes ? Number(form.readingMinutes) : undefined,
+          base: baseRef.current ?? undefined,
         }),
       });
 
@@ -1349,6 +1357,7 @@ export default function EditWorkPage() {
 
       setSuccess("Teks & maklumat karya disimpan.");
       setSavedBody(sentForm.body);
+      baseRef.current = baseOf(sentForm);
       // If the editor kept typing while this was saving, those edits are not saved yet: stay dirty.
       if (JSON.stringify(formRef.current) === JSON.stringify(sentForm)) {
         setDirty(false);
