@@ -14,31 +14,32 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Image from "next/image";
 import { renderAttribution } from "@/components/reader/Attribution";
+import { categoryIntro, DEFAULT_CATEGORY_INTROS, isCategoryType } from "@/lib/site-copy";
 
 const CATEGORY_META: Record<string, { title: string; intro: string; headerLabel: string }> = {
   cerpen: {
     title: "Senarai Cerpen",
-    intro: "Cerita pendek berilustrasi untuk pembaca Jalin.",
+    intro: DEFAULT_CATEGORY_INTROS.cerpen,
     headerLabel: "Cerpen",
   },
   novela: {
     title: "Senarai Novela",
-    intro: "Novela pendek berilustrasi untuk pembaca Jalin.",
+    intro: DEFAULT_CATEGORY_INTROS.novela,
     headerLabel: "Novela",
   },
   bersiri: {
     title: "Senarai Bersiri",
-    intro: "Siri berilustrasi untuk pembaca Jalin — sambungan demi sambungan.",
+    intro: DEFAULT_CATEGORY_INTROS.bersiri,
     headerLabel: "Bersiri",
   },
   fragmen: {
     title: "Senarai Fragmen",
-    intro: "Sedutan bermakna daripada karya untuk pembaca Jalin.",
+    intro: DEFAULT_CATEGORY_INTROS.fragmen,
     headerLabel: "Fragmen",
   },
   sinopsis: {
     title: "Senarai Sinopsis",
-    intro: "Penceritaan semula editorial karya lain.",
+    intro: DEFAULT_CATEGORY_INTROS.sinopsis,
     headerLabel: "Sinopsis",
   },
 };
@@ -94,6 +95,8 @@ function WorkCard({ work, type }: { work: PublicWorkSummary; type: string }) {
   );
 }
 
+export const dynamic = "force-dynamic";
+
 function SeriesCard({ series, episodeCount }: { series: PublicSeriesSummary; episodeCount: number }) {
   const genre = displayableGenre(series.genre);
   return (
@@ -113,21 +116,21 @@ function SeriesCard({ series, episodeCount }: { series: PublicSeriesSummary; epi
   );
 }
 
-export function generateMetadata({ params }: { params: Promise<{ type: string }> }): Promise<Metadata> {
-  return params.then(({ type }) => {
-    const meta = CATEGORY_META[type];
-    if (!meta) return {};
-    return {
+export async function generateMetadata({ params }: { params: Promise<{ type: string }> }): Promise<Metadata> {
+  const { type } = await params;
+  const meta = CATEGORY_META[type];
+  if (!meta) return {};
+  const intro = isCategoryType(type) ? await categoryIntro(type) : meta.intro;
+  return {
+    title: meta.title,
+    description: intro,
+    alternates: { canonical: `/kategori/${type}` },
+    openGraph: {
       title: meta.title,
-      description: meta.intro,
-      alternates: { canonical: `/kategori/${type}` },
-      openGraph: {
-        title: meta.title,
-        description: meta.intro,
-        url: `/kategori/${type}`
-      }
-    };
-  });
+      description: intro,
+      url: `/kategori/${type}`
+    }
+  };
 }
 
 function EmptyCategoryFallback({ currentType }: { currentType: string }) {
@@ -161,6 +164,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ type:
   const { type } = await params;
   const meta = CATEGORY_META[type];
   if (!meta) notFound();
+  const intro = isCategoryType(type) ? await categoryIntro(type) : meta.intro;
 
   const isDb =
     (await initContentRepository()).source === "database";
@@ -176,7 +180,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ type:
             <header className="category-head">
               <p className="category-kicker">{meta.headerLabel}</p>
               <h1>{meta.title}</h1>
-              <p className="category-intro">{meta.intro}</p>
+              <p className="category-intro">{intro}</p>
             </header>
             <div className="work-list">
               {seriesList.length === 0 ? <EmptyCategoryFallback currentType={type} /> : null}
@@ -210,7 +214,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ type:
           <header className="category-head">
             <p className="category-kicker">{meta.headerLabel}</p>
             <h1>{meta.title}</h1>
-            <p className="category-intro">{meta.intro}</p>
+            <p className="category-intro">{intro}</p>
           </header>
 
           <div className="latest-grid category-grid">
