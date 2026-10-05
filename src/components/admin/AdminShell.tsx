@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
+import { linkLabels } from "./link-labels";
 import { usePathname } from "next/navigation";
 import DialogHost from "./DialogHost";
 import { confirmAction } from "../../lib/admin/dialogs";
@@ -54,6 +55,19 @@ export default function AdminShell({ children }: { children: ReactNode }) {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
+  }, []);
+
+  // Forms are drawn and redrawn by the pages themselves; tie each label to its box whenever the page changes.
+  useEffect(() => {
+    linkLabels(document);
+    let queued = false;
+    const observer = new MutationObserver(() => {
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(() => { queued = false; linkLabels(document); });
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+    return () => observer.disconnect();
   }, []);
 
   if (pathname.startsWith("/admin/login")) return <>{children}</>;
