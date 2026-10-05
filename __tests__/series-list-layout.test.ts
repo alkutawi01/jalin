@@ -31,9 +31,10 @@ assert(kicker.includes("--font-inter") && kicker.includes("font-weight: 700"), "
 // content (370px in a 335px card on a phone) and the cover runs out of the card and is cut off.
 assert(rule(".latest-card a").includes("min-width: 0"), "the latest-work card link can shrink to the card, so the cover stays inside it on a phone");
 
-// ...and on a phone the cover is narrow enough (118px) that the title column stays wide (170px at 375px) and a long title
-// does not touch the picture.
-assert(/@media \(max-width: 480px\) \{\s*\.latest-card-cover \{ flex: 0 0 118px; width: 118px; \}/.test(css), "on a phone the latest-work cover is 118px wide so the text column is not squeezed");
+// ...and on a phone the card stacks (picture on top, text below at full width). Side by side it made two unequal columns: a
+// tall dense text column next to a picture with empty space under it.
+const phone = css.slice(css.indexOf("/* Phones: the card stacks"), css.indexOf("/* Very narrow phones"));
+assert(phone.includes("@media (max-width: 480px)") && phone.includes(".latest-card a { flex-direction: column;") && phone.includes(".latest-card-cover { flex: none; width: 100%; }"), "on a phone the latest-work card stacks: picture on top, text at full width");
 
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);
