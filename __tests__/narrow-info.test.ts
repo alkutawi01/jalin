@@ -35,6 +35,7 @@ const block = css.slice(start, css.indexOf("}", start));
 assert(block.includes("position: static") && !block.includes("position: fixed"), "it is part of the page, not floating over it");
 assert(block.includes("min-height: 44px") && block.includes("font-size: 14px"), "it is big enough to read and tap");
 assert(css.includes(".mobile-info-row { display: block;"), "the row shows below 820px");
+assert(css.includes("margin: 0 auto 20px;"), "the trigger has room before the first paragraph (it was 8px at 768px)");
 
 const series = read("src/app/kategori/bersiri/[seriesSlug]/page.tsx");
 assert(!series.includes("Mula Episod") && !series.includes("Episod terkini") && !series.includes("series-actions"), "the series page has no read buttons");

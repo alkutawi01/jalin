@@ -2998,4 +2998,4 @@ main:focus { outline: none; }
 @media (max-width: 680px) { .preview-banner-inner { flex-direction: column; align-items: flex-start; gap: 6px; } }
 
 /* The row that holds the "Tentang karya" trigger on a narrow screen (hidden above 820px, where the side columns show it). */
-@media (max-width: 820px) { .mobile-info-row { display: block; margin: 0 auto 8px; padding-top: 4px; } }
+@media (max-width: 820px) { .mobile-info-row { display: block; margin: 0 auto 20px; padding-top: 4px; } }
