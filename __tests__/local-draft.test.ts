@@ -49,5 +49,11 @@ assert(readDraft(junk, "w1") === null, "a damaged copy is ignored");
 junk.setItem("jalin:draft:w1", JSON.stringify({ savedAt: "x", fields: 5 }));
 assert(readDraft(junk, "w1") === null, "a copy of the wrong shape is ignored");
 
+import fs from "node:fs";
+import path from "node:path";
+const page = fs.readFileSync(path.join(__dirname, "../src/app/admin/works/[id]/page.tsx"), "utf8").replace(/\r\n/g, "\n");
+assert(page.includes("restoreOffer.savedAt < serverSavedAt") && page.includes("Salinan ini lebih lama"), "the restore offer says when the browser copy is older than what the server has");
+assert(page.includes('slug: work.slug, dek: work.dek || ""') && page.includes('readerNote: work.reader?.note ?? ""'), "the server side of the comparison includes the address and the note");
+
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);
