@@ -3,12 +3,30 @@ import { SITE_URL } from "../lib/seo";
 import { initContentRepository } from "../lib/content";
 import { getAllWorks } from "../lib/content/workLoader";
 import type { WorkType } from "../lib/content/types";
+import { getDb, hasDb } from "../lib/db";
+
+// Read on every request, like the pages it lists: a work published after the last deploy must be in the sitemap at once.
+export const dynamic = "force-dynamic";
 
 const CATEGORY_TYPES: WorkType[] = ["cerpen", "novela", "bersiri", "fragmen", "sinopsis"];
 const CONTRIBUTOR_SLUGS = ["nara-zahin", "rafiq-naim"];
 
+/** The public contributor pages: the visible contributors of the database (what bylines link to), else the two static profiles. */
+async function contributorSlugs(): Promise<string[]> {
+  if (process.env.CONTENT_SOURCE === "database" && hasDb()) {
+    try {
+      const rows = await getDb().selectFrom("contributors").select("slug").where("is_visible", "=", true).orderBy("slug").execute();
+      if (rows.length > 0) return rows.map((row) => row.slug);
+    } catch {
+      /* fall back to the static list */
+    }
+  }
+  return CONTRIBUTOR_SLUGS;
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const repo = await initContentRepository();
+  const contributors = await contributorSlugs();
   const works = repo.source === "database" ? repo.getWorks() : getAllWorks();
 
   const entries: MetadataRoute.Sitemap = [
@@ -23,7 +41,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "yearly" as const,
       priority: 0.3
     })),
-    ...CONTRIBUTOR_SLUGS.map((slug) => ({
+    ...contributors.map((slug) => ({
       url: `${SITE_URL}/penulis/${slug}`,
       changeFrequency: "monthly" as const,
       priority: 0.4
