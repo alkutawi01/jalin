@@ -331,10 +331,15 @@ export async function createRevisionTx(
     const publishedBy = actor.email || actor.id;
     const revisionId = `rev_${workId}_${revisionNo}_${Date.now()}`;
 
+    // The label readers see is the one this publication gives, not the working copy's older one. Readers are served from the
+    // frozen row (raw.work), so the new label is written there too.
+    const publishedLabel = options.versionLabel ?? snapshot.versionLabel;
+    const frozenRaw = (snapshot as { raw?: { work?: Record<string, unknown> } }).raw;
     const snapshotWithMeta = {
       ...snapshot,
+      ...(options.versionLabel && frozenRaw?.work ? { raw: { ...frozenRaw, work: { ...frozenRaw.work, version_label: options.versionLabel } } } : {}),
       version: snapshot.version,
-      versionLabel: snapshot.versionLabel,
+      versionLabel: publishedLabel,
       revisionCount: snapshot.revisionCount,
       publishedRevisionId: snapshot.publishedRevisionId,
     };
