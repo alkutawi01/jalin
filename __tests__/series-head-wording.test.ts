@@ -3,7 +3,7 @@
  *  - the series page listed "Bersambung · Berterusan · Rumah Tangga · 1 episod diterbitkan · Dikemas kini ..." and no author;
  *    it now shows who wrote it (the same "Oleh ..." row as a story) and one quiet line: form, status, genre;
  *  - status reads "Masih diteruskan" (not "Berterusan" / "Siri berterusan") and "Tamat";
- *  - the row that holds the series name is "Tajuk siri", not "Siri";
+ *  - the row that holds the series name is "Judul" (Izzat: one word for every kind of work, not "tajuk siri", "tajuk cerpen"...), not "Siri";
  *  - "Episod 1" with no "daripada 1", which made a series that has only one episode so far look as if it only ever has one.
  */
 import fs from "node:fs";
@@ -24,7 +24,7 @@ assert(metaBlock.includes("MODE_LABELS") && metaBlock.includes("STATUS_LABELS") 
 assert(series.includes("ongoing: \"Masih diteruskan\""), "an ongoing series reads 'Masih diteruskan'");
 
 const episode = read("src/components/reader/EpisodeView.tsx");
-assert(episode.includes("{ label: \"Tajuk siri\", value: series.title }") && !episode.includes("{ label: \"Siri\","), "the series name is on a row called 'Tajuk siri'");
+assert(episode.includes("{ label: \"Judul\", value: series.title }") && !episode.includes("{ label: \"Siri\",") && !episode.includes("Tajuk siri"), "the row that holds the series name is called 'Judul', like the title row of every other kind of work");
 assert(episode.includes("`Episod ${episodeIndex + 1} · `") && episode.includes("String(episodeIndex + 1)") && !episode.includes("daripada"), "the episode number has no 'daripada N'");
 assert(episode.includes("\"Tamat\" : \"Masih diteruskan\""), "the status row reads Tamat or Masih diteruskan");
 

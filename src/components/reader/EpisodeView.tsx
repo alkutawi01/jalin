@@ -71,7 +71,7 @@ export default function EpisodeView({
 
   const workMeta: WorkMetaRow[] = [
     { label: "Bentuk", value: typeLabel },
-    { label: "Tajuk siri", value: series.title },
+    { label: "Judul", value: series.title },
     { label: "Episod", value: episodeIndex >= 0 ? String(episodeIndex + 1) : "—" },
     ...(genre ? [{ label: "Genre", value: genre }] : []),
     { label: "Bacaan", value: work.readingMinutes ? `± ${work.readingMinutes} minit` : "—" },
