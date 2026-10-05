@@ -47,6 +47,7 @@ export async function PATCH(
       audience: body.audience,
       mode: body.mode,
       status: body.status,
+      confirmModeChange: body.confirmModeChange === true,
     });
 
     return NextResponse.json(series);
@@ -54,9 +55,9 @@ export async function PATCH(
     const message = error instanceof Error ? error.message : "Ralat tidak diketahui.";
     const status = message.includes("tidak ditemui")
       ? 404
-      : message.includes("sudah wujud")
+      : message.includes("sudah wujud") || message.includes("Perlu disahkan")
         ? 409
-        : message.includes("tidak sah")
+        : message.includes("tidak sah") || message.includes("tidak boleh ditukar")
           ? 400
           : 500;
     return NextResponse.json({ error: message }, { status });

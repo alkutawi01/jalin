@@ -29,6 +29,8 @@ export interface SeriesInput {
   audience?: string | null;
   mode?: string;
   status?: string;
+  /** The editor has confirmed changing the mode of a series that already has public episodes. */
+  confirmModeChange?: boolean;
 }
 
 export interface SeriesRecord {
@@ -149,6 +151,28 @@ export async function updateSeries(
       .executeTakeFirst();
     if (clash) {
       throw new Error(`Slug Siri "${input.slug}" sudah wujud.`);
+    }
+  }
+
+  // A series' address is part of every episode's address, and its mode decides which episodes readers see; once episodes have been
+  // public, changing the address would break shared links and changing the mode would show or hide episodes at once.
+  const slugChanges = input.slug !== undefined && input.slug !== existing.slug;
+  const modeChanges = input.mode !== undefined && input.mode !== existing.mode;
+  if (slugChanges || modeChanges) {
+    const everPublic = await db
+      .selectFrom("series_entries")
+      .innerJoin("works", "works.id", "series_entries.work_id")
+      .where("series_entries.series_id", "=", id)
+      .where((eb) => eb.or([eb("works.status", "=", "published"), eb("works.published_at", "is not", null), eb("works.published_revision_id", "is not", null)]))
+      .select("works.id")
+      .executeTakeFirst();
+    if (everPublic && slugChanges) {
+      throw new Error("Alamat pautan siri yang episodnya pernah terbit tidak boleh ditukar: pautan siri dan semua episodnya yang sudah dikongsi akan terputus.");
+    }
+    if (everPublic && modeChanges && input.confirmModeChange !== true) {
+      throw new Error(
+        "Menukar mod siri yang sudah mempunyai episod terbit mengubah episod mana yang dilihat pembaca serta-merta (siri bersambung hanya menunjukkan larian tanpa jurang dari episod 1; antologi menunjukkan semua yang terbit). Perlu disahkan."
+      );
     }
   }
 
