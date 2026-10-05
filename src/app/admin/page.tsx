@@ -9,6 +9,7 @@ import { EditorialIssueQueue } from "../../components/admin/EditorialIssueQueue"
 import { EditorialWorkflowDashboard } from "../../components/admin/EditorialWorkflowDashboard";
 import { listWorks } from "../../lib/admin/work-service";
 import { summarizeReadiness } from "../../lib/admin/publication-service";
+import { countWorks } from "../../lib/admin/dashboard-counts";
 
 export const dynamic = "force-dynamic";
 
@@ -21,14 +22,7 @@ async function getStats() {
   if (!hasDb()) {
     return {
       contentSource: "markdown",
-      totalWorks: getAllWorks().length,
-      worksByType: {
-        cerpen: getAllWorks().filter((w) => w.type === "cerpen").length,
-        novela: getAllWorks().filter((w) => w.type === "novela").length,
-        bersiri: getAllWorks().filter((w) => w.type === "bersiri").length,
-        fragmen: getAllWorks().filter((w) => w.type === "fragmen").length,
-        sinopsis: getAllWorks().filter((w) => w.type === "sinopsis").length,
-      },
+      counts: countWorks(getAllWorks().map((w) => ({ type: w.type, status: "published" }))),
       editorialHealth: null,
     };
   }
@@ -48,14 +42,7 @@ async function getStats() {
 
   return {
     contentSource: useDb ? "database" : "markdown",
-    totalWorks: works.length,
-    worksByType: {
-      cerpen: works.filter((w) => w.type === "cerpen").length,
-      novela: works.filter((w) => w.type === "novela").length,
-      bersiri: works.filter((w) => w.type === "bersiri").length,
-      fragmen: works.filter((w) => w.type === "fragmen").length,
-      sinopsis: works.filter((w) => w.type === "sinopsis").length,
-    },
+    counts: countWorks(works),
     editorialHealth,
   };
 }
@@ -150,30 +137,13 @@ export default async function AdminDashboard() {
       </section>
 
       <div className="admin-stats-grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))" }}>
-        <div className="admin-stat-card">
-          <div className="admin-stat-label">Jumlah Karya</div>
-          <div className="admin-stat-value">{stats.totalWorks}</div>
-        </div>
-        <div className="admin-stat-card">
-          <div className="admin-stat-label">Cerpen</div>
-          <div className="admin-stat-value">{stats.worksByType.cerpen}</div>
-        </div>
-        <div className="admin-stat-card">
-          <div className="admin-stat-label">Novela</div>
-          <div className="admin-stat-value">{stats.worksByType.novela}</div>
-        </div>
-        <div className="admin-stat-card">
-          <div className="admin-stat-label">Bersiri</div>
-          <div className="admin-stat-value">{stats.worksByType.bersiri}</div>
-        </div>
-        <div className="admin-stat-card">
-          <div className="admin-stat-label">Fragmen</div>
-          <div className="admin-stat-value">{stats.worksByType.fragmen}</div>
-        </div>
-        <div className="admin-stat-card">
-          <div className="admin-stat-label">Sinopsis</div>
-          <div className="admin-stat-value">{stats.worksByType.sinopsis}</div>
-        </div>
+        {([["Karya diterbitkan", stats.counts.total], ["Cerpen", stats.counts.byType.cerpen], ["Novela", stats.counts.byType.novela], ["Bersiri", stats.counts.byType.bersiri], ["Fragmen", stats.counts.byType.fragmen], ["Sinopsis", stats.counts.byType.sinopsis]] as const).map(([label, count]) => (
+          <div className="admin-stat-card" key={label}>
+            <div className="admin-stat-label">{label}</div>
+            <div className="admin-stat-value">{count?.published ?? 0}</div>
+            {count && count.pending > 0 ? <div className="admin-section-meta">+ {count.pending} belum diterbitkan</div> : null}
+          </div>
+        ))}
       </div>
 
       <details className="admin-section a-tech">
