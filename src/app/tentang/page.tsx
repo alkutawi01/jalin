@@ -26,7 +26,7 @@ export default function AboutPage() {
       <p>
         Jalin diterbitkan oleh Adjung Press. Setiap karya menyatakan dengan jelas siapa yang menulis, menyunting dan
         membantu. Sebahagian penulis kami ialah penulis maya, iaitu watak penulis yang dibantu kecerdasan buatan.
-        Mereka ditandakan dengan "Maya" di sebelah nama, dan sentiasa bekerja di bawah kawal selia editorial manusia.
+        Mereka ditandakan dengan “Maya” di sebelah nama, dan sentiasa bekerja di bawah kawal selia editorial manusia.
       </p>
 
       <h2>Ilustrasi</h2>
