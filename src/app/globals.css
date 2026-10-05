@@ -812,10 +812,12 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 
 .category-head { padding: 56px 0 12px; }
 .category-kicker {
+  font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif;
+  font-weight: 700;
   margin: 0 0 8px;
   font-size: 11px;
   text-transform: uppercase;
-  letter-spacing: .13em;
+  letter-spacing: .14em;
   color: var(--clay-text);
 }
 .category-head h1 { margin: 0; font-size: 44px; line-height: 1.1; }
@@ -2591,7 +2593,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 .series-list-card { border-top: 1px solid var(--line); }
 .series-list-card:last-child { border-bottom: 1px solid var(--line); }
 .series-list-card > a { display: grid; grid-template-columns: minmax(0, 31%) minmax(0, 1fr); gap: clamp(24px, 4vw, 52px); align-items: center; padding-block: 24px; }
-.series-list-media { position: relative; min-height: 220px; aspect-ratio: 3 / 2; overflow: hidden; border-radius: 10px; background: #d6ded3; }
+.series-list-media { position: relative; width: 100%; aspect-ratio: 3 / 2; overflow: hidden; border-radius: 10px; background: #d6ded3; }
 .series-list-body { min-width: 0; padding-right: 20px; }
 .series-list-body h2 { margin: 12px 0; font-size: clamp(1.7rem, 2.8vw, 2.7rem); font-weight: 500; line-height: 1.13; letter-spacing: -.02em; text-wrap: balance; }
 .series-list-dek { display: -webkit-box; max-width: 65ch; margin: 0; overflow: hidden; color: var(--ink-soft); font-size: 1rem; line-height: 1.55; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
