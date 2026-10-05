@@ -94,6 +94,9 @@ export default function AdminWorksTable({ works, initialPicks }: { works: AdminW
   return (
     <>
       {error ? <div className="admin-alert admin-alert-error" role="alert">{error}</div> : null}
+      <p className="admin-form-hint admin-pick-summary">
+        Hero laman utama: {saved.length}/{LIMIT} pilihan disimpan. Karusel bertukar secara automatik apabila sekurang-kurangnya dua karya disimpan.
+      </p>
       <div className="admin-table-wrap">
         <table className="admin-table admin-works-table">
           <thead><tr><th className="admin-pick-column">Pilihan Editor</th><th>Tajuk</th><th>Alamat pautan</th><th>Jenis</th><th>Status</th><th>Versi</th><th>Dikemas kini</th><th>Aksi</th></tr></thead>

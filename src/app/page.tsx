@@ -206,7 +206,6 @@ function SeriesHighlight({ data }: { data: SeriesHighlightData }) {
       <div className="site-shell">
         <header className="section-head">
           <h2 id="series-highlight-title">Bersiri</h2>
-          <p className="section-sub">Sambungan demi sambungan, satu episod pada satu masa</p>
         </header>
         <article className="series-feature">
           <a className="series-feature-media" href={base}>
