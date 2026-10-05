@@ -1,4 +1,5 @@
 import { renderItalics } from "../../lib/reader/inline-italics";
+import { smartQuotes } from "../../lib/admin/smart-quotes";
 import type { ReactNode } from "react";
 import Image from "next/image";
 import { cropStyle } from "../../lib/reader/crop";
@@ -52,7 +53,7 @@ export function StoryHead({
       <div className="story-kicker">{kicker}</div>
       <h1 style={{ fontStyle: "normal" }}>{title}</h1>
       {originalTitle ? <p className="story-original-title"><cite>{originalTitle}</cite></p> : null}
-      <p className="dek">{dek}</p>
+      <p className="dek">{smartQuotes(dek)}</p>
       {contextLine ? <p className="story-context-line">{contextLine}</p> : null}
       {byline.length > 0 && (
         <div className="byline">

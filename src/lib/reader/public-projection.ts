@@ -6,6 +6,7 @@ import type {
   WorkType
 } from "../content/types";
 import { projectCardAttribution, type CardAttribution } from "./card-attribution";
+import { smartQuotes } from "../admin/smart-quotes";
 
 /**
  * Public page projection boundary.
@@ -56,7 +57,7 @@ export function projectPublicWorkSummary(work: Work): PublicWorkSummary {
     slug: work.slug,
     title: work.title,
     ...(work.genre ? { genre: work.genre } : {}),
-    ...(work.dek ? { dek: work.dek } : {}),
+    ...(work.dek ? { dek: smartQuotes(work.dek) } : {}),
     ...(work.readingMinutes ? { readingMinutes: work.readingMinutes } : {}),
     ...(work.publishedAt ? { publishedAt: work.publishedAt } : {}),
     ...(work.updatedAt ? { updatedAt: work.updatedAt } : {}),
@@ -75,7 +76,7 @@ export function projectPublicSeries(series: SeriesMeta): PublicSeriesSummary {
   return {
     slug: series.slug,
     title: series.title,
-    ...(series.dek ? { dek: series.dek } : {}),
+    ...(series.dek ? { dek: smartQuotes(series.dek) } : {}),
     ...(series.genre ? { genre: series.genre } : {}),
     ...(series.hero ? { hero: { src: series.hero.src, alt: series.hero.alt } } : {}),
     mode: series.mode,
