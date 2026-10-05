@@ -70,9 +70,11 @@ export async function PATCH(
     const message = error instanceof Error ? error.message : "Ralat tidak diketahui.";
     const status = message.includes("tidak ditemui")
       ? 404
-      : message.includes("tidak sah") || message.includes("kosong")
-        ? 400
-        : 500;
+      : message.includes("sudah digunakan")
+        ? 409
+        : message.includes("tidak sah") || message.includes("kosong")
+          ? 400
+          : 500;
     return NextResponse.json({ error: message }, { status });
   }
 }
