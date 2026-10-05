@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { absoluteUrl, clipDescription } from "../../../../lib/seo";
+import { absoluteUrl, clipDescription, shareImageUrl } from "../../../../lib/seo";
 import { chapterHeroOf } from "../../../../lib/reader/chapter-visuals";
 import { initContentRepository } from "../../../../lib/content";
 import { getWorkBySlug } from "../../../../lib/content/workLoader";
@@ -57,13 +57,13 @@ export async function generateMetadata({
       title: pageTitle,
       description: pageDescription,
       url: canonicalPath,
-      images: hero?.src ? [{ url: absoluteUrl(hero.src) }] : undefined
+      images: hero?.src ? [{ url: shareImageUrl(hero.src) }] : undefined
     },
     twitter: {
       card: hero?.src ? "summary_large_image" : "summary",
       title: pageTitle,
       description: pageDescription,
-      images: hero?.src ? [absoluteUrl(hero.src)] : undefined
+      images: hero?.src ? [shareImageUrl(hero.src)] : undefined
     }
   };
 }

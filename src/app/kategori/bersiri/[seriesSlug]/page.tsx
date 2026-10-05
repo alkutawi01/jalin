@@ -8,7 +8,7 @@ import type { BylineCredit } from "../../../../components/reader/types";
 import { WorkCover } from "../../../../components/reader/WorkCover";
 import { initContentRepository } from "../../../../lib/content";
 import { displayableGenre } from "../../../../lib/reader/genre-display";
-import { absoluteUrl, clipDescription } from "../../../../lib/seo";
+import { absoluteUrl, clipDescription, shareImageUrl } from "../../../../lib/seo";
 import { jsonLdString, seriesJsonLd } from "../../../../lib/seo-jsonld";
 
 export const dynamic = "force-dynamic";
@@ -43,7 +43,7 @@ export async function generateMetadata({ params }: { params: Promise<{ seriesSlu
   if (!series || repo.getPublishedSeriesEpisodes(series.id).length === 0) return {};
   const description = clipDescription(series.dek ? smartQuotes(series.dek) : `Siri ${series.title} di Jalin.`);
   const path = `/kategori/bersiri/${series.slug}`;
-  const image = series.hero?.src ? [{ url: absoluteUrl(series.hero.src) }] : undefined;
+  const image = series.hero?.src ? [{ url: shareImageUrl(series.hero.src) }] : undefined;
   return {
     title: series.title,
     description,
