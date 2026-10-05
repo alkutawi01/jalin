@@ -27,5 +27,9 @@ assert(mixed.length === 0, "no rule combines a minimum height with an aspect rat
 const kicker = rule(".category-kicker");
 assert(kicker.includes("--font-inter") && kicker.includes("font-weight: 700"), "the category eyebrow uses the label font (Inter, bold), like the other labels");
 
+// Homepage "Karya Terbaru" card: its link is a flex item of the card, so without "min-width: 0" it grows to the width of its
+// content (370px in a 335px card on a phone) and the cover runs out of the card and is cut off.
+assert(rule(".latest-card a").includes("min-width: 0"), "the latest-work card link can shrink to the card, so the cover stays inside it on a phone");
+
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);
