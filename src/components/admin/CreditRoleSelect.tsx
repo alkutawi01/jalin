@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { STANDARD_ROLES, normaliseCustomRole } from "../../lib/credit-roles";
+import { STANDARD_ROLES, canonicalRole, normaliseCustomRole } from "../../lib/credit-roles";
 
 const NEW_ROLE = "__new__";
 
@@ -21,6 +21,12 @@ export default function CreditRoleSelect({
 }) {
   const [custom, setCustom] = useState<string[]>([]);
   const [adding, setAdding] = useState(false);
+
+  // A credit saved as "Penulis bersama" is shown, and saved again, as plain "Penulis".
+  useEffect(() => {
+    const canonical = canonicalRole(value);
+    if (canonical !== value) onChange(canonical);
+  }, [value, onChange]);
 
   useEffect(() => {
     fetch("/api/admin/credit-roles")

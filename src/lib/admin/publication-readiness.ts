@@ -487,7 +487,7 @@ export function evaluatePublicationReadinessFromData(
   if (credits.length > 0 && !publicCredits.some((c) => isWritingRole(c.role_label))) {
     const noWriter = issue(
       "writer_credit_missing",
-      "Tiada kredit awam sebagai penulis. Tambah kredit Penulis, Penulis bersama atau Pengarang asal di tab Kredit. Editor dan penyemak tidak boleh dikreditkan sebagai penulis jika mereka tidak menulis."
+      "Tiada kredit awam sebagai penulis. Tambah kredit Penulis atau Pengarang asal di tab Kredit. Editor dan penyemak tidak boleh dikreditkan sebagai penulis jika mereka tidak menulis."
     );
     (alreadyPublished ? creditWarnings : creditBlockers).push(noWriter);
   }

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCurrentAdmin } from "../../../../lib/admin/auth";
 import { getDb, hasDb } from "../../../../lib/db";
-import { STANDARD_ROLES } from "../../../../lib/credit-roles";
+import { STANDARD_ROLES, canonicalRole } from "../../../../lib/credit-roles";
 
 /** GET /api/admin/credit-roles: roles editors added earlier (custom labels in use), for the credit dropdown. */
 export async function GET() {
@@ -13,7 +13,7 @@ export async function GET() {
   const standard = new Set(STANDARD_ROLES.map((role) => role.value));
   const custom = rows
     .map((row) => (row.role_label ?? "").trim())
-    .filter((role) => role && !standard.has(role) && /^[A-Z]/.test(role))
+    .filter((role) => role && !standard.has(role) && canonicalRole(role) === role && /^[A-Z]/.test(role))
     .sort((a, b) => a.localeCompare(b, "ms"));
   return NextResponse.json({ custom });
 }

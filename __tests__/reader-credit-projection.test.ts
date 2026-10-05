@@ -155,10 +155,27 @@ console.log("reader credit projection tests\n");
     { slug: "rafiq-naim", role: "Penulis bersama", byline: false, ...rafiq }
   ];
   assert(json(projectEditorialCredits(credits)) === json([
-    { role: "Penulis bersama, Penterjemah", names: ["Rafiq Naim · Maya"] },
+    { role: "Penulis, Penterjemah", names: ["Rafiq Naim · Maya"] },
     { role: "Editor", names: ["Izzat Anas"] }
-  ]), "The same person with two roles appears once, roles separated by a comma, in order, without repeating a role");
+  ]), "The same person with two roles appears once, roles separated by a comma, in order, without repeating a role; a lone writer is \"Penulis\", not \"Penulis bersama\"");
   assert(projectEditorialCredits(credits.slice(0, 2)).length === 2, "Different people stay on their own lines");
+}
+
+// "Penulis bersama" is not a role anyone picks: it appears by itself when two or more people are "Penulis"
+{
+  const maya = (slug: string, displayName: string, role: string): ContributorRef => ({ slug, role, byline: false, displayName, kind: "virtual" });
+  assert(json(projectEditorialCredits([maya("mimo", "Mimo", "initial_draft")])) === json([
+    { role: "Penulis", names: ["Mimo · Maya"] }
+  ]), "one writer is plain \"Penulis\"");
+  assert(json(projectEditorialCredits([maya("mimo", "Mimo", "initial_draft"), maya("rafiq-naim", "Rafiq Naim", "initial_draft")])) === json([
+    { role: "Penulis bersama", names: ["Mimo · Maya", "Rafiq Naim · Maya"] }
+  ]), "two \"Penulis\" credits are shown as \"Penulis bersama\" without anyone choosing it");
+  assert(json(projectEditorialCredits([maya("mimo", "Mimo", "co_writer")])) === json([
+    { role: "Penulis", names: ["Mimo · Maya"] }
+  ]), "a legacy co_writer credit that stands alone reads \"Penulis\"");
+  assert(json(projectEditorialCredits([maya("mimo", "Mimo", "initial_draft"), maya("rafiq-naim", "Rafiq Naim", "co_writer")])) === json([
+    { role: "Penulis bersama", names: ["Mimo · Maya", "Rafiq Naim · Maya"] }
+  ]), "legacy co_writer and Penulis count together");
 }
 
 // The case Izzat pointed at: three co-writers under one "Penulis bersama", not three labels

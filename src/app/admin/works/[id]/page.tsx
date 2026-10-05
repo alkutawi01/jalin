@@ -263,6 +263,14 @@ interface SourceRightsData {
   rightsBlockers: ReadinessIssue[];
 }
 
+/** Title the server gives a brand-new draft (start-draft route). The editor shows it as an empty field with a hint, so nobody has to delete it first. */
+const UNTITLED_DRAFT = "Draf tanpa tajuk";
+
+/** "Satu Daerah Paling Sunyi" -> "satu-daerah-paling-sunyi" */
+function slugify(text: string): string {
+  return text.normalize("NFKD").replace(/\p{Diacritic}/gu, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
+
 export default function EditWorkPage() {
   const router = useRouter();
   const params = useParams();
@@ -610,6 +618,8 @@ export default function EditWorkPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
+  /** While true (drafts only) the link address follows the title; typing in the address field turns it off. */
+  const [slugAuto, setSlugAuto] = useState(false);
   /** A copy of unsaved text found in this browser from an earlier visit, waiting for the editor's choice. */
   const [restoreOffer, setRestoreOffer] = useState<StoredDraft | null>(null);
   /** The characters as last loaded or saved, to tell whether the editor has unsaved character edits. */
@@ -756,8 +766,11 @@ export default function EditWorkPage() {
         const work: WorkData = await res.json();
         setManuscriptMode(canEditVisually(work.body || "") ? "visual" : "markdown");
 
+        const shownTitle = work.title === UNTITLED_DRAFT ? "" : work.title;
+        // A published work keeps its address; a draft follows the title until the editor types its own address.
+        setSlugAuto(work.status === "draft" && (work.slug.startsWith("draf-") || work.slug === slugify(work.title)));
         setForm({
-          title: work.title,
+          title: shownTitle,
           slug: work.slug,
           type: work.type,
           status: work.status,
@@ -777,7 +790,7 @@ export default function EditWorkPage() {
         const kept = readDraft(window.localStorage, workId);
         if (kept) {
           const onServer = pickDraftFields({
-            title: work.title, dek: work.dek || "", body: work.body || "", genre: work.genre || "", audience: work.audience || "",
+            title: shownTitle, dek: work.dek || "", body: work.body || "", genre: work.genre || "", audience: work.audience || "",
             readingMinutes: work.reading_minutes?.toString() || "", editorNote: work.metadata?.editorNote ?? "",
             origin: work.metadata?.origin === "sumber" ? "sumber" : "asli",
           });
@@ -1303,7 +1316,9 @@ export default function EditWorkPage() {
 
   async function handleSubmit(e?: React.FormEvent) {
     e?.preventDefault();
-    if (!form.title.trim() || !form.slug.trim()) {
+    // A draft may be saved without a title yet; the server keeps its "untitled" marker so it cannot be published like that.
+    const blankTitleOk = form.status === "draft";
+    if ((!form.title.trim() && !blankTitleOk) || !form.slug.trim()) {
       setError("Tajuk dan alamat pautan perlu diisi sebelum menyimpan.");
       return;
     }
@@ -1319,6 +1334,7 @@ export default function EditWorkPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...editableForm,
+          title: form.title.trim() ? editableForm.title : UNTITLED_DRAFT,
           readingMinutes: form.readingMinutes ? Number(form.readingMinutes) : undefined,
         }),
       });
@@ -1972,12 +1988,13 @@ export default function EditWorkPage() {
             <input
               id="title"
               type="text"
-              required
+              required={form.status !== "draft"}
+              placeholder={UNTITLED_DRAFT}
               value={form.title}
               onChange={(e) => setForm((prev) => {
                 const title = e.target.value;
-                const generated = title.normalize("NFKD").replace(/\p{Diacritic}/gu, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-                return { ...prev, title, slug: prev.slug.startsWith("draf-") && generated ? generated : prev.slug };
+                const generated = slugify(title);
+                return { ...prev, title, slug: slugAuto && generated ? generated : prev.slug };
               })}
             />
           </div>
@@ -2066,8 +2083,22 @@ export default function EditWorkPage() {
               type="text"
               required
               value={form.slug}
-              onChange={(e) => setForm((prev) => ({ ...prev, slug: e.target.value }))}
+              onChange={(e) => { setSlugAuto(false); setForm((prev) => ({ ...prev, slug: e.target.value })); }}
             />
+            {form.status === "draft" && (
+              <label className="admin-checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={slugAuto}
+                  onChange={(e) => {
+                    const on = e.target.checked;
+                    setSlugAuto(on);
+                    if (on) setForm((prev) => ({ ...prev, slug: slugify(prev.title) || prev.slug }));
+                  }}
+                />
+                Ikut tajuk secara automatik
+              </label>
+            )}
           </div>
 
           <div className="admin-form-row">

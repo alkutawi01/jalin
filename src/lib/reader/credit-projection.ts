@@ -18,7 +18,7 @@ const ROLE_LABELS: Record<string, string> = {
   initial_draft: "Penulis",
   story_editor: "Penulis & penyemak",
   final_editor: "Editor",
-  co_writer: "Penulis bersama",
+  co_writer: "Penulis",
   language_editor: "Penyemak bahasa",
   fact_checker: "Penyemak fakta",
   publication_editor: "Editor penerbitan",
@@ -73,8 +73,10 @@ export function projectEditorialCredits(credits: ContributorRef[]): EditorialCre
   const order: string[] = [];
   const byPerson = new Map<string, { name: string; roles: string[] }>();
   for (const credit of credits ?? []) {
-    const label = projectRole(credit.role ?? "");
-    if (!label) continue;
+    const projected = projectRole(credit.role ?? "");
+    if (!projected) continue;
+    // "Penulis bersama" is no longer chosen by hand: it is worked out below from how many writers there are.
+    const label = projected === "Penulis bersama" ? "Penulis" : projected;
     const person = projectPerson(credit);
     if (!person) continue;
     const name = person.maya ? `${person.name} · Maya` : person.name;
@@ -85,6 +87,14 @@ export function projectEditorialCredits(credits: ContributorRef[]): EditorialCre
       order.push(key);
     } else if (!entry.roles.includes(label)) {
       entry.roles.push(label);
+    }
+  }
+  // Two or more writers: each writer's "Penulis" is written "Penulis bersama".
+  const writers = order.filter((key) => byPerson.get(key)!.roles.includes("Penulis"));
+  if (writers.length >= 2) {
+    for (const key of writers) {
+      const person = byPerson.get(key)!;
+      person.roles = person.roles.map((role) => (role === "Penulis" ? "Penulis bersama" : role));
     }
   }
   // Then everyone with the same roles shares one entry: the role is written once and the names listed under it.
