@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { CHECK_LABELS, ISSUE_STATE_LABELS, SEVERITY_LABELS } from "../../lib/admin/dashboard-labels";
 
 interface EditorialIssue {
   id: string;
@@ -49,7 +50,7 @@ export function EditorialIssueQueue() {
   };
 
   if (loading) {
-    return <p>Memuatkan isu…</p>;
+    return <p className="admin-form-hint">Memuatkan isu…</p>;
   }
 
   return (
@@ -61,31 +62,32 @@ export function EditorialIssueQueue() {
             onClick={() => setFilter(f)}
             className={`admin-filter-btn ${filter === f ? "active" : ""}`}
           >
-            {f.charAt(0).toUpperCase() + f.slice(1)}
+            {ISSUE_STATE_LABELS[f] ?? f}
           </button>
         ))}
       </div>
       
       {issues.length === 0 ? (
-        <p>Tiada isu ditemui</p>
+        <p className="admin-form-hint">Tiada isu dalam senarai ini.</p>
       ) : (
         <div className="admin-issue-list">
           {issues.map(issue => (
             <div key={issue.id} className={`admin-issue-card admin-severity-${issue.severity}`}>
               <div className="admin-issue-header">
-                <span className="admin-issue-type">{issue.type}</span>
+                <span className="admin-issue-type">{CHECK_LABELS[issue.type as keyof typeof CHECK_LABELS]?.title ?? issue.type}</span>
+                <span className="admin-issue-severity">{SEVERITY_LABELS[issue.severity] ?? issue.severity}</span>
                 <span className={`admin-issue-status admin-status-${issue.status}`}>
-                  {issue.status}
+                  {ISSUE_STATE_LABELS[issue.status] ?? issue.status}
                 </span>
               </div>
               <p className="admin-issue-message">{issue.message}</p>
               {issue.status === "open" && (
                 <div className="admin-issue-actions">
                   <button onClick={() => updateStatus(issue.id, "resolved")}>
-                    Mark Resolved
+                    Tandakan selesai
                   </button>
                   <button onClick={() => updateStatus(issue.id, "ignored")}>
-                    Ignore
+                    Abaikan
                   </button>
                 </div>
               )}

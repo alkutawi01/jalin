@@ -555,3 +555,28 @@
 .a-shell .a-empty-state { display: grid; gap: 6px; justify-items: start; padding: 22px 24px; border: 1px dashed var(--a-line, #d9cfc0); border-radius: 12px; background: var(--a-surface, #fffefa); }
 .a-shell .a-empty-state strong { font-size: 15px; }
 .a-shell .a-empty-state p { margin: 0 0 6px; color: var(--a-muted, #52656a); font-size: 14px; line-height: 1.5; }
+
+/* Dashboard: "Semakan kandungan" and the administrator tools */
+.a-shell .a-check { margin-bottom: 20px; }
+.a-shell .a-check-head { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 2px; }
+.a-shell .a-check-head h3 { margin: 0; }
+.a-shell .a-check-count { margin: 0; }
+.a-shell .a-chip { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+.a-shell .a-chip-fail { background: var(--a-danger-bg); color: var(--a-danger); }
+.a-shell .a-chip-warning { background: var(--a-warn-bg); color: var(--a-warn); }
+.a-shell .a-chip-pass { background: var(--a-ok-bg); color: var(--a-ok); }
+.a-shell .a-tech-body { display: grid; gap: 28px; }
+.a-shell .a-tech-body h3 { margin: 0 0 8px; font-size: 15px; }
+.a-shell .a-tools-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+.a-shell .admin-export-buttons { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.a-shell .admin-issue-filters { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.a-shell .admin-filter-btn { border: 1px solid var(--a-line-strong); background: var(--a-surface); color: var(--a-ink); border-radius: 999px; padding: 6px 14px; font: inherit; font-size: 13px; cursor: pointer; }
+.a-shell .admin-filter-btn.active { background: var(--a-ink); color: var(--a-surface); border-color: var(--a-ink); }
+.a-shell .admin-issue-list, .a-shell .admin-audit-history { display: grid; gap: 10px; }
+.a-shell .admin-issue-card, .a-shell .admin-audit-run { border: 1px solid var(--a-line); border-radius: 10px; padding: 12px 14px; background: var(--a-surface); }
+.a-shell .admin-issue-header { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 4px; font-size: 13px; }
+.a-shell .admin-issue-message { margin: 0 0 8px; }
+.a-shell .admin-issue-actions { display: flex; gap: 8px; }
+.a-shell .admin-audit-date { margin: 0 0 6px; font-weight: 600; font-size: 13px; }
+.a-shell .admin-audit-summary { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; color: var(--a-ink-soft); }
+.a-shell .admin-audit-issues { margin: 8px 0 0; padding-left: 18px; font-size: 13px; }

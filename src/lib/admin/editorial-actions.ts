@@ -2,12 +2,12 @@ export async function runEditorialAudit(): Promise<{ success: boolean; message: 
   try {
     const response = await fetch("/api/admin/editorial-report");
     if (!response.ok) {
-      throw new Error("Audit failed");
+      throw new Error("Semakan gagal");
     }
     const data = await response.json();
-    return { success: true, message: `Audit completed. Issues: ${data.issues?.length || 0}` };
+    return { success: true, message: data.issues?.length ? `Semakan selesai. ${data.issues.length} perkara perlu diberi perhatian.` : "Semakan selesai. Tiada perkara yang perlu dibaiki." };
   } catch (error) {
-    return { success: false, message: "Failed to run audit" };
+    return { success: false, message: "Semakan tidak dapat dijalankan. Cuba lagi sebentar lagi." };
   }
 }
 
@@ -15,14 +15,14 @@ export async function syncEditorialIssuesAction(): Promise<{ success: boolean; m
   try {
     const response = await fetch("/api/admin/editorial-issues", { method: "POST" });
     if (!response.ok) {
-      throw new Error("Sync failed");
+      throw new Error("Penyegerakan gagal");
     }
     const data = await response.json();
     return { 
       success: true, 
-      message: `Synced: ${data.created} created, ${data.resolved} resolved, ${data.reopened} reopened` 
+      message: `Isu dikemas kini: ${data.created} baharu, ${data.resolved} selesai, ${data.reopened} dibuka semula.`
     };
   } catch (error) {
-    return { success: false, message: "Failed to sync issues" };
+    return { success: false, message: "Isu tidak dapat disegerakkan. Cuba lagi sebentar lagi." };
   }
 }

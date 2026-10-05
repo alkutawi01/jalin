@@ -1,5 +1,6 @@
 "use client";
 import { toast } from "../../lib/admin/dialogs";
+import { CHECK_LABELS, statusLabel } from "../../lib/admin/dashboard-labels";
 
 export function ExportReportButton() {
   const handleExport = async (format: "json" | "markdown") => {
@@ -25,8 +26,8 @@ export function ExportReportButton() {
         md += `Dijana: ${new Date(data.generatedAt).toLocaleString("ms-MY")}\n\n`;
         
         for (const [category, info] of Object.entries(data.summary)) {
-          const status = (info as string).toUpperCase();
-          md += `## ${category.charAt(0).toUpperCase() + category.slice(1)}\n`;
+          const status = statusLabel(info as string);
+          md += `## ${CHECK_LABELS[category as keyof typeof CHECK_LABELS]?.title ?? category}\n`;
           md += `Status: ${status}\n\n`;
         }
         

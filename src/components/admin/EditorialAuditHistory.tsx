@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { CHECK_LABELS, statusLabel } from "../../lib/admin/dashboard-labels";
 
 interface AuditRun {
   id: string;
@@ -27,11 +28,11 @@ export function EditorialAuditHistory() {
   }, []);
 
   if (loading) {
-    return <p>Memuatkan sejarah audit…</p>;
+    return <p className="admin-form-hint">Memuatkan sejarah…</p>;
   }
 
   if (runs.length === 0) {
-    return <p>Tiada sejarah audit</p>;
+    return <p className="admin-form-hint">Belum ada semakan yang direkodkan. Tekan "Jalankan semakan".</p>;
   }
 
   return (
@@ -44,7 +45,7 @@ export function EditorialAuditHistory() {
           <div className="admin-audit-summary">
             {Object.entries(run.summary).map(([category, status]) => (
               <span key={category} className={`admin-audit-status admin-audit-${status}`}>
-                {category}: {String(status).toUpperCase()}
+                {CHECK_LABELS[category as keyof typeof CHECK_LABELS]?.title ?? category}: {statusLabel(String(status))}
               </span>
             ))}
           </div>

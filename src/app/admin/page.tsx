@@ -10,13 +10,9 @@ import { EditorialWorkflowDashboard } from "../../components/admin/EditorialWork
 import { listWorks } from "../../lib/admin/work-service";
 import { summarizeReadiness } from "../../lib/admin/publication-service";
 import { countWorks } from "../../lib/admin/dashboard-counts";
+import { buildContentChecks } from "../../lib/admin/dashboard-labels";
 
 export const dynamic = "force-dynamic";
-
-const HEALTH_LABELS: Record<string, string> = { pass: "LULUS", fail: "GAGAL", warning: "AMARAN" };
-function healthLabel(status: string): string {
-  return HEALTH_LABELS[status] ?? status.toUpperCase();
-}
 
 async function getStats() {
   if (!hasDb()) {
@@ -68,6 +64,7 @@ async function getTodo() {
 export default async function AdminDashboard() {
   const stats = await getStats();
   const works = await getTodo();
+  const checks = stats.editorialHealth ? buildContentChecks(stats.editorialHealth) : null;
   // The same readiness service the Terbitkan button uses decides who is really ready.
   const verdicts = works ? await summarizeReadiness(works.filter((w) => w.status === "ready").map((w) => w.id)) : new Map();
   const inGroup = (w: { id: string; status: string }, g: string) =>
@@ -146,80 +143,68 @@ export default async function AdminDashboard() {
         ))}
       </div>
 
-      <details className="admin-section a-tech">
-        <summary>Butiran teknikal (untuk pentadbir)</summary>
-      <section className="admin-section">
-        <h2>Kesihatan Editorial</h2>
-        {stats.editorialHealth ? (
-          <>
-            <p className="admin-section-meta">Disemak: {new Date().toLocaleString("ms-MY")}</p>
-            <ExportReportButton />
-            <div className="admin-stats-grid">
-            <div className="admin-stat-card">
-              <div className="admin-stat-label">Penulis</div>
-              <div className="admin-stat-value">{healthLabel(stats.editorialHealth.authors.status)}</div>
-              {stats.editorialHealth.authors.issues.length > 0 && (
-                <ul className="admin-stat-issues">
-                  {stats.editorialHealth.authors.issues.map((issue, i) => (
-                    <li key={i}>{issue}</li>
-                  ))}
-                </ul>
-              )}
-            </div>
-            <div className="admin-stat-card">
-              <div className="admin-stat-label">Semakan semula</div>
-              <div className="admin-stat-value">{healthLabel(stats.editorialHealth.revisions.status)}</div>
-              {stats.editorialHealth.revisions.issues.length > 0 && (
-                <ul className="admin-stat-issues">
-                  {stats.editorialHealth.revisions.issues.map((issue, i) => (
-                    <li key={i}>{issue}</li>
-                  ))}
-                </ul>
-              )}
-            </div>
-            <div className="admin-stat-card">
-              <div className="admin-stat-label">Kredit visual</div>
-              <div className="admin-stat-value">{healthLabel(stats.editorialHealth.visuals.status)}</div>
-              {stats.editorialHealth.visuals.issues.length > 0 && (
-                <ul className="admin-stat-issues">
-                  {stats.editorialHealth.visuals.issues.map((issue, i) => (
-                    <li key={i}>{issue}</li>
-                  ))}
-                </ul>
-              )}
-            </div>
-            <div className="admin-stat-card">
-              <div className="admin-stat-label">Terjemahan</div>
-              <div className="admin-stat-value">{healthLabel(stats.editorialHealth.translations.status)}</div>
-              {stats.editorialHealth.translations.issues.length > 0 && (
-                <ul className="admin-stat-issues">
-                  {stats.editorialHealth.translations.issues.map((issue, i) => (
-                    <li key={i}>{issue}</li>
-                  ))}
-                </ul>
-              )}
-            </div>
+      <section className="admin-section" aria-label="Semakan kandungan">
+        <h2>Semakan kandungan</h2>
+        {!checks ? (
+          <p className="admin-form-hint">Semakan belum tersedia.</p>
+        ) : checks.needAttention.length === 0 ? (
+          <div className="a-empty">
+            <strong>Semua semakan lulus.</strong>
+            Tiada karya terbit yang perlu dibaiki.
           </div>
-          </>
         ) : (
-          <p>Data kesihatan editorial belum tersedia.</p>
+          <>
+            {checks.needAttention.map((row) => (
+              <div className="a-check" key={row.key}>
+                <div className="a-check-head">
+                  <h3>{row.title}</h3>
+                  <span className={`a-chip a-chip-${row.status}`}>{row.statusLabel}</span>
+                  <span className="admin-form-hint a-check-count">{row.total} karya</span>
+                </div>
+                <p className="admin-form-hint">{row.about}</p>
+                <div className="admin-table-wrap">
+                  <table className="admin-table">
+                    <tbody>
+                      {row.shown.map((item) => (
+                        <tr key={item.href + item.message}>
+                          <td className="admin-table-title">{item.message}</td>
+                          <td style={{ textAlign: "right" }}>
+                            <a href={item.href} className="admin-btn admin-btn-sm">{row.fix}</a>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {row.hidden > 0 ? (
+                  <p className="admin-form-hint">dan {row.hidden} lagi. <a href="/admin/works">Lihat senarai karya</a></p>
+                ) : null}
+              </div>
+            ))}
+            {checks.passed.length > 0 ? (
+              <p className="admin-form-hint">Lulus: {checks.passed.join(", ")}.</p>
+            ) : null}
+          </>
         )}
       </section>
 
-      <section className="admin-section">
-        <h2>Sejarah Audit</h2>
-        <EditorialAuditHistory />
-      </section>
-
-      <section className="admin-section">
-        <h2>Isu Editorial</h2>
-        <EditorialIssueQueue />
-      </section>
-
-      <section className="admin-section">
-        <h2>Aliran Editorial</h2>
-        <EditorialWorkflowDashboard />
-      </section>
+      <details className="admin-section a-tech">
+        <summary>Alat pentadbir (jarang diperlukan)</summary>
+        <div className="a-tech-body">
+          <div>
+            <h3>Semak dan segerakkan</h3>
+            <EditorialWorkflowDashboard />
+            <ExportReportButton />
+          </div>
+          <div>
+            <h3>Sejarah semakan</h3>
+            <EditorialAuditHistory />
+          </div>
+          <div>
+            <h3>Isu yang direkodkan</h3>
+            <EditorialIssueQueue />
+          </div>
+        </div>
       </details>
     </div>
   );

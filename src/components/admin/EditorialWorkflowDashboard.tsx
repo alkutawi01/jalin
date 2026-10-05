@@ -1,125 +1,41 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { runEditorialAudit, syncEditorialIssuesAction } from "../../lib/admin/editorial-actions";
 
-interface DashboardData {
-  health: {
-    authors: { status: string; issues: string[] };
-    revisions: { status: string; issues: string[] };
-    visuals: { status: string; issues: string[] };
-    translations: { status: string; issues: string[] };
-  };
-  issues: {
-    total: number;
-    byType: Record<string, number>;
-    byStatus: Record<string, number>;
-  };
-  history: {
-    recent: number;
-    runs: Array<{ id: string; createdAt: string; summary: Record<string, string> }>;
-  };
-}
-
+/**
+ * The two administrator actions: run the content checks now (which also records them and updates the issue list), or only update the issue list.
+ * (This used to repeat the health cards, the issue count and the audit history that the dashboard already shows.)
+ */
 export function EditorialWorkflowDashboard() {
-  const [data, setData] = useState<DashboardData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [actionMessage, setActionMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [busy, setBusy] = useState<"audit" | "sync" | null>(null);
+  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
-  const fetchData = () => {
-    setLoading(true);
-    fetch("/api/admin/editorial-dashboard")
-      .then(res => (res.ok ? res.json() : Promise.reject(new Error("gagal"))))
-      .then(setData)
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const handleRunAudit = async () => {
-    setActionMessage(null);
-    const result = await runEditorialAudit();
-    setActionMessage({ type: result.success ? "success" : "error", text: result.message });
-    if (result.success) fetchData();
-  };
-
-  const handleSyncIssues = async () => {
-    setActionMessage(null);
-    const result = await syncEditorialIssuesAction();
-    setActionMessage({ type: result.success ? "success" : "error", text: result.message });
-    if (result.success) fetchData();
-  };
-
-  if (loading) return <p>Memuatkan…</p>;
-  if (!data) return <p>Data belum tersedia untuk paparan ini.</p>;
+  async function run(kind: "audit" | "sync") {
+    setBusy(kind);
+    setMessage(null);
+    const result = kind === "audit" ? await runEditorialAudit() : await syncEditorialIssuesAction();
+    setMessage({ type: result.success ? "success" : "error", text: result.message });
+    setBusy(null);
+  }
 
   return (
-    <div className="admin-workflow-dashboard">
-      <div className="admin-dashboard-actions">
-        <button onClick={handleRunAudit} className="admin-btn">
-          Run Audit
+    <div className="a-tools">
+      <div className="a-tools-row">
+        <button type="button" onClick={() => run("audit")} disabled={busy !== null} className="admin-btn">
+          {busy === "audit" ? "Menjalankan…" : "Jalankan semakan"}
         </button>
-        <button onClick={handleSyncIssues} className="admin-btn">
-          Sync Issues
+        <button type="button" onClick={() => run("sync")} disabled={busy !== null} className="admin-btn">
+          {busy === "sync" ? "Menyegerakkan…" : "Segerakkan isu"}
         </button>
-        <a href="/api/admin/editorial-report" target="_blank" className="admin-btn">
-          Export Report
-        </a>
       </div>
-      
-      {actionMessage && (
-        <div className={`admin-action-message admin-${actionMessage.type}`}>
-          {actionMessage.text}
-        </div>
-      )}
-
-      <div className="admin-dashboard-grid">
-        <div className="admin-dashboard-section">
-          <h3>Kesihatan</h3>
-          <div className="admin-health-grid">
-            {Object.entries(data.health).map(([category, info]) => (
-              <div key={category} className={`admin-health-item admin-health-${info.status}`}>
-                <span className="admin-health-label">{category}</span>
-                <span className="admin-health-status">{info.status.toUpperCase()}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="admin-dashboard-section">
-          <h3>Isu</h3>
-          <div className="admin-issue-stats">
-            <div className="admin-stat">
-              <span className="admin-stat-label">Jumlah</span>
-              <span className="admin-stat-value">{data.issues.total}</span>
-            </div>
-            {Object.entries(data.issues.byStatus).map(([status, count]) => (
-              <div key={status} className="admin-stat">
-                <span className="admin-stat-label">{status}</span>
-                <span className="admin-stat-value">{count}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="admin-dashboard-section">
-          <h3>Audit Terkini</h3>
-          {data.history.runs.length === 0 ? (
-            <p>Tiada audit dijalankan</p>
-          ) : (
-            <div className="admin-audit-list">
-              {data.history.runs.map(run => (
-                <div key={run.id} className="admin-audit-item">
-                  <span>{new Date(run.createdAt).toLocaleDateString("ms-MY")}</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
+      <p className="admin-form-hint">
+        &quot;Jalankan semakan&quot; memeriksa semua karya terbit, menyimpan satu rekod dalam sejarah dan mengemas kini senarai isu.
+        &quot;Segerakkan isu&quot; hanya mengemas kini senarai isu.
+      </p>
+      {message ? (
+        <div className={`admin-alert admin-alert-${message.type}`} role="status">{message.text}</div>
+      ) : null}
     </div>
   );
 }
