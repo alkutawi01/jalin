@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { reorderSeriesEntries } from "../../../../../../../lib/admin/series-service";
+import { listSeriesEntries, reorderSeriesEntries } from "../../../../../../../lib/admin/series-service";
 import { getCurrentAdmin } from "../../../../../../../lib/admin/auth";
+import { getDb } from "../../../../../../../lib/db";
 
 export async function POST(
   request: NextRequest,
@@ -15,24 +16,29 @@ export async function POST(
     const { id } = await params;
     const body = await request.json();
 
-    if (!Array.isArray(body.workIds)) {
+    if (!Array.isArray(body.workIds) || body.workIds.length === 0) {
       return NextResponse.json({ error: "workIds diperlukan." }, { status: 400 });
     }
+    const wanted = body.workIds.map(String);
+
+    // Asked BEFORE anything is written: if the new order moves a published episode, the editor has to confirm first. (This used to be
+    // checked after the new order was already saved, so "confirm" confirmed something that had happened.)
     if (body.confirm !== true && body.confirmPublished !== true) {
-      // Allow reorder when no published episodes are affected; service returns flag.
-      // Client should resend with confirm=true if reorderedPublished would be true.
+      const current = await listSeriesEntries(id);
+      const published = new Set(
+        (await getDb().selectFrom("works").where("id", "in", wanted).select(["id", "status"]).execute()).filter((w) => w.status === "published").map((w) => w.id)
+      );
+      const moves = wanted.some((workId: string, index: number) => published.has(workId) && current[index]?.work_id !== workId);
+      if (moves) {
+        return NextResponse.json({
+          requiresConfirmation: true,
+          entries: current,
+          message: "Susunan ini menggerakkan episod yang sudah terbit. Hantar semula dengan confirm=true untuk mengesahkan; belum ada yang diubah.",
+        });
+      }
     }
 
-    const result = await reorderSeriesEntries(id, body.workIds.map(String));
-
-    if (result.reorderedPublished && body.confirm !== true) {
-      return NextResponse.json({
-        requiresConfirmation: true,
-        entries: result.entries,
-        message:
-          "Reorder melibatkan episod yang sudah terbit. Hantar semula dengan confirm=true untuk mengesahkan.",
-      });
-    }
+    const result = await reorderSeriesEntries(id, wanted);
 
     return NextResponse.json({
       requiresConfirmation: false,
