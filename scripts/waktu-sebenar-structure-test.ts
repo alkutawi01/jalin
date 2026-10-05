@@ -18,7 +18,7 @@
  * Source self-label: "novel penuh, versi Structural Edit v1.0, disahkan bersama ChatGPT"
  * No taxonomy reclassification. No prose modification. No public publication.
  */
-import { assertDisposableFixtures } from "./lib/disposable-fixture";
+import { assertDisposableFixtures, useTestDatabase } from "./lib/disposable-fixture";
 import "dotenv/config";
 import { config } from "dotenv";
 config({ path: ".env.local", override: true });
@@ -96,6 +96,7 @@ async function cleanup(db: ReturnType<typeof getDb>) {
 }
 
 async function main() {
+  useTestDatabase();
   if (!hasDb()) fail("DATABASE_URL not set");
   const db = getDb();
   await cleanup(db);

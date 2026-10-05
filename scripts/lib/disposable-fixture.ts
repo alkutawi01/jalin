@@ -16,6 +16,23 @@
  */
 export const DESTRUCTIVE_OPT_IN = "ALLOW_DESTRUCTIVE_TESTS";
 
+/**
+ * Third lock: these scripts never use the application's DATABASE_URL. They run against TEST_DATABASE_URL (a temporary database branch chosen
+ * on purpose for this run) and refuse to start without it, or if it is the same database as DATABASE_URL.
+ */
+export function useTestDatabase(env: Record<string, string | undefined> = process.env): void {
+  requireDestructiveOptIn(env);
+  const test = env.TEST_DATABASE_URL?.trim();
+  if (!test) {
+    throw new Error("TEST_DATABASE_URL tiada. Skrip ujian yang memadam tidak menggunakan DATABASE_URL aplikasi: cipta cabang pangkalan data sementara dan tetapkan TEST_DATABASE_URL kepadanya.");
+  }
+  if (env.DATABASE_URL && env.DATABASE_URL.trim() === test) {
+    // .env.local sets DATABASE_URL to the real database; being identical to the test URL means the "test" database is the real one.
+    throw new Error("TEST_DATABASE_URL sama dengan DATABASE_URL aplikasi: itu bukan pangkalan data ujian. Hentikan.");
+  }
+  env.DATABASE_URL = test;
+}
+
 export function requireDestructiveOptIn(env: Record<string, string | undefined> = process.env): void {
   if (env[DESTRUCTIVE_OPT_IN] !== "true") {
     throw new Error(

@@ -8,7 +8,7 @@
  *
  * Never mutates existing production editorial Works.
  */
-import { assertDisposableFixtures } from "./lib/disposable-fixture";
+import { assertDisposableFixtures, useTestDatabase } from "./lib/disposable-fixture";
 import "dotenv/config";
 import { config } from "dotenv";
 config({ path: ".env.local", override: true });
@@ -32,6 +32,7 @@ function ok(msg: string) {
 }
 
 async function main() {
+  useTestDatabase();
   if (!hasDb()) fail("DATABASE_URL not set");
   const db = getDb();
   await assertDisposableFixtures(db, { ids: [TEST_ID, "work-uji-4d6-slug-race"], slugs: [TEST_SLUG] });

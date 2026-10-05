@@ -12,7 +12,7 @@
  * Mid-publish race test is in scripts/controlled-novela-race-test.ts.
  * Never mutates existing production editorial Works.
  */
-import { assertDisposableFixtures } from "./lib/disposable-fixture";
+import { assertDisposableFixtures, useTestDatabase } from "./lib/disposable-fixture";
 import "dotenv/config";
 import { config } from "dotenv";
 config({ path: ".env.local", override: true });
@@ -89,6 +89,7 @@ async function makePublishable(db: ReturnType<typeof getDb>) {
 }
 
 async function main() {
+  useTestDatabase();
   if (!hasDb()) fail("DATABASE_URL not set");
   const db = getDb();
   await cleanupFixture(db);
