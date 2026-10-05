@@ -29,10 +29,10 @@ export async function POST(request: NextRequest) {
     if (!body.workId) {
       return NextResponse.json({ error: "workId diperlukan." }, { status: 400 });
     }
-    if (!body.term?.trim()) {
+    if (typeof body.term !== "string" || !body.term.trim()) {
       return NextResponse.json({ error: "term diperlukan." }, { status: 400 });
     }
-    if (!body.meaning?.trim()) {
+    if (typeof body.meaning !== "string" || !body.meaning.trim()) {
       return NextResponse.json({ error: "meaning diperlukan." }, { status: 400 });
     }
 
