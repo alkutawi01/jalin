@@ -31,5 +31,9 @@ assert(kicker.includes("--font-inter") && kicker.includes("font-weight: 700"), "
 // content (370px in a 335px card on a phone) and the cover runs out of the card and is cut off.
 assert(rule(".latest-card a").includes("min-width: 0"), "the latest-work card link can shrink to the card, so the cover stays inside it on a phone");
 
+// ...and on a phone the cover is narrow enough (118px) that the title column stays wide (170px at 375px) and a long title
+// does not touch the picture.
+assert(/@media \(max-width: 480px\) \{\s*\.latest-card-cover \{ flex: 0 0 118px; width: 118px; \}/.test(css), "on a phone the latest-work cover is 118px wide so the text column is not squeezed");
+
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);
