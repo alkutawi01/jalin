@@ -5,3 +5,18 @@ export function absoluteUrl(path: string): string {
   if (/^https?:\/\//i.test(path)) return path;
   return `${SITE_URL}${path.startsWith("/") ? path : `/${path}`}`;
 }
+
+export const META_DESCRIPTION_MAX = 160;
+
+/**
+ * A description for search results and shared links. Search engines cut it at about 160 characters, so a long dek (the live
+ * pages had up to 323) is shortened at a word boundary with an ellipsis instead of being cut mid-word by someone else.
+ */
+export function clipDescription(text: string, max: number = META_DESCRIPTION_MAX): string {
+  const clean = text.replace(/\s+/g, " ").trim();
+  if (clean.length <= max) return clean;
+  const cut = clean.slice(0, max - 1);
+  const lastSpace = cut.lastIndexOf(" ");
+  const base = lastSpace > max * 0.6 ? cut.slice(0, lastSpace) : cut;
+  return base.replace(/[\s,;:—–-]+$/, "") + "…";
+}

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { absoluteUrl } from "../../../../../lib/seo";
+import { absoluteUrl, clipDescription } from "../../../../../lib/seo";
 import { episodeHeroOf } from "../../../../../lib/reader/chapter-visuals";
 import { initContentRepository } from "../../../../../lib/content";
 import { getWorkBySlug } from "../../../../../lib/content/workLoader";
@@ -40,7 +40,7 @@ export async function generateMetadata({ params }: { params: Promise<{ seriesSlu
   const index = episodes.findIndex((e) => e.slug === work.slug);
   const label = index >= 0 ? `Episod ${index + 1}: ` : "";
   const title = `${label}${work.title} · ${work.series.title}`;
-  const description = work.dek ?? `${work.title}, ${work.series.title}. Siri Jalin.`;
+  const description = clipDescription(work.dek ?? `${work.title}, ${work.series.title}. Siri Jalin.`);
   const path = `/kategori/bersiri/${work.series.slug}/${work.slug}`;
   // An episode without a picture of its own shares the series' picture.
   const hero = episodeHeroOf(work.visuals.find((visual) => visual.role === "hero"), work.series.hero);
