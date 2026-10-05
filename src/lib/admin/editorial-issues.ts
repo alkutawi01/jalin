@@ -70,6 +70,17 @@ export async function syncEditorialIssues(): Promise<{ created: number; resolved
           continue;
         }
         
+        // An issue the administrator chose to ignore stays ignored while the same problem is still there: without this the next sync
+        // created a new open copy of it, so "Abaikan" lasted only until the next "Segerakkan isu".
+        const existingIgnored = await db
+          .selectFrom("editorial_issues")
+          .where("type", "=", category.name)
+          .where("message", "=", message)
+          .where("status", "=", "ignored")
+          .select("id")
+          .executeTakeFirst();
+        if (existingIgnored) continue;
+
         // Check if there's a resolved issue for the same problem
         const existingResolved = await db
           .selectFrom("editorial_issues")

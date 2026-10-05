@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentAdmin } from "../../../../../lib/admin/auth";
 import { getDb } from "../../../../../lib/db";
+import { recordIssueEvent } from "../../../../../lib/admin/issue-events";
 
 export async function PATCH(
   _request: NextRequest,
@@ -27,15 +28,17 @@ export async function PATCH(
       return NextResponse.json({ error: "Isu tidak ditemui." }, { status: 404 });
     }
     
+    // resolved_at belongs to "resolved" only: reopening or ignoring clears it.
     const updateData: any = {
       status: body.status,
+      resolved_at: body.status === "resolved" ? new Date().toISOString() : null,
     };
-    
-    if (body.status === "resolved") {
-      updateData.resolved_at = new Date().toISOString();
-    }
-    
+
     await db.updateTable("editorial_issues").where("id", "=", id).set(updateData).execute();
+    // Every manual change is on the issue's history, like the changes the system makes.
+    if (issue.status !== body.status) {
+      await recordIssueEvent(id, body.status === "resolved" ? "resolve" : body.status === "ignored" ? "ignore" : "reopen", issue.status, body.status, admin.email ?? admin.id ?? "admin");
+    }
     
     return NextResponse.json({ success: true });
   } catch (error) {
