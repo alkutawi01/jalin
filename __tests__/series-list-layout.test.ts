@@ -22,7 +22,8 @@ const rule = (selector: string) => {
 const media = rule(".series-list-media");
 assert(media.includes("aspect-ratio") && media.includes("width: 100%"), "the picture is as wide as its column and the height follows from the ratio");
 assert(!media.includes("min-height"), "the picture has no minimum height that would widen it past its column");
-const mixed = css.split("\n").filter((line) => line.includes("aspect-ratio") && line.includes("min-height"));
+// "aspect-ratio: auto" turns the ratio off, so a minimum height next to it cannot widen anything.
+const mixed = css.split("\n").filter((line) => line.includes("aspect-ratio") && !line.includes("aspect-ratio: auto") && line.includes("min-height"));
 assert(mixed.length === 0, "no rule combines a minimum height with an aspect ratio");
 const kicker = rule(".category-kicker");
 assert(kicker.includes("--font-inter") && kicker.includes("font-weight: 700"), "the category eyebrow uses the label font (Inter, bold), like the other labels");
