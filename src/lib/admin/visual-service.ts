@@ -9,6 +9,7 @@ import { Kysely } from "kysely";
 import { getDb, hasDb } from "../db";
 import type { Database } from "../db/types";
 import type { VisualRole, VisualPlace } from "../db/types";
+import { isImageMarker } from "../reader/image-markers";
 
 function getAdminDb(): Kysely<Database> {
   if (!hasDb()) {
@@ -80,23 +81,31 @@ export async function getVisual(id: number): Promise<VisualRecord | undefined> {
 export async function createVisual(input: VisualInput): Promise<VisualRecord> {
   const db = getAdminDb();
 
-  const result = await db
-    .insertInto("visuals")
-    .values({
-      work_id: input.workId,
-      role: input.role,
-      src: input.src,
-      alt: input.alt || null,
-      provider: input.provider || null,
-      creation_id: input.creationId || null,
-      anchor: input.anchor || null,
-      place: input.place || "after",
-      sort_order: input.sortOrder,
-      is_asset_finalized: false,
-      created_at: new Date().toISOString(),
-    })
-    .returning("id")
-    .executeTakeFirst();
+  // A work has one hero: checked under a lock on the work, like when a picture is changed into a hero (a hero has no marker).
+  const result = await db.transaction().execute(async (trx) => {
+    await trx.selectFrom("works").where("id", "=", input.workId).select("id").forUpdate().executeTakeFirst();
+    if (input.role === "hero") {
+      const otherHero = await trx.selectFrom("visuals").where("work_id", "=", input.workId).where("role", "=", "hero").select("id").executeTakeFirst();
+      if (otherHero) throw new Error("Karya ini sudah mempunyai hero. Padam atau tukar hero lama dahulu.");
+    }
+    return trx
+      .insertInto("visuals")
+      .values({
+        work_id: input.workId,
+        role: input.role,
+        src: input.src,
+        alt: input.alt || null,
+        provider: input.provider || null,
+        creation_id: input.creationId || null,
+        anchor: input.role === "hero" ? null : input.anchor || null,
+        place: input.place || "after",
+        sort_order: input.sortOrder,
+        is_asset_finalized: false,
+        created_at: new Date().toISOString(),
+      })
+      .returning("id")
+      .executeTakeFirst();
+  });
 
   if (!result) {
     throw new Error("Failed to create visual.");
@@ -134,11 +143,32 @@ export async function updateVisual(
   if (input.zoom !== undefined) updateData.zoom = input.zoom === null ? null : Math.round(Math.min(300, Math.max(100, input.zoom)));
   if (input.sectionSlug !== undefined) updateData.section_slug = input.sectionSlug || null;
 
-  await db
-    .updateTable("visuals")
-    .where("id", "=", id)
-    .set(updateData)
-    .execute();
+  // The rules about heroes and markers are checked here, under a lock on the work, so two editors changing pictures at once cannot both pass:
+  // at most one work-level hero (a hero has no marker) and a marker belongs to one picture within its own text (the work's or one chapter's).
+  await db.transaction().execute(async (trx) => {
+    const current = await trx.selectFrom("visuals").where("id", "=", id).selectAll().forUpdate().executeTakeFirst();
+    if (!current) throw new Error("Visual tidak ditemui.");
+    await trx.selectFrom("works").where("id", "=", current.work_id).select("id").forUpdate().executeTakeFirst();
+    const role = input.role ?? current.role;
+    const currentSection = (current as { section_slug?: string | null }).section_slug ?? null;
+    const section = input.sectionSlug !== undefined ? input.sectionSlug || null : currentSection;
+    // Only what this change touches is judged: a crop or caption edit on a picture must not fail because of an older problem elsewhere.
+    const becomesHero = role === "hero" && current.role !== "hero";
+    const movesMarker = input.anchor !== undefined || input.sectionSlug !== undefined || (input.role !== undefined && input.role !== current.role);
+    if (becomesHero) {
+      const otherHero = await trx.selectFrom("visuals").where("work_id", "=", current.work_id).where("role", "=", "hero").where("id", "!=", id).select("id").executeTakeFirst();
+      if (otherHero) throw new Error("Karya ini sudah mempunyai hero. Padam atau tukar hero lama dahulu.");
+      updateData.anchor = null;
+    } else if (role !== "hero" && movesMarker) {
+      const anchor = input.anchor !== undefined ? input.anchor || null : current.anchor;
+      if (isImageMarker(anchor)) {
+        let clash = trx.selectFrom("visuals").where("work_id", "=", current.work_id).where("anchor", "=", anchor).where("id", "!=", id);
+        clash = section ? clash.where("section_slug" as never, "=", section as never) : clash.where("section_slug" as never, "is", null as never);
+        if (await clash.select("id").executeTakeFirst()) throw new Error("Penanda ini sudah digunakan oleh gambar lain.");
+      }
+    }
+    if (Object.keys(updateData).length > 0) await trx.updateTable("visuals").where("id", "=", id).set(updateData).execute();
+  });
 
   const visual = await getVisual(id);
   if (!visual) {

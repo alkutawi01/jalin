@@ -54,10 +54,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(visual, { status: 201 });
   } catch (error) {
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Ralat tidak diketahui." },
-      { status: 500 }
-    );
+    const message = error instanceof Error ? error.message : "Ralat tidak diketahui.";
+    return NextResponse.json({ error: message }, { status: message.includes("sudah mempunyai hero") ? 409 : 500 });
   }
 }
 
