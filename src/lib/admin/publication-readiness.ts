@@ -515,6 +515,9 @@ export function evaluatePublicationReadinessFromData(
   const heroVisuals = visuals.filter((v) => v.role === "hero");
   // An episode of a series may rely on the series' picture instead of having a hero of its own.
   const heroFromSeries = work.type === "bersiri" && Boolean(input.series?.hero_src?.trim());
+  if (work.type === "bersiri" && input.series && !heroFromSeries) {
+    visualBlockers.push(issue("series_hero_missing", "Siri ini memerlukan gambar utama pada judul siri sebelum episod boleh diterbitkan. Muat naik gambar di halaman sunting siri."));
+  }
 
   if (heroFromSeries && heroVisuals.length === 0) {
     // The series' picture is this episode's hero, so there is nothing to ask for.

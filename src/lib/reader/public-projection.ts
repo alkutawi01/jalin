@@ -38,6 +38,7 @@ export interface PublicSeriesSummary {
   title: string;
   dek?: string;
   genre?: string;
+  hero?: { src: string; alt: string };
   mode: SeriesMeta["mode"];
   status: SeriesMeta["status"];
 }
@@ -76,6 +77,7 @@ export function projectPublicSeries(series: SeriesMeta): PublicSeriesSummary {
     title: series.title,
     ...(series.dek ? { dek: series.dek } : {}),
     ...(series.genre ? { genre: series.genre } : {}),
+    ...(series.hero ? { hero: { src: series.hero.src, alt: series.hero.alt } } : {}),
     mode: series.mode,
     status: series.status
   };

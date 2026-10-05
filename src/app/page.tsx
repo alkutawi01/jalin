@@ -56,27 +56,51 @@ const CATEGORIES: { type: string; label: string }[] = [
   { type: "sinopsis", label: "Sinopsis" },
 ];
 
+function workEyebrow(work: Pick<PublicWorkSummary, "type" | "genre">): string {
+  const type = TYPE_LABELS[work.type] ?? work.type;
+  const genre = displayableGenre(work.genre);
+  return genre ? `${type} · ${genre}` : type;
+}
+
+function readingLabel(minutes: number | undefined): string | null {
+  return minutes ? `± ${minutes} minit` : null;
+}
+
+function WorkMeta({
+  work,
+  variant = "line",
+}: {
+  work: Pick<PublicWorkSummary, "readingMinutes" | "publishedAt">;
+  variant?: "line" | "pills";
+}) {
+  const reading = readingLabel(work.readingMinutes);
+  const published = formatDate(work.publishedAt);
+
+  if (!reading && published === "—") return null;
+
+  return (
+    <div className={`home-work-meta home-work-meta--${variant}`}>
+      {reading ? <span>{reading}</span> : null}
+      {published !== "—" ? <span>{published}</span> : null}
+    </div>
+  );
+}
+
 function FeaturedHero({ work }: { work: PublicFeaturedSummary }) {
   const hero = work.hero;
-  const label = TYPE_LABELS[work.type] ?? work.type;
-  const genre = displayableGenre(work.genre);
-  const reading = work.readingMinutes ? `± ${work.readingMinutes} minit membaca` : null;
 
   return (
     <section className="hero-featured">
       <div className="site-shell">
         <div className={`hero-featured-inner${hero?.src ? "" : " hero-featured-text-only"}`}>
           <div className="hero-featured-text">
-            <p className="hero-featured-kicker">{genre ? `${label} · ${genre}` : label}</p>
+            <p className="home-eyebrow hero-featured-kicker">{workEyebrow(work)}</p>
             <h1 className="hero-featured-title" style={{ fontStyle: "normal" }}>{work.title}</h1>
             {work.attribution ? <p className="work-attribution hero-featured-attribution">{renderAttribution(work.attribution.primary)}</p> : null}
             {work.dek ? <p className="hero-featured-dek">{work.dek}</p> : null}
-            <div className="hero-featured-meta">
-              {reading ? <span>{reading}</span> : null}
-              <span>{formatDate(work.publishedAt)}</span>
-            </div>
-            <a className="hero-featured-cta" href={`/kategori/${work.type}/${work.slug}`}>
-              Baca Sekarang
+            <WorkMeta work={work} variant="pills" />
+            <a className="home-action-primary hero-featured-cta" href={`/kategori/${work.type}/${work.slug}`}>
+              Baca sekarang
             </a>
           </div>
           {hero?.src ? (
@@ -98,8 +122,6 @@ function yearOf(work: { updatedAt?: string; publishedAt?: string }): string {
 }
 
 function LatestWorkCard({ work }: { work: PublicWorkSummary }) {
-  const label = TYPE_LABELS[work.type] ?? work.type;
-  const reading = work.readingMinutes ? `± ${work.readingMinutes} minit` : null;
   return (
     <article className="latest-card">
       <a href={`/kategori/${work.type}/${work.slug}`}>
@@ -108,20 +130,15 @@ function LatestWorkCard({ work }: { work: PublicWorkSummary }) {
         </div>
         <div className="latest-card-body">
           <div className="latest-card-meta">
-            <span className="latest-card-type">{label}</span>
-            {reading ? <span className="latest-card-reading">{reading}</span> : null}
+            <span className="home-eyebrow latest-card-type">{workEyebrow(work)}</span>
           </div>
           <h3 className="latest-card-title" style={{ fontStyle: "normal" }}>{work.title}</h3>
           {work.attribution ? <p className="work-attribution">{renderAttribution(work.attribution.primary)}</p> : null}
           {work.attribution?.secondary ? <p className="work-attribution-source">{renderAttribution(work.attribution.secondary)}</p> : null}
           {work.dek ? <p className="latest-card-dek">{work.dek}</p> : null}
+          <WorkMeta work={work} />
           <div className="latest-card-footer">
-            <span className="latest-card-cta">Baca →</span>
-            <span className="latest-card-date">
-              {formatDate(work.publishedAt) !== "—"
-                ? formatDate(work.publishedAt)
-                : null}
-            </span>
+            <span className="home-action-text latest-card-cta">Baca sekarang</span>
           </div>
         </div>
       </a>
@@ -180,14 +197,12 @@ function EditorialSelection({ works }: { works: PublicWorkSummary[] }) {
             <a key={work.slug} href={`/kategori/${work.type}/${work.slug}`} className="editorial-pick">
               <WorkCover type={work.type} title={work.title} hero={work.hero} rightsYear={yearOf(work)} sizes="(max-width: 680px) 100vw, 360px" quality={85} />
               <div className="editorial-pick-body">
-                <span className="editorial-pick-type">
-                  {TYPE_LABELS[work.type] ?? work.type}
-                  {work.readingMinutes ? ` · ± ${work.readingMinutes} minit` : ""}
-                </span>
+                <span className="home-eyebrow editorial-pick-type">{workEyebrow(work)}</span>
                 <h3 style={{ fontStyle: "normal" }}>{work.title}</h3>
                 {work.attribution ? <p className="work-attribution">{renderAttribution(work.attribution.primary)}</p> : null}
                 {work.dek ? <p>{work.dek}</p> : null}
-                <span className="editorial-pick-cta">Baca</span>
+                <WorkMeta work={work} />
+                <span className="home-action-text editorial-pick-cta">Baca sekarang</span>
               </div>
             </a>
           ))}
@@ -200,8 +215,8 @@ function EditorialSelection({ works }: { works: PublicWorkSummary[] }) {
 interface SeriesHighlightData {
   slug: string;
   title: string;
-  dek?: string;
-  episodeCount: number;
+  genre?: string;
+  hero?: { src: string; alt: string };
   first: { slug: string; position: number };
   latest: { slug: string; position: number; title: string };
   year: string;
@@ -209,6 +224,18 @@ interface SeriesHighlightData {
 
 /** The series with the most recent published episode. Null when no series has a published episode. */
 async function getSeriesHighlight(): Promise<SeriesHighlightData | null> {
+  // Local design preview only: the Markdown checkout has no Series records.
+  if (process.env.NODE_ENV === "development" && process.env.JALIN_PREVIEW_SERIES === "1") {
+    return {
+      slug: "satu-daerah-yang-paling-sunyi",
+      title: "Satu Daerah yang Paling Sunyi",
+      genre: "Rumah Tangga",
+      hero: { src: "https://hinxqignbwjdoi92.public.blob.vercel-storage.com/assets/visuals/vr-5894790-v1-54cf7d5e.png", alt: "Ilustrasi siri Satu Daerah yang Paling Sunyi" },
+      first: { slug: "garing-bukan-hangit", position: 1 },
+      latest: { slug: "garing-bukan-hangit", position: 1, title: "Garing, Bukan Hangit" },
+      year: "2026",
+    };
+  }
   const repo = await initContentRepository();
   let best: (SeriesHighlightData & { at: string }) | null = null;
   for (const series of repo.getPublishedSeries()) {
@@ -221,8 +248,8 @@ async function getSeriesHighlight(): Promise<SeriesHighlightData | null> {
     best = {
       slug: series.slug,
       title: series.title,
-      dek: series.dek,
-      episodeCount: episodes.length,
+      genre: series.genre,
+      hero: series.hero,
       first: { slug: ordered[0]!.slug, position: ordered[0]!.position },
       latest: { slug: latest.slug, position: latest.position, title: latest.title },
       year: (at || "2026").slice(0, 4),
@@ -233,7 +260,9 @@ async function getSeriesHighlight(): Promise<SeriesHighlightData | null> {
 }
 
 function SeriesHighlight({ data }: { data: SeriesHighlightData }) {
-  const base = `/kategori/bersiri/${data.slug}`;
+  const preview = process.env.NODE_ENV === "development" && process.env.JALIN_PREVIEW_SERIES === "1";
+  const base = `${preview ? "https://jalin.adjung.com" : ""}/kategori/bersiri/${data.slug}`;
+  const genre = displayableGenre(data.genre);
   return (
     <section className="editorial-selection series-highlight" aria-labelledby="series-highlight-title">
       <div className="site-shell">
@@ -241,24 +270,27 @@ function SeriesHighlight({ data }: { data: SeriesHighlightData }) {
           <h2 id="series-highlight-title">Bersiri</h2>
           <p className="section-sub">Sambungan demi sambungan, satu episod pada satu masa</p>
         </header>
-        <div className="editorial-pick">
-          <a href={base} aria-label={`Buka siri ${data.title}`}>
-            <WorkCover type="bersiri" title={data.title} />
-          </a>
-          <div className="editorial-pick-body">
-            <span className="editorial-pick-type">Bersiri · {data.episodeCount} episod</span>
-            <h3 style={{ fontStyle: "normal" }}><a href={base}>{data.title}</a></h3>
-            {data.dek ? <p>{data.dek}</p> : null}
-            <p className="work-attribution">Terkini: Episod {data.latest.position} — {data.latest.title}</p>
-            <span>
-              <a className="editorial-pick-cta" href={`${base}/${data.latest.slug}`}>Baca Episod {data.latest.position}</a>
-              {data.first.slug !== data.latest.slug ? (
-                <> · <a href={`${base}/${data.first.slug}`}>Mula dari Episod {data.first.position}</a></>
-              ) : null}
-              {" · "}<a href={base}>Semua episod</a>
+        <article className="series-feature">
+          <a className="series-feature-media" href={base}>
+            {data.hero ? (
+              <>
+                <Image src={data.hero.src} alt={data.hero.alt || `Ilustrasi siri ${data.title}`} fill sizes="(max-width: 700px) 100vw, (max-width: 924px) calc(100vw - 64px), 860px" />
+                <span className="image-rights" aria-hidden="true">© ADJUNG {data.year}</span>
+              </>
+            ) : null}
+            <span className="series-feature-overlay">
+              <span className="home-eyebrow series-feature-meta">Bersiri{genre ? ` · ${genre}` : ""}</span>
+              <h3 className="series-feature-title">{data.title}</h3>
             </span>
+          </a>
+          <div className="series-feature-footer">
+            <p className="series-feature-latest">Episod terkini: <strong>Episod {data.latest.position} — {data.latest.title}</strong></p>
+            <div className="series-feature-actions">
+              <a className="home-action-primary hero-featured-cta" href={`${base}/${data.first.slug}`}>Baca sekarang</a>
+              <a className="home-action-text series-feature-secondary" href={base}>Lihat semua episod</a>
+            </div>
           </div>
-        </div>
+        </article>
       </div>
     </section>
   );
@@ -300,12 +332,15 @@ export default async function Home() {
       if (summary.hero) categoryImages.set(cat.type, { ...summary.hero, year: yearOf(summary) });
     }
   }
+  if (seriesHighlight?.hero) {
+    categoryImages.set("bersiri", { ...seriesHighlight.hero, year: seriesHighlight.year });
+  }
 
   return (
     <>
       <SiteHeader active="home" />
 
-      <main id="kandungan" tabIndex={-1}>
+      <main id="kandungan" className="homepage" tabIndex={-1}>
         {featured ? (
           <FeaturedHero work={projectPublicFeaturedSummary(featured)} />
         ) : null}
@@ -315,8 +350,6 @@ export default async function Home() {
             <p className="section-sub">Karya pertama sedang disediakan. Kembali tidak lama lagi.</p>
           </section>
         ) : null}
-
-        <EditorialSelection works={editorialPicks} />
 
         {seriesHighlight ? <SeriesHighlight data={seriesHighlight} /> : null}
 
@@ -335,6 +368,8 @@ export default async function Home() {
             </div>
           </div>
         </section> : null}
+
+        <EditorialSelection works={editorialPicks} />
 
         <section className="category-explorer">
           <div className="site-shell">

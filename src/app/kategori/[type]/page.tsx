@@ -12,6 +12,7 @@ import {
 } from "../../../lib/reader/public-projection";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import Image from "next/image";
 import { renderAttribution } from "@/components/reader/Attribution";
 
 const CATEGORY_META: Record<string, { title: string; intro: string; headerLabel: string }> = {
@@ -96,18 +97,17 @@ function WorkCard({ work, type }: { work: PublicWorkSummary; type: string }) {
 function SeriesCard({ series, episodeCount }: { series: PublicSeriesSummary; episodeCount: number }) {
   const genre = displayableGenre(series.genre);
   return (
-    <article className="work-card">
+    <article className="series-list-card">
       <a href={`/kategori/bersiri/${series.slug}`}>
-        <div className="work-card-meta">
-          <span>
-            {MODE_LABELS[series.mode] ?? series.mode}
-            {genre ? ` · ${genre}` : ""}
-          </span>
-          <span>{STATUS_LABELS[series.status] ?? series.status}</span>
-          <span>{episodeCount} episod</span>
+        <div className="series-list-media">
+          {series.hero ? <Image src={series.hero.src} alt={series.hero.alt || `Ilustrasi siri ${series.title}`} fill sizes="(max-width: 680px) 100vw, 360px" /> : <span>{series.title}</span>}
         </div>
-        <h2 className="work-card-title" style={{ fontStyle: "normal" }}>{series.title}</h2>
-        {series.dek ? <p className="work-card-dek">{series.dek}</p> : null}
+        <div className="series-list-body">
+          <p className="series-list-meta">{genre || MODE_LABELS[series.mode] || series.mode} · {episodeCount} episod · {STATUS_LABELS[series.status] ?? series.status}</p>
+          <h2>{series.title}</h2>
+          {series.dek ? <p className="series-list-dek">{series.dek}</p> : null}
+          <span className="series-list-action">Lihat siri dan episod</span>
+        </div>
       </a>
     </article>
   );

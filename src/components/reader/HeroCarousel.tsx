@@ -81,7 +81,7 @@ export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
                     {work.reading ? <span>{work.reading}</span> : null}
                     <span>{work.date}</span>
                   </div>
-                  <a className="hero-featured-cta" href={`/kategori/${work.type}/${work.slug}`}>Baca Sekarang</a>
+                  <a className="hero-featured-cta" href={`/kategori/${work.type}/${work.slug}`}>Baca sekarang</a>
                 </div>
                 {work.hero?.src ? (
                   <div className="hero-featured-visual">

@@ -1177,6 +1177,13 @@ console.log("\n=== Structure gate (4D-8) ===");
     assert(!withSeriesPicture.warnings.some((w) => w.code === "hero_missing"), "and it is not even warned about the hero");
     assert(episode(null).blockers.some((b) => b.code === "hero_missing"), "episode with no hero and no series picture is still blocked");
     assert(episode("   ").blockers.some((b) => b.code === "hero_missing"), "an empty series picture does not count");
+    assert(episode(null).blockers.some((b) => b.code === "series_hero_missing"), "series title picture is required before an episode may be published");
+    const episodeWithOwnHero = evaluatePublicationReadinessFromData(validInput({
+      work: baseWork({ id: "JLN-BER-9991", slug: "ep-uji", type: "bersiri" }),
+      seriesEntry: { id: 1, series_id: "SER-1", work_id: "JLN-BER-9991", position: 1 },
+      series: { id: "SER-1", slug: "siri-uji", title: "Siri Uji", mode: "continuous", status: "ongoing", hero_src: null },
+    }));
+    assert(episodeWithOwnHero.blockers.some((b) => b.code === "series_hero_missing"), "an episode picture cannot replace the series title picture");
   }
 
   // Invalid series mode → series_mode_invalid
