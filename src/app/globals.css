@@ -2756,17 +2756,19 @@ dd { margin: 0; color: var(--ink); text-align: left; }
   .series-feature-media { aspect-ratio: 16 / 9; }
   .series-feature-title { font-size: 1.45rem; }
 }
-/* Phone only: the picture stands alone (no text beside it as on a desktop), so it runs from screen edge to screen edge. */
-@media (max-width: 680px) {
-  .hero-featured-visual, .series-feature-media, .work-head-visual, .hero-figure {
-    width: 100vw;
-    max-width: 100vw;
-    margin-left: calc(50% - 50vw);
-    margin-right: 0;
-    border-radius: 0;
-    box-shadow: none;
-  }
-  .hero-featured-visual { margin-top: 0; }
+/* A hero is edge to edge on the screen whenever it stands alone, above or below its text, whatever kind it is: the homepage carousel,
+   the homepage series picture, a work's hero, a series page's hero. (Beside its text on a desktop it is a picture in the layout; a
+   card is never a hero.) Each rule starts where that layout stacks. */
+/* 100vw includes a scrollbar's width, so a full-width hero overshoots a window that has one (tablet, narrow desktop) by half of it on each side: hidden, not scroll. */
+@media (max-width: 1050px) { body { overflow-x: hidden; } .hero-featured-visual { order: -1; } }
+@media (max-width: 1050px) {
+  .hero-featured-visual { width: 100vw; max-width: 100vw; margin-left: calc(50% - 50vw); margin-right: 0; margin-top: 0; border-radius: 0; box-shadow: none; -webkit-mask-image: none; mask-image: none; }
+}
+@media (max-width: 900px) {
+  .work-head-visual, .series-hero { width: 100vw; max-width: 100vw; margin-left: calc(50% - 50vw); margin-right: 0; border-radius: 0; box-shadow: none; }
+}
+@media (max-width: 700px) {
+  .series-feature-media, .hero-figure { width: 100vw; max-width: 100vw; margin-left: calc(50% - 50vw); margin-right: 0; border-radius: 0; box-shadow: none; }
   .series-feature-overlay { border-radius: 0 6px 0 0; }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -2777,7 +2779,8 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 
 /* Homepage carousel of the editor's picks. All slides share one grid cell so the tallest sets the height. */
 .hero-carousel-stack { display: grid; }
-.hero-carousel-slide { grid-area: 1 / 1; opacity: 0; visibility: hidden; transition: opacity .35s ease, visibility 0s linear .35s; }
+/* The stack is as tall as its tallest slide; a shorter slide keeps its own row heights (start) instead of stretching them, so the picture is the same height on every slide. */
+.hero-carousel-slide { align-content: start; grid-area: 1 / 1; opacity: 0; visibility: hidden; transition: opacity .35s ease, visibility 0s linear .35s; }
 .hero-carousel-slide.is-active { opacity: 1; visibility: visible; transition: opacity .35s ease; }
 .hero-carousel-controls { display: flex; align-items: center; justify-content: flex-start; gap: 14px; padding: 4px 0 24px; font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; }
 .hero-carousel-btn { min-width: 40px; height: 40px; padding: 0 12px; border: 1px solid var(--line); border-radius: 999px; background: var(--white); color: var(--ink); font: inherit; font-size: 14px; cursor: pointer; transition: border-color .18s ease; }
