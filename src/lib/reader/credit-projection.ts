@@ -65,7 +65,8 @@ function projectPerson(credit: ContributorRef): ProjectedPerson | undefined {
 }
 
 /**
- * One line per person. A person with several roles on the same work is shown once, with the roles separated by commas
+ * One entry per role: a role is written once with everyone who holds it listed under it. A person with several roles is
+ * shown once, with the roles separated by commas
  * ("Penulis bersama, Penterjemah"), in the order the credits are kept and without repeating a role.
  */
 export function projectEditorialCredits(credits: ContributorRef[]): EditorialCredit[] {
@@ -86,7 +87,16 @@ export function projectEditorialCredits(credits: ContributorRef[]): EditorialCre
       entry.roles.push(label);
     }
   }
-  return order.map((key) => ({ role: byPerson.get(key)!.roles.join(", "), name: byPerson.get(key)!.name }));
+  // Then everyone with the same roles shares one entry: the role is written once and the names listed under it.
+  const byRoles = new Map<string, EditorialCredit>();
+  for (const key of order) {
+    const person = byPerson.get(key)!;
+    const roles = person.roles.join(", ");
+    const entry = byRoles.get(roles);
+    if (entry) entry.names.push(person.name);
+    else byRoles.set(roles, { role: roles, names: [person.name] });
+  }
+  return [...byRoles.values()];
 }
 
 export function projectBylineCredits(credits: ContributorRef[]): BylineCredit[] {

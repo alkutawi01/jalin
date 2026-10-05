@@ -18,9 +18,10 @@ export type CharacterMeta = {
   role: string;
 };
 
+/** One role (or set of roles) and everyone who holds it, so a role is written once with all its names under it. */
 export type EditorialCredit = {
   role: string;
-  name: string;
+  names: string[];
 };
 
 export type BylineCredit = {

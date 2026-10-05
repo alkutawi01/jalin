@@ -165,8 +165,9 @@ export function RightRail({ characters, editorial }: { characters: CharacterMeta
           <>
             <div className="rail-label">Editorial</div>
             {editorial.map((credit) => (
-              <div className="editorial-meta" key={credit.role + "-" + credit.name}>
-                <span>{credit.role}</span><b>{credit.name}</b>
+              <div className="editorial-meta" key={credit.role + "-" + credit.names.join("|")}>
+                <span>{credit.role}</span>
+                {credit.names.map((name) => <b key={name}>{name}</b>)}
               </div>
             ))}
           </>
