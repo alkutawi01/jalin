@@ -14,13 +14,17 @@ function assert(cond: boolean, msg: string) {
 const read = (p: string) => fs.readFileSync(path.join(__dirname, "..", p), "utf8").replace(/\r\n/g, "\n");
 const css = read("src/app/globals.css");
 
-const phone = css.slice(css.indexOf("/* Phone only: the picture stands alone"));
-const block = phone.slice(0, phone.indexOf("}\n", phone.indexOf("@media (max-width: 680px)")) + 2);
-assert(/@media \(max-width: 680px\)/.test(phone), "the full-bleed rule is phone-only (max-width 680px)");
-for (const sel of [".hero-featured-visual", ".series-feature-media", ".work-head-visual", ".hero-figure"]) {
-  assert(block.includes(sel), `${sel} runs edge to edge on a phone`);
+const hero = css.slice(css.indexOf("/* A hero is edge to edge on the screen whenever it stands alone"));
+// For each hero kind: inside the media query where its layout stacks, it is 100vw wide, has no side margin and square corners.
+for (const [sel, w] of [[".hero-featured-visual", 1050], [".work-head-visual", 900], [".series-hero", 900], [".series-feature-media", 700], [".hero-figure", 700]] as const) {
+  const start = hero.indexOf(`@media (max-width: ${w}px) {`, hero.indexOf(sel) > 0 ? 0 : 0);
+  let ok = false;
+  for (let at = hero.indexOf(`@media (max-width: ${w}px) {`); at >= 0 && !ok; at = hero.indexOf(`@media (max-width: ${w}px) {`, at + 1)) {
+    const body = hero.slice(at, hero.indexOf("\n}\n", at));
+    ok = body.includes(sel) && body.includes("width: 100vw") && body.includes("margin-left: calc(50% - 50vw)") && body.includes("border-radius: 0");
+  }
+  assert(ok && start >= 0, `${sel} runs edge to edge once its layout stacks (max-width ${w}px)`);
 }
-assert(block.includes("width: 100vw") && block.includes("margin-left: calc(50% - 50vw)") && block.includes("border-radius: 0"), "full width, no side margin, square corners");
 assert(/\.story-body \{ font-size: 17\.5px;/.test(css) && !/\.story-body \{ font-size: 19px;/.test(css), "the work text is a little smaller on a phone (17.5px, was 19px)");
 assert(/\.series-feature-overlay \{[^}]*bottom: 0; left: 0;/.test(css), "the series title box sits against the picture's left-bottom edge");
 assert(/\.series-feature-media > \.image-rights \{ right: 0; bottom: 0;/.test(css), "the copyright notice sits against the picture's right-bottom edge");
