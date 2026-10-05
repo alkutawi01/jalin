@@ -244,13 +244,17 @@ async function getSeriesHighlight(): Promise<SeriesHighlightData | null> {
     if (episodes.length === 0) continue;
     const ordered = [...episodes].sort((a, b) => a.position - b.position);
     const latest = [...episodes].sort((a, b) => (b.publishedAt ?? "").localeCompare(a.publishedAt ?? ""))[0]!;
+    const latestWork = repo.getEpisodeBySeriesAndSlug(series.slug, latest.slug);
+    const latestHero = latestWork ? projectPublicWorkSummary(latestWork).hero : undefined;
     const at = latest.publishedAt ?? "";
     if (best && best.at >= at) continue;
     best = {
       slug: series.slug,
       title: series.title,
       genre: series.genre,
-      hero: series.hero,
+      // The homepage promotes what is new. Prefer the latest episode's scene,
+      // while retaining the series artwork as a stable fallback.
+      hero: latestHero ?? series.hero,
       first: { slug: ordered[0]!.slug, position: ordered[0]!.position },
       latest: { slug: latest.slug, position: latest.position, title: latest.title },
       year: (at || "2026").slice(0, 4),

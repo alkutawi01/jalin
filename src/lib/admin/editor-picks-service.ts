@@ -1,7 +1,7 @@
 import { getDb } from "../db";
 
-/** The homepage carousel shows at most this many picks, newest first. */
-export const EDITOR_PICK_LIMIT = 5;
+/** The homepage shows at most three deliberately curated works. */
+export const EDITOR_PICK_LIMIT = 3;
 
 export interface PickWork {
   id: string;
@@ -35,7 +35,12 @@ export async function getPickState(): Promise<PickState> {
   });
   const picked = rows
     .filter((r) => r.editor_pick)
-    .sort((a, b) => String(b.published_at ?? "").localeCompare(String(a.published_at ?? "")))
+    .sort((a, b) => {
+      const rankA = a.editor_pick_rank ?? Number.MAX_SAFE_INTEGER;
+      const rankB = b.editor_pick_rank ?? Number.MAX_SAFE_INTEGER;
+      if (rankA !== rankB) return rankA - rankB;
+      return String(b.published_at ?? "").localeCompare(String(a.published_at ?? ""));
+    })
     .map(toWork)
     .map((work, index) => ({ ...work, rank: index + 1 }));
   const others = rows

@@ -2,7 +2,7 @@ import { getDb, hasDb } from "../db";
 import type { Work } from "../content/types";
 import { projectPublicWorkSummary, type PublicWorkSummary } from "./public-projection";
 
-const EDITOR_PICK_LIMIT = 5;
+const EDITOR_PICK_LIMIT = 3;
 
 function isDatabaseMode(): boolean {
   return hasDb() && process.env.CONTENT_SOURCE === "database";
@@ -13,8 +13,6 @@ export function selectPublishedEditorPicks(ids: string[], publishedWorks: Work[]
   return ids
     .map((id) => byId.get(id))
     .filter((work): work is Work => Boolean(work))
-    // Newest first: the homepage carousel opens on the most recently published pick.
-    .sort((a, b) => String(b.publishedAt ?? "").localeCompare(String(a.publishedAt ?? "")))
     .slice(0, EDITOR_PICK_LIMIT)
     .map(projectPublicWorkSummary);
 }

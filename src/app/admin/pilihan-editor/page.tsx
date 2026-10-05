@@ -1,29 +1,5 @@
-import EditorPicksManager from "../../../components/admin/EditorPicksManager";
-import { getPickState } from "../../../lib/admin/editor-picks-service";
-import { hasDb } from "../../../lib/db";
+import { redirect } from "next/navigation";
 
-export const dynamic = "force-dynamic";
-
-export default async function EditorPicksPage() {
-  if (!hasDb()) {
-    return (
-      <div className="admin-placeholder">
-        <h1>Pilihan Editor</h1>
-        <p>Pangkalan data tidak tersedia.</p>
-      </div>
-    );
-  }
-  const state = await getPickState();
-  return (
-    <div className="admin-form-page">
-      <header className="admin-page-header">
-        <p className="admin-form-hint"><a href="/admin/works">← Karya</a></p>
-        <h1>Pilihan Editor</h1>
-        <p className="admin-page-sub">
-          Karya yang diketengahkan di laman utama, di bahagian Pilihan Editor. Maksimum 5, disusun daripada yang terbaharu diterbitkan. Hanya karya yang sudah terbit boleh dipilih. Jika tiada pilihan, bahagian itu tidak dipaparkan.
-        </p>
-      </header>
-      <EditorPicksManager initial={state} />
-    </div>
-  );
+export default function EditorPicksPage() {
+  redirect("/admin/works?status=published");
 }

@@ -2187,7 +2187,7 @@ export default function EditWorkPage() {
             </span>
           </div>
           <p className="admin-form-hint">
-            Memilih karya untuk laman utama dibuat di halaman <a href="/admin/pilihan-editor">Pilihan Editor</a>, bukan di sini.
+            Pilihan Editor diurus melalui kotak tanda di sebelah judul pada <a href="/admin/works?status=published">senarai karya terbit</a>.
           </p>
 
         </form>
