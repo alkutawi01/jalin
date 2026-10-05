@@ -36,6 +36,8 @@ export interface WorkInput {
   editorPickReason?: string | null;
   /** Editor's note shown at the end of the work; empty removes it. Stored in works.metadata. */
   editorNote?: string;
+  /** The note under "Tentang karya" in the reader's side card; empty removes it. Stored in works.reader. */
+  readerNote?: string;
   /** Cerpen/Novela: "sumber" when taken from another source, "asli" (or empty) for Jalin's own. Stored in works.metadata. */
   origin?: string;
 }
@@ -227,6 +229,11 @@ export async function updateWork(
   }
   if (input.editorPickReason !== undefined) {
     updateData.editor_pick_reason = input.editorPickReason ? String(input.editorPickReason) : null;
+  }
+
+  if (input.readerNote !== undefined) {
+    const note = String(input.readerNote ?? "").trim();
+    updateData.reader = note ? { note } : null;
   }
 
   if (input.editorNote !== undefined || input.origin !== undefined) {

@@ -104,6 +104,15 @@ export async function PATCH(
       }
     }
 
+    // The note in the reader's "Tentang karya" card.
+    let readerNote: string | undefined;
+    if (body.readerNote !== undefined) {
+      readerNote = String(body.readerNote ?? "");
+      if (readerNote.length > 600) {
+        return NextResponse.json({ error: "Nota pada kad 'Tentang karya' terlalu panjang (maksimum 600 aksara)." }, { status: 400 });
+      }
+    }
+
     const work = await updateWork(id, {
       title: body.title,
       slug: body.slug,
@@ -117,6 +126,7 @@ export async function PATCH(
       publishedAt:
         body.status === "published" ? body.publishedAt : undefined,
       editorNote,
+      readerNote,
       origin: body.origin === undefined ? undefined : body.origin === "sumber" ? "sumber" : "asli",
     });
 

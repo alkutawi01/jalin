@@ -60,6 +60,7 @@ interface WorkData {
   published_by?: string | null;
   updated_at: string;
   metadata?: { editorNote?: string; origin?: string } | null;
+  reader?: { note?: string } | null;
 }
 
 interface ReadinessIssue {
@@ -639,6 +640,7 @@ export default function EditWorkPage() {
     version: "v0.1",
     publishedAt: "",
     editorNote: "",
+    readerNote: "",
     origin: "asli",
   });
 
@@ -762,6 +764,7 @@ export default function EditWorkPage() {
           version: work.version_label || work.version,
           publishedAt: work.published_at ? work.published_at.split("T")[0] : "",
           editorNote: work.metadata?.editorNote ?? "",
+          readerNote: work.reader?.note ?? "",
           origin: work.metadata?.origin === "sumber" ? "sumber" : "asli",
         });
         setSavedBody(work.body || "");
@@ -2159,6 +2162,21 @@ export default function EditWorkPage() {
             />
             <span className="admin-form-hint">
               Dipaparkan kepada pembaca di hujung karya, bawah tajuk &quot;Catatan Editor&quot;. Bebas ditulis; baris kosong memulakan perenggan baharu. Biarkan kosong jika tiada catatan. Karya terbit hanya menunjukkan catatan baharu selepas diterbitkan semula.
+            </span>
+          </div>
+          <div className="admin-form-group">
+            <label htmlFor="readerNote">Nota pada kad &quot;Tentang karya&quot;</label>
+            <textarea
+              id="readerNote"
+              className="admin-textarea"
+              rows={3}
+              maxLength={600}
+              value={form.readerNote}
+              onChange={(e) => dashChange(e, (value) => setForm((prev) => ({ ...prev, readerNote: value })))}
+              placeholder="Satu atau dua ayat pendek di bawah jadual Bentuk, Genre, Bacaan dan Versi."
+            />
+            <span className="admin-form-hint">
+              Dipaparkan kepada pembaca di kad &quot;Tentang karya&quot; di tepi karya. Biarkan kosong jika tiada nota. Karya terbit hanya menunjukkan nota baharu selepas diterbitkan semula.
             </span>
           </div>
           <p className="admin-form-hint">
