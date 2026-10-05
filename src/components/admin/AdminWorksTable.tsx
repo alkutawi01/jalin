@@ -99,7 +99,7 @@ export default function AdminWorksTable({ works, initialPicks }: { works: AdminW
       </p>
       <div className="admin-table-wrap">
         <table className="admin-table admin-works-table">
-          <thead><tr><th className="admin-pick-column">Pilihan Editor</th><th>Tajuk</th><th>Alamat pautan</th><th>Jenis</th><th>Status</th><th>Versi</th><th>Dikemas kini</th><th>Aksi</th></tr></thead>
+          <thead><tr><th className="admin-pick-column" title="Pilihan Editor">Pilihan</th><th>Tajuk</th><th>Alamat pautan</th><th>Jenis</th><th>Status</th><th>Versi</th><th>Dikemas kini</th><th>Aksi</th></tr></thead>
           <tbody>
             {works.length === 0 ? (
               <tr><td colSpan={8} className="admin-table-empty">Tiada karya yang sepadan. Kosongkan carian atau pilih status lain.</td></tr>
