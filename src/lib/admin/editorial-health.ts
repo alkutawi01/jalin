@@ -89,6 +89,12 @@ export async function getEditorialHealth(): Promise<EditorialHealth> {
         health.revisions.items.push({ workId: work.id, title: work.title || work.id, message, tab: "content" });
         health.revisions.status = "fail";
       }
+    } else {
+      // Published with no frozen version: readers are served the live working copy, so every edit shows at once, without "Terbitkan semula".
+      const message = `${work.title || work.id} belum dibekukan: pembaca melihat salinan kerja semasa`;
+      health.revisions.issues.push(message);
+      health.revisions.items.push({ workId: work.id, title: work.title || work.id, message, tab: "content", fix: "Terbitkan semula" });
+      health.revisions.status = "fail";
     }
   }
   

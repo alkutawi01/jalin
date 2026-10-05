@@ -45,7 +45,7 @@ assert(statusLabel("pass") === "Lulus" && statusLabel("weird") === "weird", "an 
 // the check that used to be noise
 const healthSource = read("src/lib/admin/editorial-health.ts");
 assert(!healthSource.includes("provider") && healthSource.includes("Pictures: no check"), "the dashboard no longer asks for a picture's recorded source (not required)");
-assert((healthSource.match(/\.items\.push\(/g) ?? []).length === 4, "every check records which work it is about");
+assert((healthSource.match(/\.items\.push\(/g) ?? []).length === 5, "every check records which work it is about");
 
 // the page and the components
 const page = read("src/app/admin/page.tsx");
