@@ -2411,16 +2411,18 @@ dd { margin: 0; color: var(--ink); text-align: left; }
   border: 0;
 }
 
-/* Phones: a narrower cover leaves the text column wide enough for a long title (158px left it 131px and the title touched the picture). */
+/* Phones: the card stacks (a wide picture on top, the text below at full width). Side by side it made two unequal columns:
+   a tall, dense text column next to a picture with empty space under it. */
 @media (max-width: 480px) {
-  .latest-card-cover { flex: 0 0 118px; width: 118px; }
+  .latest-card a { flex-direction: column; align-items: stretch; gap: 0; padding: 0; }
+  .latest-card-cover { flex: none; width: 100%; }
+  .latest-card-cover .work-cover { aspect-ratio: 21 / 9; }
+  .latest-card-body { padding: 14px 16px 16px; }
   .latest-card-title { overflow-wrap: anywhere; }
 }
 
 /* Very narrow phones (320–360px): keep text columns readable and nothing clipped. */
 @media (max-width: 360px) {
-  .latest-card a { gap: 10px; padding: 12px; }
-  .latest-card-cover { flex-basis: 112px; width: 112px; }
   .latest-card-meta { flex-wrap: wrap; white-space: normal; }
   .latest-card-title { font-size: 15px; overflow-wrap: anywhere; }
   .category-explorer-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
