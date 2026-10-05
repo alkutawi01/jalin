@@ -147,25 +147,48 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
     // Text is selected: turn the paragraphs it touches into one message or e-mail box (their wording and emphasis kept),
     // instead of adding an empty box beside it.
     if ((kind === "mesej" || kind === "emel") && saved && !saved.collapsed && editor.contains(saved.commonAncestorContainer)) {
-      // Only blocks that really contain selected words (a selection that merely begins at the end of a paragraph does not count).
-      const hasSelectedText = (block: Element) => {
+      // The part of a block that is inside the selection (a selection that merely begins at the end of a paragraph has none).
+      const partOf = (block: Element) => {
         const part = document.createRange();
         part.selectNodeContents(block);
         if (part.compareBoundaryPoints(Range.START_TO_START, saved) < 0) part.setStart(saved.startContainer, saved.startOffset);
         if (part.compareBoundaryPoints(Range.END_TO_END, saved) > 0) part.setEnd(saved.endContainer, saved.endOffset);
-        return part.toString().trim().length > 0;
+        return part;
       };
-      const touched = [...editor.children].filter((child) => /^(P|H2)$/.test(child.tagName) && saved.intersectsNode(child) && hasSelectedText(child));
+      const htmlOf = (range: Range) => {
+        const holder = document.createElement("div");
+        holder.appendChild(range.cloneContents());
+        return holder.innerHTML.replace(/<br\s*\/?>$/i, "").trim();
+      };
+      const touched = [...editor.children].filter((child) => /^(P|H2)$/.test(child.tagName) && saved.intersectsNode(child) && partOf(child).toString().trim().length > 0);
       if (touched.length > 0) {
+        const first = touched[0]!;
+        const last = touched[touched.length - 1]!;
+        // Only the selected words go into the box; what is left of the first paragraph before it, and of the last after it, stays outside.
+        const selectedHtml = touched.map((block) => htmlOf(partOf(block))).join("<br>");
+        const beforeRange = document.createRange();
+        beforeRange.selectNodeContents(first);
+        const firstPart = partOf(first);
+        beforeRange.setEnd(firstPart.startContainer, firstPart.startOffset);
+        const afterRange = document.createRange();
+        afterRange.selectNodeContents(last);
+        const lastPart = partOf(last);
+        afterRange.setStart(lastPart.endContainer, lastPart.endOffset);
+        const before = beforeRange.toString().trim() ? htmlOf(beforeRange) : "";
+        const after = afterRange.toString().trim() ? htmlOf(afterRange) : "";
+        const tag = (block: Element) => block.tagName.toLowerCase();
         editor.focus();
         const selection = window.getSelection();
         const whole = document.createRange();
-        whole.setStartBefore(touched[0]!);
-        whole.setEndAfter(touched[touched.length - 1]!);
+        whole.setStartBefore(first);
+        whole.setEndAfter(last);
         selection?.removeAllRanges();
         selection?.addRange(whole);
-        const inner = touched.map((child) => child.innerHTML.replace(/<br\s*\/?>$/i, "")).join("<br>");
-        document.execCommand("insertHTML", false, `<div class="visual-manuscript-communication visual-manuscript-communication-${kind}" data-communication="${kind}">${inner}</div>`);
+        document.execCommand(
+          "insertHTML",
+          false,
+          `${before ? `<${tag(first)}>${before}</${tag(first)}>` : ""}<div class="visual-manuscript-communication visual-manuscript-communication-${kind}" data-communication="${kind}">${selectedHtml}</div>${after ? `<${tag(last)}>${after}</${tag(last)}>` : ""}`
+        );
         sync();
         rememberSelection();
         return;
