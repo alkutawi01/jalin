@@ -402,6 +402,8 @@ export default function EditWorkPage() {
     }
     setFillBusy(true);
     const notes: string[] = [];
+    /** Writes that reached the server so far: an error part-way must say truthfully whether anything was saved. */
+    let wrote = 0;
     try {
       // 1) dek and genre: only into empty fields
       const patch: Record<string, string> = {};
@@ -421,6 +423,7 @@ export default function EditWorkPage() {
         });
         if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || "Gagal menyimpan maklumat.");
         setForm((prev) => ({ ...prev, ...patch }));
+        wrote += 1;
         notes.push(`Maklumat: ${Object.keys(patch).map((k) => (k === "dek" ? "dek" : "genre")).join(" dan ")} diisi.`);
       }
 
@@ -441,6 +444,7 @@ export default function EditWorkPage() {
             })
           });
           if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || "Gagal menyimpan watak.");
+          wrote += 1;
           notes.push(`Watak: ${fresh.length} ditambah${result.characters.length > fresh.length ? `, ${result.characters.length - fresh.length} sudah ada` : ""}.`);
         } else {
           notes.push(result.characters.length ? "Watak: semua sudah ada." : "Watak: tiada cadangan.");
@@ -460,8 +464,12 @@ export default function EditWorkPage() {
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ workId, term: item.term, meaning: item.meaning, source: "", sortOrder: glossaryTerms.length + index + 1 })
             });
-            if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || `Gagal menambah istilah "${item.term}".`);
+            if (!res.ok) {
+              if (added > 0) notes.push(`Glosari: ${added} istilah sempat ditambah sebelum ralat.`);
+              throw new Error((await res.json().catch(() => ({}))).error || `Gagal menambah istilah "${item.term}".`);
+            }
             added += 1;
+            wrote += 1;
           }
           const skipped = [
             g.existing.length ? `${g.existing.length} sudah ada` : "",
@@ -503,6 +511,7 @@ export default function EditWorkPage() {
             body: JSON.stringify({ ...body, chatbotFields: filled })
           });
           if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || "Gagal menyimpan sumber.");
+          wrote += 1;
           notes.push(`Sumber: ${Object.keys(body).length} medan diisi. Medan yang chatbot tidak tahu dibiarkan kosong. Hak dan bukti tidak diisi; semak di tab Sumber & Hak.`);
         } else {
           notes.push("Sumber: tiada medan kosong untuk diisi.");
@@ -511,7 +520,7 @@ export default function EditWorkPage() {
       notes.push("Tidak disentuh: teks karya, kredit, imej dan hak. Semak semua isi sebelum menerbitkan.");
       toast("Maklumat daripada chatbot telah diisi.", "success");
     } catch (err) {
-      notes.push(`Berhenti kerana ralat: ${err instanceof Error ? err.message : "ralat tidak diketahui"}. Bahagian sebelumnya sudah disimpan.`);
+      notes.push(`Berhenti kerana ralat: ${err instanceof Error ? err.message : "ralat tidak diketahui"}. ${wrote > 0 ? "Bahagian di atas yang sudah diisi kekal tersimpan; tekan Tampal & isi semula untuk menyambung (yang sudah ada dilangkau, tiada yang berganda)." : "Tiada apa-apa disimpan."}`);
     } finally {
       setFillNote(notes);
       setFillBusy(false);
