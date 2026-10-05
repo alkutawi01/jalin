@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getWork, updateWork, archiveWork, deleteUnpublishedWork } from "../../../../../lib/admin/work-service";
 import { conflictMessage, reconcileEdit, storedFormValues } from "../../../../../lib/admin/stale-write";
+import { episodesHiddenByArchiving } from "../../../../../lib/admin/series-hidden-by-archive";
 import { getCurrentAdmin } from "../../../../../lib/admin/auth";
 import { getDb, hasDb } from "../../../../../lib/db";
 import { imageMarkers, isImageMarker } from "../../../../../lib/reader/image-markers";
@@ -68,6 +69,17 @@ export async function PATCH(
     // Once public, the address is what readers, search engines and shared links hold; the next "Terbitkan semula" would turn the old one into a 404.
     if (body.slug !== undefined && body.slug !== existing.slug && (existing.published_revision_id || existing.published_at || existing.status === "published")) {
       return NextResponse.json({ error: "Alamat pautan karya yang pernah diterbitkan tidak boleh ditukar: pautan yang sudah dikongsi akan terputus." }, { status: 400 });
+    }
+
+    // Archiving a published episode in the middle of a continuous series hides the published episodes after it: ask first.
+    if (body.status === "archived" && existing.status === "published" && body.confirmHidesLater !== true && hasDb()) {
+      const hidden = await episodesHiddenByArchiving(id);
+      if (hidden.length > 0) {
+        return NextResponse.json(
+          { error: `Mengarkibkan episod ini akan menyembunyikan episod terbit selepasnya daripada pembaca (siri bersambung): ${hidden.map((h) => h.title).join(", ")}.`, confirmHidesLater: true, hidden },
+          { status: 409 }
+        );
+      }
     }
 
     // A work's taxonomy determines series membership, sections and rights gates.

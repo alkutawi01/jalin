@@ -1743,11 +1743,22 @@ export default function EditWorkPage() {
     setError(null);
 
     try {
-      const res = await fetch(`/api/admin/works/${workId}`, {
+      let res = await fetch(`/api/admin/works/${workId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: "archived" }),
       });
+      if (res.status === 409) {
+        // In a continuous series the episodes after this one would disappear for readers: say which, and ask again.
+        const data = await res.json().catch(() => ({}));
+        if (!data.confirmHidesLater) throw new Error(data.error || "Gagal mengarkibkan.");
+        if (!(await confirmAction(`${data.error} Teruskan mengarkibkan?`, { danger: true, confirmLabel: "Ya, arkibkan" }))) { setSaving(false); return; }
+        res = await fetch(`/api/admin/works/${workId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: "archived", confirmHidesLater: true }),
+        });
+      }
 
       if (!res.ok) throw new Error("Gagal mengarkibkan.");
       router.push("/admin/works");
