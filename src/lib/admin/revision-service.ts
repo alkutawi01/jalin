@@ -131,6 +131,28 @@ function snapshotCharacters(snapshot: unknown): string {
   return charactersFingerprint(s?.raw?.work?.metadata ?? s?.metadata);
 }
 
+/**
+ * The note in the reader's "Tentang karya" card. Like the characters, it is compared next to the content hash instead of
+ * inside it, so every work published before it could be edited keeps a valid hash, and so that clearing a note which was
+ * frozen into the published version is seen as a change. No note gives "".
+ */
+export function readerNoteOf(reader: unknown): string {
+  let value = reader;
+  if (typeof value === "string") {
+    try { value = JSON.parse(value); } catch { value = null; }
+  }
+  return String((value as { note?: unknown } | null | undefined)?.note ?? "").trim();
+}
+
+function snapshotReaderNote(snapshot: unknown): string {
+  let snap = snapshot;
+  if (typeof snap === "string") {
+    try { snap = JSON.parse(snap); } catch { return ""; }
+  }
+  const s = snap as { raw?: { work?: { reader?: unknown } }; reader?: unknown } | null | undefined;
+  return readerNoteOf(s?.raw?.work?.reader ?? s?.reader);
+}
+
 /** Hash of only what readers can see; timestamps and bookkeeping are left out so "no changes" is detectable. */
 export function materialHashOf(input: NonNullable<Awaited<ReturnType<typeof loadWorkForRevision>>>): string {
   const w = input.work;
@@ -303,6 +325,7 @@ export async function createRevisionTx(
 
     // Same visible content as an existing revision: reuse it, but make sure it is the public one.
     const liveCharacters = charactersFingerprint(input?.work.metadata);
+    const liveReaderNote = readerNoteOf((input?.work as { reader?: unknown } | undefined)?.reader);
     const sameHash = await trx
       .selectFrom("work_revisions")
       .where("work_id", "=", workId)
@@ -310,8 +333,8 @@ export async function createRevisionTx(
       .select(["id", "revision_no", "snapshot"])
       .orderBy("revision_no", "desc")
       .execute();
-    // Same visible content AND the same character list; otherwise it is a new version.
-    const existing = sameHash.find((row) => snapshotCharacters(row.snapshot) === liveCharacters);
+    // Same visible content AND the same character list AND the same side-card note; otherwise it is a new version.
+    const existing = sameHash.find((row) => snapshotCharacters(row.snapshot) === liveCharacters && snapshotReaderNote(row.snapshot) === liveReaderNote);
     if (existing) {
       await trx
         .updateTable("works")
@@ -405,6 +428,7 @@ export async function getUnpublishedChanges(workId: string): Promise<Unpublished
   return {
     snapshotMissing: false,
     changed: materialHashOf(live) !== rev.content_hash || charactersFingerprint(live.work.metadata) !== snapshotCharacters(rev.snapshot)
+      || readerNoteOf((live.work as { reader?: unknown }).reader) !== snapshotReaderNote(rev.snapshot)
   };
 }
 
