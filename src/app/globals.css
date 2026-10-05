@@ -2411,6 +2411,12 @@ dd { margin: 0; color: var(--ink); text-align: left; }
   border: 0;
 }
 
+/* Phones: a narrower cover leaves the text column wide enough for a long title (158px left it 131px and the title touched the picture). */
+@media (max-width: 480px) {
+  .latest-card-cover { flex: 0 0 118px; width: 118px; }
+  .latest-card-title { overflow-wrap: anywhere; }
+}
+
 /* Very narrow phones (320–360px): keep text columns readable and nothing clipped. */
 @media (max-width: 360px) {
   .latest-card a { gap: 10px; padding: 12px; }
