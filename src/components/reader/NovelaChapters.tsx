@@ -34,7 +34,7 @@ export function ChapterHead({
   return (
     <header className="chapter-head">
       <Crumbs items={[{ label: "Novela", href: "/kategori/novela" }, { label: workTitle, href: workHref }, { label: `Bab ${index + 1}` }]} />
-      <p className="story-kicker">Bab {index + 1} daripada {rows.length} · ± {row.minutes} min</p>
+      <p className="story-kicker">Bab {index + 1} daripada {rows.length} · ± {row.minutes} minit</p>
       <h1>{row.title}</h1>
       <div className="chapter-head-nav">
         {prev ? <a href={prev.href} rel="prev">← Bab {index}</a> : <span aria-hidden="true" />}
@@ -59,7 +59,7 @@ export function NovelaIntro({ rows }: { rows: ChapterRow[] }): ReactNode {
             <a href={row.href}>
               <span className="chapter-num">{index + 1}</span>
               <span className="chapter-ttl">{row.title}</span>
-              <span className="chapter-min">± {row.minutes} min</span>
+              <span className="chapter-min">± {row.minutes} minit</span>
             </a>
           </li>
         ))}

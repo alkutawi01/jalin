@@ -46,7 +46,7 @@ export default function ChapterPicker({ rows, currentSlug }: { rows: ChapterPick
             <a href={row.href} aria-current={row.slug === currentSlug ? "page" : undefined}>
               <span className="chapter-num">{index + 1}</span>
               <span className="chapter-ttl">{row.title}</span>
-              <span className="chapter-min">± {row.minutes} min</span>
+              <span className="chapter-min">± {row.minutes} minit</span>
             </a>
           </li>
         ))}

@@ -150,7 +150,7 @@ export default async function SeriesLandingPage({
                           </h3>
                           {episode.dek ? <p className="episode-card-dek">{episode.dek}</p> : null}
                           <p className="episode-card-meta">
-                            {[episode.readingMinutes ? `± ${episode.readingMinutes} min` : "", episode.publishedAt ? formatDate(episode.publishedAt) : ""]
+                            {[episode.readingMinutes ? `± ${episode.readingMinutes} minit` : "", episode.publishedAt ? formatDate(episode.publishedAt) : ""]
                               .filter(Boolean)
                               .join(" · ")}
                             <span className="episode-card-arrow" aria-hidden="true"> →</span>

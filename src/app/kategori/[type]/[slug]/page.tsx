@@ -152,7 +152,7 @@ function buildMetaRows(work: Awaited<ReturnType<typeof getWork>>): WorkMetaRow[]
   return [
     { label: "Bentuk", value: formLabel },
     ...(genre ? [{ label: "Genre", value: genre }] : []),
-    { label: "Bacaan", value: work.readingMinutes ? `± ${work.readingMinutes} min` : "—" },
+    { label: "Bacaan", value: work.readingMinutes ? `± ${work.readingMinutes} minit` : "—" },
     ...sourceRows(work.sourceWork),
     ...(work.version ? [{ label: "Versi", value: work.version }] : [])
   ];
@@ -227,7 +227,7 @@ function RelatedWorks({
               <div className="related-work-body">
                 <h3 style={{ fontStyle: "normal" }}>{related.title}</h3>
                 {related.dek ? <p>{related.dek}</p> : null}
-                {related.readingMinutes ? <span>± {related.readingMinutes} min</span> : null}
+                {related.readingMinutes ? <span>± {related.readingMinutes} minit</span> : null}
               </div>
             </a>
           ))}

@@ -64,7 +64,7 @@ function formatDate(date: string | undefined): string {
 
 function WorkCard({ work, type }: { work: PublicWorkSummary; type: string }) {
   const genre = displayableGenre(work.genre);
-  const reading = work.readingMinutes ? `± ${work.readingMinutes} min` : null;
+  const reading = work.readingMinutes ? `± ${work.readingMinutes} minit` : null;
   const published = work.publishedAt;
   const year = (published ?? "2026").slice(0, 4);
   const label = CATEGORY_META[type]?.headerLabel ?? type;

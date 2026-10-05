@@ -60,7 +60,7 @@ function FeaturedHero({ work }: { work: PublicFeaturedSummary }) {
   const hero = work.hero;
   const label = TYPE_LABELS[work.type] ?? work.type;
   const genre = displayableGenre(work.genre);
-  const reading = work.readingMinutes ? `± ${work.readingMinutes} min membaca` : null;
+  const reading = work.readingMinutes ? `± ${work.readingMinutes} minit membaca` : null;
 
   return (
     <section className="hero-featured">
@@ -99,7 +99,7 @@ function yearOf(work: { updatedAt?: string; publishedAt?: string }): string {
 
 function LatestWorkCard({ work }: { work: PublicWorkSummary }) {
   const label = TYPE_LABELS[work.type] ?? work.type;
-  const reading = work.readingMinutes ? `± ${work.readingMinutes} min` : null;
+  const reading = work.readingMinutes ? `± ${work.readingMinutes} minit` : null;
   return (
     <article className="latest-card">
       <a href={`/kategori/${work.type}/${work.slug}`}>
@@ -182,7 +182,7 @@ function EditorialSelection({ works }: { works: PublicWorkSummary[] }) {
               <div className="editorial-pick-body">
                 <span className="editorial-pick-type">
                   {TYPE_LABELS[work.type] ?? work.type}
-                  {work.readingMinutes ? ` · ± ${work.readingMinutes} min` : ""}
+                  {work.readingMinutes ? ` · ± ${work.readingMinutes} minit` : ""}
                 </span>
                 <h3 style={{ fontStyle: "normal" }}>{work.title}</h3>
                 {work.attribution ? <p className="work-attribution">{renderAttribution(work.attribution.primary)}</p> : null}
