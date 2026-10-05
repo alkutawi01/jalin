@@ -68,12 +68,12 @@ export async function importPlanAsDraft(
         audience: plan.work.audience,
         dek: plan.work.dek,
         reading_minutes: plan.work.readingMinutes,
-        version: "v0.1",
+        version: "v1.0",
         version_label: null,
         revision_count: 0,
         editorial_history: JSON.stringify([
           {
-            version: "v0.1",
+            version: "v1.0",
             type: "initial",
             summary: "Draf awal disediakan melalui Tambah Karya",
             date: now

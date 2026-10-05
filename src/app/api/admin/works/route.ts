@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
       audience: body.audience || undefined,
       dek: body.dek || undefined,
       readingMinutes: body.readingMinutes || undefined,
-      version: body.version || "v0.1",
+      version: body.version || "v1.0",
     });
 
     return NextResponse.json(work, { status: 201 });

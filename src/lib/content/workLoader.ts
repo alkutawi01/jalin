@@ -127,7 +127,7 @@ function parseWorkSlug(slug: string): Work | undefined {
     readingMinutes: typeof data.readingMinutes === "number" ? data.readingMinutes : undefined,
     publishedAt: data.publishedAt ? String(data.publishedAt) : undefined,
     updatedAt: data.updatedAt ? String(data.updatedAt) : undefined,
-    version: String(data.version ?? "v0.1"),
+    version: String(data.version ?? "v1.0"),
     versionLabel: data.versionLabel ? String(data.versionLabel) : null,
     revisionCount: typeof data.revisionCount === "number" ? data.revisionCount : 0,
     body,

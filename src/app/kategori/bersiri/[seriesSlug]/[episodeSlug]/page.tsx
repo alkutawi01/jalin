@@ -1,3 +1,4 @@
+import { displayVersion } from "@/lib/admin/version-label";
 import type { Metadata } from "next";
 import { ContinueNav } from "../../../../../components/reader/ReadingNav";
 import { notFound } from "next/navigation";
@@ -128,7 +129,7 @@ export default async function EpisodePage({
       label: "Status",
       value: series.status === "completed" ? "Siri tamat" : "Siri berterusan"
     },
-    { label: "Versi", value: work.versionLabel || work.version }
+    { label: "Versi", value: displayVersion(work.versionLabel || work.version) }
   ];
 
   const characters: CharacterMeta[] = work.metadata?.characters ?? [];
