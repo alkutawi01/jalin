@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { StoryInfoData } from "./types";
 
-type Tab = "karya" | "watak" | "editorial" | "bab";
+type Tab = "karya" | "watak" | "latar" | "editorial" | "bab";
 
 export default function MobileStoryInfo({ data }: { data: StoryInfoData }) {
   const [open, setOpen] = useState(false);
@@ -84,7 +84,7 @@ export default function MobileStoryInfo({ data }: { data: StoryInfoData }) {
           role="tablist"
           aria-label="Maklumat cerita"
           onKeyDown={(event) => {
-            const tabs: Tab[] = ["karya", "watak", "editorial", ...(data.bab && data.bab.length > 0 ? (["bab"] as Tab[]) : [])];
+            const tabs: Tab[] = ["karya", "watak", ...(data.places && data.places.length > 0 ? (["latar"] as Tab[]) : []), "editorial", ...(data.bab && data.bab.length > 0 ? (["bab"] as Tab[]) : [])];
             const index = tabs.indexOf(tab);
             if (event.key === "ArrowRight") {
               event.preventDefault();
@@ -123,6 +123,20 @@ export default function MobileStoryInfo({ data }: { data: StoryInfoData }) {
           >
             Watak
           </button>
+          {data.places && data.places.length > 0 ? (
+            <button
+              type="button"
+              id="sheet-tab-latar"
+              role="tab"
+              aria-selected={tab === "latar"}
+              aria-controls="sheet-panel-latar"
+              tabIndex={tab === "latar" ? 0 : -1}
+              className={tab === "latar" ? "active" : ""}
+              onClick={() => setTab("latar")}
+            >
+              Latar
+            </button>
+          ) : null}
           <button
             type="button"
             id="sheet-tab-editorial"
@@ -159,6 +173,11 @@ export default function MobileStoryInfo({ data }: { data: StoryInfoData }) {
           {tab === "watak" && (
             <div id="sheet-panel-watak" role="tabpanel" aria-labelledby="sheet-tab-watak" className="sheet-stack">
               {data.characters.map((character) => <div key={character.name}><b>{character.name}</b><span>{character.role}</span></div>)}
+            </div>
+          )}
+          {tab === "latar" && (
+            <div id="sheet-panel-latar" role="tabpanel" aria-labelledby="sheet-tab-latar" className="sheet-stack">
+              {(data.places ?? []).map((place) => <div key={place.name}><b>{place.name}</b>{place.description ? <span>{place.description}</span> : null}</div>)}
             </div>
           )}
           {tab === "editorial" && (

@@ -39,6 +39,8 @@ export type BylineCredit = {
 export type StoryInfoData = {
   work: WorkMetaRow[];
   characters: CharacterMeta[];
+  /** Latar tempat. */
+  places?: PlaceMeta[];
   editorial: EditorialCredit[];
   note?: string;
   /** Daftar bab untuk drawer mobile (novela sahaja). */

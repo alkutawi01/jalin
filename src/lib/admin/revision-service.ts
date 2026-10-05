@@ -112,13 +112,21 @@ export function charactersFingerprint(metadata: unknown): string {
     try { meta = JSON.parse(meta); } catch { meta = null; }
   }
   const list = (meta as { characters?: unknown } | null | undefined)?.characters;
-  if (!Array.isArray(list) || list.length === 0) return "";
-  return JSON.stringify(
-    list.map((c) => {
-      const row = (c ?? {}) as { name?: unknown; role?: unknown; firstAppearanceSection?: unknown };
-      return [String(row.name ?? ""), String(row.role ?? ""), String(row.firstAppearanceSection ?? "")];
-    })
-  );
+  const characters = !Array.isArray(list) || list.length === 0
+    ? ""
+    : JSON.stringify(
+        list.map((c) => {
+          const row = (c ?? {}) as { name?: unknown; role?: unknown; firstAppearanceSection?: unknown };
+          return [String(row.name ?? ""), String(row.role ?? ""), String(row.firstAppearanceSection ?? "")];
+        })
+      );
+  // The places (Latar tempat) ride along. A work with none gives exactly what it gave before, so no published work looks changed.
+  const places = (meta as { places?: unknown } | null | undefined)?.places;
+  if (!Array.isArray(places) || places.length === 0) return characters;
+  return characters + "|places:" + JSON.stringify(places.map((p) => {
+    const row = (p ?? {}) as { name?: unknown; description?: unknown };
+    return [String(row.name ?? ""), String(row.description ?? "")];
+  }));
 }
 
 /** The characters that were frozen into a stored revision. */

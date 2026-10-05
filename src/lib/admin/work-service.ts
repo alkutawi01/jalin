@@ -348,6 +348,45 @@ function validateCharacterEntries(characters: unknown): CharacterEntry[] {
   });
 }
 
+export const PLACES_MAX = 12;
+export const PLACE_NAME_MAX = 80;
+export const PLACE_DESCRIPTION_MAX = 160;
+
+/** The places (Latar tempat) of a story: a name and, optionally, a few words about it. */
+export function validatePlaceEntries(places: unknown): Array<{ name: string; description?: string }> {
+  if (!Array.isArray(places)) throw new Error("places mesti senarai (array).");
+  if (places.length > PLACES_MAX) throw new Error(`Latar tempat: paling banyak ${PLACES_MAX}.`);
+  const seen = new Set<string>();
+  return places.map((entry, index) => {
+    if (!entry || typeof entry !== "object") throw new Error(`Latar tempat #${index + 1}: bentuk tidak sah.`);
+    const name = String((entry as { name?: unknown }).name ?? "").trim();
+    const description = String((entry as { description?: unknown }).description ?? "").trim();
+    if (!name) throw new Error(`Latar tempat #${index + 1}: nama diperlukan.`);
+    if (name.length > PLACE_NAME_MAX) throw new Error(`Latar tempat #${index + 1}: nama terlalu panjang (maksimum ${PLACE_NAME_MAX} aksara).`);
+    if (description.length > PLACE_DESCRIPTION_MAX) throw new Error(`Latar tempat #${index + 1}: keterangan terlalu panjang (maksimum ${PLACE_DESCRIPTION_MAX} aksara).`);
+    const key = name.toLocaleLowerCase("ms");
+    if (seen.has(key)) throw new Error(`Latar tempat "${name}" disenaraikan dua kali.`);
+    seen.add(key);
+    return description ? { name, description } : { name };
+  });
+}
+
+/** Replace the places stored in works.metadata.places (the other metadata keys are kept; same row lock as the characters). */
+export async function updateWorkPlaces(id: string, places: unknown): Promise<WorkRecord> {
+  const db = getAdminDb();
+  const existing = await getWork(id);
+  if (!existing) throw new Error("Work not found.");
+  const validated = validatePlaceEntries(places);
+  await db.transaction().execute(async (trx) => {
+    const current = await trx.selectFrom("works").where("id", "=", id).select("metadata").forUpdate().executeTakeFirst();
+    const metadata = { ...((current?.metadata ?? {}) as Record<string, unknown>), places: validated };
+    await trx.updateTable("works").where("id", "=", id).set({ metadata, updated_at: new Date().toISOString() }).execute();
+  });
+  const work = await getWork(id);
+  if (!work) throw new Error("Work not found after update.");
+  return work;
+}
+
 /**
  * Replace the full character list stored in works.metadata.characters.
  * Read-modify-write on the metadata jsonb: other keys that may live in

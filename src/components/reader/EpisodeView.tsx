@@ -17,6 +17,7 @@ import StoryMarkdown from "./StoryMarkdown";
 import FootnoteList from "./FootnoteList";
 import { extractFootnotes, markFootnoteReferences } from "../../lib/reader/footnotes";
 import MobileStoryInfo from "./MobileStoryInfo";
+import { publicPlaces } from "../../lib/reader/places";
 import { initContentRepository } from "../../lib/content";
 import { getWorkBySlug, getWorksByType } from "../../lib/content/workLoader";
 import {
@@ -82,12 +83,14 @@ export default function EpisodeView({
   ];
 
   const characters: CharacterMeta[] = work.metadata?.characters ?? [];
+  const places = publicPlaces(work.metadata);
 
   const editorial = projectEditorialCredits(work.credits);
 
   const mobileInfo: StoryInfoData = {
     work: workMeta,
     characters,
+    places,
     editorial,
     note: disclosureNoteFor(work)
   };
@@ -150,7 +153,7 @@ export default function EpisodeView({
             <FootnoteList notes={footnotes.notes} />
           </article>
 
-          <RightRail characters={characters} />
+          <RightRail characters={characters} places={places} />
         </div>
 
         <ContinueNav
