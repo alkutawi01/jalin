@@ -675,6 +675,23 @@ export default function EditWorkPage() {
 
   const [sections, setSections] = useState<SectionData[]>([]);
   const [editingSection, setEditingSection] = useState<Partial<SectionData> | null>(null);
+  // The edit forms open above or below the table the editor clicked in, often off screen, so "Edit" seemed to do nothing.
+  // When one opens, bring it into view and put the cursor in its first field.
+  const openEditorKey = editingCredit ? `kredit-${editingCredit.id ?? "baharu"}`
+    : editingGlossary ? `glosari-${editingGlossary.id ?? "baharu"}`
+    : editingVisual ? `gambar-${editingVisual.id ?? "baharu"}`
+    : editingSection ? `bab-${editingSection.id ?? "baharu"}`
+    : null;
+  useEffect(() => {
+    if (!openEditorKey) return;
+    const timer = window.setTimeout(() => {
+      const form = document.querySelector<HTMLElement>(".admin-credit-form");
+      if (!form) return;
+      form.scrollIntoView({ behavior: "smooth", block: "center" });
+      form.querySelector<HTMLElement>("input:not([type=hidden]):not([disabled]), select, textarea")?.focus({ preventScroll: true });
+    }, 50);
+    return () => window.clearTimeout(timer);
+  }, [openEditorKey]);
   const [sectionError, setSectionError] = useState<string | null>(null);
   const [sectionSuccess, setSectionSuccess] = useState<string | null>(null);
 
@@ -1343,8 +1360,13 @@ export default function EditWorkPage() {
     }
   }
 
+  const [creditSaving, setCreditSaving] = useState(false);
+  /** Set at once (state updates wait for the next render), so two quick clicks cannot both save. */
+  const creditSavingNow = useRef(false);
   async function handleSaveCredit() {
-    if (!editingCredit) return;
+    if (!editingCredit || creditSavingNow.current) return;
+    creditSavingNow.current = true;
+    setCreditSaving(true);
 
     setCreditError(null);
 
@@ -1395,6 +1417,9 @@ export default function EditWorkPage() {
       loadCredits();
     } catch (err) {
       setCreditError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+    } finally {
+      creditSavingNow.current = false;
+      setCreditSaving(false);
     }
   }
 
@@ -2159,7 +2184,7 @@ export default function EditWorkPage() {
             </button>
           </div>
           <p className="admin-form-hint">
-            Novela kekal satu Work. Bab ialah struktur dalaman — bukan karya berasingan.
+            Novela kekal satu karya. Bab ialah bahagian di dalamnya, bukan karya berasingan.
             Apabila bab wujud, ia menjadi struktur kanonik pembaca.
           </p>
 
@@ -2229,7 +2254,7 @@ export default function EditWorkPage() {
 
           {sections.length === 0 ? (
             <p className="admin-table-empty">
-              Tiada bab — Novela menggunakan works.body sahaja sehingga bab ditambah.
+              Belum ada bab. Novela menggunakan manuskrip di tab Kandungan sehingga bab ditambah.
             </p>
           ) : (
             <div className="admin-table-wrap">
@@ -2456,8 +2481,9 @@ export default function EditWorkPage() {
                   type="button"
                   className="admin-btn admin-btn-primary"
                   onClick={handleSaveCredit}
+                  disabled={creditSaving}
                 >
-                  Simpan Kredit
+                  {creditSaving ? "Menyimpan…" : "Simpan Kredit"}
                 </button>
               </div>
             </div>

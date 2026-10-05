@@ -64,19 +64,29 @@ function projectPerson(credit: ContributorRef): ProjectedPerson | undefined {
   return { name: meta.name, href: `/penulis/${trimmed}`, maya: meta.kind === "virtual" };
 }
 
+/**
+ * One line per person. A person with several roles on the same work is shown once, with the roles separated by commas
+ * ("Penulis bersama, Penterjemah"), in the order the credits are kept and without repeating a role.
+ */
 export function projectEditorialCredits(credits: ContributorRef[]): EditorialCredit[] {
-  const projected: EditorialCredit[] = [];
+  const order: string[] = [];
+  const byPerson = new Map<string, { name: string; roles: string[] }>();
   for (const credit of credits ?? []) {
     const label = projectRole(credit.role ?? "");
     if (!label) continue;
     const person = projectPerson(credit);
     if (!person) continue;
-    projected.push({
-      role: label,
-      name: person.maya ? `${person.name} · Maya` : person.name
-    });
+    const name = person.maya ? `${person.name} · Maya` : person.name;
+    const key = name.trim().toLocaleLowerCase("ms");
+    const entry = byPerson.get(key);
+    if (!entry) {
+      byPerson.set(key, { name, roles: [label] });
+      order.push(key);
+    } else if (!entry.roles.includes(label)) {
+      entry.roles.push(label);
+    }
   }
-  return projected;
+  return order.map((key) => ({ role: byPerson.get(key)!.roles.join(", "), name: byPerson.get(key)!.name }));
 }
 
 export function projectBylineCredits(credits: ContributorRef[]): BylineCredit[] {
