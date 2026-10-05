@@ -2567,7 +2567,9 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 }
 
 /* Links in a crumb line are underlined so they are not told apart from the text by colour alone. */
-.series-crumb a, .crumbs a { text-decoration: underline; text-underline-offset: 3px; border-bottom: 0; }
+/* The breadcrumb is a row of small accent-coloured labels: no line until the pointer or the keyboard is on one. */
+.series-crumb a, .crumbs a { text-decoration: none; border-bottom: 0; }
+.series-crumb a:hover, .series-crumb a:focus-visible, .crumbs a:hover, .crumbs a:focus-visible { text-decoration: underline; text-underline-offset: 3px; }
 
 /* Bersiri reads as an open editorial spread, not another boxed work card. */
 .series-highlight { padding-block: 56px 30px; }
@@ -2790,7 +2792,9 @@ main:focus { outline: none; }
 .info-body p, .info-body ul { margin: 0 0 14px; }
 .info-body ul { padding-left: 1.2rem; }
 .info-body li { margin-bottom: 6px; }
-.info-body a { color: var(--clay-text); text-decoration: underline; text-underline-offset: 3px; }
+/* A link inside a paragraph keeps a line (colour alone is not enough), but a thin, soft one that does not cut through the letters. */
+.info-body a { color: var(--clay-text); text-decoration-line: underline; text-decoration-thickness: 1px; text-decoration-color: rgba(160, 96, 76, .38); text-underline-offset: 4px; text-decoration-skip-ink: none; }
+.info-body a:hover, .info-body a:focus-visible { text-decoration-color: currentColor; }
 .info-updated { margin: 40px 0 0; padding-top: 16px; border-top: 1px solid var(--line); font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 13px; color: var(--ink-soft); }
 @media (max-width: 680px) { .info-page { padding-top: 36px; padding-bottom: 48px; } .info-body { font-size: 1.05rem; } }
 .site-footer .footer-col { display: block; }
