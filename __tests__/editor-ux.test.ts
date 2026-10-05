@@ -30,7 +30,8 @@ assert(offenders.length === 0, `no readiness message shows an internal name${off
 assert(!/works\.body|kekal satu Work/.test(page), "the chapter tab does not show database names");
 
 const visualEditor = fs.readFileSync(path.join(__dirname, "../src/components/admin/VisualManuscriptEditor.tsx"), "utf8");
-assert(visualEditor.includes("hasSelectedText") && visualEditor.includes("!saved.collapsed"), "selected text becomes the message/e-mail box (only the paragraphs that hold selected words)");
+assert(visualEditor.includes("partOf") && visualEditor.includes("!saved.collapsed"), "selected text becomes the message/e-mail box (only the paragraphs that hold selected words)");
+assert(visualEditor.includes("beforeRange") && visualEditor.includes("afterRange"), "only the selected words go into the box; the rest of the first and last paragraph stays outside it");
 
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);
