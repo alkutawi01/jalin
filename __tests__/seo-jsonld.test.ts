@@ -1,5 +1,5 @@
 /** Structured data for work and chapter pages. */
-import { absoluteUrl } from "../src/lib/seo";
+import { absoluteUrl, shareImageUrl, SITE_URL } from "../src/lib/seo";
 import { episodeJsonLd, jsonLdString, seriesJsonLd, workJsonLd } from "../src/lib/seo-jsonld";
 
 let passed = 0;
@@ -38,7 +38,7 @@ assert(absoluteUrl("/visuals/a/hero.png").endsWith("/visuals/a/hero.png") && !ab
 assert(absoluteUrl(blob) === blob, "an address that is already full is not prefixed with the site again");
 assert(absoluteUrl("HTTP://x.test/a.png") === "HTTP://x.test/a.png", "the check ignores letter case");
 const imageOfWork = (workJsonLd({ ...novela, heroSrc: blob }) as { "@graph": Array<Record<string, unknown>> })["@graph"][0]!.image;
-assert(imageOfWork === blob, "structured data points at the real image, not a doubled address");
+assert(imageOfWork === shareImageUrl(blob) && String(imageOfWork).startsWith("http") && !String(imageOfWork).includes(SITE_URL + "/https"), "structured data points at the optimised copy of the real image, not a doubled address");
 
 const series = seriesJsonLd({ slug: "siri-a", title: "Siri A", dek: "Dek.", episodes: [{ slug: "ep-1", title: "Satu", position: 1 }, { slug: "ep-2", title: "Dua", position: 2 }] }) as { "@graph": Array<Record<string, unknown>> };
 assert(series["@graph"][0]!["@type"] === "CreativeWorkSeries" && (series["@graph"][0]!.hasPart as unknown[]).length === 2, "a series lists its episodes");
