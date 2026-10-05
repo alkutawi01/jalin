@@ -6,6 +6,7 @@ export const CHECK_LABELS: Record<keyof EditorialHealth, { title: string; about:
   authors: { title: "Nama penulis", about: "Setiap karya terbit mesti ada pengarang yang dipaparkan: seorang penulis awam bagi karya Jalin, atau pengarang asal (tab Sumber) bagi sinopsis dan fragmen.", fix: "Tambah kredit penulis" },
   revisions: { title: "Versi terbit", about: "Karya terbit mesti ada salinan versi yang dibaca pembaca.", fix: "Terbitkan semula" },
   visuals: { title: "Asal imej", about: "Setiap imej mesti direkod daripada mana datangnya (alat penjana atau muat naik manual).", fix: "Rekod asal imej" },
+  rights: { title: "Hak sumber", about: "Karya terbit yang hak sumbernya kini terhad atau ditolak. Pembaca masih melihatnya sehingga ia diarkibkan.", fix: "Semak hak atau arkibkan" },
   translations: { title: "Jenis lama", about: "Karya yang masih berjenis \"terjemahan\" (jenis ini sudah dihentikan).", fix: "Tukar jenis" }
 };
 

@@ -8,7 +8,7 @@
  * glossary, visuals) and checks the public repository still serves the published snapshot until
  * the work is published again.
  */
-import { assertDisposableFixtures } from "./lib/disposable-fixture";
+import { assertDisposableFixtures, useTestDatabase } from "./lib/disposable-fixture";
 import { config } from "dotenv";
 if (process.env.AUDIT_ENV) config({ path: process.env.AUDIT_ENV, override: true });
 else config({ path: ".env.local" });
@@ -39,6 +39,7 @@ async function publicWork() {
 }
 
 async function main() {
+  useTestDatabase();
   if (!hasDb()) throw new Error("DATABASE_URL tiada");
   if (/br-nameless-boat/.test(process.env.DATABASE_URL ?? "") && !process.env.ALLOW_PRODUCTION_BRANCH) {
     // The primary production branch has a different endpoint host from branches; this guards against pasting it.

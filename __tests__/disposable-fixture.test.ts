@@ -5,7 +5,7 @@
  */
 import fs from "node:fs";
 import path from "node:path";
-import { assertDisposableFixtures, isDisposableFixture, type FixtureRow } from "../scripts/lib/disposable-fixture";
+import { assertDisposableFixtures, isDisposableFixture, requireDestructiveOptIn, useTestDatabase, type FixtureRow } from "../scripts/lib/disposable-fixture";
 
 let passed = 0;
 let failed = 0;
@@ -49,6 +49,21 @@ async function refused(rows: FixtureRow[], ids: string[], slugs: string[]): Prom
 }
 
 (async () => {
+  // Second lock: without an explicit opt-in for this run nothing is deleted, whatever the database.
+  const saved = process.env.ALLOW_DESTRUCTIVE_TESTS;
+  delete process.env.ALLOW_DESTRUCTIVE_TESTS;
+  assert((await refused([], ["JLN-NOV-9998"], ["uji-novela-4d8"])) !== null, "no ALLOW_DESTRUCTIVE_TESTS: refused even for a clean fixture");
+  assert(((): boolean => { try { requireDestructiveOptIn({ ALLOW_DESTRUCTIVE_TESTS: "yes" }); return false; } catch { return true; } })(), "only the exact value true counts");
+  assert(((): boolean => { try { requireDestructiveOptIn({ ALLOW_DESTRUCTIVE_TESTS: "true" }); return true; } catch { return false; } })(), "true lets the run continue to the fixture check");
+  assert(!fs.existsSync(path.join(__dirname, "../scripts/import-waktu-sebenar.ts")) && !fs.existsSync(path.join(__dirname, "../scripts/assign-author-waktu-sebenar.ts")), "the two old one-off Waktu Sebenar scripts (hard-coded id, delete) are gone");
+  // Third lock: the scripts use TEST_DATABASE_URL, never the application's DATABASE_URL.
+  const thrown = (fn: () => void): string | null => { try { fn(); return null; } catch (e) { return (e as Error).message; } };
+  assert(thrown(() => useTestDatabase({ ALLOW_DESTRUCTIVE_TESTS: "true", DATABASE_URL: "postgres://prod" }))?.includes("TEST_DATABASE_URL tiada") === true, "no TEST_DATABASE_URL: refused, the application's DATABASE_URL is never used");
+  assert(thrown(() => useTestDatabase({ ALLOW_DESTRUCTIVE_TESTS: "true", DATABASE_URL: "postgres://prod", TEST_DATABASE_URL: "postgres://prod" }))?.includes("sama dengan DATABASE_URL") === true, "the 'test' URL equal to the application's: refused");
+  assert(thrown(() => useTestDatabase({ DATABASE_URL: "postgres://prod", TEST_DATABASE_URL: "postgres://branch" }))?.includes("ALLOW_DESTRUCTIVE_TESTS") === true, "without the opt-in: refused even with a test URL");
+  const okEnv: Record<string, string | undefined> = { ALLOW_DESTRUCTIVE_TESTS: "true", DATABASE_URL: "postgres://prod", TEST_DATABASE_URL: "postgres://branch" };
+  assert(thrown(() => useTestDatabase(okEnv)) === null && okEnv.DATABASE_URL === "postgres://branch", "with both locks the script is pointed at the test database");
+  process.env.ALLOW_DESTRUCTIVE_TESTS = "true";
   assert((await refused([], ["JLN-NOV-9998"], ["uji-novela-4d8"])) === null, "nothing there yet: fine");
   assert((await refused([fixture], ["JLN-NOV-9998"], ["uji-novela-4d8"])) === null, "a leftover fixture from an earlier run: fine");
   const real = await refused([published], ["JLN-NOV-9991"], ["uji-novela-race-4d8r"]);
@@ -66,6 +81,8 @@ async function refused(rows: FixtureRow[], ids: string[], slugs: string[]): Prom
     const source = fs.readFileSync(path.join(root, file), "utf8").replace(/\r\n/g, "\n");
     const guard = source.indexOf("await assertDisposableFixtures(");
     const firstDelete = source.search(/await db\s*\.deleteFrom\(/);
+    const pointed = source.indexOf("useTestDatabase();");
+    assert(pointed > 0 && pointed < source.indexOf("= getDb()"), `${file} points itself at TEST_DATABASE_URL before it opens any connection`);
     assert(guard > 0 && firstDelete > guard, `${file} checks what it is about to delete before its first delete`);
   }
   // the ids that collided with real works are not used by the fixtures any more

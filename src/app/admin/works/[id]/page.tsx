@@ -633,6 +633,8 @@ export default function EditWorkPage() {
   const [slugAuto, setSlugAuto] = useState(false);
   /** A copy of unsaved text found in this browser from an earlier visit, waiting for the editor's choice. */
   const [restoreOffer, setRestoreOffer] = useState<StoredDraft | null>(null);
+  /** When the server's copy was last saved: a browser copy older than this is not the latest word on the work. */
+  const [serverSavedAt, setServerSavedAt] = useState<number | null>(null);
   /** The characters as last loaded or saved, to tell whether the editor has unsaved character edits. */
   const charactersBaseline = useRef<string>("[]");
   /** The latest form, so a save can tell whether the editor kept typing while it was in flight. */
@@ -814,11 +816,15 @@ export default function EditWorkPage() {
         const kept = readDraft(window.localStorage, workId);
         if (kept) {
           const onServer = pickDraftFields({
-            title: shownTitle, dek: work.dek || "", body: work.body || "", genre: work.genre || "", audience: work.audience || "",
-            readingMinutes: work.reading_minutes?.toString() || "", editorNote: work.metadata?.editorNote ?? "",
+            title: shownTitle, slug: work.slug, dek: work.dek || "", body: work.body || "", genre: work.genre || "", audience: work.audience || "",
+            readingMinutes: work.reading_minutes?.toString() || "", editorNote: work.metadata?.editorNote ?? "", readerNote: work.reader?.note ?? "",
             origin: work.metadata?.origin === "sumber" ? "sumber" : "asli",
           });
-          if (draftDiffers(kept.fields, onServer)) setRestoreOffer(kept);
+          if (draftDiffers(kept.fields, onServer)) {
+            const savedOnServer = Date.parse(work.updated_at);
+            setServerSavedAt(Number.isFinite(savedOnServer) ? savedOnServer : null);
+            setRestoreOffer(kept);
+          }
           else clearDraft(window.localStorage, workId);
         }
       } catch (err) {
@@ -1867,9 +1873,10 @@ export default function EditWorkPage() {
       {restoreOffer && (
         <div className="admin-alert admin-alert-error" role="alert">
           <strong>Ada teks yang belum disimpan.</strong> Pelayar ini menyimpan salinan yang anda taip pada {new Date(restoreOffer.savedAt).toLocaleString("ms-MY")}, tetapi ia tidak pernah ditekan Simpan.{" "}
+          {serverSavedAt !== null && restoreOffer.savedAt < serverSavedAt ? <><strong>Salinan ini lebih lama</strong> daripada versi di pelayan (disimpan {new Date(serverSavedAt).toLocaleString("ms-MY")}); memulihkannya akan menggantikan perubahan yang lebih baharu itu.{" "}</> : null}
           <button type="button" className="admin-btn admin-btn-sm" onClick={() => {
             setForm((prev) => ({ ...prev, ...restoreOffer.fields }));
-            setManuscriptMode(canEditVisually(restoreOffer.fields.body) ? "visual" : "markdown");
+            setManuscriptMode(canEditVisually(restoreOffer.fields.body ?? "") ? "visual" : "markdown");
             setDirty(true);
             setRestoreOffer(null);
           }}>Pulihkan teks itu</button>{" "}

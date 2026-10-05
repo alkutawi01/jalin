@@ -8,7 +8,7 @@
  * Uses insideTransactionAfterReadiness hook to pause T1 after locks held.
  * T2 attempts deleteSection while T1 is paused → T2 blocks on FOR UPDATE.
  */
-import { assertDisposableFixtures } from "./lib/disposable-fixture";
+import { assertDisposableFixtures, useTestDatabase } from "./lib/disposable-fixture";
 import "dotenv/config";
 import { config } from "dotenv";
 config({ path: ".env.local", override: true });
@@ -47,6 +47,7 @@ async function cleanup(db: ReturnType<typeof getDb>) {
 }
 
 async function main() {
+  useTestDatabase();
   if (!hasDb()) fail("DATABASE_URL not set");
   const db = getDb();
   await cleanup(db);

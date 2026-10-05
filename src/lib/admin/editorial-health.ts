@@ -24,7 +24,12 @@ export interface EditorialHealth {
   revisions: HealthCategory;
   visuals: HealthCategory;
   translations: HealthCategory;
+  rights: HealthCategory;
 }
+
+/** A source work whose rights now forbid publication (rights status "restricted" or "rejected"). "Needs review" is not one of them. */
+export const RIGHTS_BLOCKING = ["restricted", "rejected"] as const;
+export const RIGHTS_STATUS_WORDS: Record<string, string> = { restricted: "terhad", rejected: "ditolak" };
 
 interface EditorialReport {
   generatedAt: string;
@@ -33,6 +38,7 @@ interface EditorialReport {
     revisions: string;
     visuals: string;
     translations: string;
+    rights: string;
   };
   issues: string[];
 }
@@ -45,12 +51,13 @@ export async function getEditorialHealth(): Promise<EditorialHealth> {
     revisions: { status: "pass", issues: [], items: [] },
     visuals: { status: "pass", issues: [], items: [] },
     translations: { status: "pass", issues: [], items: [] },
+    rights: { status: "pass", issues: [], items: [] },
   };
   
   // Get published works
   const works = await db.selectFrom("works").where("status", "=", "published").selectAll().execute();
   const credits = await db.selectFrom("credits").selectAll().execute();
-  const sources = await db.selectFrom("source_works").select(["work_id", "author"]).execute();
+  const sources = await db.selectFrom("source_works").select(["work_id", "author", "rights_status"]).execute();
   const revisions = await db.selectFrom("work_revisions").selectAll().execute();
   const visuals = await db.selectFrom("visuals").selectAll().execute();
   
@@ -88,6 +95,17 @@ export async function getEditorialHealth(): Promise<EditorialHealth> {
   // Pictures: no check. Where a picture came from is not required (a manual upload records itself; older pictures added straight
   // to a work have no source and that is fine), so it is not something the dashboard asks the administrator to fix.
 
+  // Rights withdrawn after publication: readers keep being served the published version, so the dashboard must say so.
+  for (const work of works) {
+    const status = String(sources.find((s) => s.work_id === work.id)?.rights_status ?? "");
+    if ((RIGHTS_BLOCKING as readonly string[]).includes(status)) {
+      const message = `${work.title || work.id}: hak sumber ${RIGHTS_STATUS_WORDS[status] ?? status}, tetapi karya masih terbit`;
+      health.rights.issues.push(message);
+      health.rights.items.push({ workId: work.id, title: work.title || work.id, message, tab: "source", fix: "Semak hak atau arkibkan" });
+    }
+  }
+  if (health.rights.items.length > 0) health.rights.status = "fail";
+
   // Check translations
   const translationWorks = await db.selectFrom("works").where("type", "=", "terjemahan").selectAll().execute();
   if (translationWorks.length > 0) {
@@ -110,6 +128,7 @@ export async function getEditorialReport(): Promise<EditorialReport> {
     ...health.revisions.issues,
     ...health.visuals.issues,
     ...health.translations.issues,
+    ...health.rights.issues,
   ];
   
   return {
@@ -119,6 +138,7 @@ export async function getEditorialReport(): Promise<EditorialReport> {
       revisions: health.revisions.status,
       visuals: health.visuals.status,
       translations: health.translations.status,
+      rights: health.rights.status,
     },
     issues: allIssues,
   };

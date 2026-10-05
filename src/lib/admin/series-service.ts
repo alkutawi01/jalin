@@ -29,6 +29,8 @@ export interface SeriesInput {
   audience?: string | null;
   mode?: string;
   status?: string;
+  /** The editor has confirmed changing the mode of a series that already has public episodes. */
+  confirmModeChange?: boolean;
 }
 
 export interface SeriesRecord {
@@ -149,6 +151,28 @@ export async function updateSeries(
       .executeTakeFirst();
     if (clash) {
       throw new Error(`Slug Siri "${input.slug}" sudah wujud.`);
+    }
+  }
+
+  // A series' address is part of every episode's address, and its mode decides which episodes readers see; once episodes have been
+  // public, changing the address would break shared links and changing the mode would show or hide episodes at once.
+  const slugChanges = input.slug !== undefined && input.slug !== existing.slug;
+  const modeChanges = input.mode !== undefined && input.mode !== existing.mode;
+  if (slugChanges || modeChanges) {
+    const everPublic = await db
+      .selectFrom("series_entries")
+      .innerJoin("works", "works.id", "series_entries.work_id")
+      .where("series_entries.series_id", "=", id)
+      .where((eb) => eb.or([eb("works.status", "=", "published"), eb("works.published_at", "is not", null), eb("works.published_revision_id", "is not", null)]))
+      .select("works.id")
+      .executeTakeFirst();
+    if (everPublic && slugChanges) {
+      throw new Error("Alamat pautan siri yang episodnya pernah terbit tidak boleh ditukar: pautan siri dan semua episodnya yang sudah dikongsi akan terputus.");
+    }
+    if (everPublic && modeChanges && input.confirmModeChange !== true) {
+      throw new Error(
+        "Menukar mod siri yang sudah mempunyai episod terbit mengubah episod mana yang dilihat pembaca serta-merta (siri bersambung hanya menunjukkan larian tanpa jurang dari episod 1; antologi menunjukkan semua yang terbit). Perlu disahkan."
+      );
     }
   }
 
@@ -274,6 +298,10 @@ export async function attachEpisode(
     .orderBy("position", "desc")
     .executeTakeFirst();
   const nextPosition = position ?? (maxEntry ? maxEntry.position + 1 : 1);
+  // Positions are kept as an unbroken 1..N (reordering and removing close gaps, and the reader numbers episodes by position).
+  if (position !== undefined && (!Number.isInteger(position) || position < 1 || position > (maxEntry?.position ?? 0) + 1)) {
+    throw new Error(`Kedudukan tidak sah: mesti nombor bulat dari 1 hingga ${(maxEntry?.position ?? 0) + 1} (tidak boleh meninggalkan ruang kosong).`);
+  }
 
   if (position !== undefined) {
     const clash = await db
@@ -336,11 +364,17 @@ export async function detachEpisode(seriesId: string, workId: string): Promise<v
   const work = await db
     .selectFrom("works")
     .where("id", "=", workId)
-    .select(["status"])
+    .select(["status", "published_at", "published_revision_id"])
     .executeTakeFirst();
   if (work && String(work.status) === "published") {
     throw new Error(
       "Episod yang sudah terbit tidak boleh dikeluarkan terus. Arkib/ubah status terbit mengikut aliran editorial selamat terlebih dahulu."
+    );
+  }
+  // An episode's public address contains its series' address: one that has been public (even if archived now) cannot move to another series.
+  if (work && (work.published_at || work.published_revision_id)) {
+    throw new Error(
+      "Episod yang pernah terbit tidak boleh dikeluarkan daripada siri ini: alamat awamnya mengandungi alamat siri, dan pautan yang sudah dikongsi akan terputus."
     );
   }
 

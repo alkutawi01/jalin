@@ -18,5 +18,11 @@ assert(block.indexOf("published_revision_id") < block.indexOf('status: "publishe
 assert(block.includes("fresh.published_revision_id || fresh.first_published_at"), "a work with a published revision or first-published date counts as returning");
 assert(block.includes("nextVersionLabel(fresh.version_label, fresh.published_at") && block.includes("Diterbitkan semula selepas diarkibkan"), "a returning work gets the next version label and says so");
 assert(block.includes('"Penerbitan pertama"') && block.includes("FIRST_VERSION_LABEL"), "a first publication is unchanged");
+// An ordinary republish checks readiness again inside its own transaction, on the locked rows, like a first publication does.
+const republish = src.slice(src.indexOf("export async function republishWork"));
+const txStart = republish.indexOf('.setIsolationLevel("serializable")');
+const recheck = republish.indexOf("evaluatePublicationReadinessFromData(locked)");
+assert(txStart > 0 && recheck > txStart && recheck < republish.indexOf("createRevisionTx("), "republishWork re-evaluates readiness in its transaction before freezing the new version");
+assert(republish.includes("loadReadinessInput(trx, workId, { lock: true })") && republish.includes("Publication readiness (transaksi) gagal"), "on the locked rows, and refuses with the blockers");
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);

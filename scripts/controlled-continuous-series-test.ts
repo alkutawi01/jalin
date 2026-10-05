@@ -8,7 +8,7 @@
  * completed status retains public Series, membership/order race protected.
  * Archives/cleans controlled fixtures only.
  */
-import { assertDisposableFixtures } from "./lib/disposable-fixture";
+import { assertDisposableFixtures, useTestDatabase } from "./lib/disposable-fixture";
 import "dotenv/config";
 import { config } from "dotenv";
 config({ path: ".env.local", override: true });
@@ -154,6 +154,7 @@ async function ensureEpisode(
 }
 
 async function main() {
+  useTestDatabase();
   if (!hasDb()) fail("DATABASE_URL not set");
   const db = getDb();
   await cleanup(db);

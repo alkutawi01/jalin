@@ -10,7 +10,37 @@
  * Now every such script calls assertDisposableFixtures() before its first delete. A row that matches the fixture's id or slug
  * may only be removed if it is itself a fixture (slug "uji-...", or id "work-uji-...") and has never been published.
  * Anything else stops the script with an explanation, whichever database it is connected to.
+ *
+ * Second lock: the scripts load .env.local, which points at the real database, so none of them may delete anything unless the person
+ * running it has said so for this run (ALLOW_DESTRUCTIVE_TESTS=true on the command line, never stored in a file or package script).
  */
+export const DESTRUCTIVE_OPT_IN = "ALLOW_DESTRUCTIVE_TESTS";
+
+/**
+ * Third lock: these scripts never use the application's DATABASE_URL. They run against TEST_DATABASE_URL (a temporary database branch chosen
+ * on purpose for this run) and refuse to start without it, or if it is the same database as DATABASE_URL.
+ */
+export function useTestDatabase(env: Record<string, string | undefined> = process.env): void {
+  requireDestructiveOptIn(env);
+  const test = env.TEST_DATABASE_URL?.trim();
+  if (!test) {
+    throw new Error("TEST_DATABASE_URL tiada. Skrip ujian yang memadam tidak menggunakan DATABASE_URL aplikasi: cipta cabang pangkalan data sementara dan tetapkan TEST_DATABASE_URL kepadanya.");
+  }
+  if (env.DATABASE_URL && env.DATABASE_URL.trim() === test) {
+    // .env.local sets DATABASE_URL to the real database; being identical to the test URL means the "test" database is the real one.
+    throw new Error("TEST_DATABASE_URL sama dengan DATABASE_URL aplikasi: itu bukan pangkalan data ujian. Hentikan.");
+  }
+  env.DATABASE_URL = test;
+}
+
+export function requireDestructiveOptIn(env: Record<string, string | undefined> = process.env): void {
+  if (env[DESTRUCTIVE_OPT_IN] !== "true") {
+    throw new Error(
+      `Skrip ini memadam dan mencipta semula data ujian, dan .env.local menunjuk ke pangkalan data sebenar. ` +
+        `Untuk menjalankannya terhadap cabang pangkalan data ujian: tetapkan DATABASE_URL ke cabang itu dan ${DESTRUCTIVE_OPT_IN}=true untuk larian ini sahaja.`
+    );
+  }
+}
 
 export interface FixtureRow {
   id: string;
@@ -34,6 +64,7 @@ export async function assertDisposableFixtures(
 ): Promise<void> {
   const ids = [...(fixtures.ids ?? [])];
   const slugs = [...(fixtures.slugs ?? [])];
+  requireDestructiveOptIn();
   if (ids.length === 0 && slugs.length === 0) return;
   const rows: FixtureRow[] = await db
     .selectFrom("works" as never)

@@ -121,12 +121,22 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
     setError(null);
     setSuccess(null);
     try {
-      const res = await fetch(`/api/admin/series/${id}`, {
+      let res = await fetch(`/api/admin/series/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
-      const data = await res.json();
+      let data = await res.json();
+      if (res.status === 409 && String(data.error).includes("Perlu disahkan")) {
+        // Changing the mode of a series with public episodes changes what readers see at once: say so, then ask again.
+        if (!(await confirmAction(`${data.error} Teruskan?`, { danger: true, confirmLabel: "Ya, tukar mod" }))) { setSaving(false); return; }
+        res = await fetch(`/api/admin/series/${id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...form, confirmModeChange: true }),
+        });
+        data = await res.json();
+      }
       if (!res.ok) throw new Error(data.error || "Gagal menyimpan.");
       setSuccess("Siri disimpan.");
       await loadSeries();
