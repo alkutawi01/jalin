@@ -3,7 +3,7 @@ import type { EditorialHealth, HealthItem } from "./editorial-health";
 /** What the administrator reads on the dashboard: plain Malay for every check, status and issue state. */
 
 export const CHECK_LABELS: Record<keyof EditorialHealth, { title: string; about: string; fix: string }> = {
-  authors: { title: "Nama penulis", about: "Setiap karya terbit mesti ada sekurang-kurangnya seorang penulis awam.", fix: "Tambah kredit penulis" },
+  authors: { title: "Nama penulis", about: "Setiap karya terbit mesti ada pengarang yang dipaparkan: seorang penulis awam bagi karya Jalin, atau pengarang asal (tab Sumber) bagi sinopsis dan fragmen.", fix: "Tambah kredit penulis" },
   revisions: { title: "Versi terbit", about: "Karya terbit mesti ada salinan versi yang dibaca pembaca.", fix: "Terbitkan semula" },
   visuals: { title: "Asal imej", about: "Setiap imej mesti direkod daripada mana datangnya (alat penjana atau muat naik manual).", fix: "Rekod asal imej" },
   translations: { title: "Jenis lama", about: "Karya yang masih berjenis \"terjemahan\" (jenis ini sudah dihentikan).", fix: "Tukar jenis" }
@@ -26,7 +26,7 @@ export interface CheckRow {
   statusLabel: string;
   total: number;
   /** The first few affected works, each with the address of the tab that fixes it. */
-  shown: Array<{ title: string; message: string; href: string }>;
+  shown: Array<{ title: string; message: string; href: string; fix?: string }>;
   hidden: number;
 }
 
@@ -47,7 +47,7 @@ export function buildContentChecks(health: EditorialHealth): { needAttention: Ch
       status: category.status,
       statusLabel: statusLabel(category.status),
       total: category.items.length,
-      shown: category.items.slice(0, CHECKS_SHOWN).map((item) => ({ title: item.title, message: item.message, href: hrefFor(item) })),
+      shown: category.items.slice(0, CHECKS_SHOWN).map((item) => ({ title: item.title, message: item.message, href: hrefFor(item), ...(item.fix ? { fix: item.fix } : {}) })),
       hidden: Math.max(0, category.items.length - CHECKS_SHOWN)
     };
   });

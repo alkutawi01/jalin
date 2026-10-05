@@ -1,5 +1,6 @@
 import type { BylineCredit, EditorialCredit } from "../../components/reader/types";
 import { getContributorMeta } from "../content/contributors";
+import { isDerivativeType, isOriginalAuthorRole } from "../credit-roles";
 import type { ContributorRef } from "../content/types";
 
 /**
@@ -118,6 +119,19 @@ export function projectBylineCredits(credits: ContributorRef[]): BylineCredit[] 
     projected.push({ name: person.name, href: person.href, maya: person.maya });
   }
   return projected;
+}
+
+/**
+ * The name under the title of a story page.
+ * Sinopsis and fragmen: only the author of the original work, from the source record, whatever the credits' own flags say
+ * (their credits are for the people who made Jalin's text, shown in the editorial block). If the source record has no author,
+ * the public credit that names the original author stands in. Every other type: the credits ticked "Nama di bawah tajuk".
+ */
+export function bylineFor(work: { type: string; credits: ContributorRef[]; sourceWork?: { author?: string } }): BylineCredit[] {
+  if (!isDerivativeType(work.type)) return projectBylineCredits(work.credits);
+  const author = work.sourceWork?.author?.trim();
+  if (author) return [{ name: author, maya: false }];
+  return projectBylineCredits((work.credits ?? []).filter((credit) => isOriginalAuthorRole(credit.role)).map((credit) => ({ ...credit, byline: true })));
 }
 
 export const VIRTUAL_WRITER_NOTE = "Penulis Maya bekerja di bawah kawal selia editorial manusia.";

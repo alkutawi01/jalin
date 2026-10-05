@@ -169,7 +169,7 @@ export default async function AdminDashboard() {
                         <tr key={item.href + item.message}>
                           <td className="admin-table-title">{item.message}</td>
                           <td style={{ textAlign: "right" }}>
-                            <a href={item.href} className="admin-btn admin-btn-sm">{row.fix}</a>
+                            <a href={item.href} className="admin-btn admin-btn-sm">{item.fix ?? row.fix}</a>
                           </td>
                         </tr>
                       ))}

@@ -8,6 +8,7 @@
 import { Kysely } from "kysely";
 import { getDb, hasDb } from "../db";
 import type { Database } from "../db/types";
+import { isDerivativeType } from "../credit-roles";
 
 function getAdminDb(): Kysely<Database> {
   if (!hasDb()) {
@@ -36,6 +37,12 @@ export interface CreditRecord {
   is_public: boolean;
   sort_order: number;
   created_at: Date;
+}
+
+/** Sinopsis and fragmen have no "Nama di bawah tajuk": the name there is the original author, shown automatically (credit-roles.ts). */
+async function bylineAllowed(db: Kysely<Database>, workId: string): Promise<boolean> {
+  const work = await db.selectFrom("works").where("id", "=", workId).select("type").executeTakeFirst();
+  return !isDerivativeType(work?.type);
 }
 
 /**
@@ -100,7 +107,7 @@ export async function createCredit(input: CreditInput): Promise<CreditRecord> {
       contributor_slug: input.contributorSlug || null,
       guest_name: input.guestName || null,
       role_label: input.roleLabel,
-      byline: input.byline,
+      byline: input.byline && (await bylineAllowed(db, input.workId)),
       is_public: input.isPublic,
       sort_order: input.sortOrder,
       created_at: now,
@@ -162,7 +169,10 @@ export async function updateCredit(
   if (hasSlug && input.guestName === undefined) updateData.guest_name = null;
   if (hasGuest && input.contributorSlug === undefined) updateData.contributor_slug = null;
   if (input.roleLabel !== undefined) updateData.role_label = input.roleLabel;
-  if (input.byline !== undefined) updateData.byline = input.byline;
+  if (input.byline !== undefined) {
+    const current = await getCredit(id);
+    updateData.byline = input.byline && (current ? await bylineAllowed(db, current.work_id) : true);
+  }
   if (input.isPublic !== undefined) updateData.is_public = input.isPublic;
   if (input.sortOrder !== undefined) updateData.sort_order = input.sortOrder;
 

@@ -13,7 +13,7 @@ import WorkVisualUpload from "../../../../components/admin/WorkVisualUpload";
 import { imageMarkerLabel, imageMarkers, insertImageMarker, isImageMarker } from "../../../../lib/reader/image-markers";
 import CreditRoleSelect from "../../../../components/admin/CreditRoleSelect";
 import AiCreditPicker from "../../../../components/admin/AiCreditPicker";
-import { roleDisplay } from "../../../../lib/credit-roles";
+import { isDerivativeType, roleDisplay } from "../../../../lib/credit-roles";
 import WorkStatusPanel from "../../../../components/admin/WorkStatusPanel";
 import { toast, confirmAction } from "../../../../lib/admin/dialogs";
 import LoadingBlock from "../../../../components/admin/LoadingBlock";
@@ -1239,6 +1239,7 @@ export default function EditWorkPage() {
       setForm((prev) => ({ ...prev, body: work.body || "" }));
       setSavedBody(work.body || "");
       await loadVisuals();
+      await loadReadiness();
       setMarkerMigration(null);
       setSuccess(action === "apply" ? `${data.converted} gambar ditukar kepada penanda. Semak pratonton sebelum menerbitkan semula.` : `${data.restored} gambar dipulihkan kepada anchor asal.`);
     } catch (error) {
@@ -1306,6 +1307,7 @@ export default function EditWorkPage() {
       charactersBaseline.current = JSON.stringify(data);
       setCharacters(data);
       setCharactersSuccess("Watak disimpan.");
+      await loadReadiness();
       setTimeout(() => setCharactersSuccess(null), 3000);
     } catch (err) {
       setCharactersError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
@@ -1402,7 +1404,7 @@ export default function EditWorkPage() {
       contributorSlug: editingCredit.contributor_slug || undefined,
       guestName: editingCredit.guest_name || undefined,
       roleLabel: editingCredit.role_label,
-      byline: editingCredit.byline,
+      byline: isDerivativeType(form.type) ? false : editingCredit.byline,
       isPublic: editingCredit.is_public,
     };
 
@@ -1438,7 +1440,9 @@ export default function EditWorkPage() {
       }
 
       setEditingCredit(null);
-      loadCredits();
+      await loadCredits();
+      // The status panel decides whether "Terbitkan semula" is offered, so it must see the new credit at once.
+      await loadReadiness();
     } catch (err) {
       setCreditError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
     } finally {
@@ -1460,7 +1464,8 @@ export default function EditWorkPage() {
         throw new Error(data.error || "Gagal memadam kredit.");
       }
 
-      loadCredits();
+      await loadCredits();
+      await loadReadiness();
     } catch (err) {
       setCreditError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
     }
@@ -1533,6 +1538,7 @@ export default function EditWorkPage() {
 
       setEditingVisual(null);
       await loadVisuals();
+      await loadReadiness();
       toast("Butiran gambar disimpan.", "success");
     } catch (err) {
       setVisualError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
@@ -1553,6 +1559,7 @@ export default function EditWorkPage() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Gagal mengganti imej.");
       await loadVisuals();
+      await loadReadiness();
       toast(form.status === "published" ? "Gambar diganti dalam draf. Pembaca belum melihatnya: tekan Terbitkan semula di atas karya." : "Gambar diganti. Semak pratonton sebelum menerbitkan.", "success");
     } catch (err) {
       setVisualError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
@@ -1583,6 +1590,7 @@ export default function EditWorkPage() {
       }
 
       await loadVisuals();
+      await loadReadiness();
       toast(markerInText ? `${label} dipadam. Penanda ${imageMarkerLabel(marker!)} masih ada dalam manuskrip.` : `${label} dipadam.`, "success");
     } catch (err) {
       setVisualError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
@@ -1626,7 +1634,8 @@ export default function EditWorkPage() {
       }
 
       setEditingGlossary(null);
-      loadGlossary();
+      await loadGlossary();
+      await loadReadiness();
     } catch (err) {
       setGlossaryError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
     }
@@ -1645,7 +1654,8 @@ export default function EditWorkPage() {
         throw new Error(data.error || "Gagal memadam istilah glosari.");
       }
 
-      loadGlossary();
+      await loadGlossary();
+      await loadReadiness();
     } catch (err) {
       setGlossaryError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
     }
@@ -2501,17 +2511,19 @@ export default function EditWorkPage() {
                 <div className="admin-form-group">
                   <label>&nbsp;</label>
                   <div className="admin-checkbox-group">
-                    <label className="admin-checkbox-label">
-                      <input
-                        type="checkbox"
-                        checked={editingCredit.byline || false}
-                        onChange={(e) => setEditingCredit((prev) => ({
-                          ...prev,
-                          byline: e.target.checked,
-                        }))}
-                      />
-                      Nama di bawah tajuk
-                    </label>
+                    {!isDerivativeType(form.type) ? (
+                      <label className="admin-checkbox-label">
+                        <input
+                          type="checkbox"
+                          checked={editingCredit.byline || false}
+                          onChange={(e) => setEditingCredit((prev) => ({
+                            ...prev,
+                            byline: e.target.checked,
+                          }))}
+                        />
+                        Nama di bawah tajuk
+                      </label>
+                    ) : null}
                     <label className="admin-checkbox-label">
                       <input
                         type="checkbox"
@@ -2547,6 +2559,12 @@ export default function EditWorkPage() {
             </div>
           )}
 
+          {isDerivativeType(form.type) ? (
+            <p className="admin-form-hint" id="derivative-byline-note">
+              Nama di bawah tajuk bagi {form.type === "fragmen" ? "fragmen" : "sinopsis"} ialah pengarang karya asal. Ia dipaparkan automatik daripada tab Sumber, jadi tiada kotak untuk ditanda di sini. Kredit di bawah ialah untuk mereka yang menyediakan teks Jalin.
+            </p>
+          ) : null}
+
           {credits.length === 0 ? (
             <p className="admin-table-empty">Tiada kredit untuk karya ini.</p>
           ) : (
@@ -2557,7 +2575,7 @@ export default function EditWorkPage() {
                     <th>Penyumbang</th>
                     <th>Jenis</th>
                     <th>Peranan</th>
-                    <th>Nama di bawah tajuk</th>
+                    {!isDerivativeType(form.type) ? <th>Nama di bawah tajuk</th> : null}
                     <th>Awam</th>
                     <th>Susunan</th>
                     <th>Aksi</th>
@@ -2573,18 +2591,20 @@ export default function EditWorkPage() {
                       </td>
                       <td>{isAiSlug(credit.contributor_slug) ? "AI" : "Manusia"}</td>
                       <td>{roleDisplay(credit.role_label)}</td>
-                      <td>
-                        <label className="admin-inline-toggle">
-                          <input
-                            type="checkbox"
-                            checked={credit.byline}
-                            disabled={creditToggleBusy === credit.id}
-                            onChange={(e) => void toggleCreditFlag(credit, "byline", e.target.checked)}
-                            aria-label={`Papar nama ${credit.contributor_slug ? contributors.find((c) => c.slug === credit.contributor_slug)?.display_name || credit.contributor_slug : credit.guest_name || "ini"} di bawah tajuk`}
-                          />
-                          <span>{credit.byline ? "Ya" : "Tidak"}</span>
-                        </label>
-                      </td>
+                      {!isDerivativeType(form.type) ? (
+                        <td>
+                          <label className="admin-inline-toggle">
+                            <input
+                              type="checkbox"
+                              checked={credit.byline}
+                              disabled={creditToggleBusy === credit.id}
+                              onChange={(e) => void toggleCreditFlag(credit, "byline", e.target.checked)}
+                              aria-label={`Papar nama ${credit.contributor_slug ? contributors.find((c) => c.slug === credit.contributor_slug)?.display_name || credit.contributor_slug : credit.guest_name || "ini"} di bawah tajuk`}
+                            />
+                            <span>{credit.byline ? "Ya" : "Tidak"}</span>
+                          </label>
+                        </td>
+                      ) : null}
                       <td>
                         <label className="admin-inline-toggle">
                           <input
