@@ -407,24 +407,32 @@ export default async function WorkPage({
           />
         )}
 
-        <div className="site-shell reading-grid">
-          <LeftRail
-            rows={workMeta}
-            note={disclosureNote}
-          >
-            {landing ? null : <SectionIndexDetails items={chapterItems} />}
-          </LeftRail>
-
-          {landing ? <NovelaIntro rows={chapterRows} /> : sectionIndex >= 0 ? (
+        {/* A chapter's head and picture sit above the columns, so the two side columns start level with the first paragraph. */}
+        {sectionIndex >= 0 ? (
+          <div className="site-shell reading-grid chapter-top">
+            <div className="left-rail" aria-hidden="true" />
             <div className="chapter-column">
               <ChapterHead workTitle={work.title} workHref={`/kategori/${work.type}/${work.slug}`} rows={chapterRows} index={sectionIndex} />
               {/* A chapter shows its own hero when it has one; until then the novela's hero stands in. */}
               {(chapterHero ?? hero)?.src ? <EditorialImage src={(chapterHero ?? hero)!.src} alt={(chapterHero ?? hero)!.alt ?? ""} rights={rights} kind="hero" crop={(chapterHero ?? hero)!.crop} /> : null}
-              {articleNode}
             </div>
-          ) : articleNode}
+            <div className="right-rail" aria-hidden="true" />
+          </div>
+        ) : null}
 
-          <RightRail characters={characters} editorial={editorial} />
+        <div className="site-shell reading-grid">
+          <LeftRail
+            rows={workMeta}
+            note={disclosureNote}
+            editorial={editorial}
+          >
+            {/* A chapter page has its own "Senarai Bab" in its head, so this one is only for a novela whose chapters are headings in one text. */}
+            {landing || sectionIndex >= 0 ? null : <SectionIndexDetails items={chapterItems} />}
+          </LeftRail>
+
+          {landing ? <NovelaIntro rows={chapterRows} /> : articleNode}
+
+          <RightRail characters={characters} />
         </div>
 
         {sections.length > 0 && !landing ? (

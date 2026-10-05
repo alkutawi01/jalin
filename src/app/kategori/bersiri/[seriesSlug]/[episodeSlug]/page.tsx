@@ -174,6 +174,7 @@ export default async function EpisodePage({
           <LeftRail
             rows={workMeta}
             note={disclosureNoteFor(work)}
+            editorial={editorial}
           />
 
           <article className="story-body">
@@ -200,7 +201,7 @@ export default async function EpisodePage({
             <FootnoteList notes={footnotes.notes} />
           </article>
 
-          <RightRail characters={characters} editorial={editorial} />
+          <RightRail characters={characters} />
         </div>
 
         <ContinueNav

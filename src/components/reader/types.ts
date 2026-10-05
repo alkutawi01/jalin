@@ -18,6 +18,12 @@ export type CharacterMeta = {
   role: string;
 };
 
+/** A place the story happens in (Latar tempat): a name and, if the editor wrote one, a few words about it. */
+export type PlaceMeta = {
+  name: string;
+  description?: string;
+};
+
 /** One role (or set of roles) and everyone who holds it, so a role is written once with all its names under it. */
 export type EditorialCredit = {
   role: string;
