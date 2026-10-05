@@ -81,7 +81,7 @@ nav a.active { color: var(--ink); border-bottom: 1px solid var(--clay); padding-
   text-align: center;
 }
 .story-kicker {
-  font-family: Arial, sans-serif;
+  font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif;
   color: var(--clay-text);
   text-transform: uppercase;
   letter-spacing: .16em;
@@ -126,7 +126,7 @@ nav a.active { color: var(--ink); border-bottom: 1px solid var(--clay); padding-
   align-items: center;
   flex-wrap: wrap;
   gap: 8px;
-  font-family: Arial, sans-serif;
+  font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif;
   font-size: 13px;
   color: #5a6b6f;
 }
@@ -164,7 +164,7 @@ nav a.active { color: var(--ink); border-bottom: 1px solid var(--clay); padding-
 
 .sticky { position: sticky; top: 104px; }
 .rail-card {
-  font-family: Arial, sans-serif;
+  font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif;
   font-size: 13px;
   line-height: 1.5;
   color: #55676b;
@@ -267,7 +267,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 .inline-figure figcaption {
   margin-top: 12px;
   color: #6b7575;
-  font-family: Arial, sans-serif;
+  font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif;
   font-size: 12px;
   line-height: 1.5;
   text-align: center;
@@ -279,7 +279,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
   padding: 64px 0 100px;
   text-align: center;
   color: #5f7074;
-  font-family: Arial, sans-serif;
+  font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif;
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: .13em;
@@ -980,7 +980,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
   background: #fffdf8;
   box-shadow: 0 14px 36px rgba(24,52,60,.12);
   color: var(--ink);
-  font-family: Arial, sans-serif;
+  font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif;
   font-size: 13px;
   line-height: 1.5;
   /* The pointer can move onto the tooltip to read it steadily or select its text. */
@@ -1800,7 +1800,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
   height: 21px;
 }
 .visual-manuscript-glyph {
-  font-family: Arial, sans-serif;
+  font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif;
   font-size: 20px;
   line-height: 1;
 }
@@ -2436,7 +2436,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 }
 .editor-note h2 {
   margin: 0 0 14px;
-  font-family: Arial, sans-serif;
+  font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif;
   font-size: 11px;
   letter-spacing: .16em;
   text-transform: uppercase;
@@ -2452,15 +2452,15 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 
 /* ---- Bersiri title page: the home of one story ---- */
 .series-masthead { padding: 72px 0 36px; border-bottom: 1px solid var(--line); max-width: 860px; }
-.series-crumb { margin: 0 0 18px; font-family: Arial, sans-serif; font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-soft); }
+.series-crumb { margin: 0 0 18px; font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-soft); }
 .series-crumb a { color: var(--clay-text); }
-.series-masthead h1 { margin: 0 0 18px; font-size: clamp(2.6rem, 7vw, 4.6rem); line-height: 1.04; font-style: normal; }
+.series-masthead h1 { margin: 0 0 18px; font-size: clamp(2.6rem, 6vw, 4rem); font-weight: 500; line-height: 1.04; font-style: normal; }
 .series-premise { max-width: 38rem; margin: 0 0 16px; font-size: 1.2rem; line-height: 1.6; color: var(--ink-soft); font-style: italic; }
-.series-meta { margin: 0; font-family: Arial, sans-serif; font-size: 13px; letter-spacing: .04em; color: var(--ink-soft); }
+.series-meta { margin: 0; font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 13px; letter-spacing: .04em; color: var(--ink-soft); }
 .series-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
 .series-action {
   display: inline-flex; align-items: baseline; gap: 10px; min-height: 44px; padding: 12px 22px;
-  border: 1px solid var(--ink); border-radius: 999px; color: var(--ink); font-family: Arial, sans-serif; font-size: 15px;
+  border: 1px solid var(--ink); border-radius: 999px; color: var(--ink); font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 15px;
   transition: background-color .18s ease, color .18s ease, border-color .18s ease;
 }
 .series-action--primary { background: var(--ink); color: var(--paper); }
@@ -2468,7 +2468,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 .series-action--primary:hover, .series-action--primary:focus-visible { background: #0f262c; }
 .series-action:not(.series-action--primary):hover { background: rgba(167, 100, 80, .08); }
 .series-action-sub { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; opacity: .8; }
-.series-section-title { margin: 40px 0 0; font-family: Arial, sans-serif; font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--ink-soft); font-weight: 600; }
+.series-section-title { margin: 40px 0 0; font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--ink-soft); font-weight: 600; }
 .episode-index { list-style: none; margin: 8px 0 0; padding: 0 0 72px; max-width: 860px; }
 .episode-row a {
   display: grid; grid-template-columns: 3.4rem minmax(0, 1fr) auto; gap: 14px; align-items: start;
@@ -2481,7 +2481,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 .episode-row-body { display: grid; gap: 6px; }
 .episode-row-title { font-size: 1.35rem; line-height: 1.3; font-style: normal; }
 .episode-row-dek { color: var(--ink-soft); line-height: 1.55; }
-.episode-row-meta { font-family: Arial, sans-serif; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-soft); }
+.episode-row-meta { font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-soft); }
 .episode-row-arrow { align-self: center; color: var(--clay-text); transition: transform .18s ease; }
 .episode-row a:hover .episode-row-arrow, .episode-row a:focus-visible .episode-row-arrow { transform: translateX(3px); }
 @media (max-width: 560px) {
@@ -2512,9 +2512,11 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 
 
 /* ---- Breadcrumb in the head and the continue block after the story ---- */
+/* One breadcrumb for the whole site: the small capital label style (Inter), links in the accent colour, underlined. */
+.crumbs, .series-crumb { font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 12px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-soft); }
 .crumbs ol { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; margin: 0; padding: 0; }
 .crumbs li + li::before { content: "/"; margin-right: 6px; opacity: .5; }
-.crumbs a { color: inherit; border-bottom: 1px solid transparent; transition: border-color .18s ease; }
+.crumbs a { color: var(--clay-text); border-bottom: 1px solid transparent; transition: border-color .18s ease; }
 .crumbs a:hover, .crumbs a:focus-visible { border-bottom-color: currentColor; }
 .continue-nav { font-family: Georgia, "Times New Roman", serif; }
 .continue-nav { width: min(673px, calc(100% - 64px)); margin: 56px auto 72px; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); justify-content: stretch; gap: 16px; }
@@ -2531,7 +2533,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 .continue-arrow { flex: none; font-size: 1.25rem; color: var(--clay-text); transition: transform .18s ease; }
 .continue-next:hover .continue-arrow, .continue-next:focus-visible .continue-arrow { transform: translateX(4px); }
 .continue-end { margin: 0; padding: 18px 20px; border: 1px dashed var(--line); border-radius: 14px; color: var(--ink-soft); text-align: center; }
-.continue-secondary { display: flex; flex-wrap: wrap; gap: 8px 22px; justify-content: space-between; font-family: Arial, sans-serif; font-size: 14px; }
+.continue-secondary { display: flex; flex-wrap: wrap; gap: 8px 22px; justify-content: space-between; font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 14px; }
 .continue-secondary a { color: var(--ink-soft); }
 .continue-secondary a:hover, .continue-secondary a:focus-visible { color: var(--ink); }
 @media (prefers-reduced-motion: reduce) {
@@ -2549,12 +2551,12 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 .episode-card a { display: block; }
 .episode-card-cover { position: relative; border-radius: 14px; overflow: hidden; border: 1px solid var(--line); transition: border-color .18s ease, box-shadow .18s ease; }
 .episode-card-cover .work-cover { width: 100%; aspect-ratio: 3 / 2; height: auto; border-radius: 0; }
-.episode-card-num { position: absolute; left: 12px; top: 10px; padding: 2px 10px; border-radius: 999px; background: rgba(251, 248, 242, .92); color: var(--clay-text); font-family: Arial, sans-serif; font-size: 13px; font-variant-numeric: tabular-nums; }
+.episode-card-num { position: absolute; left: 12px; top: 10px; padding: 2px 10px; border-radius: 999px; background: rgba(251, 248, 242, .92); color: var(--clay-text); font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 13px; font-variant-numeric: tabular-nums; }
 .episode-card a:hover .episode-card-cover, .episode-card a:focus-visible .episode-card-cover { border-color: var(--clay); box-shadow: 0 14px 30px -22px rgba(24, 52, 60, .6); }
 .episode-card-body { padding: 14px 2px 0; display: grid; gap: 6px; }
 .episode-card-title { margin: 0; font-size: 1.25rem; line-height: 1.3; font-style: normal; }
 .episode-card-dek { margin: 0; color: var(--ink-soft); line-height: 1.5; font-size: 15px; }
-.episode-card-meta { margin: 0; font-family: Arial, sans-serif; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-soft); }
+.episode-card-meta { margin: 0; font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-soft); }
 .episode-card-arrow { display: inline-block; color: var(--clay-text); transition: transform .18s ease; }
 .episode-card a:hover .episode-card-arrow, .episode-card a:focus-visible .episode-card-arrow { transform: translateX(3px); }
 @media (max-width: 560px) { .episode-grid { grid-template-columns: 1fr; } }
@@ -2796,16 +2798,16 @@ main:focus { outline: none; }
 @media (max-width: 680px) { .site-footer .footer-brand .footer-logo { margin: -18px 0 -12px -26px; } }
 
 /* Which series and episode a story belongs to: a quiet line under the dek, like the byline, not a trail of capitals. */
-.story-context-line { margin: 14px 0 0; font-family: Arial, sans-serif; font-size: 14px; color: var(--ink-soft); }
+.story-context-line { margin: 14px 0 0; font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 14px; color: var(--ink-soft); }
 .story-context-line a { color: inherit; text-decoration: underline; text-decoration-color: var(--line-strong, currentColor); text-underline-offset: 3px; }
 .story-context-line a:hover, .story-context-line a:focus-visible { color: var(--clay-text); text-decoration-color: currentColor; }
 
 /* ---- Footnotes: a small number in the text and the notes in a list at the end (see also the right margin on wide screens) ---- */
-.footnote-ref { font-family: Arial, sans-serif; font-size: .68em; font-weight: 700; line-height: 0; margin-left: 1px; }
+.footnote-ref { font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: .68em; font-weight: 700; line-height: 0; margin-left: 1px; }
 .footnote-ref a { color: var(--clay-text); text-decoration: none; padding: 0 2px; border-radius: 3px; scroll-margin-top: 150px; }
 .footnote-ref a:hover, .footnote-ref a:focus-visible { text-decoration: underline; text-underline-offset: 2px; }
-.footnotes { margin-top: 56px; padding-top: 24px; border-top: 1px solid var(--line); font-family: Arial, sans-serif; font-size: 15px; line-height: 1.6; color: var(--ink-soft); }
-.footnotes-title { margin: 0 0 14px; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--clay-text); font-family: Arial, sans-serif; font-weight: 700; }
+.footnotes { margin-top: 56px; padding-top: 24px; border-top: 1px solid var(--line); font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 15px; line-height: 1.6; color: var(--ink-soft); }
+.footnotes-title { margin: 0 0 14px; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--clay-text); font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-weight: 700; }
 .footnotes ol { margin: 0; padding-left: 1.5em; }
 .footnotes li { margin: 0 0 10px; padding-left: 4px; scroll-margin-top: 120px; }
 .footnote-text { display: inline; }
