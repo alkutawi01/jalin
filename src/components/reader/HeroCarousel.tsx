@@ -99,7 +99,7 @@ export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
 
         {count > 1 ? (
           <div className="hero-carousel-controls">
-            <button type="button" className="hero-carousel-btn" onClick={() => go(index - 1)} aria-label="Sebelumnya">←</button>
+            <button type="button" className="hero-carousel-btn" onClick={() => go(index - 1)} aria-label="Sebelumnya"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M10 3 5 8l5 5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg></button>
             <div className="hero-carousel-dots" role="group" aria-label="Pilih slaid">
               {slides.map((work, i) => (
                 <button
@@ -112,10 +112,12 @@ export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
                 />
               ))}
             </div>
-            <button type="button" className="hero-carousel-btn" onClick={() => go(index + 1)} aria-label="Seterusnya">→</button>
+            <button type="button" className="hero-carousel-btn" onClick={() => go(index + 1)} aria-label="Seterusnya"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="m6 3 5 5-5 5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg></button>
             {!reduced ? (
-              <button type="button" className="hero-carousel-btn hero-carousel-pause" onClick={() => setPaused((value) => !value)} aria-pressed={paused}>
-                {paused ? "Main" : "Jeda"}
+              <button type="button" className="hero-carousel-btn hero-carousel-pause" onClick={() => setPaused((value) => !value)} aria-pressed={paused} aria-label={paused ? "Main slaid secara automatik" : "Jeda slaid automatik"} title={paused ? "Main" : "Jeda"}>
+                {paused
+                  ? <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M4 2.5v11l9-5.5z" fill="currentColor" /></svg>
+                  : <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M4.5 2.5h2.5v11H4.5zM9 2.5h2.5v11H9z" fill="currentColor" /></svg>}
               </button>
             ) : null}
           </div>
