@@ -3398,7 +3398,8 @@ export default function EditWorkPage() {
           </button>
         </div>
       ) : null}
-      {form.status !== "published" ? (
+      {/* The server refuses to delete anything that was ever public (it can only be archived), so the button is not offered for it. */}
+      {form.status !== "published" && !everPublic ? (
         <div className="a-danger-zone">
           <div>
             <strong>Padam karya ini</strong>
