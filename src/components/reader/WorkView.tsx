@@ -395,7 +395,8 @@ export default async function WorkView({
         {/* "Tamat" marks the end of the work, so a chapter that has a next chapter does not show it. */}
         {sections.length === 0 || (!landing && !nextSection) ? <StoryEnd title={work.title} /> : null}
 
-        <RelatedWorks works={relatedWorks} typeLabel={typeLabel} />
+        {/* Other works are offered where the reader has finished or is choosing, not between two chapters of a novela (whose next step is the next chapter). */}
+        {activeSection && nextSection ? null : <RelatedWorks works={relatedWorks} typeLabel={typeLabel} />}
 
         {preview ? null : <script
           type="application/ld+json"
