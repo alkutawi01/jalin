@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import Image from "next/image";
 import { cropStyle } from "../../lib/reader/crop";
 import type { ImageCrop } from "../../lib/content/types";
-import type { BylineCredit, CharacterMeta, EditorialCredit, WorkMetaRow } from "./types";
+import type { BylineCredit, CharacterMeta, EditorialCredit, PlaceMeta, WorkMetaRow } from "./types";
 import { NAV_LINKS, SiteNavLinks } from "./nav-links";
 import MobileNavMenu from "./MobileNavMenu";
 
@@ -126,7 +126,8 @@ export function EditorialImage({
   );
 }
 
-export function LeftRail({ rows, note, children }: { rows: WorkMetaRow[]; note?: string; children?: ReactNode }) {
+/** The left rail: about the work, then who made it (editorial). It starts level with the first paragraph, not with the page header. */
+export function LeftRail({ rows, note, editorial = [], children }: { rows: WorkMetaRow[]; note?: string; editorial?: EditorialCredit[]; children?: ReactNode }) {
   return (
     <aside className="left-rail" aria-label="Tentang karya">
       <div className="rail-card sticky">
@@ -140,16 +141,29 @@ export function LeftRail({ rows, note, children }: { rows: WorkMetaRow[]; note?:
           <div className="rail-rule" />
           <p className="maya-note">{note}</p>
         </> : null}
+        {editorial.length > 0 && (
+          <>
+            <div className="rail-rule" />
+            <div className="rail-label">Editorial</div>
+            {editorial.map((credit) => (
+              <div className="editorial-meta" key={credit.role + "-" + credit.names.join("|")}>
+                <span>{credit.role}</span>
+                {credit.names.map((name) => <b key={name}>{name}</b>)}
+              </div>
+            ))}
+          </>
+        )}
       </div>
       {children ? <div className="rail-card sticky">{children}</div> : null}
     </aside>
   );
 }
 
-export function RightRail({ characters, editorial }: { characters: CharacterMeta[]; editorial: EditorialCredit[] }) {
-  if (characters.length === 0 && editorial.length === 0) return null;
+/** The right rail: who is in the story (Watak) and where it happens (Latar tempat). Level with the first paragraph. */
+export function RightRail({ characters, places = [] }: { characters: CharacterMeta[]; places?: PlaceMeta[] }) {
+  if (characters.length === 0 && places.length === 0) return null;
   return (
-    <aside className="right-rail" aria-label="Watak dan kredit editorial">
+    <aside className="right-rail" aria-label="Watak dan latar tempat">
       <div className="rail-card sticky">
         {characters.length > 0 && (
           <>
@@ -161,14 +175,13 @@ export function RightRail({ characters, editorial }: { characters: CharacterMeta
             ))}
           </>
         )}
-        {characters.length > 0 && editorial.length > 0 && <div className="rail-rule" />}
-        {editorial.length > 0 && (
+        {characters.length > 0 && places.length > 0 && <div className="rail-rule" />}
+        {places.length > 0 && (
           <>
-            <div className="rail-label">Editorial</div>
-            {editorial.map((credit) => (
-              <div className="editorial-meta" key={credit.role + "-" + credit.names.join("|")}>
-                <span>{credit.role}</span>
-                {credit.names.map((name) => <b key={name}>{name}</b>)}
+            <div className="rail-label">Latar tempat</div>
+            {places.map((place) => (
+              <div className="rail-person" key={place.name}>
+                <b>{place.name}</b>{place.description ? <span>{place.description}</span> : null}
               </div>
             ))}
           </>
