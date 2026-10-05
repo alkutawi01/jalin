@@ -593,3 +593,6 @@
 .a-shell .a-settings-fold > summary { cursor: pointer; padding: 12px 16px; font-weight: 600; font-size: 14px; }
 .a-shell .a-settings-fold[open] > summary { border-bottom: 1px solid var(--a-line); }
 .a-shell .a-settings-fold > :not(summary) { margin: 14px 16px 16px; }
+
+/* The Pilihan column is only a tick: as narrow as its box (the 190px first-column rule is for title columns) */
+.a-shell .admin-works-table th.admin-pick-column, .a-shell .admin-works-table td.admin-pick-cell { width: 1%; min-width: 0; padding-inline: 12px; white-space: nowrap; text-align: center; }

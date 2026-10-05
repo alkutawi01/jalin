@@ -85,19 +85,9 @@ export async function getEditorialHealth(): Promise<EditorialHealth> {
     }
   }
   
-  // Check visuals: where each picture came from (a generator or a manual upload) must be on record. This used to warn about
-  // every published work that had any picture ("N visual tanpa kredit") without looking at anything: a picture has no credit
-  // field, so the warning could never go away. The recorded source (provider) is what can really be missing.
-  for (const work of works) {
-    const withoutSource = visuals.filter(v => v.work_id === work.id && !String(v.provider ?? "").trim());
-    if (withoutSource.length > 0) {
-      const message = `${work.title || work.id}: ${withoutSource.length} imej tiada rekod asal`;
-      health.visuals.issues.push(message);
-      health.visuals.items.push({ workId: work.id, title: work.title || work.id, message, tab: "content" });
-      health.visuals.status = "warning";
-    }
-  }
-  
+  // Pictures: no check. Where a picture came from is not required (a manual upload records itself; older pictures added straight
+  // to a work have no source and that is fine), so it is not something the dashboard asks the administrator to fix.
+
   // Check translations
   const translationWorks = await db.selectFrom("works").where("type", "=", "terjemahan").selectAll().execute();
   if (translationWorks.length > 0) {
