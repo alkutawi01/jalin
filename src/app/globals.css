@@ -2734,3 +2734,8 @@ main:focus { outline: none; }
 /* The logo file has empty margin inside its canvas; pull it back so it lines up with the text beneath it. */
 .site-footer .footer-brand .footer-logo { margin: -22px 0 -14px -30px; }
 @media (max-width: 680px) { .site-footer .footer-brand .footer-logo { margin: -18px 0 -12px -26px; } }
+
+/* Which series and episode a story belongs to: a quiet line under the dek, like the byline, not a trail of capitals. */
+.story-context-line { margin: 14px 0 0; font-family: Arial, sans-serif; font-size: 14px; color: var(--ink-soft); }
+.story-context-line a { color: inherit; text-decoration: underline; text-decoration-color: var(--line-strong, currentColor); text-underline-offset: 3px; }
+.story-context-line a:hover, .story-context-line a:focus-visible { color: var(--clay-text); text-decoration-color: currentColor; }

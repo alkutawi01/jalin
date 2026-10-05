@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ContinueNav, Crumbs } from "../../../../../components/reader/ReadingNav";
+import { ContinueNav } from "../../../../../components/reader/ReadingNav";
 import { notFound } from "next/navigation";
 import { absoluteUrl } from "../../../../../lib/seo";
 import { episodeJsonLd, jsonLdString } from "../../../../../lib/seo-jsonld";
@@ -117,8 +117,9 @@ export default async function EpisodePage({
   const genre = displayableGenre(work.genre) ?? displayableGenre(series.genre);
 
   const workMeta: WorkMetaRow[] = [
-    { label: "Bentuk", value: `${typeLabel} · Episod ${episodeIndex >= 0 ? episodeIndex + 1 : "—"}` },
+    { label: "Bentuk", value: typeLabel },
     { label: "Siri", value: series.title },
+    { label: "Episod", value: episodeIndex >= 0 ? `${episodeIndex + 1} daripada ${episodes.length}` : "—" },
     ...(genre ? [{ label: "Genre", value: genre }] : []),
     { label: "Bacaan", value: work.readingMinutes ? `± ${work.readingMinutes} minit` : "—" },
     {
@@ -150,17 +151,16 @@ export default async function EpisodePage({
 
       <main id="kandungan" tabIndex={-1}>
         <StoryHead
-          kicker={
-            <Crumbs
-              items={[
-                { label: "Bersiri", href: "/kategori/bersiri" },
-                { label: series.title, href: `/kategori/bersiri/${series.slug}` },
-                { label: episodeIndex >= 0 ? `Episod ${episodeIndex + 1} daripada ${episodes.length}` : "Episod" }
-              ]}
-            />
-          }
+          // The same quiet kicker as a cerpen ("Cerpen · Keluarga"); which series and episode this is goes in a line under the dek.
+          kicker={[typeLabel, genre].filter(Boolean).join(" · ")}
           title={work.title}
           dek={work.dek ?? ""}
+          contextLine={
+            <>
+              {episodeIndex >= 0 ? `Episod ${episodeIndex + 1} daripada ${episodes.length} · ` : ""}
+              <a href={`/kategori/bersiri/${series.slug}`}>{series.title}</a>
+            </>
+          }
           byline={byline}
           hero={hero?.src ? { src: hero.src, alt: hero.alt ?? "", rights } : undefined}
         />
