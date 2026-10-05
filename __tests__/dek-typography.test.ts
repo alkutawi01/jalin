@@ -22,7 +22,6 @@ assert(projectPublicSeries({ id: "S2", slug: "s", title: "S", mode: "continuous"
 
 for (const file of [
   "src/app/kategori/bersiri/[seriesSlug]/page.tsx",
-  "src/app/page.tsx",
   "src/components/reader/HeroCarousel.tsx",
   "src/components/reader/StoryChrome.tsx"
 ]) {
@@ -33,7 +32,7 @@ assert(seriesPage.includes("smartQuotes(series.dek)") && seriesPage.includes("sm
 
 const css = read("src/app/globals.css");
 const premise = css.split("\n").find((line) => line.startsWith(".series-premise {")) ?? "";
-assert(premise.includes("font-style: italic"), "the series premise is italic like every other dek");
+assert(!premise.includes("font-style: italic"), "the series premise is regular type (Izzat made it so on 5 Okt; the homepage dek lives in HeroCarousel)");
 const listTitle = css.split("\n").find((line) => line.startsWith(".series-list-body h2 {")) ?? "";
 assert(listTitle.includes("font-weight: 700"), "a Bersiri list title is bold like a Cerpen list title");
 

@@ -9,19 +9,21 @@ function assert(cond: boolean, msg: string) {
 }
 
 const adminRoot = path.join(__dirname, "..", "src", "app", "admin");
-const lists = fs.readdirSync(adminRoot, { withFileTypes: true })
+const files: { name: string; file: string }[] = fs.readdirSync(adminRoot, { withFileTypes: true })
   .filter((e) => e.isDirectory())
-  .map((e) => path.join(adminRoot, e.name, "page.tsx"))
-  .filter((f) => fs.existsSync(f));
+  .map((e) => ({ name: e.name, file: path.join(adminRoot, e.name, "page.tsx") }))
+  .filter((x) => fs.existsSync(x.file));
+// The Karya list's table lives in a component.
+files.push({ name: "works", file: path.join(__dirname, "..", "src", "components", "admin", "AdminWorksTable.tsx") });
 
 const checked: string[] = [];
 const plain: string[] = [];
-for (const file of lists) {
+for (const { name, file } of files) {
   const src = fs.readFileSync(file, "utf8");
   const cells = [...src.matchAll(/<td className="admin-table-title">([\s\S]*?)<\/td>/g)];
   if (cells.length === 0) continue;
-  checked.push(path.basename(path.dirname(file)));
-  for (const cell of cells) if (!/<a\s/.test(cell[1]!)) plain.push(path.basename(path.dirname(file)));
+  checked.push(name);
+  for (const cell of cells) if (!/<a\s/.test(cell[1]!)) plain.push(name);
 }
 assert(checked.length >= 5, `the scan sees the admin lists (${checked.join(", ")})`);
 assert(plain.length === 0, `every list title is a link${plain.length ? ` (plain text in: ${[...new Set(plain)].join(", ")})` : ""}`);
