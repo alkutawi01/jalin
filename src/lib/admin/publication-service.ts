@@ -541,6 +541,14 @@ export async function republishWork(
   const changeType = options.changeType ?? "minor";
   const summary = options.summary?.trim() || "Kemas kini diterbitkan";
   return db.transaction().setIsolationLevel("serializable").execute(async (trx) => {
+    // The check above ran before this transaction: something may have changed since (a credit, a picture, the rights record). The
+    // version that gets frozen must pass the same gate, so check again on the locked rows, as a first publication does.
+    const locked = await loadReadinessInput(trx, workId, { lock: true });
+    if (!locked) throw new Error("Work tidak ditemui semasa transaksi.");
+    const recheck = evaluatePublicationReadinessFromData(locked);
+    if (!recheck.ready) {
+      throw new Error(`Publication readiness (transaksi) gagal: ${recheck.blockers.map((b) => b.message).join(" | ")}`);
+    }
     const rev = await createRevisionTx(trx, workId, { id: actor.id, email: actor.email }, {
       changeType,
       revisionSummary: summary,
