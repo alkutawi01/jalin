@@ -70,7 +70,7 @@ assert(ready({ work: { ...fragmenWork, status: "draft" }, sourceWork: { ...sourc
 assert(codes(ready({ work: { ...fragmenWork, type: "cerpen", status: "draft", metadata: null }, sourceWork: null })).includes("byline_missing"), "a cerpen still needs a ticked credit (unchanged)");
 
 // ── the dashboard check ──
-assert(buildContentChecks({ authors: { status: "pass", issues: [], items: [] }, revisions: { status: "pass", issues: [], items: [] }, visuals: { status: "pass", issues: [], items: [] }, translations: { status: "pass", issues: [], items: [] } } as EditorialHealth).needAttention.length === 0, "baseline: nothing to do");
+assert(buildContentChecks({ authors: { status: "pass", issues: [], items: [] }, revisions: { status: "pass", issues: [], items: [] }, visuals: { status: "pass", issues: [], items: [] }, translations: { status: "pass", issues: [], items: [] }, rights: { status: "pass", issues: [], items: [] } } as EditorialHealth).needAttention.length === 0, "baseline: nothing to do");
 const health = read("src/lib/admin/editorial-health.ts");
 assert(health.includes("isDerivativeType(work.type)") && health.includes('.selectFrom("source_works")') && health.includes('tab: derivative ? "source" : "credits"'), "the dashboard counts the original author (source record) for a sinopsis or fragmen, not a registered contributor");
 assert(read("src/lib/admin/dashboard-labels.ts").includes("pengarang asal (tab Sumber) bagi sinopsis dan fragmen") && read("src/app/admin/page.tsx").includes("{item.fix ?? row.fix}"), "the dashboard words it that way and the button says 'Isi pengarang asal'");

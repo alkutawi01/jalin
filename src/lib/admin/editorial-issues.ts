@@ -27,6 +27,7 @@ export async function syncEditorialIssues(): Promise<{ created: number; resolved
     { name: "revisions", severity: "high" as const },
     { name: "visuals", severity: "medium" as const },
     { name: "translations", severity: "low" as const },
+    { name: "rights", severity: "high" as const },
   ];
   
   for (const category of categories) {

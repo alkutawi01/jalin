@@ -27,12 +27,13 @@ const health: EditorialHealth = {
   authors: category("fail", [item(1, "credits", "tiada penulis awam"), item(2, "credits", "tiada penulis awam")]),
   revisions: category("pass", []),
   visuals: category("warning", Array.from({ length: 8 }, (_, i) => item(i + 10, "content", "1 imej tiada rekod asal"))),
-  translations: category("pass", [])
+  translations: category("pass", []),
+  rights: category("pass", [])
 };
 const checks = buildContentChecks(health);
 
 assert(checks.needAttention.map((r) => r.key).join() === "authors,visuals", "only the checks that need attention are listed, the failing one first", checks.needAttention.map((r) => r.key));
-assert(checks.passed.join(", ") === "Versi terbit, Jenis lama", "the passed checks are one short line", checks.passed);
+assert(checks.passed.join(", ") === "Versi terbit, Hak sumber, Jenis lama", "the passed checks are one short line", checks.passed);
 assert(checks.needAttention[0]!.statusLabel === "Perlu dibaiki" && checks.needAttention[1]!.statusLabel === "Perlu perhatian", "statuses are plain Malay");
 assert(checks.needAttention[0]!.shown[0]!.href === "/admin/works/W1#credits", "each row links to the tab of the work that fixes it", checks.needAttention[0]!.shown[0]);
 assert(hrefFor(item(3, "content", "x")) === "/admin/works/W3#content", "an image problem opens the content tab");
@@ -44,7 +45,7 @@ assert(statusLabel("pass") === "Lulus" && statusLabel("weird") === "weird", "an 
 // the check that used to be noise
 const healthSource = read("src/lib/admin/editorial-health.ts");
 assert(!healthSource.includes("provider") && healthSource.includes("Pictures: no check"), "the dashboard no longer asks for a picture's recorded source (not required)");
-assert((healthSource.match(/\.items\.push\(/g) ?? []).length === 3, "every check records which work it is about");
+assert((healthSource.match(/\.items\.push\(/g) ?? []).length === 4, "every check records which work it is about");
 
 // the page and the components
 const page = read("src/app/admin/page.tsx");
