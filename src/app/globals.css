@@ -2698,7 +2698,8 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 .series-feature:hover .series-feature-media img, .series-feature:focus-within .series-feature-media img,
 .series-list-card:hover .series-list-media img, .series-list-card:focus-within .series-list-media img { transform: scale(1.025); }
 .series-list-media > span { display: flex; height: 100%; align-items: center; justify-content: center; padding: 26px; color: var(--ink); font-size: clamp(1.5rem, 3vw, 2.8rem); line-height: 1.15; text-align: center; }
-.series-feature-overlay { position: absolute; z-index: 2; bottom: 20px; left: 12px; display: grid; gap: 4px; width: max-content; max-width: min(72%, 320px); padding: 9px 12px; border-radius: 5px; background: rgba(0, 0, 0, .82); color: #fff; }
+.series-feature-overlay { position: absolute; z-index: 2; bottom: 32px; left: 12px; display: grid; gap: 4px; width: max-content; max-width: min(72%, 320px); padding: 9px 12px; border-radius: 5px; background: rgba(0, 0, 0, .82); color: #fff; }
+.series-feature-media > .image-rights { right: 12px; bottom: 12px; }
 .series-feature-title { margin: 0; font-size: clamp(1.3rem, 2.1vw, 1.85rem); line-height: 1.12; font-weight: 500; text-wrap: balance; }
 .series-feature-meta, .series-list-meta { margin: 0; color: var(--clay-text); font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; }
 .series-feature-overlay .series-feature-meta { color: #f5dfc6; font-size: 10px; }
@@ -2724,7 +2725,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
   .series-highlight .section-head { align-items: flex-start; margin-bottom: 22px; }
   .series-feature { grid-template-columns: minmax(0, 1fr); gap: 12px; }
   .series-feature-media { aspect-ratio: 2 / 1; }
-  .series-feature-overlay { bottom: 18px; left: 10px; padding: 8px 10px; }
+  .series-feature-overlay { bottom: 26px; left: 10px; padding: 8px 10px; }
   .series-feature-title { font-size: clamp(1.4rem, 4vw, 1.8rem); }
   .series-feature-overlay .series-feature-meta { font-size: 9px; }
   .series-feature-footer { gap: 4px; padding-block: 0; }
