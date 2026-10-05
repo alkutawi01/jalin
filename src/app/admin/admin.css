@@ -395,6 +395,9 @@
 /* Table columns: keep titles readable, let secondary columns stay on one line */
 .a-shell .admin-table td:first-child { min-width: 190px; }
 .a-shell .admin-table td code { max-width: 170px; }
+/* The dashboard's to-do rows are title + type + Buka. The 190px title column made the table wider than its card on a phone and hid Buka, so here the title wraps. */
+.a-shell .a-todo-table td:first-child { min-width: 0; overflow-wrap: anywhere; }
+@media (max-width: 480px) { .a-shell .a-todo-table td { padding: 12px 10px; } }
 
 /* ── Phase 2: dialogs, toasts, loading, empty states ─── */
 .a-btn-danger { background: var(--a-danger); border-color: var(--a-danger); color: #fff; }

@@ -99,7 +99,7 @@ export default async function AdminDashboard() {
                 </h3>
                 <p className="admin-form-hint" style={{ margin: "0 0 8px" }}>{group.hint}</p>
                 <div className="admin-table-wrap">
-                  <table className="admin-table">
+                  <table className="admin-table a-todo-table">
                     <tbody>
                       {items.slice(0, 6).map((w) => (
                         <tr key={w.id}>

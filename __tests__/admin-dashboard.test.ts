@@ -50,6 +50,13 @@ assert((healthSource.match(/\.items\.push\(/g) ?? []).length === 4, "every check
 const page = read("src/app/admin/page.tsx");
 assert(page.includes("Semakan kandungan") && page.includes("buildContentChecks("), "the dashboard shows the plain checks");
 assert(/<details className="admin-section a-tech">/.test(page) && !/<details[^>]*\bopen\b/.test(page), "the tools stay folded until needed");
+// On a 375px phone the to-do rows (title, type, Buka) were wider than their card because every table's first column is at least 190px,
+// so the only action, Buka, sat behind a horizontal scroll. This table lets its title wrap, even a single very long word.
+const adminCss = read("src/app/admin/admin.css");
+assert(page.includes('className="admin-table a-todo-table"'), "the to-do table has its own class");
+assert(adminCss.includes(".a-shell .a-todo-table td:first-child { min-width: 0; overflow-wrap: anywhere; }"), "its title column may shrink and break long words");
+assert(/@media \(max-width: 480px\) \{ \.a-shell \.a-todo-table td \{ padding: 12px 10px; \} \}/.test(adminCss), "its cells are tighter on a phone");
+assert(adminCss.indexOf(".a-todo-table td:first-child") > adminCss.indexOf(".admin-table td:first-child { min-width: 190px; }"), "the override comes after the 190px rule it replaces");
 for (const gone of ["Aliran Editorial", "Kesihatan Editorial", "Sejarah Audit", "Isu Editorial", "healthLabel("]) {
   assert(!page.includes(gone), `the dashboard no longer has "${gone}"`);
 }
