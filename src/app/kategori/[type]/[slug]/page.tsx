@@ -18,6 +18,8 @@ import {
   StoryHead
 } from "../../../../components/reader/StoryChrome";
 import StoryMarkdown from "../../../../components/reader/StoryMarkdown";
+import FootnoteList from "../../../../components/reader/FootnoteList";
+import { extractFootnotes, markFootnoteReferences } from "../../../../lib/reader/footnotes";
 import { WorkCover } from "../../../../components/reader/WorkCover";
 import { extractInlineChapters } from "../../../../lib/reader/inline-chapters";
 import { placeVisuals } from "../../../../lib/reader/place-visuals";
@@ -287,7 +289,9 @@ export default async function WorkPage({
 
   // A chapter's own images (hero and inline) belong to that chapter; the work's other images stay with the work.
   const visualsForBody = visualsForPage(work.visuals, activeSection?.slug, bodyToRender);
-  const segmentNodes = placeVisuals(bodyToRender, visualsForBody);
+  // Footnotes: the notes are taken out of the text and the references marked, before the text is cut around its images.
+  const footnotes = extractFootnotes(bodyToRender);
+  const segmentNodes = placeVisuals(markFootnoteReferences(footnotes.body, footnotes.numbers), visualsForBody);
   const chapterHero = chapterHeroOf(work.visuals, activeSection?.slug);
   const segmentGlossaries = firstGlossaryBySegment(segmentNodes, glossary);
 
@@ -356,7 +360,7 @@ export default async function WorkPage({
         {segmentNodes.map((node, index) => {
           if (typeof node === "string") {
             return (
-              <StoryMarkdown key={index} glossary={segmentGlossaries[index]}>
+              <StoryMarkdown key={index} glossary={segmentGlossaries[index]} footnoteNumbers={footnotes.numbers}>
                 {node}
               </StoryMarkdown>
             );
@@ -374,6 +378,7 @@ export default async function WorkPage({
           }
           return null;
         })}
+        <FootnoteList notes={footnotes.notes} />
       </article>
   );
 

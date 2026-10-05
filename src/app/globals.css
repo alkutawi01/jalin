@@ -2739,3 +2739,19 @@ main:focus { outline: none; }
 .story-context-line { margin: 14px 0 0; font-family: Arial, sans-serif; font-size: 14px; color: var(--ink-soft); }
 .story-context-line a { color: inherit; text-decoration: underline; text-decoration-color: var(--line-strong, currentColor); text-underline-offset: 3px; }
 .story-context-line a:hover, .story-context-line a:focus-visible { color: var(--clay-text); text-decoration-color: currentColor; }
+
+/* ---- Footnotes: a small number in the text and the notes in a list at the end (see also the right margin on wide screens) ---- */
+.footnote-ref { font-family: Arial, sans-serif; font-size: .68em; font-weight: 700; line-height: 0; margin-left: 1px; }
+.footnote-ref a { color: var(--clay-text); text-decoration: none; padding: 0 2px; border-radius: 3px; scroll-margin-top: 150px; }
+.footnote-ref a:hover, .footnote-ref a:focus-visible { text-decoration: underline; text-underline-offset: 2px; }
+.footnotes { margin-top: 56px; padding-top: 24px; border-top: 1px solid var(--line); font-family: Arial, sans-serif; font-size: 15px; line-height: 1.6; color: var(--ink-soft); }
+.footnotes-title { margin: 0 0 14px; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--clay-text); font-family: Arial, sans-serif; font-weight: 700; }
+.footnotes ol { margin: 0; padding-left: 1.5em; }
+.footnotes li { margin: 0 0 10px; padding-left: 4px; scroll-margin-top: 120px; }
+.footnote-text { display: inline; }
+.footnote-text p { display: inline; margin: 0; }
+.footnote-text p + p { display: block; margin-top: 6px; }
+.footnote-back { margin-left: 6px; color: var(--clay-text); text-decoration: none; }
+.footnote-back:hover, .footnote-back:focus-visible { text-decoration: underline; }
+.footnotes li:target { background: rgba(167, 100, 80, .1); border-radius: 4px; }
+@media print { .footnote-back { display: none; } }
