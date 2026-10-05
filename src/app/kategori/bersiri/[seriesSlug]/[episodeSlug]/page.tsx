@@ -125,7 +125,7 @@ export default async function EpisodePage({
       label: "Status",
       value: series.status === "completed" ? "Siri tamat" : "Siri berterusan"
     },
-    { label: "Versi", value: work.version }
+    { label: "Versi", value: work.versionLabel || work.version }
   ];
 
   const characters: CharacterMeta[] = work.metadata?.characters ?? [];

@@ -14,6 +14,7 @@ import { createRevisionTx, getUnpublishedChanges } from "./revision-service";
 import type { Kysely, Transaction } from "kysely";
 import type { Database } from "../db/types";
 import { getDb, hasDb } from "../db";
+import { FIRST_VERSION_LABEL, nextVersionLabel } from "./version-label";
 import {
   evaluatePublicationReadinessFromData,
   type PublicationReadiness,
@@ -403,6 +404,7 @@ export async function publishWorkExplicit(
         await createRevisionTx(trx, workId, { id: actor.id, email: actor.email }, {
           changeType: "major",
           revisionSummary: "Penerbitan pertama",
+          versionLabel: FIRST_VERSION_LABEL,
         });
 
         return {
@@ -539,6 +541,8 @@ export async function republishWork(
     const rev = await createRevisionTx(trx, workId, { id: actor.id, email: actor.email }, {
       changeType,
       revisionSummary: summary,
+      // Set by the date of the change: same day v1.0.1, a later day v1.1, a later month v2.0.
+      versionLabel: nextVersionLabel(existing.version_label, existing.published_at, new Date(nowIso)),
     });
     // Living text: record the meaningful change in the public editorial history.
     const fresh = await trx.selectFrom("works").where("id", "=", workId).select(["editorial_history", "version_label"]).executeTakeFirstOrThrow();
