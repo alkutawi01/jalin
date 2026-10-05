@@ -18,5 +18,10 @@ const del = service.slice(service.indexOf("export async function deleteSection")
 assert(del.includes(".forUpdate()") && del.includes("c.firstAppearanceSection === existing.slug") && del.includes("masih dirujuk sebagai kemunculan pertama watak"), "a chapter that a character first appears in cannot be deleted, and the message names them");
 assert(del.indexOf("masih dirujuk") < del.indexOf('deleteFrom("reading_sections")'), "checked under the work's lock before anything is deleted");
 assert(read("src/app/api/admin/works/[id]/sections/[sectionId]/route.ts").includes('message.includes("masih dirujuk") || message.includes("Perlu disahkan") ? 409'), "answered as 409");
+// Saving characters judges the chapters under the same work lock (a chapter cannot vanish between the check and the write).
+const work = read("src/lib/admin/work-service.ts");
+const save = work.slice(work.indexOf("export async function updateWorkCharacters"));
+assert(save.indexOf(".forUpdate()") > 0 && save.indexOf(".forUpdate()") < save.indexOf('selectFrom("reading_sections")') && save.indexOf('selectFrom("reading_sections")') < save.indexOf("characterProblems(validated"), "updateWorkCharacters takes the lock, then reads the chapters, then judges them, all in one transaction");
+assert(!/const chapterSlugs = (await db.selectFrom("reading_sections")/.test(save), "the unlocked read of the chapters before the transaction is gone");
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);
