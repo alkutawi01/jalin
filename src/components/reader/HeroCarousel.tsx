@@ -4,6 +4,8 @@ import Image from "next/image";
 import { smartQuotes } from "../../lib/admin/smart-quotes";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { renderAttribution } from "./Attribution";
+import { cropStyle } from "../../lib/reader/crop";
+import type { ImageCrop } from "../../lib/content/types";
 
 export interface HeroSlide {
   slug: string;
@@ -14,7 +16,7 @@ export interface HeroSlide {
   dek?: string;
   reading?: string;
   date: string;
-  hero?: { src: string; alt: string };
+  hero?: { src: string; alt: string; crop?: ImageCrop };
   rights: string;
 }
 
@@ -74,19 +76,19 @@ export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
                 inert={!active}
               >
                 <div className="hero-featured-text">
-                  <p className="hero-featured-kicker">{work.kicker}</p>
-                  <h2 className="hero-featured-title" style={{ fontStyle: "normal" }}>{work.title}</h2>
+                  <p className="home-eyebrow hero-featured-kicker">{work.kicker}</p>
+                  <h1 className="hero-featured-title" style={{ fontStyle: "normal" }}>{work.title}</h1>
                   {work.attribution ? <p className="work-attribution hero-featured-attribution">{renderAttribution(work.attribution)}</p> : null}
                   {work.dek ? <p className="hero-featured-dek">{smartQuotes(work.dek)}</p> : null}
-                  <div className="hero-featured-meta">
+                  <div className="home-work-meta home-work-meta--pills">
                     {work.reading ? <span>{work.reading}</span> : null}
                     <span>{work.date}</span>
                   </div>
-                  <a className="hero-featured-cta" href={`/kategori/${work.type}/${work.slug}`}>Baca sekarang</a>
+                  <a className="home-action-primary hero-featured-cta" href={`/kategori/${work.type}/${work.slug}`}>Baca sekarang</a>
                 </div>
                 {work.hero?.src ? (
                   <div className="hero-featured-visual">
-                    <Image src={work.hero.src} alt={work.hero.alt} fill sizes="(max-width: 900px) 100vw, 640px" quality={85} priority={i === 0} />
+                    <Image src={work.hero.src} alt={work.hero.alt} fill sizes="(max-width: 680px) 750px, (max-width: 1050px) 100vw, 1000px" quality={85} priority={i === 0} style={cropStyle(work.hero.crop)} />
                     <div className="image-rights" aria-hidden="true">{work.rights}</div>
                   </div>
                 ) : null}
