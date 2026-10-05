@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { smartQuotes } from "../lib/admin/smart-quotes";
 import Image from "next/image";
 import { SiteFooter, SiteHeader } from "../components/reader/StoryChrome";
 import { WorkCover } from "../components/reader/WorkCover";
@@ -97,7 +98,7 @@ function FeaturedHero({ work }: { work: PublicFeaturedSummary }) {
             <p className="home-eyebrow hero-featured-kicker">{workEyebrow(work)}</p>
             <h1 className="hero-featured-title" style={{ fontStyle: "normal" }}>{work.title}</h1>
             {work.attribution ? <p className="work-attribution hero-featured-attribution">{renderAttribution(work.attribution.primary)}</p> : null}
-            {work.dek ? <p className="hero-featured-dek">{work.dek}</p> : null}
+            {work.dek ? <p className="hero-featured-dek">{smartQuotes(work.dek)}</p> : null}
             <WorkMeta work={work} variant="pills" />
             <a className="home-action-primary hero-featured-cta" href={`/kategori/${work.type}/${work.slug}`}>
               Baca sekarang
