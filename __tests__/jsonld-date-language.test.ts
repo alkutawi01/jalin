@@ -22,5 +22,10 @@ assert(graph(base).inLanguage === "ms" && graph({ ...base, inLanguage: "id" }).i
 const view = fs.readFileSync(path.join(__dirname, "../src/components/reader/WorkView.tsx"), "utf8").replace(/\r\n/g, "\n");
 assert(view.includes('inLanguage: isIndonesianLanguage(work.metadata?.fragmenTextLanguage) ? "id" : "ms"'), "the work page passes the language of the published text");
 
+// A series page shows a byline, so its structured data names the same writers.
+const seriesNode = (authors?: string[]) => (seriesJsonLd({ slug: "s", title: "S", authors, episodes: [] }) as { "@graph": Array<Record<string, unknown>> })["@graph"][0]!;
+assert(JSON.stringify(seriesNode(["Nara Zahin", "Rafiq Naim"]).author).includes("Rafiq Naim") && seriesNode([]).author === undefined && seriesNode().author === undefined, "a series' structured data names the writers of its byline, and nothing when there are none");
+assert(fs.readFileSync(path.join(__dirname, "../src/app/kategori/bersiri/[seriesSlug]/page.tsx"), "utf8").includes("authors: authors.map((author) => author.name)"), "the series page passes them");
+
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);
