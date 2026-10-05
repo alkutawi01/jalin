@@ -155,7 +155,7 @@ export default function WorkStatusPanel({
           <h1>{title || "(belum bertajuk)"}</h1>
         </div>
         <div className="a-status-actions">
-          <a href={`/admin/works/${workId}/preview`} className="a-btn">
+          <a href={`/pratonton/${workId}`} className="a-btn">
             Pratonton
           </a>
           {status === "published" ? (

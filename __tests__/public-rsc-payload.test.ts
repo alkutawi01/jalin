@@ -114,9 +114,12 @@ async function walk(node: unknown, hits: string[]): Promise<void> {
   if (!React.isValidElement(node)) return;
 
   const props = node.props as Record<string, unknown>;
-  scanValue(props, "props", hits);
-
   const type = node.type;
+  // Only what is serialized into the page is scanned: host elements and client components. A server component (a function
+  // that is run here) receives its props on the server and they never cross into the payload; what it renders is walked next.
+  // (WorkView and EpisodeView take the whole Work as a prop for exactly that reason, and the editor's preview shares them.)
+  if (typeof type !== "function" || CLIENT_COMPONENTS.has(type)) scanValue(props, "props", hits);
+
   if (typeof type === "function" && !CLIENT_COMPONENTS.has(type)) {
     const output = await (type as (p: Record<string, unknown>) => ReactNode | Promise<ReactNode>)(props);
     await walk(output, hits);

@@ -44,10 +44,10 @@ console.log("sourceWork reader tests (Phase 4D-0.5)\n");
 }
 
 {
-  const pageSource = fs.readFileSync(
-    path.join(process.cwd(), "src/app/kategori/[type]/[slug]/page.tsx"),
-    "utf8"
-  );
+  // The reader page is the route file plus WorkView, which renders it (the editor preview shares WorkView).
+  const pageSource = ["src/app/kategori/[type]/[slug]/page.tsx", "src/components/reader/WorkView.tsx"]
+    .map((file) => fs.readFileSync(path.join(process.cwd(), file), "utf8"))
+    .join("\n");
   assert(
     !pageSource.includes("rightsStatus") && !pageSource.includes("attribution.status"),
     "Reader page never reads/displays the internal rights-review status"

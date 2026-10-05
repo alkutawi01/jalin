@@ -2036,9 +2036,9 @@ export default function EditWorkPage() {
                 <li><code>[[gambar:1]]</code> pada baris sendiri → lokasi gambar dalam teks. Alihkan baris penanda untuk mengalihkan gambar.</li>
                 <li>Kotak mesej: <code>:::mesej</code>, isi mesej, kemudian <code>:::</code> pada baris sendiri. Untuk e-mel, gunakan <code>:::emel</code>. Tiada nombor telefon atau alamat diperlukan.</li>
               </ul>
-              <p>Isi tajuk utama dalam medan Tajuk—<code># Tajuk</code> di dalam manuskrip tidak dipaparkan kepada pembaca. Semak hasil melalui Pratonton bacaan sebelum menyimpan.</p>
+              <p>Isi tajuk utama dalam medan Tajuk—<code># Tajuk</code> di dalam manuskrip tidak dipaparkan kepada pembaca. &quot;Pratonton teks&quot; di bawah hanya menunjukkan teks yang sedang anda taip. Untuk halaman penuh seperti yang dilihat pembaca (kepala, gambar, lajur sisi, bab), simpan dahulu kemudian tekan Pratonton di bahagian atas.</p>
             </details>
-            <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={() => setShowManuscriptPreview((value) => !value)}>{showManuscriptPreview ? "Tutup pratonton bacaan" : "Pratonton bacaan"}</button>
+            <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={() => setShowManuscriptPreview((value) => !value)}>{showManuscriptPreview ? "Tutup pratonton teks" : "Pratonton teks"}</button>
             {showManuscriptPreview && (() => {
               const footnotes = extractFootnotes(stripImageMarkers(form.body));
               return <div className="admin-markdown-preview"><StoryMarkdown glossary={{}} footnoteNumbers={footnotes.numbers}>{markFootnoteReferences(footnotes.body, footnotes.numbers)}</StoryMarkdown><FootnoteList notes={footnotes.notes} /></div>;

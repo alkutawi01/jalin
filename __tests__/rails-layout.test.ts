@@ -22,7 +22,7 @@ const right = chrome.slice(chrome.indexOf("export function RightRail"), chrome.i
 assert(left.includes("Tentang karya") && left.includes(">Editorial<"), "the left column holds Tentang karya and Editorial");
 assert(right.includes(">Watak<") && right.includes("Latar tempat") && !right.includes("Editorial"), "the right column holds Watak and Latar tempat, not Editorial");
 
-const story = read("src/app/kategori/[type]/[slug]/page.tsx");
+const story = read("src/components/reader/WorkView.tsx");
 const topGrid = story.indexOf("chapter-top");
 const bodyGrid = story.indexOf("<LeftRail");
 assert(topGrid > 0 && topGrid < bodyGrid, "a chapter's head and picture are above the columns");
@@ -33,7 +33,7 @@ assert(!columns.slice(0, columns.indexOf("<RightRail")).includes("<ChapterHead")
 assert(story.includes("landing || sectionIndex >= 0 ? null : <SectionIndexDetails"), "a chapter page does not repeat Senarai Bab in the left column");
 assert(story.includes("editorial={editorial}") && !story.includes("<RightRail characters={characters} editorial="), "Editorial goes to the left column");
 
-const episode = read("src/app/kategori/bersiri/[seriesSlug]/[episodeSlug]/page.tsx");
+const episode = read("src/components/reader/EpisodeView.tsx");
 assert(episode.includes("editorial={editorial}") && !episode.includes("<RightRail characters={characters} editorial="), "a series episode follows the same columns");
 
 const chapters = read("src/components/reader/NovelaChapters.tsx");

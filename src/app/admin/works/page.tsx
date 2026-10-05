@@ -199,7 +199,7 @@ export default async function AdminWorksPage({
                       <a href={`/admin/works/${work.id}`} className="admin-btn admin-btn-sm">
                         Sunting
                       </a>
-                      <a href={`/admin/works/${work.id}/preview`} className="admin-btn admin-btn-sm admin-btn-outline">
+                      <a href={`/pratonton/${work.id}`} className="admin-btn admin-btn-sm admin-btn-outline">
                         Pratonton
                       </a>
                     </div>
