@@ -108,7 +108,7 @@ export async function DELETE(
     return NextResponse.json({ success: true });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Ralat tidak diketahui.";
-    const status = message.includes("tidak ditemui") ? 404 : 500;
+    const status = message.includes("tidak ditemui") ? 404 : message.includes("masih dirujuk") ? 409 : 500;
     return NextResponse.json({ error: message }, { status });
   }
 }

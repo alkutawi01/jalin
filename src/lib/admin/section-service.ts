@@ -240,6 +240,15 @@ export async function deleteSection(id: number): Promise<void> {
   }
 
   await db.transaction().execute(async (trx) => {
+    // A character remembers the chapter where they first appear by its slug. Deleting that chapter would leave the reference pointing at
+    // nothing (and the character form itself rejects such a reference), so the editor is told which characters to move first.
+    // Checked under the same lock on the work that saving characters takes.
+    const work = await trx.selectFrom("works").where("id", "=", existing.work_id).select("metadata").forUpdate().executeTakeFirst();
+    const characters = ((work?.metadata ?? null) as { characters?: Array<Record<string, unknown>> } | null)?.characters;
+    const using = Array.isArray(characters) ? characters.filter((c) => c.firstAppearanceSection === existing.slug).map((c) => String(c.name ?? "")) : [];
+    if (using.length > 0) {
+      throw new Error(`Bab ini masih dirujuk sebagai kemunculan pertama watak: ${using.join(", ")}. Pindahkan atau kosongkan kemunculan pertama watak itu dahulu (tab Watak), kemudian padam bab.`);
+    }
     await trx.deleteFrom("reading_sections").where("id", "=", id).execute();
     // Images that belonged to this chapter go with it (a failed delete must not abort the chapter delete).
     await sql`SAVEPOINT chapter_images`.execute(trx);
