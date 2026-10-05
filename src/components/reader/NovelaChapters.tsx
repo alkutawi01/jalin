@@ -45,13 +45,12 @@ export function ChapterHead({
   );
 }
 
-/** The body of a novela's own page: where to start and every chapter. */
+/** The body of a novela's own page: every chapter. A reader starts by choosing a chapter, so there is no separate read button. */
 export function NovelaIntro({ rows }: { rows: ChapterRow[] }): ReactNode {
   const first = rows[0];
   if (!first) return null;
   return (
     <article className="story-body novela-intro">
-      <a className="hero-featured-cta" href={first.href}>Baca sekarang</a>
       <h2 id="senarai-bab">Senarai Bab</h2>
       <ol className="chapter-list" aria-labelledby="senarai-bab">
         {rows.map((row, index) => (
