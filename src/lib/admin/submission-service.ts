@@ -134,13 +134,17 @@ export async function updateSubmission(
 export async function deleteSubmission(id: number): Promise<void> {
   const db = getAdminDb();
 
-  await db
-    .deleteFrom("submission_contributions")
-    .where("submission_id", "=", id)
-    .execute();
-
-  await db
-    .deleteFrom("work_submissions")
-    .where("id", "=", id)
-    .execute();
+  // One transaction: if the submission is still referenced (by a promoted work or a picture request) nothing is removed. Before, its
+  // contributions were deleted first and then the delete failed, leaving a submission with its contributions gone.
+  try {
+    await db.transaction().execute(async (trx) => {
+      await trx.deleteFrom("submission_contributions").where("submission_id", "=", id).execute();
+      await trx.deleteFrom("work_submissions").where("id", "=", id).execute();
+    });
+  } catch (error) {
+    if ((error as { code?: string }).code === "23503") {
+      throw new Error("Penghantaran ini tidak boleh dipadam kerana masih dirujuk oleh karya atau permintaan gambar. Tiada apa yang diubah.");
+    }
+    throw error;
+  }
 }
