@@ -64,6 +64,7 @@ interface WorkData {
   published_at: string | null;
   published_by?: string | null;
   updated_at: string;
+  published_revision_id?: string | null;
   metadata?: { editorNote?: string; origin?: string } | null;
   reader?: { note?: string } | null;
 }
@@ -402,6 +403,8 @@ export default function EditWorkPage() {
     }
     setFillBusy(true);
     const notes: string[] = [];
+    /** Writes that reached the server so far: an error part-way must say truthfully whether anything was saved. */
+    let wrote = 0;
     try {
       // 1) dek and genre: only into empty fields
       const patch: Record<string, string> = {};
@@ -421,6 +424,7 @@ export default function EditWorkPage() {
         });
         if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || "Gagal menyimpan maklumat.");
         setForm((prev) => ({ ...prev, ...patch }));
+        wrote += 1;
         notes.push(`Maklumat: ${Object.keys(patch).map((k) => (k === "dek" ? "dek" : "genre")).join(" dan ")} diisi.`);
       }
 
@@ -441,6 +445,7 @@ export default function EditWorkPage() {
             })
           });
           if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || "Gagal menyimpan watak.");
+          wrote += 1;
           notes.push(`Watak: ${fresh.length} ditambah${result.characters.length > fresh.length ? `, ${result.characters.length - fresh.length} sudah ada` : ""}.`);
         } else {
           notes.push(result.characters.length ? "Watak: semua sudah ada." : "Watak: tiada cadangan.");
@@ -460,8 +465,12 @@ export default function EditWorkPage() {
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ workId, term: item.term, meaning: item.meaning, source: "", sortOrder: glossaryTerms.length + index + 1 })
             });
-            if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || `Gagal menambah istilah "${item.term}".`);
+            if (!res.ok) {
+              if (added > 0) notes.push(`Glosari: ${added} istilah sempat ditambah sebelum ralat.`);
+              throw new Error((await res.json().catch(() => ({}))).error || `Gagal menambah istilah "${item.term}".`);
+            }
             added += 1;
+            wrote += 1;
           }
           const skipped = [
             g.existing.length ? `${g.existing.length} sudah ada` : "",
@@ -503,6 +512,7 @@ export default function EditWorkPage() {
             body: JSON.stringify({ ...body, chatbotFields: filled })
           });
           if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || "Gagal menyimpan sumber.");
+          wrote += 1;
           notes.push(`Sumber: ${Object.keys(body).length} medan diisi. Medan yang chatbot tidak tahu dibiarkan kosong. Hak dan bukti tidak diisi; semak di tab Sumber & Hak.`);
         } else {
           notes.push("Sumber: tiada medan kosong untuk diisi.");
@@ -511,7 +521,7 @@ export default function EditWorkPage() {
       notes.push("Tidak disentuh: teks karya, kredit, imej dan hak. Semak semua isi sebelum menerbitkan.");
       toast("Maklumat daripada chatbot telah diisi.", "success");
     } catch (err) {
-      notes.push(`Berhenti kerana ralat: ${err instanceof Error ? err.message : "ralat tidak diketahui"}. Bahagian sebelumnya sudah disimpan.`);
+      notes.push(`Berhenti kerana ralat: ${err instanceof Error ? err.message : "ralat tidak diketahui"}. ${wrote > 0 ? "Bahagian di atas yang sudah diisi kekal tersimpan; tekan Tampal & isi semula untuk menyambung (yang sudah ada dilangkau, tiada yang berganda)." : "Tiada apa-apa disimpan."}`);
     } finally {
       setFillNote(notes);
       setFillBusy(false);
@@ -627,6 +637,13 @@ export default function EditWorkPage() {
   const charactersBaseline = useRef<string>("[]");
   /** The latest form, so a save can tell whether the editor kept typing while it was in flight. */
   const formRef = useRef<typeof form | null>(null);
+  const [everPublic, setEverPublic] = useState(false);
+  /** What this page last loaded or saved of the fields that two tabs can fight over; sent with every save (see stale-write.ts). */
+  const baseRef = useRef<Record<string, string> | null>(null);
+  const baseOf = (f: { title: string; slug: string; body: string; dek: string; genre: string; audience: string; readingMinutes: string; editorNote: string; readerNote: string; origin: string }) => ({
+    title: f.title.trim() ? f.title : UNTITLED_DRAFT, slug: f.slug, body: f.body, dek: f.dek, genre: f.genre, audience: f.audience,
+    readingMinutes: f.readingMinutes, editorNote: f.editorNote, readerNote: f.readerNote, origin: f.origin,
+  });
   /** Which side lists failed to load (so an empty list is never mistaken for "nothing here"). */
   const [loadFailures, setLoadFailures] = useState<Record<string, string>>({});
   function noteLoad(key: string, label: string, ok: boolean) {
@@ -787,6 +804,12 @@ export default function EditWorkPage() {
           origin: work.metadata?.origin === "sumber" ? "sumber" : "asli",
         });
         setSavedBody(work.body || "");
+        setEverPublic(Boolean(work.published_at || work.published_revision_id || work.status === "published"));
+        baseRef.current = baseOf({
+          title: work.title, slug: work.slug, body: work.body || "", dek: work.dek || "", genre: work.genre || "", audience: work.audience || "",
+          readingMinutes: work.reading_minutes?.toString() || "", editorNote: work.metadata?.editorNote ?? "", readerNote: work.reader?.note ?? "",
+          origin: work.metadata?.origin === "sumber" ? "sumber" : "asli",
+        });
         // Text typed in an earlier visit that never reached "Simpan" (refresh, closed tab, crash): offer it back.
         const kept = readDraft(window.localStorage, workId);
         if (kept) {
@@ -1239,6 +1262,7 @@ export default function EditWorkPage() {
       const work = await workRes.json();
       setForm((prev) => ({ ...prev, body: work.body || "" }));
       setSavedBody(work.body || "");
+      if (baseRef.current) baseRef.current = { ...baseRef.current, body: work.body || "" };
       await loadVisuals();
       await loadReadiness();
       setMarkerMigration(null);
@@ -1339,6 +1363,7 @@ export default function EditWorkPage() {
           ...editableForm,
           title: form.title.trim() ? editableForm.title : UNTITLED_DRAFT,
           readingMinutes: form.readingMinutes ? Number(form.readingMinutes) : undefined,
+          base: baseRef.current ?? undefined,
         }),
       });
 
@@ -1349,6 +1374,7 @@ export default function EditWorkPage() {
 
       setSuccess("Teks & maklumat karya disimpan.");
       setSavedBody(sentForm.body);
+      baseRef.current = baseOf(sentForm);
       // If the editor kept typing while this was saving, those edits are not saved yet: stay dirty.
       if (JSON.stringify(formRef.current) === JSON.stringify(sentForm)) {
         setDirty(false);
@@ -1717,11 +1743,22 @@ export default function EditWorkPage() {
     setError(null);
 
     try {
-      const res = await fetch(`/api/admin/works/${workId}`, {
+      let res = await fetch(`/api/admin/works/${workId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: "archived" }),
       });
+      if (res.status === 409) {
+        // In a continuous series the episodes after this one would disappear for readers: say which, and ask again.
+        const data = await res.json().catch(() => ({}));
+        if (!data.confirmHidesLater) throw new Error(data.error || "Gagal mengarkibkan.");
+        if (!(await confirmAction(`${data.error} Teruskan mengarkibkan?`, { danger: true, confirmLabel: "Ya, arkibkan" }))) { setSaving(false); return; }
+        res = await fetch(`/api/admin/works/${workId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: "archived", confirmHidesLater: true }),
+        });
+      }
 
       if (!res.ok) throw new Error("Gagal mengarkibkan.");
       router.push("/admin/works");
@@ -2094,8 +2131,11 @@ export default function EditWorkPage() {
               type="text"
               required
               value={form.slug}
+              readOnly={everPublic}
+              aria-describedby={everPublic ? "slug-locked" : undefined}
               onChange={(e) => { setSlugAuto(false); setForm((prev) => ({ ...prev, slug: e.target.value })); }}
             />
+            {everPublic ? <span id="slug-locked" className="admin-form-hint">Karya ini pernah diterbitkan; alamatnya dikunci supaya pautan yang sudah dikongsi tidak terputus.</span> : null}
             {form.status === "draft" && (
               <label className="admin-checkbox-label">
                 <input
@@ -3369,7 +3409,8 @@ export default function EditWorkPage() {
           </button>
         </div>
       ) : null}
-      {form.status !== "published" ? (
+      {/* The server refuses to delete anything that was ever public (it can only be archived), so the button is not offered for it. */}
+      {form.status !== "published" && !everPublic ? (
         <div className="a-danger-zone">
           <div>
             <strong>Padam karya ini</strong>

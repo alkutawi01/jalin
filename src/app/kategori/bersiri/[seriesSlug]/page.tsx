@@ -67,7 +67,8 @@ export default async function SeriesLandingPage({
     const series = repo.getSeriesBySlug(seriesSlug);
     if (!series) {
       const work = repo.getWork(seriesSlug);
-      if (work && work.type === "bersiri" && work.series) {
+      const inRun = work?.series ? repo.getPublishedSeriesEpisodes(work.series.id).some((episode) => episode.slug === work.slug) : false;
+      if (work && work.type === "bersiri" && work.series && inRun) {
         redirect(`/kategori/bersiri/${work.series.slug}/${work.slug}`);
       }
       notFound();

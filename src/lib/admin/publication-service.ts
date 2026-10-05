@@ -364,7 +364,7 @@ export async function publishWorkExplicit(
         const fresh = await trx
           .selectFrom("works")
           .where("id", "=", workId)
-          .select(["editorial_history"])
+          .select(["editorial_history", "version_label", "published_at", "published_revision_id", "first_published_at"])
           .executeTakeFirstOrThrow();
 
         let history: unknown[] = [];
@@ -401,10 +401,13 @@ export async function publishWorkExplicit(
           .execute();
 
         // Freeze what readers will see. Later edits stay in draft until the work is published again.
+        // A work that was archived and is now back has been public before: it continues its version numbers and history
+        // instead of starting again at v1.0 as a "first publication".
+        const returning = Boolean(fresh.published_revision_id || fresh.first_published_at);
         await createRevisionTx(trx, workId, { id: actor.id, email: actor.email }, {
-          changeType: "major",
-          revisionSummary: "Penerbitan pertama",
-          versionLabel: FIRST_VERSION_LABEL,
+          changeType: returning ? "minor" : "major",
+          revisionSummary: returning ? "Diterbitkan semula selepas diarkibkan" : "Penerbitan pertama",
+          versionLabel: returning ? nextVersionLabel(fresh.version_label, fresh.published_at, new Date(nowIso)) : FIRST_VERSION_LABEL,
         });
 
         return {
