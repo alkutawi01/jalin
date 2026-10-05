@@ -274,6 +274,10 @@ export async function attachEpisode(
     .orderBy("position", "desc")
     .executeTakeFirst();
   const nextPosition = position ?? (maxEntry ? maxEntry.position + 1 : 1);
+  // Positions are kept as an unbroken 1..N (reordering and removing close gaps, and the reader numbers episodes by position).
+  if (position !== undefined && (!Number.isInteger(position) || position < 1 || position > (maxEntry?.position ?? 0) + 1)) {
+    throw new Error(`Kedudukan tidak sah: mesti nombor bulat dari 1 hingga ${(maxEntry?.position ?? 0) + 1} (tidak boleh meninggalkan ruang kosong).`);
+  }
 
   if (position !== undefined) {
     const clash = await db
