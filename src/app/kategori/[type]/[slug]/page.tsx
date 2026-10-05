@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { absoluteUrl } from "../../../../lib/seo";
+import { absoluteUrl, clipDescription } from "../../../../lib/seo";
 import { chapterHeroOf } from "../../../../lib/reader/chapter-visuals";
 import { initContentRepository } from "../../../../lib/content";
 import { getWorkBySlug } from "../../../../lib/content/workLoader";
@@ -44,9 +44,9 @@ export async function generateMetadata({
   // A chapter has its own title and description, so a search result or a shared link says which chapter it is.
   const chapterLabel = chapter ? `Bab ${sectionIndex + 1}${chapter.title ? `: ${chapter.title}` : ""}` : "";
   const pageTitle = chapter ? `${chapterLabel} · ${work.title}` : work.title;
-  const pageDescription = chapter
-    ? `Bab ${sectionIndex + 1} daripada ${sections.length} · ${work.title}. ${description}`
-    : description;
+  const pageDescription = clipDescription(
+    chapter ? `Bab ${sectionIndex + 1} daripada ${sections.length} · ${work.title}. ${description}` : description
+  );
 
   return {
     title: pageTitle,
