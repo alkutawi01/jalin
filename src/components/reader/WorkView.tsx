@@ -5,7 +5,7 @@ import { visibleCharacters } from "../../lib/reader/visible-characters";
 import { publicPlaces } from "../../lib/reader/places";
 import { notFound } from "next/navigation";
 import { displayableGenre } from "../../lib/reader/genre-display";
-import { classifyFragmen } from "../../lib/content/fragmen-kind";
+import { classifyFragmen, isIndonesianLanguage } from "../../lib/content/fragmen-kind";
 import { jsonLdString, workJsonLd } from "../../lib/seo-jsonld";
 import {
   EditorialImage,
@@ -413,6 +413,7 @@ export default async function WorkView({
                   publishedAt: work.publishedAt,
                   updatedAt: work.updatedAt,
                   heroSrc: hero?.src,
+                  inLanguage: isIndonesianLanguage(work.metadata?.fragmenTextLanguage) ? "id" : "ms",
                   authors: byline.map((person) => person.name),
                   sections: sections.map((section) => ({ slug: section.slug, title: section.title ?? undefined }))
                 },
