@@ -151,26 +151,36 @@ export async function updateContributor(
   if (input.disclosure !== undefined) updateData.disclosure = input.disclosure || null;
   if (input.isVisible !== undefined) updateData.is_visible = input.isVisible;
 
+  const renaming = Boolean(input.slug && input.slug !== slug);
+
   await db.transaction().execute(async (trx) => {
-    const updated = await trx
-      .updateTable("contributors")
-      .where("slug", "=", slug)
-      .set(updateData)
-      .executeTakeFirst();
-    if (Number(updated.numUpdatedRows) !== 1) {
-      throw new Error("Penyumbang tidak ditemui.");
+    if (!renaming) {
+      const updated = await trx.updateTable("contributors").where("slug", "=", slug).set(updateData).executeTakeFirst();
+      if (Number(updated.numUpdatedRows) !== 1) throw new Error("Penyumbang tidak ditemui.");
+      return;
     }
 
-    if (input.slug && input.slug !== slug) {
-      await trx.updateTable("credits")
-        .set({ contributor_slug: input.slug })
-        .where("contributor_slug", "=", slug)
-        .execute();
-      await trx.updateTable("submission_contributions")
-        .set({ contributor_slug: input.slug })
-        .where("contributor_slug", "=", slug)
-        .execute();
+    // A published work shows its credits from the version frozen when it was published, and that version names the contributor by
+    // the old address: after a rename those bylines would find no one.
+    const onPublished = await trx
+      .selectFrom("credits")
+      .innerJoin("works", "works.id", "credits.work_id")
+      .where("credits.contributor_slug", "=", slug)
+      .where("works.status", "=", "published")
+      .select("works.id")
+      .executeTakeFirst();
+    if (onPublished) {
+      throw new Error("Alamat pautan tidak boleh ditukar kerana penyumbang ini dikreditkan pada karya yang sudah terbit. Tukar nama paparan sahaja.");
     }
+
+    // credits and submission_contributions point at contributors.slug without ON UPDATE CASCADE, so changing the slug in place fails
+    // as soon as there is one credit. Make the record under the new address, move the references to it, then remove the old one.
+    const old = await trx.selectFrom("contributors").where("slug", "=", slug).selectAll().executeTakeFirst();
+    if (!old) throw new Error("Penyumbang tidak ditemui.");
+    await trx.insertInto("contributors").values({ ...old, ...updateData, slug: input.slug as string } as never).execute();
+    await trx.updateTable("credits").set({ contributor_slug: input.slug as string }).where("contributor_slug", "=", slug).execute();
+    await trx.updateTable("submission_contributions").set({ contributor_slug: input.slug as string }).where("contributor_slug", "=", slug).execute();
+    await trx.deleteFrom("contributors").where("slug", "=", slug).execute();
   });
 
   const targetSlug = input.slug || slug;

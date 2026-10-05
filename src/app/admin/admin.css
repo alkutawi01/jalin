@@ -596,3 +596,10 @@
 
 /* The Pilihan column is only a tick: as narrow as its box (the 190px first-column rule is for title columns) */
 .a-shell .admin-works-table th.admin-pick-column, .a-shell .admin-works-table td.admin-pick-cell { width: 1%; min-width: 0; padding-inline: 12px; white-space: nowrap; text-align: center; }
+
+/* Audiens: ticks for the bands set in Tetapan */
+.a-shell .a-audience { margin: 0; padding: 0; border: 0; min-width: 0; }
+.a-shell .a-audience legend { padding: 0; margin: 0 0 6px; font-size: 13px; font-weight: 600; }
+.a-shell .a-audience-options { display: flex; flex-wrap: wrap; gap: 6px 16px; }
+.a-shell .a-audience-range { color: var(--a-muted); font-size: 12px; }
+.a-shell .a-bands-table input { width: 100%; min-width: 0; }

@@ -14,6 +14,7 @@ import { imageMarkerLabel, imageMarkers, insertImageMarker, isImageMarker } from
 import CreditRoleSelect from "../../../../components/admin/CreditRoleSelect";
 import AiCreditPicker from "../../../../components/admin/AiCreditPicker";
 import { isDerivativeType, roleDisplay } from "../../../../lib/credit-roles";
+import AudiencePicker from "../../../../components/admin/AudiencePicker";
 import WorkStatusPanel from "../../../../components/admin/WorkStatusPanel";
 import { toast, confirmAction } from "../../../../lib/admin/dialogs";
 import LoadingBlock from "../../../../components/admin/LoadingBlock";
@@ -2179,13 +2180,7 @@ export default function EditWorkPage() {
             </div>
 
             <div className="admin-form-group">
-              <label htmlFor="audience">Audiens</label>
-              <input
-                id="audience"
-                type="text"
-                value={form.audience}
-                onChange={(e) => setForm((prev) => ({ ...prev, audience: e.target.value }))}
-              />
+              <AudiencePicker value={form.audience} onChange={(next) => setForm((prev) => ({ ...prev, audience: next }))} />
             </div>
 
             <div className="admin-form-group">

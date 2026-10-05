@@ -167,65 +167,62 @@ export async function updateSection(
   if (input.title !== undefined) updateData.title = input.title || null;
   if (input.body !== undefined) updateData.body = input.body;
   if (input.readingMinutes !== undefined) updateData.reading_minutes = input.readingMinutes ?? null;
-  if (input.position !== undefined && input.position !== existing.position) {
-    // Position change: two-phase via temporary negative to avoid unique violation.
-    const target = input.position;
-    await db.transaction().execute(async (trx) => {
-      // Park far above real positions first (CHECK position >= 1 forbids negatives).
-      await trx
-        .updateTable("reading_sections")
-        .where("id", "=", id)
-        .set({ position: 1000001, updated_at: new Date().toISOString() })
-        .execute();
-      const others = await trx
-        .selectFrom("reading_sections")
-        .where("work_id", "=", existing.work_id)
-        .where("position", ">=", target)
-        .where("id", "!=", id)
-        .select(["id", "position"])
-        .orderBy("position", "asc")
-        .execute();
-      for (const row of others) {
-        await trx
-          .updateTable("reading_sections")
-          .where("id", "=", row.id)
-          .set({ position: 2000000 + row.position, updated_at: new Date().toISOString() })
-          .execute();
-      }
-      for (const row of others) {
-        await trx
-          .updateTable("reading_sections")
-          .where("id", "=", row.id)
-          .set({ position: row.position + 1, updated_at: new Date().toISOString() })
-          .execute();
-      }
-      await trx
-        .updateTable("reading_sections")
-        .where("id", "=", id)
-        .set({ position: target, updated_at: new Date().toISOString() })
-        .execute();
-    });
-    delete updateData.position;
+  if (input.position !== undefined && (!Number.isInteger(input.position) || input.position < 1)) {
+    throw new Error("Kedudukan bab tidak sah: nombor bulat bermula 1.");
   }
+  const renamed = input.slug !== undefined && input.slug !== existing.slug;
+  const moved = input.position !== undefined && input.position !== existing.position;
 
-  await db
-    .updateTable("reading_sections")
-    .where("id", "=", id)
-    .set(updateData)
-    .execute();
+  // One transaction: a request that fails (a slug another chapter already has) changes nothing, not even the chapter's position.
+  try {
+    await db.transaction().execute(async (trx) => {
+      if (moved) {
+        // The new order: this chapter placed at the asked position among the others, then every position renumbered 1..N
+        // (parked above the real positions first, so the unique position never clashes on the way).
+        const rows = await trx.selectFrom("reading_sections").where("work_id", "=", existing.work_id).select("id").orderBy("position", "asc").execute();
+        const others = rows.map((r) => r.id).filter((x) => x !== id);
+        const index = Math.min(Math.max(input.position! - 1, 0), others.length);
+        const order = [...others.slice(0, index), id, ...others.slice(index)];
+        for (let i = 0; i < order.length; i++) {
+          await trx.updateTable("reading_sections").where("id", "=", order[i]!).set({ position: 1000001 + i }).execute();
+        }
+        for (let i = 0; i < order.length; i++) {
+          await trx.updateTable("reading_sections").where("id", "=", order[i]!).set({ position: i + 1, updated_at: new Date().toISOString() }).execute();
+        }
+      }
 
-  // The chapter's images are tied to its slug, so they follow it when the slug changes.
-  if (input.slug !== undefined && input.slug !== existing.slug) {
-    try {
-      await db
-        .updateTable("visuals")
-        .where("work_id", "=", existing.work_id)
-        .where("section_slug" as never, "=", existing.slug as never)
-        .set({ section_slug: input.slug } as never)
-        .execute();
-    } catch {
-      // Migration 022 not applied yet: there are no chapter images to move.
+      await trx.updateTable("reading_sections").where("id", "=", id).set(updateData).execute();
+
+      if (renamed) {
+        // The chapter's images are tied to its slug, so they follow it when the slug changes.
+        await sql`SAVEPOINT chapter_images`.execute(trx);
+        try {
+          await trx
+            .updateTable("visuals")
+            .where("work_id", "=", existing.work_id)
+            .where("section_slug" as never, "=", existing.slug as never)
+            .set({ section_slug: input.slug } as never)
+            .execute();
+          await sql`RELEASE SAVEPOINT chapter_images`.execute(trx);
+        } catch {
+          // Migration 022 not applied yet: there are no chapter images to move.
+          await sql`ROLLBACK TO SAVEPOINT chapter_images`.execute(trx);
+        }
+        // A character remembers the chapter where they first appear by its slug; without this the reader would not find that chapter
+        // and would show the character from chapter 1 (before they appear in the story).
+        const work = await trx.selectFrom("works").where("id", "=", existing.work_id).select("metadata").forUpdate().executeTakeFirst();
+        const metadata = (work?.metadata ?? null) as { characters?: Array<Record<string, unknown>> } | null;
+        if (metadata && Array.isArray(metadata.characters) && metadata.characters.some((c) => c.firstAppearanceSection === existing.slug)) {
+          const characters = metadata.characters.map((c) => (c.firstAppearanceSection === existing.slug ? { ...c, firstAppearanceSection: input.slug } : c));
+          await trx.updateTable("works").where("id", "=", existing.work_id).set({ metadata: JSON.stringify({ ...metadata, characters }) }).execute();
+        }
+      }
+    });
+  } catch (error) {
+    if ((error as { code?: string }).code === "23505") {
+      throw new Error("Alamat bab ini sudah digunakan oleh bab lain dalam karya yang sama. Pilih alamat lain.");
     }
+    throw error;
   }
 
   const section = await getSection(id);

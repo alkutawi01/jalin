@@ -6,6 +6,15 @@ export function absoluteUrl(path: string): string {
   return `${SITE_URL}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
+/**
+ * The picture for a shared link (og:image, twitter:image, structured data): the site's own optimiser at 1200px wide, not the original
+ * file. The originals are 4 to 9 MB PNGs, above the preview limits of Facebook (8 MB) and X (5 MB), which then show no picture.
+ * 1200 and 75 are among the widths and qualities the optimiser accepts (next.config.mjs).
+ */
+export function shareImageUrl(src: string): string {
+  return `${SITE_URL}/_next/image?url=${encodeURIComponent(src)}&w=1200&q=75`;
+}
+
 export const META_DESCRIPTION_MAX = 160;
 
 /**

@@ -1,4 +1,5 @@
-import { SITE_URL, absoluteUrl } from "./seo";
+import { SITE_URL, absoluteUrl, shareImageUrl } from "./seo";
+import { audienceAgeRange } from "./audience";
 
 /** Structured data for the reader pages (schema.org). Only what is public: no credits' private fields, no rights notes. */
 
@@ -19,12 +20,10 @@ export interface JsonLdWork {
 
 /** An age range written in the work's audience field, or nothing: no age is assumed. */
 export function audienceOf(text?: string): { audience?: Record<string, unknown> } {
-  const match = text?.match(/(\d{1,2})\s*[-\u2013]\s*(\d{1,2})/);
-  if (!match) return {};
-  const min = Number(match[1]);
-  const max = Number(match[2]);
-  if (!(min >= 0 && max >= min && max <= 99)) return {};
-  return { audience: { "@type": "PeopleAudience", suggestedMinAge: min, suggestedMaxAge: max } };
+  // The stored value is band codes ("belia,dewasa"), a band label or an older age range; all give the ages they cover.
+  const range = audienceAgeRange(text);
+  if (!range) return {};
+  return { audience: { "@type": "PeopleAudience", suggestedMinAge: range.min, suggestedMaxAge: range.max } };
 }
 
 const publisher = { "@type": "Organization", name: "Jalin", url: SITE_URL };
@@ -56,7 +55,7 @@ export function workJsonLd(work: JsonLdWork, sectionSlug?: string): Record<strin
     ...(work.dek ? { description: work.dek } : {}),
     ...(work.publishedAt ? { datePublished: work.publishedAt } : {}),
     ...(work.updatedAt ? { dateModified: work.updatedAt } : {}),
-    ...(work.heroSrc ? { image: absoluteUrl(work.heroSrc) } : {}),
+    ...(work.heroSrc ? { image: shareImageUrl(work.heroSrc) } : {}),
     ...(work.authors.length > 0 ? { author: people(work.authors) } : {}),
     publisher,
     isAccessibleForFree: true,
@@ -141,7 +140,7 @@ export function seriesJsonLd(series: JsonLdSeries): Record<string, unknown> {
         inLanguage: "ms",
         ...(series.dek ? { description: series.dek } : {}),
         ...(series.genre ? { genre: series.genre } : {}),
-        ...(series.heroSrc ? { image: absoluteUrl(series.heroSrc) } : {}),
+        ...(series.heroSrc ? { image: shareImageUrl(series.heroSrc) } : {}),
         publisher,
         isAccessibleForFree: true,
         hasPart: series.episodes.map((episode) => ({
@@ -178,7 +177,7 @@ export function episodeJsonLd(work: JsonLdWork, series: { slug: string; title: s
         ...(work.dek ? { description: work.dek } : {}),
         ...(work.publishedAt ? { datePublished: work.publishedAt } : {}),
         ...(work.updatedAt ? { dateModified: work.updatedAt } : {}),
-        ...(work.heroSrc ? { image: absoluteUrl(work.heroSrc) } : {}),
+        ...(work.heroSrc ? { image: shareImageUrl(work.heroSrc) } : {}),
         ...(work.authors.length > 0 ? { author: people(work.authors) } : {}),
         publisher,
         isAccessibleForFree: true,

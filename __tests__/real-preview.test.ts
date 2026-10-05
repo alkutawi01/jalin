@@ -47,7 +47,7 @@ assert(view.includes("{preview ? null : <script") && read("src/components/reader
 
 const old = read("src/app/admin/works/[id]/preview/page.tsx");
 assert(old.includes("redirect(`/pratonton/${id}`)") && !old.includes("\"use client\""), "the old preview address redirects to the real preview");
-assert(read("src/components/admin/WorkStatusPanel.tsx").includes("href={`/pratonton/${workId}`}") && read("src/app/admin/works/page.tsx").includes("href={`/pratonton/${work.id}`}"), "the Pratonton buttons open the real preview");
+assert(read("src/components/admin/WorkStatusPanel.tsx").includes("href={`/pratonton/${workId}`}") && read("src/components/admin/AdminWorksTable.tsx").includes("href={`/pratonton/${work.id}`}"), "the Pratonton buttons open the real preview");
 const editor = read("src/app/admin/works/[id]/page.tsx");
 assert(editor.includes("\"Tutup pratonton teks\" : \"Pratonton teks\"") && !editor.includes("\"Pratonton bacaan\""), "the in-editor text view is called what it is: a text preview");
 

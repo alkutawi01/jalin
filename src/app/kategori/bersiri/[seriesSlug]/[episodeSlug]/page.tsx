@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { absoluteUrl, clipDescription } from "../../../../../lib/seo";
+import { absoluteUrl, clipDescription, shareImageUrl } from "../../../../../lib/seo";
 import { episodeHeroOf } from "../../../../../lib/reader/chapter-visuals";
 import { initContentRepository } from "../../../../../lib/content";
 import { getWorkBySlug } from "../../../../../lib/content/workLoader";
@@ -44,7 +44,7 @@ export async function generateMetadata({ params }: { params: Promise<{ seriesSlu
   const path = `/kategori/bersiri/${work.series.slug}/${work.slug}`;
   // An episode without a picture of its own shares the series' picture.
   const hero = episodeHeroOf(work.visuals.find((visual) => visual.role === "hero"), work.series.hero);
-  const image = hero?.src ? [{ url: absoluteUrl(hero.src) }] : undefined;
+  const image = hero?.src ? [{ url: shareImageUrl(hero.src) }] : undefined;
   return {
     title,
     description,
