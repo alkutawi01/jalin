@@ -22,6 +22,6 @@ assert(read("src/app/api/admin/works/[id]/sections/[sectionId]/route.ts").includ
 const work = read("src/lib/admin/work-service.ts");
 const save = work.slice(work.indexOf("export async function updateWorkCharacters"));
 assert(save.indexOf(".forUpdate()") > 0 && save.indexOf(".forUpdate()") < save.indexOf('selectFrom("reading_sections")') && save.indexOf('selectFrom("reading_sections")') < save.indexOf("characterProblems(validated"), "updateWorkCharacters takes the lock, then reads the chapters, then judges them, all in one transaction");
-assert(!/const chapterSlugs = (await db.selectFrom("reading_sections")/.test(save), "the unlocked read of the chapters before the transaction is gone");
+assert(!save.includes('const chapterSlugs = (await db.selectFrom("reading_sections")'), "the unlocked read of the chapters before the transaction is gone");
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);
