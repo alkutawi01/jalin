@@ -12,6 +12,7 @@
  * Mid-publish race test is in scripts/controlled-novela-race-test.ts.
  * Never mutates existing production editorial Works.
  */
+import { assertDisposableFixtures } from "./lib/disposable-fixture";
 import "dotenv/config";
 import { config } from "dotenv";
 config({ path: ".env.local", override: true });
@@ -40,6 +41,7 @@ function ok(msg: string) {
 }
 
 async function cleanupFixture(db: ReturnType<typeof getDb>) {
+  await assertDisposableFixtures(db, { ids: [TEST_ID], slugs: [TEST_SLUG] });
   await db.deleteFrom("reading_sections").where("work_id", "=", TEST_ID).execute();
   await db.deleteFrom("credits").where("work_id", "=", TEST_ID).execute();
   await db.deleteFrom("visuals").where("work_id", "=", TEST_ID).execute();

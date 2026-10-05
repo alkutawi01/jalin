@@ -8,6 +8,7 @@
  * glossary, visuals) and checks the public repository still serves the published snapshot until
  * the work is published again.
  */
+import { assertDisposableFixtures } from "./lib/disposable-fixture";
 import { config } from "dotenv";
 if (process.env.AUDIT_ENV) config({ path: process.env.AUDIT_ENV, override: true });
 else config({ path: ".env.local" });
@@ -45,6 +46,7 @@ async function main() {
   }
   const db = getDb();
   const now = new Date().toISOString();
+  await assertDisposableFixtures(db, { ids: [ID], slugs: [SLUG] });
 
   for (const t of ["credits", "visuals", "glossary_terms", "visual_requests", "work_revisions", "reading_sections"]) {
     await db.deleteFrom(t as never).where("work_id" as never, "=", ID as never).execute();

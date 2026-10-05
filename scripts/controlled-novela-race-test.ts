@@ -8,6 +8,7 @@
  * Uses insideTransactionAfterReadiness hook to pause T1 after locks held.
  * T2 attempts deleteSection while T1 is paused → T2 blocks on FOR UPDATE.
  */
+import { assertDisposableFixtures } from "./lib/disposable-fixture";
 import "dotenv/config";
 import { config } from "dotenv";
 config({ path: ".env.local", override: true });
@@ -22,7 +23,7 @@ import {
 } from "../src/lib/admin/section-service";
 
 const TEST_SLUG = "uji-novela-race-4d8r";
-const TEST_ID = "JLN-NOV-9991";
+const TEST_ID = "JLN-NOV-9989"; // not 9991: that is the real, published Sekuntum Bunga untuk Alia
 
 function fail(msg: string): never {
   console.error(`FAIL: ${msg}`);
@@ -33,6 +34,7 @@ function ok(msg: string) {
 }
 
 async function cleanup(db: ReturnType<typeof getDb>) {
+  await assertDisposableFixtures(db, { ids: [TEST_ID], slugs: [TEST_SLUG] });
   await db.deleteFrom("reading_sections").where("work_id", "=", TEST_ID).execute();
   await db.deleteFrom("credits").where("work_id", "=", TEST_ID).execute();
   await db.deleteFrom("visuals").where("work_id", "=", TEST_ID).execute();

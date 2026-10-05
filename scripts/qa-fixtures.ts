@@ -9,6 +9,7 @@
  *
  * Admin fixtures also created for Bahagian/Series detail tests.
  */
+import { assertDisposableFixtures } from "./lib/disposable-fixture";
 import "dotenv/config";
 import { config } from "dotenv";
 config({ path: ".env.local", override: true });
@@ -88,6 +89,7 @@ export async function setupFixtures() {
 export async function cleanupFixtures() {
   if (!hasDb()) return;
   const db = getDb();
+  await assertDisposableFixtures(db, { ids: [NOV_ID, EP_ID], slugs: [NOV_SLUG, EP_SLUG] });
   const series = await db.selectFrom("series").where("slug", "=", SER_SLUG).select("id").executeTakeFirst();
   if (series) {
     await db.deleteFrom("series_entries").where("series_id", "=", series.id).execute();

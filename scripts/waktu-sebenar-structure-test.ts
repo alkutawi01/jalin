@@ -18,6 +18,7 @@
  * Source self-label: "novel penuh, versi Structural Edit v1.0, disahkan bersama ChatGPT"
  * No taxonomy reclassification. No prose modification. No public publication.
  */
+import { assertDisposableFixtures } from "./lib/disposable-fixture";
 import "dotenv/config";
 import { config } from "dotenv";
 config({ path: ".env.local", override: true });
@@ -32,7 +33,7 @@ import {
 } from "../src/lib/admin/section-service";
 import { DatabaseContentRepository } from "../src/lib/content/database-repository";
 
-const TEST_ID = "JLN-NOV-9990";
+const TEST_ID = "JLN-NOV-9988"; // not 9990: that was the real Waktu Sebenar, which this script deleted on 28 Sep 2026
 const TEST_SLUG = "uji-waktu-sebenar-4d8r";
 const MANUSCRIPT_PATH = resolve(__dirname, "../content/manuscripts/Waktu_Sebenar_Structural_Edit_v1.0.txt");
 
@@ -82,6 +83,7 @@ function parseManuscript(): { heading: string; slug: string; body: string }[] {
 }
 
 async function cleanup(db: ReturnType<typeof getDb>) {
+  await assertDisposableFixtures(db, { ids: [TEST_ID], slugs: [TEST_SLUG] });
   await db.deleteFrom("reading_sections").where("work_id", "=", TEST_ID).execute();
   await db.deleteFrom("credits").where("work_id", "=", TEST_ID).execute();
   await db.deleteFrom("visuals").where("work_id", "=", TEST_ID).execute();

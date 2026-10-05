@@ -7,6 +7,7 @@
  *
  * Never mutates existing production editorial Works.
  */
+import { assertDisposableFixtures } from "./lib/disposable-fixture";
 import "dotenv/config";
 import { config } from "dotenv";
 config({ path: ".env.local", override: true });
@@ -36,6 +37,7 @@ function ok(msg: string) {
 async function main() {
   if (!hasDb()) fail("DATABASE_URL not set");
   const db = getDb();
+  await assertDisposableFixtures(db, { ids: [TEST_ID], slugs: [TEST_SLUG] });
 
   // Cleanup any prior run (source_works cascades from works delete)
   await db.deleteFrom("credits").where("work_id", "=", TEST_ID).execute();
