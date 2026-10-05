@@ -171,15 +171,20 @@ export async function reorderVisuals(
 ): Promise<VisualRecord[]> {
   const db = getAdminDb();
 
-  // Update each visual's sort_order
-  for (let i = 0; i < visualIds.length; i++) {
-    await db
-      .updateTable("visuals")
-      .where("id", "=", visualIds[i])
-      .where("work_id", "=", workId)
-      .set({ sort_order: i + 1 })
-      .execute();
+  // The list must be exactly this work's pictures, each once: a missing, repeated or foreign id would leave an order that means nothing.
+  if (!Array.isArray(visualIds) || visualIds.some((id) => !Number.isInteger(id) || id < 1) || new Set(visualIds).size !== visualIds.length) {
+    throw new Error("Senarai gambar tidak sah: mesti nombor bulat, tanpa pengulangan.");
   }
+  await db.transaction().execute(async (trx) => {
+    const owned = await trx.selectFrom("visuals").where("work_id", "=", workId).select("id").forUpdate().execute();
+    const ownedIds = new Set(owned.map((row) => Number(row.id)));
+    if (ownedIds.size !== visualIds.length || visualIds.some((id) => !ownedIds.has(id))) {
+      throw new Error("Senarai gambar tidak sah: mesti tepat gambar karya ini, tidak kurang dan tidak lebih.");
+    }
+    for (let i = 0; i < visualIds.length; i++) {
+      await trx.updateTable("visuals").where("id", "=", visualIds[i]!).where("work_id", "=", workId).set({ sort_order: i + 1 }).execute();
+    }
+  });
 
   // Return updated list
   return listVisualsForWork(workId);

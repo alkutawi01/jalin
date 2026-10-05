@@ -227,6 +227,8 @@ export async function replaceVisualImage(
 
   const swapped = await swapReplacedVisual(db, old, result.visualId);
   if (!swapped) {
+    // The request that produced the removed picture must not stay marked as attached. The stored file is kept as its provenance.
+    await db.updateTable("visual_requests").set({ status: "failed", updated_at: new Date().toISOString() } as never).where("id", "=", result.visualRequestId).execute();
     return { ok: false, status: 409, error: "Gambar ini sudah diganti oleh permintaan lain. Muat semula halaman untuk melihat gambar semasa." };
   }
   return { ok: true, visualId: result.visualId, assetPath: result.assetPath };
