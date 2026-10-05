@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { smartQuotes } from "../../../../lib/admin/smart-quotes";
 import { notFound, redirect } from "next/navigation";
 import Image from "next/image";
-import { SiteFooter, SiteHeader } from "../../../../components/reader/StoryChrome";
+import { BylineRow, SiteFooter, SiteHeader } from "../../../../components/reader/StoryChrome";
+import { projectBylineCredits } from "../../../../lib/reader/credit-projection";
+import type { BylineCredit } from "../../../../components/reader/types";
 import { WorkCover } from "../../../../components/reader/WorkCover";
 import { initContentRepository } from "../../../../lib/content";
 import { displayableGenre } from "../../../../lib/reader/genre-display";
@@ -18,7 +20,7 @@ const MODE_LABELS: Record<string, string> = {
 };
 
 const STATUS_LABELS: Record<string, string> = {
-  ongoing: "Berterusan",
+  ongoing: "Masih diteruskan",
   completed: "Tamat",
 };
 
@@ -84,12 +86,17 @@ export default async function SeriesLandingPage({
         : byPosition[byPosition.length - 1]!;
     const updated = episodes.map((e) => e.publishedAt ?? "").sort().pop() ?? "";
     const base = `/kategori/bersiri/${series.slug}`;
+    // Who wrote it first; the rest is one quiet line. (Episode count and last update are in the episode list below.)
+    const authors: BylineCredit[] = [];
+    for (const episode of byPosition) {
+      for (const credit of projectBylineCredits(repo.getWork(episode.slug)?.credits ?? [])) {
+        if (!authors.some((author) => author.name === credit.name)) authors.push(credit);
+      }
+    }
     const meta = [
       MODE_LABELS[series.mode] ?? series.mode,
       STATUS_LABELS[series.status] ?? series.status,
-      displayableGenre(series.genre),
-      `${episodes.length} episod diterbitkan`,
-      updated ? `Dikemas kini ${formatDate(updated)}` : ""
+      displayableGenre(series.genre)
     ].filter(Boolean);
 
     return (
@@ -104,6 +111,7 @@ export default async function SeriesLandingPage({
               </p>
               <h1>{series.title}</h1>
               {series.dek ? <p className="series-premise">{smartQuotes(series.dek)}</p> : null}
+              <BylineRow byline={authors} />
               <p className="series-meta">{meta.join(" · ")}</p>
               <div className="series-actions">
                 <a className="series-action series-action--primary" href={`${base}/${first.slug}`}>

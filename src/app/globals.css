@@ -2456,6 +2456,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 .series-crumb a { color: var(--clay-text); }
 .series-masthead h1 { margin: 0 0 18px; font-size: clamp(2.6rem, 6vw, 4rem); font-weight: 500; line-height: 1.04; font-style: normal; }
 .series-premise { max-width: 38rem; margin: 0 0 16px; font-size: 1.2rem; line-height: 1.6; color: var(--ink-soft); font-style: italic; }
+.series-masthead .byline { justify-content: flex-start; margin: 0 0 10px; }
 .series-meta { margin: 0; font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 13px; letter-spacing: .04em; color: var(--ink-soft); }
 .series-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
 .series-action {

@@ -29,6 +29,32 @@ export function SiteHeader({ active }: { active?: string }) {
   );
 }
 
+/** "Oleh Nara Zahin · Maya & Rafiq Naim · Maya": who wrote it. One markup for a story, a chapter and a series. */
+export function BylineRow({ byline }: { byline: BylineCredit[] }) {
+  if (byline.length === 0) return null;
+  return (
+    <div className="byline">
+      <span>Oleh</span>
+      {byline.map((credit, index) => (
+        <span key={credit.name} className="byline-credit">
+          {credit.href ? (
+            <a href={credit.href}>
+              {credit.name}
+              {credit.maya ? <span className="maya-label"> · Maya</span> : null}
+            </a>
+          ) : (
+            <span className="byline-name">
+              {credit.name}
+              {credit.maya ? <span className="maya-label"> · Maya</span> : null}
+            </span>
+          )}
+          {index < byline.length - 1 ? <span className="byline-separator">&amp;</span> : null}
+        </span>
+      ))}
+    </div>
+  );
+}
+
 export function StoryHead({
   kicker,
   title,
@@ -55,27 +81,7 @@ export function StoryHead({
       {originalTitle ? <p className="story-original-title"><cite>{originalTitle}</cite></p> : null}
       <p className="dek">{smartQuotes(dek)}</p>
       {contextLine ? <p className="story-context-line">{contextLine}</p> : null}
-      {byline.length > 0 && (
-        <div className="byline">
-          <span>Oleh</span>
-          {byline.map((credit, index) => (
-            <span key={credit.name} className="byline-credit">
-              {credit.href ? (
-                <a href={credit.href}>
-                  {credit.name}
-                  {credit.maya ? <span className="maya-label"> · Maya</span> : null}
-                </a>
-              ) : (
-                <span className="byline-name">
-                  {credit.name}
-                  {credit.maya ? <span className="maya-label"> · Maya</span> : null}
-                </span>
-              )}
-              {index < byline.length - 1 ? <span className="byline-separator">&amp;</span> : null}
-            </span>
-          ))}
-        </div>
-      )}
+      <BylineRow byline={byline} />
     </>
   );
 

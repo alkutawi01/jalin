@@ -364,7 +364,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
             <label htmlFor="status">Status</label>
             <select id="status" value={form.status}
               onChange={(e) => setForm((p) => ({ ...p, status: e.target.value }))}>
-              <option value="ongoing">Berterusan</option>
+              <option value="ongoing">Masih diteruskan</option>
               <option value="completed">Tamat</option>
             </select>
             <span className="admin-form-hint">
