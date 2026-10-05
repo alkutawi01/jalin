@@ -10,11 +10,7 @@ export interface ChapterRow {
   href: string;
 }
 
-/** About 200 words a minute, never less than one minute. */
-export function readingMinutesOf(body: string): number {
-  const words = body.trim() ? body.trim().split(/\s+/).length : 0;
-  return Math.max(1, Math.round(words / 200));
-}
+export { readingMinutesOf } from "../../lib/reader/reading-time";
 
 /** The head of a chapter page: where the reader is, the chapter's own title and a way to move around. Short on purpose. */
 export function ChapterHead({
