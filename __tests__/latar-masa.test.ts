@@ -81,7 +81,7 @@ const plan = buildImportPlan(labelled, "Pelita menyala di Kampung Baru pada Mei 
 assert(plan.plan?.places[0]?.name === "Kampung Baru" && plan.plan?.places[0]?.description === "Kawasan perumahan" && plan.plan?.times[0]?.name === "Mei 1969", "the import plan carries them (the note capitalised)");
 assert(plan.plan?.characters[0]?.role === "Ibu Aminah", "and a role loses its final full stop");
 const importService = read("src/lib/admin/import/import-service.ts");
-assert(importService.includes("...(plan.places.length > 0 ? { places: plan.places } : {})") && importService.includes("...(plan.times.length > 0 ? { times: plan.times } : {})"), "the new draft is stored with its places and times");
+assert(importService.includes("if (places.length > 0) metadata.places = places;") && importService.includes("if (plan.times.length > 0) metadata.times = plan.times;"), "the new draft is stored with its places and times");
 
 // the review screen shows them and lets the editor change them
 const editsPlan = buildImportPlan(labelled, "Pelita menyala di Kampung Baru pada Mei 1969. Aminah memegang sumbu.", { expectedType: "cerpen", edits: { places: [{ name: "Lorong Baru", description: "lorong sunyi." }, { name: "lorong baru" }], times: [] } } as never) as { plan?: { places: Array<{ name: string; description?: string }>; times: unknown[] } };

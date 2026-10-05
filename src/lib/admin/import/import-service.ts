@@ -16,6 +16,7 @@ import { upsertSourceProvenance } from "../source-rights";
 import type { ImportPlan } from "./plan";
 import { estimateReadingMinutes } from "./text-utils";
 import { materializeImportImageMarkers } from "./image-markers";
+import { insertInheritedCredits, loadSeriesInheritance, mergeByName, mergeImportCredits } from "../series-inheritance";
 
 export interface ImportedVisualRequest {
   id: number;
@@ -55,6 +56,16 @@ export async function importPlanAsDraft(
 
     const id = await generateWorkId(trx, plan.work.type as WorkType);
 
+    // An episode that continues a series also takes the series' credits, characters and places (genre and audience came in with the plan).
+    const inheritance = plan.series?.kind === "sambung" ? await loadSeriesInheritance(trx, plan.series.seriesId) : null;
+    const characters = inheritance ? mergeByName(plan.characters, inheritance.characters) : plan.characters;
+    const metadata: Record<string, unknown> = {};
+    if (characters.length > 0) metadata.characters = characters;
+    // The chatbot's places come first, then the series' own; times are the episode's own (an episode may happen in another time).
+    const places = inheritance ? mergeByName(plan.places, inheritance.places) : plan.places;
+    if (places.length > 0) metadata.places = places;
+    if (plan.times.length > 0) metadata.times = plan.times;
+
     await trx
       .insertInto("works")
       .values({
@@ -79,14 +90,7 @@ export async function importPlanAsDraft(
             date: now
           }
         ]),
-        metadata:
-          plan.characters.length > 0 || plan.places.length > 0 || plan.times.length > 0
-            ? JSON.stringify({
-                ...(plan.characters.length > 0 ? { characters: plan.characters } : {}),
-                ...(plan.places.length > 0 ? { places: plan.places } : {}),
-                ...(plan.times.length > 0 ? { times: plan.times } : {})
-              })
-            : null,
+        metadata: Object.keys(metadata).length > 0 ? JSON.stringify(metadata) : null,
         published_at: null,
         published_by: null,
         first_published_at: null,
@@ -96,20 +100,27 @@ export async function importPlanAsDraft(
       })
       .execute();
 
-    for (const credit of plan.credits) {
-      await trx
-        .insertInto("credits")
-        .values({
-          work_id: id,
-          contributor_slug: null,
-          guest_name: credit.guestName,
-          role_label: credit.roleLabel,
-          byline: credit.byline,
-          is_public: credit.isPublic,
-          sort_order: credit.sortOrder,
-          created_at: now
-        })
-        .execute();
+    if (inheritance && inheritance.credits.length > 0) {
+      const slugs = inheritance.credits.map((c) => c.contributorSlug).filter((s): s is string => Boolean(s));
+      const names = slugs.length > 0 ? await trx.selectFrom("contributors").where("slug", "in", slugs).select(["slug", "display_name"]).execute() : [];
+      const merged = mergeImportCredits(plan.credits, inheritance.credits, new Map(names.map((n) => [n.slug, n.display_name])));
+      await insertInheritedCredits(trx, id, merged, { now });
+    } else {
+      for (const credit of plan.credits) {
+        await trx
+          .insertInto("credits")
+          .values({
+            work_id: id,
+            contributor_slug: null,
+            guest_name: credit.guestName,
+            role_label: credit.roleLabel,
+            byline: credit.byline,
+            is_public: credit.isPublic,
+            sort_order: credit.sortOrder,
+            created_at: now
+          })
+          .execute();
+      }
     }
 
     for (const term of plan.glossary) {

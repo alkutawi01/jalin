@@ -1,13 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentAdmin } from "../../../../../lib/admin/auth";
-import { hasDb } from "../../../../../lib/db";
+import { getDb, hasDb } from "../../../../../lib/db";
 import { slugExists } from "../../../../../lib/admin/work-service";
 import { importPlanAsDraft } from "../../../../../lib/admin/import/import-service";
+import { loadSeriesInheritance, type SeriesInheritance } from "../../../../../lib/admin/series-inheritance";
 import { buildImportPlan, type ImportOptions, type ImportPlan } from "../../../../../lib/admin/import/plan";
 import type { ImportIssue } from "../../../../../lib/admin/import/parser-output";
 
 const MAX_ANSWER_CHARS = 400_000;
 const MAX_MANUSCRIPT_CHARS = 1_500_000;
+
+/** What an episode joining a series will be given besides the chatbot's answer, for the review screen. */
+function inheritedSummary(inheritance: SeriesInheritance | null) {
+  if (!inheritance?.from) return null;
+  return {
+    fromPosition: inheritance.from.position,
+    fromTitle: inheritance.from.title,
+    credits: inheritance.credits.length,
+    characters: inheritance.characters.length,
+    places: inheritance.places.length
+  };
+}
 
 function summarise(plan: ImportPlan) {
   return {
@@ -98,6 +111,12 @@ export async function POST(request: NextRequest) {
             ? { kind: "baharu", title: str(sr.title), dek: str(sr.dek), mode: sr.mode === "anthology" ? "anthology" : undefined }
             : undefined
     };
+    // An episode that continues a series takes the series' genre and audience, and (when it is saved) its credits, characters and places.
+    let inheritance: SeriesInheritance | null = null;
+    if (options.series?.kind === "sambung" && hasDb()) {
+      inheritance = await loadSeriesInheritance(getDb(), options.series.seriesId);
+      if (inheritance) options.seriesDefaults = { genre: inheritance.genre, audience: inheritance.audience, hasByline: inheritance.credits.some((c) => c.byline) };
+    }
     // "edits" comes from the review screen and is only cast above; a wrong shape threw a TypeError that came back as a 500 with the
     // JavaScript error text. Whatever the shape, a failure of the plan builder on this input is a 400 with a Malay message.
     let result: ReturnType<typeof buildImportPlan>;
@@ -151,6 +170,7 @@ export async function POST(request: NextRequest) {
         warnings,
         report: result.report,
         plan: summarise(result.plan),
+        inherited: inheritedSummary(inheritance),
         canCreate: hasDb()
       });
     }
@@ -172,7 +192,8 @@ export async function POST(request: NextRequest) {
         warnings: [...warnings.map((w) => w.message), ...created.postWarnings],
         // Only the problems found while saving; the rest were already shown during the check.
         postWarnings: created.postWarnings,
-        visualRequests: created.visualRequests
+        visualRequests: created.visualRequests,
+        inherited: inheritedSummary(inheritance)
       },
       { status: 201 }
     );

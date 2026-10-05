@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCurrentAdmin } from "../../../../../lib/admin/auth";
 import { getDb } from "../../../../../lib/db";
 import { DEFAULT_AUDIENCE } from "../../../../../lib/audience";
+import { describeFilled, draftDefaults, insertInheritedCredits, loadSeriesInheritance } from "../../../../../lib/admin/series-inheritance";
 
 const types = new Set(["cerpen", "novela", "bersiri", "fragmen", "sinopsis"]);
 
@@ -33,18 +34,36 @@ export async function POST(request: NextRequest) {
           await tx.insertInto("series").values({ id: seriesId, slug: seriesSlug, title, dek: null, genre: null, audience: DEFAULT_AUDIENCE, mode: "continuous", status: "ongoing", created_at: now, updated_at: now }).execute();
         }
       }
+      // An episode of a series starts with what belongs to the series (genre, audience, credits, characters, places), not empty.
+      const inheritance = seriesId ? await loadSeriesInheritance(tx, seriesId) : null;
+      const defaults = draftDefaults(inheritance);
       await tx.insertInto("works").values({
-        id, slug, title: "Draf tanpa tajuk", type: input.type, status: "draft", body: "", genre: null,
-        audience: DEFAULT_AUDIENCE, dek: null, reading_minutes: null, version: "v1.0", version_label: null,
+        id, slug, title: "Draf tanpa tajuk", type: input.type, status: "draft", body: "", genre: defaults.genre,
+        audience: defaults.audience, dek: null, reading_minutes: null, version: "v1.0", version_label: null,
         revision_count: 0, editorial_history: JSON.stringify([{ version: "v1.0", type: "initial", summary: "Draf awal", date: now }]),
+        metadata: defaults.metadata ? JSON.stringify(defaults.metadata) : null,
         published_at: null, published_by: null, first_published_at: null, published_revision_id: null,
         created_at: now, updated_at: now,
       }).execute();
+      let creditsCopied = 0;
       if (seriesId) {
         const last = await tx.selectFrom("series_entries").select("position").where("series_id", "=", seriesId).orderBy("position", "desc").executeTakeFirst();
         await tx.insertInto("series_entries").values({ series_id: seriesId, work_id: id, position: (last?.position ?? 0) + 1, created_at: now, updated_at: now }).execute();
+        if (inheritance) creditsCopied = await insertInheritedCredits(tx, id, inheritance.credits, { now });
       }
-      return { id, seriesId };
+      return {
+        id,
+        seriesId,
+        inherited: inheritance
+          ? {
+              from: inheritance.from,
+              message: describeFilled(
+                { genre: Boolean(defaults.genre), audience: Boolean(inheritance.audience), credits: creditsCopied, characters: inheritance.characters.length, places: inheritance.places.length },
+                inheritance.from
+              )
+            }
+          : null
+      };
     });
     return NextResponse.json(result, { status: 201 });
   } catch (error) {

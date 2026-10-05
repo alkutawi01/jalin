@@ -248,7 +248,9 @@ async function flowBersiri() {
     for (const n of [2, 3]) {
       const eid = await newDraft("bersiri", { seriesId: mine.id });
       await api("PATCH", `/api/admin/works/${eid}`, { title: `Episod ${n} ${suffix}`, slug: `uji-e2e-episod-${n}-${suffix}`, body: `Isi episod ${n} siri ujian.`, dek: `Dek episod ${n}.`, genre: "Misteri", audience: "remaja", readingMinutes: 2 });
-      await addCredit(eid, "initial_draft", "Aina Zulaikha", true, 0);
+      // A later episode starts with the credits of the one before it (the editor may change them), so the writer is already there.
+      const inherited = await api("GET", `/api/admin/credits?workId=${eid}`);
+      check(Array.isArray(inherited.data) && inherited.data.some((x: { guest_name: string | null; byline: boolean }) => x.guest_name === "Aina Zulaikha" && x.byline), `episod ${n} mewarisi kredit penulis daripada episod sebelumnya`);
       await upload(eid, { role: "hero", alt: "Lorong sunyi.", tool: "Ujian" }, { r: 60, g: 60, b: 90 });
       await simulateDurableStorage(eid);
       await api("PATCH", `/api/admin/works/${eid}`, { status: "ready" });
