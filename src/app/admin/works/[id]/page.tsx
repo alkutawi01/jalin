@@ -913,9 +913,19 @@ export default function EditWorkPage() {
     if (!(await confirmAction("Pasti ingin memadam bab ini? Gambar bab ini turut dikeluarkan dan susunan selebihnya akan dirapatkan.", { danger: true, confirmLabel: "Ya, teruskan" }))) return;
     setSectionError(null);
     try {
-      const res = await fetch(`/api/admin/works/${workId}/sections/${id}`, { method: "DELETE" });
+      let res = await fetch(`/api/admin/works/${workId}/sections/${id}`, { method: "DELETE" });
+      if (res.status === 409) {
+        const data = await res.json().catch(() => ({}));
+        // A chapter readers are reading now: say what happens, then ask again.
+        if (String(data.error).includes("Perlu disahkan")) {
+          if (!(await confirmAction(`${data.error} Padam bab ini juga?`, { danger: true, confirmLabel: "Ya, padam" }))) return;
+          res = await fetch(`/api/admin/works/${workId}/sections/${id}?confirm=1`, { method: "DELETE" });
+        } else {
+          throw new Error(data.error || "Gagal memadam bab.");
+        }
+      }
       if (!res.ok) {
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
         throw new Error(data.error || "Gagal memadam bab.");
       }
       await loadSections();

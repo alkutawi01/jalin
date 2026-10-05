@@ -72,7 +72,7 @@ export async function PATCH(
       ? 404
       : message.includes("sudah digunakan")
         ? 409
-        : message.includes("tidak sah") || message.includes("kosong")
+        : message.includes("tidak sah") || message.includes("kosong") || message.includes("tidak boleh ditukar")
           ? 400
           : 500;
     return NextResponse.json({ error: message }, { status });
@@ -104,11 +104,11 @@ export async function DELETE(
       return NextResponse.json({ error: "Bab tidak ditemui." }, { status: 404 });
     }
 
-    await deleteSection(id);
+    await deleteSection(id, { confirmPublic: new URL(request.url).searchParams.get("confirm") === "1" });
     return NextResponse.json({ success: true });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Ralat tidak diketahui.";
-    const status = message.includes("tidak ditemui") ? 404 : message.includes("masih dirujuk") ? 409 : 500;
+    const status = message.includes("tidak ditemui") ? 404 : message.includes("masih dirujuk") || message.includes("Perlu disahkan") ? 409 : 500;
     return NextResponse.json({ error: message }, { status });
   }
 }

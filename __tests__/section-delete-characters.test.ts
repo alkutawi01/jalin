@@ -17,6 +17,6 @@ const service = read("src/lib/admin/section-service.ts");
 const del = service.slice(service.indexOf("export async function deleteSection"), service.indexOf("export async function reorderSections"));
 assert(del.includes(".forUpdate()") && del.includes("c.firstAppearanceSection === existing.slug") && del.includes("masih dirujuk sebagai kemunculan pertama watak"), "a chapter that a character first appears in cannot be deleted, and the message names them");
 assert(del.indexOf("masih dirujuk") < del.indexOf('deleteFrom("reading_sections")'), "checked under the work's lock before anything is deleted");
-assert(read("src/app/api/admin/works/[id]/sections/[sectionId]/route.ts").includes('message.includes("masih dirujuk") ? 409'), "answered as 409");
+assert(read("src/app/api/admin/works/[id]/sections/[sectionId]/route.ts").includes('message.includes("masih dirujuk") || message.includes("Perlu disahkan") ? 409'), "answered as 409");
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);
