@@ -1,4 +1,5 @@
 import type { Work, WorkType, ContributorRef, GlossaryEntry, VisualRef, EditorialRevision, SourceWorkRef, ReadingSection, SeriesMeta, SeriesEpisodeRef, CharacterMeta } from "./types";
+import { readingMinutesFor } from "../reader/reading-time";
 import type { ContributorMeta } from "./contributors";
 import type { ContentRepository } from "./repository";
 import { getDb, hasDb } from "../db";
@@ -85,7 +86,7 @@ function mapWork(
     genre: row.genre ? String(row.genre) : undefined,
     audience: row.audience ? String(row.audience) : undefined,
     dek: row.dek ? String(row.dek) : undefined,
-    readingMinutes: row.reading_minutes ? Number(row.reading_minutes) : undefined,
+    readingMinutes: readingMinutesFor(row.reading_minutes, row.body, ...(sections ?? []).map((s) => s.body)),
     publishedAt: row.published_at ? new Date(row.published_at).toISOString() : undefined,
     updatedAt: row.updated_at ? new Date(row.updated_at).toISOString() : undefined,
     version: String(row.version || "v1.0"),
@@ -348,7 +349,7 @@ export class DatabaseContentRepository implements ContentRepository {
             publishedAt: row.published_at
               ? new Date(row.published_at).toISOString()
               : undefined,
-            readingMinutes: row.reading_minutes ? Number(row.reading_minutes) : undefined,
+            readingMinutes: readingMinutesFor(row.reading_minutes, row.body),
           });
           publicEligible = true;
         }
@@ -365,7 +366,7 @@ export class DatabaseContentRepository implements ContentRepository {
             publishedAt: row.published_at
               ? new Date(row.published_at).toISOString()
               : undefined,
-            readingMinutes: row.reading_minutes ? Number(row.reading_minutes) : undefined,
+            readingMinutes: readingMinutesFor(row.reading_minutes, row.body),
           });
           publicEligible = true;
         }
@@ -490,7 +491,7 @@ export function workFromSnapshot(snapshot: any, workId: string): Work | undefine
       genre: snapshot.genre,
       audience: snapshot.audience,
       dek: snapshot.dek,
-      readingMinutes: snapshot.readingMinutes,
+      readingMinutes: readingMinutesFor(snapshot.readingMinutes, snapshot.body, ...((snapshot.sections ?? []) as Array<{ body?: string }>).map((s) => s.body)),
       version: snapshot.version,
       versionLabel: snapshot.versionLabel,
       revisionCount: snapshot.revisionCount,
