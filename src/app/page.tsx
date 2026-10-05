@@ -224,7 +224,6 @@ function SeriesHighlight({ data }: { data: SeriesHighlightData }) {
             <p className="series-feature-latest">Episod terkini: <strong>Episod {data.latest.position} — {data.latest.title}</strong></p>
             <div className="series-feature-actions">
               <a className="home-action-primary hero-featured-cta" href={`${base}/${data.first.slug}`}>Baca sekarang</a>
-              <a className="home-action-text series-feature-secondary" href={base}>Lihat semua episod</a>
             </div>
           </div>
         </article>
