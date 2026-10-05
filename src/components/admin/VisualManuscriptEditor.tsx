@@ -144,6 +144,33 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
     const editor = editorRef.current;
     if (!editor) return;
     const saved = selectionRef.current;
+    // Text is selected: turn the paragraphs it touches into one message or e-mail box (their wording and emphasis kept),
+    // instead of adding an empty box beside it.
+    if ((kind === "mesej" || kind === "emel") && saved && !saved.collapsed && editor.contains(saved.commonAncestorContainer)) {
+      // Only blocks that really contain selected words (a selection that merely begins at the end of a paragraph does not count).
+      const hasSelectedText = (block: Element) => {
+        const part = document.createRange();
+        part.selectNodeContents(block);
+        if (part.compareBoundaryPoints(Range.START_TO_START, saved) < 0) part.setStart(saved.startContainer, saved.startOffset);
+        if (part.compareBoundaryPoints(Range.END_TO_END, saved) > 0) part.setEnd(saved.endContainer, saved.endOffset);
+        return part.toString().trim().length > 0;
+      };
+      const touched = [...editor.children].filter((child) => /^(P|H2)$/.test(child.tagName) && saved.intersectsNode(child) && hasSelectedText(child));
+      if (touched.length > 0) {
+        editor.focus();
+        const selection = window.getSelection();
+        const whole = document.createRange();
+        whole.setStartBefore(touched[0]!);
+        whole.setEndAfter(touched[touched.length - 1]!);
+        selection?.removeAllRanges();
+        selection?.addRange(whole);
+        const inner = touched.map((child) => child.innerHTML.replace(/<br\s*\/?>$/i, "")).join("<br>");
+        document.execCommand("insertHTML", false, `<div class="visual-manuscript-communication visual-manuscript-communication-${kind}" data-communication="${kind}">${inner}</div>`);
+        sync();
+        rememberSelection();
+        return;
+      }
+    }
     const anchor = saved && editor.contains(saved.startContainer)
       ? (saved.startContainer.nodeType === Node.ELEMENT_NODE ? saved.startContainer as Element : saved.startContainer.parentElement)?.closest("p,h2,div,hr")
       : null;
