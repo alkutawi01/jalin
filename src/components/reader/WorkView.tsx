@@ -216,6 +216,10 @@ export default async function WorkView({
   // Each chapter has its own address, so there is one canonical URL per chapter and one for the whole novela.
   const landing = sections.length > 0 && !sectionSlug;
 
+  // A work without chapters has one address. Any extra path segment (/kategori/cerpen/kerusi-di-beranda/apa-apa) used to show the whole
+  // work again at that address: unlimited duplicate pages for a search engine.
+  if (sections.length === 0 && sectionSlug) notFound();
+
   let activeSection: ReadingSection | undefined;
   let bodyToRender = work.body;
 
