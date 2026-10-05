@@ -10,6 +10,7 @@
  */
 
 import { SECTION_NAMES } from "./output-format";
+import { DEFAULT_AUDIENCE } from "../../audience";
 import type { OutputSection } from "./recipes";
 
 export interface LabelledParse {
@@ -284,7 +285,7 @@ export function parseLabelledAnswer(answer: string): LabelledParse | null {
       raw.slug = merged.slug ?? "";
       raw.dek = merged.dek ?? "";
       raw.genre = merged.genre ?? "";
-      raw.audience = merged.audience ?? "13-17";
+      raw.audience = merged.audience ?? DEFAULT_AUDIENCE;
       raw.author = { name: merged.author ?? "" };
       raw.readingMinutes = numberFrom(merged.reading) ?? 0;
     } else if (name === "SIRI") {

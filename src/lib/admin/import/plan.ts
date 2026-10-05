@@ -19,6 +19,7 @@ import {
   type ParsedSource
 } from "./parser-output";
 import { countWords, estimateReadingMinutes, foldText, slugify } from "./text-utils";
+import { normalizeAudience } from "../../audience";
 
 export interface PlannedCredit {
   guestName: string;
@@ -385,7 +386,7 @@ export function buildImportPlan(answer: string, manuscript: string, options: Imp
       slug,
       type: data.type,
       genre: data.genre,
-      audience: data.audience ?? "13-17",
+      audience: normalizeAudience(data.audience),
       dek: data.dek,
       readingMinutes,
       body: bodyForWork,

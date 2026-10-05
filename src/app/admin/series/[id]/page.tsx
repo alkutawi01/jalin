@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, use } from "react";
 import { useRouter } from "next/navigation";
 import { confirmAction, toast } from "../../../../lib/admin/dialogs";
 import LoadingBlock from "../../../../components/admin/LoadingBlock";
+import AudiencePicker from "../../../../components/admin/AudiencePicker";
 
 interface SeriesData {
   id: string;
@@ -341,9 +342,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
               onChange={(e) => setForm((p) => ({ ...p, genre: e.target.value }))} />
           </div>
           <div className="admin-form-group">
-            <label htmlFor="audience">Audiens</label>
-            <input id="audience" type="text" value={form.audience}
-              onChange={(e) => setForm((p) => ({ ...p, audience: e.target.value }))} />
+            <AudiencePicker value={form.audience} onChange={(next) => setForm((p) => ({ ...p, audience: next }))} />
           </div>
         </div>
         <div className="admin-form-row">

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentAdmin } from "../../../../../lib/admin/auth";
 import { getDb } from "../../../../../lib/db";
+import { DEFAULT_AUDIENCE } from "../../../../../lib/audience";
 
 const types = new Set(["cerpen", "novela", "bersiri", "fragmen", "sinopsis"]);
 
@@ -29,12 +30,12 @@ export async function POST(request: NextRequest) {
           const existing = await tx.selectFrom("series").select("id").where("slug", "=", seriesSlug).executeTakeFirst();
           if (existing) throw new Error("Siri dengan tajuk ini sudah wujud. Pilih siri sedia ada atau gunakan tajuk berbeza.");
           seriesId = `SER-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-          await tx.insertInto("series").values({ id: seriesId, slug: seriesSlug, title, dek: null, genre: null, audience: "13-17", mode: "continuous", status: "ongoing", created_at: now, updated_at: now }).execute();
+          await tx.insertInto("series").values({ id: seriesId, slug: seriesSlug, title, dek: null, genre: null, audience: DEFAULT_AUDIENCE, mode: "continuous", status: "ongoing", created_at: now, updated_at: now }).execute();
         }
       }
       await tx.insertInto("works").values({
         id, slug, title: "Draf tanpa tajuk", type: input.type, status: "draft", body: "", genre: null,
-        audience: "13-17", dek: null, reading_minutes: null, version: "v1.0", version_label: null,
+        audience: DEFAULT_AUDIENCE, dek: null, reading_minutes: null, version: "v1.0", version_label: null,
         revision_count: 0, editorial_history: JSON.stringify([{ version: "v1.0", type: "initial", summary: "Draf awal", date: now }]),
         published_at: null, published_by: null, first_published_at: null, published_revision_id: null,
         created_at: now, updated_at: now,
