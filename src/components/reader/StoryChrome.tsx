@@ -215,22 +215,24 @@ export function SiteFooter() {
           <img className="footer-logo" src="/brand/jalin-logo-reversed.svg" alt="Jalin — oleh Adjung" />
           <p className="footer-tagline">Cerita untuk kita.</p>
         </div>
-        <nav className="footer-col" aria-label="Terokai karya">
-          <h2>Terokai</h2>
-          <ul>
-            {FOOTER_EXPLORE.map((link) => (
-              <li key={link.href}><a href={link.href}>{link.label}</a></li>
-            ))}
-          </ul>
-        </nav>
-        <nav className="footer-col" aria-label="Tentang tapak">
-          <h2>Jalin</h2>
-          <ul>
-            {FOOTER_ABOUT.map((link) => (
-              <li key={link.href}><a href={link.href}>{link.label}</a></li>
-            ))}
-          </ul>
-        </nav>
+        <div className="footer-nav-grid">
+          <nav className="footer-col" aria-label="Terokai karya">
+            <h2>Terokai</h2>
+            <ul>
+              {FOOTER_EXPLORE.map((link) => (
+                <li key={link.href}><a href={link.href}>{link.label}</a></li>
+              ))}
+            </ul>
+          </nav>
+          <nav className="footer-col" aria-label="Tentang tapak">
+            <h2>Jalin</h2>
+            <ul>
+              {FOOTER_ABOUT.map((link) => (
+                <li key={link.href}><a href={link.href}>{link.label}</a></li>
+              ))}
+            </ul>
+          </nav>
+        </div>
       </div>
       <div className="site-shell footer-base">
         <p>© {year} Adjung Press. Hak cipta terpelihara.</p>

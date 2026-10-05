@@ -55,6 +55,7 @@ Fiksyen asli Jalin yang berkembang secara episod.
 
 - satu garis cerita canonical;
 - setiap episod mempunyai identiti sendiri tetapi kesinambungan mesti dijaga;
+- gambar utama pada judul siri wajib disimpan sebelum episod baharu diterbitkan; gambar episod boleh berbeza, tetapi tidak menggantikan identiti visual siri;
 - boleh menggunakan AI-assisted writers' room;
 - human editorial authority kekal wajib.
 

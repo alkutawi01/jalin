@@ -256,7 +256,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
   }
 
   async function removeHero() {
-    if (!(await confirmAction("Buang gambar siri? Halaman siri akan kembali kepada tajuk bertipografi.", { danger: true, confirmLabel: "Ya, buang" }))) return;
+    if (!(await confirmAction("Buang gambar siri? Siri yang mempunyai episod terbit perlu mengekalkan gambar. Gunakan Ganti gambar jika hanya mahu menukar ilustrasi.", { danger: true, confirmLabel: "Ya, buang" }))) return;
     setHeroBusy(true);
     try {
       const res = await fetch(`/api/admin/series/${id}/hero`, { method: "DELETE" });

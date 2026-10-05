@@ -51,7 +51,7 @@ export function NovelaIntro({ rows }: { rows: ChapterRow[] }): ReactNode {
   if (!first) return null;
   return (
     <article className="story-body novela-intro">
-      <a className="hero-featured-cta" href={first.href}>Mula membaca</a>
+      <a className="hero-featured-cta" href={first.href}>Baca sekarang</a>
       <h2 id="senarai-bab">Senarai Bab</h2>
       <ol className="chapter-list" aria-labelledby="senarai-bab">
         {rows.map((row, index) => (

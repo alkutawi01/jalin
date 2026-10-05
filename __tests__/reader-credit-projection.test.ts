@@ -9,8 +9,9 @@
 import fs from "node:fs";
 import path from "node:path";
 import { projectBylineCredits, projectEditorialCredits } from "../src/lib/reader/credit-projection";
+import { projectPublicSeries } from "../src/lib/reader/public-projection";
 import { getWorkBySlug } from "../src/lib/content/workLoader";
-import type { ContributorRef } from "../src/lib/content/types";
+import type { ContributorRef, SeriesMeta } from "../src/lib/content/types";
 
 let passed = 0;
 let failed = 0;
@@ -179,6 +180,15 @@ console.log("reader credit projection tests\n");
     { role: "Penulis bersama", names: ["Mimo · Maya", "Nara Zahin · Maya"] },
     { role: "Penulis bersama, Penterjemah", names: ["Rafiq Naim · Maya"] }
   ]), "a person with two roles keeps both roles together on one line, apart from those who hold only one");
+}
+
+{
+  const series: SeriesMeta = {
+    id: "SER-TEST", slug: "siri-uji", title: "Siri Uji", mode: "continuous", status: "ongoing",
+    hero: { src: "/assets/siri-uji.png", alt: "Dua watak di hadapan rumah" },
+  };
+  assert(json(projectPublicSeries(series).hero) === json(series.hero), "Series artwork reaches public listing cards");
+  assert(projectPublicSeries({ ...series, hero: undefined }).hero === undefined, "Legacy series without artwork remains renderable");
 }
 
 console.log(`\n${passed} passed, ${failed} failed`);

@@ -25,7 +25,8 @@ export async function DELETE(_request: NextRequest, { params }: { params: Promis
   if (!(await getCurrentAdmin())) return NextResponse.json({ error: SESSION_ENDED }, { status: 401 });
   try {
     const { id } = await params;
-    await clearSeriesHero(id);
+    const result = await clearSeriesHero(id);
+    if (!result.ok) return NextResponse.json({ error: result.error }, { status: result.status });
     return NextResponse.json({ success: true });
   } catch (error) {
     return NextResponse.json({ error: error instanceof Error ? error.message : "Ralat tidak diketahui." }, { status: 500 });

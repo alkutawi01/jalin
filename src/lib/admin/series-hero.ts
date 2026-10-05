@@ -3,6 +3,7 @@ import { detectImageType, MAX_MANUAL_UPLOAD_BYTES } from "./visual-generation/ma
 import { storeVisualAssetBytes } from "./visual-generation/asset-storage";
 
 export type SeriesHeroResult = { ok: true; src: string } | { ok: false; status: number; error: string };
+export type SeriesHeroClearResult = { ok: true } | { ok: false; status: number; error: string };
 
 /** A stable number per series for the storage key (the content hash in the key keeps versions apart). */
 function storageId(seriesId: string): number {
@@ -44,14 +45,26 @@ export async function setSeriesHero(seriesId: string, bytes: Buffer, alt: string
   return { ok: true, src: stored.stableAssetPath };
 }
 
-export async function clearSeriesHero(seriesId: string): Promise<void> {
+export async function clearSeriesHero(seriesId: string): Promise<SeriesHeroClearResult> {
   try {
-    await getDb()
-      .updateTable("series")
-      .where("id", "=", seriesId)
-      .set({ hero_src: null, hero_alt: null, updated_at: new Date().toISOString() } as never)
-      .execute();
+    return await getDb().transaction().execute(async (trx) => {
+      const series = await trx.selectFrom("series").where("id", "=", seriesId).select("id").forUpdate().executeTakeFirst();
+      if (!series) return { ok: false, status: 404, error: "Siri tidak ditemui." };
+      const publishedEpisode = await trx.selectFrom("series_entries")
+        .innerJoin("works", "works.id", "series_entries.work_id")
+        .where("series_entries.series_id", "=", seriesId)
+        .where("works.status", "=", "published")
+        .select("works.id")
+        .executeTakeFirst();
+      if (publishedEpisode) return { ok: false, status: 409, error: "Gambar siri tidak boleh dibuang selagi siri mempunyai episod terbit. Gantikan gambar jika perlu." };
+      await trx.updateTable("series")
+        .where("id", "=", seriesId)
+        .set({ hero_src: null, hero_alt: null, updated_at: new Date().toISOString() } as never)
+        .execute();
+      return { ok: true };
+    });
   } catch (error) {
     if (!isMissingColumn(error)) throw error;
+    return { ok: false, status: 409, error: "Pangkalan data belum dikemas kini untuk gambar siri. Pentadbir teknikal perlu menjalankan migrasi 020 dahulu." };
   }
 }
