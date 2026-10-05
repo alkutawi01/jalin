@@ -71,13 +71,13 @@ export default function EpisodeView({
 
   const workMeta: WorkMetaRow[] = [
     { label: "Bentuk", value: typeLabel },
-    { label: "Siri", value: series.title },
-    { label: "Episod", value: episodeIndex >= 0 ? `${episodeIndex + 1} daripada ${episodes.length}` : "—" },
+    { label: "Tajuk siri", value: series.title },
+    { label: "Episod", value: episodeIndex >= 0 ? String(episodeIndex + 1) : "—" },
     ...(genre ? [{ label: "Genre", value: genre }] : []),
     { label: "Bacaan", value: work.readingMinutes ? `± ${work.readingMinutes} minit` : "—" },
     {
       label: "Status",
-      value: series.status === "completed" ? "Siri tamat" : "Siri berterusan"
+      value: series.status === "completed" ? "Tamat" : "Masih diteruskan"
     },
     { label: "Versi", value: displayVersion(work.versionLabel || work.version) }
   ];
@@ -113,7 +113,7 @@ export default function EpisodeView({
           dek={work.dek ?? ""}
           contextLine={
             <>
-              {episodeIndex >= 0 ? `Episod ${episodeIndex + 1} daripada ${episodes.length} · ` : ""}
+              {episodeIndex >= 0 ? `Episod ${episodeIndex + 1} · ` : ""}
               <a href={`/kategori/bersiri/${series.slug}`}>{series.title}</a>
             </>
           }

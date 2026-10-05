@@ -50,7 +50,7 @@ const MODE_LABELS: Record<string, string> = {
 };
 
 const STATUS_LABELS: Record<string, string> = {
-  ongoing: "Berterusan",
+  ongoing: "Masih diteruskan",
   completed: "Tamat",
 };
 

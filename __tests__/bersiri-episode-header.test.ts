@@ -15,7 +15,7 @@ function assert(cond: boolean, msg: string) {
 
 assert(!page.includes("<Crumbs"), "the episode head is no longer a trail of underlined capitals");
 assert(/kicker=\{\[typeLabel, genre\]\.filter\(Boolean\)\.join\(" · "\)\}/.test(page), "the kicker is the same plain 'Form · Genre' text as a cerpen");
-assert(page.includes("contextLine=") && /Episod \$\{episodeIndex \+ 1\} daripada \$\{episodes\.length\}/.test(page), "the episode number and series are in a context line");
+assert(page.includes("contextLine=") && page.includes("`Episod ${episodeIndex + 1} · `") && !page.includes("daripada"), "the episode number (without a total) and series are in a context line");
 assert(/\{ label: "Bentuk", value: typeLabel \}/.test(page), "'Bentuk' is the form only (Bersiri), without the episode number");
 assert(/\{ label: "Episod", value: /.test(page), "the episode number has its own row");
 assert(chrome.includes("contextLine") && chrome.includes("story-context-line"), "the story head can show a context line under the dek");
