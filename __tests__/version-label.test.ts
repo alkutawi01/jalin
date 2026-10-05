@@ -1,5 +1,5 @@
 /** Version label by the date of the change: same day v1.0.1, a later day v1.1, a later month v2.0 (Malaysia time). */
-import { FIRST_VERSION_LABEL, nextVersionLabel, parseVersionLabel } from "../src/lib/admin/version-label";
+import { FIRST_VERSION_LABEL, displayVersion, nextVersionLabel, parseVersionLabel } from "../src/lib/admin/version-label";
 
 let passed = 0;
 let failed = 0;
@@ -42,6 +42,16 @@ const revisionService = fs.readFileSync(path.join(__dirname, "../src/lib/admin/r
 eq(/raw: \{ \.\.\.frozenRaw, work: \{ \.\.\.frozenRaw\.work, version_label: options\.versionLabel \}/.test(revisionService), true, "a publication writes its label into the frozen row readers are served from");
 const publication = fs.readFileSync(path.join(__dirname, "../src/lib/admin/publication-service.ts"), "utf8");
 eq(publication.includes("versionLabel: FIRST_VERSION_LABEL") && publication.includes("nextVersionLabel(existing.version_label, existing.published_at"), true, "first publication and republication both set the label by the rule");
+
+// a draft never shows v0: new drafts start at v1.0 and an old stored v0.x reads as v1.0
+eq(displayVersion("v0.1"), "v1.0", "an old draft label v0.1 is shown as v1.0");
+eq(displayVersion("v0"), "v1.0", "v0 is shown as v1.0");
+eq(displayVersion(null), "v1.0", "no label is shown as v1.0");
+eq(displayVersion("v1.2.1"), "v1.2.1", "a real version is shown as it is");
+eq(displayVersion("v10.0"), "v10.0", "v10 is not mistaken for v0");
+for (const file of ["src/app/api/admin/works/route.ts", "src/app/api/admin/works/start-draft/route.ts", "src/lib/admin/work-service.ts", "src/lib/admin/import/import-service.ts"]) {
+  eq(fs.readFileSync(path.join(__dirname, "..", file), "utf8").includes("v0.1"), false, `${file} does not start a work at v0.1`);
+}
 
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);

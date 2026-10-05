@@ -1,3 +1,4 @@
+import { displayVersion } from "@/lib/admin/version-label";
 import { listWorks } from "../../../lib/admin/work-service";
 import { getDb, hasDb } from "../../../lib/db";
 import { summarizeReadiness } from "../../../lib/admin/publication-service";
@@ -191,7 +192,7 @@ export default async function AdminWorksPage({
                       </a>
                     ) : null}
                   </td>
-                  <td>{work.version_label || work.version}</td>
+                  <td>{displayVersion(work.version_label || work.version)}</td>
                   <td>{formatDate(work.updated_at)}</td>
                   <td>
                     <div className="admin-table-actions">

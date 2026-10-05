@@ -88,7 +88,7 @@ function mapWork(
     readingMinutes: row.reading_minutes ? Number(row.reading_minutes) : undefined,
     publishedAt: row.published_at ? new Date(row.published_at).toISOString() : undefined,
     updatedAt: row.updated_at ? new Date(row.updated_at).toISOString() : undefined,
-    version: String(row.version || "v0.1"),
+    version: String(row.version || "v1.0"),
     versionLabel: row.version_label ? String(row.version_label) : null,
     revisionCount: row.revision_count ? Number(row.revision_count) : 0,
     body: String(row.body || ""),

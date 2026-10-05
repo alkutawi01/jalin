@@ -148,7 +148,7 @@ export async function createWork(input: WorkInput): Promise<WorkRecord> {
 
   const editorialHistory = [
     {
-      version: input.version || "v0.1",
+      version: input.version || "v1.0",
       type: "initial",
       summary: "Draf awal",
       date: now,
@@ -168,7 +168,7 @@ export async function createWork(input: WorkInput): Promise<WorkRecord> {
       audience: input.audience || null,
       dek: input.dek || null,
       reading_minutes: input.readingMinutes || null,
-      version: input.version || "v0.1",
+      version: input.version || "v1.0",
       version_label: null,
       revision_count: 0,
       editorial_history: JSON.stringify(editorialHistory),

@@ -34,8 +34,8 @@ export async function POST(request: NextRequest) {
       }
       await tx.insertInto("works").values({
         id, slug, title: "Draf tanpa tajuk", type: input.type, status: "draft", body: "", genre: null,
-        audience: "13-17", dek: null, reading_minutes: null, version: "v0.1", version_label: null,
-        revision_count: 0, editorial_history: JSON.stringify([{ version: "v0.1", type: "initial", summary: "Draf awal", date: now }]),
+        audience: "13-17", dek: null, reading_minutes: null, version: "v1.0", version_label: null,
+        revision_count: 0, editorial_history: JSON.stringify([{ version: "v1.0", type: "initial", summary: "Draf awal", date: now }]),
         published_at: null, published_by: null, first_published_at: null, published_revision_id: null,
         created_at: now, updated_at: now,
       }).execute();

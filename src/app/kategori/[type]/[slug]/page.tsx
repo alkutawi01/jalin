@@ -1,3 +1,4 @@
+import { displayVersion } from "@/lib/admin/version-label";
 import { ContinueNav } from "../../../../components/reader/ReadingNav";
 import { ChapterHead, NovelaIntro, readingMinutesOf, type ChapterRow } from "../../../../components/reader/NovelaChapters";
 import { visibleCharacters } from "../../../../lib/reader/visible-characters";
@@ -156,7 +157,7 @@ function buildMetaRows(work: Awaited<ReturnType<typeof getWork>>): WorkMetaRow[]
     ...(genre ? [{ label: "Genre", value: genre }] : []),
     { label: "Bacaan", value: work.readingMinutes ? `± ${work.readingMinutes} minit` : "—" },
     ...sourceRows(work.sourceWork),
-    ...((work.versionLabel || work.version) ? [{ label: "Versi", value: work.versionLabel || work.version }] : [])
+    ...((work.versionLabel || work.version) ? [{ label: "Versi", value: displayVersion(work.versionLabel || work.version) }] : [])
   ];
 }
 

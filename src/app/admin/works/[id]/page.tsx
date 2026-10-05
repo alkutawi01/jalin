@@ -1,5 +1,6 @@
 "use client";
 
+import { displayVersion } from "@/lib/admin/version-label";
 import { isSourcedWork } from "@/lib/content/source-origin";
 import { dashChange } from "@/lib/admin/auto-dash";
 import { clearDraft, draftDiffers, pickDraftFields, readDraft, saveDraft, type StoredDraft } from "@/lib/admin/local-draft";
@@ -639,7 +640,7 @@ export default function EditWorkPage() {
     audience: "",
     dek: "",
     readingMinutes: "",
-    version: "v0.1",
+    version: "v1.0",
     publishedAt: "",
     editorNote: "",
     readerNote: "",
@@ -763,7 +764,7 @@ export default function EditWorkPage() {
           audience: work.audience || "",
           dek: work.dek || "",
           readingMinutes: work.reading_minutes?.toString() || "",
-          version: work.version_label || work.version,
+          version: displayVersion(work.version_label || work.version),
           publishedAt: work.published_at ? work.published_at.split("T")[0] : "",
           editorNote: work.metadata?.editorNote ?? "",
           readerNote: work.reader?.note ?? "",
@@ -1133,7 +1134,7 @@ export default function EditWorkPage() {
       const workRes = await fetch(`/api/admin/works/${workId}`);
       if (workRes.ok) {
         const work: WorkData = await workRes.json();
-        setForm((prev) => ({ ...prev, status: work.status, version: work.version_label || work.version }));
+        setForm((prev) => ({ ...prev, status: work.status, version: displayVersion(work.version_label || work.version) }));
       }
       await loadReadiness();
       setTimeout(() => setPublishSuccess(null), 5000);

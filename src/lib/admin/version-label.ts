@@ -49,3 +49,10 @@ export function nextVersionLabel(previousLabel: string | null | undefined, previ
   }
   return formatVersionLabel({ major: previous.major, minor: previous.minor, patch: previous.patch + 1 });
 }
+
+/** What to show for a stored version: the old working label of a draft ("v0.1") reads as the first version, v1.0. */
+export function displayVersion(label: string | null | undefined): string {
+  const text = (label ?? "").trim();
+  if (!text || /^v?0(\.|$)/i.test(text)) return FIRST_VERSION_LABEL;
+  return text;
+}
