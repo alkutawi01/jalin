@@ -62,6 +62,7 @@ export interface WorkRecord {
   editor_pick_reason: string | null;
   published_at: Date | null;
   published_by: string | null;
+  published_revision_id: string | null;
   metadata: Record<string, unknown> | null;
   updated_at: Date;
   created_at: Date;

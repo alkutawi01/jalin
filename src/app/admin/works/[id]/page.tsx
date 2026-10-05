@@ -64,6 +64,7 @@ interface WorkData {
   published_at: string | null;
   published_by?: string | null;
   updated_at: string;
+  published_revision_id?: string | null;
   metadata?: { editorNote?: string; origin?: string } | null;
   reader?: { note?: string } | null;
 }
@@ -636,6 +637,7 @@ export default function EditWorkPage() {
   const charactersBaseline = useRef<string>("[]");
   /** The latest form, so a save can tell whether the editor kept typing while it was in flight. */
   const formRef = useRef<typeof form | null>(null);
+  const [everPublic, setEverPublic] = useState(false);
   /** What this page last loaded or saved of the fields that two tabs can fight over; sent with every save (see stale-write.ts). */
   const baseRef = useRef<Record<string, string> | null>(null);
   const baseOf = (f: { title: string; slug: string; body: string; dek: string; genre: string; audience: string; readingMinutes: string; editorNote: string; readerNote: string; origin: string }) => ({
@@ -802,6 +804,7 @@ export default function EditWorkPage() {
           origin: work.metadata?.origin === "sumber" ? "sumber" : "asli",
         });
         setSavedBody(work.body || "");
+        setEverPublic(Boolean(work.published_at || work.published_revision_id || work.status === "published"));
         baseRef.current = baseOf({
           title: work.title, slug: work.slug, body: work.body || "", dek: work.dek || "", genre: work.genre || "", audience: work.audience || "",
           readingMinutes: work.reading_minutes?.toString() || "", editorNote: work.metadata?.editorNote ?? "", readerNote: work.reader?.note ?? "",
@@ -2117,8 +2120,11 @@ export default function EditWorkPage() {
               type="text"
               required
               value={form.slug}
+              readOnly={everPublic}
+              aria-describedby={everPublic ? "slug-locked" : undefined}
               onChange={(e) => { setSlugAuto(false); setForm((prev) => ({ ...prev, slug: e.target.value })); }}
             />
+            {everPublic ? <span id="slug-locked" className="admin-form-hint">Karya ini pernah diterbitkan; alamatnya dikunci supaya pautan yang sudah dikongsi tidak terputus.</span> : null}
             {form.status === "draft" && (
               <label className="admin-checkbox-label">
                 <input

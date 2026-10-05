@@ -65,6 +65,11 @@ export async function PATCH(
       }
     }
 
+    // Once public, the address is what readers, search engines and shared links hold; the next "Terbitkan semula" would turn the old one into a 404.
+    if (body.slug !== undefined && body.slug !== existing.slug && (existing.published_revision_id || existing.published_at || existing.status === "published")) {
+      return NextResponse.json({ error: "Alamat pautan karya yang pernah diterbitkan tidak boleh ditukar: pautan yang sudah dikongsi akan terputus." }, { status: 400 });
+    }
+
     // A work's taxonomy determines series membership, sections and rights gates.
     // Changing it through a generic edit would leave those relations inconsistent.
     if (body.type !== undefined && body.type !== existing.type) {
