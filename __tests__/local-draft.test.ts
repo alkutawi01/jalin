@@ -18,14 +18,24 @@ const store = memory();
 saveDraft(store, "w1", form, 1000);
 const back = readDraft(store, "w1");
 assert(back?.savedAt === 1000 && back.fields.body === "Teks panjang yang ditaip.", "what was typed is read back exactly");
-assert(!("status" in (back?.fields ?? {})) && !("slug" in (back?.fields ?? {})), "only the writing fields are kept (not status or slug)");
+assert(!("status" in (back?.fields ?? {})) && back?.fields.slug === "hujan", "only the fields of the Simpan button are kept (not status)");
+const typed = { ...form, slug: "alamat-sendiri", readerNote: "Nota baharu" };
+saveDraft(store, "w3", typed, 5);
+assert(readDraft(store, "w3")?.fields.slug === "alamat-sendiri" && readDraft(store, "w3")?.fields.readerNote === "Nota baharu", "the address and the reader's note come back too");
+assert(draftDiffers(pickDraftFields(typed), pickDraftFields(form)), "a change only to the address or the note is still offered back");
+// A copy made before slug and readerNote were kept must not blank them when restored, nor be offered because of them.
+const oldCopy = memory();
+oldCopy.setItem("jalin:draft:w4", JSON.stringify({ savedAt: 9, fields: { title: "Hujan", dek: "", body: "x", genre: "", audience: "", readingMinutes: "", editorNote: "", origin: "asli" } }));
+const old = readDraft(oldCopy, "w4");
+assert(old !== null && !("slug" in old.fields) && !("readerNote" in old.fields), "an old copy holds only what it had");
+assert(old !== null && !draftDiffers(old.fields, pickDraftFields({ ...form, body: "x", slug: "hujan", readerNote: "ada nota" })), "and is not offered back because of fields it never had");
 assert(readDraft(store, "w2") === null, "another work has its own copy");
 
 clearDraft(store, "w1");
 assert(readDraft(store, "w1") === null, "a saved work's copy is removed");
 
 assert(draftDiffers(pickDraftFields(form), pickDraftFields({ ...form, body: "lain" })), "different text is offered back");
-assert(!draftDiffers(pickDraftFields(form), pickDraftFields({ ...form, status: "ready", slug: "x" })), "identical text is not offered back");
+assert(!draftDiffers(pickDraftFields(form), pickDraftFields({ ...form, status: "ready" })), "identical text is not offered back");
 
 // storage trouble must never break the editor
 const broken: DraftStorage = { getItem: () => { throw new Error("blocked"); }, setItem: () => { throw new Error("full"); }, removeItem: () => { throw new Error("blocked"); } };

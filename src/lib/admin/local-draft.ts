@@ -5,12 +5,13 @@
  */
 
 /** The fields of the work form that hold what the editor writes. */
-export const DRAFT_FIELDS = ["title", "dek", "body", "genre", "audience", "readingMinutes", "editorNote", "origin"] as const;
+export const DRAFT_FIELDS = ["title", "slug", "dek", "body", "genre", "audience", "readingMinutes", "editorNote", "readerNote", "origin"] as const;
 export type DraftFields = Record<(typeof DRAFT_FIELDS)[number], string>;
 
 export interface StoredDraft {
   savedAt: number;
-  fields: DraftFields;
+  /** Only what the copy actually holds: a copy made before a field was added (slug, readerNote) must not blank that field when restored. */
+  fields: Partial<DraftFields>;
 }
 
 /** Just enough of the Storage interface, so it can be tested without a browser. */
@@ -29,8 +30,8 @@ export function pickDraftFields(form: Record<string, unknown>): DraftFields {
 }
 
 /** True when the stored text is not what the server already has. */
-export function draftDiffers(stored: DraftFields, saved: DraftFields): boolean {
-  return DRAFT_FIELDS.some((field) => stored[field] !== saved[field]);
+export function draftDiffers(stored: Partial<DraftFields>, saved: DraftFields): boolean {
+  return DRAFT_FIELDS.some((field) => typeof stored[field] === "string" && stored[field] !== saved[field]);
 }
 
 /** Browser storage can be missing, full or blocked (private windows); the editor must work without it. */
@@ -48,7 +49,10 @@ export function readDraft(storage: DraftStorage | undefined, workId: string): St
     if (!raw) return null;
     const parsed = JSON.parse(raw) as Partial<StoredDraft>;
     if (typeof parsed.savedAt !== "number" || !parsed.fields || typeof parsed.fields !== "object") return null;
-    return { savedAt: parsed.savedAt, fields: pickDraftFields(parsed.fields as Record<string, unknown>) };
+    const held = parsed.fields as Record<string, unknown>;
+    const fields: Partial<DraftFields> = {};
+    for (const field of DRAFT_FIELDS) if (typeof held[field] === "string") fields[field] = held[field] as string;
+    return { savedAt: parsed.savedAt, fields };
   } catch {
     return null;
   }
