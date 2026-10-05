@@ -2800,8 +2800,9 @@ main:focus { outline: none; }
 
 /* Which series and episode a story belongs to: a quiet line under the dek, like the byline, not a trail of capitals. */
 .story-context-line { margin: 14px 0 0; font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 14px; color: var(--ink-soft); }
-.story-context-line a { color: inherit; text-decoration: underline; text-decoration-color: var(--line-strong, currentColor); text-underline-offset: 3px; }
-.story-context-line a:hover, .story-context-line a:focus-visible { color: var(--clay-text); text-decoration-color: currentColor; }
+/* The series link looks like the author names under it (ink, semibold, no line); the line appears on hover and focus. */
+.story-context-line a { color: var(--ink); font-weight: 600; text-decoration: none; }
+.story-context-line a:hover, .story-context-line a:focus-visible { text-decoration: underline; text-underline-offset: 3px; }
 
 /* ---- Footnotes: a small number in the text and the notes in a list at the end (see also the right margin on wide screens) ---- */
 .footnote-ref { font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: .68em; font-weight: 700; line-height: 0; margin-left: 1px; }

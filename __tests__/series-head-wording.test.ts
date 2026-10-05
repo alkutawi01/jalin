@@ -37,5 +37,9 @@ const chrome = read("src/components/reader/StoryChrome.tsx");
 assert(chrome.includes("export function BylineRow") && (chrome.match(/<BylineRow byline=\{byline\} \/>/g) ?? []).length === 1, "a story and a series use one byline markup");
 assert(read("src/app/globals.css").includes(".series-masthead .byline { justify-content: flex-start;"), "the series byline is left aligned like the rest of its head");
 
+// the series link under an episode's dek had a permanent underline while the author names below it have none
+const contextLink = read("src/app/globals.css").split("\n").find((line) => line.startsWith(".story-context-line a {")) ?? "";
+assert(contextLink.includes("text-decoration: none") && contextLink.includes("font-weight: 600"), "the series link in the episode head has no permanent underline, like the author names");
+
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);
