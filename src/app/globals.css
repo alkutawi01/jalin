@@ -1041,13 +1041,12 @@ dd { margin: 0; color: var(--ink); text-align: left; }
     display: block;
     position: fixed;
     z-index: 35;
-    right: 0;
-    top: 48%;
-    transform: translateY(-50%);
+    /* In the bottom corner, not on the edge half way down the screen where it covered the words being read. */
+    right: 16px;
+    bottom: max(16px, env(safe-area-inset-bottom));
     border: 1px solid rgba(24,52,60,.14);
-    border-right: 0;
-    border-radius: 10px 0 0 10px;
-    padding: 16px 14px;
+    border-radius: 999px;
+    padding: 12px 20px;
     min-height: 44px;
     min-width: 44px;
     background: rgba(251,248,242,.96);
