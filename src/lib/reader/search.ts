@@ -3,6 +3,7 @@ import type { Work } from "../content/types";
 import { bylineFor } from "./credit-projection";
 import { projectPublicWorkSummary, type PublicWorkSummary } from "./public-projection";
 import { displayableGenre } from "./genre-display";
+import { capitaliseFirst } from "../capitalise-first";
 
 /**
  * Search over what readers can read: the published works (title, dek, genre, authors, characters, places, glossary and the text
@@ -326,7 +327,8 @@ export function filterOptions(docs: SearchDoc[]): { types: string[]; genres: str
   const seenGenre = new Map<string, string>();
   for (const d of docs) {
     const g = displayableGenre(d.genre);
-    if (g && !seenGenre.has(fold(g).trim())) seenGenre.set(fold(g).trim(), g);
+    // shown with a capital first letter ("drama keluarga" and "Drama Sosial" sit together in the list); the filter ignores case
+    if (g && !seenGenre.has(fold(g).trim())) seenGenre.set(fold(g).trim(), capitaliseFirst(g));
   }
   const genres = [...seenGenre.values()].sort((a, b) => a.localeCompare(b, "ms"));
   const authors = [...new Set(docs.flatMap((d) => d.authors))].sort((a, b) => a.localeCompare(b, "ms"));
