@@ -268,7 +268,14 @@ export function buildImportPlan(answer: string, manuscript: string, options: Imp
   };
   const places = settingEntries(data.places, 12);
   const times = settingEntries(data.times, 6);
-  const characters = data.characters.map((c) => ({
+  // The same character listed twice (a chatbot repeating itself, or a doubled paste) is one character: the first mention wins.
+  const seenCharacters = new Set<string>();
+  const characters = data.characters.filter((c) => {
+    const key = foldText(c.name);
+    if (!key || seenCharacters.has(key)) return false;
+    seenCharacters.add(key);
+    return true;
+  }).map((c) => ({
     name: c.name,
     role: tidyShort(c.role) || c.role,
     firstAppearanceSection:
@@ -461,7 +468,7 @@ function applyEdits(plan: ImportPlan, edits: ReviewEdits, foldedText: string, wa
   if (edits.characters) {
     plan.characters = edits.characters
       .map((c) => ({ name: c.name.trim(), role: c.role.trim() }))
-      .filter((c) => c.name)
+      .filter((c, i, all) => c.name && all.findIndex((o) => foldText(o.name) === foldText(c.name)) === i)
       .map((c) => ({
         ...c,
         firstAppearanceSection: plan.characters.find((o) => foldText(o.name) === foldText(c.name))?.firstAppearanceSection ?? null
