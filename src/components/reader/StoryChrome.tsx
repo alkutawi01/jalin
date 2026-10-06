@@ -289,7 +289,6 @@ export function SiteFooter() {
       </div>
       <div className="site-shell footer-base">
         <p>© {year} Adjung Press. Hak cipta terpelihara.</p>
-        <p>Karya dan ilustrasi dalam Jalin dilindungi hak cipta.</p>
       </div>
     </footer>
   );
