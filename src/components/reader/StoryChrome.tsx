@@ -162,7 +162,7 @@ export function LeftRail({ rows, note, editorial = [], children }: { rows: WorkM
         </dl>
         {note ? <>
           <div className="rail-rule" />
-          <p className="maya-note">{note}</p>
+          <p className="maya-note">{renderItalics(note)}</p>
         </> : null}
         {editorial.length > 0 && (
           <>
