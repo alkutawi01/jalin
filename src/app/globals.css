@@ -398,9 +398,23 @@ dd { margin: 0; color: var(--ink); text-align: left; }
     margin-left: -64px;
     border-radius: 0 18px 18px 0;
     box-shadow: none;
-    -webkit-mask-image: linear-gradient(to right, transparent 0, rgba(0,0,0,.18) 84px, rgba(0,0,0,.72) 220px, black 340px);
-    mask-image: linear-gradient(to right, transparent 0, rgba(0,0,0,.18) 84px, rgba(0,0,0,.72) 220px, black 340px);
   }
+  /* The picture melts into the page on its left. This was a mask on the picture itself; while one slide faded over the previous one, the two masked
+     pictures added up at the left edge and the fade looked narrow, then suddenly widened when the old picture went away. A veil of the page's own colour
+     over the picture looks the same for one picture or two, so the fade no longer changes when the transition ends. */
+  .hero-featured-visual::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background: linear-gradient(to right,
+      var(--ground-bg, var(--paper)) 0,
+      color-mix(in srgb, var(--ground-bg, var(--paper)) 82%, transparent) 84px,
+      color-mix(in srgb, var(--ground-bg, var(--paper)) 28%, transparent) 220px,
+      transparent 340px);
+  }
+  .hero-featured-visual .image-rights { z-index: 2; }
 }
 .hero-featured-visual img {
   width: 100%;
@@ -2826,6 +2840,11 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 .hero-carousel-slide .hero-featured-text { display: flex; flex-direction: column; align-items: flex-start; }
 .hero-carousel-slide .hero-featured-cta { margin-top: auto; }
 .hero-carousel-slide .home-work-meta { margin-bottom: 28px; }
+/* Beside the text (wide screens) the picture is as tall as the slide, which is as tall as the tallest slide's text. The button is pinned to the bottom of that
+   height, so with a picture capped at 560px the button of a slide with a long text hung below the picture's bottom edge. Now both end on the same line. */
+@media (min-width: 1051px) {
+  .hero-carousel-slide .hero-featured-visual { max-height: none; aspect-ratio: auto; min-height: 440px; }
+}
 @media (max-width: 1050px) { .hero-carousel-slide { grid-template-rows: auto minmax(0, 1fr); } }
 .hero-carousel-controls { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 0 26px; font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; }
 .hero-carousel-btn { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; padding: 0; border: 1px solid var(--line); border-radius: 50%; background: var(--white); color: var(--ink); cursor: pointer; transition: border-color .18s ease; }
