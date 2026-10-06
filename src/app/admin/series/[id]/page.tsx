@@ -289,6 +289,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
             <p className="admin-page-sub">ID: {series.id}</p>
           </div>
           <div className="admin-page-header-actions">
+            <a className="admin-btn admin-btn-outline" href={`/admin/penilaian/series/${series.id}`}>Penilaian & teks penuh</a>
             <button type="button" className="admin-btn admin-btn-danger" onClick={handleDelete}>
               Padam Siri
             </button>
