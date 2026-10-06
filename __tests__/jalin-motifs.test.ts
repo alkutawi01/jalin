@@ -35,5 +35,8 @@ assert(css.includes(".site-footer::before { content: \"\"; position: absolute; i
 const bidai = read("public/brand/motif/bidai-light.svg");
 assert(bidai.includes('width="48" height="24"') && !/<polygon|<circle/.test(bidai), "the band is the 48 x 24 strand tile, with no star or radial shape");
 
+assert(css.includes("html:has(.boot-screen:not(.boot-out)) { overflow: hidden; }") && css.includes("html:has(.a-nav, .admin-login-page) { overflow: visible; }"), "the page behind the loading screen has no scroll bar and does not scroll (not in the admin)");
+assert(css.includes(".work-cover img { animation: jalin-fade-in .3s ease-out; }") && !/\.hero-featured-visual img \{ animation: jalin-fade-in/.test(css), "the home hero picture runs no fade of its own; cards keep theirs");
+
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);

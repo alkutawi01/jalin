@@ -2642,7 +2642,8 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 /* ---- Quiet motion: only where it helps the reader see what happened ---- */
 @keyframes jalin-fade-in { from { opacity: 0; } to { opacity: 1; } }
 .glossary-tooltip { animation: jalin-fade-in .14s ease-out; }
-.work-cover img, .hero-featured-visual img { animation: jalin-fade-in .3s ease-out; }
+/* Cards fade their picture in. The home hero does not: its fade began when the page was styled, before the picture had arrived, so it was either unseen or a flash; the loading screen now fades away over the finished page instead. */
+.work-cover img { animation: jalin-fade-in .3s ease-out; }
 .latest-card, .editorial-pick, .work-card, .category-explorer-card { transition: border-color .18s ease; }
 .latest-card-cta, .editorial-pick-cta { display: inline-block; transition: transform .18s ease; }
 .latest-card a:hover .latest-card-cta, .latest-card a:focus-visible .latest-card-cta,
@@ -2650,7 +2651,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 
 /* Motion is never required to understand anything, and can be switched off. */
 @media (prefers-reduced-motion: reduce) {
-  .glossary-tooltip, .work-cover img, .hero-featured-visual img { animation: none; }
+  .glossary-tooltip, .work-cover img { animation: none; }
   .series-action, .episode-row a, .episode-row-arrow,
   .latest-card, .editorial-pick, .work-card, .category-explorer-card, .latest-card-cta, .editorial-pick-cta { transition: none; }
   .episode-row a:hover .episode-row-arrow, .episode-row a:focus-visible .episode-row-arrow,
@@ -3346,6 +3347,9 @@ body { overflow-wrap: break-word; }
 .boot-screen { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; background: #18343c; transition: opacity .35s ease, visibility 0s linear .35s; }
 .boot-screen.boot-out { opacity: 0; visibility: hidden; pointer-events: none; }
 body:has(.a-nav, .admin-login-page) .boot-screen { display: none; }
+/* While the loading screen is up the page behind it neither scrolls nor shows its scroll bar. */
+html:has(.boot-screen:not(.boot-out)) { overflow: hidden; }
+html:has(.a-nav, .admin-login-page) { overflow: visible; }
 @media print { .boot-screen { display: none; } }
 
 /* Phones: the carousel's arrows and dots were large and left empty space under them. Smaller, with the space under them taken out. */
