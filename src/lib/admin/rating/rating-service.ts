@@ -10,6 +10,7 @@ import { assembleFullText, countTextWords, fullTextFileName, partHeading, refere
 import { parseRatingPaste, type ParseResult, type ParsedEvidence } from "./parse";
 import { buildRatingPrompt } from "./prompt";
 import { COMPONENTS, RUBRIC_VERSION, consensus, scoreLabel } from "./rubric";
+import { withoutOwnTitle } from "../../reader/search";
 
 export type TargetKind = "work" | "series";
 export const isTargetKind = (value: unknown): value is TargetKind => value === "work" || value === "series";
@@ -34,10 +35,11 @@ export interface RatingTarget {
 const KIND_LABEL: Record<string, string> = { cerpen: "Cerpen", novela: "Novela", bersiri: "Bersiri" };
 
 /** The text of one work: its chapters in order when it has them, otherwise its body. */
-async function workParts(workId: string, body: string | null, word: "Bab" | "Episod" = "Bab"): Promise<TextPart[]> {
+/** A manuscript that starts with its own title as a heading ("# Kerusi di Beranda") does not say the title twice in the file. */
+async function workParts(workId: string, title: string, body: string | null, word: "Bab" | "Episod" = "Bab"): Promise<TextPart[]> {
   const sections = await getDb().selectFrom("reading_sections").where("work_id", "=", workId).orderBy("position", "asc").select(["title", "position", "body"]).execute();
   if (sections.length > 0) return sections.map((s, i) => ({ heading: partHeading(word, i + 1, s.title), body: s.body ?? "" }));
-  return [{ heading: "", body: body ?? "" }];
+  return [{ heading: "", body: withoutOwnTitle(body ?? "", title) }];
 }
 
 export async function loadRatingTarget(kind: TargetKind, id: string): Promise<RatingTarget | undefined> {
@@ -55,7 +57,7 @@ export async function loadRatingTarget(kind: TargetKind, id: string): Promise<Ra
     type = work.type;
     if (type === "bersiri") reason = "Episod tidak dinilai satu demi satu. Nilai siri penuh di halaman sirinya, selepas siri itu tamat.";
     else if (type !== "cerpen" && type !== "novela") reason = "Hanya cerpen, novela dan siri yang tamat dinilai.";
-    parts = await workParts(work.id, work.body);
+    parts = await workParts(work.id, work.title, work.body);
   } else {
     const series = await db.selectFrom("series").where("id", "=", id).select(["id", "slug", "title", "status"]).executeTakeFirst();
     if (!series) return undefined;
@@ -69,7 +71,7 @@ export async function loadRatingTarget(kind: TargetKind, id: string): Promise<Ra
       .select(["works.id as id", "works.title as title", "works.body as body"])
       .execute();
     for (const [index, entry] of entries.entries()) {
-      const inner = await workParts(entry.id, entry.body);
+      const inner = await workParts(entry.id, entry.title, entry.body);
       const body = inner.map((p) => (p.heading ? `${p.heading}\n\n${p.body}` : p.body)).join("\n\n");
       parts.push({ heading: partHeading("Episod", index + 1, entry.title), body });
     }
