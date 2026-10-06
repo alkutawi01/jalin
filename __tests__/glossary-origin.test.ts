@@ -79,6 +79,8 @@ for (const [name, source] of [["wide screen", rail], ["phone", mobile]] as const
   assert(source.includes("renderItalics(place.name)") && source.includes("renderItalics(place.description)") && source.includes("renderItalics(character.name)") && source.includes("renderItalics(time.name)"), `${name}: place, character and time cards render *italic* marks`);
 }
 
+assert(rail.includes("renderItalics(note)") && mobile.includes("renderItalics(data.note)"), "the 'Tentang karya' note renders *italic* marks on wide screen and phone");
+
 console.log("\n=== Storage and editor ===");
 const migration = read("src/lib/db/migrations/023_glossary_pronunciation_original.ts");
 assert(["pronunciation", "original_text", "original_language"].every((c) => migration.includes(`"${c}"`)) && migration.includes("information_schema.columns"), "migration 023 adds the three columns, guarded per column");
