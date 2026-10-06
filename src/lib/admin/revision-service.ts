@@ -122,11 +122,21 @@ export function charactersFingerprint(metadata: unknown): string {
       );
   // The places (Latar tempat) ride along. A work with none gives exactly what it gave before, so no published work looks changed.
   const places = (meta as { places?: unknown } | null | undefined)?.places;
-  if (!Array.isArray(places) || places.length === 0) return characters;
-  return characters + "|places:" + JSON.stringify(places.map((p) => {
-    const row = (p ?? {}) as { name?: unknown; description?: unknown };
-    return [String(row.name ?? ""), String(row.description ?? "")];
-  }));
+  let result = characters;
+  if (Array.isArray(places) && places.length > 0) {
+    result += "|places:" + JSON.stringify(places.map((p) => {
+      const row = (p ?? {}) as { name?: unknown; description?: unknown };
+      return [String(row.name ?? ""), String(row.description ?? "")];
+    }));
+  }
+  // Two more settings change what readers see: the language of a fragmen's text (its label and the page's language) and "from another
+  // source" (whether the source block shows). Added only when set, so a work without them gives what it gave before. Not the whole
+  // metadata: internal stamps (a review mark, say) must not create a version for readers.
+  const bag = (meta ?? {}) as { fragmenTextLanguage?: unknown; origin?: unknown };
+  const language = typeof bag.fragmenTextLanguage === "string" ? bag.fragmenTextLanguage.trim() : "";
+  if (language) result += "|lang:" + language;
+  if (bag.origin === "sumber") result += "|origin:sumber";
+  return result;
 }
 
 /** The characters that were frozen into a stored revision. */
