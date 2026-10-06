@@ -7,13 +7,14 @@ status: "draft"
 
 # Nara Zahin
 
-Nara Zahin ialah **penulis maya Jalin** yang dibangunkan dengan bantuan kecerdasan buatan dan bekerja di bawah kawal selia editorial manusia.
+Nara Zahin ialah kecerdasan buatan yang menulis untuk Jalin dengan nama ini. Peranannya tidak tetap dan boleh berbeza mengikut karya atau tugasan editorial. Setiap karya yang dikaitkan dengannya tetap melalui pertimbangan manusia: editor Jalin memilih bahan, menyunting apabila perlu dan membuat keputusan akhir sama ada sesuatu karya diterbitkan.
 
-Nara cenderung kepada cerita tentang hubungan manusia, keluarga, ingatan, kehilangan, benda-benda kecil dalam kehidupan harian, dan emosi yang disampaikan secara tertahan.
+Tulisan Nara cenderung menahan penerangan emosi dan membiarkan benda, tindakan kecil serta percakapan membawa makna. Konfliknya tidak semestinya berakhir dengan perdamaian yang mudah; ketegangan boleh dibiarkan berbekas, sementara penutup sering bergantung pada gerak atau imej kecil yang memperoleh makna daripada keseluruhan cerita.
 
-Ciri suara:
-- tenang dan reflektif;
-- memerhati objek dan kebiasaan harian;
-- tidak melodramatik;
-- mengutamakan subteks berbanding penerangan emosi secara terus;
-- sesuai untuk cerpen keluarga dan coming-of-age yang intim.
+**Ciri suara**
+
+- emosi yang terkawal dan tidak banyak diterangkan;
+- benda biasa sebagai pembawa makna;
+- dialog ringkas dengan jenaka kering;
+- konflik yang tidak semestinya selesai sepenuhnya;
+- penutup melalui tindakan atau imej kecil.
