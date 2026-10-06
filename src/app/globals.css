@@ -47,7 +47,19 @@ img { display: block; max-width: 100%; }
 
 .header-brand { display: flex; align-items: center; gap: 4px; min-width: 0; }
 .header-search { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; color: var(--ink-soft); transition: background .18s ease, color .18s ease; }
-.header-search:hover, .header-search:focus-visible, .header-search.active { color: var(--ink); background: rgba(24, 52, 60, .07); }
+.header-search-wrap { position: relative; }
+.header-search-panel { position: absolute; top: calc(100% + 6px); left: 0; z-index: 40; width: min(420px, calc(100vw - 32px)); background: var(--paper); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 12px 32px rgba(24, 52, 60, .16); padding: 8px; }
+.header-search-input { width: 100%; box-sizing: border-box; min-height: 44px; padding: 8px 12px; font: inherit; font-size: 16px; color: var(--ink); background: transparent; border: 1px solid var(--line); border-radius: 8px; }
+.header-search-input:focus-visible { outline: 2px solid var(--ink); outline-offset: 1px; }
+.header-search-list { list-style: none; margin: 6px 0 0; padding: 0; max-height: min(60vh, 420px); overflow-y: auto; }
+.header-search-list a { display: flex; flex-direction: column; gap: 2px; min-height: 44px; justify-content: center; padding: 6px 12px; border-radius: 8px; color: var(--ink); text-decoration: none; }
+.header-search-list a:hover, .header-search-list a.selected { background: rgba(24, 52, 60, .08); }
+.header-search-title { font-weight: 600; line-height: 1.3; }
+.header-search-meta { font-size: 13px; color: var(--ink-soft); }
+.header-search-empty { padding: 10px 12px; font-size: 14px; color: var(--ink-soft); }
+.header-search-list .header-search-all { flex-direction: row; font-size: 14px; font-weight: 600; color: var(--ink); border-top: 1px solid var(--line); border-radius: 0 0 8px 8px; margin-top: 4px; }
+@media (max-width: 600px) { .header-search-wrap { position: static; } .header-search-panel { left: 16px; right: 16px; width: auto; } }
+.header-search:hover, .header-search:focus-visible, .header-search.active, .header-search.open { color: var(--ink); background: rgba(24, 52, 60, .07); }
 .header-wordmark {
   display: inline-flex;
   align-items: center;
