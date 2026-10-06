@@ -15,9 +15,9 @@ const call = async (body: string) => {
   assert((await call("{")).status === 400, "a body that is not JSON is a 400");
   assert((await call("null")).status === 400 && (await call("[]")).status === 400 && (await call("5")).status === 400, "null, an array and a number are a 400");
   const num = await call('{"email":1,"password":"x"}');
-  assert(num.status === 400 && num.error === "Email diperlukan.", "an email that is not text is 'Email diperlukan.'");
-  assert((await call("{}")).error === "Email diperlukan." && (await call('{"email":"a@b.c"}')).error === "Password diperlukan.", "the old messages are unchanged");
-  assert((await call('{"email":"a@b.c","password":123}')).error === "Password diperlukan.", "a password that is not text is refused");
+  assert(num.status === 400 && num.error === "E-mel diperlukan.", "an email that is not text is 'E-mel diperlukan.'");
+  assert((await call("{}")).error === "E-mel diperlukan." && (await call('{"email":"a@b.c"}')).error === "Kata laluan diperlukan.", "the missing-field messages use the Malay wording (E-mel, Kata laluan)");
+  assert((await call('{"email":"a@b.c","password":123}')).error === "Kata laluan diperlukan.", "a password that is not text is refused");
   console.log(`\n${passed} passed, ${failed} failed`);
   if (failed) process.exit(1);
 })();

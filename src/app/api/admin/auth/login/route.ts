@@ -17,17 +17,17 @@ export async function POST(request: NextRequest) {
 
     const email = typeof body.email === "string" ? body.email.trim() : "";
     if (!email) {
-      return NextResponse.json({ error: "Email diperlukan." }, { status: 400 });
+      return NextResponse.json({ error: "E-mel diperlukan." }, { status: 400 });
     }
     if (typeof body.password !== "string" || !body.password) {
-      return NextResponse.json({ error: "Password diperlukan." }, { status: 400 });
+      return NextResponse.json({ error: "Kata laluan diperlukan." }, { status: 400 });
     }
 
     const token = await loginAdmin(email, body.password);
 
     if (!token) {
       return NextResponse.json(
-        { error: "Email atau password tidak sah." },
+        { error: "E-mel atau kata laluan tidak sah." },
         { status: 401 }
       );
     }
