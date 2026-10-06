@@ -231,6 +231,17 @@ function parseSetting(text: string): { places: WorkFillResult["places"]; times: 
   return { places, times };
 }
 
+/** The same name twice in one answer (a repeating chatbot, a doubled paste) is one entry, the first; the lists refuse duplicates when saved. */
+function uniqueByName<T extends { name: string }>(items: T[]): T[] {
+  const seen = new Set<string>();
+  return items.filter((item) => {
+    const key = item.name.trim().toLocaleLowerCase("ms");
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 export function parseWorkFill(answer: string): WorkFillResult {
   const lines = answer.replace(/\r\n/g, "\n").replace(/^```[a-z]*\s*$/gim, "").split("\n");
   const sections: Record<string, string[]> = {};
@@ -279,9 +290,9 @@ export function parseWorkFill(answer: string): WorkFillResult {
   return {
     dek: clean(field(info, /dek/)),
     genre: clean(field(info, /genre/)),
-    characters,
-    places: setting.places,
-    times: setting.times,
+    characters: uniqueByName(characters),
+    places: uniqueByName(setting.places),
+    times: uniqueByName(setting.times),
     glossaryText: ["[GLOSARI]", ...(sections.GLOSARI ?? [])].join("\n"),
     source: source && Object.values(source).some((v) => v !== "" && v !== null) ? source : null,
     sections: Object.keys(sections)
