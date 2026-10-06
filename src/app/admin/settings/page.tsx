@@ -1,6 +1,7 @@
 import PromptEditor from "../../../components/admin/PromptEditor";
 import AiPersonaSettings from "../../../components/admin/AiPersonaSettings";
 import SiteCopySettings from "../../../components/admin/SiteCopySettings";
+import SiteThemeSettings from "../../../components/admin/SiteThemeSettings";
 import AudienceBandsSettings from "../../../components/admin/AudienceBandsSettings";
 import { loadPrompts } from "../../../lib/admin/authoring/prompt-store";
 import { RECIPE_KEYS, getRecipe, KIND_LABELS } from "../../../lib/admin/authoring/recipes";
@@ -22,6 +23,7 @@ export default async function SettingsPage() {
         <p className="admin-page-sub">Pilih bahagian di bawah. Apa yang paling kerap diubah ada di atas; arahan AI yang panjang dilipat.</p>
         <nav className="a-settings-nav" aria-label="Bahagian Tetapan">
           <a href="#teks-awam">Teks halaman awam</a>
+          <a href="#warna-blok">Warna blok laman utama</a>
           <a href="#audiens">Audiens</a>
           <a href="#nama-samaran">Nama samaran AI</a>
           <a href="#arahan-ai">Arahan AI</a>
@@ -34,6 +36,11 @@ export default async function SettingsPage() {
         <h2 className="admin-form-section-title">Teks halaman awam</h2>
         <p className="admin-form-hint">Ayat pengenalan yang pembaca lihat di atas setiap halaman senarai (Cerpen, Novela, Bersiri dan lain-lain).</p>
         <SiteCopySettings />
+      </section>
+
+      <section className="admin-section" id="warna-blok">
+        <h2 className="admin-form-section-title">Warna blok laman utama</h2>
+        <SiteThemeSettings />
       </section>
 
       <section className="admin-section" id="audiens">

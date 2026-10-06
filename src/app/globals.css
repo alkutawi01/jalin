@@ -2717,8 +2717,8 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 .series-list-card:hover .series-list-media img, .series-list-card:focus-within .series-list-media img { transform: scale(1.025); }
 .series-list-media > span { display: flex; height: 100%; align-items: center; justify-content: center; padding: 26px; color: var(--ink); font-size: clamp(1.5rem, 3vw, 2.8rem); line-height: 1.15; text-align: center; }
 /* The title box and the copyright notice sit against the picture's own edges (left and right, bottom), not floating inside it. */
-.series-feature-overlay { position: absolute; z-index: 2; bottom: 32px; left: 0; display: grid; gap: 4px; width: max-content; max-width: min(68%, 320px); padding: 10px 14px 11px 12px; border-radius: 0 6px 6px 0; background: rgba(0, 0, 0, .82); color: #fff; }
-.series-feature-media > .image-rights { right: 12px; bottom: 12px; }
+.series-feature-overlay { position: absolute; z-index: 2; bottom: 32px; left: 0; display: grid; gap: 4px; width: max-content; max-width: min(68%, 320px); padding: 10px 14px 11px 26px; border-radius: 0 6px 6px 0; background: rgba(0, 0, 0, .82); color: #fff; }
+.series-feature-media > .image-rights { right: 0; bottom: 12px; border-radius: 4px 0 0 4px; }
 .series-feature-title { margin: 0; font-size: clamp(1.3rem, 2.1vw, 1.85rem); line-height: 1.12; font-weight: 500; text-wrap: balance; }
 .series-feature-meta, .series-list-meta { margin: 0; color: var(--clay-text); font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; }
 .series-feature-overlay .series-feature-meta { color: #f5dfc6; font-size: 10px; }
@@ -2744,7 +2744,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
   .series-highlight .section-head { align-items: flex-start; margin-bottom: 22px; }
   .series-feature { grid-template-columns: minmax(0, 1fr); gap: 12px; }
   .series-feature-media { aspect-ratio: 2 / 1; }
-  .series-feature-overlay { bottom: 26px; padding: 9px 12px 10px 10px; }
+  .series-feature-overlay { bottom: 26px; padding: 9px 12px 10px 20px; }
   .series-feature-title { font-size: clamp(1.4rem, 4vw, 1.8rem); }
   .series-feature-overlay .series-feature-meta { font-size: 9px; }
   .series-feature-footer { gap: 4px; padding-block: 0; }
@@ -3164,3 +3164,34 @@ body { overflow-wrap: break-word; }
 /* The phone Info sheet's "Latar" tab lists places, then times under a small heading. */
 .sheet-stack .sheet-subhead { margin-top: 6px; padding-top: 14px; border-top: 1px solid var(--line); }
 .sheet-stack .sheet-subhead b { font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--clay-text); }
+/* ── Home page block backgrounds, picked in Tetapan > Warna blok laman utama (the Jalin logo colours, white and black only).
+   A dark ground turns the text of its block light. Cards, and the carousel arrows, keep their own light faces and text colours. ── */
+.homepage [data-ground] { background: var(--ground-bg); }
+.homepage [data-ground="paper"] { --ground-bg: #fbf8f2; }
+.homepage [data-ground="white"] { --ground-bg: #ffffff; }
+.homepage [data-ground="sand"] { --ground-bg: #f7ece4; }
+.homepage [data-ground="beige"] { --ground-bg: #d8b9a6; }
+.homepage [data-ground="ink"] { --ground-bg: #18343c; }
+.homepage [data-ground="clay"] { --ground-bg: #a76450; }
+.homepage [data-ground="black"] { --ground-bg: #000000; }
+.homepage [data-ground="ink"], .homepage [data-ground="clay"], .homepage [data-ground="black"] {
+  color: #fbf8f2;
+  --ink: #fbf8f2;
+  --ink-soft: #dbe3e4;
+  --line: rgba(251, 248, 242, .3);
+  --clay-text: #e8cfc0;
+  --clay: #e8cfc0;
+}
+.homepage [data-ground="beige"] { --ink-soft: #34494f; --clay-text: #74392a; }
+.homepage [data-ground="clay"] { color: #ffffff; --ink: #ffffff; --ink-soft: #ffffff; --clay-text: #ffffff; --clay: #ffffff; }
+.homepage [data-ground="ink"] .home-work-meta--pills span, .homepage [data-ground="clay"] .home-work-meta--pills span, .homepage [data-ground="black"] .home-work-meta--pills span { background: rgba(251, 248, 242, .14); }
+.homepage [data-ground="clay"] .home-work-meta--pills span { background: transparent; border-color: rgba(255, 255, 255, .7); }
+.homepage [data-ground="ink"] .hero-featured-cta, .homepage [data-ground="clay"] .hero-featured-cta, .homepage [data-ground="black"] .hero-featured-cta { color: #18343c; }
+.homepage [data-ground] .latest-card, .homepage [data-ground] .category-explorer-card, .homepage [data-ground] .editorial-pick, .homepage [data-ground] .hero-carousel-btn {
+  color: #18343c;
+  --ink: #18343c;
+  --ink-soft: #52656a;
+  --line: #ddd7cc;
+  --clay-text: #9a5a47;
+  --clay: #a76450;
+}

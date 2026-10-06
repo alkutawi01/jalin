@@ -9,6 +9,7 @@ import { getAllWorks } from "../lib/content/workLoader";
 import { getEditorPickSummaries } from "../lib/reader/editor-picks";
 import { projectPublicWorkSummary, type PublicWorkSummary } from "../lib/reader/public-projection";
 import { renderAttribution } from "@/components/reader/Attribution";
+import { homeGrounds, type GroundKey } from "../lib/site-theme";
 
 export const dynamic = "force-dynamic";
 
@@ -197,12 +198,12 @@ async function getSeriesHighlight(): Promise<SeriesHighlightData | null> {
   return best;
 }
 
-function SeriesHighlight({ data }: { data: SeriesHighlightData }) {
+function SeriesHighlight({ data, ground }: { data: SeriesHighlightData; ground: GroundKey }) {
   const preview = process.env.NODE_ENV === "development" && process.env.JALIN_PREVIEW_SERIES === "1";
   const base = `${preview ? "https://jalin.adjung.com" : ""}/kategori/bersiri/${data.slug}`;
   const genre = displayableGenre(data.genre);
   return (
-    <section className="editorial-selection series-highlight" aria-labelledby="series-highlight-title">
+    <section className="editorial-selection series-highlight" data-ground={ground} aria-labelledby="series-highlight-title">
       <div className="site-shell">
         <header className="section-head">
           <h2 id="series-highlight-title">Bersiri</h2>
@@ -251,6 +252,7 @@ export default async function Home() {
   const sortedAll = [...allWorks].sort(byNewest);
   const editorialPicks = await getEditorPickSummaries(standalone);
   const seriesHighlight = await getSeriesHighlight();
+  const grounds = await homeGrounds();
 
   // The hero is an editorial decision, never an automatic "newest work" slot.
   // Selected works rotate in the same hero presentation; everything else remains eligible for Karya Terbaru.
@@ -289,7 +291,7 @@ export default async function Home() {
       <SiteHeader active="home" />
 
       <main id="kandungan" className="homepage" tabIndex={-1}>
-        {heroSlides.length > 0 ? <HeroCarousel slides={heroSlides} /> : null}
+        {heroSlides.length > 0 ? <HeroCarousel slides={heroSlides} ground={grounds.hero} /> : null}
 
         {allWorks.length === 0 ? (
           <section className="site-shell">
@@ -297,9 +299,9 @@ export default async function Home() {
           </section>
         ) : null}
 
-        {seriesHighlight ? <SeriesHighlight data={seriesHighlight} /> : null}
+        {seriesHighlight ? <SeriesHighlight data={seriesHighlight} ground={grounds.series} /> : null}
 
-        {latest.length > 0 ? <section className="latest-works">
+        {latest.length > 0 ? <section className="latest-works" data-ground={grounds.latest}>
           <div className="site-shell">
             <header className="section-head">
               <h2>Karya Terbaru</h2>
@@ -315,7 +317,7 @@ export default async function Home() {
           </div>
         </section> : null}
 
-        <section className="category-explorer">
+        <section className="category-explorer" data-ground={grounds.categories}>
           <div className="site-shell">
             <header className="section-head">
               <h2>Jelajahi Kategori</h2>

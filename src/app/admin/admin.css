@@ -603,3 +603,11 @@
 .a-shell .a-audience-options { display: flex; flex-wrap: wrap; gap: 6px 16px; }
 .a-shell .a-audience-range { color: var(--a-muted); font-size: 12px; }
 .a-shell .a-bands-table input { width: 100%; min-width: 0; }
+.a-shell .a-ground-list { display: grid; gap: 12px; }
+.a-shell .a-ground-row { margin: 0; padding: 12px 14px; border: 1px solid var(--a-line); border-radius: var(--a-radius); background: var(--a-surface); min-width: 0; }
+.a-shell .a-ground-row legend { padding: 0 6px; font-size: 13px; font-weight: 600; }
+.a-shell .a-ground-swatches { display: flex; flex-wrap: wrap; gap: 8px; }
+.a-shell .a-ground-swatch { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px 6px 6px; border: 1px solid var(--a-line); border-radius: 999px; background: var(--a-surface); color: var(--a-ink); font: inherit; font-size: 13px; cursor: pointer; }
+.a-shell .a-ground-swatch:hover, .a-shell .a-ground-swatch:focus-visible { border-color: var(--a-accent); }
+.a-shell .a-ground-swatch.is-selected { border-color: var(--a-accent); box-shadow: 0 0 0 2px var(--a-accent); font-weight: 600; }
+.a-shell .a-ground-chip { width: 22px; height: 22px; border-radius: 50%; border: 1px solid rgba(0, 0, 0, .25); flex: none; }

@@ -27,7 +27,7 @@ const INTERVAL_MS = 6000;
  * button is held down on a slide or a dot, and while focus is inside it; there is no pause button. It does not move at all for
  * readers who ask for less motion.
  */
-export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
+export default function HeroCarousel({ slides, ground }: { slides: HeroSlide[]; ground?: string }) {
   const [index, setIndex] = useState(0);
   const [hovering, setHovering] = useState(false);
   const [holding, setHolding] = useState(false);
@@ -69,6 +69,7 @@ export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
     <section
       ref={rootRef}
       className="hero-featured hero-carousel"
+      data-ground={ground}
       aria-roledescription="karusel"
       aria-label="Pilihan Editor"
       onPointerEnter={(event) => { if (event.pointerType === "mouse") setHovering(true); }}

@@ -26,8 +26,8 @@ for (const [sel, w] of [[".hero-featured-visual", 1050], [".work-head-visual", 9
   assert(ok && start >= 0, `${sel} runs edge to edge once its layout stacks (max-width ${w}px)`);
 }
 assert(/\.story-body \{ font-size: 17\.5px;/.test(css) && !/\.story-body \{ font-size: 19px;/.test(css), "the work text is a little smaller on a phone (17.5px, was 19px)");
-assert(/\.series-feature-overlay \{[^}]*bottom: 0; left: 0;/.test(css), "the series title box sits against the picture's left-bottom edge");
-assert(/\.series-feature-media > \.image-rights \{ right: 0; bottom: 0;/.test(css), "the copyright notice sits against the picture's right-bottom edge");
+assert(/\.series-feature-overlay \{[^}]*bottom: 32px; left: 0;/.test(css) && /\.series-feature-overlay \{[^}]*padding: 10px 14px 11px 26px; border-radius: 0 6px 6px 0/.test(css), "the series title box floats above the bottom edge and sits against the picture's left edge, while the title text is set in from it (Izzat, 6 Okt)");
+assert(/\.series-feature-media > \.image-rights \{ right: 0; bottom: 12px;/.test(css), "the copyright notice sits against the picture's right edge, a little above the bottom");
 
 const contributor = read("src/app/penulis/[slug]/page.tsx");
 assert(contributor.includes('{ "nara-zahin": "claude" }') && contributor.includes('.where("slug", "in", [slug, EDITOR_RECORD[slug] ?? slug])'), "the older address 'nara-zahin' shows what the editor writes for that person in Admin > Penyumbang");
