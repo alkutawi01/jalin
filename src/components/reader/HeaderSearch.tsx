@@ -152,7 +152,7 @@ export default function HeaderSearch({ active }: { active?: boolean }) {
                   </a>
                 </li>
               ))}
-              {settled && suggestions.length === 0 ? <li className="header-search-empty" role="presentation">Tiada karya yang sepadan lagi.</li> : null}
+              {settled && suggestions.length === 0 ? <li className="header-search-empty" role="presentation">Tiada tajuk atau penulis yang sepadan.</li> : null}
               <li role="option" id={`header-search-opt-${seeAllIndex}`} aria-selected={selected === seeAllIndex}>
                 <a className={`header-search-all${selected === seeAllIndex ? " selected" : ""}`} href={allResultsHref(query)}>
                   Lihat semua hasil untuk “{text}”

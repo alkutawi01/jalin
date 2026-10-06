@@ -244,10 +244,11 @@ export function EditorNote({ note }: { note?: string }) {
   );
 }
 
-export function StoryEnd({ title }: { title: string }) {
+/** The mark at the end of a text: "Tamat", or "Bersambung" under the newest episode of a series that is still going on. */
+export function StoryEnd({ title, label = "Tamat" }: { title: string; label?: string }) {
   return (
     <div className="site-shell story-end">
-      <span>Tamat</span><div className="end-rule"><LilitDivider /></div><p><span style={{ fontStyle: "normal" }}>{title}</span> · Jalin</p>
+      <span>{label}</span><div className="end-rule"><LilitDivider /></div><p><span style={{ fontStyle: "normal" }}>{title}</span> · Jalin</p>
     </div>
   );
 }

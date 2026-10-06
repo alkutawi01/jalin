@@ -177,8 +177,9 @@ export default function EpisodeView({
 
         <EditorNote note={work.metadata?.editorNote} />
 
-        {/* "Tamat" marks the end of the work, so an episode that has a next episode does not show it. */}
-        {!nextEpisode ? <StoryEnd title={work.title} /> : null}
+        {/* "Tamat" marks the end of the work, so an episode that has a next episode does not show it. The newest episode of a
+            series that is still going on is not the end either: it said "Tamat" under a status of "Masih diteruskan". */}
+        {!nextEpisode ? <StoryEnd title={work.title} label={series.status === "completed" ? "Tamat" : "Bersambung"} /> : null}
       </main>
 
       {preview ? null : <script
