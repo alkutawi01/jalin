@@ -2760,16 +2760,16 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 /* A hero is edge to edge on the screen whenever it stands alone, above or below its text, whatever kind it is: the homepage carousel,
    the homepage series picture, a work's hero, a series page's hero. (Beside its text on a desktop it is a picture in the layout; a
    card is never a hero.) Each rule starts where that layout stacks. */
-/* 100vw includes a scrollbar's width, so a full-width hero overshoots a window that has one (tablet, narrow desktop) by half of it on each side: hidden, not scroll. */
-@media (max-width: 1050px) { body { overflow-x: hidden; } .hero-featured-visual { order: -1; } }
+/* 100vw includes a scrollbar's width, so a full-width hero would overshoot a window that has one (tablet, narrow desktop) by half of it on each side and lose its edges (the copyright notice at the right edge was cut). The body is a size container, so 100cqw is the width the page really has, scrollbar excluded; 100vw stays as the fallback. */
+@media (max-width: 1050px) { body { overflow-x: hidden; container-type: inline-size; } .hero-featured-visual { order: -1; } }
 @media (max-width: 1050px) {
-  .hero-featured-visual { width: 100vw; max-width: 100vw; margin-left: calc(50% - 50vw); margin-right: 0; margin-top: 0; border-radius: 0; box-shadow: none; -webkit-mask-image: none; mask-image: none; }
+  .hero-featured-visual { width: 100vw; max-width: 100vw; margin-left: calc(50% - 50vw); width: 100cqw; max-width: 100cqw; margin-left: calc(50% - 50cqw); margin-right: 0; margin-top: 0; border-radius: 0; box-shadow: none; -webkit-mask-image: none; mask-image: none; }
 }
 @media (max-width: 900px) {
-  .work-head-visual, .series-hero { width: 100vw; max-width: 100vw; margin-left: calc(50% - 50vw); margin-right: 0; border-radius: 0; box-shadow: none; }
+  .work-head-visual, .series-hero { width: 100vw; max-width: 100vw; margin-left: calc(50% - 50vw); width: 100cqw; max-width: 100cqw; margin-left: calc(50% - 50cqw); margin-right: 0; border-radius: 0; box-shadow: none; }
 }
 @media (max-width: 700px) {
-  .series-feature-media, .hero-figure { width: 100vw; max-width: 100vw; margin-left: calc(50% - 50vw); margin-right: 0; border-radius: 0; box-shadow: none; }
+  .series-feature-media, .hero-figure { width: 100vw; max-width: 100vw; margin-left: calc(50% - 50vw); width: 100cqw; max-width: 100cqw; margin-left: calc(50% - 50cqw); margin-right: 0; border-radius: 0; box-shadow: none; }
   .series-feature-overlay { border-radius: 0 6px 6px 0; }
 }
 @media (prefers-reduced-motion: reduce) {
