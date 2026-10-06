@@ -19,5 +19,9 @@ assert(episode.includes('{!nextEpisode ? <StoryEnd title={work.title} label={ser
 const work = read("src/components/reader/WorkView.tsx");
 assert(/<StoryEnd title=\{work\.title\} \/>/.test(work), "a cerpen and the last chapter of a novela still end with Tamat");
 
+// A series picture without a description of its own is named after the series wherever it is shown: it had an empty alt on the
+// series page and on its episodes, while the listing and the homepage already said "Ilustrasi siri …".
+assert(read("src/lib/content/database-repository.ts").includes("alt: se.hero_alt && String(se.hero_alt).trim() ? String(se.hero_alt) : `Ilustrasi siri ${String(se.title)}`"), "a series picture with no text of its own is called Ilustrasi siri <title>");
+
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);
