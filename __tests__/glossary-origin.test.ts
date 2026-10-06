@@ -68,6 +68,7 @@ const built = buildVerifiedGlossary({
 assert(built["mudif"]?.pronunciation === "mu-dif" && built["mudif"]?.original === "مضيف" && built["mudif"]?.originalLanguage === "Arab" && built["mudif"]?.termDisplay === "*mudif*", "pronunciation and spelling reach the reader entry; the italic display term is kept", built["mudif"]);
 assert(built["ceruk"]?.originalLanguage === undefined && built["buritan"]?.pronunciation === undefined, "a language alone, or nothing, adds nothing");
 const tooltip = read("src/components/reader/GlossaryTerm.tsx");
+assert(tooltip.includes("stripItalicMarks") && tooltip.includes(".map(stripItalicMarks)"), "screen readers never hear the asterisks");
 assert(tooltip.includes("Sebutan:") && tooltip.includes("glossary-original") && tooltip.includes('dir="auto"'), "the tooltip shows pronunciation and original spelling (right-to-left safe)");
 assert(read("src/components/reader/StoryMarkdown.tsx").includes("pronunciation={glossary[key].pronunciation}"), "the story passes them to the tooltip");
 

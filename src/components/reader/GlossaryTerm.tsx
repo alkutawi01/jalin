@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { renderItalics } from "../../lib/reader/inline-italics";
+import { renderItalics, stripItalicMarks } from "../../lib/reader/inline-italics";
 
 type Position = { left: number; top: number };
 
@@ -117,7 +117,7 @@ export default function GlossaryTerm({ term, termDisplay, meaning, pronunciation
         {children}
       </button>
       {/* Always present for screen readers; the floating tooltip is the visual version. */}
-      <span id={descriptionId} className="sr-only">{[pronunciation ? `Sebutan: ${pronunciation}.` : "", original ? `${originalLanguage ? `${originalLanguage}: ` : "Ejaan asal: "}${original}.` : "", meaning].filter(Boolean).join(" ")}</span>
+      <span id={descriptionId} className="sr-only">{[pronunciation ? `Sebutan: ${pronunciation}.` : "", original ? `${originalLanguage ? `${originalLanguage}: ` : "Ejaan asal: "}${original}.` : "", meaning].filter(Boolean).map(stripItalicMarks).join(" ")}</span>
       {open ? createPortal(
         <span
           ref={tooltipRef}
