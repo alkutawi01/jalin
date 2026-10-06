@@ -25,13 +25,14 @@ export default function AiCreditPicker({
   useEffect(() => {
     fetch("/api/admin/ai-personas")
       .then((res) => (res.ok ? res.json() : { personas: [] }))
-      .then((data) => setPersonas((data.personas as Persona[]).filter((p) => p.slug)))
+      .then((data) => setPersonas(data.personas as Persona[]))
       .catch(() => setPersonas([]))
       .finally(() => setLoaded(true));
   }, []);
 
   if (!loaded) return null;
-  if (personas.length === 0) {
+  const ready = personas.filter((p) => p.slug);
+  if (ready.length === 0) {
     return (
       <p className="admin-form-hint">
         Untuk memilih kredit mengikut AI (contoh: Claude), tetapkan nama samaran setiap AI di <a href="/admin/settings">Tetapan</a>.
@@ -49,11 +50,15 @@ export default function AiCreditPicker({
       }}>
         <option value="">-- Pilih AI --</option>
         {personas.map((p) => (
-          <option key={p.ai} value={p.ai}>
-            {p.ai}
+          // An AI with no pseudonym yet is still listed (it used to vanish, so the editor could not tell why Gemini was missing).
+          <option key={p.ai} value={p.ai} disabled={!p.slug}>
+            {p.slug ? p.ai : `${p.ai} (belum ada nama samaran)`}
           </option>
         ))}
       </select>
+      {personas.some((p) => !p.slug) ? (
+        <p className="admin-form-hint">AI yang belum ada nama samaran tidak boleh dipilih lagi: tetapkan namanya di <a href="/admin/settings#nama-samaran">Tetapan</a>, kemudian muat semula halaman ini.</p>
+      ) : null}
       {picked ? <p className="admin-form-hint">Dipaparkan sebagai: {picked.displayName} (Maya)</p> : null}
     </div>
   );
