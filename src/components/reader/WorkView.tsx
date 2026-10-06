@@ -26,6 +26,7 @@ import { placeVisuals } from "../../lib/reader/place-visuals";
 import { chapterHeroOf, visualsForPage } from "../../lib/reader/chapter-visuals";
 import { firstGlossaryBySegment } from "../../lib/reader/glossary-first";
 import MobileStoryInfo from "./MobileStoryInfo";
+import { isDerivativeType } from "../../lib/credit-roles";
 import { initContentRepository } from "../../lib/content";
 import { getWorkBySlug, getWorksByType } from "../../lib/content/workLoader";
 import {
@@ -348,6 +349,7 @@ export default async function WorkView({
             dek={work.dek ?? ""}
             byline={byline}
             originalTitle={originalTitle}
+            originalAuthorBesideTitle={isDerivativeType(work.type)}
             hero={hero?.src ? { src: hero.src, alt: hero.alt ?? "", rights, crop: hero.crop } : undefined}
           />
         )}
