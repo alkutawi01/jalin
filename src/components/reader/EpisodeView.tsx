@@ -15,6 +15,7 @@ import {
 } from "./StoryChrome";
 import StoryMarkdown from "./StoryMarkdown";
 import FootnoteList from "./FootnoteList";
+import FootnoteMargin from "./FootnoteMargin";
 import { extractFootnotes, markFootnoteReferences } from "../../lib/reader/footnotes";
 import MobileStoryInfo from "./MobileStoryInfo";
 import { publicPlaces, publicTimes } from "../../lib/reader/places";
@@ -129,7 +130,7 @@ export default function EpisodeView({
           <MobileStoryInfo data={mobileInfo} />
         </div>
 
-        <div className="site-shell reading-grid">
+        <div className={`site-shell reading-grid${footnotes.notes.length > 0 ? " has-margin-notes" : ""}`}>
           <LeftRail
             rows={workMeta}
             note={disclosureNoteFor(work)}
@@ -161,6 +162,7 @@ export default function EpisodeView({
           </article>
 
           <RightRail characters={characters} places={places} times={times} />
+          {footnotes.notes.length > 0 ? <FootnoteMargin notes={footnotes.notes.map((note) => ({ number: note.number, text: note.text }))} /> : null}
         </div>
 
         <ContinueNav

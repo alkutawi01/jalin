@@ -24,7 +24,7 @@ assert((work.match(/<MobileStoryInfo data=\{mobileInfo\} \/>/g) ?? []).length ==
 assert((episode.match(/<MobileStoryInfo data=\{mobileInfo\} \/>/g) ?? []).length === 1, "a series episode page renders it too (it built the data and never showed it)");
 for (const [name, source] of [["story", work], ["episode", episode]] as const) {
   const row = source.indexOf("mobile-info-row");
-  const columns = source.indexOf("<div className=\"site-shell reading-grid\">\n          <LeftRail");
+  const columns = source.indexOf("site-shell reading-grid", row); // the grid's class may carry "has-margin-notes"
   assert(row > 0 && columns > row, `on the ${name} page the trigger sits above the text, not at the end`);
 }
 assert(read("src/components/reader/MobileStoryInfo.tsx").includes("Tentang karya<span aria-hidden=\"true\"> ›</span>"), "the trigger says what it opens");
