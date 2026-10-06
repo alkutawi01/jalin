@@ -183,6 +183,8 @@ const ANSWER_FENCED = "Berikut hasilnya:\n```json\n" + JSON.stringify(JSON_BODY,
   const single = prepareSingleBody("Surat Lama\n\nSatu dua.\nTiga empat.", "Surat Lama");
   assert(single.droppedTitleLine && single.body === "Satu dua.\n\nTiga empat.", "cerpen body drops a leading title line and normalises paragraphs");
   assert(toParagraphs("a\r\n\r\n b \n") === "a\n\nb", "toParagraphs trims and collapses blank lines");
+  assert(toParagraphs("## Bahagian 1\nTeks.\n## Bahagian 2\nLagi.") === "## Bahagian 1\n\nTeks.\n\n## Bahagian 2\n\nLagi.", "a '## ' section heading stays a heading and is not escaped to a backslash heading (a pasted sinopsis lost its headings)");
+  assert(toParagraphs("# Satu\n### Tiga\n- senarai") === "\\# Satu\n\n\\### Tiga\n\n\\- senarai", "other markdown markers are still escaped");
 }
 
 // ── plan ──────────────────────────────────────────────────────

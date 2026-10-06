@@ -29,14 +29,16 @@ export interface SplitResult {
 }
 
 const MARKDOWN_LINE_START = /^(#{1,6}\s|[-*+]\s|>\s|\d+[.)]\s)/;
+/** A section heading ("## Bahagian 1"): the one Markdown marker Jalin itself uses in a manuscript, so it is kept. */
+const SECTION_HEADING = /^##\s+\S/;
 
-/** Every non-empty line becomes one paragraph; leading markdown markers are escaped. */
+/** Every non-empty line becomes one paragraph; leading markdown markers are escaped, except "## " section headings, which stay headings. */
 export function toParagraphs(text: string): string {
   return text
     .split(/\r?\n/)
     .map((line) => line.replace(/ /g, " ").trim())
     .filter((line) => line.length > 0)
-    .map((line) => (MARKDOWN_LINE_START.test(line) ? `\\${line}` : line))
+    .map((line) => (MARKDOWN_LINE_START.test(line) && !SECTION_HEADING.test(line) ? `\\${line}` : line))
     .join("\n\n");
 }
 
