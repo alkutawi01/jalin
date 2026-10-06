@@ -92,6 +92,16 @@ export function readable(markdown: string): string {
     .trim();
 }
 
+/**
+ * A manuscript often starts with its own title as a heading ("# Kerusi di Beranda"). That line is not part of the story: left in,
+ * a search for a word of the title quoted the title back as if it were a passage. Only a first heading that says the title is dropped.
+ */
+export function withoutOwnTitle(markdown: string, title: string): string {
+  const match = /^\s*#{1,6}\s+([^\n]+)\n?/.exec(markdown);
+  if (!match) return markdown;
+  return fold(readable(match[1])).replace(/\s+/g, " ").trim() === fold(title).replace(/\s+/g, " ").trim() ? markdown.slice(match[0].length) : markdown;
+}
+
 const section = (label: string, markdown: string): SearchSection => {
   const text = readable(markdown);
   return { label, text, folded: fold(text) };
@@ -121,7 +131,7 @@ export function chapterLabel(position: number, title: string | undefined): strin
 function docFromWork(work: Work, sections: { slug: string; title?: string; body: string }[]): SearchDoc {
   const parts: SearchSection[] = [];
   if (sections.length > 0) sections.forEach((s, i) => parts.push(section(chapterLabel(i + 1, s.title), s.body)));
-  else parts.push(section("", work.body));
+  else parts.push(section("", withoutOwnTitle(work.body, work.title)));
   const entities = entitiesOf(work);
   const authors = authorsOf(work);
   return {
@@ -177,7 +187,7 @@ export function buildSearchIndex(repo: ContentRepository): SearchDoc[] {
       foldedGenre: fold(displayableGenre(series.genre) ?? ""),
       foldedAuthors: fold(authors.join(" · ")),
       foldedEntities: fold(entities),
-      sections: episodes.map((e, i) => section(`Episod ${i + 1}: ${e.ref.title}`, e.work.body))
+      sections: episodes.map((e, i) => section(`Episod ${i + 1}: ${e.ref.title}`, withoutOwnTitle(e.work.body, e.ref.title)))
     });
   }
   for (const work of repo.getWorks()) {
