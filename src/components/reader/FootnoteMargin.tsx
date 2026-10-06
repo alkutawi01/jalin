@@ -178,6 +178,11 @@ export default function FootnoteMargin({ notes }: { notes: Note[] }) {
       const anchor = triggerRef.current;
       if (!box || !anchor) return;
       const rect = anchor.getBoundingClientRect();
+      // Scrolled away from the number: close, or the box would follow the reader along the edge of the screen.
+      if (rect.bottom < 0 || rect.top > window.innerHeight) {
+        setPopover(null);
+        return;
+      }
       const boxRect = box.getBoundingClientRect();
       const margin = 12;
       const viewportWidth = document.documentElement.clientWidth;
