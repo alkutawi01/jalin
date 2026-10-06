@@ -21,6 +21,9 @@ assert(css.includes(".page-loading { position: fixed; inset: 0; z-index: 200; di
 const boot = read("src/components/reader/BootScreen.tsx");
 assert(boot.includes("1000-performance.now()") && boot.includes("setTimeout(out,8000)") && /readyState/.test(boot), "every page shows the loading screen for at least one second, and for as long as the page takes (8 seconds at most)");
 assert(boot.includes("classList.add(\"boot-out\")") && !/removeChild|.remove()/.test(boot.split("const SCRIPT")[1]!.split("export default")[0]!), "the script only adds a class, so the page still hydrates cleanly");
+// Without JavaScript the streamed page (it arrives inside hidden boxes, id "S:…", that a script moves into place) must still be seen:
+// before this, a reader with no script saw only the emblem of the loading screen, for ever.
+assert(boot.includes('.boot-screen,.page-loading{display:none!important}') && boot.includes('div[hidden][id^="S:"]{display:block!important}') && boot.includes("<noscript><style>{NOSCRIPT_CSS}</style></noscript>"), "without JavaScript both loading screens are off and the streamed page is shown");
 assert(read("src/app/layout.tsx").includes("<BootScreen />") && css.includes("body:has(.a-nav, .admin-login-page) .boot-screen { display: none; }") && boot.includes("<noscript>"), "it is in every page, and not in the admin or without JavaScript");
 
 assert(read("src/app/not-found.tsx").includes("<JalinEmblem animated"), "the 404 page shows the moving emblem");
