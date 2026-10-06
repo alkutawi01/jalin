@@ -110,9 +110,17 @@ function authorsOf(work: Work): string[] {
   return bylineFor(work).map((person) => person.name);
 }
 
+/** "Bab 3: Tajuk"; a chapter whose title is only "BAB 3" is just "Bab 3", and an epilogue or prologue is called by its own name. */
+export function chapterLabel(position: number, title: string | undefined): string {
+  const t = (title ?? "").trim();
+  if (!t || /^bab\s*\d+$/i.test(t)) return `Bab ${position}`;
+  if (/^(epilog|prolog|pengenalan|penutup|kata pengantar)\b/i.test(t)) return t;
+  return `Bab ${position}: ${t}`;
+}
+
 function docFromWork(work: Work, sections: { slug: string; title?: string; body: string }[]): SearchDoc {
   const parts: SearchSection[] = [];
-  if (sections.length > 0) sections.forEach((s, i) => parts.push(section(`Bab ${i + 1}${s.title ? `: ${s.title}` : ""}`, s.body)));
+  if (sections.length > 0) sections.forEach((s, i) => parts.push(section(chapterLabel(i + 1, s.title), s.body)));
   else parts.push(section("", work.body));
   const entities = entitiesOf(work);
   const authors = authorsOf(work);

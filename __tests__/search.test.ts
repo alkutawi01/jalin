@@ -3,7 +3,7 @@
  */
 import fs from "node:fs";
 import path from "node:path";
-import { buildSearchIndex, filterDocs, filterOptions, fold, highlight, readable, runSearch, tokenize, QUERY_MAX, RESULT_LIMIT } from "../src/lib/reader/search";
+import { buildSearchIndex, chapterLabel, filterDocs, filterOptions, fold, highlight, readable, runSearch, tokenize, QUERY_MAX, RESULT_LIMIT } from "../src/lib/reader/search";
 import type { ContentRepository } from "../src/lib/content/repository";
 import type { Work } from "../src/lib/content/types";
 
@@ -57,6 +57,10 @@ assert(tokenize("a ".repeat(40)).length === 1 && tokenize("w1 w2 w3 w4 w5 w6 w7 
 assert(docs.filter((d) => d.type === "bersiri").length === 1 && docs.find((d) => d.type === "bersiri")!.href === "/kategori/bersiri/siri-a" && docs.find((d) => d.type === "bersiri")!.episodeCount === 2, "the two episodes are one result: the series");
 assert(slugs("makmal").join() === "novela-x" && find("makmal").results[0]!.snippet?.label === "Bab 1: Permulaan", "a word inside a novela chapter finds the novela, and the snippet says which chapter");
 assert(find("menyiram").results[0]!.doc.slug === "siri-a" && find("menyiram").results[0]!.snippet?.label.startsWith("Episod 1") === true, "a word inside an episode finds the series, and the snippet says which episode");
+
+// chapter labels: "BAB 7" is not repeated, an epilogue keeps its own name
+assert(chapterLabel(7, "BAB 7") === "Bab 7" && chapterLabel(3, "bab 3") === "Bab 3" && chapterLabel(2, "") === "Bab 2" && chapterLabel(2, undefined) === "Bab 2", "a chapter titled only BAB 7 is labelled Bab 7, not Bab 7: BAB 7");
+assert(chapterLabel(31, "Epilog") === "Epilog" && chapterLabel(1, "Permulaan") === "Bab 1: Permulaan" && chapterLabel(10, "Pengorbanan") === "Bab 10: Pengorbanan", "an epilogue is called Epilog; a named chapter keeps its name");
 
 // matching
 assert(slugs("paya").includes("anak-qasab") && slugs("paya").includes("kerusi"), "a word in the text finds the works that have it");
