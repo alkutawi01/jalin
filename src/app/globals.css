@@ -2712,7 +2712,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
   border-bottom: 1px solid var(--line);
 }
 .series-feature-media { position: relative; display: block; aspect-ratio: 16 / 9; overflow: hidden; border-radius: 12px 0 0 12px; background: #d6ded3; }
-.series-feature-media img, .series-list-media img { object-fit: cover; transition: transform .35s ease-out; }
+.series-feature-media img, .series-list-media img { object-fit: cover; transition: transform 1s cubic-bezier(.25, .6, .25, 1); }
 .series-feature:hover .series-feature-media img, .series-feature:focus-within .series-feature-media img,
 .series-list-card:hover .series-list-media img, .series-list-card:focus-within .series-list-media img { transform: scale(1.025); }
 .series-list-media > span { display: flex; height: 100%; align-items: center; justify-content: center; padding: 26px; color: var(--ink); font-size: clamp(1.5rem, 3vw, 2.8rem); line-height: 1.15; text-align: center; }
@@ -2978,7 +2978,7 @@ main:focus { outline: none; }
 .homepage {
   --home-section-space: clamp(48px, 6vw, 72px);
   --home-image-radius: 14px;
-  --home-motion: 360ms cubic-bezier(.2, .7, .2, 1);
+  --home-motion: 1000ms cubic-bezier(.25, .6, .25, 1);
 }
 
 .homepage .home-eyebrow {
