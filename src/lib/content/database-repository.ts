@@ -277,7 +277,9 @@ export class DatabaseContentRepository implements ContentRepository {
         audience: se.audience ? String(se.audience) : undefined,
         mode: (String(se.mode) === "anthology" ? "anthology" : "continuous"),
         status: (String(se.status) === "completed" ? "completed" : "ongoing"),
-        ...(se.hero_src ? { hero: { src: String(se.hero_src), alt: se.hero_alt ? String(se.hero_alt) : "" } } : {}),
+        // A series picture with no description of its own is still named for a reader who cannot see it (the listing and the homepage
+        // already said "Ilustrasi siri …"; the series page and its episodes had an empty alt).
+        ...(se.hero_src ? { hero: { src: String(se.hero_src), alt: se.hero_alt && String(se.hero_alt).trim() ? String(se.hero_alt) : `Ilustrasi siri ${String(se.title)}` } } : {}),
       };
       this.seriesCache.set(meta.id, meta);
       this.seriesBySlug.set(meta.slug, meta);

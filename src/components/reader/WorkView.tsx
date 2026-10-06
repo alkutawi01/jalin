@@ -5,6 +5,7 @@ import { visibleCharacters } from "../../lib/reader/visible-characters";
 import { publicPlaces, publicTimes } from "../../lib/reader/places";
 import { notFound } from "next/navigation";
 import { displayableGenre } from "../../lib/reader/genre-display";
+import { chapterTitleBesideNumber } from "../../lib/reader/chapter-label";
 import { classifyFragmen, isIndonesianLanguage } from "../../lib/content/fragmen-kind";
 import { jsonLdString, workJsonLd } from "../../lib/seo-jsonld";
 import {
@@ -394,8 +395,8 @@ export default async function WorkView({
         {sections.length > 0 && !landing ? (
           <ContinueNav
             name="Selepas bab ini"
-            next={nextSection ? { href: chapterHref(nextSection.slug), label: `Bab ${sectionIndex + 2}`, title: nextSection.title || nextSection.slug } : undefined}
-            prev={prevSection ? { href: chapterHref(prevSection.slug), label: `Bab ${sectionIndex}`, title: prevSection.title || prevSection.slug } : undefined}
+            next={nextSection ? { href: chapterHref(nextSection.slug), label: `Bab ${sectionIndex + 2}`, title: chapterTitleBesideNumber(nextSection.title, sectionIndex + 2) } : undefined}
+            prev={prevSection ? { href: chapterHref(prevSection.slug), label: `Bab ${sectionIndex}`, title: chapterTitleBesideNumber(prevSection.title, sectionIndex) } : undefined}
           />
         ) : null}
 
