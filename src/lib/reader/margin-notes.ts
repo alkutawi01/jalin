@@ -5,8 +5,9 @@
  * A note wants to sit level with the line that refers to it. It is set in the right margin, below the card that column already
  * holds (Watak & Latar), and below the note before it, so two notes never overlap. When that would push a note more than
  * `maxShift` below its line, the right margin is "full" at that place: the note goes to the left margin instead, if the left
- * margin has room there (it is below its own card too). A note that fits neither is left to the list at the end of the chapter,
- * so no note is ever lost.
+ * margin has room there (it is below its own card too). When neither margin is close to its line, the note still goes to the margin
+ * that is nearer (it sits a little lower than its line, as side notes do when they crowd), so a wide screen never shows two kinds of
+ * notes. Only a note that would run past the end of the text (`limit`), or whose number cannot be found, is left to the list.
  */
 export interface MarginNoteInput {
   number: number;
@@ -30,6 +31,8 @@ export interface MarginOptions {
   gap: number;
   /** How far below its own line a note may sit before the margin counts as full there. */
   maxShift: number;
+  /** The bottom of the text: a note that would end below it is left to the list. Default: no limit. */
+  limit?: number;
 }
 
 export function placeMarginNotes(notes: MarginNoteInput[], options: MarginOptions): MarginPlacement[] {
@@ -37,19 +40,18 @@ export function placeMarginNotes(notes: MarginNoteInput[], options: MarginOption
   let leftBottom = options.leftFloor ?? 0;
   return notes.map((note) => {
     if (!Number.isFinite(note.refTop)) return { number: note.number, side: "list", top: 0 };
+    const limit = options.limit ?? Number.POSITIVE_INFINITY;
     const rightTop = Math.max(note.refTop, rightBottom);
-    if (rightTop - note.refTop <= options.maxShift) {
-      rightBottom = rightTop + note.height + options.gap;
-      return { number: note.number, side: "right", top: rightTop };
-    }
-    if (options.leftFloor !== null) {
-      const leftTop = Math.max(note.refTop, leftBottom, options.leftFloor);
-      if (leftTop - note.refTop <= options.maxShift) {
-        leftBottom = leftTop + note.height + options.gap;
-        return { number: note.number, side: "left", top: leftTop };
-      }
-    }
-    return { number: note.number, side: "list", top: 0 };
+    const leftTop = options.leftFloor === null ? Number.POSITIVE_INFINITY : Math.max(note.refTop, leftBottom, options.leftFloor);
+    const rightShift = rightTop - note.refTop;
+    const leftShift = leftTop - note.refTop;
+    // Level with its line when the right margin allows, else the left; else whichever is nearer.
+    const side: "right" | "left" = rightShift <= options.maxShift ? "right" : leftShift <= options.maxShift ? "left" : leftShift < rightShift ? "left" : "right";
+    const top = side === "right" ? rightTop : leftTop;
+    if (top + note.height > limit) return { number: note.number, side: "list", top: 0 };
+    if (side === "right") rightBottom = top + note.height + options.gap;
+    else leftBottom = top + note.height + options.gap;
+    return { number: note.number, side, top };
   });
 }
 
