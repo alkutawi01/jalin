@@ -1,4 +1,5 @@
 import type { GlossaryMap } from "../../components/reader/types";
+import { capitaliseFirst } from "../capitalise-first";
 import type { GlossaryEntry, Work } from "../content/types";
 import { stripItalicMarks } from "./inline-italics";
 
@@ -23,7 +24,8 @@ export function buildVerifiedGlossary(work: Pick<Work, "glossary">): GlossaryMap
     if (isVerifiedGlossaryEntry(entry)) {
       // Matching uses the plain term; the editor's *italic* marks are only for display.
       const plain = stripItalicMarks(entry.term).trim();
-      glossary[plain] = plain === entry.term ? { meaning: entry.meaning } : { meaning: entry.meaning, termDisplay: entry.term };
+      const meaning = capitaliseFirst(entry.meaning);
+      glossary[plain] = plain === entry.term ? { meaning } : { meaning, termDisplay: entry.term };
     }
   }
   return glossary;

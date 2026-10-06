@@ -1,4 +1,5 @@
 import { renderItalics } from "../../lib/reader/inline-italics";
+import { capitaliseFirst } from "../../lib/capitalise-first";
 import { smartQuotes } from "../../lib/admin/smart-quotes";
 import type { ReactNode } from "react";
 import Image from "next/image";
@@ -176,7 +177,7 @@ export function RightRail({ characters, places = [] }: { characters: CharacterMe
             <div className="rail-label">Watak</div>
             {characters.map((character) => (
               <div className="rail-person" key={character.name}>
-                <b>{character.name}</b><span>{character.role}</span>
+                <b>{character.name}</b><span>{capitaliseFirst(character.role)}</span>
               </div>
             ))}
           </>

@@ -6,6 +6,7 @@
  */
 
 import { Kysely } from "kysely";
+import { capitaliseFirst } from "../capitalise-first";
 import { getDb, hasDb } from "../db";
 import type { Database } from "../db/types";
 import type { WorkType, WorkStatus } from "../db/types";
@@ -345,7 +346,7 @@ function validateCharacterEntries(characters: unknown): CharacterEntry[] {
         ? null
         : String(rawSection).trim();
 
-    return { name, role, firstAppearanceSection };
+    return { name, role: capitaliseFirst(role), firstAppearanceSection };
   });
 }
 
@@ -368,7 +369,7 @@ export function validatePlaceEntries(places: unknown): Array<{ name: string; des
     const key = name.toLocaleLowerCase("ms");
     if (seen.has(key)) throw new Error(`Latar tempat "${name}" disenaraikan dua kali.`);
     seen.add(key);
-    return description ? { name, description } : { name };
+    return description ? { name, description: capitaliseFirst(description) } : { name };
   });
 }
 
