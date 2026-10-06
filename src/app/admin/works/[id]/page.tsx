@@ -1965,7 +1965,7 @@ export default function EditWorkPage() {
       </div>
       <p className="admin-form-hint a-work-save-help">Gambar, kredit, glosari dan bab disimpan melalui tindakan masing-masing — tidak memerlukan butang ini.</p>
 
-      <section className="a-assistant" aria-label="Isi maklumat dengan chatbot">
+      <section className="a-assistant" id="chatbot-fill" aria-label="Isi maklumat dengan chatbot">
         <h2>Isi maklumat dengan chatbot (sekali salin, sekali tampal)</h2>
         <p className="admin-form-hint">
           Chatbot hanya membantu; editor yang memutuskan. Satu jawapan mengisi dek, genre, watak, glosari{form.type === "fragmen" || form.type === "sinopsis" ? " dan maklumat sumber" : ""} yang masih kosong. Teks karya, kredit, imej dan hak tidak diisi, dan apa yang sudah anda tulis tidak diganti.
@@ -2041,7 +2041,19 @@ export default function EditWorkPage() {
 
       {activeTab !== "glossary" && <details className="admin-advanced-field">
         <summary>Bantuan chatbot untuk tab {TAB_NAMES[activeTab as Tab] ?? activeTab}</summary>
-        <p className="admin-form-hint">Salin arahan bersama manuskrip semasa, kemudian tampal ke chatbot pilihan anda. Cadangan tidak diimport atau disimpan secara automatik; editor kekal bertanggungjawab menyemaknya.</p>
+        {activeTab === "characters" ? (
+          <>
+            <p className="admin-form-hint">
+              <strong>Watak:</strong> jawapan chatbot dimasukkan melalui kotak <strong>&quot;Isi maklumat dengan chatbot&quot;</strong> di bahagian atas halaman ini: tekan <em>1. Salin arahan</em>, tampal ke chatbot, salin seluruh jawapannya, kemudian tekan <em>2. Tampal &amp; isi</em>. Watak baharu ditambah dan yang sudah ada tidak diganti.
+            </p>
+            <p className="admin-form-hint">
+              <strong>Latar tempat:</strong> belum ada import daripada chatbot. Salin arahan di bawah untuk mendapat cadangan, kemudian taip latar yang dipilih sendiri di bahagian Latar tempat tab ini.
+            </p>
+            <a className="admin-btn admin-btn-outline admin-btn-sm" href="#chatbot-fill" onClick={(event) => { event.preventDefault(); document.getElementById("chatbot-fill")?.scrollIntoView({ behavior: "smooth", block: "start" }); }}>Pergi ke Tampal &amp; isi</a>{" "}
+          </>
+        ) : (
+          <p className="admin-form-hint">Salin arahan bersama manuskrip semasa, kemudian tampal ke chatbot pilihan anda. Jawapan untuk tab ini hanya nasihat: tiada tempat untuk menampalnya, jadi taip atau ubah sendiri di tab ini. (Dek, genre, watak, glosari dan sumber boleh diisi sekali gus melalui kotak &quot;Isi maklumat dengan chatbot&quot; di bahagian atas.) Editor kekal bertanggungjawab menyemaknya.</p>
+        )}
         <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={() => void copyAssistantPrompt()}>Salin arahan tab ini</button>
         {assistantNote && <p className="admin-form-hint" role="status">{assistantNote}</p>}
       </details>}
