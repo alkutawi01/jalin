@@ -3195,3 +3195,6 @@ body { overflow-wrap: break-word; }
   --clay-text: #9a5a47;
   --clay: #a76450;
 }
+/* A block that has its own colour is a band, so it gets equal space above and below (the paper blocks flow into each other and keep their own spacing). */
+.homepage .series-highlight[data-ground]:not([data-ground="paper"]),
+.homepage .latest-works[data-ground]:not([data-ground="paper"]) { padding-block: clamp(36px, 5vw, 56px); }

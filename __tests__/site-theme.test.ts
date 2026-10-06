@@ -56,6 +56,7 @@ assert(/\.homepage \[data-ground\] \.latest-card, \.homepage \[data-ground\] \.c
 assert(/\.homepage \[data-ground="clay"\] \.home-work-meta--pills span \{ background: transparent;/.test(css), "the date pills stay readable on terracotta");
 
 assert(page.includes("data-ground={ground}") && page.includes("data-ground={grounds.latest}") && page.includes("data-ground={grounds.categories}") && page.includes("ground={grounds.hero}") && page.includes("ground={grounds.series}"), "the four blocks of the home page carry their chosen background");
+assert(css.includes('.homepage .series-highlight[data-ground]:not([data-ground="paper"]),') && css.includes('.homepage .latest-works[data-ground]:not([data-ground="paper"]) { padding-block: clamp(36px, 5vw, 56px); }'), "a coloured block has equal space above and below, and the paper blocks keep their own spacing");
 assert(api.includes("getCurrentAdmin") && api.includes("isGroundKey(body.ground)") && api.includes("isHomeBlockKey(body.block)") && (api.match(/status: 401/g) ?? []).length === 2, "the admin route needs a signed-in admin and accepts only known blocks and theme colours");
 assert(read("src/lib/site-theme.ts").includes("try {") && read("src/lib/site-theme.ts").includes("return { ...DEFAULT_GROUNDS };"), "a database problem shows the default colours, never an error page");
 
