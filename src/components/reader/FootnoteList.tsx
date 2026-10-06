@@ -2,8 +2,8 @@ import ReactMarkdown from "react-markdown";
 import type { Footnote } from "../../lib/reader/footnotes";
 
 /**
- * The notes of a story, numbered, with a way back to the place in the text. On a wide screen the same notes are also set in
- * the right margin (see FootnoteMargin); this list stays in the page for narrow screens, printing and screen readers.
+ * The notes of a story, numbered, with a way back to the place in the text, as a list at the end of the chapter. This is the
+ * only place the notes are shown today; margin notes beside the text are not built (the right column holds the Watak & Latar card).
  */
 export default function FootnoteList({ notes }: { notes: Footnote[] }) {
   if (notes.length === 0) return null;

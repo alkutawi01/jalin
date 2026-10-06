@@ -7,8 +7,9 @@
  *     pada baris berikutnya yang diinden.
  *
  * A reference is "[^label]"; the note is a line that starts with "[^label]:" and continues on lines indented by at least
- * two spaces. The reader sees a small number in the text and the note beside it (margin on a wide screen, a list at the end
- * otherwise). Numbers follow the order of the first reference, whatever the labels are, so "[^b]" before "[^a]" is note 1.
+ * two spaces. The reader sees a small number in the text and the notes as a numbered list at the end of the chapter (an
+ * "end list": a tap on the number jumps to it, with a way back). Notes set in the right margin beside the text are NOT built
+ * yet: the right column is taken by the Watak & Latar card, so the layout needs a decision first. Numbers follow the order of the first reference, whatever the labels are, so "[^b]" before "[^a]" is note 1.
  *
  * Nothing is changed in what is stored: the definitions are only taken out of the text for display. A reference with no
  * note, or a note nothing refers to, is left alone (a reference stays as typed; an unused note is not shown) and is
