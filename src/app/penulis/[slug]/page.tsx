@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { SiteFooter, SiteHeader } from "../../../components/reader/StoryChrome";
 import { getDb, hasDb } from "../../../lib/db";
+import { disclosureToShow } from "../../../lib/reader/contributor-disclosure";
 
 const allowed = new Set(["nara-zahin", "rafiq-naim"]);
 
@@ -75,6 +76,7 @@ export default async function PenulisPage({
   const { slug } = await params;
   const parsed = await readContributor(slug);
   if (!parsed) notFound();
+  const disclosure = parsed.kind === "virtual" ? disclosureToShow(parsed.body, parsed.disclosure) : null;
 
   return (
     <>
@@ -86,9 +88,7 @@ export default async function PenulisPage({
         <div className="contributor-copy">
           <ReactMarkdown>{parsed.body}</ReactMarkdown>
         </div>
-        {parsed.kind === "virtual" && <p className="contributor-disclosure">
-          {parsed.disclosure || "Persona ini ialah identiti editorial maya Jalin dan bekerja di bawah kawal selia editorial manusia."}
-        </p>}
+        {disclosure ? <p className="contributor-disclosure">{disclosure}</p> : null}
       </main>
       <SiteFooter />
     </>
