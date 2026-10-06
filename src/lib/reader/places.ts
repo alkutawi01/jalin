@@ -18,3 +18,8 @@ export function publicPlaces(metadata: { places?: unknown } | null | undefined):
   }
   return places;
 }
+
+/** The times of a story (Latar masa) as the reader sees them: the same two fields as a place. */
+export function publicTimes(metadata: { times?: unknown } | null | undefined): PlaceMeta[] {
+  return publicPlaces({ places: metadata?.times });
+}

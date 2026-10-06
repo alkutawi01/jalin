@@ -362,11 +362,23 @@ export default function EditWorkPage() {
 
   /** One copy: everything a chatbot may suggest, with the manuscript. */
   async function copyFillPrompt() {
+    const namesOf = async (path: "places" | "times") => {
+      try {
+        const res = await fetch(`/api/admin/works/${workId}/${path}`);
+        const list = res.ok ? ((await res.json()) as Array<{ name?: string }>) : [];
+        return list.map((row) => String(row.name ?? "")).filter(Boolean);
+      } catch {
+        return [];
+      }
+    };
+    const [placeNames, timeNames] = await Promise.all([namesOf("places"), namesOf("times")]);
     const prompt = buildWorkFillPrompt({
       type: form.type,
       body: form.body,
       glossaryTerms: glossaryTerms.map((term) => term.term),
       characterNames: characters.map((c) => c.name),
+      placeNames,
+      timeNames,
       chapterSlugs: form.type === "novela" ? sections.map((section) => section.slug) : [],
       origin: form.origin
     });
@@ -398,7 +410,7 @@ export default function EditWorkPage() {
     }
     const result = parseWorkFill(text);
     if (result.sections.length === 0) {
-      setFillNote(["Tiada bahagian [MAKLUMAT], [WATAK], [GLOSARI] atau [SUMBER] ditemui. Pastikan anda menyalin seluruh jawapan chatbot."]);
+      setFillNote(["Tiada bahagian [MAKLUMAT], [WATAK], [LATAR], [GLOSARI] atau [SUMBER] ditemui. Pastikan anda menyalin seluruh jawapan chatbot."]);
       return;
     }
     setFillBusy(true);
@@ -450,6 +462,32 @@ export default function EditWorkPage() {
         } else {
           notes.push(result.characters.length ? "Watak: semua sudah ada." : "Watak: tiada cadangan.");
         }
+      }
+
+      // 2b) places and times (Latar tempat, Latar masa): add new names, keep every existing one
+      for (const [path, label, found] of [["places", "Latar tempat", result.places], ["times", "Latar masa", result.times]] as const) {
+        if (!result.sections.includes("LATAR")) break;
+        if (found.length === 0) {
+          notes.push(`${label}: tiada cadangan${path === "times" ? " (teks tidak menyatakan tahun atau era)" : ""}.`);
+          continue;
+        }
+        const current = await fetch(`/api/admin/works/${workId}/${path}`).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+        if (!Array.isArray(current)) throw new Error(`Gagal membaca ${label.toLowerCase()} semasa.`);
+        const have = new Set((current as Array<{ name?: string }>).map((row) => String(row.name ?? "").toLocaleLowerCase("ms")));
+        const fresh = found.filter((row) => !have.has(row.name.toLocaleLowerCase("ms")));
+        if (fresh.length === 0) {
+          notes.push(`${label}: semua sudah ada.`);
+          continue;
+        }
+        const res = await fetch(`/api/admin/works/${workId}/${path}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ [path]: [...current, ...fresh.map((row) => ({ name: row.name, description: row.description }))] })
+        });
+        if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || `Gagal menyimpan ${label.toLowerCase()}.`);
+        wrote += 1;
+        notes.push(`${label}: ${fresh.length} ditambah${found.length > fresh.length ? `, ${found.length - fresh.length} sudah ada` : ""}.`);
+        setSettingKey((k) => k + 1);
       }
 
       // 3) glossary: same rules as the glossary tab
@@ -634,6 +672,8 @@ export default function EditWorkPage() {
   /** A copy of unsaved text found in this browser from an earlier visit, waiting for the editor's choice. */
   const [restoreOffer, setRestoreOffer] = useState<StoredDraft | null>(null);
   /** When the server's copy was last saved: a browser copy older than this is not the latest word on the work. */
+  /** Bumped when the chatbot fill adds places or times, so the two lists below reload. */
+  const [settingKey, setSettingKey] = useState(0);
   const [serverSavedAt, setServerSavedAt] = useState<number | null>(null);
   /** The characters as last loaded or saved, to tell whether the editor has unsaved character edits. */
   const charactersBaseline = useRef<string>("[]");
@@ -1968,7 +2008,7 @@ export default function EditWorkPage() {
       <section className="a-assistant" id="chatbot-fill" aria-label="Isi maklumat dengan chatbot">
         <h2>Isi maklumat dengan chatbot (sekali salin, sekali tampal)</h2>
         <p className="admin-form-hint">
-          Chatbot hanya membantu; editor yang memutuskan. Satu jawapan mengisi dek, genre, watak, glosari{form.type === "fragmen" || form.type === "sinopsis" ? " dan maklumat sumber" : ""} yang masih kosong. Teks karya, kredit, imej dan hak tidak diisi, dan apa yang sudah anda tulis tidak diganti.
+          Chatbot hanya membantu; editor yang memutuskan. Satu jawapan mengisi dek, genre, watak, latar tempat, latar masa, glosari{form.type === "fragmen" || form.type === "sinopsis" ? " dan maklumat sumber" : ""} yang masih kosong. Teks karya, kredit, imej dan hak tidak diisi, dan apa yang sudah anda tulis tidak diganti.
         </p>
         <div className="admin-form-actions">
           <button type="button" className="admin-btn admin-btn-outline" onClick={() => void copyFillPrompt()} disabled={fillBusy}>1. Salin arahan</button>
@@ -2044,17 +2084,24 @@ export default function EditWorkPage() {
         {activeTab === "characters" ? (
           <>
             <p className="admin-form-hint">
-              <strong>Watak:</strong> jawapan chatbot dimasukkan melalui kotak <strong>&quot;Isi maklumat dengan chatbot&quot;</strong> di bahagian atas halaman ini: tekan <em>1. Salin arahan</em>, tampal ke chatbot, salin seluruh jawapannya, kemudian tekan <em>2. Tampal &amp; isi</em>. Watak baharu ditambah dan yang sudah ada tidak diganti.
+              Satu arahan untuk <strong>watak, latar tempat dan latar masa</strong> (dan dek, genre dan glosari sekali): tekan <em>1. Salin arahan</em>, tampal ke chatbot, salin seluruh jawapannya, kemudian tekan <em>2. Tampal &amp; isi</em> di sini. Yang baharu ditambah; apa yang sudah ada tidak diganti. Latar masa ialah tahun atau era (contoh: 1969), bukan pagi, siang atau malam.
             </p>
-            <p className="admin-form-hint">
-              <strong>Latar tempat:</strong> belum ada import daripada chatbot. Salin arahan di bawah untuk mendapat cadangan, kemudian taip latar yang dipilih sendiri di bahagian Latar tempat tab ini.
-            </p>
-            <a className="admin-btn admin-btn-outline admin-btn-sm" href="#chatbot-fill" onClick={(event) => { event.preventDefault(); document.getElementById("chatbot-fill")?.scrollIntoView({ behavior: "smooth", block: "start" }); }}>Pergi ke Tampal &amp; isi</a>{" "}
+            <div className="admin-form-actions">
+              <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={() => void copyFillPrompt()} disabled={fillBusy}>1. Salin arahan</button>
+              <button type="button" className="admin-btn admin-btn-primary admin-btn-sm" onClick={() => void pasteFillFromClipboard()} disabled={fillBusy}>{fillBusy ? "Mengisi…" : "2. Tampal & isi"}</button>
+            </div>
+            {fillNote.length > 0 ? (
+              <ul className="admin-form-hint" role="status">
+                {fillNote.map((line, index) => (<li key={index}>{line}</li>))}
+              </ul>
+            ) : null}
           </>
         ) : (
           <p className="admin-form-hint">Salin arahan bersama manuskrip semasa, kemudian tampal ke chatbot pilihan anda. Jawapan untuk tab ini hanya nasihat: tiada tempat untuk menampalnya, jadi taip atau ubah sendiri di tab ini. (Dek, genre, watak, glosari dan sumber boleh diisi sekali gus melalui kotak &quot;Isi maklumat dengan chatbot&quot; di bahagian atas.) Editor kekal bertanggungjawab menyemaknya.</p>
         )}
-        <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={() => void copyAssistantPrompt()}>Salin arahan tab ini</button>
+        {activeTab !== "characters" ? (
+          <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={() => void copyAssistantPrompt()}>Salin arahan tab ini</button>
+        ) : null}
         {assistantNote && <p className="admin-form-hint" role="status">{assistantNote}</p>}
       </details>}
 
@@ -3127,7 +3174,8 @@ export default function EditWorkPage() {
             </button>
           </div>
 
-          <PlacesEditor workId={workId} />
+          <PlacesEditor key={"p" + settingKey} workId={workId} />
+          <PlacesEditor key={"t" + settingKey} workId={workId} kind="times" />
         </div>
       )}
       {activeTab === "source" && isSourced(form.type, form.origin) && (

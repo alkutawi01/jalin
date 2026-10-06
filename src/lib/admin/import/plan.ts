@@ -5,6 +5,7 @@
  */
 
 import { composeVisualPrompt } from "../visual-generation/prompt-composer";
+import { tidyShort } from "../../capitalise-first";
 import {
   prepareSingleBody,
   resolveAnchor,
@@ -65,6 +66,9 @@ export interface ImportPlan {
   credits: PlannedCredit[];
   characters: { name: string; role: string; firstAppearanceSection: string | null }[];
   glossary: { term: string; meaning: string; source: string; sortOrder: number }[];
+  /** Latar tempat and latar masa, ready to store in works.metadata. */
+  places: { name: string; description?: string }[];
+  times: { name: string; description?: string }[];
   sections: { slug: string; title: string; position: number; body: string; words: number }[];
   source: ParsedSource | null;
   series: PlannedSeries | null;
@@ -88,6 +92,9 @@ export interface ReviewEdits {
   glossary?: { term: string; meaning: string }[];
   /** Replaces the parsed characters. */
   characters?: { name: string; role: string }[];
+  /** Replaces the parsed latar tempat / latar masa. */
+  places?: { name: string; description?: string }[];
+  times?: { name: string; description?: string }[];
   /** By original index; null removes that image. */
   visuals?: ({ altText?: string; scene?: string; place?: "before" | "after"; aspectRatio?: string } | null)[];
 }
@@ -246,9 +253,24 @@ export function buildImportPlan(answer: string, manuscript: string, options: Imp
       }
     }
   }
+  const settingEntries = (list: Array<{ name: string; description: string | null }>, max: number) => {
+    const seen = new Set<string>();
+    const out: { name: string; description?: string }[] = [];
+    for (const item of list) {
+      const entryName = item.name.trim().slice(0, 80);
+      const key = entryName.toLocaleLowerCase("ms");
+      if (!entryName || seen.has(key) || out.length >= max) continue;
+      seen.add(key);
+      const note = tidyShort(item.description ?? "").slice(0, 160);
+      out.push(note ? { name: entryName, description: note } : { name: entryName });
+    }
+    return out;
+  };
+  const places = settingEntries(data.places, 12);
+  const times = settingEntries(data.times, 6);
   const characters = data.characters.map((c) => ({
     name: c.name,
-    role: c.role,
+    role: tidyShort(c.role) || c.role,
     firstAppearanceSection:
       c.firstAppearanceSection && (data.type !== "novela" || sectionSlugs.has(c.firstAppearanceSection))
         ? c.firstAppearanceSection
@@ -395,6 +417,8 @@ export function buildImportPlan(answer: string, manuscript: string, options: Imp
     credits,
     characters,
     glossary,
+    places,
+    times,
     sections: sections.map((s) => ({ slug: s.slug, title: s.title, position: s.position, body: s.body, words: s.words })),
     source: data.source,
     series,
@@ -443,6 +467,22 @@ function applyEdits(plan: ImportPlan, edits: ReviewEdits, foldedText: string, wa
         firstAppearanceSection: plan.characters.find((o) => foldText(o.name) === foldText(c.name))?.firstAppearanceSection ?? null
       }));
   }
+
+  const editedSettings = (list: { name: string; description?: string }[], max: number) => {
+    const seenNames = new Set<string>();
+    const out: { name: string; description?: string }[] = [];
+    for (const item of list) {
+      const name = String(item.name ?? "").trim().slice(0, 80);
+      const key = name.toLocaleLowerCase("ms");
+      if (!name || seenNames.has(key) || out.length >= max) continue;
+      seenNames.add(key);
+      const note = tidyShort(item.description ?? "").slice(0, 160);
+      out.push(note ? { name, description: note } : { name });
+    }
+    return out;
+  };
+  if (edits.places) plan.places = editedSettings(edits.places, 12);
+  if (edits.times) plan.times = editedSettings(edits.times, 6);
 
   if (edits.glossary) {
     const seen = new Set<string>();

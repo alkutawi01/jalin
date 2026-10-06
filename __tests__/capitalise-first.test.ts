@@ -4,7 +4,7 @@
  */
 import fs from "node:fs";
 import path from "node:path";
-import { capitaliseFirst } from "../src/lib/capitalise-first";
+import { capitaliseFirst, tidyShort } from "../src/lib/capitalise-first";
 import { publicPlaces } from "../src/lib/reader/places";
 import { buildVerifiedGlossary } from "../src/lib/reader/verified-glossary";
 
@@ -25,7 +25,8 @@ const map = buildVerifiedGlossary({ glossary: [{ term: "gundah", meaning: "beras
 assert(map["gundah"]?.meaning === "Berasa resah" && map["pit stop"]?.meaning === "Perhentian singkat", "a glossary meaning is shown capitalised");
 const read = (p: string) => fs.readFileSync(path.join(__dirname, "..", p), "utf8").replace(/\r\n/g, "\n");
 const work = read("src/lib/admin/work-service.ts");
-assert(work.includes("role: capitaliseFirst(role)") && work.includes("description: capitaliseFirst(description)"), "character role and place note are capitalised when saved");
+assert(work.includes("role: tidyShort(role)") && work.includes("const description = tidyShort("), "character role and place note are capitalised when saved");
+assert(tidyShort("ibu Aminah.") === "Ibu Aminah" && tidyShort("Kampung") === "Kampung" && tidyShort("Rumah. Dekat sungai.") === "Rumah. Dekat sungai." && tidyShort("") === "", "a one-line label also loses a trailing full stop (and never a letter); several sentences keep theirs");
 assert(read("src/app/api/admin/glossary/route.ts").includes("capitaliseFirst(body.meaning.trim())") && read("src/app/api/admin/glossary/[id]/route.ts").includes("capitaliseFirst(body.meaning.trim())"), "so is a glossary meaning, when created and when edited");
 assert(read("src/components/reader/StoryChrome.tsx").includes("capitaliseFirst(character.role)") && read("src/components/reader/MobileStoryInfo.tsx").includes("capitaliseFirst(character.role)"), "and a role is shown capitalised on both reader layouts");
 console.log(`\n${passed} passed, ${failed} failed`);

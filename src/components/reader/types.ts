@@ -41,6 +41,8 @@ export type StoryInfoData = {
   characters: CharacterMeta[];
   /** Latar tempat. */
   places?: PlaceMeta[];
+  /** Latar masa. */
+  times?: PlaceMeta[];
   editorial: EditorialCredit[];
   note?: string;
   /** Daftar bab untuk drawer mobile (novela sahaja). */

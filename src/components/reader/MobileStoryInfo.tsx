@@ -9,6 +9,7 @@ type Tab = "karya" | "watak" | "latar" | "editorial" | "bab";
 export default function MobileStoryInfo({ data }: { data: StoryInfoData }) {
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<Tab>("karya");
+  const hasSetting = (data.places?.length ?? 0) > 0 || (data.times?.length ?? 0) > 0;
   const [dragY, setDragY] = useState(0);
   const startY = useRef<number | null>(null);
   const edgeStart = useRef<{ x: number; y: number } | null>(null);
@@ -85,7 +86,7 @@ export default function MobileStoryInfo({ data }: { data: StoryInfoData }) {
           role="tablist"
           aria-label="Maklumat cerita"
           onKeyDown={(event) => {
-            const tabs: Tab[] = ["karya", "watak", ...(data.places && data.places.length > 0 ? (["latar"] as Tab[]) : []), "editorial", ...(data.bab && data.bab.length > 0 ? (["bab"] as Tab[]) : [])];
+            const tabs: Tab[] = ["karya", "watak", ...(hasSetting ? (["latar"] as Tab[]) : []), "editorial", ...(data.bab && data.bab.length > 0 ? (["bab"] as Tab[]) : [])];
             const index = tabs.indexOf(tab);
             if (event.key === "ArrowRight") {
               event.preventDefault();
@@ -124,7 +125,7 @@ export default function MobileStoryInfo({ data }: { data: StoryInfoData }) {
           >
             Watak
           </button>
-          {data.places && data.places.length > 0 ? (
+          {hasSetting ? (
             <button
               type="button"
               id="sheet-tab-latar"
@@ -178,7 +179,7 @@ export default function MobileStoryInfo({ data }: { data: StoryInfoData }) {
           )}
           {tab === "latar" && (
             <div id="sheet-panel-latar" role="tabpanel" aria-labelledby="sheet-tab-latar" className="sheet-stack">
-              {(data.places ?? []).map((place) => <div key={place.name}><b>{place.name}</b>{place.description ? <span>{place.description}</span> : null}</div>)}
+              {[...(data.places ?? []).map((place) => <div key={"p-" + place.name}><b>{place.name}</b>{place.description ? <span>{place.description}</span> : null}</div>), ...((data.times ?? []).length > 0 ? [<div key="t-head" className="sheet-subhead"><b>Latar masa</b></div>] : []), ...(data.times ?? []).map((time) => <div key={"t-" + time.name}><b>{time.name}</b>{time.description ? <span>{time.description}</span> : null}</div>)]}
             </div>
           )}
           {tab === "editorial" && (

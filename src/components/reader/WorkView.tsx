@@ -2,7 +2,7 @@ import { displayVersion } from "@/lib/admin/version-label";
 import { ContinueNav } from "./ReadingNav";
 import { ChapterHead, NovelaIntro, readingMinutesOf, type ChapterRow } from "./NovelaChapters";
 import { visibleCharacters } from "../../lib/reader/visible-characters";
-import { publicPlaces } from "../../lib/reader/places";
+import { publicPlaces, publicTimes } from "../../lib/reader/places";
 import { notFound } from "next/navigation";
 import { displayableGenre } from "../../lib/reader/genre-display";
 import { classifyFragmen, isIndonesianLanguage } from "../../lib/content/fragmen-kind";
@@ -246,6 +246,7 @@ export default async function WorkView({
     .map(({ name, role }) => ({ name, role }));
   const disclosureNote = disclosureNoteFor(work);
   const places = publicPlaces(work.metadata);
+  const times = publicTimes(work.metadata);
 
   const sameTypeWorks = await getWorksByTypeUnified(type as WorkType);
   const relatedWorks = sameTypeWorks
@@ -294,6 +295,7 @@ export default async function WorkView({
     work: workMeta,
     characters,
     places,
+    times,
     editorial,
     note: disclosureNote,
     ...(chapterItems.length > 0 ? { bab: chapterItems } : {})
@@ -380,7 +382,7 @@ export default async function WorkView({
 
           {landing ? <NovelaIntro rows={chapterRows} /> : articleNode}
 
-          <RightRail characters={characters} places={places} />
+          <RightRail characters={characters} places={places} times={times} />
         </div>
 
         {sections.length > 0 && !landing ? (

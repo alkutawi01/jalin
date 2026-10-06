@@ -26,6 +26,8 @@ const HEADING_ALIASES: Record<string, OutputSection> = {
   BAB: "BAB",
   SUMBER: "SUMBER",
   WATAK: "WATAK",
+  LATAR: "LATAR",
+  "LATAR TEMPAT DAN MASA": "LATAR",
   GLOSARI: "GLOSARI",
   GAMBAR: "GAMBAR",
   VISUAL: "GAMBAR"
@@ -121,6 +123,13 @@ const FIELD_ALIASES: Record<OutputSection, FieldMap> = {
     "muncul di": "first",
     "kemunculan pertama": "first",
     bab: "first"
+  },
+  LATAR: {
+    jenis: "kind",
+    nama: "name",
+    keterangan: "description",
+    penerangan: "description",
+    huraian: "description"
   },
   GLOSARI: {
     istilah: "term",
@@ -315,6 +324,17 @@ export function parseLabelledAnswer(answer: string): LabelledParse | null {
         const f = parseBlock("WATAK", block);
         return { name: f.name ?? "", role: f.role ?? "", description: f.description ?? "", firstAppearanceSection: f.first ?? "" };
       });
+    } else if (name === "LATAR") {
+      const places: Array<{ name: string; description: string }> = [];
+      const times: Array<{ name: string; description: string }> = [];
+      for (const block of blocks) {
+        const f = parseBlock("LATAR", block);
+        const entryName = (f.name ?? "").trim();
+        if (!entryName || /^tiada (latar|masa|tempat)/i.test(entryName) || /^tidak dinyatakan$/i.test(entryName)) continue;
+        const entry = { name: entryName, description: /^tidak dinyatakan$/i.test(f.description ?? "") ? "" : f.description ?? "" };
+        (/masa|era|tahun|zaman/i.test(f.kind ?? "") ? times : places).push(entry);
+      }
+      raw.settings = { places, times };
     } else if (name === "GLOSARI") {
       raw.glossary = blocks.map((block) => {
         const f = parseBlock("GLOSARI", block);

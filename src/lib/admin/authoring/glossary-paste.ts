@@ -30,6 +30,7 @@ const MAX_MEANING = 600;
 /** Shared with the all-in-one fill prompt (work-fill.ts). */
 export const GLOSSARY_RULES = `- UJIAN KESUKARAN: masukkan sesuatu perkataan atau frasa hanya jika seorang pelajar Tingkatan 2 yang biasa akan terhenti membaca kerana tidak tahu maknanya. Jika pelajar itu faham, JANGAN masukkan. Perkataan harian dan perkataan yang lazim didengar (cth. rumah, kereta, pintu, jam, sekolah) tidak perlu dimasukkan.
 - Yang layak: istilah teknikal khusus, kata Melayu sastera atau kurang lazim, simpulan bahasa dan pepatah, pinjaman asing yang jarang, dan istilah kerja yang khusus. Semak juga kata sastera dalam dialog dan naratif.
+- Jika ragu-ragu sama ada seorang remaja tahu perkataan itu, JANGAN masukkan. Lebih baik dua istilah yang benar-benar sukar daripada tujuh yang mudah. Elakkan perkataan biasa yang hanya berimbuhan (contoh: berjalan, berlari, menulis, kedai runcit) dan istilah umum yang digunakan setiap hari.
 - Tiada had bilangan. Jangan cuba mencukupkan bilangan. Jika tiada perkataan yang sukar, jawab hanya dengan [GLOSARI] dan satu baris: Tiada istilah sukar.
 - Setiap istilah MESTI wujud dalam manuskrip, dieja tepat seperti dalam teks. Jangan reka istilah.
 - Jangan masukkan nama watak atau nama tempat.
