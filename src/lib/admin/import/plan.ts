@@ -92,6 +92,9 @@ export interface ReviewEdits {
   glossary?: { term: string; meaning: string }[];
   /** Replaces the parsed characters. */
   characters?: { name: string; role: string }[];
+  /** Replaces the parsed latar tempat / latar masa. */
+  places?: { name: string; description?: string }[];
+  times?: { name: string; description?: string }[];
   /** By original index; null removes that image. */
   visuals?: ({ altText?: string; scene?: string; place?: "before" | "after"; aspectRatio?: string } | null)[];
 }
@@ -464,6 +467,22 @@ function applyEdits(plan: ImportPlan, edits: ReviewEdits, foldedText: string, wa
         firstAppearanceSection: plan.characters.find((o) => foldText(o.name) === foldText(c.name))?.firstAppearanceSection ?? null
       }));
   }
+
+  const editedSettings = (list: { name: string; description?: string }[], max: number) => {
+    const seenNames = new Set<string>();
+    const out: { name: string; description?: string }[] = [];
+    for (const item of list) {
+      const name = String(item.name ?? "").trim().slice(0, 80);
+      const key = name.toLocaleLowerCase("ms");
+      if (!name || seenNames.has(key) || out.length >= max) continue;
+      seenNames.add(key);
+      const note = tidyShort(item.description ?? "").slice(0, 160);
+      out.push(note ? { name, description: note } : { name });
+    }
+    return out;
+  };
+  if (edits.places) plan.places = editedSettings(edits.places, 12);
+  if (edits.times) plan.times = editedSettings(edits.times, 6);
 
   if (edits.glossary) {
     const seen = new Set<string>();

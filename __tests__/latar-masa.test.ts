@@ -83,6 +83,11 @@ assert(plan.plan?.characters[0]?.role === "Ibu Aminah", "and a role loses its fi
 const importService = read("src/lib/admin/import/import-service.ts");
 assert(importService.includes("...(plan.places.length > 0 ? { places: plan.places } : {})") && importService.includes("...(plan.times.length > 0 ? { times: plan.times } : {})"), "the new draft is stored with its places and times");
 
+// the review screen shows them and lets the editor change them
+const editsPlan = buildImportPlan(labelled, "Pelita menyala di Kampung Baru pada Mei 1969. Aminah memegang sumbu.", { expectedType: "cerpen", edits: { places: [{ name: "Lorong Baru", description: "lorong sunyi." }, { name: "lorong baru" }], times: [] } } as never) as { plan?: { places: Array<{ name: string; description?: string }>; times: unknown[] } };
+assert(editsPlan.plan?.places.length === 1 && editsPlan.plan?.places[0]?.description === "Lorong sunyi" && editsPlan.plan?.times.length === 0, "edits from the review screen replace places and times (capitalised, duplicates dropped)");
+assert(read("src/components/admin/AuthoringForm.tsx").includes("Latar tempat ({review.places.length})") && read("src/app/api/admin/works/import/route.ts").includes("times: plan.times"), "the review screen lists Latar tempat and Latar masa");
+
 // the writing recipes (found by testing sinopsis.tulis with ChatGPT: it answered "tidak dinyatakan" to everything)
 const sinopsis = composeAiPrompt({ recipe: "sinopsis.tulis" });
 assert(sinopsis.includes("PENGECUALIAN KEPADA PERATURAN 1") && sinopsis.includes("pengetahuan anda tentang karya itu") && sinopsis.includes("JANGAN menulis sinopsis rekaan"), "sinopsis.tulis may use real knowledge of a published work, and must not invent when unsure");

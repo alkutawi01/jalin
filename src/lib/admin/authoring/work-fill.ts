@@ -57,7 +57,7 @@ Peranan: ...${novela ? "\nMuncul: ..." : ""}
 [LATAR]
 ${existingPlaces}${existingTimes}Latar tempat dan latar masa cerita ini. Jenis: tempat atau masa.
 - Tempat: nama tempat seperti dalam teks (kampung, bandar, bangunan, jalan); hanya tempat yang benar-benar disebut atau jelas daripada teks. Keterangan: 2 hingga 8 patah perkataan tentang tempat itu dalam cerita.
-- Masa: TAHUN, TEMPOH atau ERA cerita ini berlaku (contoh: Mei 1969, Era Darurat 1948–1960, Awal 1990-an). Ini BUKAN waktu pagi, siang, petang atau malam. Keterangan: 2 hingga 8 patah perkataan tentang zaman itu. Jika teks menyatakan lebih daripada satu zaman (contoh: kisah lampau dan kini), tulis satu baris masa bagi setiap zaman.
+- Masa: TAHUN, TEMPOH atau ERA cerita ini berlaku (contoh: Mei 1969, Era Darurat 1948–1960, Awal 1990-an). Ini BUKAN waktu pagi, siang, petang atau malam. Keterangan: 2 hingga 8 patah perkataan tentang zaman itu. Jika teks menyatakan lebih daripada satu zaman (contoh: kisah lampau dan kini), tulis satu baris masa bagi setiap zaman, tetapi HANYA zaman yang tahun, dekad atau era-nya boleh ditentukan daripada teks; jangan tulis ungkapan kabur seperti "tahun-tahun kemudian" atau "masa lalu".
 - Jangan meneka. Jika teks tidak menyatakan atau tidak memberi petunjuk yang jelas tentang tahun atau era, tulis hanya satu baris: Tiada latar masa dinyatakan. Begitu juga jika tiada tempat yang jelas: Tiada latar tempat dinyatakan.
 Jenis: tempat
 Nama: (nama tempat)

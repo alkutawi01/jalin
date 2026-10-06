@@ -88,7 +88,7 @@ const LATAR = [
   "Nama: (TAHUN, TEMPOH atau ERA cerita ini berlaku, contoh: Mei 1969 atau Era Darurat 1948–1960; BUKAN waktu pagi, siang atau malam)",
   "Keterangan: (2 hingga 8 patah perkataan tentang zaman itu)",
   "____",
-  "(satu item bagi setiap tempat penting dan setiap zaman; jika teks tidak menyatakan atau tidak memberi petunjuk yang jelas tentang tahun atau era, tulis hanya: Tiada latar masa dinyatakan; jangan meneka)"
+  "(satu item bagi setiap tempat penting dan setiap zaman yang tahun, dekad atau era-nya boleh ditentukan daripada teks, bukan ungkapan kabur seperti \"tahun-tahun kemudian\"; jika teks tidak menyatakan atau tidak memberi petunjuk yang jelas tentang tahun atau era, tulis hanya: Tiada latar masa dinyatakan; jangan meneka)"
 ].join("\n");
 
 function glosari(recipe: Recipe): string {

@@ -29,6 +29,8 @@ interface Summary {
   stats: { storedWords: number; sectionCount: number };
   credits: { guestName: string; roleLabel: string; byline: boolean }[];
   characters: { name: string; role: string }[];
+  places?: { name: string; description?: string }[];
+  times?: { name: string; description?: string }[];
   glossary: { term: string; meaning: string }[];
   sections: { slug: string; title: string; words: number }[];
   visuals: SummaryVisual[];
@@ -51,6 +53,8 @@ interface Review {
   source: { title: string; author: string; language: string; provenance: string } | null;
   glossary: { term: string; meaning: string }[];
   characters: { name: string; role: string }[];
+  places: { name: string; description: string }[];
+  times: { name: string; description: string }[];
   visuals: {
     originalIndex: number;
     role: string;
@@ -91,6 +95,8 @@ function toReview(plan: Summary): Review {
       : null,
     glossary: plan.glossary.map((g) => ({ ...g })),
     characters: plan.characters.map((c) => ({ ...c })),
+    places: (plan.places ?? []).map((p) => ({ name: p.name, description: p.description ?? "" })),
+    times: (plan.times ?? []).map((p) => ({ name: p.name, description: p.description ?? "" })),
     visuals: plan.visuals.map((v) => ({
       originalIndex: v.originalIndex,
       role: v.role,
@@ -145,6 +151,8 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
       source: current.source ?? undefined,
       glossary: current.glossary,
       characters: current.characters,
+      places: current.places,
+      times: current.times,
       visuals
     };
   }
@@ -589,6 +597,62 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
                     type="button"
                     className="admin-btn admin-btn-sm admin-btn-outline"
                     onClick={() => setReview({ ...review, characters: review.characters.filter((_, j) => j !== i) })}
+                  >
+                    Buang
+                  </button>
+                </div>
+              ))}
+
+              <h3>Latar tempat ({review.places.length})</h3>
+              {review.places.length === 0 ? <p className="admin-form-hint">Tiada latar tempat.</p> : null}
+              {review.places.map((c, i) => (
+                <div className="admin-form-row" key={i}>
+                  <div className="admin-form-group">
+                    <input
+                      aria-label="Latar tempat"
+                      value={c.name}
+                      onChange={(e) => setReview({ ...review, places: review.places.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)) })}
+                    />
+                  </div>
+                  <div className="admin-form-group">
+                    <input
+                      aria-label="Keterangan latar tempat"
+                      value={c.description}
+                      onChange={(e) => setReview({ ...review, places: review.places.map((x, j) => (j === i ? { ...x, description: e.target.value } : x)) })}
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    className="admin-btn admin-btn-sm admin-btn-outline"
+                    onClick={() => setReview({ ...review, places: review.places.filter((_, j) => j !== i) })}
+                  >
+                    Buang
+                  </button>
+                </div>
+              ))}
+
+              <h3>Latar masa ({review.times.length})</h3>
+              {review.times.length === 0 ? <p className="admin-form-hint">Tiada latar masa.</p> : null}
+              {review.times.map((c, i) => (
+                <div className="admin-form-row" key={i}>
+                  <div className="admin-form-group">
+                    <input
+                      aria-label="Latar masa"
+                      value={c.name}
+                      onChange={(e) => setReview({ ...review, times: review.times.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)) })}
+                    />
+                  </div>
+                  <div className="admin-form-group">
+                    <input
+                      aria-label="Keterangan latar masa"
+                      value={c.description}
+                      onChange={(e) => setReview({ ...review, times: review.times.map((x, j) => (j === i ? { ...x, description: e.target.value } : x)) })}
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    className="admin-btn admin-btn-sm admin-btn-outline"
+                    onClick={() => setReview({ ...review, times: review.times.filter((_, j) => j !== i) })}
                   >
                     Buang
                   </button>
