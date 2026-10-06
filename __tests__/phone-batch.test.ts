@@ -27,7 +27,7 @@ for (const [sel, w] of [[".hero-featured-visual", 1050], [".work-head-visual", 9
 }
 assert(/\.story-body \{ font-size: 17\.5px;/.test(css) && !/\.story-body \{ font-size: 19px;/.test(css), "the work text is a little smaller on a phone (17.5px, was 19px)");
 assert(/\.series-feature-overlay \{[^}]*bottom: 32px; left: 0;/.test(css) && /\.series-feature-overlay \{[^}]*padding: 10px 14px 11px 26px; border-radius: 0 6px 6px 0/.test(css), "the series title box floats above the bottom edge and sits against the picture's left edge, while the title text is set in from it (Izzat, 6 Okt)");
-assert(/\.series-feature-media > \.image-rights \{ right: 0; bottom: 12px;/.test(css), "the copyright notice sits against the picture's right edge, a little above the bottom");
+assert(/\.series-feature-media > \.image-rights \{ right: 0; bottom: 14px;/.test(css), "the copyright notice sits against the picture's right edge, 14px above the bottom");
 assert(css.includes("body { overflow-x: hidden; container-type: inline-size; }") && (css.match(/width: 100cqw; max-width: 100cqw; margin-left: calc\(50% - 50cqw\);/g) ?? []).length === 3, "full-width pictures use the width the page really has (100cqw, scrollbar excluded), so the copyright notice at the right edge is not cut in a window with a scrollbar");
 
 const contributor = read("src/app/penulis/[slug]/page.tsx");

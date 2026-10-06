@@ -2718,7 +2718,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 .series-list-media > span { display: flex; height: 100%; align-items: center; justify-content: center; padding: 26px; color: var(--ink); font-size: clamp(1.5rem, 3vw, 2.8rem); line-height: 1.15; text-align: center; }
 /* The title box and the copyright notice sit against the picture's own edges (left and right, bottom), not floating inside it. */
 .series-feature-overlay { position: absolute; z-index: 2; bottom: 32px; left: 0; display: grid; gap: 4px; width: max-content; max-width: min(68%, 320px); padding: 10px 14px 11px 26px; border-radius: 0 6px 6px 0; background: rgba(0, 0, 0, .82); color: #fff; }
-.series-feature-media > .image-rights { right: 0; bottom: 12px; border-radius: 4px 0 0 4px; }
+.series-feature-media > .image-rights { right: 0; bottom: 14px; border-radius: 4px 0 0 4px; }
 .series-feature-title { margin: 0; font-size: clamp(1.3rem, 2.1vw, 1.85rem); line-height: 1.12; font-weight: 500; text-wrap: balance; }
 .series-feature-meta, .series-list-meta { margin: 0; color: var(--clay-text); font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; }
 .series-feature-overlay .series-feature-meta { color: #f5dfc6; font-size: 10px; }
