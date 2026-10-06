@@ -422,7 +422,8 @@ export default async function WorkView({
                   updatedAt: work.updatedAt,
                   heroSrc: hero?.src,
                   inLanguage: isIndonesianLanguage(work.metadata?.fragmenTextLanguage) ? "id" : "ms",
-                  authors: byline.map((person) => person.name),
+                  authors: isDerivativeType(work.type) ? [] : byline.map((person) => person.name),
+                  basedOn: isDerivativeType(work.type) ? { title: originalTitle, authors: byline.map((person) => person.name) } : undefined,
                   sections: sections.map((section) => ({ slug: section.slug, title: section.title ?? undefined }))
                 },
                 activeSection?.slug

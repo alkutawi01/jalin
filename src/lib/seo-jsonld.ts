@@ -17,6 +17,11 @@ export interface JsonLdWork {
   /** The language the text is published in ("ms" unless it is a work published in Indonesian, "id"). */
   inLanguage?: string;
   authors: string[];
+  /**
+   * A sinopsis or fragmen is Jalin's own text about someone else's book, so the original author is not the page's author:
+   * it is the author of the book the page is based on.
+   */
+  basedOn?: { title?: string; authors: string[] };
   sections: { slug: string; title?: string }[];
 }
 
@@ -66,7 +71,17 @@ export function workJsonLd(work: JsonLdWork, sectionSlug?: string): Record<strin
     ...(work.publishedAt ? { datePublished: work.publishedAt } : {}),
     ...(work.updatedAt ? { dateModified: laterOf(work.updatedAt, work.publishedAt) } : {}),
     ...(work.heroSrc ? { image: shareImageUrl(work.heroSrc) } : {}),
-    ...(work.authors.length > 0 ? { author: people(work.authors) } : {}),
+    ...(work.basedOn
+      ? {
+          isBasedOn: {
+            "@type": "Book",
+            ...(work.basedOn.title ? { name: work.basedOn.title } : {}),
+            ...(work.basedOn.authors.length > 0 ? { author: people(work.basedOn.authors) } : {})
+          }
+        }
+      : work.authors.length > 0
+        ? { author: people(work.authors) }
+        : {}),
     publisher,
     isAccessibleForFree: true,
     ...audienceOf(work.audience)
