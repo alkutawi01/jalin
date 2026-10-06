@@ -129,6 +129,14 @@ export function charactersFingerprint(metadata: unknown): string {
       return [String(row.name ?? ""), String(row.description ?? "")];
     }));
   }
+  // The times (Latar masa) ride along the same way: only when there are some.
+  const times = (meta as { times?: unknown } | null | undefined)?.times;
+  if (Array.isArray(times) && times.length > 0) {
+    result += "|times:" + JSON.stringify(times.map((p) => {
+      const row = (p ?? {}) as { name?: unknown; description?: unknown };
+      return [String(row.name ?? ""), String(row.description ?? "")];
+    }));
+  }
   // Two more settings change what readers see: the language of a fragmen's text (its label and the page's language) and "from another
   // source" (whether the source block shows). Added only when set, so a work without them gives what it gave before. Not the whole
   // metadata: internal stamps (a review mark, say) must not create a version for readers.

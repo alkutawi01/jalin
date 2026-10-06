@@ -78,6 +78,9 @@ export interface ParserOutput {
   authorCredit: string | null;
   characters: ParsedCharacter[];
   locations: string[];
+  /** Latar tempat and latar masa (name and a few words each). */
+  places: Array<{ name: string; description: string | null }>;
+  times: Array<{ name: string; description: string | null }>;
   themes: string[];
   glossary: ParsedGlossaryTerm[];
   sections: ParsedSection[];
@@ -337,6 +340,22 @@ function normaliseParserOutput(
     }
   }
 
+  const settingList = (value: unknown): Array<{ name: string; description: string | null }> => {
+    const out: Array<{ name: string; description: string | null }> = [];
+    if (!Array.isArray(value)) return out;
+    for (const item of value) {
+      const entryName = isRecord(item) ? text(item.name) : typeof item === "string" ? text(item) : null;
+      if (!entryName) continue;
+      out.push({ name: entryName, description: isRecord(item) ? text(item.description) : null });
+    }
+    return out;
+  };
+  const settings = isRecord(raw.settings) ? raw.settings : {};
+  const places = settingList(settings.places);
+  // The JSON parser lists locations as plain names: they are places too.
+  for (const place of locations) if (!places.some((p) => p.name.toLowerCase() === place.toLowerCase())) places.push({ name: place, description: null });
+  const times = settingList(settings.times);
+
   const themes: string[] = [];
   if (Array.isArray(raw.themes)) {
     for (const item of raw.themes) {
@@ -465,6 +484,8 @@ function normaliseParserOutput(
     authorCredit,
     characters,
     locations,
+    places,
+    times,
     themes,
     glossary,
     sections,

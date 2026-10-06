@@ -12,7 +12,7 @@ import type { OutputSection, Recipe } from "./recipes";
 
 export const FORMAT_VERSION = "v4";
 
-export const SECTION_NAMES: OutputSection[] = ["KARYA", "SIRI", "KANDUNGAN", "BAB", "SUMBER", "WATAK", "GLOSARI", "GAMBAR"];
+export const SECTION_NAMES: OutputSection[] = ["KARYA", "SIRI", "KANDUNGAN", "BAB", "SUMBER", "WATAK", "LATAR", "GLOSARI", "GAMBAR"];
 
 export interface FormatOptions {
   /** bersiri only: true when the editor is starting a new series (asks for the [SIRI] section). */
@@ -72,11 +72,24 @@ const SUMBER = [
 ].join("\n");
 
 function watak(recipe: Recipe): string {
-  const lines = ["[WATAK]", "Nama: (nama watak)", "Peranan: (peranan ringkas)", "Penerangan: (berdasarkan teks sahaja, tanpa spoiler)"];
+  const lines = ["[WATAK]", "Nama: (nama watak)", "Peranan: (peranan ringkas dalam 2 hingga 6 patah perkataan, contoh: Ibu Aminah, Jiran, Jururawat; bukan ayat penuh dan tanpa noktah)", "Penerangan: (berdasarkan teks sahaja, tanpa spoiler)"];
   if (recipe.kind === "novela") lines.push("Muncul di: (slug bab pertama watak ini muncul, contoh bab-1)");
   lines.push("____", "(ulang untuk setiap watak yang benar-benar wujud dalam teks)");
   return lines.join("\n");
 }
+
+const LATAR = [
+  "[LATAR]",
+  "Jenis: tempat",
+  "Nama: (nama tempat seperti dalam teks; hanya tempat yang benar-benar disebut atau jelas)",
+  "Keterangan: (2 hingga 8 patah perkataan tentang tempat itu dalam cerita)",
+  "____",
+  "Jenis: masa",
+  "Nama: (TAHUN, TEMPOH atau ERA cerita ini berlaku, contoh: Mei 1969 atau Era Darurat 1948–1960; BUKAN waktu pagi, siang atau malam)",
+  "Keterangan: (2 hingga 8 patah perkataan tentang zaman itu)",
+  "____",
+  "(satu item bagi setiap tempat penting dan setiap zaman; jika teks tidak menyatakan atau tidak memberi petunjuk yang jelas tentang tahun atau era, tulis hanya: Tiada latar masa dinyatakan; jangan meneka)"
+].join("\n");
 
 function glosari(recipe: Recipe): string {
   const lines = ["[GLOSARI]", "Istilah: (perkataan seperti dieja dalam teks)", "Maksud: (maksud berdasarkan konteks dalam teks)"];
@@ -117,6 +130,7 @@ const RENDERERS: Record<OutputSection, (recipe: Recipe) => string> = {
   BAB: () => BAB,
   SUMBER: () => SUMBER,
   WATAK: watak,
+  LATAR: () => LATAR,
   GLOSARI: glosari,
   GAMBAR: gambar
 };

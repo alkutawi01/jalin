@@ -167,10 +167,10 @@ export function LeftRail({ rows, note, editorial = [], children }: { rows: WorkM
 }
 
 /** The right rail: who is in the story (Watak) and where it happens (Latar tempat). Level with the first paragraph. */
-export function RightRail({ characters, places = [] }: { characters: CharacterMeta[]; places?: PlaceMeta[] }) {
-  if (characters.length === 0 && places.length === 0) return null;
+export function RightRail({ characters, places = [], times = [] }: { characters: CharacterMeta[]; places?: PlaceMeta[]; times?: PlaceMeta[] }) {
+  if (characters.length === 0 && places.length === 0 && times.length === 0) return null;
   return (
-    <aside className="right-rail" aria-label="Watak dan latar tempat">
+    <aside className="right-rail" aria-label="Watak, latar tempat dan latar masa">
       <div className="rail-card sticky">
         {characters.length > 0 && (
           <>
@@ -189,6 +189,17 @@ export function RightRail({ characters, places = [] }: { characters: CharacterMe
             {places.map((place) => (
               <div className="rail-person" key={place.name}>
                 <b>{place.name}</b>{place.description ? <span>{place.description}</span> : null}
+              </div>
+            ))}
+          </>
+        )}
+        {(characters.length > 0 || places.length > 0) && times.length > 0 && <div className="rail-rule" />}
+        {times.length > 0 && (
+          <>
+            <div className="rail-label">Latar masa</div>
+            {times.map((time) => (
+              <div className="rail-person" key={time.name}>
+                <b>{time.name}</b>{time.description ? <span>{time.description}</span> : null}
               </div>
             ))}
           </>

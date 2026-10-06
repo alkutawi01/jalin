@@ -80,7 +80,13 @@ export async function importPlanAsDraft(
           }
         ]),
         metadata:
-          plan.characters.length > 0 ? JSON.stringify({ characters: plan.characters }) : null,
+          plan.characters.length > 0 || plan.places.length > 0 || plan.times.length > 0
+            ? JSON.stringify({
+                ...(plan.characters.length > 0 ? { characters: plan.characters } : {}),
+                ...(plan.places.length > 0 ? { places: plan.places } : {}),
+                ...(plan.times.length > 0 ? { times: plan.times } : {})
+              })
+            : null,
         published_at: null,
         published_by: null,
         first_published_at: null,

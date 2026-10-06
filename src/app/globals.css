@@ -3155,3 +3155,7 @@ body { overflow-wrap: break-word; }
 
 /* The main menu is set in Figtree (Izzat's choice); the footer navigation and every other label stay Inter. */
 .header-nav, .header-nav a, .header-mobile-nav summary, .header-mobile-nav .header-mobile-nav-links a { font-family: var(--font-figtree), var(--font-inter), Inter, ui-sans-serif, sans-serif; }
+
+/* The phone Info sheet's "Latar" tab lists places, then times under a small heading. */
+.sheet-stack .sheet-subhead { margin-top: 6px; padding-top: 14px; border-top: 1px solid var(--line); }
+.sheet-stack .sheet-subhead b { font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--clay-text); }

@@ -6,7 +6,7 @@
  */
 
 import { Kysely } from "kysely";
-import { capitaliseFirst } from "../capitalise-first";
+import { tidyShort } from "../capitalise-first";
 import { getDb, hasDb } from "../db";
 import type { Database } from "../db/types";
 import type { WorkType, WorkStatus } from "../db/types";
@@ -346,31 +346,42 @@ function validateCharacterEntries(characters: unknown): CharacterEntry[] {
         ? null
         : String(rawSection).trim();
 
-    return { name, role: capitaliseFirst(role), firstAppearanceSection };
+    return { name, role: tidyShort(role), firstAppearanceSection };
   });
 }
 
 export const PLACES_MAX = 12;
 export const PLACE_NAME_MAX = 80;
 export const PLACE_DESCRIPTION_MAX = 160;
+export const TIMES_MAX = 6;
+
+/** A short list of named things with an optional few words each (places, times): a name and, optionally, a description. */
+function validateSettingEntries(list: unknown, noun: string, max: number, listName: string, noun2: string): Array<{ name: string; description?: string }> {
+  if (!Array.isArray(list)) throw new Error(`${listName} mesti senarai (array).`);
+  if (list.length > max) throw new Error(`${noun}: paling banyak ${max}.`);
+  const seen = new Set<string>();
+  return list.map((entry, index) => {
+    if (!entry || typeof entry !== "object") throw new Error(`${noun} #${index + 1}: bentuk tidak sah.`);
+    const name = String((entry as { name?: unknown }).name ?? "").trim();
+    const description = tidyShort(String((entry as { description?: unknown }).description ?? ""));
+    if (!name) throw new Error(`${noun} #${index + 1}: nama diperlukan.`);
+    if (name.length > PLACE_NAME_MAX) throw new Error(`${noun} #${index + 1}: nama terlalu panjang (maksimum ${PLACE_NAME_MAX} aksara).`);
+    if (description.length > PLACE_DESCRIPTION_MAX) throw new Error(`${noun} #${index + 1}: keterangan terlalu panjang (maksimum ${PLACE_DESCRIPTION_MAX} aksara).`);
+    const key = name.toLocaleLowerCase("ms");
+    if (seen.has(key)) throw new Error(`${noun2} "${name}" disenaraikan dua kali.`);
+    seen.add(key);
+    return description ? { name, description } : { name };
+  });
+}
 
 /** The places (Latar tempat) of a story: a name and, optionally, a few words about it. */
 export function validatePlaceEntries(places: unknown): Array<{ name: string; description?: string }> {
-  if (!Array.isArray(places)) throw new Error("places mesti senarai (array).");
-  if (places.length > PLACES_MAX) throw new Error(`Latar tempat: paling banyak ${PLACES_MAX}.`);
-  const seen = new Set<string>();
-  return places.map((entry, index) => {
-    if (!entry || typeof entry !== "object") throw new Error(`Latar tempat #${index + 1}: bentuk tidak sah.`);
-    const name = String((entry as { name?: unknown }).name ?? "").trim();
-    const description = String((entry as { description?: unknown }).description ?? "").trim();
-    if (!name) throw new Error(`Latar tempat #${index + 1}: nama diperlukan.`);
-    if (name.length > PLACE_NAME_MAX) throw new Error(`Latar tempat #${index + 1}: nama terlalu panjang (maksimum ${PLACE_NAME_MAX} aksara).`);
-    if (description.length > PLACE_DESCRIPTION_MAX) throw new Error(`Latar tempat #${index + 1}: keterangan terlalu panjang (maksimum ${PLACE_DESCRIPTION_MAX} aksara).`);
-    const key = name.toLocaleLowerCase("ms");
-    if (seen.has(key)) throw new Error(`Latar tempat "${name}" disenaraikan dua kali.`);
-    seen.add(key);
-    return description ? { name, description: capitaliseFirst(description) } : { name };
-  });
+  return validateSettingEntries(places, "Latar tempat", PLACES_MAX, "places", "Latar tempat");
+}
+
+/** The times (Latar masa) of a story: a year, a period or an era (not the time of day), and optionally a few words about it. */
+export function validateTimeEntries(times: unknown): Array<{ name: string; description?: string }> {
+  return validateSettingEntries(times, "Latar masa", TIMES_MAX, "times", "Latar masa");
 }
 
 /** Replace the places stored in works.metadata.places (the other metadata keys are kept; same row lock as the characters). */
@@ -382,6 +393,22 @@ export async function updateWorkPlaces(id: string, places: unknown): Promise<Wor
   await db.transaction().execute(async (trx) => {
     const current = await trx.selectFrom("works").where("id", "=", id).select("metadata").forUpdate().executeTakeFirst();
     const metadata = { ...((current?.metadata ?? {}) as Record<string, unknown>), places: validated };
+    await trx.updateTable("works").where("id", "=", id).set({ metadata, updated_at: new Date().toISOString() }).execute();
+  });
+  const work = await getWork(id);
+  if (!work) throw new Error("Work not found after update.");
+  return work;
+}
+
+/** Replace the times stored in works.metadata.times (the other metadata keys are kept; same row lock as the characters). */
+export async function updateWorkTimes(id: string, times: unknown): Promise<WorkRecord> {
+  const db = getAdminDb();
+  const existing = await getWork(id);
+  if (!existing) throw new Error("Work not found.");
+  const validated = validateTimeEntries(times);
+  await db.transaction().execute(async (trx) => {
+    const current = await trx.selectFrom("works").where("id", "=", id).select("metadata").forUpdate().executeTakeFirst();
+    const metadata = { ...((current?.metadata ?? {}) as Record<string, unknown>), times: validated };
     await trx.updateTable("works").where("id", "=", id).set({ metadata, updated_at: new Date().toISOString() }).execute();
   });
   const work = await getWork(id);

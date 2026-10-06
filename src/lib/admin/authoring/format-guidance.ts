@@ -84,6 +84,20 @@ export function exampleBlock(recipe: Recipe, sections: OutputSection[]): string 
       )
     );
   }
+  if (has("LATAR")) {
+    blocks.push(
+      lines(
+        "[LATAR]",
+        "Jenis: tempat",
+        "Nama: Rumah arwah datuk",
+        "Keterangan: Rumah papan lama tempat keluarga berkumpul",
+        "____",
+        "Jenis: masa",
+        "Nama: Awal 1990-an",
+        "Keterangan: Zaman sebelum telefon bimbit"
+      )
+    );
+  }
   if (has("GLOSARI")) {
     blocks.push(
       lines(
