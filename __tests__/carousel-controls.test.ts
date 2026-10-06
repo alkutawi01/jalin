@@ -24,7 +24,7 @@ const css = read("src/app/globals.css");
 assert(/\.hero-carousel-controls \{[^}]*justify-content: center/.test(css) && /\.hero-carousel-btn \{[^}]*width: 36px; height: 36px[^}]*border-radius: 50%/.test(css), "the controls are a centred group of small circles");
 assert(/\.hero-carousel-slide \{[^}]*align-items: stretch/.test(css) && /\.hero-carousel-slide \.hero-featured-cta \{ margin-top: auto; \}/.test(css) && css.includes("grid-template-rows: auto minmax(0, 1fr)"), "slides stretch to one height and the button is pinned to the bottom (also in the stacked layout)");
 assert(!/\.hero-carousel-slide \{[^}]*align-content: start/.test(css), "the old per-slide 'start' alignment that let the text move is gone");
-assert(/\.hero-carousel-slide \{[^}]*transition: opacity \.28s/.test(css) && /\.hero-carousel-slide\.is-active \{[^}]*transition: opacity \.6s[^}]*\.22s/.test(css), "out fast, then in slowly with a short delay");
+assert(/\.hero-carousel-slide\.is-active \{[^}]*z-index: 2/.test(css) && /\.hero-carousel-slide\.is-active \.hero-featured-visual \{ opacity: 1; transition: opacity 1s ease-in-out; \}/.test(css) && /\.hero-carousel-slide \.hero-featured-text \{ opacity: 0; transition: opacity \.3s/.test(css) && /\.hero-carousel-slide\.is-active \.hero-featured-text \{ opacity: 1; transition: opacity \.6s ease-in-out \.4s; \}/.test(css) && !css.includes("hero-carousel-slide.is-leaving"), "cross-fade: the new picture fades in over the old one (no dip), the old text leaves quickly and the new text arrives a moment later");
 assert(!css.includes(".hero-carousel-pause"), "the pause button's style is gone");
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);
