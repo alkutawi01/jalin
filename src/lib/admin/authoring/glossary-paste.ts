@@ -102,6 +102,9 @@ function fold(value: string): string {
   return value.replace(/\*/g, "").normalize("NFKD").replace(/\p{M}+/gu, "").toLocaleLowerCase("ms-MY").replace(/\s+/g, " ").trim();
 }
 
+/** A meaning the chatbot did not know ("Tidak dinyatakan" is the word the Tambah Karya prompts teach it): not a meaning. */
+const NO_MEANING = /^(tiada|tidak ada|tidak dinyatakan|tidak diketahui|n\/a|-|—|\.\.\.)\.?$/i;
+
 export function parseGlossaryPaste(answer: string, body: string, existingTerms: string[]): GlossaryPasteResult {
   const text = answer
     .replace(/\r\n/g, "\n")
@@ -120,7 +123,7 @@ export function parseGlossaryPaste(answer: string, body: string, existingTerms: 
   const flush = () => {
     if (term === null && meaning.length === 0) return;
     const m = meaning.join(" ").trim();
-    if (term && m) pairs.push({ term, meaning: m, foreign });
+    if (term && m && !NO_MEANING.test(m)) pairs.push({ term, meaning: m, foreign });
     else unreadable += 1;
     term = null;
     meaning = [];
@@ -167,7 +170,7 @@ export function parseGlossaryPaste(answer: string, body: string, existingTerms: 
       const line = clean(raw.trim());
       if (!line) continue;
       const split = /^(.{1,80}?)\s*(?:—|–|:|：|=|\s-\s)\s+(.+)$/.exec(line) ?? /^(.{1,80}?)\s*[:：=]\s*(.+)$/.exec(line);
-      if (split && split[1] && split[2]) pairs.push({ term: clean(split[1]), meaning: clean(split[2]) });
+      if (split && split[1] && split[2] && !NO_MEANING.test(clean(split[2]))) pairs.push({ term: clean(split[1]), meaning: clean(split[2]) });
       else unreadable += 1;
     }
   }
