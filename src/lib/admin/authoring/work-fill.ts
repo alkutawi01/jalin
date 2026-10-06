@@ -156,7 +156,8 @@ function field(block: string[], names: RegExp): string {
   return "";
 }
 
-const EMPTY = /^(tiada|tidak ada|-|—|n\/a|perlu semakan editor|\.\.\.)\.?$/i;
+// "tidak dinyatakan" is the word the Tambah Karya prompts teach the chatbot for an unknown value; it must not be filled into a field.
+const EMPTY = /^(tiada|tidak ada|tidak dinyatakan|tidak diketahui|-|—|n\/a|perlu semakan editor|\.\.\.)\.?$/i;
 const clean = (v: string) => (EMPTY.test(v.trim()) ? "" : v.trim());
 const yearIn = (v: string): number | null => {
   const m = /(?<![0-9])(1[5-9][0-9]{2}|20[0-9]{2})(?![0-9])/.exec(v);
