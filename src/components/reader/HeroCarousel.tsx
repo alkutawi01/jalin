@@ -93,7 +93,12 @@ export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
               >
                 <div className="hero-featured-text">
                   <p className="home-eyebrow hero-featured-kicker">{work.kicker}</p>
-                  <h1 className="hero-featured-title" style={{ fontStyle: "normal" }}>{work.title}</h1>
+                  {/* The page has one h1: the first slide's title. The other slides are h2, so a screen reader's heading list is not three h1s. */}
+                  {i === 0 ? (
+                    <h1 className="hero-featured-title" style={{ fontStyle: "normal" }}>{work.title}</h1>
+                  ) : (
+                    <h2 className="hero-featured-title" style={{ fontStyle: "normal" }}>{work.title}</h2>
+                  )}
                   {work.attribution ? <p className="work-attribution hero-featured-attribution">{renderAttribution(work.attribution)}</p> : null}
                   {work.dek ? <p className="hero-featured-dek">{smartQuotes(work.dek)}</p> : null}
                   <div className="home-work-meta home-work-meta--pills">
