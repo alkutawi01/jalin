@@ -154,7 +154,7 @@ interface SeriesHighlightData {
   genre?: string;
   hero?: { src: string; alt: string };
   first: { slug: string; position: number };
-  latest: { slug: string; position: number; title: string; readingMinutes?: number };
+  latest: { slug: string; position: number; title: string; readingMinutes?: number; publishedAt?: string };
   year: string;
 }
 
@@ -192,7 +192,7 @@ async function getSeriesHighlight(): Promise<SeriesHighlightData | null> {
       // while retaining the series artwork as a stable fallback.
       hero: latestHero ?? series.hero,
       first: { slug: ordered[0]!.slug, position: ordered[0]!.position },
-      latest: { slug: latest.slug, position: latest.position, title: latest.title, readingMinutes: latestSummary?.readingMinutes },
+      latest: { slug: latest.slug, position: latest.position, title: latest.title, readingMinutes: latestSummary?.readingMinutes, publishedAt: latest.publishedAt },
       year: (at || "2026").slice(0, 4),
       at
     };
@@ -224,10 +224,11 @@ function SeriesHighlight({ data, ground }: { data: SeriesHighlightData; ground: 
             </span>
           </a>
           <div className="series-feature-footer">
-            <p className="series-feature-latest">
-              Episod terkini: <a href={`${base}/${data.latest.slug}`}><strong>Episod {data.latest.position} — {data.latest.title}</strong></a>
-              {data.latest.readingMinutes ? <span className="series-feature-minutes"> · ± {data.latest.readingMinutes} minit</span> : null}
-            </p>
+            <div className="series-feature-latest">
+              <span className="home-eyebrow series-feature-latest-label">Episod terkini · Episod {data.latest.position}</span>
+              <a className="series-feature-latest-title" href={`${base}/${data.latest.slug}`}>{data.latest.title}</a>
+            </div>
+            <WorkMeta work={{ readingMinutes: data.latest.readingMinutes, publishedAt: data.latest.publishedAt }} variant="pills" />
             <div className="series-feature-actions">
               <a className="home-action-primary hero-featured-cta" href={base}>Baca sekarang</a>
             </div>

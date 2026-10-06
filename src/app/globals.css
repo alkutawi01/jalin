@@ -2774,10 +2774,11 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 .series-feature-meta, .series-list-meta { margin: 0; color: var(--clay-text); font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; }
 .series-feature-overlay .series-feature-meta { color: #f5dfc6; font-size: 10px; }
 .series-feature-footer { min-width: 0; display: grid; align-content: center; gap: 20px; padding-block: 20px; }
-.series-feature-latest { margin: 0; color: var(--ink-soft); font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 15px; line-height: 1.55; }
-.series-feature-latest strong { color: var(--ink); font-weight: 600; }
-.series-feature-latest a { color: var(--ink); text-decoration: underline; text-decoration-color: var(--clay); text-underline-offset: 3px; }
-.series-feature-latest a:hover, .series-feature-latest a:focus-visible { text-decoration-thickness: 2px; }
+/* Latest episode: a small label, its title as a link (like the titles of the other cards), then the same pills (minutes, date) as every other work on the page. */
+.series-feature-latest { display: grid; gap: 6px; margin: 0; }
+.series-feature-latest-title { color: var(--ink); font-family: var(--font-serif, Georgia, "Times New Roman", serif); font-size: clamp(22px, 2.2vw, 28px); line-height: 1.15; font-weight: 500; letter-spacing: -.01em; text-wrap: balance; }
+.series-feature-latest-title:hover, .series-feature-latest-title:focus-visible { text-decoration: underline; text-decoration-color: var(--clay); text-underline-offset: 4px; }
+.series-feature-footer .home-work-meta { margin: 0; }
 .series-feature-actions { display: flex; flex-direction: column; align-items: flex-start; flex-wrap: wrap; gap: 10px; font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 14px; font-weight: 650; }
 .series-feature-secondary { display: inline-flex; min-height: 32px; align-items: center; color: var(--ink-soft); transition: color .18s ease; }
 .series-feature-secondary:hover, .series-feature-secondary:focus-visible { color: var(--clay-text); }
