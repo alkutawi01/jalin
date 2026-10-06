@@ -16,6 +16,7 @@ import {
 import StoryMarkdown from "./StoryMarkdown";
 import FootnoteList from "./FootnoteList";
 import FootnoteMargin from "./FootnoteMargin";
+import ReadingProgress from "./ReadingProgress";
 import { extractFootnotes, markFootnoteReferences } from "../../lib/reader/footnotes";
 import MobileStoryInfo from "./MobileStoryInfo";
 import { publicPlaces, publicTimes } from "../../lib/reader/places";
@@ -107,6 +108,7 @@ export default function EpisodeView({
   return (
     <>
       <SiteHeader active="bersiri" />
+      <ReadingProgress />
 
       <main id="kandungan" tabIndex={-1}>
         <StoryHead

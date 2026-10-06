@@ -3250,3 +3250,8 @@ body { overflow-wrap: break-word; }
   .footnote-margins { display: none; }
   .footnotes[data-margin] , .footnotes[data-margin] li[data-in-margin="true"] { position: static; width: auto; height: auto; margin: 0 0 10px; overflow: visible; clip: auto; white-space: normal; }
 }
+
+/* The line along the top that fills as the reader scrolls through a story (components/reader/ReadingProgress). */
+.reading-progress { position: fixed; top: 0; left: 0; right: 0; height: 3px; z-index: 25; pointer-events: none; }
+.reading-progress-bar { height: 100%; background: var(--clay); transform: scaleX(0); transform-origin: left center; will-change: transform; }
+@media print { .reading-progress { display: none !important; } }
