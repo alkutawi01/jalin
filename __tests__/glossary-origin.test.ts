@@ -36,7 +36,7 @@ const pasted = parseGlossaryPaste(answer, body, []);
 const mudif = pasted.items.find((i) => i.term === "mudif");
 const qasab = pasted.items.find((i) => i.term === "qasab");
 assert(mudif?.pronunciation === "mu-dif" && mudif?.original === "مضيف" && mudif?.originalLanguage === "Arab", "pronunciation, original spelling and language are read", mudif);
-assert(mudif?.meaning.includes("*reed*"), "the Asing line still italicises foreign words in the meaning", mudif);
+assert(Boolean(mudif?.meaning.includes("*reed*")), "the Asing line still italicises foreign words in the meaning", mudif);
 assert(qasab !== undefined && qasab.pronunciation === undefined && qasab.original === undefined, "'tidak dinyatakan' and missing lines leave the fields empty", qasab);
 assert(!parseGlossaryPaste("Istilah: mudif\nMaksud: Bangunan.\nBahasa asal: Arab", body, []).items[0]?.originalLanguage, "a language without a spelling is dropped");
 const prompt = buildGlossaryPrompt({ type: "cerpen", body, existingTerms: [] });
