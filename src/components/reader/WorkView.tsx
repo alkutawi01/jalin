@@ -19,6 +19,7 @@ import {
 } from "./StoryChrome";
 import StoryMarkdown from "./StoryMarkdown";
 import FootnoteList from "./FootnoteList";
+import FootnoteMargin from "./FootnoteMargin";
 import { extractFootnotes, markFootnoteReferences } from "../../lib/reader/footnotes";
 import { WorkCover } from "./WorkCover";
 import { extractInlineChapters } from "../../lib/reader/inline-chapters";
@@ -372,7 +373,7 @@ export default async function WorkView({
           <MobileStoryInfo data={mobileInfo} />
         </div>
 
-        <div className="site-shell reading-grid">
+        <div className={`site-shell reading-grid${!landing && footnotes.notes.length > 0 ? " has-margin-notes" : ""}`}>
           <LeftRail
             rows={workMeta}
             note={disclosureNote}
@@ -385,6 +386,7 @@ export default async function WorkView({
           {landing ? <NovelaIntro rows={chapterRows} /> : articleNode}
 
           <RightRail characters={characters} places={places} times={times} />
+          {!landing && footnotes.notes.length > 0 ? <FootnoteMargin notes={footnotes.notes.map((note) => ({ number: note.number, text: note.text }))} /> : null}
         </div>
 
         {sections.length > 0 && !landing ? (
