@@ -87,6 +87,7 @@ assert(slugs("paya", { jenis: "cerpen", bacaan: "pendek" }).join() === "kerusi",
 assert(slugs("", { jenis: "tiada" }).length === 0 && slugs("", { bacaan: "tiada" }).length === docs.length, "an unknown type finds nothing; an unknown reading band is ignored");
 assert(runSearch(docs, {}).results.length === docs.length && runSearch(docs, {}).results[0]!.doc.publishedAt >= runSearch(docs, {}).results.at(-1)!.doc.publishedAt, "no words: every work, newest first");
 const options = filterOptions(docs);
+assert(options.genres.every((g) => g.charAt(0) === g.charAt(0).toLocaleUpperCase("ms")) && slugs("", { genre: options.genres.find((g) => g.toLowerCase() === "keluarga")! }).length === 2, "genres are listed with a capital first letter and choosing one still finds the works whatever case they were written in");
 assert(options.types.join() === "cerpen,novela,bersiri,fragmen,sinopsis" && options.genres.filter((g) => g.toLowerCase() === "keluarga").length === 1 && options.genres.includes("Tragedi Romantik"), "the filter lists come from the works there are, a genre written two ways once");
 
 // snippets
