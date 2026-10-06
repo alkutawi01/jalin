@@ -62,6 +62,7 @@ export function StoryHead({
   dek,
   byline,
   originalTitle,
+  originalAuthorBesideTitle,
   contextLine,
   hero
 }: {
@@ -72,6 +73,11 @@ export function StoryHead({
   /** A quiet line under the dek, e.g. which episode of which series this is. */
   contextLine?: ReactNode;
   originalTitle?: string;
+  /**
+   * A sinopsis or fragmen is written by Jalin, so "Oleh X" under it would read as if X wrote the synopsis. The original author's name
+   * goes beside the original title instead (or takes its place when the work has no separate original title, e.g. a Malay original).
+   */
+  originalAuthorBesideTitle?: boolean;
   /** Hero image shown as a card beside the title (below it on narrow screens). */
   hero?: { src: string; alt: string; rights: string; crop?: ImageCrop };
 }) {
@@ -79,10 +85,20 @@ export function StoryHead({
     <>
       <div className="story-kicker">{kicker}</div>
       <h1 style={{ fontStyle: "normal" }}>{title}</h1>
-      {originalTitle ? <p className="story-original-title"><cite>{originalTitle}</cite></p> : null}
+      {originalAuthorBesideTitle ? (
+        originalTitle || byline.length > 0 ? (
+          <p className="story-original-title">
+            {originalTitle ? <cite>{originalTitle}</cite> : null}
+            {originalTitle && byline.length > 0 ? " · " : null}
+            {byline.length > 0 ? <span className="story-original-author">{byline.map((credit) => credit.name).join(" & ")}</span> : null}
+          </p>
+        ) : null
+      ) : originalTitle ? (
+        <p className="story-original-title"><cite>{originalTitle}</cite></p>
+      ) : null}
       <p className="dek">{smartQuotes(dek)}</p>
       {contextLine ? <p className="story-context-line">{contextLine}</p> : null}
-      <BylineRow byline={byline} />
+      {originalAuthorBesideTitle ? null : <BylineRow byline={byline} />}
     </>
   );
 

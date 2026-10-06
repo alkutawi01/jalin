@@ -102,6 +102,7 @@ nav a.active { color: var(--ink); border-bottom: 1px solid var(--clay); padding-
   font-style: normal;
 }
 .story-original-title cite { font-style: italic; }
+.story-original-author { font-weight: 600; color: var(--ink); }
 
 /* Jalin's own titles (works, series, episodes) are upright. Only the title of an original work taken from elsewhere is italic (cite). */
 .story-head h1,
