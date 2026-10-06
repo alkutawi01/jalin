@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent, type M
 import { allResultsHref, type Suggestion } from "../../lib/reader/search-suggest";
 
 /**
- * The search icon in the header. It opens a box to type in, right there; works that fit are suggested as the reader types,
+ * The search icon in the header row, at the end of the tabs. It grows into a small box to type in, in the same row; works that fit are suggested as the reader types,
  * and the page of full results (/cari) is a choice at the end of the list (or Enter). With no script the icon is still a link to that page.
  */
 export default function HeaderSearch({ active }: { active?: boolean }) {
@@ -16,6 +16,14 @@ export default function HeaderSearch({ active }: { active?: boolean }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const buttonRef = useRef<HTMLAnchorElement>(null);
+  const refocus = useRef(false);
+
+  useEffect(() => {
+    if (!open && refocus.current) {
+      refocus.current = false;
+      buttonRef.current?.focus();
+    }
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -57,8 +65,8 @@ export default function HeaderSearch({ active }: { active?: boolean }) {
   }, [query, open]);
 
   const close = (returnFocus: boolean) => {
+    refocus.current = returnFocus;
     setOpen(false);
-    if (returnFocus) buttonRef.current?.focus();
   };
 
   const onIconClick = (event: MouseEvent) => {
@@ -97,20 +105,23 @@ export default function HeaderSearch({ active }: { active?: boolean }) {
 
   return (
     <div className="header-search-wrap" ref={wrapRef}>
-      <a
-        ref={buttonRef}
-        className={`header-search${active ? " active" : ""}${open ? " open" : ""}`}
-        href="/cari"
-        aria-label="Cari karya"
-        aria-expanded={open}
-        aria-controls="header-search-panel"
-        onClick={onIconClick}
-      >
-        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" strokeWidth="1.8" /><path d="m15.5 15.5 5 5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg>
-      </a>
+      {!open ? (
+        <a
+          ref={buttonRef}
+          className={`header-search${active ? " active" : ""}${open ? " open" : ""}`}
+          href="/cari"
+          aria-label="Cari karya"
+          aria-expanded={open}
+          aria-controls="header-search-panel"
+          onClick={onIconClick}
+        >
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" strokeWidth="1.8" /><path d="m15.5 15.5 5 5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg>
+        </a>
+      ) : null}
       {open ? (
         <div className="header-search-panel" id="header-search-panel" role="search">
-          <form onSubmit={onSubmit} action="/cari" method="get">
+          <form className="header-search-field" onSubmit={onSubmit} action="/cari" method="get">
+            <span className="header-search-glyph"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" strokeWidth="1.8" /><path d="m15.5 15.5 5 5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg></span>
             <input
               ref={inputRef}
               className="header-search-input"
@@ -120,7 +131,7 @@ export default function HeaderSearch({ active }: { active?: boolean }) {
               maxLength={100}
               autoComplete="off"
               enterKeyHint="search"
-              placeholder="Cari tajuk, penulis atau petikan"
+              placeholder="Cari tajuk atau penulis"
               aria-label="Cari karya"
               role="combobox"
               aria-expanded={rows > 0}

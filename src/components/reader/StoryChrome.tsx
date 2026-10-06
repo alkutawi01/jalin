@@ -25,9 +25,11 @@ export function SiteHeader({ active }: { active?: string }) {
           <a className="header-wordmark" href="/" aria-label="Jalin utama">
             <img src="/brand/jalin-wordmark.svg" alt="Jalin" />
           </a>
+        </div>
+        <div className="header-main">
+          <SiteNav active={active} className="header-nav" />
           <HeaderSearch active={active === "cari"} />
         </div>
-        <SiteNav active={active} className="header-nav" />
         <MobileNavMenu active={active} />
       </div>
     </header>
