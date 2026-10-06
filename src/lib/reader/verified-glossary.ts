@@ -6,7 +6,8 @@ import { stripItalicMarks } from "./inline-italics";
 /**
  * Glossary projection for the public reader.
  *
- * Contract (approved): glossary entries are term + meaning only.
+ * Contract (approved): glossary entries are term + meaning, plus an optional pronunciation and original spelling
+ * (with its language) that the editor fills for loanwords.
  * - An entry renders when term and meaning are both present.
  * - `source` (legacy field) is neither required nor displayed.
  * - Provenance is never projected to the reader.
@@ -25,7 +26,16 @@ export function buildVerifiedGlossary(work: Pick<Work, "glossary">): GlossaryMap
       // Matching uses the plain term; the editor's *italic* marks are only for display.
       const plain = stripItalicMarks(entry.term).trim();
       const meaning = capitaliseFirst(entry.meaning);
-      glossary[plain] = plain === entry.term ? { meaning } : { meaning, termDisplay: entry.term };
+      const pronunciation = entry.pronunciation?.trim();
+      const original = entry.original?.trim();
+      const originalLanguage = entry.originalLanguage?.trim();
+      glossary[plain] = {
+        meaning,
+        ...(plain === entry.term ? {} : { termDisplay: entry.term }),
+        ...(pronunciation ? { pronunciation } : {}),
+        ...(original ? { original } : {}),
+        ...(original && originalLanguage ? { originalLanguage } : {})
+      };
     }
   }
   return glossary;

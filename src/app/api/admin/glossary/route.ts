@@ -48,6 +48,9 @@ export async function POST(request: NextRequest) {
       meaning: capitaliseFirst(body.meaning.trim()),
       source: body.source || "",
       sortOrder: body.sortOrder || 0,
+      pronunciation: typeof body.pronunciation === "string" ? body.pronunciation : undefined,
+      originalText: typeof body.originalText === "string" ? body.originalText : undefined,
+      originalLanguage: typeof body.originalLanguage === "string" ? body.originalLanguage : undefined,
     });
 
     return NextResponse.json(term, { status: 201 });

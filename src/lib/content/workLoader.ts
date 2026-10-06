@@ -43,7 +43,10 @@ function normalizeGlossary(glossary: unknown): GlossaryEntry[] {
     return {
       term: String(entry.term ?? ""),
       meaning: String(entry.meaning ?? entry.definition ?? ""),
-      source: String(entry.source ?? "")
+      source: String(entry.source ?? ""),
+      ...(entry.pronunciation ? { pronunciation: String(entry.pronunciation) } : {}),
+      ...(entry.original ? { original: String(entry.original) } : {}),
+      ...(entry.originalLanguage ? { originalLanguage: String(entry.originalLanguage) } : {})
     };
   });
 }

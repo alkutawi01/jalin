@@ -136,6 +136,11 @@ const FIELD_ALIASES: Record<OutputSection, FieldMap> = {
     perkataan: "term",
     maksud: "meaning",
     makna: "meaning",
+    sebutan: "pronunciation",
+    "cara sebut": "pronunciation",
+    "ejaan asal": "original",
+    "tulisan asal": "original",
+    "bahasa asal": "originalLanguage",
     "muncul di": "first",
     bab: "first"
   },
@@ -338,7 +343,7 @@ export function parseLabelledAnswer(answer: string): LabelledParse | null {
     } else if (name === "GLOSARI") {
       raw.glossary = blocks.map((block) => {
         const f = parseBlock("GLOSARI", block);
-        return { term: f.term ?? "", meaning: f.meaning ?? "", firstAppearanceSection: f.first ?? "" };
+        return { term: f.term ?? "", meaning: f.meaning ?? "", firstAppearanceSection: f.first ?? "", pronunciation: f.pronunciation ?? "", original: f.original ?? "", originalLanguage: f.originalLanguage ?? "" };
       });
     } else if (name === "GAMBAR") {
       raw.visualSuggestions = blocks.map((block) => {

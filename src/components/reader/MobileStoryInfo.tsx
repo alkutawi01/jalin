@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { renderItalics } from "../../lib/reader/inline-italics";
 import { capitaliseFirst } from "../../lib/capitalise-first";
 import type { StoryInfoData } from "./types";
 
@@ -174,12 +175,12 @@ export default function MobileStoryInfo({ data }: { data: StoryInfoData }) {
           )}
           {tab === "watak" && (
             <div id="sheet-panel-watak" role="tabpanel" aria-labelledby="sheet-tab-watak" className="sheet-stack">
-              {data.characters.map((character) => <div key={character.name}><b>{character.name}</b><span>{capitaliseFirst(character.role)}</span></div>)}
+              {data.characters.map((character) => <div key={character.name}><b>{renderItalics(character.name)}</b><span>{renderItalics(capitaliseFirst(character.role))}</span></div>)}
             </div>
           )}
           {tab === "latar" && (
             <div id="sheet-panel-latar" role="tabpanel" aria-labelledby="sheet-tab-latar" className="sheet-stack">
-              {[...(data.places ?? []).map((place) => <div key={"p-" + place.name}><b>{place.name}</b>{place.description ? <span>{place.description}</span> : null}</div>), ...((data.times ?? []).length > 0 ? [<div key="t-head" className="sheet-subhead"><b>Latar masa</b></div>] : []), ...(data.times ?? []).map((time) => <div key={"t-" + time.name}><b>{time.name}</b>{time.description ? <span>{time.description}</span> : null}</div>)]}
+              {[...(data.places ?? []).map((place) => <div key={"p-" + place.name}><b>{renderItalics(place.name)}</b>{place.description ? <span>{renderItalics(place.description)}</span> : null}</div>), ...((data.times ?? []).length > 0 ? [<div key="t-head" className="sheet-subhead"><b>Latar masa</b></div>] : []), ...(data.times ?? []).map((time) => <div key={"t-" + time.name}><b>{renderItalics(time.name)}</b>{time.description ? <span>{renderItalics(time.description)}</span> : null}</div>)]}
             </div>
           )}
           {tab === "editorial" && (

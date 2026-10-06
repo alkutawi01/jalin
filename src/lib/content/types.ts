@@ -26,6 +26,10 @@ export interface GlossaryEntry {
   meaning: string;
   /** Legacy only — not part of the output contract; never shown to readers. */
   source?: string;
+  /** How to say the term (e.g. "mu-dif"), the term in its own script and that language. All optional. */
+  pronunciation?: string;
+  original?: string;
+  originalLanguage?: string;
 }
 
 export interface VisualRef {

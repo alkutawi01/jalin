@@ -9,6 +9,10 @@
 export interface GlossaryPasteItem {
   term: string;
   meaning: string;
+  /** Optional, for loanwords: how to say it, its own-script spelling and that language. */
+  pronunciation?: string;
+  original?: string;
+  originalLanguage?: string;
 }
 
 export interface GlossaryPasteResult {
@@ -37,6 +41,7 @@ export const GLOSSARY_RULES = `- UJIAN KESUKARAN: masukkan sesuatu perkataan ata
 - Maksud dalam Bahasa Melayu, satu atau dua ayat pendek, berdasarkan konteks dalam teks. Jangan reka fakta.
 - Jika tidak pasti tentang maksud, tulis "perlu semakan editor" pada Maksud.
 - PERKATAAN ASING: pada baris Asing, senaraikan SEMUA perkataan atau frasa yang bukan Bahasa Melayu (Inggeris, Arab, dan lain-lain, termasuk istilah teknikal Inggeris) yang terdapat dalam Istilah atau Maksud anda, dipisahkan koma, ditulis tepat seperti dalam Istilah/Maksud. Jika tiada, tulis: Asing: tiada. Sistem akan mencondongkannya; jangan guna asterisk atau tanda markdown lain (tiada tebal, tiada tanda petikan).
+- SEBUTAN DAN EJAAN ASAL (pilihan): hanya untuk perkataan pinjaman asing yang anda pasti. Tulis Sebutan (cara menyebut dalam sukukata Melayu, cth. mu-dif), Bahasa asal (cth. Arab) dan Ejaan asal (istilah dalam tulisan bahasa asalnya). Jika tidak pasti atau tidak berkenaan, tinggalkan baris itu. Jangan meneka.
 - SEMAKAN AKHIR sebelum menjawab: (1) buang setiap istilah yang pelajar Tingkatan 2 sudah faham; (2) pastikan baris Asing menyenaraikan setiap perkataan asing; (3) pastikan setiap istilah ada dalam manuskrip.
 `;
 
@@ -45,6 +50,9 @@ export const GLOSSARY_FORMAT = `FORMAT JAWAPAN (ikut tepat; tiada pengenalan, ti
 Istilah: (perkataan seperti dieja dalam teks)
 Maksud: (maksud ringkas)
 Asing: (perkataan asing, atau tiada)
+Sebutan: (pilihan, hanya perkataan pinjaman asing)
+Bahasa asal: (pilihan)
+Ejaan asal: (pilihan)
 ____
 Istilah: ...
 Maksud: ...
@@ -86,6 +94,9 @@ function clean(value: string): string {
 
 const TERM_KEY = /^(?:[*_\-•>\s]*)(istilah|term|perkataan|kata)\s*[:：]\s*(.*)$/i;
 const FOREIGN_KEY = /^(?:[*_\-•>\s]*)(asing|perkataan asing|condong|italik)\s*[:：]\s*(.*)$/i;
+const PRON_KEY = /^(?:[*_-•>s]*)(sebutan|cara sebut|cara sebutan)s*[:：]s*(.*)$/i;
+const ORIGINAL_KEY = /^(?:[*_-•>s]*)(ejaan asal|tulisan asal)s*[:：]s*(.*)$/i;
+const LANG_KEY = /^(?:[*_-•>s]*)(bahasa asal)s*[:：]s*(.*)$/i;
 const MEANING_KEY = /^(?:[*_\-•>\s]*)(maksud|makna|meaning|definisi|takrif|erti)\s*[:：]\s*(.*)$/i;
 
 /** Italicise exactly the foreign words the chatbot listed; anything already marked or not listed is left alone. */
@@ -112,6 +123,9 @@ export function parseGlossaryPaste(answer: string, body: string, existingTerms: 
     .replace(/^\s*\[?GLOSARI\]?\s*:?\s*$/gim, "");
 
   const pairs: (GlossaryPasteItem & { foreign?: string[] })[] = [];
+  let pronunciation = "";
+  let original = "";
+  let originalLanguage = "";
   let unreadable = 0;
 
   // 1) labelled blocks: "Istilah: x" then "Maksud: y"
@@ -123,8 +137,19 @@ export function parseGlossaryPaste(answer: string, body: string, existingTerms: 
   const flush = () => {
     if (term === null && meaning.length === 0) return;
     const m = meaning.join(" ").trim();
-    if (term && m && !NO_MEANING.test(m)) pairs.push({ term, meaning: m, foreign });
-    else unreadable += 1;
+    if (term && m && !NO_MEANING.test(m)) {
+      pairs.push({
+        term,
+        meaning: m,
+        foreign,
+        ...(pronunciation ? { pronunciation } : {}),
+        ...(original ? { original } : {}),
+        ...(original && originalLanguage ? { originalLanguage } : {})
+      });
+    } else unreadable += 1;
+    pronunciation = "";
+    original = "";
+    originalLanguage = "";
     term = null;
     meaning = [];
     inMeaning = false;
@@ -149,6 +174,19 @@ export function parseGlossaryPaste(answer: string, body: string, existingTerms: 
       labelled = true;
       inMeaning = false;
       foreign = (fr[2] ?? "").split(/[,;，]/).map((p) => clean(p)).filter((p) => p && !/^(tiada|tidak ada|-|—|n\/a)$/i.test(p));
+      continue;
+    }
+    const pr = PRON_KEY.exec(line);
+    const og = ORIGINAL_KEY.exec(line);
+    const lg = LANG_KEY.exec(line);
+    if (pr || og || lg) {
+      labelled = true;
+      inMeaning = false;
+      const value = clean((pr ?? og ?? lg)![2] ?? "");
+      const known = value && !NO_MEANING.test(value) ? value : "";
+      if (pr) pronunciation = known;
+      else if (og) original = known;
+      else originalLanguage = known;
       continue;
     }
     const m = MEANING_KEY.exec(line);
@@ -199,7 +237,13 @@ export function parseGlossaryPaste(answer: string, body: string, existingTerms: 
       notInText.push(termText);
       continue;
     }
-    items.push({ term: termText, meaning: meaningText });
+    items.push({
+      term: termText,
+      meaning: meaningText,
+      ...(pair.pronunciation ? { pronunciation: pair.pronunciation } : {}),
+      ...(pair.original ? { original: pair.original } : {}),
+      ...(pair.original && pair.originalLanguage ? { originalLanguage: pair.originalLanguage } : {})
+    });
   }
   const none = pairs.length === 0 && /^[\s*_>\-•]*tiada\s+istilah[^\n:]{0,20}[.!]?\s*$/im.test(answer);
   return { none, items, existing, notInText, unreadable: none ? 0 : unreadable };

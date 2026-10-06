@@ -72,6 +72,9 @@ export async function PATCH(
       meaning: body.meaning,
       source: body.source,
       sortOrder: body.sortOrder,
+      pronunciation: typeof body.pronunciation === "string" ? body.pronunciation : undefined,
+      originalText: typeof body.originalText === "string" ? body.originalText : undefined,
+      originalLanguage: typeof body.originalLanguage === "string" ? body.originalLanguage : undefined,
     });
 
     return NextResponse.json(term);

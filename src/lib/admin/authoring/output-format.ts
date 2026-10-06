@@ -93,6 +93,7 @@ const LATAR = [
 
 function glosari(recipe: Recipe): string {
   const lines = ["[GLOSARI]", "Istilah: (perkataan seperti dieja dalam teks)", "Maksud: (maksud berdasarkan konteks dalam teks)"];
+  lines.push("Sebutan: (pilihan; hanya perkataan pinjaman asing yang anda pasti, cth. mu-dif. Tinggalkan baris ini jika tidak berkenaan)", "Bahasa asal: (pilihan, cth. Arab)", "Ejaan asal: (pilihan; istilah dalam tulisan bahasa asalnya)");
   if (recipe.kind === "novela") lines.push("Muncul di: (slug bab pertama istilah ini digunakan)");
   lines.push("____", "(ulang untuk setiap istilah, sehingga 8 sahaja; kosongkan jika tiada perkataan sesuai)");
   return lines.join("\n");

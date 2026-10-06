@@ -109,6 +109,10 @@ export interface GlossaryTerms {
   meaning: string;
   source: string;
   sort_order: number;
+  /** How to say the term, the term in its own script and that language (migration 023). Optional until it has run. */
+  pronunciation?: string | null;
+  original_text?: string | null;
+  original_language?: string | null;
   created_at: ColumnType<Date, string | Date, string | Date>;
 }
 

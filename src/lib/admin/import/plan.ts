@@ -65,7 +65,7 @@ export interface ImportPlan {
   };
   credits: PlannedCredit[];
   characters: { name: string; role: string; firstAppearanceSection: string | null }[];
-  glossary: { term: string; meaning: string; source: string; sortOrder: number }[];
+  glossary: { term: string; meaning: string; source: string; sortOrder: number; pronunciation?: string; original?: string; originalLanguage?: string }[];
   /** Latar tempat and latar masa, ready to store in works.metadata. */
   places: { name: string; description?: string }[];
   times: { name: string; description?: string }[];
@@ -89,7 +89,7 @@ export interface ReviewEdits {
   readingMinutes?: number;
   source?: { title?: string | null; author?: string | null; language?: string | null; provenance?: string | null };
   /** Replaces the parsed glossary (terms not found in the text are dropped with a warning). */
-  glossary?: { term: string; meaning: string }[];
+  glossary?: { term: string; meaning: string; pronunciation?: string; original?: string; originalLanguage?: string }[];
   /** Replaces the parsed characters. */
   characters?: { name: string; role: string }[];
   /** Replaces the parsed latar tempat / latar masa. */
@@ -309,7 +309,15 @@ export function buildImportPlan(answer: string, manuscript: string, options: Imp
       });
       continue;
     }
-    glossary.push({ term: g.term, meaning: g.meaning, source: "", sortOrder: glossary.length + 1 });
+    glossary.push({
+      term: g.term,
+      meaning: g.meaning,
+      source: "",
+      sortOrder: glossary.length + 1,
+      ...(g.pronunciation ? { pronunciation: g.pronunciation } : {}),
+      ...(g.original ? { original: g.original } : {}),
+      ...(g.original && g.originalLanguage ? { originalLanguage: g.originalLanguage } : {})
+    });
   }
 
   const visuals: PlannedVisual[] = [];
@@ -503,7 +511,18 @@ function applyEdits(plan: ImportPlan, edits: ReviewEdits, foldedText: string, wa
         warnings.push({ code: "glossary_term_not_in_text", message: `Istilah glosari "${term}" tidak ditemui dalam teks; dilangkau.` });
         continue;
       }
-      next.push({ term, meaning, source: "", sortOrder: next.length + 1 });
+      const pronunciation = g.pronunciation?.trim();
+      const original = g.original?.trim();
+      const originalLanguage = g.originalLanguage?.trim();
+      next.push({
+        term,
+        meaning,
+        source: "",
+        sortOrder: next.length + 1,
+        ...(pronunciation ? { pronunciation } : {}),
+        ...(original ? { original } : {}),
+        ...(original && originalLanguage ? { originalLanguage } : {})
+      });
     }
     plan.glossary = next;
   }

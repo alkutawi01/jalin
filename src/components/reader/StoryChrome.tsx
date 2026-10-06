@@ -193,7 +193,7 @@ export function RightRail({ characters, places = [], times = [] }: { characters:
             <div className="rail-label">Watak</div>
             {characters.map((character) => (
               <div className="rail-person" key={character.name}>
-                <b>{character.name}</b><span>{capitaliseFirst(character.role)}</span>
+                <b>{renderItalics(character.name)}</b><span>{renderItalics(capitaliseFirst(character.role))}</span>
               </div>
             ))}
           </>
@@ -204,7 +204,7 @@ export function RightRail({ characters, places = [], times = [] }: { characters:
             <div className="rail-label">Latar tempat</div>
             {places.map((place) => (
               <div className="rail-person" key={place.name}>
-                <b>{place.name}</b>{place.description ? <span>{place.description}</span> : null}
+                <b>{renderItalics(place.name)}</b>{place.description ? <span>{renderItalics(place.description)}</span> : null}
               </div>
             ))}
           </>
@@ -215,7 +215,7 @@ export function RightRail({ characters, places = [], times = [] }: { characters:
             <div className="rail-label">Latar masa</div>
             {times.map((time) => (
               <div className="rail-person" key={time.name}>
-                <b>{time.name}</b>{time.description ? <span>{time.description}</span> : null}
+                <b>{renderItalics(time.name)}</b>{time.description ? <span>{renderItalics(time.description)}</span> : null}
               </div>
             ))}
           </>

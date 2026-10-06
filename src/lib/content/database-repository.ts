@@ -244,6 +244,9 @@ export class DatabaseContentRepository implements ContentRepository {
         term: String(g.term || ""),
         meaning: String(g.meaning || ""),
         source: String(g.source || ""),
+        ...(g.pronunciation ? { pronunciation: String(g.pronunciation) } : {}),
+        ...(g.original_text ? { original: String(g.original_text) } : {}),
+        ...(g.original_language ? { originalLanguage: String(g.original_language) } : {}),
       });
     }
 
@@ -516,7 +519,7 @@ export function workFromSnapshot(snapshot: any, workId: string): Work | undefine
         ...(cropFromRow(v) ? { crop: cropFromRow(v)! } : {}),
         ...(v.section_slug || v.sectionSlug ? { sectionSlug: String(v.section_slug ?? v.sectionSlug) } : {}),
       })),
-      glossary: (snapshot.glossary || []).map((g: any) => ({ term: String(g.term || ""), meaning: String(g.meaning || ""), source: String(g.source || "") })),
+      glossary: (snapshot.glossary || []).map((g: any) => ({ term: String(g.term || ""), meaning: String(g.meaning || ""), source: String(g.source || ""), ...(g.pronunciation ? { pronunciation: String(g.pronunciation) } : {}), ...(g.original_text ?? g.original ? { original: String(g.original_text ?? g.original) } : {}), ...(g.original_language ?? g.originalLanguage ? { originalLanguage: String(g.original_language ?? g.originalLanguage) } : {}) })),
       editorialHistory: snapshot.editorialHistory || [],
       metadata: snapshot.metadata,
       reader: snapshot.reader,

@@ -28,6 +28,10 @@ export interface ParsedGlossaryTerm {
   term: string;
   meaning: string;
   firstAppearanceSection: string | null;
+  /** Optional, for loanwords: how to say it, its own-script spelling and that language. */
+  pronunciation?: string;
+  original?: string;
+  originalLanguage?: string;
 }
 
 export interface ParsedSection {
@@ -374,7 +378,17 @@ function normaliseParserOutput(
         warnings.push(parseIssue("glossary_incomplete", `Glosari #${index + 1} tiada term atau meaning; dilangkau.`, `glossary[${index}]`));
         return;
       }
-      glossary.push({ term, meaning, firstAppearanceSection: text(item.firstAppearanceSection) });
+      const pronunciation = text(item.pronunciation);
+      const original = text(item.original);
+      const originalLanguage = text(item.originalLanguage);
+      glossary.push({
+        term,
+        meaning,
+        firstAppearanceSection: text(item.firstAppearanceSection),
+        ...(pronunciation ? { pronunciation } : {}),
+        ...(original ? { original } : {}),
+        ...(original && originalLanguage ? { originalLanguage } : {})
+      });
     });
   }
 

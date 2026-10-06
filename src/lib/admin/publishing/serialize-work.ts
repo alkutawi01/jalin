@@ -121,6 +121,9 @@ export async function serializeWork(workId: string): Promise<SerializedWork> {
       term: g.term,
       meaning: g.meaning,
       source: g.source,
+      ...(g.pronunciation ? { pronunciation: g.pronunciation } : {}),
+      ...(g.original_text ? { original: g.original_text } : {}),
+      ...(g.original_language ? { originalLanguage: g.original_language } : {}),
     }));
   }
 

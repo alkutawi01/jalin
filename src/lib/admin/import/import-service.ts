@@ -121,6 +121,10 @@ export async function importPlanAsDraft(
           meaning: term.meaning,
           source: term.source,
           sort_order: term.sortOrder,
+          // Left out when empty, so a database without migration 023 still takes the term.
+          ...(term.pronunciation ? { pronunciation: term.pronunciation } : {}),
+          ...(term.original ? { original_text: term.original } : {}),
+          ...(term.originalLanguage ? { original_language: term.originalLanguage } : {}),
           created_at: now
         })
         .execute();

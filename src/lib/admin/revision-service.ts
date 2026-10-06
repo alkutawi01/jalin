@@ -193,7 +193,11 @@ export function materialHashOf(input: NonNullable<Awaited<ReturnType<typeof load
       const extra = [v.focus_x ?? null, v.focus_y ?? null, v.zoom ?? null, v.section_slug ?? null];
       return [v.role, v.src, v.alt, v.anchor, v.place, v.sort_order, v.provider, ...(extra.some((e) => e !== null) ? extra : [])];
     }),
-    glossary: input.glossary.map((g) => [g.term, g.meaning, g.source, g.sort_order]),
+    // Pronunciation and original spelling join the hash only once set, so works published before they existed keep their hash.
+    glossary: input.glossary.map((g) => {
+      const extra = [g.pronunciation ?? null, g.original_text ?? null, g.original_language ?? null];
+      return [g.term, g.meaning, g.source, g.sort_order, ...(extra.some((e) => e !== null) ? extra : [])];
+    }),
     sections: input.readingSections.map((r) => [r.slug, r.title, r.body, r.position]),
     source: input.sourceWork
       ? [
@@ -268,6 +272,9 @@ function buildSnapshot(input: Awaited<ReturnType<typeof loadWorkForRevision>>) {
       meaning: g.meaning,
       source: g.source,
       sort_order: g.sort_order,
+      pronunciation: g.pronunciation ?? null,
+      original_text: g.original_text ?? null,
+      original_language: g.original_language ?? null,
     })),
     editorialHistory: input.work.editorial_history,
     sourceWork: input.sourceWork

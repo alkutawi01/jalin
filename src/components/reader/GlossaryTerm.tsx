@@ -6,7 +6,9 @@ import { renderItalics } from "../../lib/reader/inline-italics";
 
 type Position = { left: number; top: number };
 
-export default function GlossaryTerm({ term, termDisplay, meaning, children }: { term: string; termDisplay?: string; meaning: string; children: ReactNode }) {
+type GlossaryTermProps = { term: string; termDisplay?: string; meaning: string; pronunciation?: string; original?: string; originalLanguage?: string; children: ReactNode };
+
+export default function GlossaryTerm({ term, termDisplay, meaning, pronunciation, original, originalLanguage, children }: GlossaryTermProps) {
   const triggerRef = useRef<HTMLButtonElement>(null);
   const tooltipRef = useRef<HTMLSpanElement>(null);
   const pointerType = useRef<string | null>(null);
@@ -115,7 +117,7 @@ export default function GlossaryTerm({ term, termDisplay, meaning, children }: {
         {children}
       </button>
       {/* Always present for screen readers; the floating tooltip is the visual version. */}
-      <span id={descriptionId} className="sr-only">{meaning}</span>
+      <span id={descriptionId} className="sr-only">{[pronunciation ? `Sebutan: ${pronunciation}.` : "", original ? `${originalLanguage ? `${originalLanguage}: ` : "Ejaan asal: "}${original}.` : "", meaning].filter(Boolean).join(" ")}</span>
       {open ? createPortal(
         <span
           ref={tooltipRef}
@@ -127,6 +129,12 @@ export default function GlossaryTerm({ term, termDisplay, meaning, children }: {
           style={{ left: position?.left ?? 0, top: position?.top ?? 0, visibility: position ? "visible" : "hidden" }}
         >
           <strong>{renderItalics(termDisplay ?? term)}</strong>
+          {pronunciation || original ? (
+            <span className="glossary-origin">
+              {pronunciation ? <span className="glossary-pronunciation">Sebutan: {renderItalics(pronunciation)}</span> : null}
+              {original ? <span className="glossary-original" lang={originalLanguage?.toLowerCase().startsWith("arab") ? "ar" : undefined} dir="auto">{originalLanguage ? `${originalLanguage}: ` : ""}{original}</span> : null}
+            </span>
+          ) : null}
           <span>{renderItalics(meaning)}</span>
         </span>,
         document.body

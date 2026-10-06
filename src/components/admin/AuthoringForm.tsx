@@ -32,7 +32,7 @@ interface Summary {
   characters: { name: string; role: string }[];
   places?: { name: string; description?: string }[];
   times?: { name: string; description?: string }[];
-  glossary: { term: string; meaning: string }[];
+  glossary: { term: string; meaning: string; pronunciation?: string; original?: string; originalLanguage?: string }[];
   sections: { slug: string; title: string; words: number }[];
   visuals: SummaryVisual[];
   source: { title: string | null; author: string | null; language: string | null; provenance: string | null } | null;
@@ -52,7 +52,7 @@ interface CheckResponse {
 interface Review {
   readingMinutes: string;
   source: { title: string; author: string; language: string; provenance: string } | null;
-  glossary: { term: string; meaning: string }[];
+  glossary: { term: string; meaning: string; pronunciation?: string; original?: string; originalLanguage?: string }[];
   characters: { name: string; role: string }[];
   places: { name: string; description: string }[];
   times: { name: string; description: string }[];
@@ -693,6 +693,39 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
                   >
                     Buang
                   </button>
+                </div>
+                <div className="admin-form-row">
+                  <div className="admin-form-group">
+                    <input
+                      aria-label="Cara sebut (pilihan)"
+                      placeholder="Cara sebut, cth. mu-dif"
+                      value={g.pronunciation ?? ""}
+                      onChange={(e) =>
+                        setReview({ ...review, glossary: review.glossary.map((x, j) => (j === i ? { ...x, pronunciation: e.target.value } : x)) })
+                      }
+                    />
+                  </div>
+                  <div className="admin-form-group">
+                    <input
+                      aria-label="Bahasa asal (pilihan)"
+                      placeholder="Bahasa asal, cth. Arab"
+                      value={g.originalLanguage ?? ""}
+                      onChange={(e) =>
+                        setReview({ ...review, glossary: review.glossary.map((x, j) => (j === i ? { ...x, originalLanguage: e.target.value } : x)) })
+                      }
+                    />
+                  </div>
+                  <div className="admin-form-group">
+                    <input
+                      aria-label="Ejaan asal (pilihan)"
+                      placeholder="Ejaan asal"
+                      dir="auto"
+                      value={g.original ?? ""}
+                      onChange={(e) =>
+                        setReview({ ...review, glossary: review.glossary.map((x, j) => (j === i ? { ...x, original: e.target.value } : x)) })
+                      }
+                    />
+                  </div>
                 </div>
                 {glossaryProblems.filter((p) => p.term === g.term.trim()).map((p) => (
                   <p key={p.term} className="admin-form-hint" role="alert" style={{ color: "var(--a-warn, #8a5a00)" }}>

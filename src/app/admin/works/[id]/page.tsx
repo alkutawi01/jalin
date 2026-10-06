@@ -176,6 +176,10 @@ interface GlossaryData {
   meaning: string;
   source: string;
   sort_order: number;
+  /** How to say the term, the term in its own script and that language (optional). */
+  pronunciation?: string | null;
+  original_text?: string | null;
+  original_language?: string | null;
 }
 
 /**
@@ -501,7 +505,7 @@ export default function EditWorkPage() {
             const res = await fetch("/api/admin/glossary", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ workId, term: item.term, meaning: item.meaning, source: "", sortOrder: glossaryTerms.length + index + 1 })
+              body: JSON.stringify({ workId, term: item.term, meaning: item.meaning, source: "", sortOrder: glossaryTerms.length + index + 1, pronunciation: item.pronunciation, originalText: item.original, originalLanguage: item.originalLanguage })
             });
             if (!res.ok) {
               if (added > 0) notes.push(`Glosari: ${added} istilah sempat ditambah sebelum ralat.`);
@@ -610,7 +614,7 @@ export default function EditWorkPage() {
         const res = await fetch("/api/admin/glossary", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ workId, term: item.term, meaning: item.meaning, source: "", sortOrder: glossaryTerms.length + index + 1 })
+          body: JSON.stringify({ workId, term: item.term, meaning: item.meaning, source: "", sortOrder: glossaryTerms.length + index + 1, pronunciation: item.pronunciation, originalText: item.original, originalLanguage: item.originalLanguage })
         });
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
@@ -1682,6 +1686,12 @@ export default function EditWorkPage() {
 
   async function handleSaveGlossary() {
     if (!editingGlossary) return;
+    // The API takes camelCase for the optional pronunciation and original spelling.
+    const extras = {
+      pronunciation: editingGlossary.pronunciation ?? "",
+      originalText: editingGlossary.original_text ?? "",
+      originalLanguage: editingGlossary.original_language ?? "",
+    };
 
     setGlossaryError(null);
 
@@ -1691,7 +1701,7 @@ export default function EditWorkPage() {
         const res = await fetch(`/api/admin/glossary/${editingGlossary.id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(editingGlossary),
+          body: JSON.stringify({ ...editingGlossary, ...extras }),
         });
 
         if (!res.ok) {
@@ -1705,6 +1715,7 @@ export default function EditWorkPage() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             ...editingGlossary,
+            ...extras,
             workId,
             sortOrder: glossaryTerms.length + 1,
           }),
@@ -2974,6 +2985,46 @@ export default function EditWorkPage() {
               </div>
 
               <div className="admin-form-group">
+                <label htmlFor="glossary-pronunciation">Cara sebut</label>
+                <input
+                  id="glossary-pronunciation"
+                  type="text"
+                  value={editingGlossary.pronunciation || ""}
+                  onChange={(e) => setEditingGlossary((prev) => ({ ...prev, pronunciation: e.target.value }))}
+                  placeholder="cth. mu-dif"
+                  aria-describedby="glossary-origin-hint"
+                />
+              </div>
+
+              <div className="admin-form-group">
+                <label htmlFor="glossary-original-language">Bahasa asal</label>
+                <input
+                  id="glossary-original-language"
+                  type="text"
+                  value={editingGlossary.original_language || ""}
+                  onChange={(e) => setEditingGlossary((prev) => ({ ...prev, original_language: e.target.value }))}
+                  placeholder="cth. Arab"
+                  aria-describedby="glossary-origin-hint"
+                />
+              </div>
+
+              <div className="admin-form-group">
+                <label htmlFor="glossary-original-text">Ejaan asal</label>
+                <input
+                  id="glossary-original-text"
+                  type="text"
+                  dir="auto"
+                  value={editingGlossary.original_text || ""}
+                  onChange={(e) => setEditingGlossary((prev) => ({ ...prev, original_text: e.target.value }))}
+                  placeholder="Istilah dalam tulisan bahasa asalnya"
+                  aria-describedby="glossary-origin-hint"
+                />
+                <span id="glossary-origin-hint" className="admin-form-hint">
+                  Pilihan, untuk perkataan pinjaman. Cara sebut dan ejaan asal dipaparkan di bawah istilah dalam tooltip glosari. Kosongkan jika tidak berkenaan.
+                </span>
+              </div>
+
+              <div className="admin-form-group">
                 <label>Sumber</label>
                 <input
                   type="text"
@@ -3048,7 +3099,16 @@ export default function EditWorkPage() {
                         />
                       </td>
                       <td className="admin-table-title">{renderItalics(term.term)}</td>
-                      <td>{renderItalics(term.meaning)}</td>
+                      <td>
+                        {renderItalics(term.meaning)}
+                        {term.pronunciation || term.original_text ? (
+                          <div className="admin-form-hint">
+                            {term.pronunciation ? <>Sebutan: {renderItalics(term.pronunciation)}</> : null}
+                            {term.pronunciation && term.original_text ? " · " : null}
+                            {term.original_text ? <span dir="auto">{term.original_language ? `${term.original_language}: ` : ""}{term.original_text}</span> : null}
+                          </div>
+                        ) : null}
+                      </td>
                       <td>{term.source || "—"}</td>
                       <td>
                         <div className="admin-table-actions">

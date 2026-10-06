@@ -1002,6 +1002,18 @@ dd { margin: 0; color: var(--ink); text-align: left; }
   font-family: Georgia, serif;
   font-size: 15px;
 }
+/* Pronunciation and original spelling sit on one quiet line under the term. */
+.glossary-tooltip .glossary-origin {
+  margin: -2px 0 6px;
+  color: #5f7074;
+  font-size: 12px;
+}
+.glossary-tooltip .glossary-origin > span {
+  display: inline;
+}
+.glossary-tooltip .glossary-origin > span + span::before {
+  content: " · ";
+}
 .glossary-tooltip small {
   margin-top: 8px;
   color: #5f7074;

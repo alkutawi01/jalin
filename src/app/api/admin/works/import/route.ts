@@ -17,7 +17,7 @@ function summarise(plan: ImportPlan) {
     characters: plan.characters,
     places: plan.places,
     times: plan.times,
-    glossary: plan.glossary.map((g) => ({ term: g.term, meaning: g.meaning })),
+    glossary: plan.glossary.map((g) => ({ term: g.term, meaning: g.meaning, pronunciation: g.pronunciation, original: g.original, originalLanguage: g.originalLanguage })),
     sections: plan.sections.map((s) => ({
       slug: s.slug,
       title: s.title,

@@ -152,8 +152,13 @@ Tiada content derivative berasaskan karya lama boleh READY tanpa provenance yang
 - term
 - meaning
 - occurrence/anchor metadata
+- pronunciation: nullable (cara sebut, cth. mu-dif)
+- original_text: nullable (istilah dalam tulisan bahasa asalnya, cth. Arab)
+- original_language: nullable (cth. Arab; dipaparkan hanya bersama original_text)
 
 Makna mesti ringkas.
+
+Cara sebut dan ejaan asal (migration 023) pilihan, untuk perkataan pinjaman. Ia dipaparkan satu baris di bawah istilah dalam tooltip glosari, dan diisi oleh editor atau oleh chatbot hanya jika pasti (baris Sebutan, Bahasa asal dan Ejaan asal dalam [GLOSARI]; jangan meneka). Perkataan asing dalam teks, nama watak dan latar memakai tanda *teks* untuk italik, dan kad Watak, Latar tempat dan Latar masa memaparkannya.
 
 ## Contributor
 
