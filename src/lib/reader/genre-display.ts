@@ -5,7 +5,11 @@
  * frontmatter sentinel "needs_review" and its variants) and empty values
  * must never reach the public reader: the header omits the genre and
  * keeps only the type label. This helper never mutates stored values.
+ *
+ * A genre is shown with a capital first letter whatever the editor typed ("sejarah" and "Sejarah" were both on the site,
+ * side by side in the same list); only the first letter is changed.
  */
+import { capitaliseFirst } from "../capitalise-first";
 
 const PLACEHOLDER_VALUES: ReadonlySet<string> = new Set([
   "needs_review",
@@ -22,5 +26,5 @@ export function displayableGenre(
   const value = genre.trim();
   if (value === "") return undefined;
   if (PLACEHOLDER_VALUES.has(value.toLowerCase())) return undefined;
-  return value;
+  return capitaliseFirst(value);
 }
