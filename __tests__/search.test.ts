@@ -3,7 +3,7 @@
  */
 import fs from "node:fs";
 import path from "node:path";
-import { buildSearchIndex, chapterLabel, filterDocs, filterOptions, fold, highlight, readable, runSearch, tokenize, QUERY_MAX, RESULT_LIMIT } from "../src/lib/reader/search";
+import { buildSearchIndex, chapterLabel, withoutOwnTitle, filterDocs, filterOptions, fold, highlight, readable, runSearch, tokenize, QUERY_MAX, RESULT_LIMIT } from "../src/lib/reader/search";
 import type { ContentRepository } from "../src/lib/content/repository";
 import type { Work } from "../src/lib/content/types";
 
@@ -61,6 +61,10 @@ assert(find("menyiram").results[0]!.doc.slug === "siri-a" && find("menyiram").re
 // chapter labels: "BAB 7" is not repeated, an epilogue keeps its own name
 assert(chapterLabel(7, "BAB 7") === "Bab 7" && chapterLabel(3, "bab 3") === "Bab 3" && chapterLabel(2, "") === "Bab 2" && chapterLabel(2, undefined) === "Bab 2", "a chapter titled only BAB 7 is labelled Bab 7, not Bab 7: BAB 7");
 assert(chapterLabel(31, "Epilog") === "Epilog" && chapterLabel(1, "Permulaan") === "Bab 1: Permulaan" && chapterLabel(10, "Pengorbanan") === "Bab 10: Pengorbanan", "an epilogue is called Epilog; a named chapter keeps its name");
+
+// a manuscript's own title heading is not a passage of the story
+assert(withoutOwnTitle("# Kerusi di Beranda\n\nPak Long memegang cawan.", "Kerusi di Beranda") === "\nPak Long memegang cawan." && withoutOwnTitle("#  *Kerusi di beranda*\nTeks", "Kerusi di Beranda") === "Teks", "a first heading that says the work's title is dropped, whatever its case or emphasis");
+assert(withoutOwnTitle("## Air yang Membawa Suara\n\nTeks", "Anak Qasab") === "## Air yang Membawa Suara\n\nTeks" && withoutOwnTitle("Teks biasa\n# Kerusi di Beranda", "Kerusi di Beranda") === "Teks biasa\n# Kerusi di Beranda" && withoutOwnTitle("", "X") === "", "a first heading that is not the title, a title further down, and an empty text are left alone");
 
 // matching
 assert(slugs("paya").includes("anak-qasab") && slugs("paya").includes("kerusi"), "a word in the text finds the works that have it");
