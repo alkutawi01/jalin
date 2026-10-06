@@ -161,7 +161,8 @@ export default function EditVisualRequestPage() {
   });
 
   const [record, setRecord] = useState<VisualRequestData | null>(null);
-  const [genProvider, setGenProvider] = useState("mock");
+  // The real generator is the default: "Generate" must not silently make a test image (Mock stays available in the list).
+  const [genProvider, setGenProvider] = useState("magnific");
   const [genModel, setGenModel] = useState("");
   const [genOverride, setGenOverride] = useState("");
   const [generating, setGenerating] = useState(false);

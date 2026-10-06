@@ -27,6 +27,7 @@ import type {
 } from "./adapter";
 import {
   classifyVisualError,
+  isTransientVisualError,
   sanitizeVisualErrorMessage,
   MAX_VISUAL_RETRY_COUNT,
   isRetryableVisualError,
@@ -216,6 +217,27 @@ export async function pollVisualGeneration(
     try {
       poll = await adapter.pollVisualTask(vr.provider_request_id);
     } catch (error) {
+      if (isTransientVisualError(error)) {
+        // A network hiccup while asking is not the task failing (Magnific may already have finished it). Keep the request running and
+        // let the editor poll again, instead of ending it as "failed" and orphaning the task.
+        attempts.push({
+          at: new Date().toISOString(),
+          mode: "poll",
+          taskId: vr.provider_request_id,
+          status: "poll_unreachable",
+          errorCategory: classifyVisualError(error),
+        });
+        await db
+          .updateTable("visual_requests")
+          .set({ attempt_history: JSON.stringify(attempts), updated_at: new Date().toISOString() })
+          .where("id", "=", visualRequestId)
+          .execute();
+        return {
+          ...mapRecordToResult(vr),
+          errorCategory: classifyVisualError(error),
+          errorMessage: "Tidak dapat menghubungi Magnific buat sementara waktu. Tugas masih berjalan; tekan Poll Task semula sebentar lagi.",
+        };
+      }
       await failVisualGeneration(db, {
         visualRequestId,
         error,

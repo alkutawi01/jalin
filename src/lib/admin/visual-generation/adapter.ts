@@ -151,6 +151,21 @@ export function classifyVisualError(error: unknown): VisualErrorCategory {
   return "unknown";
 }
 
+/**
+ * A network-level hiccup (the question never reached the provider, or the answer was cut off), as opposed to the provider answering that
+ * the task failed. Polling that hits one of these must not end the request: the task may already be finished on the provider's side.
+ */
+export function isTransientVisualError(error: unknown): boolean {
+  if (!(error instanceof Error)) return false;
+  const message = error.message.toLowerCase();
+  const code = String((error as { cause?: { code?: string } }).cause?.code ?? (error as { code?: string }).code ?? "").toUpperCase();
+  if (["ECONNRESET", "ECONNREFUSED", "ENOTFOUND", "ETIMEDOUT", "EAI_AGAIN", "UND_ERR_CONNECT_TIMEOUT", "UND_ERR_SOCKET"].includes(code)) return true;
+  if (message === "fetch failed" || message.includes("network") || message.includes("socket hang up")) return true;
+  if (message.includes("502") || message.includes("503") || message.includes("504")) return true;
+  const category = classifyVisualError(error);
+  return category === "timeout" || category === "rate_limit";
+}
+
 /** Sanitize error message for storage — never expose raw provider payloads. */
 export function sanitizeVisualErrorMessage(error: unknown): string {
   if (!(error instanceof Error)) return "Unknown error";

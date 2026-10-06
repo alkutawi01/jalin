@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { glossaryTermsMissingFromText } from "../../lib/admin/glossary-check";
 import CopyButton from "./CopyButton";
 import { pasteAsMarkdown } from "./pasteMarkdown";
 
@@ -311,6 +312,8 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
   }
 
   const plan = result?.plan ?? null;
+  // Only checkable when the editor pasted the text (when the chatbot writes it, the text is not here yet).
+  const glossaryProblems = review && needsManuscript ? glossaryTermsMissingFromText(review.glossary.map((g) => g.term), material) : [];
   const canSave = !!result?.ok && !!result.canCreate && busy === "idle";
   const materialLabel = needsManuscript ? "Teks karya" : "Maklumat karya sumber";
   const materialHint = needsManuscript
@@ -663,7 +666,8 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
               <p className="admin-form-hint">Tooltip hanya muncul pada kemunculan pertama setiap istilah dalam halaman bacaan.</p>
               {review.glossary.length === 0 ? <p className="admin-form-hint">Tiada istilah glosari.</p> : null}
               {review.glossary.map((g, i) => (
-                <div className="admin-form-row" key={i}>
+                <div key={i}>
+                <div className="admin-form-row">
                   <div className="admin-form-group">
                     <input
                       aria-label="Istilah"
@@ -689,6 +693,13 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
                   >
                     Buang
                   </button>
+                </div>
+                {glossaryProblems.filter((p) => p.term === g.term.trim()).map((p) => (
+                  <p key={p.term} className="admin-form-hint" role="alert" style={{ color: "var(--a-warn, #8a5a00)" }}>
+                    "{p.term}" tidak ditemui sebagai perkataan penuh dalam teks, jadi tooltipnya tidak akan muncul.
+                    {p.suggestion ? ` Teks menulis "${p.suggestion}": eja istilah sama seperti dalam teks.` : " Eja istilah sama seperti dalam teks, atau buangnya."}
+                  </p>
+                ))}
                 </div>
               ))}
               <button
