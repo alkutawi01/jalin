@@ -17,10 +17,10 @@ assert(["rgb(19,47,56)", "rgb(215,174,150)", "rgb(169,93,70)"].every((c) => embl
 const css = read("src/app/globals.css");
 assert(css.includes(".jalin-emblem.is-live .jalin-blade { animation: jalin-tenun"), "only a live emblem animates");
 assert(/prefers-reduced-motion: reduce\) \{ \.jalin-emblem\.is-live \.jalin-blade, \.jalin-emblem\.is-live svg \{ animation: none; \}/.test(css), "no motion under prefers-reduced-motion");
-assert(css.includes(".page-loading { min-height: 50vh; display: grid; place-items: center; animation: jalin-muncul .01s linear .35s both; }"), "the loader waits before appearing, so a quick page never flashes it");
+assert(css.includes(".page-loading { position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; background: #18343c; animation: jalin-muncul .01s linear .35s both; }"), "the loading screen is the theme's deep teal and waits before appearing, so a quick page never flashes it");
 
 assert(read("src/app/not-found.tsx").includes("<JalinEmblem animated"), "the 404 page shows the moving emblem");
-assert(read("src/app/loading.tsx").includes('<JalinEmblem animated size={88} label="Memuatkan" />'), "the loading screen shows the moving emblem, named for screen readers");
+assert(read("src/app/loading.tsx").includes('<JalinEmblem animated tone="on-teal" size={104} label="Memuatkan" />'), "the loading screen shows the moving emblem, named for screen readers");
 assert(read("src/app/kategori/[type]/page.tsx").includes("<JalinEmblem size={72} />"), "an empty category shows the still emblem");
 
 assert(read("src/components/reader/StoryChrome.tsx").includes('<div className="end-rule"><LilitDivider /></div>'), "the end of a story shows the Lilit Naskhah divider");

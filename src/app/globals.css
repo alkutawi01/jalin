@@ -3325,7 +3325,7 @@ body { overflow-wrap: break-word; }
 }
 @keyframes jalin-nafas { 0%, 100% { transform: rotate(0deg) scale(.97); } 50% { transform: rotate(14deg) scale(1.02); } }
 @media (prefers-reduced-motion: reduce) { .jalin-emblem.is-live .jalin-blade, .jalin-emblem.is-live svg { animation: none; } }
-.page-loading { min-height: 50vh; display: grid; place-items: center; animation: jalin-muncul .01s linear .35s both; }
+.page-loading { position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; background: #18343c; animation: jalin-muncul .01s linear .35s both; }
 @keyframes jalin-muncul { from { opacity: 0; } to { opacity: 1; } }
 .page-loading { opacity: 0; }
 .not-found .jalin-emblem { margin-bottom: 14px; }

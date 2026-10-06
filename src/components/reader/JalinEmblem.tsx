@@ -42,9 +42,11 @@ const BLADES: Array<{ fill: string; d: string }> = [
     "d": "M 886.8 666.665 C 889.344 668.585 892.66 672.036 895.091 674.337 C 921.065 698.923 950.317 719.948 978.013 742.558 C 1003.5 763.365 1031.8 781.529 1062.59 793.384 C 1064.19 794 1064.32 793.842 1065.52 795.327 L 1063.73 796.244 C 971.186 821.059 896.437 758.421 886.8 666.665 z"
   }
 ];
+/** The logo's deep teal blades. On a teal ground (tone "on-teal") only these turn white; terracotta and peach keep their colours. */
+const TEAL = "rgb(19,47,56)";
 const ORDER = [0,3,1,5,6,4,2,7,8];
 
-export default function JalinEmblem({ animated = false, size = 96, label }: { animated?: boolean; size?: number; label?: string }) {
+export default function JalinEmblem({ animated = false, size = 96, label, tone = "color" }: { animated?: boolean; size?: number; label?: string; tone?: "color" | "on-teal" }) {
   return (
     <span className={`jalin-emblem${animated ? " is-live" : ""}`} style={{ width: size, height: size }} role={label ? "img" : undefined} aria-label={label} aria-hidden={label ? undefined : true}>
       <svg viewBox="692 175 700 700" focusable="false">
@@ -56,7 +58,7 @@ export default function JalinEmblem({ animated = false, size = 96, label }: { an
         {BLADES.map((b, i) => (
           <g key={i} transform="translate(1042 525)">
             <g className="jalin-blade" style={{ ["--i" as string]: ORDER.indexOf(i) }}>
-              <path transform="translate(-1042 -525)" fill={b.fill.replace("url(#", "url(#je-")} d={b.d} />
+              <path transform="translate(-1042 -525)" fill={tone === "on-teal" && b.fill === TEAL ? "#fff" : b.fill.replace("url(#", "url(#je-")} d={b.d} />
             </g>
           </g>
         ))}
