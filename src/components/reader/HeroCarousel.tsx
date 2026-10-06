@@ -110,7 +110,7 @@ export default function HeroCarousel({ slides, ground }: { slides: HeroSlide[]; 
                 </div>
                 {work.hero?.src ? (
                   <div className="hero-featured-visual">
-                    <Image src={work.hero.src} alt={work.hero.alt} fill sizes="(max-width: 680px) 750px, (max-width: 1050px) 100vw, 1000px" quality={85} priority={i === 0} style={cropStyle(work.hero.crop)} />
+                    <Image src={work.hero.src} alt={work.hero.alt} fill sizes="(max-width: 680px) 750px, (max-width: 1050px) 100vw, 1000px" quality={85} priority={i === 0} loading={i === 0 ? undefined : "eager"} fetchPriority={i === 0 ? undefined : "low"} style={cropStyle(work.hero.crop)} />
                     <div className="image-rights" aria-hidden="true">{work.rights}</div>
                   </div>
                 ) : null}

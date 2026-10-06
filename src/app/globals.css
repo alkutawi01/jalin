@@ -2787,7 +2787,9 @@ dd { margin: 0; color: var(--ink); text-align: left; }
    the homepage series picture, a work's hero, a series page's hero. (Beside its text on a desktop it is a picture in the layout; a
    card is never a hero.) Each rule starts where that layout stacks. */
 /* 100vw includes a scrollbar's width, so a full-width hero would overshoot a window that has one (tablet, narrow desktop) by half of it on each side and lose its edges (the copyright notice at the right edge was cut). The body is a size container, so 100cqw is the width the page really has, scrollbar excluded; 100vw stays as the fallback. */
-@media (max-width: 1050px) { html { overflow-x: clip; } body { overflow-x: hidden; container-type: inline-size; } .hero-featured-visual { order: -1; } }
+/* "clip", not "hidden": hidden turns the body into a scroll container (its other axis becomes auto), and then the sticky header
+   sticks to the body instead of the screen, so on a phone it scrolled away. clip cuts the overshoot without that side effect. */
+@media (max-width: 1050px) { html { overflow-x: clip; } body { overflow-x: hidden; overflow-x: clip; container-type: inline-size; } .hero-featured-visual { order: -1; } }
 @media (max-width: 1050px) {
   .hero-featured-visual { width: 100vw; max-width: 100vw; margin-left: calc(50% - 50vw); width: 100cqw; max-width: 100cqw; margin-left: calc(50% - 50cqw); margin-right: 0; margin-top: 0; border-radius: 0; box-shadow: none; -webkit-mask-image: none; mask-image: none; }
 }

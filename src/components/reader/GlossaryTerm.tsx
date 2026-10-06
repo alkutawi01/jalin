@@ -41,6 +41,11 @@ export default function GlossaryTerm({ term, termDisplay, meaning, pronunciation
       if (!trigger || !tooltip) return;
 
       const rect = trigger.getBoundingClientRect();
+      // Scrolled away from the word: close, or the box would follow the reader along the edge of the screen.
+      if (rect.bottom < 0 || rect.top > window.innerHeight) {
+        setOpen(false);
+        return;
+      }
       const tooltipRect = tooltip.getBoundingClientRect();
       const viewportWidth = document.documentElement.clientWidth;
       const viewportHeight = window.innerHeight;
