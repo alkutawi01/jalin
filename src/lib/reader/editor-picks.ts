@@ -99,6 +99,8 @@ export function resolveHeroPicks(picks: PublicWorkSummary[], seriesOfEpisode: (e
       genre: series.genre ?? pick.genre,
       dek: series.dek ?? pick.dek,
       attribution: pick.attribution?.primary,
+      // The slide shows the picked episode's reading time (a series has no single length).
+      readingMinutes: pick.readingMinutes,
       publishedAt: pick.publishedAt,
       // The series' own artwork when it has one, else the episode's picture.
       hero: series.hero ? { src: series.hero.src, alt: series.hero.alt } : pick.hero

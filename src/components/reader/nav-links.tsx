@@ -4,9 +4,11 @@ export const NAV_LINKS: { label: string; href: string; match?: string }[] = [
   { label: "Novela", href: "/kategori/novela", match: "novela" },
   { label: "Bersiri", href: "/kategori/bersiri", match: "bersiri" },
   { label: "Fragmen", href: "/kategori/fragmen", match: "fragmen" },
-  { label: "Sinopsis", href: "/kategori/sinopsis", match: "sinopsis" },
-  { label: "Cari", href: "/cari", match: "cari" }
+  { label: "Sinopsis", href: "/kategori/sinopsis", match: "sinopsis" }
 ];
+
+/** Search is an icon beside the Jalin wordmark in the header, not a word in the menu. */
+export const SEARCH_HREF = "/cari";
 
 export function SiteNavLinks({
   active,

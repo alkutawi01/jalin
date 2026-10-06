@@ -45,6 +45,9 @@ img { display: block; max-width: 100%; }
   gap: 32px;
 }
 
+.header-brand { display: flex; align-items: center; gap: 4px; min-width: 0; }
+.header-search { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; color: var(--ink-soft); transition: background .18s ease, color .18s ease; }
+.header-search:hover, .header-search:focus-visible, .header-search.active { color: var(--ink); background: rgba(24, 52, 60, .07); }
 .header-wordmark {
   display: inline-flex;
   align-items: center;
@@ -285,7 +288,11 @@ dd { margin: 0; color: var(--ink); text-align: left; }
   text-transform: uppercase;
   letter-spacing: .13em;
 }
-.end-rule { width: 50px; height: 1px; background: var(--clay); margin: 16px auto; }
+.end-rule { display: flex; justify-content: center; margin: 14px auto; }
+.lilit-divider { width: min(100%, 240px); height: auto; overflow: visible; }
+.lilit-divider .lilit-a { stroke: var(--ink); }
+.lilit-divider .lilit-b { stroke: var(--clay); }
+.lilit-divider .lilit-gap { stroke: var(--paper); }
 
 .landing {
   min-height: 100vh;
@@ -337,6 +344,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
   font-size: 18px;
   line-height: 1.65;
   max-width: 440px;
+  font-style: italic;
 }
 .hero-featured-meta {
   display: flex;
@@ -2517,6 +2525,10 @@ dd { margin: 0; color: var(--ink); text-align: left; }
     padding-top: 32px;
     padding-bottom: 28px;
   }
+  /* The hero picture sits below the text here, so the text is centred above it (side by side it stays left-aligned). */
+  .work-head-text.story-head { text-align: center; }
+  .work-head-text .dek { margin-inline: auto; }
+  .work-head-text .byline { justify-content: center; }
 }
 
 /* Category listing: homepage-style cards; the empty-state fallback spans the row */
@@ -2737,6 +2749,8 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 .series-feature-footer { min-width: 0; display: grid; align-content: center; gap: 20px; padding-block: 20px; }
 .series-feature-latest { margin: 0; color: var(--ink-soft); font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 15px; line-height: 1.55; }
 .series-feature-latest strong { color: var(--ink); font-weight: 600; }
+.series-feature-latest a { color: var(--ink); text-decoration: underline; text-decoration-color: var(--clay); text-underline-offset: 3px; }
+.series-feature-latest a:hover, .series-feature-latest a:focus-visible { text-decoration-thickness: 2px; }
 .series-feature-actions { display: flex; flex-direction: column; align-items: flex-start; flex-wrap: wrap; gap: 10px; font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 14px; font-weight: 650; }
 .series-feature-secondary { display: inline-flex; min-height: 32px; align-items: center; color: var(--ink-soft); transition: color .18s ease; }
 .series-feature-secondary:hover, .series-feature-secondary:focus-visible { color: var(--clay-text); }
@@ -2773,7 +2787,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
    the homepage series picture, a work's hero, a series page's hero. (Beside its text on a desktop it is a picture in the layout; a
    card is never a hero.) Each rule starts where that layout stacks. */
 /* 100vw includes a scrollbar's width, so a full-width hero would overshoot a window that has one (tablet, narrow desktop) by half of it on each side and lose its edges (the copyright notice at the right edge was cut). The body is a size container, so 100cqw is the width the page really has, scrollbar excluded; 100vw stays as the fallback. */
-@media (max-width: 1050px) { body { overflow-x: hidden; container-type: inline-size; } .hero-featured-visual { order: -1; } }
+@media (max-width: 1050px) { html { overflow-x: clip; } body { overflow-x: hidden; container-type: inline-size; } .hero-featured-visual { order: -1; } }
 @media (max-width: 1050px) {
   .hero-featured-visual { width: 100vw; max-width: 100vw; margin-left: calc(50% - 50vw); width: 100cqw; max-width: 100cqw; margin-left: calc(50% - 50cqw); margin-right: 0; margin-top: 0; border-radius: 0; box-shadow: none; -webkit-mask-image: none; mask-image: none; }
 }
@@ -2791,7 +2805,11 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 }
 
 /* Homepage carousel of the editor's picks. All slides share one grid cell so the tallest sets the height. */
-.hero-carousel-stack { display: grid; }
+/* The one column is exactly the page's width (minmax(0, 1fr)), and a slide may be narrower than its contents. Without this, a slide's full-width picture
+   (100cqw, pulled left by a percentage margin) counted at its whole width on iPhone Safari, the column grew past the screen, and the whole carousel, text
+   included, sat dragged to the right and cut off. */
+.hero-carousel-stack { display: grid; grid-template-columns: minmax(0, 1fr); }
+.hero-carousel-slide, .hero-carousel-slide > * { min-width: 0; }
 /* The stack is as tall as its tallest slide; a shorter slide keeps its own row heights (start) instead of stretching them, so the picture is the same height on every slide. */
 /* Every slide fills the same cell, so the page never moves when the slide changes. Inside it the text column is a flex column with the button
    pinned to the bottom, so the title stays at the top and the button at the bottom on every slide, whatever the length of the text between. */
@@ -3292,3 +3310,25 @@ body { overflow-wrap: break-word; }
 .search-empty { padding: 12px 0 24px; color: var(--ink-soft); }
 @media (max-width: 560px) { .search-field-row { flex-direction: column; } .search-submit { width: 100%; } }
 @media print { .search-form { display: none; } }
+/* ── Emblem Jalin (loader, 404, empty states) and the footer's Bidai Beralih band ── */
+.jalin-emblem { display: inline-block; flex: none; }
+.jalin-emblem svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.jalin-blade { transform-origin: 0 0; }
+.jalin-emblem.is-live .jalin-blade { animation: jalin-tenun 4.8s cubic-bezier(.45, 0, .2, 1) infinite; animation-delay: calc(var(--i) * 0.16s); }
+.jalin-emblem.is-live svg { animation: jalin-nafas 4.8s ease-in-out infinite; }
+@keyframes jalin-tenun {
+  0%   { opacity: 0; transform: rotate(-62deg) scale(.78); }
+  26%  { opacity: 1; transform: rotate(0deg) scale(1); }
+  68%  { opacity: 1; transform: rotate(0deg) scale(1); }
+  92%  { opacity: 0; transform: rotate(46deg) scale(.88); }
+  100% { opacity: 0; transform: rotate(46deg) scale(.88); }
+}
+@keyframes jalin-nafas { 0%, 100% { transform: rotate(0deg) scale(.97); } 50% { transform: rotate(14deg) scale(1.02); } }
+@media (prefers-reduced-motion: reduce) { .jalin-emblem.is-live .jalin-blade, .jalin-emblem.is-live svg { animation: none; } }
+.page-loading { min-height: 50vh; display: grid; place-items: center; animation: jalin-muncul .01s linear .35s both; }
+@keyframes jalin-muncul { from { opacity: 0; } to { opacity: 1; } }
+.page-loading { opacity: 0; }
+.not-found .jalin-emblem { margin-bottom: 14px; }
+.category-empty .jalin-emblem { display: block; margin: 0 auto 14px; }
+.site-footer { position: relative; }
+.site-footer::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 30px; background: url(/brand/motif/bidai-light.svg) repeat-x left top / 48px 24px; pointer-events: none; }

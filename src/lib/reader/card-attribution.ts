@@ -17,9 +17,7 @@ function creditedWriters(work: Work): string[] {
   const writers = (work.credits ?? []).filter(
     (credit) => credit.byline && WRITING_ROLES.has(credit.role)
   );
-  return [...new Set(projectBylineCredits(writers).map((person) =>
-    `${person.name}${person.maya ? " · Maya" : ""}`
-  ))];
+  return [...new Set(projectBylineCredits(writers).map((person) => person.name))];
 }
 
 /** Reader-safe, role-aware card copy. Never expose raw credit or rights metadata. */

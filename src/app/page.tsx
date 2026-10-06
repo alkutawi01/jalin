@@ -154,7 +154,7 @@ interface SeriesHighlightData {
   genre?: string;
   hero?: { src: string; alt: string };
   first: { slug: string; position: number };
-  latest: { slug: string; position: number; title: string };
+  latest: { slug: string; position: number; title: string; readingMinutes?: number };
   year: string;
 }
 
@@ -180,7 +180,8 @@ async function getSeriesHighlight(): Promise<SeriesHighlightData | null> {
     const ordered = [...episodes].sort((a, b) => a.position - b.position);
     const latest = [...episodes].sort((a, b) => (b.publishedAt ?? "").localeCompare(a.publishedAt ?? ""))[0]!;
     const latestWork = repo.getEpisodeBySeriesAndSlug(series.slug, latest.slug);
-    const latestHero = latestWork ? projectPublicWorkSummary(latestWork).hero : undefined;
+    const latestSummary = latestWork ? projectPublicWorkSummary(latestWork) : undefined;
+    const latestHero = latestSummary?.hero;
     const at = latest.publishedAt ?? "";
     if (best && best.at >= at) continue;
     best = {
@@ -191,7 +192,7 @@ async function getSeriesHighlight(): Promise<SeriesHighlightData | null> {
       // while retaining the series artwork as a stable fallback.
       hero: latestHero ?? series.hero,
       first: { slug: ordered[0]!.slug, position: ordered[0]!.position },
-      latest: { slug: latest.slug, position: latest.position, title: latest.title },
+      latest: { slug: latest.slug, position: latest.position, title: latest.title, readingMinutes: latestSummary?.readingMinutes },
       year: (at || "2026").slice(0, 4),
       at
     };
@@ -223,9 +224,12 @@ function SeriesHighlight({ data, ground }: { data: SeriesHighlightData; ground: 
             </span>
           </a>
           <div className="series-feature-footer">
-            <p className="series-feature-latest">Episod terkini: <strong>Episod {data.latest.position} — {data.latest.title}</strong></p>
+            <p className="series-feature-latest">
+              Episod terkini: <a href={`${base}/${data.latest.slug}`}><strong>Episod {data.latest.position} — {data.latest.title}</strong></a>
+              {data.latest.readingMinutes ? <span className="series-feature-minutes"> · ± {data.latest.readingMinutes} minit</span> : null}
+            </p>
             <div className="series-feature-actions">
-              <a className="home-action-primary hero-featured-cta" href={`${base}/${data.first.slug}`}>Baca sekarang</a>
+              <a className="home-action-primary hero-featured-cta" href={base}>Baca sekarang</a>
             </div>
           </div>
         </article>

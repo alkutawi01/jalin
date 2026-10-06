@@ -12,11 +12,11 @@ function work(slug: string): Work {
 }
 
 const cerpen = projectPublicWorkSummary(work("kerusi-di-beranda"));
-assert.match(cerpen.attribution?.primary ?? "", /^Oleh Nara Zahin · Maya$/);
+assert.match(cerpen.attribution?.primary ?? "", /^Oleh Nara Zahin$/);
 assert.ok(!cerpen.attribution?.primary.includes("Rafiq"), "story editor is not relabelled as author");
 
 const sinopsis = projectPublicWorkSummary(work("di-hadapan-singgahsana"));
-assert.match(sinopsis.attribution?.primary ?? "", /^Sinopsis oleh Nara Zahin · Maya$/);
+assert.match(sinopsis.attribution?.primary ?? "", /^Sinopsis oleh Nara Zahin$/);
 assert.match(sinopsis.attribution?.secondary ?? "", /Berdasarkan Amam al-'Arsh karya Naguib Mahfouz/);
 assert.ok(!sinopsis.attribution?.primary.includes("Naguib"), "source author is not called synopsis author");
 

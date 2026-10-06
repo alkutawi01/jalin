@@ -80,7 +80,7 @@ export function projectEditorialCredits(credits: ContributorRef[]): EditorialCre
     const label = projected === "Penulis bersama" ? "Penulis" : projected;
     const person = projectPerson(credit);
     if (!person) continue;
-    const name = person.maya ? `${person.name} · Maya` : person.name;
+    const name = person.name;
     const key = name.trim().toLocaleLowerCase("ms");
     const entry = byPerson.get(key);
     if (!entry) {

@@ -1,4 +1,5 @@
 import { renderItalics } from "../../lib/reader/inline-italics";
+import LilitDivider from "./LilitDivider";
 import { capitaliseFirst } from "../../lib/capitalise-first";
 import { smartQuotes } from "../../lib/admin/smart-quotes";
 import type { ReactNode } from "react";
@@ -6,7 +7,7 @@ import Image from "next/image";
 import { cropStyle } from "../../lib/reader/crop";
 import type { ImageCrop } from "../../lib/content/types";
 import type { BylineCredit, CharacterMeta, EditorialCredit, PlaceMeta, WorkMetaRow } from "./types";
-import { NAV_LINKS, SiteNavLinks } from "./nav-links";
+import { NAV_LINKS, SEARCH_HREF, SiteNavLinks } from "./nav-links";
 import MobileNavMenu from "./MobileNavMenu";
 
 function SiteNav({ active, className }: { active?: string; className: string }) {
@@ -19,9 +20,14 @@ export function SiteHeader({ active }: { active?: string }) {
     <a className="skip-link" href="#kandungan">Langkau ke kandungan</a>
     <header className="site-header">
       <div className="site-shell header-inner">
-        <a className="header-wordmark" href="/" aria-label="Jalin utama">
-          <img src="/brand/jalin-wordmark.svg" alt="Jalin" />
-        </a>
+        <div className="header-brand">
+          <a className="header-wordmark" href="/" aria-label="Jalin utama">
+            <img src="/brand/jalin-wordmark.svg" alt="Jalin" />
+          </a>
+          <a className={`header-search${active === "cari" ? " active" : ""}`} href={SEARCH_HREF} aria-label="Cari karya" aria-current={active === "cari" ? "page" : undefined}>
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" strokeWidth="1.8" /><path d="m15.5 15.5 5 5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg>
+          </a>
+        </div>
         <SiteNav active={active} className="header-nav" />
         <MobileNavMenu active={active} />
       </div>
@@ -30,7 +36,7 @@ export function SiteHeader({ active }: { active?: string }) {
   );
 }
 
-/** "Oleh Nara Zahin · Maya & Rafiq Naim · Maya": who wrote it. One markup for a story, a chapter and a series. */
+/** "Oleh Nara Zahin & Rafiq Naim": who wrote it (no "Maya" label; Izzat removed it, 6 Oct 2026). One markup for a story, a chapter and a series. */
 export function BylineRow({ byline }: { byline: BylineCredit[] }) {
   if (byline.length === 0) return null;
   return (
@@ -41,12 +47,10 @@ export function BylineRow({ byline }: { byline: BylineCredit[] }) {
           {credit.href ? (
             <a href={credit.href}>
               {credit.name}
-              {credit.maya ? <span className="maya-label"> · Maya</span> : null}
             </a>
           ) : (
             <span className="byline-name">
               {credit.name}
-              {credit.maya ? <span className="maya-label"> · Maya</span> : null}
             </span>
           )}
           {index < byline.length - 1 ? <span className="byline-separator">&amp;</span> : null}
@@ -242,7 +246,7 @@ export function EditorNote({ note }: { note?: string }) {
 export function StoryEnd({ title }: { title: string }) {
   return (
     <div className="site-shell story-end">
-      <span>Tamat</span><div className="end-rule" /><p><span style={{ fontStyle: "normal" }}>{title}</span> · Jalin</p>
+      <span>Tamat</span><div className="end-rule"><LilitDivider /></div><p><span style={{ fontStyle: "normal" }}>{title}</span> · Jalin</p>
     </div>
   );
 }

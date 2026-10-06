@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { SiteFooter, SiteHeader } from "../components/reader/StoryChrome";
+import JalinEmblem from "../components/reader/JalinEmblem";
 
 export const metadata: Metadata = {
   title: "Halaman tidak ditemui",
@@ -21,6 +22,7 @@ export default function NotFound() {
       <SiteHeader />
       <main id="kandungan" tabIndex={-1}>
         <section className="site-shell not-found">
+          <JalinEmblem animated size={96} />
           <p className="story-kicker">404</p>
           <h1>Halaman ini tidak ditemui</h1>
           <p className="dek">Alamat itu mungkin sudah berubah atau karya itu belum diterbitkan. Mari kita cari semula jalan.</p>

@@ -46,8 +46,8 @@ console.log("reader credit projection tests\n");
   const kerusi = getWorkBySlug("kerusi-di-beranda");
   const editorial = projectEditorialCredits(kerusi?.credits ?? []);
   assert(json(editorial) === json([
-    { role: "Penulis", names: ["Nara Zahin · Maya"] },
-    { role: "Penulis & penyemak", names: ["Rafiq Naim · Maya"] },
+    { role: "Penulis", names: ["Nara Zahin"] },
+    { role: "Penulis & penyemak", names: ["Rafiq Naim"] },
     { role: "Editor", names: ["Izzat Anas"] }
   ]), "Existing cerpen editorial credit display is unchanged");
 
@@ -108,7 +108,7 @@ console.log("reader credit projection tests\n");
   ];
   const editorial = projectEditorialCredits(coWriter);
   assert(json(editorial) === json([
-    { role: "Penulis bersama", names: ["Rafiq Naim · Maya", "Amir Syafiq · Maya"] },
+    { role: "Penulis bersama", names: ["Rafiq Naim", "Amir Syafiq"] },
     { role: "Editor", names: ["Izzat Anas"] }
   ]), "co_writer maps to a Malay label, written once with both co-writers listed under it");
 }
@@ -155,7 +155,7 @@ console.log("reader credit projection tests\n");
     { slug: "rafiq-naim", role: "Penulis bersama", byline: false, ...rafiq }
   ];
   assert(json(projectEditorialCredits(credits)) === json([
-    { role: "Penulis, Penterjemah", names: ["Rafiq Naim · Maya"] },
+    { role: "Penulis, Penterjemah", names: ["Rafiq Naim"] },
     { role: "Editor", names: ["Izzat Anas"] }
   ]), "The same person with two roles appears once, roles separated by a comma, in order, without repeating a role; a lone writer is \"Penulis\", not \"Penulis bersama\"");
   assert(projectEditorialCredits(credits.slice(0, 2)).length === 2, "Different people stay on their own lines");
@@ -165,16 +165,16 @@ console.log("reader credit projection tests\n");
 {
   const maya = (slug: string, displayName: string, role: string): ContributorRef => ({ slug, role, byline: false, displayName, kind: "virtual" });
   assert(json(projectEditorialCredits([maya("mimo", "Mimo", "initial_draft")])) === json([
-    { role: "Penulis", names: ["Mimo · Maya"] }
+    { role: "Penulis", names: ["Mimo"] }
   ]), "one writer is plain \"Penulis\"");
   assert(json(projectEditorialCredits([maya("mimo", "Mimo", "initial_draft"), maya("rafiq-naim", "Rafiq Naim", "initial_draft")])) === json([
-    { role: "Penulis bersama", names: ["Mimo · Maya", "Rafiq Naim · Maya"] }
+    { role: "Penulis bersama", names: ["Mimo", "Rafiq Naim"] }
   ]), "two \"Penulis\" credits are shown as \"Penulis bersama\" without anyone choosing it");
   assert(json(projectEditorialCredits([maya("mimo", "Mimo", "co_writer")])) === json([
-    { role: "Penulis", names: ["Mimo · Maya"] }
+    { role: "Penulis", names: ["Mimo"] }
   ]), "a legacy co_writer credit that stands alone reads \"Penulis\"");
   assert(json(projectEditorialCredits([maya("mimo", "Mimo", "initial_draft"), maya("rafiq-naim", "Rafiq Naim", "co_writer")])) === json([
-    { role: "Penulis bersama", names: ["Mimo · Maya", "Rafiq Naim · Maya"] }
+    { role: "Penulis bersama", names: ["Mimo", "Rafiq Naim"] }
   ]), "legacy co_writer and Penulis count together");
 }
 
@@ -189,13 +189,13 @@ console.log("reader credit projection tests\n");
   ];
   assert(json(projectEditorialCredits(credits)) === json([
     { role: "Pengarah", names: ["Izzat Anas"] },
-    { role: "Penulis bersama", names: ["Mimo · Maya", "Nara Zahin · Maya", "Rafiq Naim · Maya"] }
+    { role: "Penulis bersama", names: ["Mimo", "Nara Zahin", "Rafiq Naim"] }
   ]), "three co-writers share one 'Penulis bersama' label with the names listed under it");
   const withExtra = [...credits, maya("rafiq-naim", "Rafiq Naim", "Penterjemah")];
   assert(json(projectEditorialCredits(withExtra)) === json([
     { role: "Pengarah", names: ["Izzat Anas"] },
-    { role: "Penulis bersama", names: ["Mimo · Maya", "Nara Zahin · Maya"] },
-    { role: "Penulis bersama, Penterjemah", names: ["Rafiq Naim · Maya"] }
+    { role: "Penulis bersama", names: ["Mimo", "Nara Zahin"] },
+    { role: "Penulis bersama, Penterjemah", names: ["Rafiq Naim"] }
   ]), "a person with two roles keeps both roles together on one line, apart from those who hold only one");
 }
 

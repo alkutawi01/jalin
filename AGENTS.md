@@ -16,7 +16,7 @@ Jalin bukan platform novel penuh. Novel dan Novel Pendek tidak berada dalam taxo
 2. Baca `docs/MASTER_PLAN.md` sebelum perubahan produk, schema atau reader UX yang besar.
 3. Jangan masukkan secrets, API key, token, data peribadi, private story bible atau future arc sulit ke repo public.
 4. AI tidak menerbitkan kandungan secara autonomi. Kawal selia manusia wajib.
-5. Penulis/penyemak maya boleh menggunakan persona bernama, tetapi mesti mempunyai disclosure awam yang jelas; byline menggunakan penanda halus seperti `Maya`.
+5. Penulis/penyemak maya boleh menggunakan persona bernama, tetapi mesti mempunyai disclosure awam yang jelas; byline tidak lagi memaparkan penanda "Maya" (arahan Izzat, 6 Okt 2026); pendedahan kekal pada halaman penulis dan halaman Tentang.
 6. Semua ilustrasi mesti mematuhi Jalin House Style.
 7. Untuk watak/lokasi berulang, guna canonical visual reference apabila tersedia; jangan reka semula daripada prompt teks sahaja.
 9. Bersiri terdiri daripada episod canonical yang mempunyai kesinambungan.

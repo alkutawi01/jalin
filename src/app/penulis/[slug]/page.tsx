@@ -84,7 +84,6 @@ export default async function PenulisPage({
       <main id="kandungan" tabIndex={-1} className="contributor-page site-shell">
         <div className="contributor-kicker">Penyumbang Jalin</div>
         <h1>{parsed.name}</h1>
-        {parsed.kind === "virtual" && <div className="contributor-badge">Maya</div>}
         <div className="contributor-copy">
           <ReactMarkdown>{parsed.body}</ReactMarkdown>
         </div>

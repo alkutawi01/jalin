@@ -1,4 +1,5 @@
 import { SiteFooter, SiteHeader } from "../../../components/reader/StoryChrome";
+import JalinEmblem from "../../../components/reader/JalinEmblem";
 import { WorkCover } from "../../../components/reader/WorkCover";
 import { initContentRepository } from "../../../lib/content";
 import { displayableGenre } from "../../../lib/reader/genre-display";
@@ -137,6 +138,7 @@ function EmptyCategoryFallback({ currentType }: { currentType: string }) {
   const others = CATEGORY_META_LIST.filter(({ type }) => type !== currentType);
   return (
     <div className="category-empty">
+      <JalinEmblem size={72} />
       <p>Belum ada karya diterbitkan dalam kategori ini. Jelajahi kategori lain buat masa ini:</p>
       <div className="category-empty-links">
         {others.map(({ type, label }) => (
