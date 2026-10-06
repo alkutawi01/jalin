@@ -68,6 +68,10 @@ assert(slugs("pay").includes("anak-qasab") && !slugs("aya").includes("anak-qasab
 assert(slugs("paya longkang").join() === "kerusi" && slugs("paya hamka").length === 0, "every word must be found (a work with only one of the words is not a result)");
 assert(find("zzzz").total === 0 && find("<script>alert(1)</script>").total === 0 && find("%00").total === 0, "a word that is nowhere, or markup, finds nothing and breaks nothing");
 
+// something typed with nothing to search for finds nothing (it used to list every work); blank spaces are no query
+assert(find("😀").total === 0 && find("\\([").total === 0 && find("\uFFFD").total === 0 && find("?!").total === 0, "a query of only an emoji or punctuation finds nothing");
+assert(find("   ").total === docs.length && find("").total === docs.length, "a blank query lists every work");
+
 // ranking
 assert(slugs("Padang Panjang")[0] === "hamka", "a title match is first");
 assert(slugs("qasab")[0] === "anak-qasab", "a title (and text) match comes before a text-only match");

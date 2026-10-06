@@ -303,6 +303,8 @@ export function filterDocs(docs: SearchDoc[], params: SearchParams): SearchDoc[]
 
 export function runSearch(docs: SearchDoc[], params: SearchParams): { results: SearchResult[]; total: number; tokens: string[] } {
   const tokens = tokenize(clean(params.q));
+  // Something was typed but there is nothing in it to search for (only an emoji or punctuation): no result, not "everything".
+  if (clean(params.q) !== "" && tokens.length === 0) return { results: [], total: 0, tokens };
   const phrase = tokens.join(" ");
   const filtered = filterDocs(docs, params);
   const scored: SearchResult[] = [];
