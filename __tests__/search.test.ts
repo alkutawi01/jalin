@@ -114,8 +114,8 @@ assert(filterDocs(docs, { q: "paya", jenis: "<b>" }).length === 0, "a hostile fi
 const page = read("src/app/cari/page.tsx");
 assert(page.includes('role="search"') && page.includes('action="/cari"') && page.includes('method="get"') && page.includes('htmlFor="cari-q"'), "the page is a plain GET form with a labelled search box (no script needed)");
 assert(page.includes("robots: { index: false, follow: true }") && !page.includes("dangerouslySetInnerHTML") && page.includes('role="status"'), "the page is not indexed, shows words as text (not HTML), and says the count to screen readers");
-assert(!read("src/components/reader/nav-links.tsx").includes('label: "Cari"') && read("src/components/reader/nav-links.tsx").includes('SEARCH_HREF = "/cari"'), "search is not a word in the menu");
-assert(/className={`header-search/.test(read("src/components/reader/StoryChrome.tsx")) && read("src/components/reader/StoryChrome.tsx").includes('aria-label="Cari karya"') && /.header-brand { display: flex/.test(read("src/app/globals.css")), "search is an icon link beside the wordmark in the header, named for screen readers");
+assert(!read("src/components/reader/nav-links.tsx").includes('label: "Cari"') && read("src/components/reader/StoryChrome.tsx").includes("<HeaderSearch"), "search is not a word in the menu");
+assert(/className={`header-search/.test(read("src/components/reader/HeaderSearch.tsx")) && read("src/components/reader/HeaderSearch.tsx").includes('aria-label="Cari karya"') && /.header-brand { display: flex/.test(read("src/app/globals.css")), "search is an icon link beside the wordmark in the header, named for screen readers");
 assert(!read("src/app/sitemap.ts").includes("/cari"), "the search page is not in the sitemap");
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);

@@ -7,7 +7,8 @@ import Image from "next/image";
 import { cropStyle } from "../../lib/reader/crop";
 import type { ImageCrop } from "../../lib/content/types";
 import type { BylineCredit, CharacterMeta, EditorialCredit, PlaceMeta, WorkMetaRow } from "./types";
-import { NAV_LINKS, SEARCH_HREF, SiteNavLinks } from "./nav-links";
+import { NAV_LINKS, SiteNavLinks } from "./nav-links";
+import HeaderSearch from "./HeaderSearch";
 import MobileNavMenu from "./MobileNavMenu";
 
 function SiteNav({ active, className }: { active?: string; className: string }) {
@@ -24,9 +25,7 @@ export function SiteHeader({ active }: { active?: string }) {
           <a className="header-wordmark" href="/" aria-label="Jalin utama">
             <img src="/brand/jalin-wordmark.svg" alt="Jalin" />
           </a>
-          <a className={`header-search${active === "cari" ? " active" : ""}`} href={SEARCH_HREF} aria-label="Cari karya" aria-current={active === "cari" ? "page" : undefined}>
-            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" strokeWidth="1.8" /><path d="m15.5 15.5 5 5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg>
-          </a>
+          <HeaderSearch active={active === "cari"} />
         </div>
         <SiteNav active={active} className="header-nav" />
         <MobileNavMenu active={active} />

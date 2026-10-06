@@ -7,9 +7,6 @@ export const NAV_LINKS: { label: string; href: string; match?: string }[] = [
   { label: "Sinopsis", href: "/kategori/sinopsis", match: "sinopsis" }
 ];
 
-/** Search is an icon beside the Jalin wordmark in the header, not a word in the menu. */
-export const SEARCH_HREF = "/cari";
-
 export function SiteNavLinks({
   active,
   className,
