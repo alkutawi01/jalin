@@ -23,14 +23,17 @@ export interface HeroSlide {
 const INTERVAL_MS = 6000;
 
 /**
- * The editor's picks, one at a time. Moves on by itself every few seconds, stops while the reader points at it,
- * focuses inside it or presses pause, and does not move at all for readers who ask for less motion.
+ * The editor's picks, one at a time. Moves on by itself every few seconds. It stops while a mouse rests on it, while a finger or
+ * button is held down on a slide or a dot, and while focus is inside it; there is no pause button. It does not move at all for
+ * readers who ask for less motion.
  */
 export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
   const [index, setIndex] = useState(0);
-  const [paused, setPaused] = useState(false);
   const [hovering, setHovering] = useState(false);
+  const [holding, setHolding] = useState(false);
+  const [focused, setFocused] = useState(false);
   const [reduced, setReduced] = useState(false);
+  const stopped = hovering || holding || focused;
   const rootRef = useRef<HTMLElement>(null);
   const count = slides.length;
 
@@ -45,10 +48,22 @@ export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
   const go = useCallback((next: number) => setIndex(((next % count) + count) % count), [count]);
 
   useEffect(() => {
-    if (count < 2 || paused || hovering || reduced) return;
+    if (count < 2 || stopped || reduced) return;
     const timer = window.setTimeout(() => go(index + 1), INTERVAL_MS);
     return () => window.clearTimeout(timer);
-  }, [index, count, paused, hovering, reduced, go]);
+  }, [index, count, stopped, reduced, go]);
+
+  // A hold ends wherever the finger or button is let go, even outside the carousel.
+  useEffect(() => {
+    if (!holding) return;
+    const release = () => setHolding(false);
+    window.addEventListener("pointerup", release);
+    window.addEventListener("pointercancel", release);
+    return () => {
+      window.removeEventListener("pointerup", release);
+      window.removeEventListener("pointercancel", release);
+    };
+  }, [holding]);
 
   return (
     <section
@@ -56,13 +71,14 @@ export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
       className="hero-featured hero-carousel"
       aria-roledescription="karusel"
       aria-label="Pilihan Editor"
-      onMouseEnter={() => setHovering(true)}
-      onMouseLeave={() => setHovering(false)}
-      onFocus={() => setHovering(true)}
-      onBlur={(event) => { if (!rootRef.current?.contains(event.relatedTarget as Node | null)) setHovering(false); }}
+      onPointerEnter={(event) => { if (event.pointerType === "mouse") setHovering(true); }}
+      onPointerLeave={() => setHovering(false)}
+      onPointerDown={() => setHolding(true)}
+      onFocus={() => setFocused(true)}
+      onBlur={(event) => { if (!rootRef.current?.contains(event.relatedTarget as Node | null)) setFocused(false); }}
     >
       <div className="site-shell">
-        <div className="hero-carousel-stack" aria-live={paused || hovering || reduced ? "polite" : "off"}>
+        <div className="hero-carousel-stack" aria-live={stopped || reduced ? "polite" : "off"}>
           {slides.map((work, i) => {
             const active = i === index;
             return (
@@ -113,13 +129,6 @@ export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
               ))}
             </div>
             <button type="button" className="hero-carousel-btn" onClick={() => go(index + 1)} aria-label="Seterusnya"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="m6 3 5 5-5 5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg></button>
-            {!reduced ? (
-              <button type="button" className="hero-carousel-btn hero-carousel-pause" onClick={() => setPaused((value) => !value)} aria-pressed={paused} aria-label={paused ? "Main slaid secara automatik" : "Jeda slaid automatik"} title={paused ? "Main" : "Jeda"}>
-                {paused
-                  ? <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M4 2.5v11l9-5.5z" fill="currentColor" /></svg>
-                  : <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M4.5 2.5h2.5v11H4.5zM9 2.5h2.5v11H9z" fill="currentColor" /></svg>}
-              </button>
-            ) : null}
           </div>
         ) : null}
       </div>
