@@ -13,7 +13,7 @@ function assert(cond: boolean, msg: string) {
 const read = (p: string) => fs.readFileSync(path.join(__dirname, "..", p), "utf8").replace(/\r\n/g, "\n");
 const patch = read("src/app/api/admin/glossary/[id]/route.ts");
 assert(patch.includes('typeof body[field] !== "string" || !body[field].trim()') && patch.includes("tidak boleh kosong") && patch.indexOf("tidak boleh kosong") < patch.indexOf("updateGlossaryTerm(termId"), "a blank or non-text term or meaning is a 400 before anything is saved");
-assert(patch.includes("body.term = body.term.trim()") && patch.includes("body.meaning = body.meaning.trim()"), "and what is saved is trimmed (as on creation)");
+assert(patch.includes("body.term = body.term.trim()") && patch.includes("body.meaning = capitaliseFirst(body.meaning.trim())"), "and what is saved is trimmed (as on creation)");
 const post = read("src/app/api/admin/glossary/route.ts");
 assert(post.includes('typeof body.term !== "string"') && post.includes('typeof body.meaning !== "string"') && !post.includes("body.term?.trim()"), "creating with a non-text term or meaning is a 400, not a TypeError");
 console.log(`\n${passed} passed, ${failed} failed`);

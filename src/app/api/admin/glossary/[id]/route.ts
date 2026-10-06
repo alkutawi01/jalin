@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { capitaliseFirst } from "../../../../../lib/capitalise-first";
 import { getGlossaryTerm, updateGlossaryTerm, deleteGlossaryTerm, listGlossaryForWork } from "../../../../../lib/admin/glossary-service";
 import { findDuplicateTerm } from "../../../../../lib/admin/metadata-rules";
 import { parseDbId } from "../../../../../lib/admin/ids";
@@ -57,7 +58,7 @@ export async function PATCH(
       }
     }
     if (typeof body.term === "string") body.term = body.term.trim();
-    if (typeof body.meaning === "string") body.meaning = body.meaning.trim();
+    if (typeof body.meaning === "string") body.meaning = capitaliseFirst(body.meaning.trim());
 
     if (typeof body.term === "string" && body.term.trim()) {
       const duplicate = findDuplicateTerm(await listGlossaryForWork(existing.work_id), body.term, termId);

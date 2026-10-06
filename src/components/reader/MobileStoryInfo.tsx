@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { capitaliseFirst } from "../../lib/capitalise-first";
 import type { StoryInfoData } from "./types";
 
 type Tab = "karya" | "watak" | "latar" | "editorial" | "bab";
@@ -172,7 +173,7 @@ export default function MobileStoryInfo({ data }: { data: StoryInfoData }) {
           )}
           {tab === "watak" && (
             <div id="sheet-panel-watak" role="tabpanel" aria-labelledby="sheet-tab-watak" className="sheet-stack">
-              {data.characters.map((character) => <div key={character.name}><b>{character.name}</b><span>{character.role}</span></div>)}
+              {data.characters.map((character) => <div key={character.name}><b>{character.name}</b><span>{capitaliseFirst(character.role)}</span></div>)}
             </div>
           )}
           {tab === "latar" && (

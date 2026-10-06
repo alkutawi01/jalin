@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { capitaliseFirst } from "../../../../lib/capitalise-first";
 import { listGlossaryForWork, createGlossaryTerm } from "../../../../lib/admin/glossary-service";
 import { findDuplicateTerm } from "../../../../lib/admin/metadata-rules";
 
@@ -44,7 +45,7 @@ export async function POST(request: NextRequest) {
     const term = await createGlossaryTerm({
       workId: body.workId,
       term: body.term.trim(),
-      meaning: body.meaning.trim(),
+      meaning: capitaliseFirst(body.meaning.trim()),
       source: body.source || "",
       sortOrder: body.sortOrder || 0,
     });
