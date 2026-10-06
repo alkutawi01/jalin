@@ -80,7 +80,7 @@ function parseContributorFile(filePath: string): ContributorData | null {
     const { data, content } = matter(raw);
 
     const bio = content.trim();
-    const disclosureMatch = bio.match(/Identiti ini[^]*?(?:manusia sebenar|persona editorial)/);
+    const disclosureMatch = bio.match(/Identiti ini[^.]*./);
     const disclosure = disclosureMatch ? disclosureMatch[0] : undefined;
 
     return {
