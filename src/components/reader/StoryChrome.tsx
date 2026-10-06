@@ -261,7 +261,7 @@ export function SiteFooter() {
       <div className="site-shell footer-grid">
         <div className="footer-brand">
           <img className="footer-logo" src="/brand/jalin-logo-reversed.svg" alt="Jalin — oleh Adjung" />
-          <p className="footer-tagline">Cerita untuk kita.</p>
+          <p className="footer-tagline">Cerita untuk kita</p>
         </div>
         <div className="footer-nav-grid">
           <nav className="footer-col" aria-label="Terokai karya">
