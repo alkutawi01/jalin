@@ -1,4 +1,5 @@
 import { getDb } from "../db";
+import { seriesPickedTwice } from "../reader/editor-picks";
 
 /** The homepage shows at most three deliberately curated works. */
 export const EDITOR_PICK_LIMIT = 3;
@@ -64,6 +65,11 @@ export async function savePicks(picks: { id: string; reason?: string }[]): Promi
     if (ids.length > 0) {
       const found = await trx.selectFrom("works").where("id", "in", ids).where("status", "=", "published").select("id").execute();
       if (found.length !== ids.length) throw new Error("Hanya karya yang sudah terbit boleh dipilih.");
+      // An episode is shown on the home page as its series, so two episodes of one series would be one slide while this list showed two.
+      const entries = await trx.selectFrom("series_entries").where("work_id", "in", ids).select(["series_id", "work_id"]).execute();
+      if (seriesPickedTwice(entries.map((e) => ({ seriesId: String(e.series_id), workId: String(e.work_id) })), ids).length > 0) {
+        throw new Error("Dua episod daripada siri yang sama dipilih. Siri dipaparkan sebagai satu slaid, jadi pilih satu episod sahaja.");
+      }
     }
     await trx
       .updateTable("works")

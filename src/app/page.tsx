@@ -4,9 +4,10 @@ import { SiteFooter, SiteHeader } from "../components/reader/StoryChrome";
 import HeroCarousel, { type HeroSlide } from "../components/reader/HeroCarousel";
 import { WorkCover } from "../components/reader/WorkCover";
 import { initContentRepository } from "../lib/content";
+import type { SeriesMeta } from "../lib/content/types";
 import { displayableGenre } from "../lib/reader/genre-display";
 import { getAllWorks } from "../lib/content/workLoader";
-import { getEditorPickSummaries } from "../lib/reader/editor-picks";
+import { getEditorPickSummaries, resolveHeroPicks } from "../lib/reader/editor-picks";
 import { projectPublicWorkSummary, type PublicWorkSummary } from "../lib/reader/public-projection";
 import { renderAttribution } from "@/components/reader/Attribution";
 import { homeGrounds, type GroundKey } from "../lib/site-theme";
@@ -250,7 +251,14 @@ export default async function Home() {
   const standalone = allWorks.filter((work) => work.type !== "bersiri");
   const sorted = [...standalone].sort(byNewest);
   const sortedAll = [...allWorks].sort(byNewest);
-  const editorialPicks = await getEditorPickSummaries(standalone);
+  // Picks come from every published work: an episode the editor picked is shown as its series (see resolveHeroPicks).
+  const pickSummaries = await getEditorPickSummaries(allWorks);
+  const pickRepo = await initContentRepository();
+  const seriesByEpisode = new Map<string, SeriesMeta>();
+  for (const series of pickRepo.getPublishedSeries()) {
+    for (const episode of pickRepo.getPublishedSeriesEpisodes(series.id)) seriesByEpisode.set(episode.slug, series);
+  }
+  const editorialPicks = resolveHeroPicks(pickSummaries, (episodeSlug) => seriesByEpisode.get(episodeSlug));
   const seriesHighlight = await getSeriesHighlight();
   const grounds = await homeGrounds();
 
@@ -261,7 +269,7 @@ export default async function Home() {
     type: work.type,
     title: work.title,
     kicker: `Pilihan Editor · ${workEyebrow(work)}`,
-    attribution: work.attribution?.primary,
+    attribution: work.attribution,
     dek: work.dek,
     reading: readingLabel(work.readingMinutes) ?? undefined,
     date: formatDate(work.publishedAt),

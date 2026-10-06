@@ -44,3 +44,73 @@ export async function getEditorPickSummaries(publishedWorks: Work[]): Promise<Pu
 
   return selectPublishedEditorPicks(rows.map((row) => String(row.id)), publishedWorks);
 }
+
+/** What the home carousel needs from a pick: a single work, or the series an episode belongs to. */
+export interface HeroPick {
+  slug: string;
+  type: PublicWorkSummary["type"];
+  title: string;
+  genre?: string;
+  dek?: string;
+  attribution?: string;
+  readingMinutes?: number;
+  publishedAt?: string;
+  hero?: PublicWorkSummary["hero"];
+}
+
+export interface SeriesOfEpisode {
+  slug: string;
+  title: string;
+  dek?: string;
+  genre?: string;
+  hero?: { src: string; alt: string };
+}
+
+/**
+ * A series episode has no address of its own (an episode is reached through its series), so a pick that is an episode is shown as
+ * its series: the series title, dek and artwork, linking to the series page. Two episodes of one series are one slide (the first
+ * wins). An episode that belongs to no published series cannot be linked to, so it is left out.
+ */
+export function resolveHeroPicks(picks: PublicWorkSummary[], seriesOfEpisode: (episodeSlug: string) => SeriesOfEpisode | undefined): HeroPick[] {
+  const out: HeroPick[] = [];
+  const seenSeries = new Set<string>();
+  for (const pick of picks) {
+    if (pick.type !== "bersiri") {
+      out.push({
+        slug: pick.slug,
+        type: pick.type,
+        title: pick.title,
+        genre: pick.genre,
+        dek: pick.dek,
+        attribution: pick.attribution?.primary,
+        readingMinutes: pick.readingMinutes,
+        publishedAt: pick.publishedAt,
+        hero: pick.hero
+      });
+      continue;
+    }
+    const series = seriesOfEpisode(pick.slug);
+    if (!series || seenSeries.has(series.slug)) continue;
+    seenSeries.add(series.slug);
+    out.push({
+      slug: series.slug,
+      type: "bersiri",
+      title: series.title,
+      genre: series.genre ?? pick.genre,
+      dek: series.dek ?? pick.dek,
+      attribution: pick.attribution?.primary,
+      publishedAt: pick.publishedAt,
+      // The series' own artwork when it has one, else the episode's picture.
+      hero: series.hero ? { src: series.hero.src, alt: series.hero.alt } : pick.hero
+    });
+  }
+  return out;
+}
+
+/** The series that have more than one of the picked episodes (two picks of one series would show as one slide). */
+export function seriesPickedTwice(entries: { seriesId: string; workId: string }[], pickedIds: string[]): string[] {
+  const picked = new Set(pickedIds);
+  const count = new Map<string, number>();
+  for (const entry of entries) if (picked.has(entry.workId)) count.set(entry.seriesId, (count.get(entry.seriesId) ?? 0) + 1);
+  return [...count].filter(([, n]) => n > 1).map(([id]) => id);
+}
