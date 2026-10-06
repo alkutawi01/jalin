@@ -1,19 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isAllowed, roleFromClaim, type Role } from "./lib/admin/permissions";
 
 /**
  * Validate session token using Web Crypto API (Edge-compatible).
  */
-async function validateSessionToken(token: string): Promise<boolean> {
+async function validateSessionToken(token: string): Promise<Role | null> {
   try {
     const [payload, signature] = token.split(".");
     if (!payload || !signature) {
-      return false;
+      return null;
     }
 
     const secret = process.env.ADMIN_SECRET;
     if (!secret) {
       console.error("[Middleware] ADMIN_SECRET not configured.");
-      return false;
+      return null;
     }
 
     // Use Web Crypto API for HMAC (Edge-compatible)
@@ -36,7 +37,7 @@ async function validateSessionToken(token: string): Promise<boolean> {
 
     // Constant-time comparison
     if (signature.length !== expectedSignature.length) {
-      return false;
+      return null;
     }
 
     const sigBytes = encoder.encode(signature);
@@ -47,24 +48,20 @@ async function validateSessionToken(token: string): Promise<boolean> {
     }
 
     if (result !== 0) {
-      return false;
+      return null;
     }
 
     // Decode and check expiry
     const data_str = atob(payload.replace(/-/g, "+").replace(/_/g, "/"));
     const parsed = JSON.parse(data_str);
     if (parsed.expires && parsed.expires < Date.now()) {
-      return false;
+      return null;
     }
 
-    // Check role
-    if (parsed.role !== "admin") {
-      return false;
-    }
-
-    return true;
+    // The role the session says it has ("admin" is today's single account: the owner).
+    return roleFromClaim(parsed.role);
   } catch {
-    return false;
+    return null;
   }
 }
 
@@ -103,7 +100,8 @@ export async function middleware(request: NextRequest) {
   }
 
   // Validate session token (HMAC + expiry + role)
-  if (!(await validateSessionToken(sessionCookie.value))) {
+  const role = await validateSessionToken(sessionCookie.value);
+  if (!role) {
     // Invalid/forged/expired session - reject and clear cookie
     if (pathname.startsWith("/api/")) {
       const response = NextResponse.json(
@@ -120,7 +118,14 @@ export async function middleware(request: NextRequest) {
     return response;
   }
 
-  // Valid session - continue
+  // A valid session still needs the permission this address and method ask for (see lib/admin/permissions).
+  if (!isAllowed(role, request.method, pathname)) {
+    if (pathname.startsWith("/api/")) {
+      return NextResponse.json({ error: "Anda tidak mempunyai kebenaran untuk tindakan ini." }, { status: 403 });
+    }
+    return NextResponse.redirect(new URL("/admin", request.url));
+  }
+
   return NextResponse.next();
 }
 
