@@ -31,7 +31,8 @@ export interface ContinueTarget {
   href: string;
   /** Small line above the title, e.g. "Episod 3". */
   label: string;
-  title: string;
+  /** Left out when there is nothing to add to the label (a chapter titled only "BAB 3"): the label is then shown alone. */
+  title?: string;
 }
 
 /** What the reader can do after finishing: go on, go back one, or back to the series page. */
@@ -55,8 +56,8 @@ export function ContinueNav({
       {next ? (
         <a className="continue-next" href={next.href} rel="next">
           <span className="continue-text">
-            <span className="continue-label">Seterusnya · {next.label}</span>
-            <span className="continue-title">{next.title}</span>
+            <span className="continue-label">{next.title ? `Seterusnya · ${next.label}` : "Seterusnya"}</span>
+            <span className="continue-title">{next.title ?? next.label}</span>
           </span>
           <span className="continue-arrow" aria-hidden="true">→</span>
         </a>
@@ -67,7 +68,7 @@ export function ContinueNav({
         <div className="continue-secondary">
           {prev ? (
             <a href={prev.href} rel="prev">
-              ← {prev.label}: {prev.title}
+              ← {prev.title ? `${prev.label}: ${prev.title}` : prev.label}
             </a>
           ) : null}
           {back ? (
