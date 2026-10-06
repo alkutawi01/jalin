@@ -4,7 +4,8 @@ export const NAV_LINKS: { label: string; href: string; match?: string }[] = [
   { label: "Novela", href: "/kategori/novela", match: "novela" },
   { label: "Bersiri", href: "/kategori/bersiri", match: "bersiri" },
   { label: "Fragmen", href: "/kategori/fragmen", match: "fragmen" },
-  { label: "Sinopsis", href: "/kategori/sinopsis", match: "sinopsis" }
+  { label: "Sinopsis", href: "/kategori/sinopsis", match: "sinopsis" },
+  { label: "Cari", href: "/cari", match: "cari" }
 ];
 
 export function SiteNavLinks({
