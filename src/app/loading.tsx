@@ -4,7 +4,7 @@ import JalinEmblem from "../components/reader/JalinEmblem";
 export default function Loading() {
   return (
     <div className="page-loading" role="status" aria-live="polite">
-      <JalinEmblem animated tone="on-teal" size={104} label="Memuatkan" />
+      <JalinEmblem animated tone="on-teal" variant="gelombang" size={104} label="Memuatkan" />
     </div>
   );
 }

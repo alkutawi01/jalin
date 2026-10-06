@@ -13,5 +13,8 @@ assert(css.includes(".hero-carousel-stack { display: grid; grid-template-columns
 assert(css.includes(".hero-carousel-slide, .hero-carousel-slide > * { min-width: 0; }"), "a slide and its parts may be narrower than their contents");
 assert(css.includes("@media (max-width: 1050px) { html { overflow-x: clip; }"), "a page that is slightly too wide cannot be panned sideways on a phone");
 
+const phone = css.slice(css.lastIndexOf("/* Phones: the carousel's arrows and dots were large"));
+assert(/\.hero-carousel-btn \{ width: 30px; height: 30px; \}/.test(phone) && /\.hero-carousel-dot \{ width: 24px; height: 24px; \}/.test(phone) && /\.hero-carousel-controls \{ padding: 0 0 6px;/.test(phone), "on a phone the arrows and dots are smaller and leave no empty space under them");
+
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);

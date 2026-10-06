@@ -3316,8 +3316,8 @@ body { overflow-wrap: break-word; }
 .jalin-emblem { display: inline-block; flex: none; }
 .jalin-emblem svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .jalin-blade { transform-origin: 0 0; }
-.jalin-emblem.is-live .jalin-blade { animation: jalin-tenun 4.8s cubic-bezier(.45, 0, .2, 1) infinite; animation-delay: calc(var(--i) * 0.16s); }
-.jalin-emblem.is-live svg { animation: jalin-nafas 4.8s ease-in-out infinite; }
+.jalin-emblem.is-live.v-tenun .jalin-blade { animation: jalin-tenun 4.8s cubic-bezier(.45, 0, .2, 1) infinite; animation-delay: calc(var(--i) * 0.16s); }
+.jalin-emblem.is-live.v-tenun svg { animation: jalin-nafas 4.8s ease-in-out infinite; }
 @keyframes jalin-tenun {
   0%   { opacity: 0; transform: rotate(-62deg) scale(.78); }
   26%  { opacity: 1; transform: rotate(0deg) scale(1); }
@@ -3334,3 +3334,26 @@ body { overflow-wrap: break-word; }
 .category-empty .jalin-emblem { display: block; margin: 0 auto 14px; }
 .site-footer { position: relative; }
 .site-footer::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 30px; background: url(/brand/motif/bidai-light.svg) repeat-x left top / 48px 24px; pointer-events: none; }
+
+/* Gelombang: the whole emblem is there from the first frame (a loading screen may be seen for only a second); light travels from blade to blade. */
+.jalin-emblem.is-live.v-gelombang .jalin-blade { animation: jalin-gelombang 2.7s ease-in-out infinite; animation-delay: calc(var(--i) * 0.2s); }
+.jalin-emblem.is-live.v-gelombang svg { animation: jalin-putar-perlahan 18s linear infinite; }
+@keyframes jalin-gelombang { 0%, 55%, 100% { opacity: .3; } 20%, 35% { opacity: 1; } }
+@keyframes jalin-putar-perlahan { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .jalin-emblem.is-live.v-gelombang .jalin-blade, .jalin-emblem.is-live.v-gelombang svg { animation: none; } }
+
+/* Loading screen of every public page: at least one second (see BootScreen). */
+.boot-screen { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; background: #18343c; transition: opacity .35s ease, visibility 0s linear .35s; }
+.boot-screen.boot-out { opacity: 0; visibility: hidden; pointer-events: none; }
+body:has(.a-nav, .admin-login-page) .boot-screen { display: none; }
+@media print { .boot-screen { display: none; } }
+
+/* Phones: the carousel's arrows and dots were large and left empty space under them. Smaller, with the space under them taken out. */
+@media (max-width: 680px) {
+  .hero-carousel-controls { padding: 0 0 6px; gap: 2px; }
+  .hero-carousel-btn { width: 30px; height: 30px; }
+  .hero-carousel-dot { width: 24px; height: 24px; }
+  .hero-carousel-dot::after { width: 7px; height: 7px; }
+  .hero-carousel-slide .hero-featured-text { padding-bottom: 8px; }
+  .hero-carousel-slide .home-work-meta { margin-bottom: 20px; }
+}

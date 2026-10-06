@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Figtree } from "next/font/google";
 import "./globals.css";
 import { SITE_URL } from "../lib/seo";
+import BootScreen from "../components/reader/BootScreen";
 
 /**
  * The sans-serif the stylesheet has always named (Inter) is now actually loaded, self-hosted by Next at build time, with a
@@ -40,7 +41,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="ms" className={`${inter.variable} ${figtree.variable}`}>
-      <body>{children}</body>
+      <body>
+        <BootScreen />
+        {children}
+      </body>
     </html>
   );
 }

@@ -46,9 +46,9 @@ const BLADES: Array<{ fill: string; d: string }> = [
 const TEAL = "rgb(19,47,56)";
 const ORDER = [0,3,1,5,6,4,2,7,8];
 
-export default function JalinEmblem({ animated = false, size = 96, label, tone = "color" }: { animated?: boolean; size?: number; label?: string; tone?: "color" | "on-teal" }) {
+export default function JalinEmblem({ animated = false, size = 96, label, tone = "color", variant = "tenun" }: { animated?: boolean; size?: number; label?: string; tone?: "color" | "on-teal"; variant?: "tenun" | "gelombang" }) {
   return (
-    <span className={`jalin-emblem${animated ? " is-live" : ""}`} style={{ width: size, height: size }} role={label ? "img" : undefined} aria-label={label} aria-hidden={label ? undefined : true}>
+    <span className={`jalin-emblem${animated ? " is-live" : ""} v-${variant}`} style={{ width: size, height: size }} role={label ? "img" : undefined} aria-label={label} aria-hidden={label ? undefined : true}>
       <svg viewBox="692 175 700 700" focusable="false">
         <defs>
           <linearGradient id="je-Gradient1" gradientUnits="userSpaceOnUse" x1="1068.53" y1="1262.03" x2="1094.94" y2="1258.21"><stop offset="0" stopColor="rgb(16,37,48)" /><stop offset="1" stopColor="rgb(25,61,70)" /></linearGradient>

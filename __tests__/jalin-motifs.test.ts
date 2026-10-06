@@ -15,12 +15,16 @@ assert((emblem.match(/"fill":/g) ?? []).length === 9 && (logo.match(/<path/g) ??
 assert(["rgb(19,47,56)", "rgb(215,174,150)", "rgb(169,93,70)"].every((c) => emblem.includes(c)), "the emblem keeps the logo's own colours");
 
 const css = read("src/app/globals.css");
-assert(css.includes(".jalin-emblem.is-live .jalin-blade { animation: jalin-tenun"), "only a live emblem animates");
+assert(css.includes(".jalin-emblem.is-live.v-tenun .jalin-blade { animation: jalin-tenun") && css.includes(".jalin-emblem.is-live.v-gelombang .jalin-blade { animation: jalin-gelombang"), "only a live emblem animates");
 assert(/prefers-reduced-motion: reduce\) \{ \.jalin-emblem\.is-live \.jalin-blade, \.jalin-emblem\.is-live svg \{ animation: none; \}/.test(css), "no motion under prefers-reduced-motion");
-assert(css.includes(".page-loading { position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; background: #18343c; animation: jalin-muncul .01s linear .35s both; }"), "the loading screen is the theme's deep teal and waits before appearing, so a quick page never flashes it");
+assert(css.includes(".page-loading { position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; background: #18343c; animation: jalin-muncul .01s linear .35s both; }"), "the route loading screen is the theme's deep teal and waits before appearing");
+const boot = read("src/components/reader/BootScreen.tsx");
+assert(boot.includes("1000-performance.now()") && boot.includes("setTimeout(out,8000)") && /readyState/.test(boot), "every page shows the loading screen for at least one second, and for as long as the page takes (8 seconds at most)");
+assert(boot.includes("classList.add(\"boot-out\")") && !/removeChild|.remove()/.test(boot.split("const SCRIPT")[1]!.split("export default")[0]!), "the script only adds a class, so the page still hydrates cleanly");
+assert(read("src/app/layout.tsx").includes("<BootScreen />") && css.includes("body:has(.a-nav, .admin-login-page) .boot-screen { display: none; }") && boot.includes("<noscript>"), "it is in every page, and not in the admin or without JavaScript");
 
 assert(read("src/app/not-found.tsx").includes("<JalinEmblem animated"), "the 404 page shows the moving emblem");
-assert(read("src/app/loading.tsx").includes('<JalinEmblem animated tone="on-teal" size={104} label="Memuatkan" />'), "the loading screen shows the moving emblem, named for screen readers");
+assert(read("src/app/loading.tsx").includes('<JalinEmblem animated tone="on-teal" variant="gelombang" size={104} label="Memuatkan" />'), "the loading screen shows the moving emblem, named for screen readers");
 assert(read("src/app/kategori/[type]/page.tsx").includes("<JalinEmblem size={72} />"), "an empty category shows the still emblem");
 
 assert(read("src/components/reader/StoryChrome.tsx").includes('<div className="end-rule"><LilitDivider /></div>'), "the end of a story shows the Lilit Naskhah divider");
