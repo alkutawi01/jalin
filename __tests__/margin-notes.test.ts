@@ -26,9 +26,11 @@ const d = placeMarginNotes([{ number: 1, refTop: 800, height: 400 }, { number: 2
 assert(d[1]!.side === "left" && d[1]!.top === 820, "when the right margin is full at that place only that note goes to the left margin");
 assert(d[2]!.side === "left" && d[2]!.top === 894, "and the next one stacks under it on the left");
 const e = placeMarginNotes([{ number: 1, refTop: 800, height: 400 }, { number: 2, refTop: 820, height: 60 }], { ...opts, leftFloor: null });
-assert(e[1]!.side === "list", "with no left margin (narrow screen) a note that does not fit is left to the list");
+assert(e[1]!.side === "right" && e[1]!.top === 1214, "with no left margin (narrow screen) a note that does not fit sits lower in the right margin, under the one before it");
 const f = placeMarginNotes([{ number: 1, refTop: 800, height: 400 }, { number: 2, refTop: 810, height: 600 }, { number: 3, refTop: 820, height: 60 }, { number: 4, refTop: 830, height: 60 }], opts);
-assert(f.map((p) => p.side).join() === "right,left,left,list" || f.map((p) => p.side).join() === "right,left,list,list", "when both margins are full, the note goes to the list, never lost");
+assert(f.every((p) => p.side !== "list") && new Set(f.map((p) => p.number)).size === 4, "when both margins are full the notes still go to a margin (the nearer), none to the list");
+const lim = placeMarginNotes([{ number: 1, refTop: 800, height: 400 }, { number: 2, refTop: 820, height: 60 }], { ...opts, leftFloor: null, limit: 1250 });
+assert(lim[0]!.side === "right" && lim[1]!.side === "list", "only a note that would run past the end of the text is left to the list");
 const g = placeMarginNotes([{ number: 1, refTop: Number.NaN, height: 60 }], opts);
 assert(g[0]!.side === "list", "a note whose number cannot be found is left to the list");
 const h = placeMarginNotes([{ number: 1, refTop: 50, height: 60 }], { ...opts, rightFloor: 600, leftFloor: 200 });

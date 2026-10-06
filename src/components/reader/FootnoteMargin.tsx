@@ -41,7 +41,7 @@ export default function FootnoteMargin({ notes }: { notes: Note[] }) {
     const grid = layer?.parentElement;
     if (!layer || !grid) return;
     const list = document.querySelector<HTMLElement>("[data-footnotes]");
-    let frame = 0;
+    let timer: ReturnType<typeof setTimeout> | undefined;
 
     function setListMode(mode: "all" | "some" | "none", placed: Set<number>) {
       if (!list) return;
@@ -96,7 +96,7 @@ export default function FootnoteMargin({ notes }: { notes: Note[] }) {
       });
       const placements = placeMarginNotes(
         inputs.map(({ number, refTop, height }) => ({ number, refTop, height })),
-        { rightFloor, leftFloor, gap: NOTE_GAP, maxShift: MAX_SHIFT }
+        { rightFloor, leftFloor, gap: NOTE_GAP, maxShift: MAX_SHIFT, limit: grid.getBoundingClientRect().height }
       );
       const placed = new Set<number>();
       placements.forEach((placement, index) => {
@@ -117,9 +117,10 @@ export default function FootnoteMargin({ notes }: { notes: Note[] }) {
       setListMode(placed.size === 0 ? "none" : placed.size === nodes.length ? "all" : "some", placed);
     }
 
+    // A short debounce rather than requestAnimationFrame: a frame is never given to a tab that is in the background.
     function schedule() {
-      cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(layout);
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(layout, 60);
     }
 
     layout();
@@ -133,7 +134,7 @@ export default function FootnoteMargin({ notes }: { notes: Note[] }) {
       observer.observe(grid);
     }
     return () => {
-      cancelAnimationFrame(frame);
+      if (timer) clearTimeout(timer);
       window.removeEventListener("resize", schedule);
       window.removeEventListener("load", schedule);
       observer?.disconnect();
