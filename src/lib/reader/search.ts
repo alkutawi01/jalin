@@ -50,7 +50,7 @@ export function tokenize(query: string): string[] {
 const WORD_CHAR = /[\p{L}\p{N}']/u;
 const escape = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 /** The start of a word that begins with the token; an apostrophe may sit between the letters ("sad" finds "sa'd"). */
-const wordStart = (token: string) => new RegExp(`(?<![\\p{L}\\p{N}'])${[...token].map(escape).join("'?")}`, "gu");
+export const wordStart = (token: string) => new RegExp(`(?<![\\p{L}\\p{N}'])${[...token].map(escape).join("'?")}`, "gu");
 
 export interface SearchSection {
   /** "Bab 3: Tajuk" or "Episod 2: Tajuk"; empty for a single text. */

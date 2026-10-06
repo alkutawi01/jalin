@@ -54,16 +54,20 @@ img { display: block; max-width: 100%; }
 .header-search-field { display: flex; align-items: center; gap: 8px; box-sizing: border-box; height: 38px; padding: 0 12px; background: #fff; border: 1px solid var(--line); border-radius: 8px; color: var(--ink-soft); }
 .header-search-field:focus-within { border-color: var(--ink); }
 .header-search-glyph { display: inline-flex; flex: none; }
-.header-search-input { flex: 1 1 auto; min-width: 0; padding: 0; font: inherit; font-size: 14px; color: var(--ink); background: transparent; border: 0; outline: 0; }
-.header-search-input::placeholder { font-size: 13px; color: var(--ink-soft); opacity: .8; }
+.header-search-input { flex: 1 1 auto; min-width: 0; padding: 0; font: inherit; font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 14px; color: var(--ink); background: transparent; border: 0; outline: 0; }
+.header-search-input::placeholder { font-size: inherit; color: var(--ink-soft); opacity: .8; }
 .header-search-list { position: absolute; top: calc(100% + 6px); right: 0; z-index: 40; width: min(420px, calc(100vw - 32px)); box-sizing: border-box; background: var(--paper); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 12px 32px rgba(24, 52, 60, .16); padding: 8px; list-style: none; margin: 0; padding: 0; max-height: min(60vh, 420px); overflow-y: auto; }
-.header-search-list a { display: flex; flex-direction: column; gap: 2px; min-height: 44px; justify-content: center; padding: 6px 12px; border-radius: 8px; color: var(--ink); text-decoration: none; }
+.header-search-list a { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-height: 44px; justify-content: center; text-align: left; padding: 6px 12px; border-radius: 8px; color: var(--ink); text-decoration: none; }
 .header-search-list a:hover, .header-search-list a.selected { background: rgba(24, 52, 60, .08); }
-.header-search-title { font-weight: 600; line-height: 1.3; }
-.header-search-meta { font-size: 13px; color: var(--ink-soft); }
-.header-search-empty { padding: 10px 12px; font-size: 14px; color: var(--ink-soft); }
-.header-search-list .header-search-all { flex-direction: row; font-size: 14px; font-weight: 600; color: var(--ink); border-top: 1px solid var(--line); border-radius: 0 0 8px 8px; margin-top: 4px; }
-@media (max-width: 600px) { .header-search-panel { width: 168px; } .header-search-wrap { position: static; } .header-search-panel { position: static; } .header-search-wrap { position: relative; } .header-search-list { position: fixed; top: 84px; left: 16px; right: 16px; width: auto; } }
+/* Type system of the site: a work's title is Georgia at weight 500 (as on the cards and the results page); everything that is only information about it is Inter (12-14 px). */
+.header-search-title { font-size: 16px; font-weight: 500; line-height: 1.3; }
+.header-search-meta { font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 13px; line-height: 1.4; color: var(--ink-soft); }
+.header-search-empty { padding: 10px 12px; font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 14px; color: var(--ink-soft); }
+.header-search-list .header-search-all { flex-direction: row; justify-content: flex-start; font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 14px; font-weight: 600; color: var(--ink); border-top: 1px solid var(--line); border-radius: 0 0 8px 8px; margin-top: 4px; }
+/* On a mid-width screen the six tabs and an open 240 px field do not fit side by side, and the tabs pushed out over the Jalin wordmark.
+   There the field opens over the end of the tabs (the icon keeps its place), so nothing moves and nothing overlaps. */
+@media (min-width: 821px) and (max-width: 1050px) { .header-search-wrap { width: 40px; height: 40px; } .header-search-panel { position: absolute; top: 1px; right: 0; z-index: 30; } }
+@media (max-width: 600px) { .header-search-input { font-size: 16px; } .header-search-panel { width: 168px; } .header-search-wrap { position: static; } .header-search-panel { position: static; } .header-search-wrap { position: relative; } .header-search-list { position: fixed; top: 84px; left: 16px; right: 16px; width: auto; } }
 .header-search:hover, .header-search:focus-visible, .header-search.active, .header-search.open { color: var(--ink); background: rgba(24, 52, 60, .07); }
 .header-wordmark {
   display: inline-flex;

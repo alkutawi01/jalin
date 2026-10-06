@@ -15,8 +15,10 @@ const box = read("src/components/reader/HeaderSearch.tsx");
 assert(/<div className="header-main">\s*<SiteNav active=\{active\} className="header-nav" \/>\s*<HeaderSearch/.test(chrome), "the search is in the same row as the tabs, after them");
 assert(css.includes(".header-search-panel { position: relative; width: 240px; }") && css.includes(".header-search-field { display: flex;"), "the open box is a small field in the row, not an absolute panel");
 assert(/\.header-search-list \{ position: absolute; top: calc\(100% \+ 6px\); right: 0;/.test(css), "only the suggestions hang below the field");
-assert(box.includes('placeholder="Cari tajuk atau penulis"') && css.includes(".header-search-input::placeholder { font-size: 13px;"), "the placeholder is short and smaller");
+assert(box.includes('placeholder="Cari tajuk atau penulis"') && css.includes(".header-search-input::placeholder { font-size: inherit;"), "the placeholder is short and smaller");
 assert(box.includes("{!open ? (") && box.includes("refocus.current"), "the icon is replaced by the field when open, and focus returns to the icon on Escape");
+
+assert(css.includes("@media (min-width: 821px) and (max-width: 1050px) { .header-search-wrap { width: 40px; height: 40px; } .header-search-panel { position: absolute;"), "on a mid-width screen the open field floats over the end of the tabs, so the tabs never push over the wordmark");
 
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);

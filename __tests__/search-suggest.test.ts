@@ -39,7 +39,21 @@ assert(first.typeLabel === "Novela" && first.authors === "Rafiq Naim & Nara Zahi
 assert(Object.keys(first).sort().join() === "authors,href,title,typeLabel", "a suggestion carries only what a public card shows");
 assert(suggest(docs, "x".repeat(5000)).length === 0, "a very long query is cut, not a problem");
 
+// the box looks at the title and the author only; a word that is only inside a story belongs to the full search page
+const withText = { ...doc("teks", "Cerita Lain", "cerpen", ["Mimo"]), sections: [{ label: "", text: "ada seekor helang di langit", folded: fold("ada seekor helang di langit") }], foldedEntities: fold("helang") };
+assert(suggest([withText], "helang").length === 0, "a word that is only in the text of a story is not suggested");
+assert(suggest([withText], "cerita").length === 1 && suggest([withText], "mim").length === 1 && suggest([withText], "mimo cerita").length === 1, "a title word, the start of an author's name and both together find it");
+assert(suggest([withText], "erita").length === 0, "typing starts a word; the middle of a word does not match");
+assert(suggest(docs, "hujan petang")[0].title === "Hujan Petang" && suggest([doc("a", "Bukan Hujan"), doc("b", "Hujan Petang")], "hujan")[0].title === "Hujan Petang", "a title that begins with what was typed comes first");
+
 assert(allResultsHref("kerusi roda") === "/cari?q=kerusi%20roda" && allResultsHref("  ") === "/cari" && allResultsHref("a&b=c") === "/cari?q=a%26b%3Dc", "the page of full results is reached with the query made safe");
+
+// type: a title is Georgia at weight 500 (as on the cards); information is Inter; "see all" lines up with the rows; the field is 16 px on a phone (no zoom)
+const css = read("src/app/globals.css");
+assert(/\.header-search-title \{ font-size: 16px; font-weight: 500;/.test(css), "a suggested title is 16 px at weight 500, like a title elsewhere on the site");
+assert(/\.header-search-meta \{ font-family: var\(--font-inter\)[^}]*font-size: 13px;/.test(css) && /\.header-search-empty \{[^}]*font-family: var\(--font-inter\)/.test(css), "kind and author, and the empty note, are Inter");
+assert(/\.header-search-all \{[^}]*justify-content: flex-start;[^}]*font-family: var\(--font-inter\)[^}]*font-size: 14px;/.test(css), "\"see all\" is left-aligned like the rows, Inter 14 px");
+assert(/\.header-search-input \{[^}]*font-family: var\(--font-inter\)[^}]*font-size: 14px;/.test(css) && css.includes(".header-search-input::placeholder { font-size: inherit;") && /max-width: 600px\) \{ \.header-search-input \{ font-size: 16px; \}/.test(css), "the field is Inter 14 px (16 px on a phone), its hint the same size");
 
 const box = read("src/components/reader/HeaderSearch.tsx");
 assert(box.includes("event.preventDefault();\n    setOpen") && box.includes('href="/cari"'), "the icon opens the box, and is still a link to the search page when script does not run");
