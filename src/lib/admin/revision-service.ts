@@ -358,8 +358,11 @@ export async function createRevisionTx(
       .select(["id", "revision_no", "snapshot"])
       .orderBy("revision_no", "desc")
       .execute();
-    // Same visible content AND the same character list AND the same side-card note; otherwise it is a new version.
-    const existing = sameHash.find((row) => snapshotCharacters(row.snapshot) === liveCharacters && snapshotReaderNote(row.snapshot) === liveReaderNote);
+    // Same visible content AND the same character list AND the same side-card note; otherwise it is a new version. Only the version that is
+    // public right now can be reused (publishing again with nothing changed, after an archive, say). An OLDER version that happens to match
+    // (the text was put back as it was in v1 while v2 is public) is not reused: that would send readers back to v1 with no new entry in the
+    // history, the version label of v2 and a revision count that does not know about it. It becomes a new version instead.
+    const existing = sameHash.find((row) => row.id === work.published_revision_id && snapshotCharacters(row.snapshot) === liveCharacters && snapshotReaderNote(row.snapshot) === liveReaderNote);
     if (existing) {
       await trx
         .updateTable("works")
