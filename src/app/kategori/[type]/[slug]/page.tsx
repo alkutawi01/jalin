@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { chapterPageLabel } from "../../../../lib/reader/chapter-label";
 import { notFound } from "next/navigation";
 import { absoluteUrl, clipDescription, shareImageUrl } from "../../../../lib/seo";
 import { chapterHeroOf } from "../../../../lib/reader/chapter-visuals";
@@ -42,7 +43,7 @@ export async function generateMetadata({
     ? `/kategori/${type}/${slug}/${chapter.slug}`
     : `/kategori/${type}/${slug}`;
   // A chapter has its own title and description, so a search result or a shared link says which chapter it is.
-  const chapterLabel = chapter ? `Bab ${sectionIndex + 1}${chapter.title ? `: ${chapter.title}` : ""}` : "";
+  const chapterLabel = chapter ? chapterPageLabel(sectionIndex + 1, chapter.title) : "";
   const pageTitle = chapter ? `${chapterLabel} · ${work.title}` : work.title;
   const pageDescription = clipDescription(
     chapter ? `Bab ${sectionIndex + 1} daripada ${sections.length} · ${work.title}. ${description}` : description
