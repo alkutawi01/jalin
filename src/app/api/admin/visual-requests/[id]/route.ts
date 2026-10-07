@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getVisualRequest, updateVisualRequest, deleteVisualRequest } from "../../../../../lib/admin/visual-request-service";
+import { getVisualRequest, updateVisualRequest, deleteVisualRequest, parseSubmissionId } from "../../../../../lib/admin/visual-request-service";
 import { parseDbId } from "../../../../../lib/admin/ids";
 
 export async function GET(
@@ -48,9 +48,16 @@ export async function PATCH(
 
     const body = await request.json();
 
+    let submissionId: number | null | undefined;
+    try {
+      submissionId = parseSubmissionId(body.submissionId);
+    } catch (error) {
+      return NextResponse.json({ error: (error as Error).message }, { status: 400 });
+    }
+
     const visualRequest = await updateVisualRequest(numId, {
       workId: body.workId,
-      submissionId: body.submissionId,
+      submissionId,
       visualRole: body.visualRole,
       prompt: body.prompt,
       provider: body.provider,
