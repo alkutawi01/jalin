@@ -14,7 +14,7 @@ import type { ContributorKind } from "../db/types";
 
 function getAdminDb(): Kysely<Database> {
   if (!hasDb()) {
-    throw new Error("[ContributorService] Database not available.");
+    throw new Error("Pangkalan data tidak tersedia.");
   }
   return getDb();
 }
@@ -92,28 +92,34 @@ export async function createContributor(input: ContributorInput): Promise<Contri
 
   // Check slug uniqueness
   if (await slugExists(input.slug)) {
-    throw new Error(`Slug "${input.slug}" already exists.`);
+    throw new Error(`Alamat pautan "${input.slug}" sudah digunakan. Pilih alamat lain.`);
   }
 
   const now = new Date().toISOString();
 
-  await db
-    .insertInto("contributors")
-    .values({
-      slug: input.slug,
-      display_name: input.displayName,
-      kind: input.kind,
-      bio: input.bio || null,
-      disclosure: input.disclosure || null,
-      is_visible: input.isVisible !== false,
-      created_at: now,
-      updated_at: now,
-    })
-    .execute();
+  try {
+    await db
+      .insertInto("contributors")
+      .values({
+        slug: input.slug,
+        display_name: input.displayName,
+        kind: input.kind,
+        bio: input.bio || null,
+        disclosure: input.disclosure || null,
+        is_visible: input.isVisible !== false,
+        created_at: now,
+        updated_at: now,
+      })
+      .execute();
+  } catch (error) {
+    // The same address saved twice at the same moment: the second is told what the check above would have said.
+    if ((error as { code?: string }).code === "23505") throw new Error(`Alamat pautan "${input.slug}" sudah digunakan. Pilih alamat lain.`);
+    throw error;
+  }
 
   const contributor = await getContributor(input.slug);
   if (!contributor) {
-    throw new Error("Failed to create contributor.");
+    throw new Error("Penyumbang tidak dapat dibuat.");
   }
 
   return contributor;
@@ -134,7 +140,7 @@ export async function updateContributor(
   // Check slug uniqueness if slug is being changed
   if (input.slug && input.slug !== slug) {
     if (await slugExists(input.slug, slug)) {
-      throw new Error(`Slug "${input.slug}" already exists.`);
+      throw new Error(`Alamat pautan "${input.slug}" sudah digunakan. Pilih alamat lain.`);
     }
   }
 
@@ -186,7 +192,7 @@ export async function updateContributor(
   const targetSlug = input.slug || slug;
   const contributor = await getContributor(targetSlug);
   if (!contributor) {
-    throw new Error("Contributor not found after update.");
+    throw new Error("Penyumbang tidak ditemui selepas dikemas kini.");
   }
 
   return contributor;

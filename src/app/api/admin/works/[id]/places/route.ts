@@ -23,6 +23,6 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     return NextResponse.json((work.metadata?.places as unknown[]) ?? []);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Ralat tidak diketahui.";
-    return NextResponse.json({ error: message }, { status: message === "Work not found." ? 404 : 400 });
+    return NextResponse.json({ error: message }, { status: message === "Karya tidak ditemui." ? 404 : 400 });
   }
 }

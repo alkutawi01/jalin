@@ -27,7 +27,9 @@ assert(boot.includes('.boot-screen,.page-loading{display:none!important}') && bo
 assert(read("src/app/layout.tsx").includes("<BootScreen />") && css.includes("body:has(.a-nav, .admin-login-page) .boot-screen { display: none; }") && boot.includes("<noscript>"), "it is in every page, and not in the admin or without JavaScript");
 
 assert(read("src/app/not-found.tsx").includes("<JalinEmblem animated"), "the 404 page shows the moving emblem");
-assert(read("src/app/loading.tsx").includes('<JalinEmblem animated tone="on-teal" variant="gelombang" size={104} label="Memuatkan" />'), "the loading screen shows the moving emblem, named for screen readers");
+// A root loading.tsx makes every page stream behind it, and a streamed page has already answered 200 when it finds the work does not
+// exist: every missing address was a "soft 404" (200) to search engines. The loading screen readers see is the BootScreen above.
+assert(!fs.existsSync(path.join(__dirname, "..", "src/app/loading.tsx")), "no root loading file, so a page that does not exist answers 404");
 assert(read("src/app/kategori/[type]/page.tsx").includes("<JalinEmblem size={72} />"), "an empty category shows the still emblem");
 
 assert(read("src/components/reader/StoryChrome.tsx").includes('<div className="end-rule"><LilitDivider /></div>'), "the end of a story shows the Lilit Naskhah divider");
@@ -36,7 +38,7 @@ assert(lilit.includes('className="lilit-gap"') && css.includes(".lilit-divider .
 
 assert(!css.includes(".site-footer::before"), "the footer has no pattern band along its top edge (Izzat found it unattractive, 7 Oct 2026)");
 
-assert(css.includes("html:has(.boot-screen:not(.boot-out)) { overflow: hidden; }") && css.includes("html:has(.a-nav, .admin-login-page) { overflow: visible; }"), "the page behind the loading screen has no scroll bar and does not scroll (not in the admin)");
+assert(css.includes("html:has(.boot-screen:not(.boot-out)):not(:has(.a-nav, .admin-login-page)) { overflow: hidden;") && css.includes("@keyframes boot-unlock") && css.includes("html:has(.a-nav, .admin-login-page) { overflow: visible; }"), "the page behind the loading screen has no scroll bar and does not scroll (never in the admin, even if boot-out is missing; a public page lets go after 8.5s if the script never ran)");
 assert(css.includes(".work-cover img { animation: jalin-fade-in .3s ease-out; }") && !/\.hero-featured-visual img \{ animation: jalin-fade-in/.test(css), "the home hero picture runs no fade of its own; cards keep theirs");
 
 console.log(`\n${passed} passed, ${failed} failed`);

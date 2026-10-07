@@ -26,6 +26,7 @@ export type GroundKey = (typeof GROUNDS)[number]["key"];
 /** The home page blocks whose background can be chosen, in page order, with the colour each has until an editor picks another. */
 export const HOME_BLOCKS = [
   { key: "hero", label: "Karya utama (karusel)", default: "paper" },
+  { key: "stats", label: "Statistik (di bawah karusel)", default: "ink" },
   { key: "series", label: "Bersiri", default: "paper" },
   { key: "latest", label: "Karya Terbaru", default: "paper" },
   { key: "categories", label: "Jelajahi Kategori", default: "sand" }

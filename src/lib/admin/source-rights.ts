@@ -171,7 +171,7 @@ export function validateSourceUrl(url: string | null | undefined): {
 
 function getDbOrThrow(): Kysely<Database> {
   if (!hasDb()) {
-    throw new Error("[SourceRights] Database not available.");
+    throw new Error("Pangkalan data tidak tersedia.");
   }
   return getDb();
 }
@@ -302,7 +302,7 @@ async function saveFragmenTextLanguage(
   }
   return db.transaction().execute(async (trx) => {
     const work = await trx.selectFrom("works").where("id", "=", workId).selectAll().forUpdate().executeTakeFirst();
-    if (!work) throw new Error("Work tidak ditemui.");
+    if (!work) throw new Error("Karya tidak ditemui.");
     if (work.type !== "fragmen") return false;
     const metadata = (work.metadata ?? {}) as Record<string, unknown>;
     if (metadata.fragmenTextLanguage === next) return false;
@@ -346,7 +346,7 @@ export async function upsertSourceProvenance(
     .where("id", "=", workId)
     .selectAll()
     .executeTakeFirst();
-  if (!work) throw new Error("Work tidak ditemui.");
+  if (!work) throw new Error("Karya tidak ditemui.");
 
   const type = String(work.type);
   if (!isSourcedWork(type, work.metadata)) {
@@ -482,7 +482,7 @@ export async function upsertSourceProvenance(
   }
 
   const view = await getSourceRightsView(workId);
-  if (!view) throw new Error("Work tidak ditemui.");
+  if (!view) throw new Error("Karya tidak ditemui.");
   return { view, invalidatedApproval };
 }
 
@@ -523,7 +523,7 @@ export async function performRightsReview(
     .where("id", "=", workId)
     .selectAll()
     .executeTakeFirst();
-  if (!work) throw new Error("Work tidak ditemui.");
+  if (!work) throw new Error("Karya tidak ditemui.");
 
   const type = String(work.type);
   if (!isSourcedWork(type, work.metadata)) {
@@ -534,16 +534,16 @@ export async function performRightsReview(
 
   const status = String(input.rights_status || "").trim();
   if (!ALL_RIGHTS_STATUSES.includes(status as RightsStatus)) {
-    throw new Error(`rights_status tidak sah: "${status}".`);
+    throw new Error(`Keputusan hak tidak sah: "${status}".`);
   }
   if (status === "restricted" || status === "rejected") {
     if (!input.rights_notes || !String(input.rights_notes).trim()) {
-      throw new Error("rights_notes wajib untuk status restricted/rejected.");
+      throw new Error("Catatan hak wajib apabila hak disekat atau ditolak.");
     }
   }
   if (isPassRightsStatus(status)) {
     if (!input.rights_notes || !String(input.rights_notes).trim()) {
-      throw new Error("rights_notes wajib untuk kelulusan hak (PASS).");
+      throw new Error("Catatan hak wajib apabila hak diluluskan.");
     }
   }
 
@@ -678,7 +678,7 @@ export async function performRightsReview(
   });
 
   const view = await getSourceRightsView(workId);
-  if (!view) throw new Error("Work tidak ditemui.");
+  if (!view) throw new Error("Karya tidak ditemui.");
   return { view, invalidatedApproval: false };
 }
 
@@ -729,7 +729,7 @@ export async function confirmFragmenMalayText(
   const db = getDbOrThrow();
   await db.transaction().execute(async (trx) => {
     const work = await trx.selectFrom("works").where("id", "=", workId).selectAll().forUpdate().executeTakeFirst();
-    if (!work) throw new Error("Work tidak ditemui.");
+    if (!work) throw new Error("Karya tidak ditemui.");
     if (work.type !== "fragmen") throw new Error("Pengesahan bahasa hanya untuk Fragmen.");
     const metadata = { ...((work.metadata ?? {}) as Record<string, unknown>) };
     if (confirmed) {
@@ -746,6 +746,6 @@ export async function confirmFragmenMalayText(
       .execute();
   });
   const view = await getSourceRightsView(workId);
-  if (!view) throw new Error("Work tidak ditemui.");
+  if (!view) throw new Error("Karya tidak ditemui.");
   return view;
 }

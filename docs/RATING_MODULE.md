@@ -31,7 +31,7 @@ Chatbot juga memberi: nama modelnya, "Sesuai Untuk", **Verdict** (maksimum 30 pa
 
 ## Data
 
-Migrasi `024_ratings`: satu jadual `ratings` (aditif, boleh diundur). Tiada perubahan pada jadual lain, snapshot terbitan atau payload awam.
+Migrasi `025_ratings`: satu jadual `ratings` (aditif, boleh diundur). Tiada perubahan pada jadual lain, snapshot terbitan atau payload awam.
 
 ## Kod
 

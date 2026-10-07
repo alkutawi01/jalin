@@ -139,7 +139,7 @@ export default function EditSubmissionPage() {
     async function loadSubmission() {
       try {
         const res = await fetch(`/api/admin/submissions/${submissionId}`);
-        if (!res.ok) throw new Error("Submission tidak ditemui.");
+        if (!res.ok) throw new Error("Penghantaran tidak ditemui.");
         const sub: SubmissionData = await res.json();
 
         setForm({
@@ -201,7 +201,7 @@ export default function EditSubmissionPage() {
 
   async function handleGenerate() {
     if (!genForm.submissionBrief.trim()) {
-      setGenError("Arahan/brief diperlukan.");
+      setGenError("Arahan diperlukan.");
       return;
     }
     setGenerating(true);
@@ -281,7 +281,7 @@ export default function EditSubmissionPage() {
         throw new Error(data.error || "Gagal mempromosikan.");
       }
 
-      setPromoteSuccess(`Berjaya! Work ${data.workId} dicipta. ${data.promotedCreditCount} kredit disalin.`);
+      setPromoteSuccess(`Karya ${data.workId} dibuat. ${data.promotedCreditCount} kredit disalin.`);
       setForm((prev) => ({ ...prev, resultWorkId: data.workId }));
 
       if (data.warnings?.length > 0) {
@@ -549,7 +549,7 @@ export default function EditSubmissionPage() {
 
             <div className="admin-form-row">
               <div className="admin-form-group">
-                <label>Persona / Nama Awam</label>
+                <label>Nama awam (nama samaran)</label>
                 <input
                   type="text"
                   value={editingContribution.ai_persona || editingContribution.guest_name || ""}
@@ -592,7 +592,7 @@ export default function EditSubmissionPage() {
             </div>
 
             <div className="admin-section" style={{ margin: "1rem 0", padding: "0.75rem", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: "6px" }}>
-              <h4 style={{ margin: "0 0 0.25rem", fontSize: "0.85rem", color: "#991b1b" }}>Identiti Dalaman (Admin sahaja — TIDAK didedahkan kepada awam)</h4>
+              <h4 style={{ margin: "0 0 0.25rem", fontSize: "0.85rem", color: "#991b1b" }}>Identiti dalaman (pentadbir sahaja, tidak didedahkan kepada awam)</h4>
               <p style={{ margin: 0, fontSize: "0.8rem", color: "#b91c1c" }}>
                 Maklumat teknikal AI hanya untuk rujukan admin. Provider/model/tool TIDAK akan sesekali muncul di laman awam.
               </p>
@@ -780,7 +780,7 @@ export default function EditSubmissionPage() {
                 }));
               }}
             >
-              <option value="mock">Mock (Ujian)</option>
+              <option value="mock">Olok-olok (ujian)</option>
               <option value="openai">OpenAI</option>
             </select>
           </div>
@@ -807,7 +807,7 @@ export default function EditSubmissionPage() {
         </div>
 
         <div className="admin-form-group">
-          <label htmlFor="genBrief">Arahan / Brief</label>
+          <label htmlFor="genBrief">Arahan</label>
           <textarea
             id="genBrief"
             value={genForm.submissionBrief}
@@ -905,7 +905,7 @@ export default function EditSubmissionPage() {
           <div>
             <div className="admin-section" style={{ marginBottom: "1rem", padding: "0.75rem", background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: "6px" }}>
               <p style={{ margin: 0, fontSize: "0.85rem", color: "#1e40af" }}>
-                Promosi akan mencipta Work canonical dengan status "ready". Tidak akan menerbitkan secara automatik.
+                Menaikkan penghantaran membuat sebuah karya berstatus Sedia. Karya itu tidak diterbitkan secara automatik.
               </p>
             </div>
 
@@ -918,7 +918,7 @@ export default function EditSubmissionPage() {
                 type="text"
                 value={promoteSlug}
                 onChange={(e) => setPromoteSlug(e.target.value)}
-                placeholder={form.proposedSlug || "auto-dari-tajuk"}
+                placeholder={form.proposedSlug || "dibentuk daripada tajuk"}
               />
               <span className="admin-form-hint">Kosongkan untuk dijana daripada tajuk</span>
             </div>
@@ -1003,7 +1003,7 @@ export default function EditSubmissionPage() {
                 disabled={promoting || contributions.length === 0}
                 style={{ background: "#7c3aed", borderColor: "#7c3aed" }}
               >
-                {promoting ? "Memproses..." : "Promote ke Work"}
+                {promoting ? "Memproses…" : "Naikkan ke Karya"}
               </button>
             </div>
           </div>

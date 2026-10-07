@@ -14,7 +14,7 @@ const ASPECT_RATIOS = [
   { value: "3:2", label: "3:2 (Landskap)" },
   { value: "2:3", label: "2:3 (Potret)" },
   { value: "1:1", label: "1:1 (Segi Empat)" },
-  { value: "16:9", label: "16:9 (Wide)" },
+  { value: "16:9", label: "16:9 (lebar)" },
   { value: "9:16", label: "9:16 (Tegak)" },
   { value: "4:3", label: "4:3" },
   { value: "3:4", label: "3:4" },
@@ -59,7 +59,7 @@ export default function NewVisualRequestPage() {
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error || "Gagal mencipta visual request.");
+        throw new Error(data.error || "Permintaan gambar tidak dapat dibuat.");
       }
 
       const vr = await res.json();
@@ -197,7 +197,7 @@ export default function NewVisualRequestPage() {
         <div className="admin-form-actions">
           <a href="/admin/visual-requests" className="admin-btn admin-btn-outline">Kembali</a>
           <button type="submit" className="admin-btn admin-btn-primary" disabled={saving}>
-            {saving ? "Mencipta..." : "Cipta Visual Request"}
+            {saving ? "Mencipta..." : "Cipta Permintaan"}
           </button>
         </div>
       </form>

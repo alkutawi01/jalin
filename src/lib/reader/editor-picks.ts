@@ -1,5 +1,5 @@
 import { getDb, hasDb } from "../db";
-import type { Work } from "../content/types";
+import type { ImageCrop, Work } from "../content/types";
 import { projectPublicWorkSummary, type PublicWorkSummary } from "./public-projection";
 
 const EDITOR_PICK_LIMIT = 3;
@@ -63,7 +63,7 @@ export interface SeriesOfEpisode {
   title: string;
   dek?: string;
   genre?: string;
-  hero?: { src: string; alt: string };
+  hero?: { src: string; alt: string; crop?: ImageCrop };
 }
 
 /**
@@ -103,7 +103,7 @@ export function resolveHeroPicks(picks: PublicWorkSummary[], seriesOfEpisode: (e
       readingMinutes: pick.readingMinutes,
       publishedAt: pick.publishedAt,
       // The series' own artwork when it has one, else the episode's picture.
-      hero: series.hero ? { src: series.hero.src, alt: series.hero.alt } : pick.hero
+      hero: series.hero ? { src: series.hero.src, alt: series.hero.alt, ...(series.hero.crop ? { crop: series.hero.crop } : {}) } : pick.hero
     });
   }
   return out;

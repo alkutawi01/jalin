@@ -42,7 +42,7 @@ export async function uploadVisualForWork(
   input: WorkVisualUploadInput
 ): Promise<WorkVisualUploadResult> {
   if (!ROLES.has(input.role as VisualRole)) {
-    return { ok: false, status: 400, error: "Role mesti hero, inline atau section." };
+    return { ok: false, status: 400, error: "Jenis gambar tidak sah: gambar utama, gambar dalam teks atau gambar bab." };
   }
   const chapterHero = input.role === "section" && Boolean(input.sectionSlug) && !input.anchor?.trim();
   const needsMarker = input.role !== "hero" && !chapterHero;
@@ -208,7 +208,7 @@ export async function replaceVisualImage(
   input: { visualId: number; bytes: Buffer; toolName: string | null; altText?: string; actor: string }
 ): Promise<ReplaceVisualResult> {
   const old = await db.selectFrom("visuals").where("id", "=", input.visualId).selectAll().executeTakeFirst();
-  if (!old) return { ok: false, status: 404, error: "Visual tidak ditemui." };
+  if (!old) return { ok: false, status: 404, error: "Gambar tidak ditemui." };
 
   const result = await uploadVisualForWork(db, {
     workId: old.work_id,

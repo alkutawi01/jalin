@@ -7,12 +7,16 @@ import HeroCarousel, { type HeroSlide } from "../components/reader/HeroCarousel"
 import { WorkCover } from "../components/reader/WorkCover";
 import { initContentRepository } from "../lib/content";
 import type { SeriesMeta } from "../lib/content/types";
+import type { ImageCrop } from "../lib/content/types";
+import { cropStyle } from "../lib/reader/crop";
 import { displayableGenre } from "../lib/reader/genre-display";
 import { getAllWorks } from "../lib/content/workLoader";
 import { getEditorPickSummaries, resolveHeroPicks } from "../lib/reader/editor-picks";
 import { projectPublicWorkSummary, type PublicWorkSummary } from "../lib/reader/public-projection";
 import { renderAttribution } from "@/components/reader/Attribution";
 import { homeGrounds, type GroundKey } from "../lib/site-theme";
+import CountUp from "../components/reader/CountUp";
+import { computeSiteStats, statItems } from "../lib/reader/site-stats";
 
 export const dynamic = "force-dynamic";
 
@@ -154,7 +158,7 @@ interface SeriesHighlightData {
   slug: string;
   title: string;
   genre?: string;
-  hero?: { src: string; alt: string };
+  hero?: { src: string; alt: string; crop?: ImageCrop };
   first: { slug: string; position: number };
   latest: { slug: string; position: number; title: string; readingMinutes?: number; publishedAt?: string };
   year: string;
@@ -216,7 +220,7 @@ function SeriesHighlight({ data, ground }: { data: SeriesHighlightData; ground: 
           <a className="series-feature-media" href={base}>
             {data.hero ? (
               <>
-                <Image src={data.hero.src} alt={data.hero.alt || `Ilustrasi siri ${data.title}`} fill sizes="(max-width: 700px) 100vw, (max-width: 924px) calc(100vw - 64px), 860px" />
+                <Image src={data.hero.src} alt={data.hero.alt || `Ilustrasi siri ${data.title}`} fill sizes="(max-width: 700px) 100vw, (max-width: 924px) calc(100vw - 64px), 860px" style={cropStyle(data.hero.crop)} />
                 <span className="image-rights" aria-hidden="true">© ADJUNG {data.year}</span>
               </>
             ) : null}
@@ -268,6 +272,7 @@ export default async function Home() {
   const editorialPicks = resolveHeroPicks(pickSummaries, (episodeSlug) => seriesByEpisode.get(episodeSlug));
   const seriesHighlight = await getSeriesHighlight();
   const grounds = await homeGrounds();
+  const stats = statItems(computeSiteStats(allWorks, pickRepo.getPublishedSeries().length));
 
   // The hero is an editorial decision, never an automatic "newest work" slot.
   // Selected works rotate in the same hero presentation; everything else remains eligible for Karya Terbaru.
@@ -311,6 +316,23 @@ export default async function Home() {
         {allWorks.length === 0 ? (
           <section className="site-shell">
             <p className="section-sub">Karya pertama sedang disediakan. Kembali tidak lama lagi.</p>
+          </section>
+        ) : null}
+
+        {stats.length > 0 ? (
+          <section className="home-stats" data-ground={grounds.stats} aria-label="Isi Jalin mengikut kategori">
+            <div className="site-shell">
+              <ul className="home-stats-list">
+                {stats.map((item, index) => (
+                  <li key={item.key} className="home-stat">
+                    <a href={item.href}>
+                      <span className="home-stat-value"><CountUp value={item.count} delayMs={index * 120} /></span>
+                      <span className="home-stat-label">{item.label}</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </section>
         ) : null}
 

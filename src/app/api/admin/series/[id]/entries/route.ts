@@ -32,7 +32,7 @@ export async function POST(
     const body = await request.json();
 
     if (!body.workId) {
-      return NextResponse.json({ error: "workId diperlukan." }, { status: 400 });
+      return NextResponse.json({ error: "Karya diperlukan." }, { status: 400 });
     }
 
     const entry = await attachEpisode(
@@ -48,7 +48,7 @@ export async function POST(
       ? 404
       : message.includes("sudah menjadi") || message.includes("duplicate")
         ? 409
-        : message.includes("hanya") || message.includes("tidak sah") || message.includes("sudah digunakan") || message.includes("diperlukan")
+        : message.includes("Hanya") || message.includes("tidak sah") || message.includes("sudah digunakan") || message.includes("diperlukan")
           ? 400
           : 500;
     return NextResponse.json({ error: message }, { status });

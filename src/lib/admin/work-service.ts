@@ -14,7 +14,7 @@ import { characterProblems } from "./metadata-rules";
 
 function getAdminDb(): Kysely<Database> {
   if (!hasDb()) {
-    throw new Error("[AdminWorkService] Database not available.");
+    throw new Error("Pangkalan data tidak tersedia.");
   }
   return getDb();
 }
@@ -28,7 +28,8 @@ export interface WorkInput {
   genre?: string;
   audience?: string;
   dek?: string;
-  readingMinutes?: number;
+  /** null removes the stored number (the reader then estimates from the text). */
+  readingMinutes?: number | null;
   version?: string;
   publishedAt?: string;
   updatedAt?: string;
@@ -142,7 +143,7 @@ export async function createWork(input: WorkInput): Promise<WorkRecord> {
 
   // Check slug uniqueness
   if (await slugExists(input.slug)) {
-    throw new Error(`Slug "${input.slug}" already exists.`);
+    throw new Error(`Alamat pautan "${input.slug}" sudah digunakan. Pilih alamat lain.`);
   }
 
   const now = new Date().toISOString();
@@ -185,7 +186,7 @@ export async function createWork(input: WorkInput): Promise<WorkRecord> {
 
   const work = await getWork(id);
   if (!work) {
-    throw new Error("Failed to create work.");
+    throw new Error("Karya tidak dapat dibuat.");
   }
 
   return work;
@@ -203,7 +204,7 @@ export async function updateWork(
   // Check slug uniqueness if slug is being changed
   if (input.slug) {
     if (await slugExists(input.slug, id)) {
-      throw new Error(`Slug "${input.slug}" already exists.`);
+      throw new Error(`Alamat pautan "${input.slug}" sudah digunakan. Pilih alamat lain.`);
     }
   }
 
@@ -264,7 +265,7 @@ export async function updateWork(
 
   const work = await getWork(id);
   if (!work) {
-    throw new Error("Work not found after update.");
+    throw new Error("Karya tidak ditemui selepas dikemas kini.");
   }
 
   return work;
@@ -293,6 +294,11 @@ export async function deleteUnpublishedWork(id: string): Promise<void> {
     await trx.deleteFrom("visuals").where("work_id", "=", id).execute();
     await trx.deleteFrom("credits").where("work_id", "=", id).execute();
     await trx.deleteFrom("glossary_terms").where("work_id", "=", id).execute();
+    // These two name the work without a link in the database, so nothing removed them: the editorial problems of a work that is
+    // gone stayed listed, and the submission the draft was made from stayed "sudah dipromosikan ke Work …" for a work that no
+    // longer exists, so it could never be promoted again.
+    await trx.deleteFrom("editorial_issues").where("work_id", "=", id).execute();
+    await trx.updateTable("work_submissions").set({ result_work_id: null, promoted_at: null, updated_at: new Date().toISOString() }).where("result_work_id", "=", id).execute();
     await trx.deleteFrom("works").where("id", "=", id).execute();
   });
 }
@@ -388,7 +394,7 @@ export function validateTimeEntries(times: unknown): Array<{ name: string; descr
 export async function updateWorkPlaces(id: string, places: unknown): Promise<WorkRecord> {
   const db = getAdminDb();
   const existing = await getWork(id);
-  if (!existing) throw new Error("Work not found.");
+  if (!existing) throw new Error("Karya tidak ditemui.");
   const validated = validatePlaceEntries(places);
   await db.transaction().execute(async (trx) => {
     const current = await trx.selectFrom("works").where("id", "=", id).select("metadata").forUpdate().executeTakeFirst();
@@ -396,7 +402,7 @@ export async function updateWorkPlaces(id: string, places: unknown): Promise<Wor
     await trx.updateTable("works").where("id", "=", id).set({ metadata, updated_at: new Date().toISOString() }).execute();
   });
   const work = await getWork(id);
-  if (!work) throw new Error("Work not found after update.");
+  if (!work) throw new Error("Karya tidak ditemui selepas dikemas kini.");
   return work;
 }
 
@@ -404,7 +410,7 @@ export async function updateWorkPlaces(id: string, places: unknown): Promise<Wor
 export async function updateWorkTimes(id: string, times: unknown): Promise<WorkRecord> {
   const db = getAdminDb();
   const existing = await getWork(id);
-  if (!existing) throw new Error("Work not found.");
+  if (!existing) throw new Error("Karya tidak ditemui.");
   const validated = validateTimeEntries(times);
   await db.transaction().execute(async (trx) => {
     const current = await trx.selectFrom("works").where("id", "=", id).select("metadata").forUpdate().executeTakeFirst();
@@ -412,7 +418,7 @@ export async function updateWorkTimes(id: string, times: unknown): Promise<WorkR
     await trx.updateTable("works").where("id", "=", id).set({ metadata, updated_at: new Date().toISOString() }).execute();
   });
   const work = await getWork(id);
-  if (!work) throw new Error("Work not found after update.");
+  if (!work) throw new Error("Karya tidak ditemui selepas dikemas kini.");
   return work;
 }
 
@@ -429,7 +435,7 @@ export async function updateWorkCharacters(
 
   const existing = await getWork(id);
   if (!existing) {
-    throw new Error("Work not found.");
+    throw new Error("Karya tidak ditemui.");
   }
 
   const validated = validateCharacterEntries(characters);
@@ -447,7 +453,7 @@ export async function updateWorkCharacters(
 
   const work = await getWork(id);
   if (!work) {
-    throw new Error("Work not found after update.");
+    throw new Error("Karya tidak ditemui selepas dikemas kini.");
   }
 
   return work;

@@ -5,6 +5,10 @@ import { useRouter } from "next/navigation";
 import { confirmAction, toast } from "../../../../lib/admin/dialogs";
 import LoadingBlock from "../../../../components/admin/LoadingBlock";
 import AudiencePicker from "../../../../components/admin/AudiencePicker";
+import ImageFocusPicker, { type FocusValue } from "../../../../components/admin/ImageFocusPicker";
+
+/** An episode's status in the editor's words, as the works list shows it. */
+const EPISODE_STATUS: Record<string, string> = { draft: "Draf", review: "Semakan", ready: "Sedia", published: "Diterbitkan", archived: "Diarkibkan" };
 
 interface SeriesData {
   id: string;
@@ -17,6 +21,9 @@ interface SeriesData {
   status: string;
   hero_src?: string | null;
   hero_alt?: string | null;
+  hero_focus_x?: number | null;
+  hero_focus_y?: number | null;
+  hero_zoom?: number | null;
   entries: { id: number; series_id: string; work_id: string; position: number }[];
 }
 
@@ -44,6 +51,8 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
   const [heroFile, setHeroFile] = useState<File | null>(null);
   const [heroAlt, setHeroAlt] = useState("");
   const [heroBusy, setHeroBusy] = useState(false);
+  /** The part of the series' picture being chosen; null until the editor touches the picker (the saved choice is shown meanwhile). */
+  const [heroCrop, setHeroCrop] = useState<FocusValue | null>(null);
   const [form, setForm] = useState({
     title: "",
     slug: "",
@@ -257,7 +266,30 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Gagal memuat naik gambar siri.");
       setHeroFile(null);
+      setHeroCrop(null);
       toast("Gambar siri disimpan.", "success");
+      await loadSeries();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+    } finally {
+      setHeroBusy(false);
+    }
+  }
+
+  async function saveHeroCrop() {
+    if (!heroCrop) return;
+    setHeroBusy(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/admin/series/${id}/hero`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ focusX: heroCrop.x, focusY: heroCrop.y, zoom: heroCrop.zoom }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Bahagian gambar tidak dapat disimpan.");
+      setHeroCrop(null);
+      toast("Bahagian gambar disimpan.", "success");
       await loadSeries();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
@@ -311,6 +343,22 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
             <img src={series.hero_src} alt={series.hero_alt || "Gambar siri"} style={{ width: "100%", borderRadius: 12, display: "block" }} />
             <figcaption className="admin-form-hint">{series.hero_alt || "Tiada teks alternatif"}</figcaption>
           </figure>
+        ) : null}
+        {series.hero_src ? (
+          <details className="a-settings-fold">
+            <summary>Bahagian gambar yang dipaparkan (fokus dan zum)</summary>
+            <ImageFocusPicker
+              src={series.hero_src}
+              value={heroCrop ?? { x: series.hero_focus_x ?? 50, y: series.hero_focus_y ?? 50, zoom: series.hero_zoom ?? 100 }}
+              onChange={setHeroCrop}
+            />
+            <div className="admin-form-actions">
+              <button type="button" className="admin-btn admin-btn-primary" disabled={heroBusy || heroCrop === null} onClick={() => void saveHeroCrop()}>
+                {heroBusy ? "Menyimpan…" : "Simpan bahagian gambar"}
+              </button>
+              {heroCrop !== null ? <button type="button" className="admin-btn admin-btn-outline" disabled={heroBusy} onClick={() => setHeroCrop(null)}>Batal</button> : null}
+            </div>
+          </details>
         ) : null}
         <div className="admin-form-group">
           <label htmlFor="series-hero-file">Fail imej (PNG, JPEG atau WebP, maksimum 10 MB)</label>
@@ -428,7 +476,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
                       </td>
                       <td>
                         <span className={`admin-status admin-status-${work?.status ?? "draft"}`}>
-                          {work?.status ?? "—"}
+                          {work ? EPISODE_STATUS[work.status] ?? work.status : "—"}
                         </span>
                       </td>
                       <td>
@@ -464,10 +512,10 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
               <div className="admin-form-group" style={{ flex: 1 }}>
                 <label htmlFor="attach-existing">Pilih episod</label>
                 <select id="attach-existing" value={attachWorkId} onChange={(e) => setAttachWorkId(e.target.value)}>
-                  <option value="">-- Pilih episod --</option>
+                  <option value="">— Pilih episod —</option>
                   {attachable.map((w) => (
                     <option key={w.id} value={w.id}>
-                      {w.title} ({w.status})
+                      {w.title} ({EPISODE_STATUS[w.status] ?? w.status})
                     </option>
                   ))}
                 </select>

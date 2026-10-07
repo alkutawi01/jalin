@@ -35,7 +35,7 @@ export async function POST(
     const { provider, model, editorialOverride, executionMode } = body;
 
     if (!provider || typeof provider !== "string") {
-      return NextResponse.json({ error: "provider diperlukan." }, { status: 400 });
+      return NextResponse.json({ error: "Penyedia diperlukan." }, { status: 400 });
     }
 
     if (
@@ -43,7 +43,7 @@ export async function POST(
       executionMode !== "magnific_api" &&
       executionMode !== "magnific_connector"
     ) {
-      return NextResponse.json({ error: "executionMode tidak sah." }, { status: 400 });
+      return NextResponse.json({ error: "Cara penjanaan tidak sah." }, { status: 400 });
     }
 
     // Select adapter

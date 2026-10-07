@@ -23,6 +23,6 @@ const republish = src.slice(src.indexOf("export async function republishWork"));
 const txStart = republish.indexOf('.setIsolationLevel("serializable")');
 const recheck = republish.indexOf("evaluatePublicationReadinessFromData(locked)");
 assert(txStart > 0 && recheck > txStart && recheck < republish.indexOf("createRevisionTx("), "republishWork re-evaluates readiness in its transaction before freezing the new version");
-assert(republish.includes("loadReadinessInput(trx, workId, { lock: true })") && republish.includes("Publication readiness (transaksi) gagal"), "on the locked rows, and refuses with the blockers");
+assert(republish.includes("loadReadinessInput(trx, workId, { lock: true })") && republish.includes("Karya belum boleh diterbitkan (semakan terakhir)"), "on the locked rows, and refuses with the blockers");
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);

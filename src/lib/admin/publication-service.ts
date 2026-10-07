@@ -70,7 +70,7 @@ export interface PublishWorkResult {
 
 function getDbOrThrow(): Kysely<Database> {
   if (!hasDb()) {
-    throw new Error("[PublicationService] Database not available.");
+    throw new Error("Pangkalan data tidak tersedia.");
   }
   return getDb();
 }
@@ -267,13 +267,13 @@ export async function publishWorkExplicit(
     .selectAll()
     .executeTakeFirst();
   if (!existing) {
-    throw new Error("Work tidak ditemui.");
+    throw new Error("Karya tidak ditemui.");
   }
 
   // Idempotent path: already published → no state change (read-only readiness).
   if (existing.status === "published") {
     const readiness = await evaluatePublicationReadiness(workId);
-    if (!readiness) throw new Error("Work tidak ditemui.");
+    if (!readiness) throw new Error("Karya tidak ditemui.");
     const publishedAt =
       existing.published_at instanceof Date
         ? existing.published_at.toISOString()
@@ -291,11 +291,11 @@ export async function publishWorkExplicit(
 
   // Preflight (advisory): fast failure before opening a transaction.
   const preflightInput = await loadReadinessInput(db, workId);
-  if (!preflightInput) throw new Error("Work tidak ditemui.");
+  if (!preflightInput) throw new Error("Karya tidak ditemui.");
   const preflight = evaluatePublicationReadinessFromData(preflightInput);
   if (!preflight.ready) {
     const summary = preflight.blockers.map((b) => b.message).join(" | ");
-    throw new Error(`Publication readiness gagal: ${summary}`);
+    throw new Error(`Karya belum boleh diterbitkan: ${summary}`);
   }
   if (preflightInput.work.status !== "ready") {
     throw new Error(
@@ -324,7 +324,7 @@ export async function publishWorkExplicit(
         // with row locks (FOR UPDATE / FOR SHARE) so concurrent writers block
         // until this publish commits or rolls back.
         const input = await loadReadinessInput(trx, workId, { lock: true });
-        if (!input) throw new Error("Work tidak ditemui semasa transaksi.");
+        if (!input) throw new Error("Karya tidak ditemui semasa menyimpan.");
 
         if (input.work.status === "published") {
           // Concurrent publish won the race — idempotent success without rewrite.
@@ -349,7 +349,7 @@ export async function publishWorkExplicit(
         const readiness = evaluatePublicationReadinessFromData(input);
         if (!readiness.ready) {
           const summary = readiness.blockers.map((b) => b.message).join(" | ");
-          throw new Error(`Publication readiness (transaksi) gagal: ${summary}`);
+          throw new Error(`Karya belum boleh diterbitkan (semakan terakhir): ${summary}`);
         }
         if (input.work.status !== "ready") {
           throw new Error(
@@ -439,7 +439,7 @@ export async function publishWorkExplicit(
   if (!result) {
     throw lastSerializationError instanceof Error
       ? lastSerializationError
-      : new Error("Publish transaction gagal selepas retry berperingkat.");
+      : new Error("Penerbitan tidak dapat diselesaikan selepas beberapa percubaan. Cuba lagi sebentar.");
   }
 
   return {
@@ -523,14 +523,14 @@ export async function republishWork(
 ): Promise<RepublishResult> {
   const db = getDbOrThrow();
   const existing = await db.selectFrom("works").where("id", "=", workId).selectAll().executeTakeFirst();
-  if (!existing) throw new Error("Work tidak ditemui.");
+  if (!existing) throw new Error("Karya tidak ditemui.");
   if (existing.status !== "published") {
     throw new Error("Hanya karya yang sudah terbit boleh diterbitkan semula.");
   }
   const readiness = await evaluatePublicationReadiness(workId);
-  if (!readiness) throw new Error("Work tidak ditemui.");
+  if (!readiness) throw new Error("Karya tidak ditemui.");
   if (!readiness.ready) {
-    throw new Error(`Publication readiness gagal: ${readiness.blockers.map((b) => b.message).join(" | ")}`);
+    throw new Error(`Karya belum boleh diterbitkan: ${readiness.blockers.map((b) => b.message).join(" | ")}`);
   }
   const state = await getUnpublishedChanges(workId);
   if (!state.snapshotMissing && !state.changed) {
@@ -544,10 +544,10 @@ export async function republishWork(
     // The check above ran before this transaction: something may have changed since (a credit, a picture, the rights record). The
     // version that gets frozen must pass the same gate, so check again on the locked rows, as a first publication does.
     const locked = await loadReadinessInput(trx, workId, { lock: true });
-    if (!locked) throw new Error("Work tidak ditemui semasa transaksi.");
+    if (!locked) throw new Error("Karya tidak ditemui semasa menyimpan.");
     const recheck = evaluatePublicationReadinessFromData(locked);
     if (!recheck.ready) {
-      throw new Error(`Publication readiness (transaksi) gagal: ${recheck.blockers.map((b) => b.message).join(" | ")}`);
+      throw new Error(`Karya belum boleh diterbitkan (semakan terakhir): ${recheck.blockers.map((b) => b.message).join(" | ")}`);
     }
     const rev = await createRevisionTx(trx, workId, { id: actor.id, email: actor.email }, {
       changeType,

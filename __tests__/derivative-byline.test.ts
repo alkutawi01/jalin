@@ -89,7 +89,7 @@ assert(cerpenPlan.plan?.credits.find((c) => c.guestName === "Nara Zahin")?.bylin
 
 // ── the credit service and the editor ──
 const service = read("src/lib/admin/credit-service.ts");
-assert(service.includes("byline: input.byline && (await bylineAllowed(db, input.workId))") && service.includes("updateData.byline = input.byline && (current ? await bylineAllowed(db, current.work_id) : true)"), "the server never stores a ticked credit on a sinopsis or fragmen, whoever calls it");
+assert(service.includes("const byline = input.byline && (await bylineAllowed(db, input.workId));") && service.includes("updateData.byline = input.byline && (current ? await bylineAllowed(db, current.work_id) : true)"), "the server never stores a ticked credit on a sinopsis or fragmen, whoever calls it");
 const editorPage = read("src/app/admin/works/[id]/page.tsx");
 assert(editorPage.includes("{!isDerivativeType(form.type) ? <th>Nama di bawah tajuk</th> : null}") && editorPage.includes("byline: isDerivativeType(form.type) ? false : editingCredit.byline"), "the editor has no such tick for a sinopsis or fragmen, in the form or the table");
 assert(editorPage.includes('id="derivative-byline-note"') && editorPage.includes("ialah pengarang karya asal. Ia dipaparkan automatik daripada tab Sumber"), "...and says why");

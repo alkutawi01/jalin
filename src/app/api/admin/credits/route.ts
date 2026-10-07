@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { listCreditsForWork, createCredit, reorderCredits } from "../../../../lib/admin/credit-service";
-import { findDuplicateCredit } from "../../../../lib/admin/metadata-rules";
+import { listCreditsForWork, createCredit, reorderCredits, DuplicateCreditError } from "../../../../lib/admin/credit-service";
+import { creditErrorStatus, findDuplicateCredit } from "../../../../lib/admin/metadata-rules";
 
 export async function GET(request: NextRequest) {
   try {
@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
     const workId = searchParams.get("workId");
 
     if (!workId) {
-      return NextResponse.json({ error: "workId diperlukan." }, { status: 400 });
+      return NextResponse.json({ error: "Karya diperlukan." }, { status: 400 });
     }
 
     const credits = await listCreditsForWork(workId);
@@ -27,13 +27,13 @@ export async function POST(request: NextRequest) {
 
     // Validation
     if (!body.workId) {
-      return NextResponse.json({ error: "workId diperlukan." }, { status: 400 });
+      return NextResponse.json({ error: "Karya diperlukan." }, { status: 400 });
     }
     if (!body.roleLabel?.trim()) {
-      return NextResponse.json({ error: "roleLabel diperlukan." }, { status: 400 });
+      return NextResponse.json({ error: "Peranan diperlukan." }, { status: 400 });
     }
     if (!body.contributorSlug && !body.guestName) {
-      return NextResponse.json({ error: "contributor atau guestName diperlukan." }, { status: 400 });
+      return NextResponse.json({ error: "Penyumbang atau nama tetamu diperlukan." }, { status: 400 });
     }
 
     const duplicate = findDuplicateCredit(await listCreditsForWork(body.workId), {
@@ -57,9 +57,11 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(credit, { status: 201 });
   } catch (error) {
+    // A second request that lost the race to the first: the same answer as the check above.
+    if (error instanceof DuplicateCreditError) return NextResponse.json({ error: error.message }, { status: 409 });
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Ralat tidak diketahui." },
-      { status: 500 }
+      { status: creditErrorStatus(error) }
     );
   }
 }
@@ -69,7 +71,7 @@ export async function PATCH(request: NextRequest) {
     const body = await request.json();
 
     if (!body.workId || !body.creditIds) {
-      return NextResponse.json({ error: "workId dan creditIds diperlukan." }, { status: 400 });
+      return NextResponse.json({ error: "Karya dan susunan kredit diperlukan." }, { status: 400 });
     }
 
     const credits = await reorderCredits(body.workId, body.creditIds);
@@ -77,7 +79,7 @@ export async function PATCH(request: NextRequest) {
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Ralat tidak diketahui." },
-      { status: 500 }
+      { status: creditErrorStatus(error) }
     );
   }
 }

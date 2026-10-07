@@ -55,7 +55,7 @@ export default async function AdminSubmissionsPage() {
             <p className="admin-page-sub">{submissions.length} penghantaran dalam pangkalan data</p>
           </div>
           <a href="/admin/submissions/new" className="admin-btn admin-btn-primary">
-            + Submission Baharu
+            + Penghantaran Baharu
           </a>
         </div>
       </header>

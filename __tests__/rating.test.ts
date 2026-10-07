@@ -121,7 +121,7 @@ assert(permissionFor("POST", "/api/admin/ratings") === "editorial.curate" && per
 assert(!isAllowed("editor", "POST", "/api/admin/ratings") && isAllowed("chief_editor", "POST", "/api/admin/ratings") && isAllowed("editor", "GET", "/api/admin/full-text"), "an ordinary editor may download the text but not keep a rating");
 const service = read("src/lib/admin/rating/rating-service.ts");
 assert(service.includes('series.status !== "completed"') && service.includes('type === "bersiri"') && !/\.set\(\{[^}]*(scores|verdict|review)/.test(service), "a series still going on and a single episode are not rated; a kept rating's numbers and words are never changed");
-const migration = read("src/lib/db/migrations/024_ratings.ts");
+const migration = read("src/lib/db/migrations/025_ratings.ts");
 assert(migration.includes('createTable("ratings")') && migration.includes("information_schema.tables") && migration.includes('dropTable("ratings")'), "the migration adds one table, guarded, and can be undone");
 for (const route of ["src/app/api/admin/ratings/route.ts", "src/app/api/admin/ratings/[id]/route.ts", "src/app/api/admin/full-text/route.ts"]) {
   assert(read(route).includes("getCurrentAdmin()"), `${route} asks who is signed in`);

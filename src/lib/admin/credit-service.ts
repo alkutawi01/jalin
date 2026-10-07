@@ -5,14 +5,18 @@
  * Handles per-work credit assignments with flexible roles.
  */
 
-import { Kysely } from "kysely";
+import { Kysely, sql } from "kysely";
 import { getDb, hasDb } from "../db";
 import type { Database } from "../db/types";
 import { isDerivativeType } from "../credit-roles";
+import { findDuplicateCredit } from "./metadata-rules";
+
+/** The same person in the same role is already credited on this work. */
+export class DuplicateCreditError extends Error {}
 
 function getAdminDb(): Kysely<Database> {
   if (!hasDb()) {
-    throw new Error("[CreditService] Database not available.");
+    throw new Error("Pangkalan data tidak tersedia.");
   }
   return getDb();
 }
@@ -79,10 +83,10 @@ export async function createCredit(input: CreditInput): Promise<CreditRecord> {
 
   // Enforce XOR: exactly one of contributorSlug or guestName
   if (!input.contributorSlug && !input.guestName) {
-    throw new Error("Must provide either contributor or guest name.");
+    throw new Error("Pilih penyumbang atau isi nama tetamu.");
   }
   if (input.contributorSlug && input.guestName) {
-    throw new Error("Cannot provide both contributor and guest name.");
+    throw new Error("Pilih penyumbang atau nama tetamu, bukan kedua-duanya.");
   }
 
   // If contributorSlug provided, verify it exists
@@ -94,34 +98,45 @@ export async function createCredit(input: CreditInput): Promise<CreditRecord> {
       .executeTakeFirst();
 
     if (!contributor) {
-      throw new Error(`Contributor "${input.contributorSlug}" not found.`);
+      throw new Error(`Penyumbang "${input.contributorSlug}" tidak ditemui. Muat semula halaman dan pilih semula.`);
     }
   }
 
   const now = new Date().toISOString();
+  const byline = input.byline && (await bylineAllowed(db, input.workId));
 
-  const result = await db
-    .insertInto("credits")
-    .values({
-      work_id: input.workId,
-      contributor_slug: input.contributorSlug || null,
-      guest_name: input.guestName || null,
-      role_label: input.roleLabel,
-      byline: input.byline && (await bylineAllowed(db, input.workId)),
-      is_public: input.isPublic,
-      sort_order: input.sortOrder,
-      created_at: now,
-    })
-    .returning("id")
-    .executeTakeFirst();
+  // Two requests at the same moment (a double click on "Tambah kredit") each saw no such credit and both wrote one: a published
+  // episode had the same co-writer twice. The check and the write now happen one request at a time for a work.
+  const result = await db.transaction().execute(async (trx) => {
+    await sql`SELECT pg_advisory_xact_lock(hashtext(${"credits:" + input.workId}))`.execute(trx);
+    const existing = await trx.selectFrom("credits").where("work_id", "=", input.workId).select(["id", "contributor_slug", "guest_name", "role_label"]).execute();
+    const duplicate = findDuplicateCredit(existing, { contributorSlug: input.contributorSlug, guestName: input.guestName, roleLabel: input.roleLabel });
+    if (duplicate) {
+      throw new DuplicateCreditError(`Kredit ini sudah ada: ${duplicate.contributor_slug ?? duplicate.guest_name} sebagai ${duplicate.role_label}. Ubah yang sedia ada, atau pilih peranan lain.`);
+    }
+    return trx
+      .insertInto("credits")
+      .values({
+        work_id: input.workId,
+        contributor_slug: input.contributorSlug || null,
+        guest_name: input.guestName || null,
+        role_label: input.roleLabel,
+        byline,
+        is_public: input.isPublic,
+        sort_order: input.sortOrder,
+        created_at: now,
+      })
+      .returning("id")
+      .executeTakeFirst();
+  });
 
   if (!result) {
-    throw new Error("Failed to create credit.");
+    throw new Error("Kredit tidak dapat dibuat.");
   }
 
   const credit = await getCredit(result.id);
   if (!credit) {
-    throw new Error("Credit not found after creation.");
+    throw new Error("Kredit tidak ditemui selepas dibuat.");
   }
 
   return credit;
@@ -158,7 +173,7 @@ export async function updateCredit(
       .executeTakeFirst();
 
     if (!contributor) {
-      throw new Error(`Contributor "${input.contributorSlug}" not found.`);
+      throw new Error(`Penyumbang "${input.contributorSlug}" tidak ditemui. Muat semula halaman dan pilih semula.`);
     }
   }
 
@@ -184,7 +199,7 @@ export async function updateCredit(
 
   const credit = await getCredit(id);
   if (!credit) {
-    throw new Error("Credit not found after update.");
+    throw new Error("Kredit tidak ditemui selepas dikemas kini.");
   }
 
   return credit;
@@ -226,19 +241,19 @@ export async function reorderCredits(
 
   // Exact set equality: submitted IDs must equal all credit IDs
   if (existingIds.length !== submittedIds.length) {
-    throw new Error(`Expected ${existingIds.length} credit IDs, received ${submittedIds.length}.`);
+    throw new Error("Senarai kredit karya ini telah berubah (kredit ditambah atau dipadam di tempat lain). Muat semula halaman, kemudian susun semula.");
   }
 
   for (let i = 0; i < existingIds.length; i++) {
     if (existingIds[i] !== submittedIds[i]) {
-      throw new Error(`Credit ID mismatch: expected ${existingIds[i]}, got ${submittedIds[i]}.`);
+      throw new Error("Senarai kredit karya ini telah berubah (kredit ditambah atau dipadam di tempat lain). Muat semula halaman, kemudian susun semula.");
     }
   }
 
   // Check no duplicates
   const uniqueIds = new Set(creditIds);
   if (uniqueIds.size !== creditIds.length) {
-    throw new Error("Duplicate credit IDs in reorder request.");
+    throw new Error("Kredit yang sama disenaraikan dua kali dalam susunan baharu.");
   }
 
   // Use transaction for atomicity

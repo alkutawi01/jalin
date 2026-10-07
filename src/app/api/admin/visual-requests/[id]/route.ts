@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getVisualRequest, updateVisualRequest, deleteVisualRequest } from "../../../../../lib/admin/visual-request-service";
+import { getVisualRequest, updateVisualRequest, deleteVisualRequest, parseSubmissionId } from "../../../../../lib/admin/visual-request-service";
 import { parseDbId } from "../../../../../lib/admin/ids";
 
 export async function GET(
@@ -17,7 +17,7 @@ export async function GET(
     const visualRequest = await getVisualRequest(numId);
 
     if (!visualRequest) {
-      return NextResponse.json({ error: "Visual request tidak ditemui." }, { status: 404 });
+      return NextResponse.json({ error: "Permintaan gambar tidak ditemui." }, { status: 404 });
     }
 
     return NextResponse.json(visualRequest);
@@ -43,14 +43,21 @@ export async function PATCH(
 
     const existing = await getVisualRequest(numId);
     if (!existing) {
-      return NextResponse.json({ error: "Visual request tidak ditemui." }, { status: 404 });
+      return NextResponse.json({ error: "Permintaan gambar tidak ditemui." }, { status: 404 });
     }
 
     const body = await request.json();
 
+    let submissionId: number | null | undefined;
+    try {
+      submissionId = parseSubmissionId(body.submissionId);
+    } catch (error) {
+      return NextResponse.json({ error: (error as Error).message }, { status: 400 });
+    }
+
     const visualRequest = await updateVisualRequest(numId, {
       workId: body.workId,
-      submissionId: body.submissionId,
+      submissionId,
       visualRole: body.visualRole,
       prompt: body.prompt,
       provider: body.provider,
@@ -91,7 +98,7 @@ export async function DELETE(
 
     const existing = await getVisualRequest(numId);
     if (!existing) {
-      return NextResponse.json({ error: "Visual request tidak ditemui." }, { status: 404 });
+      return NextResponse.json({ error: "Permintaan gambar tidak ditemui." }, { status: 404 });
     }
 
     await deleteVisualRequest(numId);

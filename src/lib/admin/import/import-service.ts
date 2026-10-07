@@ -50,7 +50,7 @@ export async function importPlanAsDraft(
       .select("id")
       .executeTakeFirst();
     if (clash) {
-      throw new Error(`Slug "${plan.work.slug}" already exists.`);
+      throw new Error(`Alamat pautan "${plan.work.slug}" sudah digunakan. Pilih alamat lain.`);
     }
 
     const id = await generateWorkId(trx, plan.work.type as WorkType);

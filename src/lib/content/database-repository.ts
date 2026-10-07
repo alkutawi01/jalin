@@ -59,6 +59,22 @@ function parseJsonbField<T>(value: unknown): T | undefined {
   return value as T;
 }
 
+/**
+ * A work's hero whose alt was left empty reached readers as alt="": a screen reader skipped the one picture of the story, and a
+ * shared link's image had no description. It is named after the work (as a series' hero already is: "Ilustrasi siri …"). A picture
+ * inside the text is left alone: an empty alt there means the editor judged it decorative.
+ */
+export function withHeroAlt<T extends { role?: string; alt?: string }>(visuals: T[], title: string): T[] {
+  const name = title.trim();
+  if (!name) return visuals;
+  return visuals.map((visual) => (visual.role === "hero" && !(visual.alt ?? "").trim() ? { ...visual, alt: `Ilustrasi ${name}` } : visual));
+}
+
+/** The focus and zoom chosen for a series' picture (columns of migration 024; absent before it has run). */
+function seriesCrop(row: any) {
+  return cropFromRow({ focus_x: row.hero_focus_x, focus_y: row.hero_focus_y, zoom: row.hero_zoom });
+}
+
 function mapWork(
   row: any,
   credits: ContributorRef[],
@@ -94,7 +110,7 @@ function mapWork(
     revisionCount: row.revision_count ? Number(row.revision_count) : 0,
     body: String(row.body || ""),
     credits,
-    visuals,
+    visuals: withHeroAlt(visuals, String(row.title || "")),
     glossary,
     editorialHistory,
     metadata: parseJsonbField<{ characters?: CharacterMeta[]; fragmenTextLanguage?: string }>(row.metadata),
@@ -279,7 +295,7 @@ export class DatabaseContentRepository implements ContentRepository {
         status: (String(se.status) === "completed" ? "completed" : "ongoing"),
         // A series picture with no description of its own is still named for a reader who cannot see it (the listing and the homepage
         // already said "Ilustrasi siri …"; the series page and its episodes had an empty alt).
-        ...(se.hero_src ? { hero: { src: String(se.hero_src), alt: se.hero_alt && String(se.hero_alt).trim() ? String(se.hero_alt) : `Ilustrasi siri ${String(se.title)}` } } : {}),
+        ...(se.hero_src ? { hero: { src: String(se.hero_src), alt: se.hero_alt && String(se.hero_alt).trim() ? String(se.hero_alt) : `Ilustrasi siri ${String(se.title)}`, ...(seriesCrop(se) ? { crop: seriesCrop(se)! } : {}) } } : {}),
       };
       this.seriesCache.set(meta.id, meta);
       this.seriesBySlug.set(meta.slug, meta);
@@ -510,7 +526,7 @@ export function workFromSnapshot(snapshot: any, workId: string): Work | undefine
         role: String(c.role_label || c.role || ""),
         byline: Boolean(c.byline),
       })),
-      visuals: (snapshot.visuals || []).map((v: any) => ({
+      visuals: withHeroAlt((snapshot.visuals || []).map((v: any) => ({
         role: String(v.role || "inline"),
         src: String(v.src || ""),
         alt: String(v.alt || ""),
@@ -520,7 +536,7 @@ export function workFromSnapshot(snapshot: any, workId: string): Work | undefine
         place: v.place === "before" ? "before" : "after",
         ...(cropFromRow(v) ? { crop: cropFromRow(v)! } : {}),
         ...(v.section_slug || v.sectionSlug ? { sectionSlug: String(v.section_slug ?? v.sectionSlug) } : {}),
-      })),
+      })), String(snapshot.title || "")),
       glossary: (snapshot.glossary || []).map((g: any) => ({ term: String(g.term || ""), meaning: String(g.meaning || ""), source: String(g.source || ""), ...(g.pronunciation ? { pronunciation: String(g.pronunciation) } : {}), ...(g.original_text ?? g.original ? { original: String(g.original_text ?? g.original) } : {}), ...(g.original_language ?? g.originalLanguage ? { originalLanguage: String(g.original_language ?? g.originalLanguage) } : {}) })),
       editorialHistory: snapshot.editorialHistory || [],
       metadata: snapshot.metadata,

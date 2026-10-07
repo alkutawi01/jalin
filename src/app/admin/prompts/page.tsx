@@ -8,7 +8,7 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const SCOPE_LABELS: Record<string, string> = {
-  global: "Global",
+  global: "Am",
   category: "Kategori",
   work: "Karya",
 };
@@ -50,7 +50,7 @@ export default async function AdminPromptsPage() {
             <p className="admin-page-sub">{templates.length} templat dalam pangkalan data</p>
           </div>
           <a href="/admin/prompts/new" className="admin-btn admin-btn-primary">
-            + Template Baharu
+            + Templat Baharu
           </a>
         </div>
       </header>
@@ -73,7 +73,7 @@ export default async function AdminPromptsPage() {
             {templates.length === 0 ? (
               <tr>
                 <td colSpan={8} className="admin-table-empty">
-                  Tiada prompt templat dalam pangkalan data.
+                  Belum ada templat arahan.
                 </td>
               </tr>
             ) : (

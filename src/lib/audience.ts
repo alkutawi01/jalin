@@ -79,6 +79,17 @@ export function audienceAgeRange(raw: string | null | undefined, bands: Audience
   return { min, max: open ? 99 : Math.max(...chosen.map((b) => b.max as number)) };
 }
 
+/**
+ * An age as the form sent it: a number, or digits in a string. An empty "Dari" box reaches the server as null (the form sends NaN,
+ * which JSON writes as null), and Number(null) is 0: the band was saved as "from age 0" without a word. Anything that is not a
+ * number is not an age.
+ */
+function ageOf(value: unknown): number {
+  if (typeof value === "number") return value;
+  if (typeof value === "string" && /^\s*\d+\s*$/.test(value)) return Number(value);
+  return NaN;
+}
+
 /** Checks the bands an editor typed in Tetapan. Throws a Malay message the form can show. */
 export function validateBands(input: unknown): AudienceBand[] {
   if (!Array.isArray(input) || input.length === 0) throw new Error("Sekurang-kurangnya satu peringkat diperlukan.");
@@ -90,9 +101,9 @@ export function validateBands(input: unknown): AudienceBand[] {
     const n = index + 1;
     if (!label) throw new Error(`Peringkat ${n}: nama diperlukan.`);
     if (label.length > 30) throw new Error(`Peringkat ${n}: nama terlalu panjang (maksimum 30 aksara).`);
-    const min = Number(row.min);
+    const min = ageOf(row.min);
     if (!Number.isInteger(min) || min < 0 || min > 99) throw new Error(`Peringkat ${n} (${label}): umur paling muda mesti nombor 0 hingga 99.`);
-    const maxRaw = row.max === null || row.max === undefined || row.max === "" ? null : Number(row.max);
+    const maxRaw = row.max === null || row.max === undefined || (typeof row.max === "string" && row.max.trim() === "") ? null : ageOf(row.max);
     if (maxRaw !== null && (!Number.isInteger(maxRaw) || maxRaw < min || maxRaw > 99)) throw new Error(`Peringkat ${n} (${label}): umur paling tua mesti nombor dari ${min} hingga 99, atau kosong (dan ke atas).`);
     // A band keeps its code once it has one, so works already marked for it stay marked when the editor renames it.
     let code = String(row.code ?? "").trim() || fold(label).replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || `peringkat-${n}`;

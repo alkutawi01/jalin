@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Nama diperlukan." }, { status: 400 });
     }
     if (!body.slug?.trim()) {
-      return NextResponse.json({ error: "Slug diperlukan." }, { status: 400 });
+      return NextResponse.json({ error: "Alamat pautan diperlukan." }, { status: 400 });
     }
     if (!body.kind) {
       return NextResponse.json({ error: "Jenis diperlukan." }, { status: 400 });
@@ -45,7 +45,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(contributor, { status: 201 });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Ralat tidak diketahui.";
-    const status = message.includes("already exists") ? 409
+    const status = message.includes("already exists") || message.includes("sudah digunakan") ? 409
+      : message.includes("tidak ditemui") ? 404
       : message.startsWith("Alamat pautan") ? 400 : 500;
     return NextResponse.json({ error: message }, { status });
   }

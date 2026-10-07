@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
     const workId = searchParams.get("workId");
 
     if (!workId) {
-      return NextResponse.json({ error: "workId diperlukan." }, { status: 400 });
+      return NextResponse.json({ error: "Karya diperlukan." }, { status: 400 });
     }
 
     const visuals = await listVisualsForWork(workId);
@@ -26,18 +26,18 @@ export async function POST(request: NextRequest) {
 
     // Validation
     if (!body.workId) {
-      return NextResponse.json({ error: "workId diperlukan." }, { status: 400 });
+      return NextResponse.json({ error: "Karya diperlukan." }, { status: 400 });
     }
     if (!body.src?.trim()) {
-      return NextResponse.json({ error: "src diperlukan." }, { status: 400 });
+      return NextResponse.json({ error: "Fail gambar diperlukan." }, { status: 400 });
     }
     if (!body.role) {
-      return NextResponse.json({ error: "role diperlukan." }, { status: 400 });
+      return NextResponse.json({ error: "Jenis gambar diperlukan." }, { status: 400 });
     }
 
     const validRoles = ["hero", "inline", "section", "decorative"];
     if (!validRoles.includes(body.role)) {
-      return NextResponse.json({ error: "role tidak sah." }, { status: 400 });
+      return NextResponse.json({ error: "Jenis gambar tidak sah." }, { status: 400 });
     }
 
     const visual = await createVisual({
@@ -64,7 +64,7 @@ export async function PATCH(request: NextRequest) {
     const body = await request.json();
 
     if (!body.workId || !body.visualIds) {
-      return NextResponse.json({ error: "workId dan visualIds diperlukan." }, { status: 400 });
+      return NextResponse.json({ error: "Karya dan susunan gambar diperlukan." }, { status: 400 });
     }
 
     const visuals = await reorderVisuals(body.workId, body.visualIds);

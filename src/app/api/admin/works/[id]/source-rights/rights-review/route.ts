@@ -21,7 +21,7 @@ export async function POST(
     const body = await request.json();
 
     if (!body.rights_status) {
-      return NextResponse.json({ error: "rights_status diperlukan." }, { status: 400 });
+      return NextResponse.json({ error: "Keputusan hak diperlukan." }, { status: 400 });
     }
 
     // Strip any client-supplied review stamps — never trusted.

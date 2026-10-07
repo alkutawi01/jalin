@@ -59,7 +59,8 @@ export async function PATCH(
     return NextResponse.json(contributor);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Ralat tidak diketahui.";
-    const status = message.includes("already exists") ? 409
+    const status = message.includes("already exists") || message.includes("sudah digunakan") ? 409
+      : message.includes("tidak ditemui") ? 404
       : message.startsWith("Alamat pautan") ? 400 : 500;
     return NextResponse.json({ error: message }, { status });
   }

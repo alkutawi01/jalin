@@ -18,10 +18,10 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     if (!body.name?.trim()) {
-      return NextResponse.json({ error: "name diperlukan." }, { status: 400 });
+      return NextResponse.json({ error: "Nama templat diperlukan." }, { status: 400 });
     }
     if (!body.promptText?.trim()) {
-      return NextResponse.json({ error: "promptText diperlukan." }, { status: 400 });
+      return NextResponse.json({ error: "Teks arahan diperlukan." }, { status: 400 });
     }
 
     const template = await createPromptTemplate({

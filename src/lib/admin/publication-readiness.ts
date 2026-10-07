@@ -11,6 +11,12 @@ import type { WorkStatus, WorkType } from "../db/types";
 import { isDerivativeType } from "../credit-roles";
 import { classifyFragmen, fragmenTextHash, isIndonesianLanguage, isMalayLanguage, readFragmenTextReview } from "../content/fragmen-kind";
 
+/** A work type as an editor reads it ("Novela"), not the stored key ("novela"). */
+function jenisKarya(type: unknown): string {
+  const key = String(type ?? "");
+  return ({ cerpen: "Cerpen", novela: "Novela", bersiri: "Bersiri", fragmen: "Fragmen", sinopsis: "Sinopsis", terjemahan: "Terjemahan" } as Record<string, string>)[key] ?? key;
+}
+
 export type ReadinessGateName =
   | "content"
   | "credits"
@@ -387,7 +393,7 @@ export function evaluatePublicationReadinessFromData(
     contentBlockers.push(
       issue(
         "slug_invalid",
-        `Slug "${work.slug}" tidak sah (huruf kecil, nombor, dan tanda hubung sahaja).`
+        `Alamat pautan "${work.slug}" tidak sah (huruf kecil, nombor dan tanda hubung sahaja).`
       )
     );
   }
@@ -409,7 +415,7 @@ export function evaluatePublicationReadinessFromData(
   }
   if (!work.dek || !work.dek.trim()) {
     contentWarnings.push(
-      issue("dek_missing", "Dek (ringkasan) belum diisi — disyorkan untuk senarai awam.")
+      issue("dek_missing", "Dek (ringkasan) belum diisi. Disyorkan untuk senarai awam.")
     );
   }
   if (isSourcedWork(String(work.type), work.metadata)) {
@@ -422,7 +428,7 @@ export function evaluatePublicationReadinessFromData(
   }
   if (glossary.length === 0) {
     contentWarnings.push(
-      issue("glossary_empty", "Glosari kosong — disyorkan mengikut model kandungan.")
+      issue("glossary_empty", "Glosari kosong. Disyorkan sekurang-kurangnya beberapa istilah.")
     );
   }
 
@@ -450,7 +456,7 @@ export function evaluatePublicationReadinessFromData(
         creditBlockers.push(
           issue(
             "credit_identity_missing",
-            `Kredit #${credit.id} tiada penyumbang (contributor atau guest).`
+            `Kredit #${credit.id} tiada penyumbang atau nama tetamu.`
           )
         );
       }
@@ -462,7 +468,7 @@ export function evaluatePublicationReadinessFromData(
         creditBlockers.push(
           issue(
             "credit_contributor_unknown",
-            `Kredit #${credit.id} merujuk contributor "${credit.contributor_slug}" yang tidak wujud.`
+            `Kredit #${credit.id} merujuk penyumbang "${credit.contributor_slug}" yang tidak wujud.`
           )
         );
       }
@@ -527,7 +533,7 @@ export function evaluatePublicationReadinessFromData(
     // The series' picture is this episode's hero, so there is nothing to ask for.
   } else if (visuals.length === 0) {
     if (policy.hero === "required") {
-      const msg = `Jenis "${work.type}" memerlukan gambar utama (hero).`;
+      const msg = `${jenisKarya(work.type)} memerlukan gambar utama.`;
       if (grandfatherVisuals) {
         visualWarnings.push(issue("hero_missing_grandfathered", `${msg} (dikecualikan kerana karya sudah terbit).`));
       } else {
@@ -535,26 +541,26 @@ export function evaluatePublicationReadinessFromData(
       }
     } else {
       visualWarnings.push(
-        issue("hero_missing", `Tiada gambar utama (hero) (disyorkan untuk jenis "${work.type}").`)
+        issue("hero_missing", `Tiada gambar utama (disyorkan untuk ${jenisKarya(work.type)}).`)
       );
     }
   } else {
     if (heroVisuals.length === 0) {
       if (policy.hero === "required") {
-        const msg = `Tiada visual berperanan "hero" (diperlukan untuk "${work.type}").`;
+        const msg = `Tiada gambar yang ditanda sebagai gambar utama (diperlukan untuk ${jenisKarya(work.type)}).`;
         if (grandfatherVisuals) {
           visualWarnings.push(issue("hero_role_missing_grandfathered", `${msg} (dikecualikan kerana karya sudah terbit).`));
         } else {
           visualBlockers.push(issue("hero_role_missing", msg));
         }
       } else {
-        visualWarnings.push(issue("hero_role_missing", "Tiada gambar utama (hero) (disyorkan)."));
+        visualWarnings.push(issue("hero_role_missing", "Tiada gambar utama (disyorkan)."));
       }
     }
   }
 
   for (const visual of visuals) {
-    const label = `Visual #${visual.id}`;
+    const label = `Gambar #${visual.id}`;
     if (!visual.src || !visual.src.trim()) {
       visualBlockers.push(issue("visual_src_missing", `${label}: alamat gambar kosong.`));
     } else if (isTransientSrc(visual.src)) {
@@ -575,13 +581,13 @@ export function evaluatePublicationReadinessFromData(
       }
     }
     if (!visual.alt || !visual.alt.trim()) {
-      const msg = `${label}: teks alternatif kosong.`;
+      const msg = `${label}: teks alt kosong.`;
       // Alt text is encouraged, never required: a missing one is a note for the editor, not a blocker.
       visualWarnings.push(issue("visual_alt_missing", `${msg} Disyorkan untuk pembaca yang menggunakan pembaca skrin.`));
     }
     const validRoles = ["hero", "inline", "section", "decorative"];
     if (!validRoles.includes(visual.role)) {
-      const msg = `${label}: role "${visual.role}" tidak sah.`;
+      const msg = `${label}: jenis gambar "${visual.role}" tidak sah.`;
       if (grandfatherVisuals) {
         // Legacy published Works may carry scene-specific roles (e.g. inline-*).
         visualWarnings.push(issue("visual_role_invalid_grandfathered", `${msg} (dikecualikan kerana karya sudah terbit).`));
@@ -628,7 +634,7 @@ export function evaluatePublicationReadinessFromData(
       rightsBlockers.push(
         issue(
           "source_missing",
-          "Karya derivative memerlukan rekod source_works (provenance sumber) sebelum terbit."
+          "Karya turunan memerlukan butiran karya asal (tab Sumber) sebelum diterbitkan."
         )
       );
     } else {
@@ -661,7 +667,7 @@ export function evaluatePublicationReadinessFromData(
       if (!src.publication_year) editionMissing.push("Tahun terbit pertama");
       if (!(src.publisher ?? "").trim() && !(src.source_url ?? "").trim()) editionMissing.push("Penerbit atau URL sumber");
       if (editionMissing.length > 0) {
-        const edition = issue("source_edition_incomplete", `Butiran naskhah belum lengkap — isi ${editionMissing.join(", ")} dalam tab Sumber supaya pembaca tahu naskhah mana yang digunakan.`);
+        const edition = issue("source_edition_incomplete", `Butiran naskhah belum lengkap. Isi ${editionMissing.join(", ")} dalam tab Sumber supaya pembaca tahu naskhah mana yang digunakan.`);
         (alreadyPublished ? rightsWarnings : rightsBlockers).push(edition);
       }
       const missing: string[] = [];
@@ -672,7 +678,7 @@ export function evaluatePublicationReadinessFromData(
         rightsBlockers.push(
           issue(
             "source_incomplete",
-            `Butiran sumber belum lengkap — isi ${missing.join(", ")} dalam tab Sumber.`
+            `Butiran sumber belum lengkap. Isi ${missing.join(", ")} dalam tab Sumber.`
           )
         );
       }
@@ -680,7 +686,7 @@ export function evaluatePublicationReadinessFromData(
         rightsBlockers.push(
           issue(
             "source_url_invalid",
-            "source_url mesti http:// atau https:// (javascript:/file:/data: tidak dibenarkan)."
+            "Alamat sumber mesti bermula dengan http:// atau https://."
           )
         );
       }
@@ -706,14 +712,14 @@ export function evaluatePublicationReadinessFromData(
         rightsBlockers.push(
           issue(
             "rights_stale_approval",
-            "Kelulusan hak lapuk — provenance material berubah selepas semakan terakhir."
+            "Kelulusan hak sudah lapuk: butiran sumber berubah selepas semakan terakhir. Semak dan sahkan semula."
           )
         );
       } else if (status === "public_domain") {
         rightsWarnings.push(
           issue(
             "rights_public_domain_notice",
-            "Domain awam pada asal tidak semestinya melindungi terjemahan moden — pastikan teks terjemahan berdasarkan sumber yang sah (lihat source_text_basis)."
+            "Karya asal dalam domain awam tidak semestinya meliputi terjemahan moden. Pastikan teks terjemahan berdasarkan sumber yang sah (lihat Asas teks dalam tab Sumber)."
           )
         );
       }
@@ -722,7 +728,7 @@ export function evaluatePublicationReadinessFromData(
           rightsBlockers.push(
             issue(
               "rights_notes_required",
-              `rights_notes wajib untuk status "${status}".`
+              "Catatan hak wajib bagi keputusan ini."
             )
           );
         }
@@ -760,7 +766,7 @@ export function evaluatePublicationReadinessFromData(
       const uniquePositions = new Set(positions);
       if (uniquePositions.size !== positions.length) {
         structureBlockers.push(
-          issue("section_position_duplicate", "Reading section mempunyai position berulang.")
+          issue("section_position_duplicate", "Dua bab mempunyai kedudukan yang sama.")
         );
       }
       const sorted = [...positions].sort((a, b) => a - b);
@@ -769,7 +775,7 @@ export function evaluatePublicationReadinessFromData(
           structureBlockers.push(
             issue(
               "section_position_gap",
-              `Reading section position mesti bersebelahan 1..N (jumpa gap di ${sorted[i]}).`
+              `Kedudukan bab mesti berturutan dari 1 tanpa lompat (terputus pada ${sorted[i]}).`
             )
           );
           break;
@@ -787,7 +793,7 @@ export function evaluatePublicationReadinessFromData(
           structureBlockers.push(
             issue(
               "section_slug_invalid",
-              `Reading section slug "${section.slug}" tidak sah.`
+              `Alamat bab "${section.slug}" tidak sah.`
             )
           );
         }
@@ -795,7 +801,7 @@ export function evaluatePublicationReadinessFromData(
           structureBlockers.push(
             issue(
               "section_body_missing",
-              `Reading section "${section.slug || section.id}" tiada body.`
+              `Bab "${section.slug || section.id}" tiada teks.`
             )
           );
         }
@@ -803,7 +809,7 @@ export function evaluatePublicationReadinessFromData(
           structureBlockers.push(
             issue(
               "section_position_invalid",
-              `Reading section "${section.slug || section.id}" position tidak sah.`
+              `Kedudukan bab "${section.slug || section.id}" tidak sah.`
             )
           );
         }
@@ -821,7 +827,7 @@ export function evaluatePublicationReadinessFromData(
     structureBlockers.push(
       issue(
         "sections_only_novela",
-        `Bab hanya dibenarkan untuk karya berjenis novela (sekarang: "${workType}").`
+        `Bab hanya dibenarkan untuk Novela (karya ini: ${jenisKarya(workType)}).`
       )
     );
   }
@@ -861,7 +867,7 @@ export function evaluatePublicationReadinessFromData(
     structureBlockers.push(
       issue(
         "series_entry_only_bersiri",
-        `Hanya karya berjenis bersiri boleh menjadi episod dalam siri (sekarang: "${workType}").`
+        `Hanya karya Bersiri boleh menjadi episod dalam siri (karya ini: ${jenisKarya(workType)}).`
       )
     );
   }
@@ -886,12 +892,12 @@ export function evaluatePublicationReadinessFromData(
       workflowWarnings.push(
         issue(
           "visual_request_pending",
-          `Visual request #${req.id} masih "${req.status}" (belum selesai).`
+          `Permintaan gambar #${req.id} belum selesai.`
         )
       );
     } else if (req.status === "failed") {
       workflowWarnings.push(
-        issue("visual_request_failed", `Visual request #${req.id} gagal.`)
+        issue("visual_request_failed", `Permintaan gambar #${req.id} gagal.`)
       );
     }
   }
@@ -913,7 +919,7 @@ export function evaluatePublicationReadinessFromData(
       privacyBlockers.push(
         issue(
           "privacy_forbidden_field",
-          `Medan metadata mengandungi nilai terlarang ("${needle}").`
+          `Maklumat karya mengandungi nilai yang tidak dibenarkan ("${needle}").`
         )
       );
     }

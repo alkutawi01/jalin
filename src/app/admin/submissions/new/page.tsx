@@ -143,7 +143,7 @@ export default function NewSubmissionPage() {
         <div className="admin-form-actions">
           <a href="/admin/submissions" className="admin-btn admin-btn-outline">Kembali</a>
           <button type="submit" className="admin-btn admin-btn-primary" disabled={saving}>
-            {saving ? "Mencipta..." : "Cipta Submission"}
+            {saving ? "Mencipta..." : "Cipta Penghantaran"}
           </button>
         </div>
       </form>

@@ -10,7 +10,7 @@ import type { Database, WorkType, PromptStatus } from "../db/types";
 
 function getAdminDb(): Kysely<Database> {
   if (!hasDb()) {
-    throw new Error("[PromptTemplateService] Database not available.");
+    throw new Error("Pangkalan data tidak tersedia.");
   }
   return getDb();
 }
@@ -82,7 +82,7 @@ export async function createPromptTemplate(input: PromptTemplateInput): Promise<
 
   const template = await getPromptTemplate(result.id);
   if (!template) {
-    throw new Error("Prompt template tidak ditemui selepas penciptaan.");
+    throw new Error("Templat arahan tidak ditemui selepas dibuat.");
   }
 
   return template;
@@ -113,7 +113,7 @@ export async function updatePromptTemplate(
 
   const template = await getPromptTemplate(id);
   if (!template) {
-    throw new Error("Prompt template tidak ditemui selepas kemas kini.");
+    throw new Error("Templat arahan tidak ditemui selepas dikemas kini.");
   }
 
   return template;
