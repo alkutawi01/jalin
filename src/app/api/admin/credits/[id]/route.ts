@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCredit, updateCredit, deleteCredit, listCreditsForWork } from "../../../../../lib/admin/credit-service";
-import { findDuplicateCredit } from "../../../../../lib/admin/metadata-rules";
+import { creditErrorStatus, findDuplicateCredit } from "../../../../../lib/admin/metadata-rules";
 import { parseDbId } from "../../../../../lib/admin/ids";
 
 export async function GET(
@@ -75,7 +75,7 @@ export async function PATCH(
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Ralat tidak diketahui." },
-      { status: 500 }
+      { status: creditErrorStatus(error) }
     );
   }
 }

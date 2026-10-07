@@ -83,10 +83,10 @@ export async function createCredit(input: CreditInput): Promise<CreditRecord> {
 
   // Enforce XOR: exactly one of contributorSlug or guestName
   if (!input.contributorSlug && !input.guestName) {
-    throw new Error("Must provide either contributor or guest name.");
+    throw new Error("Pilih penyumbang atau isi nama tetamu.");
   }
   if (input.contributorSlug && input.guestName) {
-    throw new Error("Cannot provide both contributor and guest name.");
+    throw new Error("Pilih penyumbang atau nama tetamu, bukan kedua-duanya.");
   }
 
   // If contributorSlug provided, verify it exists
@@ -98,7 +98,7 @@ export async function createCredit(input: CreditInput): Promise<CreditRecord> {
       .executeTakeFirst();
 
     if (!contributor) {
-      throw new Error(`Contributor "${input.contributorSlug}" not found.`);
+      throw new Error(`Penyumbang "${input.contributorSlug}" tidak ditemui. Muat semula halaman dan pilih semula.`);
     }
   }
 
@@ -173,7 +173,7 @@ export async function updateCredit(
       .executeTakeFirst();
 
     if (!contributor) {
-      throw new Error(`Contributor "${input.contributorSlug}" not found.`);
+      throw new Error(`Penyumbang "${input.contributorSlug}" tidak ditemui. Muat semula halaman dan pilih semula.`);
     }
   }
 
@@ -241,12 +241,12 @@ export async function reorderCredits(
 
   // Exact set equality: submitted IDs must equal all credit IDs
   if (existingIds.length !== submittedIds.length) {
-    throw new Error(`Expected ${existingIds.length} credit IDs, received ${submittedIds.length}.`);
+    throw new Error("Senarai kredit karya ini telah berubah (kredit ditambah atau dipadam di tempat lain). Muat semula halaman, kemudian susun semula.");
   }
 
   for (let i = 0; i < existingIds.length; i++) {
     if (existingIds[i] !== submittedIds[i]) {
-      throw new Error(`Credit ID mismatch: expected ${existingIds[i]}, got ${submittedIds[i]}.`);
+      throw new Error("Senarai kredit karya ini telah berubah (kredit ditambah atau dipadam di tempat lain). Muat semula halaman, kemudian susun semula.");
     }
   }
 
