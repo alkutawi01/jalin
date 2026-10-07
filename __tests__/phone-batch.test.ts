@@ -31,7 +31,7 @@ assert(/\.series-feature-media > \.image-rights \{ right: 0; bottom: 14px;/.test
 assert(css.includes("body { overflow-x: hidden; overflow-x: clip; container-type: inline-size; }") && (css.match(/width: 100cqw; max-width: 100cqw; margin-left: calc\(50% - 50cqw\);/g) ?? []).length === 3, "full-width pictures use the width the page really has (100cqw, scrollbar excluded), so the copyright notice at the right edge is not cut in a window with a scrollbar");
 
 const contributor = read("src/app/penulis/[slug]/page.tsx");
-assert(contributor.includes('{ "nara-zahin": "claude" }') && contributor.includes('.where("slug", "in", [slug, EDITOR_RECORD[slug] ?? slug])'), "the older address 'nara-zahin' shows what the editor writes for that person in Admin > Penyumbang");
+assert(read("src/lib/reader/author-alias.ts").includes('"nara-zahin": "claude"') && contributor.includes('.where("slug", "in", [slug, authorSlug(slug)])'), "the older address 'nara-zahin' shows what the editor writes for that person in Admin > Penyumbang");
 assert(contributor.includes('.replace(/\\r\\n/g, "\\n").trim().replace(/^# .+\\n+/'), "a bio saved from the admin text box does not show its name twice");
 
 const settings = read("src/app/admin/settings/page.tsx");
