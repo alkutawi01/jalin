@@ -3375,7 +3375,6 @@ body { overflow-wrap: break-word; }
 .not-found .jalin-emblem { margin-bottom: 14px; }
 .category-empty .jalin-emblem { display: block; margin: 0 auto 14px; }
 .site-footer { position: relative; }
-.site-footer::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 30px; background: url(/brand/motif/bidai-light.svg) repeat-x left top / 48px 24px; pointer-events: none; }
 
 /* Gelombang: the whole emblem is there from the first frame (a loading screen may be seen for only a second); light travels from blade to blade. */
 .jalin-emblem.is-live.v-gelombang .jalin-blade { animation: jalin-gelombang 2.7s ease-in-out infinite; animation-delay: calc(var(--i) * 0.2s); }
