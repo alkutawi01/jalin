@@ -16,6 +16,7 @@ export default function HeaderSearch({ active }: { active?: boolean }) {
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [settled, setSettled] = useState(false); // suggestions are for the text now in the box
+  const [failed, setFailed] = useState(false); // the suggestions could not be fetched (not the same as "nothing matches")
   const [selected, setSelected] = useState(-1);
   const wrapRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -46,6 +47,7 @@ export default function HeaderSearch({ active }: { active?: boolean }) {
   useEffect(() => {
     const text = query.trim();
     setSettled(false);
+    setFailed(false);
     setSelected(-1);
     if (!open || text === "") {
       setSuggestions([]);
@@ -61,7 +63,9 @@ export default function HeaderSearch({ active }: { active?: boolean }) {
         setSettled(true);
       } catch (error) {
         if ((error as Error).name !== "AbortError") {
+          // A lost connection (or a server fault) is not "no such title": the reader was told nothing matched.
           setSuggestions([]);
+          setFailed(true);
           setSettled(true);
         }
       }
@@ -171,7 +175,7 @@ export default function HeaderSearch({ active }: { active?: boolean }) {
                   </a>
                 </li>
               ))}
-              {settled && suggestions.length === 0 ? <li className="header-search-empty" role="presentation">Tiada tajuk atau penulis yang sepadan.</li> : null}
+              {settled && suggestions.length === 0 ? <li className="header-search-empty" role="presentation">{failed ? "Cadangan tidak dapat dimuatkan. Semak sambungan internet anda." : "Tiada tajuk atau penulis yang sepadan."}</li> : null}
               <li role="option" id={`header-search-opt-${seeAllIndex}`} aria-selected={selected === seeAllIndex}>
                 <a className={`header-search-all${selected === seeAllIndex ? " selected" : ""}`} href={allResultsHref(query)}>
                   Lihat semua hasil untuk “{text}”
