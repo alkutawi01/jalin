@@ -95,7 +95,8 @@ export async function middleware(request: NextRequest) {
       );
     }
     const loginUrl = new URL("/admin/login", request.url);
-    loginUrl.searchParams.set("returnTo", pathname);
+    // With its query: "/admin/settings?tab=audiens" lost "?tab=audiens", so after signing in the visitor landed on another tab or an unfiltered list.
+    loginUrl.searchParams.set("returnTo", pathname + request.nextUrl.search);
     return NextResponse.redirect(loginUrl);
   }
 
@@ -112,7 +113,8 @@ export async function middleware(request: NextRequest) {
       return response;
     }
     const loginUrl = new URL("/admin/login", request.url);
-    loginUrl.searchParams.set("returnTo", pathname);
+    // With its query: "/admin/settings?tab=audiens" lost "?tab=audiens", so after signing in the visitor landed on another tab or an unfiltered list.
+    loginUrl.searchParams.set("returnTo", pathname + request.nextUrl.search);
     const response = NextResponse.redirect(loginUrl);
     response.cookies.delete("jalin-admin-session");
     return response;
