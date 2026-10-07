@@ -3,7 +3,7 @@
 Menggantikan "Master Parser v3" (satu prompt untuk semua karya) dan halaman import tiga langkah.
 
 ## Menu
-Papan Pemuka · Karya · Editorial · Tetapan · butang **+ Tambah Karya**.
+Papan pemuka · Karya · Penyuntingan · Tetapan · butang **+ Tambah karya**.
 Submission menjadi tapisan "Menunggu semakan" dalam Karya; Prompt menjadi Tetapan; Visual berada pada halaman setiap karya.
 
 ## Resipi (jenis + mod)

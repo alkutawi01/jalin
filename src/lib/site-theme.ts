@@ -18,7 +18,7 @@ export const GROUNDS = [
   { key: "sand", label: "Peach muda", hex: "#f7ece4", tone: "light" },
   { key: "beige", label: "Peach", hex: "#d8b9a6", tone: "light" },
   { key: "ink", label: "Teal tua", hex: "#18343c", tone: "dark" },
-  { key: "clay", label: "Terracotta", hex: "#a76450", tone: "dark" },
+  { key: "clay", label: "Terakota", hex: "#a76450", tone: "dark" },
   { key: "black", label: "Hitam", hex: "#000000", tone: "dark" }
 ] as const;
 export type GroundKey = (typeof GROUNDS)[number]["key"];

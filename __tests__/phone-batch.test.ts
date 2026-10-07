@@ -25,7 +25,10 @@ for (const [sel, w] of [[".hero-featured-visual", 1050], [".work-head-visual", 9
   }
   assert(ok && start >= 0, `${sel} runs edge to edge once its layout stacks (max-width ${w}px)`);
 }
-assert(/\.story-body \{ font-size: 17\.5px;/.test(css) && !/\.story-body \{ font-size: 19px;/.test(css), "the work text is a little smaller on a phone (17.5px, was 19px)");
+// 19px is the size on a laptop (1051-1600px), in its own media query; on a phone the rule is 17.5px.
+const laptopAt = css.indexOf("@media (min-width: 1051px) and (max-width: 1600px)");
+const withoutLaptop = laptopAt >= 0 ? css.slice(0, laptopAt) + css.slice(css.indexOf("\n}\n", laptopAt)) : css;
+assert(/\.story-body \{ font-size: 17\.5px;/.test(css) && !/\.story-body \{ font-size: 19px;/.test(withoutLaptop), "the work text is a little smaller on a phone (17.5px, was 19px)");
 assert(/\.series-feature-overlay \{[^}]*bottom: 32px; left: 0;/.test(css) && /\.series-feature-overlay \{[^}]*padding: 10px 14px 11px 26px; border-radius: 0 6px 6px 0/.test(css), "the series title box floats above the bottom edge and sits against the picture's left edge, while the title text is set in from it (Izzat, 6 Okt)");
 assert(/\.series-feature-media > \.image-rights \{ right: 0; bottom: 14px;/.test(css), "the copyright notice sits against the picture's right edge, 14px above the bottom");
 assert(css.includes("body { overflow-x: hidden; overflow-x: clip; container-type: inline-size; }") && (css.match(/width: 100cqw; max-width: 100cqw; margin-left: calc\(50% - 50cqw\);/g) ?? []).length === 3, "full-width pictures use the width the page really has (100cqw, scrollbar excluded), so the copyright notice at the right edge is not cut in a window with a scrollbar");
