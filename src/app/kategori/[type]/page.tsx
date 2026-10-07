@@ -48,7 +48,7 @@ const CATEGORY_META: Record<string, { title: string; intro: string; headerLabel:
 };
 
 const MODE_LABELS: Record<string, string> = {
-  continuous: "Bersambung",
+  continuous: "Berturutan",
   anthology: "Antologi",
 };
 

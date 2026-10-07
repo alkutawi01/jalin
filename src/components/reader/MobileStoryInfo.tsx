@@ -150,7 +150,7 @@ export default function MobileStoryInfo({ data }: { data: StoryInfoData }) {
             className={tab === "editorial" ? "active" : ""}
             onClick={() => setTab("editorial")}
           >
-            Editorial
+            Penyuntingan
           </button>
           {data.bab && data.bab.length > 0 ? (
             <button
