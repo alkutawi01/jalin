@@ -17,7 +17,8 @@ function getAdminDb(): Kysely<Database> {
 
 export interface VisualRequestInput {
   workId?: string;
-  submissionId?: number;
+  /** null removes the link to a submission. */
+  submissionId?: number | null;
   visualRole: string;
   prompt: string;
   provider: string;
@@ -92,6 +93,18 @@ export async function listVisualRequests(): Promise<VisualRequestRecord[]> {
     .orderBy("created_at", "desc")
     .selectAll()
     .execute();
+}
+
+/**
+ * "ID Penghantaran" as the forms send it: undefined leaves the stored id alone, null or an empty box removes it, a whole number is
+ * kept. Anything else is refused in words the form can show (2.5 used to reach the database's integer column).
+ */
+export function parseSubmissionId(value: unknown): number | null | undefined {
+  if (value === undefined) return undefined;
+  if (value === null || (typeof value === "string" && value.trim() === "")) return null;
+  const id = typeof value === "number" ? value : typeof value === "string" && /^\s*\d+\s*$/.test(value) ? Number(value) : NaN;
+  if (!Number.isSafeInteger(id) || id < 1 || id > 2147483647) throw new Error("ID Penghantaran tidak sah: nombor bulat, atau kosong.");
+  return id;
 }
 
 export async function getVisualRequest(id: number): Promise<VisualRequestRecord | undefined> {

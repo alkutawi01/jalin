@@ -249,7 +249,8 @@ export default function EditVisualRequestPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...form,
-          submissionId: form.submissionId ? Number(form.submissionId) : undefined,
+          // An emptied box is sent as null: left out, the stored id stayed and came back at the next load.
+          submissionId: form.submissionId.trim() ? Number(form.submissionId) : null,
         }),
       });
 
