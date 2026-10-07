@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { capitaliseFirst } from "../../../../lib/capitalise-first";
-import { listGlossaryForWork, createGlossaryTerm } from "../../../../lib/admin/glossary-service";
+import { listGlossaryForWork, createGlossaryTerm, DuplicateTermError } from "../../../../lib/admin/glossary-service";
 import { findDuplicateTerm } from "../../../../lib/admin/metadata-rules";
 
 export async function GET(request: NextRequest) {
@@ -55,6 +55,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(term, { status: 201 });
   } catch (error) {
+    // A second request that lost the race to the first: the same answer as the check above.
+    if (error instanceof DuplicateTermError) return NextResponse.json({ error: error.message }, { status: 409 });
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Ralat tidak diketahui." },
       { status: 500 }
