@@ -48,7 +48,7 @@ export async function POST(
       ? 404
       : message.includes("sudah menjadi") || message.includes("duplicate")
         ? 409
-        : message.includes("hanya") || message.includes("tidak sah") || message.includes("sudah digunakan") || message.includes("diperlukan")
+        : message.includes("Hanya") || message.includes("tidak sah") || message.includes("sudah digunakan") || message.includes("diperlukan")
           ? 400
           : 500;
     return NextResponse.json({ error: message }, { status });
