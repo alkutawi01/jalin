@@ -28,7 +28,8 @@ export interface WorkInput {
   genre?: string;
   audience?: string;
   dek?: string;
-  readingMinutes?: number;
+  /** null removes the stored number (the reader then estimates from the text). */
+  readingMinutes?: number | null;
   version?: string;
   publishedAt?: string;
   updatedAt?: string;

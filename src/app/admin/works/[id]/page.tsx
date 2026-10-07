@@ -1422,7 +1422,8 @@ export default function EditWorkPage() {
         body: JSON.stringify({
           ...editableForm,
           title: form.title.trim() ? editableForm.title : UNTITLED_DRAFT,
-          readingMinutes: form.readingMinutes ? Number(form.readingMinutes) : undefined,
+          // An emptied box is sent as null: left out, the stored number stayed and came back at the next load.
+          readingMinutes: form.readingMinutes.trim() ? Number(form.readingMinutes) : null,
           base: baseRef.current ?? undefined,
         }),
       });

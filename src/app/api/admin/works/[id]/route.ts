@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getWork, updateWork, archiveWork, deleteUnpublishedWork } from "../../../../../lib/admin/work-service";
 import { samePublishedDay } from "../../../../../lib/admin/published-day";
+import { parseReadingMinutes } from "../../../../../lib/admin/reading-minutes";
 import { conflictMessage, reconcileEdit, storedFormValues } from "../../../../../lib/admin/stale-write";
 import { episodesHiddenByArchiving } from "../../../../../lib/admin/series-hidden-by-archive";
 import { getCurrentAdmin } from "../../../../../lib/admin/auth";
@@ -142,6 +143,13 @@ export async function PATCH(
       }
     }
 
+    let readingMinutes: number | null | undefined;
+    try {
+      readingMinutes = parseReadingMinutes(body.readingMinutes);
+    } catch (error) {
+      return NextResponse.json({ error: (error as Error).message }, { status: 400 });
+    }
+
     const work = await updateWork(id, {
       title: body.title,
       slug: body.slug,
@@ -150,7 +158,7 @@ export async function PATCH(
       genre: body.genre,
       audience: body.audience,
       dek: body.dek,
-      readingMinutes: body.readingMinutes,
+      readingMinutes,
       // publishedAt is only meaningful alongside published status; ignore raw sets.
       // The form sends back the date it was shown (the day part of the stored time). Writing that back would reset the time to midnight
       // UTC, and for a time late in the UTC day move the date by one in Malaysia, on every ordinary save: only a different day is a change.
