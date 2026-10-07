@@ -35,6 +35,15 @@ export function characterProblems(characters: Array<{ name: string; firstAppeara
  * A credit repeats another when the same person (the same contributor, or a guest of the same name) has the same role
  * on the same work. The reader would show the line twice. "existing" is the credits of that one work.
  */
+/** A credit the editor cannot save as asked (400), a contributor that is gone (404), a list that changed elsewhere (409): not a server failure. */
+export function creditErrorStatus(error: unknown): number {
+  const message = error instanceof Error ? error.message : "";
+  if (message.includes("tidak ditemui")) return 404;
+  if (message.includes("telah berubah")) return 409;
+  if (message.startsWith("Pilih penyumbang")) return 400;
+  return 500;
+}
+
 export function findDuplicateCredit<T extends { id: number; contributor_slug: string | null; guest_name: string | null; role_label: string }>(
   existing: T[],
   candidate: { contributorSlug?: string | null; guestName?: string | null; roleLabel: string },
