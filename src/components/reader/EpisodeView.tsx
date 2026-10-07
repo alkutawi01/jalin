@@ -155,6 +155,7 @@ export default function EpisodeView({
                     src={node.src}
                     alt={node.alt}
                     rights={rights}
+                    crop={node.crop}
                   />
                 );
               }

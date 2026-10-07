@@ -123,11 +123,14 @@ function CategoryCard({
   label,
   imageSrc,
   imageAlt,
+  imageCrop,
 }: {
   type: string;
   label: string;
   imageSrc?: string | null;
   imageAlt?: string | null;
+  /** The part of the picture its editor chose (the card showed the centre whatever was chosen). */
+  imageCrop?: ImageCrop;
 }) {
   const hasImage = !!imageSrc;
   return (
@@ -142,6 +145,7 @@ function CategoryCard({
           fill
           sizes="(max-width: 1050px) 45vw, 22vw"
           className="category-explorer-card-img"
+          style={cropStyle(imageCrop)}
         />
       ) : null}
       <div className="category-explorer-card-scrim" />
@@ -291,7 +295,7 @@ export default async function Home() {
   const alreadyShown = new Set<string>(editorialPicks.map((pick) => pick.slug));
   const latest = sorted.filter((work) => !alreadyShown.has(work.slug)).slice(0, 6);
 
-  const categoryImages = new Map<string, { src: string; alt: string; year: string }>();
+  const categoryImages = new Map<string, { src: string; alt: string; year: string; crop?: ImageCrop }>();
   for (const cat of CATEGORIES) {
     const withHero = sortedAll.find((work) => {
       const summary = projectPublicWorkSummary(work);
@@ -368,6 +372,7 @@ export default async function Home() {
                     type={cat.type}
                     label={cat.label}
                     imageSrc={img?.src}
+                    imageCrop={img?.crop}
                     imageAlt={img?.alt}
                   />
                 );
