@@ -35,6 +35,7 @@ import GlossaryTerm from "../src/components/reader/GlossaryTerm";
 import ReadingProgress from "../src/components/reader/ReadingProgress";
 import FootnoteMargin from "../src/components/reader/FootnoteMargin";
 import HeaderSearch from "../src/components/reader/HeaderSearch";
+import CountUp from "../src/components/reader/CountUp";
 import { initContentRepository } from "../src/lib/content";
 
 let passed = 0;
@@ -79,7 +80,7 @@ const FORBIDDEN_STRINGS = [
 ];
 
 /** Client components receive their data as props; do not execute them. */
-const CLIENT_COMPONENTS = new Set<unknown>([MobileStoryInfo, MobileNavMenu, GlossaryTerm, ReadingProgress, FootnoteMargin, HeaderSearch]);
+const CLIENT_COMPONENTS = new Set<unknown>([MobileStoryInfo, MobileNavMenu, GlossaryTerm, ReadingProgress, FootnoteMargin, HeaderSearch, CountUp]);
 
 function scanValue(value: unknown, path: string, hits: string[]) {
   if (typeof value === "string") {

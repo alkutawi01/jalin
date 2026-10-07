@@ -181,7 +181,7 @@ export function buildSearchIndex(repo: ContentRepository): SearchDoc[] {
       authors,
       episodeCount: episodes.length,
       publishedAt: latest.publishedAt ?? "",
-      summary: { ...first, type: "bersiri", slug: series.slug, title: series.title, ...(series.genre ? { genre: series.genre } : {}), ...(series.dek ? { dek: series.dek } : {}), ...(series.hero ? { hero: { src: series.hero.src, alt: series.hero.alt } } : {}) } as PublicWorkSummary,
+      summary: { ...first, type: "bersiri", slug: series.slug, title: series.title, ...(series.genre ? { genre: series.genre } : {}), ...(series.dek ? { dek: series.dek } : {}), ...(series.hero ? { hero: { src: series.hero.src, alt: series.hero.alt, ...(series.hero.crop ? { crop: series.hero.crop } : {}) } } : {}) } as PublicWorkSummary,
       foldedTitle: fold(series.title),
       foldedDek: fold(series.dek ?? ""),
       foldedGenre: fold(displayableGenre(series.genre) ?? ""),

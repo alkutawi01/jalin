@@ -123,7 +123,7 @@ export default function EpisodeView({
             </>
           }
           byline={byline}
-          hero={hero?.src ? { src: hero.src, alt: hero.alt ?? "", rights } : undefined}
+          hero={hero?.src ? { src: hero.src, alt: hero.alt ?? "", rights, crop: hero.crop } : undefined}
         />
 
 

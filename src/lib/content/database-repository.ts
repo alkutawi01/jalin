@@ -70,6 +70,11 @@ export function withHeroAlt<T extends { role?: string; alt?: string }>(visuals: 
   return visuals.map((visual) => (visual.role === "hero" && !(visual.alt ?? "").trim() ? { ...visual, alt: `Ilustrasi ${name}` } : visual));
 }
 
+/** The focus and zoom chosen for a series' picture (columns of migration 024; absent before it has run). */
+function seriesCrop(row: any) {
+  return cropFromRow({ focus_x: row.hero_focus_x, focus_y: row.hero_focus_y, zoom: row.hero_zoom });
+}
+
 function mapWork(
   row: any,
   credits: ContributorRef[],
@@ -290,7 +295,7 @@ export class DatabaseContentRepository implements ContentRepository {
         status: (String(se.status) === "completed" ? "completed" : "ongoing"),
         // A series picture with no description of its own is still named for a reader who cannot see it (the listing and the homepage
         // already said "Ilustrasi siri …"; the series page and its episodes had an empty alt).
-        ...(se.hero_src ? { hero: { src: String(se.hero_src), alt: se.hero_alt && String(se.hero_alt).trim() ? String(se.hero_alt) : `Ilustrasi siri ${String(se.title)}` } } : {}),
+        ...(se.hero_src ? { hero: { src: String(se.hero_src), alt: se.hero_alt && String(se.hero_alt).trim() ? String(se.hero_alt) : `Ilustrasi siri ${String(se.title)}`, ...(seriesCrop(se) ? { crop: seriesCrop(se)! } : {}) } } : {}),
       };
       this.seriesCache.set(meta.id, meta);
       this.seriesBySlug.set(meta.slug, meta);
