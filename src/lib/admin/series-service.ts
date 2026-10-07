@@ -6,7 +6,7 @@
  * Reorder uses exact-set validation. No destructive cascade to Works.
  */
 
-import { Kysely, Transaction } from "kysely";
+import { Kysely, Transaction, sql } from "kysely";
 import { getDb, hasDb } from "../db";
 import type { Database } from "../db/types";
 
@@ -283,50 +283,71 @@ export async function attachEpisode(
     );
   }
 
-  const existingMembership = await getSeriesEntryForWork(workId);
-  if (existingMembership) {
-    if (existingMembership.series_id === seriesId) {
-      throw new Error("Work ini sudah menjadi ahli Siri ini.");
+  // Two episodes attached at the same moment both read the same last position, and the second was answered with the database's
+  // own words ('duplicate key value violates unique constraint "series_entries_series_position_key"'); so was one episode attached
+  // twice at once. Episodes join a series one at a time, and a clash is told in the editor's language.
+  let result: { id: number } | undefined;
+  try {
+    result = await db.transaction().execute(async (trx) => {
+      await sql`SELECT pg_advisory_xact_lock(hashtext(${"series-entries:" + seriesId}))`.execute(trx);
+
+      const existingMembership = await trx.selectFrom("series_entries").where("work_id", "=", workId).select("series_id").executeTakeFirst();
+      if (existingMembership) {
+        if (existingMembership.series_id === seriesId) {
+          throw new Error("Work ini sudah menjadi ahli Siri ini.");
+        }
+        throw new Error("Work ini sudah menjadi ahli Siri lain.");
+      }
+
+      const maxEntry = await trx
+        .selectFrom("series_entries")
+        .where("series_id", "=", seriesId)
+        .select("position")
+        .orderBy("position", "desc")
+        .executeTakeFirst();
+      const nextPosition = position ?? (maxEntry ? maxEntry.position + 1 : 1);
+      // Positions are kept as an unbroken 1..N (reordering and removing close gaps, and the reader numbers episodes by position).
+      if (position !== undefined && (!Number.isInteger(position) || position < 1 || position > (maxEntry?.position ?? 0) + 1)) {
+        throw new Error(`Kedudukan tidak sah: mesti nombor bulat dari 1 hingga ${(maxEntry?.position ?? 0) + 1} (tidak boleh meninggalkan ruang kosong).`);
+      }
+
+      if (position !== undefined) {
+        const clash = await trx
+          .selectFrom("series_entries")
+          .where("series_id", "=", seriesId)
+          .where("position", "=", nextPosition)
+          .select("id")
+          .executeTakeFirst();
+        if (clash) {
+          throw new Error(`Position ${nextPosition} sudah digunakan dalam Siri ini.`);
+        }
+      }
+
+      const now = new Date().toISOString();
+      return trx
+        .insertInto("series_entries")
+        .values({
+          series_id: seriesId,
+          work_id: workId,
+          position: nextPosition,
+          created_at: now,
+          updated_at: now,
+        })
+        .returning("id")
+        .executeTakeFirst();
+    });
+  } catch (error) {
+    const clash = error as { code?: string; constraint?: string };
+    if (clash.code === "23505") {
+      // The episode joined a series (this one or another) while this request waited, or its position was taken.
+      throw new Error(
+        clash.constraint === "series_entries_series_position_key"
+          ? "Kedudukan episod ini sudah digunakan dalam Siri ini. Muat semula senarai episod dan cuba lagi."
+          : "Work ini sudah menjadi ahli sebuah Siri."
+      );
     }
-    throw new Error("Work ini sudah menjadi ahli Siri lain.");
+    throw error;
   }
-
-  const maxEntry = await db
-    .selectFrom("series_entries")
-    .where("series_id", "=", seriesId)
-    .select("position")
-    .orderBy("position", "desc")
-    .executeTakeFirst();
-  const nextPosition = position ?? (maxEntry ? maxEntry.position + 1 : 1);
-  // Positions are kept as an unbroken 1..N (reordering and removing close gaps, and the reader numbers episodes by position).
-  if (position !== undefined && (!Number.isInteger(position) || position < 1 || position > (maxEntry?.position ?? 0) + 1)) {
-    throw new Error(`Kedudukan tidak sah: mesti nombor bulat dari 1 hingga ${(maxEntry?.position ?? 0) + 1} (tidak boleh meninggalkan ruang kosong).`);
-  }
-
-  if (position !== undefined) {
-    const clash = await db
-      .selectFrom("series_entries")
-      .where("series_id", "=", seriesId)
-      .where("position", "=", nextPosition)
-      .select("id")
-      .executeTakeFirst();
-    if (clash) {
-      throw new Error(`Position ${nextPosition} sudah digunakan dalam Siri ini.`);
-    }
-  }
-
-  const now = new Date().toISOString();
-  const result = await db
-    .insertInto("series_entries")
-    .values({
-      series_id: seriesId,
-      work_id: workId,
-      position: nextPosition,
-      created_at: now,
-      updated_at: now,
-    })
-    .returning("id")
-    .executeTakeFirst();
 
   if (!result) {
     throw new Error("Gagal menyertai episod ke Siri.");
