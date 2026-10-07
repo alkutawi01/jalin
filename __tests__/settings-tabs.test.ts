@@ -32,8 +32,10 @@ assert(page.includes("<SettingsHashRedirect current={tab} />") && redirect.inclu
 assert(read("src/components/admin/AiCreditPicker.tsx").includes('href="/admin/settings?tab=nama-samaran"'), "the credit picker links straight to the tab");
 
 const css = read("src/app/admin/admin.css");
-assert(css.includes(".a-shell .a-settings-tabs { display: flex;") && css.includes("overflow-x: auto") && css.includes(".a-shell .a-settings-tabs a.active"), "the tabs sit on one row (scrolling sideways on a phone) and the open one is marked");
-assert(css.includes("min-height: 44px") , "a tab is tall enough to tap");
+const tabsRule = (css.match(/.a-shell .a-settings-tabs {[^}]*}/) ?? [""])[0];
+assert(tabsRule.includes("flex-wrap: wrap") && !tabsRule.includes("overflow") && css.includes(".a-shell .a-settings-tabs a.active"), "the tabs wrap onto another line when they do not fit (none is ever cut off or scrolled out of view), and the open one is marked");
+assert(!read("src/components/admin/SettingsHashRedirect.tsx").includes("scrollIntoView"), "nothing scrolls the row of tabs");
+assert(/.a-shell .a-settings-tabs a {[^}]*min-height: 40px/.test(css), "a tab is tall enough to tap");
 assert(!isAllowed("editor", "GET", "/admin/settings") && isAllowed("owner", "GET", "/admin/settings"), "who may open Tetapan is unchanged");
 
 console.log(`\n${passed} passed, ${failed} failed`);

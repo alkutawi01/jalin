@@ -589,13 +589,13 @@
 .a-shell .a-settings-nav a { padding: 7px 14px; border: 1px solid var(--a-line); border-radius: 999px; background: var(--a-surface); color: var(--a-ink); font-size: 13px; font-weight: 600; text-decoration: none; }
 .a-shell .a-settings-nav a:hover, .a-shell .a-settings-nav a:focus-visible { border-color: var(--a-accent); }
 .a-shell .admin-section[id] { scroll-margin-top: 84px; }
-/* Tetapan's tabs: a row of tabs on a line, the open one joined to its panel. On a phone the row scrolls sideways instead of wrapping into a block. */
-.a-shell .a-settings-tabs { display: flex; gap: 2px; margin-top: 16px; border-bottom: 1px solid var(--a-line); overflow-x: auto; overflow-y: hidden; scrollbar-width: none; }
-.a-shell .a-settings-tabs::-webkit-scrollbar { display: none; }
-.a-shell .a-settings-tabs a { flex: none; padding: 10px 9px; min-height: 44px; display: inline-flex; align-items: center; border: 1px solid transparent; border-bottom: 0; border-radius: 8px 8px 0 0; color: var(--a-muted, var(--a-ink)); font-size: 14px; font-weight: 600; text-decoration: none; white-space: nowrap; }
-.a-shell .a-settings-tabs a:hover { color: var(--a-ink); background: var(--a-surface); }
-.a-shell .a-settings-tabs a:focus-visible { outline: 2px solid var(--a-accent); outline-offset: -2px; }
-.a-shell .a-settings-tabs a.active { color: var(--a-ink); background: var(--a-surface); border-color: var(--a-line); box-shadow: inset 0 3px 0 var(--a-accent); }
+/* Tetapan's tabs. They wrap onto a second line when the window is too narrow for all seven: an earlier row that scrolled
+   sideways with its scrollbar hidden showed tabs cut off at both ends. Every tab is always whole and in view. */
+.a-shell .a-settings-tabs { display: flex; flex-wrap: wrap; justify-content: flex-start; gap: 8px; margin-top: 16px; padding-bottom: 14px; border-bottom: 1px solid var(--a-line); }
+.a-shell .a-settings-tabs a { flex: none; padding: 0 14px; min-height: 40px; display: inline-flex; align-items: center; border: 1px solid var(--a-line); border-radius: 999px; background: var(--a-surface); color: var(--a-muted, var(--a-ink)); font-size: 14px; font-weight: 600; text-decoration: none; white-space: nowrap; }
+.a-shell .a-settings-tabs a:hover { color: var(--a-ink); border-color: var(--a-accent); }
+.a-shell .a-settings-tabs a:focus-visible { outline: 2px solid var(--a-accent); outline-offset: 2px; }
+.a-shell .a-settings-tabs a.active { color: #fff; background: var(--a-ink); border-color: var(--a-ink); }
 .a-shell .a-settings-panel { margin-top: 0; }
 
 .a-shell .a-settings-fold { border: 1px solid var(--a-line); border-radius: var(--a-radius); background: var(--a-surface); margin: 0 0 10px; }
