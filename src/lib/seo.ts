@@ -21,6 +21,13 @@ export function shareImageUrl(src: string): string {
  */
 export const OG_SITE = { siteName: "Jalin — oleh Adjung", locale: "ms_MY" } as const;
 
+/**
+ * The share picture of a page that has none of its own (homepage, lists, author pages, About, Privacy, Terms, a work with no
+ * hero): the Jalin logo and slogan on the theme's teal, 1200 x 630. A file drawn once by scripts/make-og-default.mjs; replace
+ * public/brand/og-default.png to change it.
+ */
+export const DEFAULT_SHARE_IMAGE = { url: `${SITE_URL}/brand/og-default.png`, width: 1200, height: 630, alt: "Jalin — Selami dunia melalui cerita" } as const;
+
 /** The share picture with its description, for a reader who cannot see it. */
 export function shareImage(src: string, alt?: string | null): { url: string; alt?: string } {
   const text = (alt ?? "").trim();

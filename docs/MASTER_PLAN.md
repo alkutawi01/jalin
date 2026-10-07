@@ -4,7 +4,9 @@ Status: **LOCKED — 21 September 2026**
 
 ## 1. Product thesis
 
-**Jalin — oleh Adjung** ialah platform bacaan sastera berilustrasi untuk remaja 13–17 tahun.
+**Jalin — oleh Adjung** ialah platform bacaan sastera berilustrasi dalam Bahasa Melayu.
+
+Slogan: **Selami dunia melalui cerita**. Jalin terbuka kepada semua pembaca: teks awam (tajuk, ringkasan, kad kongsi, halaman Tentang, arahan AI) tidak menyempitkan audiens kepada sesuatu umur seperti "remaja" atau "jiwa muda" (arahan Izzat, 7 Okt 2026).
 
 Jalin bukan platform novel penuh. Unit utama produk ialah **bacaan terkurasi** yang boleh dinikmati dalam satu pengalaman halaman, sama ada karya asli Jalin atau karya domain awam yang diperkenalkan semula secara editorial.
 

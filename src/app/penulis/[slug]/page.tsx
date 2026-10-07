@@ -1,5 +1,5 @@
 import fs from "node:fs";
-import { OG_SITE } from "../../../lib/seo";
+import { OG_SITE, DEFAULT_SHARE_IMAGE } from "../../../lib/seo";
 import path from "node:path";
 import matter from "gray-matter";
 import ReactMarkdown from "react-markdown";
@@ -65,7 +65,8 @@ export async function generateMetadata({
     title: name,
     description,
     alternates: { canonical: `/penulis/${slug}` },
-    openGraph: { ...OG_SITE, type: "profile", title: name, description, url: `/penulis/${slug}` }
+    openGraph: { ...OG_SITE, type: "profile", title: name, description, url: `/penulis/${slug}`, images: [DEFAULT_SHARE_IMAGE] },
+    twitter: { card: "summary_large_image", title: name, description, images: [DEFAULT_SHARE_IMAGE.url] }
   };
 }
 

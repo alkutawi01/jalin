@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
+import { DEFAULT_SHARE_IMAGE } from "../../lib/seo";
 import { InfoPage } from "../../components/reader/InfoPage";
 
 export const metadata: Metadata = {
   title: "Dasar Privasi",
   description: "Apa yang Jalin kumpul dan tidak kumpul tentang pembaca.",
   alternates: { canonical: "/privasi" },
-  openGraph: { type: "website", siteName: "Jalin — oleh Adjung", title: "Dasar Privasi", description: "Apa yang Jalin kumpul dan tidak kumpul tentang pembaca.", url: "/privasi", locale: "ms_MY" },
-  twitter: { card: "summary_large_image", title: "Dasar Privasi", description: "Apa yang Jalin kumpul dan tidak kumpul tentang pembaca." }
+  openGraph: { type: "website", siteName: "Jalin — oleh Adjung", title: "Dasar Privasi", description: "Apa yang Jalin kumpul dan tidak kumpul tentang pembaca.", url: "/privasi", locale: "ms_MY", images: [DEFAULT_SHARE_IMAGE] },
+  twitter: { card: "summary_large_image", title: "Dasar Privasi", description: "Apa yang Jalin kumpul dan tidak kumpul tentang pembaca.", images: [DEFAULT_SHARE_IMAGE.url] }
 };
 
 export default function PrivacyPage() {

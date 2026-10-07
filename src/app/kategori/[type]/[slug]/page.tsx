@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { laterOf } from "../../../../lib/seo-jsonld";
 import { chapterPageLabel } from "../../../../lib/reader/chapter-label";
 import { notFound } from "next/navigation";
-import { OG_SITE, absoluteUrl, clipDescription, shareImage, shareImageUrl } from "../../../../lib/seo";
+import { OG_SITE, absoluteUrl, clipDescription, shareImage, shareImageUrl, DEFAULT_SHARE_IMAGE } from "../../../../lib/seo";
 import { chapterHeroOf } from "../../../../lib/reader/chapter-visuals";
 import { initContentRepository } from "../../../../lib/content";
 import { getWorkBySlug } from "../../../../lib/content/workLoader";
@@ -60,15 +60,15 @@ export async function generateMetadata({
       title: pageTitle,
       description: pageDescription,
       url: canonicalPath,
-      images: hero?.src ? [shareImage(hero.src, hero.alt)] : undefined,
+      images: [hero?.src ? shareImage(hero.src, hero.alt) : DEFAULT_SHARE_IMAGE],
       ...(work.publishedAt ? { publishedTime: work.publishedAt } : {}),
       ...(work.updatedAt ? { modifiedTime: laterOf(work.updatedAt, work.publishedAt) } : {})
     },
     twitter: {
-      card: hero?.src ? "summary_large_image" : "summary",
+      card: "summary_large_image",
       title: pageTitle,
       description: pageDescription,
-      images: hero?.src ? [shareImageUrl(hero.src)] : undefined
+      images: [hero?.src ? shareImageUrl(hero.src) : DEFAULT_SHARE_IMAGE.url]
     }
   };
 }

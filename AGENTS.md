@@ -4,7 +4,9 @@ Dokumen ini ialah arahan kerja bersama untuk semua AI/agent yang menyentuh repos
 
 ## Produk
 
-Jalin — oleh Adjung ialah platform bacaan sastera berilustrasi untuk remaja 13–17 tahun.
+Jalin — oleh Adjung ialah platform bacaan sastera berilustrasi dalam Bahasa Melayu.
+
+Slogan: **Selami dunia melalui cerita**. Jalin terbuka kepada semua pembaca: teks awam (tajuk, ringkasan, kad kongsi, halaman Tentang, arahan AI) tidak menyempitkan audiens kepada sesuatu umur seperti "remaja" atau "jiwa muda" (arahan Izzat, 7 Okt 2026).
 
 Kategori utama:
 
