@@ -3,6 +3,7 @@
 import { use, useCallback, useEffect, useState } from "react";
 import LoadingBlock from "../../../../../components/admin/LoadingBlock";
 import { confirmAction, toast } from "../../../../../lib/admin/dialogs";
+import { errorText } from "../../../../../lib/admin/error-text";
 
 interface Evidence { quote: string; verified: boolean }
 interface Rating {
@@ -119,7 +120,7 @@ export default function RatingPage({ params }: { params: Promise<{ kind: string;
       setState(data);
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
     }
   }, [query]);
 
