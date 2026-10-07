@@ -191,7 +191,7 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
       const heading = needsManuscript ? "TEKS KARYA" : "MAKLUMAT KARYA SUMBER";
       const text = material.trim() ? `${data.prompt}\n\n=== ${heading} ===\n${material.trim()}\n` : data.prompt;
       await navigator.clipboard.writeText(text);
-      setCopyNote("Arahan AI disalin. Tampal dalam chatbot (ChatGPT/Claude/Gemini), kemudian salin jawapannya.");
+      setCopyNote("Arahan AI disalin. Tampal dalam bot sembang (ChatGPT/Claude/Gemini), kemudian salin jawapannya.");
     } catch (err) {
       setError(errorText(err, "Gagal menyalin arahan."));
     } finally {
@@ -252,11 +252,11 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
     try {
       text = await navigator.clipboard.readText();
     } catch {
-      setError("Peranti tidak membenarkan tampal automatik. Tampal jawapan chatbot dalam kotak di bawah, kemudian tekan Semak.");
+      setError("Peranti tidak membenarkan tampal automatik. Tampal jawapan bot sembang dalam kotak di bawah, kemudian tekan Semak.");
       return;
     }
     if (!text.trim()) {
-      setError("Papan keratan kosong. Salin jawapan chatbot dahulu.");
+      setError("Papan keratan kosong. Salin jawapan bot sembang dahulu.");
       return;
     }
     setAnswer(text);
@@ -370,7 +370,7 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
           <span className="admin-step-num">2</span>Salin arahan AI
         </h2>
         <p className="admin-form-hint">
-          Tekan butang, kemudian tampal dalam chatbot pilihan anda{needsManuscript ? " (teks karya turut disertakan)" : ""}.
+          Tekan butang, kemudian tampal dalam bot sembang pilihan anda{needsManuscript ? " (teks karya turut disertakan)" : ""}.
         </p>
         <div className="admin-form-actions">
           <button
@@ -387,7 +387,7 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
 
       <section className="admin-section">
         <h2 className="admin-form-section-title">
-          <span className="admin-step-num">3</span>Tampal jawapan chatbot
+          <span className="admin-step-num">3</span>Tampal jawapan bot sembang
         </h2>
         <div className="admin-form-actions">
           <button type="button" className="admin-btn admin-btn-primary" disabled={busy !== "idle"} onClick={paste}>
@@ -401,7 +401,7 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
             rows={6}
             value={answer}
             onChange={(e) => setAnswer(e.target.value)}
-            placeholder="Tampal jawapan chatbot di sini…"
+            placeholder="Tampal jawapan bot sembang di sini…"
           />
           <div className="admin-form-actions">
             <button
@@ -746,7 +746,7 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
 
               <h3>Gambar ({review.visuals.filter((v) => !v.removed).length})</h3>
               <p className="admin-form-hint">
-                Arahan gambar disediakan oleh chatbot. Anda boleh ubah sebelum menyimpan; selepas disimpan, arahan penuh boleh
+                Arahan gambar disediakan oleh bot sembang. Anda boleh ubah sebelum menyimpan; selepas disimpan, arahan penuh boleh
                 disalin dan imej dimuat naik di editor karya. Gambar dalam teks akan mendapat penanda bernombor yang boleh dialihkan dalam manuskrip.
               </p>
               {review.visuals.map((v, i) => (

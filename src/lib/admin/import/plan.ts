@@ -172,7 +172,7 @@ export function buildImportPlan(answer: string, manuscript: string, options: Imp
     if (!data.content) {
       errors.push({
         code: "content_missing",
-        message: "Chatbot tidak menyertakan bahagian [KANDUNGAN] (teks karya). Minta chatbot menjana semula mengikut format."
+        message: "Bot sembang tidak menyertakan bahagian [KANDUNGAN] (teks karya). Minta bot sembang menjana semula mengikut format."
       });
       return { ok: false, errors, warnings, plan: null, report: parsed.report };
     }
@@ -213,7 +213,7 @@ export function buildImportPlan(answer: string, manuscript: string, options: Imp
   if (data.readingMinutes !== null && Math.abs(data.readingMinutes - readingMinutes) > Math.max(2, readingMinutes * 0.25)) {
     warnings.push({
       code: "reading_minutes_differs",
-      message: `Chatbot menganggar ${data.readingMinutes} minit; dikira daripada teks sebenar: ${readingMinutes} minit (${storedWords} perkataan). Nilai yang dikira digunakan.`
+      message: `Bot sembang menganggar ${data.readingMinutes} minit; dikira daripada teks sebenar: ${readingMinutes} minit (${storedWords} perkataan). Nilai yang dikira digunakan.`
     });
   }
 

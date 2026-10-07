@@ -60,17 +60,17 @@ export default function AddWorkPage() {
     <div className="admin-form-page">
       <header className="admin-page-header">
         <h1>Tambah karya</h1>
-        <p className="admin-page-sub">{picked ? `Bagaimana mahu memulakan ${KIND_LABELS[picked]}?` : "Pilih jenis karya. Jenis yang dipilih dikekalkan sehingga draf siap dan tidak boleh ditukar senyap oleh chatbot. Draf tidak diterbitkan secara automatik."}</p>
+        <p className="admin-page-sub">{picked ? `Bagaimana mahu memulakan ${KIND_LABELS[picked]}?` : "Pilih jenis karya. Jenis yang dipilih dikekalkan sehingga draf siap dan tidak boleh ditukar senyap oleh bot sembang. Draf tidak diterbitkan secara automatik."}</p>
       </header>
       {error && <div className="admin-alert admin-alert-error" role="alert">{error}</div>}
       {!chooseSeries && picked ? <div className="admin-choice-grid">
         <button type="button" className="admin-choice" disabled={busy} onClick={() => void start(picked)}>
           <strong>Tulis sendiri</strong>
-          <span>Buka editor kosong. Anda menaip teks, kemudian menambah kredit, gambar dan glosari sendiri. Tiada chatbot terlibat.</span>
+          <span>Buka editor kosong. Anda menaip teks, kemudian menambah kredit, gambar dan glosari sendiri. Tiada bot sembang terlibat.</span>
         </button>
         <a className="admin-choice" href={`/admin/works/add/${picked}`}>
-          <strong>Guna chatbot</strong>
-          <span>Salin arahan, tampal jawapan chatbot. Sistem mengisi tajuk, glosari, watak dan permintaan gambar. Hasilnya draf yang sama seperti &quot;Tulis sendiri&quot;, tetapi sudah berisi dan boleh disunting.</span>
+          <strong>Guna bot sembang</strong>
+          <span>Salin arahan, tampal jawapan bot sembang. Sistem mengisi tajuk, glosari, watak dan permintaan gambar. Hasilnya draf yang sama seperti &quot;Tulis sendiri&quot;, tetapi sudah berisi dan boleh disunting.</span>
         </a>
         <button type="button" className="admin-btn admin-btn-outline" onClick={() => setPicked(null)}>← Tukar jenis</button>
       </div> : null}

@@ -67,12 +67,12 @@ export default async function AddWorkKindPage({ params, searchParams }: PageProp
         {header("Siapa yang menulis teksnya?")}
         <div className="admin-choice-grid">
           <a href={`${base}?mod=tulis`} className="admin-choice">
-            <strong>Chatbot menulis sepenuhnya</strong>
-            <span>Anda beri maklumat karya sumber; chatbot menulis teks dan menyediakan semua data.</span>
+            <strong>Bot sembang menulis sepenuhnya</strong>
+            <span>Anda beri maklumat karya sumber; bot sembang menulis teks dan menyediakan semua data.</span>
           </a>
           <a href={`${base}?mod=data`} className="admin-choice">
             <strong>Saya sudah ada teksnya</strong>
-            <span>Chatbot hanya mengeluarkan data (sumber, glosari, gambar) daripada teks anda.</span>
+            <span>Bot sembang hanya mengeluarkan data (sumber, glosari, gambar) daripada teks anda.</span>
           </a>
         </div>
       </div>
