@@ -6,6 +6,9 @@ import { confirmAction, toast } from "../../../../lib/admin/dialogs";
 import LoadingBlock from "../../../../components/admin/LoadingBlock";
 import AudiencePicker from "../../../../components/admin/AudiencePicker";
 
+/** An episode's status in the editor's words, as the works list shows it. */
+const EPISODE_STATUS: Record<string, string> = { draft: "Draf", review: "Semakan", ready: "Sedia", published: "Diterbitkan", archived: "Diarkibkan" };
+
 interface SeriesData {
   id: string;
   slug: string;
@@ -427,7 +430,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
                       </td>
                       <td>
                         <span className={`admin-status admin-status-${work?.status ?? "draft"}`}>
-                          {work?.status ?? "—"}
+                          {work ? EPISODE_STATUS[work.status] ?? work.status : "—"}
                         </span>
                       </td>
                       <td>
@@ -463,10 +466,10 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
               <div className="admin-form-group" style={{ flex: 1 }}>
                 <label htmlFor="attach-existing">Pilih episod</label>
                 <select id="attach-existing" value={attachWorkId} onChange={(e) => setAttachWorkId(e.target.value)}>
-                  <option value="">-- Pilih episod --</option>
+                  <option value="">— Pilih episod —</option>
                   {attachable.map((w) => (
                     <option key={w.id} value={w.id}>
-                      {w.title} ({w.status})
+                      {w.title} ({EPISODE_STATUS[w.status] ?? w.status})
                     </option>
                   ))}
                 </select>

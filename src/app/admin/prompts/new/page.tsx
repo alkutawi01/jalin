@@ -136,7 +136,7 @@ export default function NewPromptPage() {
         <div className="admin-form-actions">
           <a href="/admin/prompts" className="admin-btn admin-btn-outline">Kembali</a>
           <button type="submit" className="admin-btn admin-btn-primary" disabled={saving}>
-            {saving ? "Mencipta..." : "Cipta Template"}
+            {saving ? "Mencipta..." : "Cipta Templat"}
           </button>
         </div>
       </form>

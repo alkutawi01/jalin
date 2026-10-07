@@ -61,7 +61,7 @@ export default function EditPromptPage() {
     async function loadTemplate() {
       try {
         const res = await fetch(`/api/admin/prompts/${promptId}`);
-        if (!res.ok) throw new Error("Template tidak ditemui.");
+        if (!res.ok) throw new Error("Templat arahan tidak ditemui.");
         const t: PromptTemplateData = await res.json();
 
         setForm({

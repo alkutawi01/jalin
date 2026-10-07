@@ -48,14 +48,18 @@ const APPROVAL_STATES = [
   { value: "rejected", label: "Ditolak" },
 ];
 
+/** The status and approval words an editor reads, wherever a stored value is shown. */
+const STATUS_LABEL: Record<string, string> = Object.fromEntries(GENERATION_STATUSES.map((entry) => [entry.value, entry.label]));
+const APPROVAL_LABEL: Record<string, string> = Object.fromEntries(APPROVAL_STATES.map((entry) => [entry.value, entry.label]));
+
 const PROVIDERS = [
   { value: "magnific", label: "Magnific" },
-  { value: "mock", label: "Mock (Test)" },
+  { value: "mock", label: "Olok-olok (ujian)" },
 ];
 
 const MAGNIFIC_MODELS = [
-  { value: "", label: "default (flexible)" },
-  { value: "flexible", label: "flexible — illustrations" },
+  { value: "", label: "lalai (flexible)" },
+  { value: "flexible", label: "flexible (ilustrasi)" },
   { value: "fluid", label: "fluid" },
   { value: "realism", label: "realism" },
   { value: "zen", label: "zen" },
@@ -65,7 +69,7 @@ const MAGNIFIC_MODELS = [
 
 const EXECUTION_MODES: Record<string, string> = {
   magnific_api: "Magnific API",
-  magnific_connector: "Magnific Connector",
+  magnific_connector: "Penyambung Magnific",
 };
 
 interface VisualAttemptEntry {
@@ -228,7 +232,7 @@ export default function EditVisualRequestPage() {
           model: r.model || "",
         });
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Ralat memuatkan visual request.");
+        setError(err instanceof Error ? err.message : "Permintaan gambar tidak dapat dimuatkan.");
       } finally {
         setLoading(false);
       }
@@ -289,14 +293,14 @@ export default function EditVisualRequestPage() {
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Gagal menjana visual.");
+      if (!res.ok) throw new Error(data.error || "Gambar tidak dapat dijana.");
       if (data.pendingTask) {
         setSuccess(
-          `Tugas dihantar (status: ${data.status}, task: ${data.providerRequestId || "-"}). Menunggu completion via webhook/poll/connector.`
+          `Tugas dihantar (${STATUS_LABEL[data.status] ?? data.status}; nombor tugas ${data.providerRequestId || "—"}). Tekan "Semak status" sebentar lagi.`
         );
       } else {
         setSuccess(
-          `Penjanaan selesai — status: ${data.status}.` + (data.errorMessage ? ` ${data.errorMessage}` : "")
+          `Penjanaan selesai: ${STATUS_LABEL[data.status] ?? data.status}.` + (data.errorMessage ? ` ${data.errorMessage}` : "")
         );
       }
       // Reload to get fresh state
@@ -333,11 +337,11 @@ export default function EditVisualRequestPage() {
         body: JSON.stringify({ provider: record?.provider || "magnific" }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Poll gagal.");
+      if (!res.ok) throw new Error(data.error || "Status tidak dapat disemak.");
       if (data.pendingTask || data.status === "generating" || data.status === "queued") {
-        setSuccess("Tugas masih dalam proses. Cuba poll semula sebentar lagi.");
+        setSuccess("Tugas masih berjalan. Semak status semula sebentar lagi.");
       } else {
-        setSuccess(`Status kini: ${data.status}.` + (data.errorMessage ? ` ${data.errorMessage}` : ""));
+        setSuccess(`Status kini: ${STATUS_LABEL[data.status] ?? data.status}.` + (data.errorMessage ? ` ${data.errorMessage}` : ""));
       }
       const refreshed = await fetch(`/api/admin/visual-requests/${requestId}`);
       if (refreshed.ok) {
@@ -462,7 +466,7 @@ export default function EditVisualRequestPage() {
   }
 
   async function handleDelete() {
-    if (!(await confirmAction("Pasti ingin memadam visual request ini?", { danger: true, confirmLabel: "Ya, teruskan" }))) return;
+    if (!(await confirmAction("Pasti ingin memadam permintaan gambar ini?", { danger: true, confirmLabel: "Ya, teruskan" }))) return;
     setDeleting(true);
 
     try {
@@ -508,21 +512,21 @@ export default function EditVisualRequestPage() {
           {/* Three clearly separated lifecycle panels */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
             <div>
-              <h3 style={{ margin: "0 0 8px", fontSize: 14, textTransform: "uppercase", opacity: 0.7 }}>1. Generation</h3>
+              <h3 style={{ margin: "0 0 8px", fontSize: 14, textTransform: "uppercase", opacity: 0.7 }}>1. Penjanaan</h3>
               <p style={{ margin: 0 }}>
-                <strong>{record.status}</strong>
+                <strong>{STATUS_LABEL[record.status] ?? record.status}</strong>
                 {record.error_category && (
                   <span style={{ color: "#c0392b" }}> — {record.error_category}: {record.error_message}</span>
                 )}
               </p>
               <p style={{ margin: "4px 0 0", fontSize: 12, opacity: 0.7 }}>
-                Mode: {EXECUTION_MODES[record.execution_mode || "magnific_api"] || record.execution_mode || "magnific_api"}
+                Cara: {EXECUTION_MODES[record.execution_mode || "magnific_api"] || record.execution_mode || "magnific_api"}
               </p>
               {record.provider_request_id && (
-                <p style={{ margin: "4px 0 0", fontSize: 12, opacity: 0.7 }}>Task: {record.provider_request_id}</p>
+                <p style={{ margin: "4px 0 0", fontSize: 12, opacity: 0.7 }}>Nombor tugas: {record.provider_request_id}</p>
               )}
               {record.provider_creation_id && (
-                <p style={{ margin: "4px 0 0", fontSize: 12, opacity: 0.7 }}>Creation: {record.provider_creation_id}</p>
+                <p style={{ margin: "4px 0 0", fontSize: 12, opacity: 0.7 }}>Nombor ciptaan: {record.provider_creation_id}</p>
               )}
               {record.asset_width && record.asset_height && (
                 <p style={{ margin: "4px 0 0", fontSize: 12, opacity: 0.7 }}>
@@ -530,22 +534,22 @@ export default function EditVisualRequestPage() {
                 </p>
               )}
               <p style={{ margin: "4px 0 0", fontSize: 12, opacity: 0.7 }}>
-                Asset:{" "}
+                Fail gambar:{" "}
                 {record.asset_finalized
-                  ? "Stabil (final)"
-                  : "Belum stabil — tidak boleh dipaut"}
+                  ? "Sudah disimpan (muktamad)"
+                  : "Belum disimpan; belum boleh dipautkan"}
               </p>
               <p style={{ margin: "4px 0 0", fontSize: 12, opacity: 0.7 }}>
                 Percubaan: {record.retry_count}
-                {record.last_webhook_id ? " · webhook diterima" : ""}
+                {record.last_webhook_id ? " · makluman penyedia diterima" : ""}
               </p>
             </div>
             <div>
               <h3 style={{ margin: "0 0 8px", fontSize: 14, textTransform: "uppercase", opacity: 0.7 }}>
-                2. Editorial Review
+                2. Semakan editorial
               </h3>
               <p style={{ margin: 0 }}>
-                <strong>{record.approval_state}</strong>
+                <strong>{APPROVAL_LABEL[record.approval_state] ?? record.approval_state}</strong>
               </p>
               {record.approved_by && (
                 <p style={{ margin: "4px 0 0", fontSize: 12, opacity: 0.7 }}>Oleh: {record.approved_by}</p>
@@ -562,16 +566,16 @@ export default function EditVisualRequestPage() {
             </div>
             <div>
               <h3 style={{ margin: "0 0 8px", fontSize: 14, textTransform: "uppercase", opacity: 0.7 }}>
-                3. Attachment
+                3. Pautan ke karya
               </h3>
               <p style={{ margin: 0 }}>
-                <strong>{record.status === "attached" ? "attached" : "unattached"}</strong>
+                <strong>{record.status === "attached" ? "Dipaut" : "Belum dipaut"}</strong>
               </p>
               <p style={{ margin: "4px 0 0", fontSize: 12, opacity: 0.7 }}>
-                Work: {record.work_id || "-"}
+                Karya: {record.work_id || "—"}
               </p>
               <p style={{ margin: "4px 0 0", fontSize: 12, opacity: 0.7 }}>
-                Src kanonik: {record.source_asset_path || "(belum ada)"}
+                Alamat fail tersimpan: {record.source_asset_path || "(belum ada)"}
               </p>
               <p style={{ margin: "4px 0 0", fontSize: 12, opacity: 0.7 }}>
                 Pautan ≠ penerbitan
@@ -603,12 +607,12 @@ export default function EditVisualRequestPage() {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={record.source_asset_path || record.source_asset_url || ""}
-                alt={record.alt_text || "Preview visual"}
+                alt={record.alt_text || "Pratonton gambar"}
                 style={{ maxWidth: "100%", maxHeight: 320, borderRadius: 6 }}
               />
               {!record.asset_finalized && (
                 <p style={{ fontSize: 12, color: "#c0392b", margin: "6px 0 0" }}>
-                  Preview sementara (provider URL) — asset belum final, tidak boleh dipaut.
+                  Pratonton sementara daripada penyedia. Fail belum disimpan, jadi belum boleh dipautkan.
                 </p>
               )}
             </div>
@@ -634,31 +638,31 @@ export default function EditVisualRequestPage() {
                   style={{ padding: "6px 10px", width: 220 }}
                 />
                 <button type="button" onClick={handleGenerate} className="admin-btn admin-btn-primary" disabled={generating}>
-                  {generating ? "Menjana..." : "Generate"}
+                  {generating ? "Menjana…" : "Jana"}
                 </button>
               </div>
             )}
 
             {["queued", "generating"].includes(record.status) && (
               <button type="button" onClick={handlePoll} className="admin-btn admin-btn-outline" disabled={polling}>
-                {polling ? "Polling..." : "Poll Task"}
+                {polling ? "Menyemak…" : "Semak status"}
               </button>
             )}
 
             {["under_review", "generated"].includes(record.status) && (record.source_asset_url || record.source_asset_path) && (
               <>
                 <button type="button" onClick={handleApprove} className="admin-btn admin-btn-primary" disabled={approving}>
-                  {approving ? "Memproses..." : "Lulus"}
+                  {approving ? "Memproses…" : "Luluskan"}
                 </button>
                 <button type="button" onClick={handleReject} className="admin-btn admin-btn-danger" disabled={approving}>
-                  Reject
+                  Tolak
                 </button>
               </>
             )}
 
             {record.status === "approved" && record.work_id && (
               <button type="button" onClick={handleAttach} className="admin-btn admin-btn-primary" disabled={attaching || !record.asset_finalized}>
-                {attaching ? "Memautkan..." : record.asset_finalized ? "Pautkan ke karya" : "Pautkan (gambar belum siap)"}
+                {attaching ? "Memautkan…" : record.asset_finalized ? "Pautkan ke karya" : "Pautkan (gambar belum siap)"}
               </button>
             )}
           </div>
@@ -691,8 +695,8 @@ export default function EditVisualRequestPage() {
                 Atau muat naik imej sendiri
               </h3>
               <p style={{ margin: "0 0 8px", fontSize: 13, opacity: 0.8 }}>
-                Untuk imej yang dibuat di luar Magnific. Direkod sebagai sumber &quot;manual&quot;. Selepas dimuat naik anda masih perlu
-                menekan Approve, kemudian Attach. PNG/JPEG/WebP, maksimum 10 MB (disyorkan bawah 4 MB).
+                Untuk imej yang dibuat di luar Magnific. Direkod sebagai muat naik manual. Selepas dimuat naik anda masih perlu
+                menekan Luluskan, kemudian Pautkan ke karya. PNG/JPEG/WebP, maksimum 10 MB (disyorkan bawah 4 MB).
               </p>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
                 <input
