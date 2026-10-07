@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { safeReturnTo } from "../../../lib/admin/return-to";
+import { errorText } from "../../../lib/admin/error-text";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -32,7 +33,7 @@ export default function LoginPage() {
       router.push(safeReturnTo(new URLSearchParams(window.location.search).get("returnTo")));
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
     } finally {
       setLoading(false);
     }

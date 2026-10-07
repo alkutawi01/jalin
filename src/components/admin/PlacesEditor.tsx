@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { errorText } from "../../lib/admin/error-text";
 
 interface Place {
   name: string;
@@ -82,7 +83,7 @@ export default function PlacesEditor({ workId, kind = "places" }: { workId: stri
       setSuccess(`${cfg.title.replace("Latar", "Latar")} disimpan.`);
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
     } finally {
       setSaving(false);
     }

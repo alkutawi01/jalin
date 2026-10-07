@@ -4,6 +4,7 @@ import { useState } from "react";
 import { glossaryTermsMissingFromText } from "../../lib/admin/glossary-check";
 import CopyButton from "./CopyButton";
 import { pasteAsMarkdown } from "./pasteMarkdown";
+import { errorText } from "../../lib/admin/error-text";
 
 type SeriesProp = { kind: "baharu" } | { kind: "sambung"; seriesId: string; title: string } | null;
 
@@ -192,7 +193,7 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
       await navigator.clipboard.writeText(text);
       setCopyNote("Arahan AI disalin. Tampal dalam chatbot (ChatGPT/Claude/Gemini), kemudian salin jawapannya.");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Gagal menyalin arahan.");
+      setError(errorText(err, "Gagal menyalin arahan."));
     } finally {
       setBusy("idle");
     }
@@ -239,7 +240,7 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
         }
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
     } finally {
       setBusy("idle");
     }
@@ -286,7 +287,7 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
       }
       window.location.href = `/admin/works/${data.workId}`;
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
       setBusy("idle");
     }
   }

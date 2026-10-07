@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { imageMarkerLabel } from "../../lib/reader/image-markers";
 import { MAX_UPLOAD_LABEL, uploadTooLargeMessage } from "../../lib/admin/upload-limit";
+import { errorText } from "../../lib/admin/error-text";
 
 /**
  * Upload an image straight from a work. One step: the file is
@@ -57,7 +58,7 @@ export default function WorkVisualUpload({ workId, onDone, hasHero, published, s
       setAnchor("");
       onDone();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
     } finally {
       setBusy(false);
     }

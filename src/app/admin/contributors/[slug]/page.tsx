@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
+import { errorText } from "../../../../lib/admin/error-text";
 
 const CONTRIBUTOR_TYPES = [
   { value: "human", label: "Manusia" },
@@ -54,7 +55,7 @@ export default function EditContributorPage() {
           isVisible: contributor.is_visible,
         });
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Ralat memuatkan penyumbang.");
+        setError(errorText(err, "Ralat memuatkan penyumbang."));
       } finally {
         setLoading(false);
       }
@@ -88,7 +89,7 @@ export default function EditContributorPage() {
       setSuccess("Berjaya disimpan.");
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
     } finally {
       setSaving(false);
     }

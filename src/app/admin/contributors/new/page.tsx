@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { errorText } from "../../../../lib/admin/error-text";
 
 const CONTRIBUTOR_TYPES = [
   { value: "human", label: "Manusia" },
@@ -58,7 +59,7 @@ export default function NewContributorPage() {
 
       router.push("/admin/contributors");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
     } finally {
       setSaving(false);
     }

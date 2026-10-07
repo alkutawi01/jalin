@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { errorText } from "../../lib/admin/error-text";
 
 interface Props {
   target: string;
@@ -30,7 +31,7 @@ export default function PromptEditor({ target, label, description, initial, cust
       setNote(done);
       return true;
     } catch (err) {
-      setNote(err instanceof Error ? err.message : "Ralat.");
+      setNote(errorText(err, "Ralat."));
       return false;
     } finally {
       setBusy(false);

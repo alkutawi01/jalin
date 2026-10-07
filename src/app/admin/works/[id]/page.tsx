@@ -29,6 +29,7 @@ import { renderItalics, toggleItalicSelection } from "../../../../lib/reader/inl
 import VisualManuscriptEditor, { canEditVisually } from "../../../../components/admin/VisualManuscriptEditor";
 import PlacesEditor from "../../../../components/admin/PlacesEditor";
 import { uploadTooLargeMessage } from "../../../../lib/admin/upload-limit";
+import { errorText } from "../../../../lib/admin/error-text";
 
 const WORK_TYPES = [
   { value: "cerpen", label: "Cerpen" },
@@ -356,7 +357,7 @@ export default function EditWorkPage() {
       }
       toast(`${removed} istilah glosari dipadam.`, "success");
     } catch (err) {
-      setGlossaryError(`${err instanceof Error ? err.message : "Ralat tidak diketahui."} (${removed} daripada ${ids.length} sempat dipadam.)`);
+      setGlossaryError(`${errorText(err)} (${removed} daripada ${ids.length} sempat dipadam.)`);
     } finally {
       setSelectedTerms([]);
       setGlossaryBusy(false);
@@ -564,7 +565,7 @@ export default function EditWorkPage() {
       notes.push("Tidak disentuh: teks karya, kredit, imej dan hak. Semak semua isi sebelum menerbitkan.");
       toast("Maklumat daripada chatbot telah diisi.", "success");
     } catch (err) {
-      notes.push(`Berhenti kerana ralat: ${err instanceof Error ? err.message : "ralat tidak diketahui"}. ${wrote > 0 ? "Bahagian di atas yang sudah diisi kekal tersimpan; tekan Tampal & isi semula untuk menyambung (yang sudah ada dilangkau, tiada yang berganda)." : "Tiada apa-apa disimpan."}`);
+      notes.push(`Berhenti kerana ralat: ${errorText(err, "ralat tidak diketahui")}. ${wrote > 0 ? "Bahagian di atas yang sudah diisi kekal tersimpan; tekan Tampal & isi semula untuk menyambung (yang sudah ada dilangkau, tiada yang berganda)." : "Tiada apa-apa disimpan."}`);
     } finally {
       setFillNote(notes);
       setFillBusy(false);
@@ -631,7 +632,7 @@ export default function EditWorkPage() {
       setGlossaryNote(`${added} istilah ditambah${skipped ? `. Dilangkau: ${skipped}` : ""}. Semak maksudnya dalam jadual dan edit jika perlu.`);
       toast(`${added} istilah glosari ditambah.`, "success");
     } catch (err) {
-      setGlossaryError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setGlossaryError(errorText(err));
       if (added > 0) setGlossaryNote(`${added} istilah sempat ditambah sebelum ralat.`);
     } finally {
       setGlossaryBusy(false);
@@ -873,7 +874,7 @@ export default function EditWorkPage() {
           else clearDraft(window.localStorage, workId);
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Ralat memuatkan karya.");
+        setError(errorText(err, "Ralat memuatkan karya."));
       } finally {
         setLoading(false);
       }
@@ -950,7 +951,7 @@ export default function EditWorkPage() {
       await loadReadiness();
       setTimeout(() => setSectionSuccess(null), 4000);
     } catch (err) {
-      setSectionError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setSectionError(errorText(err));
     }
   }
 
@@ -976,7 +977,7 @@ export default function EditWorkPage() {
       await loadSections();
       await loadReadiness();
     } catch (err) {
-      setSectionError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setSectionError(errorText(err));
     }
   }
 
@@ -999,7 +1000,7 @@ export default function EditWorkPage() {
       await loadSections();
       await loadReadiness();
     } catch (err) {
-      setSectionError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setSectionError(errorText(err));
     }
   }
 
@@ -1016,7 +1017,7 @@ export default function EditWorkPage() {
       await loadSourceRights();
       await loadReadiness();
     } catch (err) {
-      setSourceError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setSourceError(errorText(err));
     }
   }
 
@@ -1056,7 +1057,7 @@ export default function EditWorkPage() {
         setSourceForm(loadedForm);
       }
     } catch (err) {
-      setSourceError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setSourceError(errorText(err));
     } finally {
       setSourceLoading(false);
     }
@@ -1104,7 +1105,7 @@ export default function EditWorkPage() {
       await loadReadiness();
       setTimeout(() => setSourceSuccess(null), 5000);
     } catch (err) {
-      setSourceError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setSourceError(errorText(err));
     } finally {
       setSourceSaving(false);
     }
@@ -1153,7 +1154,7 @@ export default function EditWorkPage() {
       await loadReadiness();
       setTimeout(() => setSourceSuccess(null), 5000);
     } catch (err) {
-      setSourceError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setSourceError(errorText(err));
     } finally {
       setSourceSaving(false);
     }
@@ -1170,7 +1171,7 @@ export default function EditWorkPage() {
       }
       setReadiness(await res.json());
     } catch (err) {
-      setReadinessError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setReadinessError(errorText(err));
     } finally {
       setReadinessLoading(false);
     }
@@ -1206,7 +1207,7 @@ export default function EditWorkPage() {
       await loadReadiness();
       setTimeout(() => setPublishSuccess(null), 5000);
     } catch (err) {
-      setPublishError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setPublishError(errorText(err));
     } finally {
       setPublishing(false);
     }
@@ -1239,7 +1240,7 @@ export default function EditWorkPage() {
       await loadReadiness();
       setTimeout(() => setPublishSuccess(null), 5000);
     } catch (err) {
-      setPublishError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setPublishError(errorText(err));
       await loadReadiness();
     } finally {
       setPublishing(false);
@@ -1301,7 +1302,7 @@ export default function EditWorkPage() {
       if (!res.ok) throw new Error(data.error || "Pratonton gagal dimuatkan.");
       setMarkerMigration(data);
     } catch (error) {
-      setMarkerMigrationError(error instanceof Error ? error.message : "Pratonton gagal dimuatkan.");
+      setMarkerMigrationError(errorText(error, "Pratonton gagal dimuatkan."));
     } finally {
       setMarkerMigrationBusy(false);
     }
@@ -1329,7 +1330,7 @@ export default function EditWorkPage() {
       setMarkerMigration(null);
       setSuccess(action === "apply" ? `${data.converted} gambar ditukar kepada penanda. Semak pratonton sebelum menerbitkan semula.` : `${data.restored} gambar dipulihkan kepada anchor asal.`);
     } catch (error) {
-      setMarkerMigrationError(error instanceof Error ? error.message : "Penukaran gagal.");
+      setMarkerMigrationError(errorText(error, "Penukaran gagal."));
     } finally {
       setMarkerMigrationBusy(false);
     }
@@ -1396,7 +1397,7 @@ export default function EditWorkPage() {
       await loadReadiness();
       setTimeout(() => setCharactersSuccess(null), 3000);
     } catch (err) {
-      setCharactersError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setCharactersError(errorText(err));
     } finally {
       setCharactersSaving(false);
     }
@@ -1445,7 +1446,7 @@ export default function EditWorkPage() {
       setTimeout(() => setSuccess(null), 3000);
       await loadReadiness();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
     } finally {
       setSaving(false);
     }
@@ -1469,7 +1470,7 @@ export default function EditWorkPage() {
       await loadCredits();
       await loadReadiness();
     } catch (err) {
-      setCreditError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setCreditError(errorText(err));
     } finally {
       setCreditToggleBusy(null);
     }
@@ -1533,7 +1534,7 @@ export default function EditWorkPage() {
       // The status panel decides whether "Terbitkan semula" is offered, so it must see the new credit at once.
       await loadReadiness();
     } catch (err) {
-      setCreditError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setCreditError(errorText(err));
     } finally {
       creditSavingNow.current = false;
       setCreditSaving(false);
@@ -1556,7 +1557,7 @@ export default function EditWorkPage() {
       await loadCredits();
       await loadReadiness();
     } catch (err) {
-      setCreditError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setCreditError(errorText(err));
     }
   }
 
@@ -1630,7 +1631,7 @@ export default function EditWorkPage() {
       await loadReadiness();
       toast("Butiran gambar disimpan.", "success");
     } catch (err) {
-      setVisualError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setVisualError(errorText(err));
     }
   }
 
@@ -1653,7 +1654,7 @@ export default function EditWorkPage() {
       await loadReadiness();
       toast(form.status === "published" ? "Gambar diganti dalam draf. Pembaca belum melihatnya: tekan Terbitkan semula di atas karya." : "Gambar diganti. Semak pratonton sebelum menerbitkan.", "success");
     } catch (err) {
-      setVisualError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setVisualError(errorText(err));
     }
   }
 
@@ -1684,7 +1685,7 @@ export default function EditWorkPage() {
       await loadReadiness();
       toast(markerInText ? `${label} dipadam. Penanda ${imageMarkerLabel(marker!)} masih ada dalam manuskrip.` : `${label} dipadam.`, "success");
     } catch (err) {
-      setVisualError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setVisualError(errorText(err));
     }
   }
 
@@ -1735,7 +1736,7 @@ export default function EditWorkPage() {
       await loadGlossary();
       await loadReadiness();
     } catch (err) {
-      setGlossaryError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setGlossaryError(errorText(err));
     }
   }
 
@@ -1755,7 +1756,7 @@ export default function EditWorkPage() {
       await loadGlossary();
       await loadReadiness();
     } catch (err) {
-      setGlossaryError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setGlossaryError(errorText(err));
     }
   }
 
@@ -1797,7 +1798,7 @@ export default function EditWorkPage() {
       setTimeout(() => setPublishSuccess(null), 5000);
       loadPublishPreview();
     } catch (err) {
-      setPublishError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setPublishError(errorText(err));
     } finally {
       setPublishing(false);
     }
@@ -1834,7 +1835,7 @@ export default function EditWorkPage() {
       if (!res.ok) throw new Error("Gagal mengarkibkan.");
       router.push("/admin/works");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
       setSaving(false);
     }
   }
@@ -1854,7 +1855,7 @@ export default function EditWorkPage() {
       setDirty(false);
       router.push("/admin/works");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
       setSaving(false);
     }
   }
@@ -1876,7 +1877,7 @@ export default function EditWorkPage() {
         if (!res.ok) throw new Error("Gagal menyediakan karya untuk diterbitkan.");
         setForm((prev) => (prev ? { ...prev, status: "ready" } : prev));
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+        setError(errorText(err));
         setSaving(false);
         return;
       }
@@ -1900,7 +1901,7 @@ export default function EditWorkPage() {
       toast("Status dikemas kini.", "success");
       loadReadiness();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
     } finally {
       setSaving(false);
     }

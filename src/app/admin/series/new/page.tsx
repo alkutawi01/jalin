@@ -4,6 +4,7 @@ import AudiencePicker from "../../../../components/admin/AudiencePicker";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { slugify } from "../../../../lib/admin/import/text-utils";
+import { errorText } from "../../../../lib/admin/error-text";
 
 export default function NewSeriesPage() {
   const router = useRouter();
@@ -35,7 +36,7 @@ export default function NewSeriesPage() {
       if (!res.ok) throw new Error(data.error || "Gagal mencipta siri.");
       router.push(`/admin/series/${data.id}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
       setSaving(false);
     }
   }
