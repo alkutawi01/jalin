@@ -34,7 +34,11 @@ assert(audienceLabels("belia,dewasa", B) === "Belia · Dewasa", "labels for disp
 assert(JSON.stringify(audienceAgeRange("remaja", B)) === JSON.stringify({ min: 13, max: 17 }), "search engines get the ages: Remaja is 13 to 17");
 assert(JSON.stringify(audienceAgeRange("belia,dewasa", B)) === JSON.stringify({ min: 18, max: 99 }), "...and an open band reaches 99");
 assert(audienceAgeRange("", B) === null, "no band, no ages");
-assert(JSON.stringify(audienceOf("13-17")) === JSON.stringify({ audience: { "@type": "PeopleAudience", suggestedMinAge: 13, suggestedMaxAge: 17 } }) && JSON.stringify(audienceOf("remaja")).includes('"suggestedMinAge":13') && Object.keys(audienceOf("kata sahaja")).length === 0 && Object.keys(audienceOf(undefined)).length === 0, "the structured data reads codes, labels and old ranges");
+assert(JSON.stringify(audienceOf("13-17")) === JSON.stringify({ audience: { "@type": "PeopleAudience", suggestedMinAge: 13 } }) && JSON.stringify(audienceOf("remaja")).includes('"suggestedMinAge":13') && Object.keys(audienceOf("kata sahaja")).length === 0 && Object.keys(audienceOf(undefined)).length === 0, "the structured data reads codes, labels and old ranges");
+
+// only the age a work is suitable FROM is published: no upper age, so nothing says "not for adults" or "up to 99"
+assert(JSON.stringify(audienceOf("dewasa")) === JSON.stringify({ audience: { "@type": "PeopleAudience", suggestedMinAge: 30 } }) && JSON.stringify(audienceOf("belia,dewasa")).includes('"suggestedMinAge":18') && JSON.stringify(audienceOf("remaja")) === JSON.stringify({ audience: { "@type": "PeopleAudience", suggestedMinAge: 13 } }), "a band gives the age it starts at");
+assert(["remaja", "13-17", "belia", "dewasa", "kanak-kanak,remaja", "Remaja 13-17 tahun"].every((v) => !JSON.stringify(audienceOf(v)).includes("suggestedMaxAge")), "no upper age is ever published");
 
 // the bands an editor types
 const ok = validateBands([{ code: "remaja", label: " Remaja ", min: "13", max: 17 }, { label: "Orang tua", min: 60, max: "" }]);
