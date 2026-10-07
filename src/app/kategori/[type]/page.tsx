@@ -21,27 +21,27 @@ import { categoryIntro, DEFAULT_CATEGORY_INTROS, isCategoryType } from "@/lib/si
 
 const CATEGORY_META: Record<string, { title: string; intro: string; headerLabel: string }> = {
   cerpen: {
-    title: "Senarai Cerpen",
+    title: "Senarai cerpen",
     intro: DEFAULT_CATEGORY_INTROS.cerpen,
     headerLabel: "Cerpen",
   },
   novela: {
-    title: "Senarai Novela",
+    title: "Senarai novela",
     intro: DEFAULT_CATEGORY_INTROS.novela,
     headerLabel: "Novela",
   },
   bersiri: {
-    title: "Senarai Bersiri",
+    title: "Senarai bersiri",
     intro: DEFAULT_CATEGORY_INTROS.bersiri,
     headerLabel: "Bersiri",
   },
   fragmen: {
-    title: "Senarai Fragmen",
+    title: "Senarai fragmen",
     intro: DEFAULT_CATEGORY_INTROS.fragmen,
     headerLabel: "Fragmen",
   },
   sinopsis: {
-    title: "Senarai Sinopsis",
+    title: "Senarai sinopsis",
     intro: DEFAULT_CATEGORY_INTROS.sinopsis,
     headerLabel: "Sinopsis",
   },
@@ -145,7 +145,7 @@ function EmptyCategoryFallback({ currentType }: { currentType: string }) {
   return (
     <div className="category-empty">
       <JalinEmblem size={72} />
-      <p>Belum ada karya diterbitkan dalam kategori ini. Jelajahi kategori lain buat masa ini:</p>
+      <p>Belum ada karya diterbitkan dalam kategori ini. Terokai kategori lain buat masa ini:</p>
       <div className="category-empty-links">
         {others.map(({ type, label }) => (
           <a key={type} href={`/kategori/${type}`}>{label}</a>

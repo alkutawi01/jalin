@@ -72,7 +72,7 @@ export default function EpisodeView({
   const genre = displayableGenre(work.genre) ?? displayableGenre(series.genre);
 
   const workMeta: WorkMetaRow[] = [
-    { label: "Bentuk", value: typeLabel },
+    { label: "Jenis", value: typeLabel },
     { label: "Judul", value: series.title },
     { label: "Episod", value: episodeIndex >= 0 ? String(episodeIndex + 1) : "—" },
     ...(genre ? [{ label: "Genre", value: genre }] : []),
