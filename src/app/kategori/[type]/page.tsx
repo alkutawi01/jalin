@@ -67,7 +67,7 @@ function WorkCard({ work, type }: { work: PublicWorkSummary; type: string }) {
   const reading = work.readingMinutes ? `± ${work.readingMinutes} minit` : null;
   const published = work.publishedAt;
   const year = (published ?? "2026").slice(0, 4);
-  const label = CATEGORY_META[type]?.headerLabel ?? type;
+  const label = categoryMeta(type)?.headerLabel ?? type;
   return (
     <article className="latest-card">
       <a href={`/kategori/${type}/${work.slug}`}>
@@ -116,7 +116,7 @@ function SeriesCard({ series, episodeCount }: { series: PublicSeriesSummary; epi
 
 export async function generateMetadata({ params }: { params: Promise<{ type: string }> }): Promise<Metadata> {
   const { type } = await params;
-  const meta = CATEGORY_META[type];
+  const meta = categoryMeta(type);
   if (!meta) return {};
   const intro = isCategoryType(type) ? await categoryIntro(type) : meta.intro;
   return {
@@ -150,6 +150,11 @@ function EmptyCategoryFallback({ currentType }: { currentType: string }) {
   );
 }
 
+/** The category an address names, or undefined: "constructor" and "__proto__" are not categories (they were shown as an empty one, answered 200). */
+function categoryMeta(type: string) {
+  return Object.prototype.hasOwnProperty.call(CATEGORY_META, type) ? CATEGORY_META[type] : undefined;
+}
+
 const CATEGORY_META_LIST = Object.entries(CATEGORY_META).map(([type, meta]) => ({
   type,
   label: meta.headerLabel
@@ -165,7 +170,7 @@ async function getWorks(type: string): Promise<Work[]> {
 
 export default async function CategoryPage({ params }: { params: Promise<{ type: string }> }) {
   const { type } = await params;
-  const meta = CATEGORY_META[type];
+  const meta = categoryMeta(type);
   if (!meta) notFound();
   const intro = isCategoryType(type) ? await categoryIntro(type) : meta.intro;
 
