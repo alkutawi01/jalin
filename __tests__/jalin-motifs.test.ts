@@ -1,4 +1,4 @@
-/** Jalin motifs in the site: the emblem (loader, 404, empty state), the story-end divider and the story-end divider. */
+/** Jalin motifs in the site: the emblem (loader, 404, empty state), and the story-end divider. */
 import fs from "node:fs";
 import path from "node:path";
 

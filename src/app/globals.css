@@ -3401,3 +3401,10 @@ html:has(.a-nav, .admin-login-page) { overflow: visible; }
   .hero-carousel-slide .hero-featured-text { padding-bottom: 8px; }
   .hero-carousel-slide .home-work-meta { margin-bottom: 20px; }
 }
+
+/* Tablet and phone: the picture sits above the text, so the side-by-side gap (48px) and text padding (48px) made a ~100px hole under it, and the button was pushed to the bottom of the tallest slide. Text follows the picture closely; the button follows the meta. */
+@media (max-width: 1050px) {
+  .hero-carousel-slide { gap: 18px; }
+  .hero-carousel-slide .hero-featured-text { padding: 4px 0 8px; }
+  .hero-carousel-slide .hero-featured-cta { margin-top: 0; }
+}
