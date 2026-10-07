@@ -19,6 +19,8 @@ function assert(cond: boolean, msg: string, detail?: unknown) {
 const markdown = fs.readFileSync(path.join(__dirname, "..", "src/components/reader/StoryMarkdown.tsx"), "utf8");
 assert(markdown.includes('import { smartQuotes } from "../../lib/admin/smart-quotes";') && /normalizeSceneBreaks\(smartQuotes\(/.test(markdown), "the reader converts straight quotation marks when it renders a story");
 
+assert(markdown.includes("meaning={smartQuotes(glossary[key].meaning)}"), "a glossary tooltip shows curved marks too");
+
 const line = 'Abah mencari jam itu, membelek, "Esok baru siap, tali kena tukar." Dia mengembalikannya.';
 assert(smartQuotes(line) === 'Abah mencari jam itu, membelek, “Esok baru siap, tali kena tukar.” Dia mengembalikannya.', "a dialogue line gets an opening and a closing curved mark", smartQuotes(line));
 assert(smartQuotes('"Abah," katanya.') === '“Abah,” katanya.', "a quotation at the start of a paragraph is opened and closed");
