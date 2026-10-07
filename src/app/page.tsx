@@ -10,6 +10,7 @@ import type { SeriesMeta } from "../lib/content/types";
 import type { ImageCrop } from "../lib/content/types";
 import { cropStyle } from "../lib/reader/crop";
 import { displayableGenre } from "../lib/reader/genre-display";
+import { formatMalayDate } from "../lib/reader/format-date";
 import { getAllWorks } from "../lib/content/workLoader";
 import { getEditorPickSummaries, resolveHeroPicks } from "../lib/reader/editor-picks";
 import { projectPublicWorkSummary, type PublicWorkSummary } from "../lib/reader/public-projection";
@@ -24,15 +25,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = { alternates: { canonical: "/" } };
 
 function formatDate(date: string | undefined): string {
-  if (!date) return "—";
-  const day = /^\d{4}-\d{2}-\d{2}/.test(date) ? date.slice(0, 10) : date;
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) return "—";
-  const [year, month, dayNum] = day.split("-").map(Number);
-  const months = [
-    "Januari", "Februari", "Mac", "April", "Mei", "Jun",
-    "Julai", "Ogos", "September", "Oktober", "November", "Disember"
-  ];
-  return `${dayNum} ${months[(month ?? 1) - 1]} ${year}`;
+  return formatMalayDate(date) ?? "—";
 }
 
 const TYPE_LABELS: Record<string, string> = {
