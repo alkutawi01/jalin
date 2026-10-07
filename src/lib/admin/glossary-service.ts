@@ -4,9 +4,13 @@
  * Database operations for managing work glossary terms in admin console.
  */
 
-import { Kysely } from "kysely";
+import { Kysely, sql } from "kysely";
+import { findDuplicateTerm } from "./metadata-rules";
 import { getDb, hasDb } from "../db";
 import type { Database } from "../db/types";
+
+/** The work's glossary already has this term. */
+export class DuplicateTermError extends Error {}
 
 function getAdminDb(): Kysely<Database> {
   if (!hasDb()) {
@@ -71,7 +75,14 @@ export async function getGlossaryTerm(id: number): Promise<GlossaryRecord | unde
 export async function createGlossaryTerm(input: GlossaryInput): Promise<GlossaryRecord> {
   const db = getAdminDb();
 
-  const result = await db
+  // Two requests at the same moment (a double click on "Simpan") each saw no such term and both wrote it: readers then met the
+  // same glossary entry twice. Looking for the term and writing it happen one request at a time for a work.
+  const result = await db.transaction().execute(async (trx) => {
+    await sql`SELECT pg_advisory_xact_lock(hashtext(${"glossary:" + input.workId}))`.execute(trx);
+    const existing = await trx.selectFrom("glossary_terms").where("work_id", "=", input.workId).select(["id", "term"]).execute();
+    const duplicate = findDuplicateTerm(existing, input.term);
+    if (duplicate) throw new DuplicateTermError(`Istilah "${duplicate.term}" sudah ada dalam glosari karya ini. Ubah yang sedia ada.`);
+    return trx
     .insertInto("glossary_terms")
     .values({
       work_id: input.workId,
@@ -87,6 +98,7 @@ export async function createGlossaryTerm(input: GlossaryInput): Promise<Glossary
     })
     .returning("id")
     .executeTakeFirst();
+  });
 
   if (!result) {
     throw new Error("Failed to create glossary term.");
