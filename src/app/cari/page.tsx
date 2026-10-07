@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { formatMalayDate } from "../../lib/reader/format-date";
 import { SiteFooter, SiteHeader } from "../../components/reader/StoryChrome";
 import { renderAttribution } from "../../components/reader/Attribution";
 import { initContentRepository } from "../../lib/content";
@@ -34,11 +35,8 @@ function Marked({ parts }: { parts: Part[] }) {
   );
 }
 
-const MONTHS = ["Januari", "Februari", "Mac", "April", "Mei", "Jun", "Julai", "Ogos", "September", "Oktober", "November", "Disember"];
 function formatDate(date: string): string | null {
-  if (!/^\d{4}-\d{2}-\d{2}/.test(date)) return null;
-  const [year, month, day] = date.slice(0, 10).split("-").map(Number);
-  return `${day} ${MONTHS[(month ?? 1) - 1]} ${year}`;
+  return formatMalayDate(date);
 }
 
 export default async function SearchPage({ searchParams }: { searchParams: Promise<Raw> }) {

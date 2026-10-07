@@ -5,6 +5,7 @@ import { WorkCover } from "../../../components/reader/WorkCover";
 import { cropStyle } from "../../../lib/reader/crop";
 import { initContentRepository } from "../../../lib/content";
 import { displayableGenre } from "../../../lib/reader/genre-display";
+import { formatMalayDate } from "../../../lib/reader/format-date";
 import { getWorksByType } from "../../../lib/content/workLoader";
 import type { Work, WorkType } from "../../../lib/content/types";
 import {
@@ -58,13 +59,7 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 function formatDate(date: string | undefined): string {
-  if (!date || !/^\d{4}-\d{2}-\d{2}/.test(date)) return "—";
-  const [year, month, day] = date.slice(0, 10).split("-").map(Number);
-  const months = [
-    "Januari", "Februari", "Mac", "April", "Mei", "Jun",
-    "Julai", "Ogos", "September", "Oktober", "November", "Disember"
-  ];
-  return `${day} ${months[(month ?? 1) - 1]} ${year}`;
+  return formatMalayDate(date) ?? "—";
 }
 
 function WorkCard({ work, type }: { work: PublicWorkSummary; type: string }) {

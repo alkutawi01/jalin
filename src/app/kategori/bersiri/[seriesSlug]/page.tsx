@@ -9,6 +9,7 @@ import { WorkCover } from "../../../../components/reader/WorkCover";
 import { cropStyle } from "../../../../lib/reader/crop";
 import { initContentRepository } from "../../../../lib/content";
 import { displayableGenre } from "../../../../lib/reader/genre-display";
+import { formatMalayDate } from "../../../../lib/reader/format-date";
 import { OG_SITE, absoluteUrl, clipDescription, shareImage, DEFAULT_SHARE_IMAGE } from "../../../../lib/seo";
 import { jsonLdString, seriesJsonLd } from "../../../../lib/seo-jsonld";
 
@@ -26,13 +27,7 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 function formatDate(date: string | undefined): string {
-  if (!date || !/^\d{4}-\d{2}-\d{2}/.test(date)) return "—";
-  const [year, month, day] = date.slice(0, 10).split("-").map(Number);
-  const months = [
-    "Januari", "Februari", "Mac", "April", "Mei", "Jun",
-    "Julai", "Ogos", "September", "Oktober", "November", "Disember"
-  ];
-  return `${day} ${months[(month ?? 1) - 1]} ${year}`;
+  return formatMalayDate(date) ?? "—";
 }
 
 /** Title, description, canonical and share card for a series, so it is not just "Jalin" in a tab or a search result. */
