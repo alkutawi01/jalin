@@ -5,10 +5,14 @@
  * Handles per-work credit assignments with flexible roles.
  */
 
-import { Kysely } from "kysely";
+import { Kysely, sql } from "kysely";
 import { getDb, hasDb } from "../db";
 import type { Database } from "../db/types";
 import { isDerivativeType } from "../credit-roles";
+import { findDuplicateCredit } from "./metadata-rules";
+
+/** The same person in the same role is already credited on this work. */
+export class DuplicateCreditError extends Error {}
 
 function getAdminDb(): Kysely<Database> {
   if (!hasDb()) {
@@ -99,21 +103,32 @@ export async function createCredit(input: CreditInput): Promise<CreditRecord> {
   }
 
   const now = new Date().toISOString();
+  const byline = input.byline && (await bylineAllowed(db, input.workId));
 
-  const result = await db
-    .insertInto("credits")
-    .values({
-      work_id: input.workId,
-      contributor_slug: input.contributorSlug || null,
-      guest_name: input.guestName || null,
-      role_label: input.roleLabel,
-      byline: input.byline && (await bylineAllowed(db, input.workId)),
-      is_public: input.isPublic,
-      sort_order: input.sortOrder,
-      created_at: now,
-    })
-    .returning("id")
-    .executeTakeFirst();
+  // Two requests at the same moment (a double click on "Tambah kredit") each saw no such credit and both wrote one: a published
+  // episode had the same co-writer twice. The check and the write now happen one request at a time for a work.
+  const result = await db.transaction().execute(async (trx) => {
+    await sql`SELECT pg_advisory_xact_lock(hashtext(${"credits:" + input.workId}))`.execute(trx);
+    const existing = await trx.selectFrom("credits").where("work_id", "=", input.workId).select(["id", "contributor_slug", "guest_name", "role_label"]).execute();
+    const duplicate = findDuplicateCredit(existing, { contributorSlug: input.contributorSlug, guestName: input.guestName, roleLabel: input.roleLabel });
+    if (duplicate) {
+      throw new DuplicateCreditError(`Kredit ini sudah ada: ${duplicate.contributor_slug ?? duplicate.guest_name} sebagai ${duplicate.role_label}. Ubah yang sedia ada, atau pilih peranan lain.`);
+    }
+    return trx
+      .insertInto("credits")
+      .values({
+        work_id: input.workId,
+        contributor_slug: input.contributorSlug || null,
+        guest_name: input.guestName || null,
+        role_label: input.roleLabel,
+        byline,
+        is_public: input.isPublic,
+        sort_order: input.sortOrder,
+        created_at: now,
+      })
+      .returning("id")
+      .executeTakeFirst();
+  });
 
   if (!result) {
     throw new Error("Failed to create credit.");
