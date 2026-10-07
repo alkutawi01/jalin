@@ -3415,3 +3415,9 @@ html:has(.a-nav, .admin-login-page) { overflow: visible; }
 @media (min-width: 681px) and (max-width: 820px) { .site-shell { width: min(100% - 80px, 700px); } }
 @media (min-width: 821px) and (max-width: 1050px) { .site-shell { width: min(var(--max), calc(100% - 80px)); } }
 @media (min-width: 681px) and (max-width: 1050px) { .hero-carousel-slide .hero-featured-dek { max-width: 600px; } }
+
+/* Home, "Bersiri" block beside its text (701px and wider): the picture has a 16:9 ratio and is stretched to the row's height, so when
+   the text beside it was the taller of the two (a long episode title on a tablet-wide screen), the picture took its WIDTH from that
+   height, grew past its own column and covered the start of the text. Its width is its column's; the picture fills whatever height
+   the row has (it is cropped by object-fit, never stretched). */
+@media (min-width: 701px) { .series-feature-media { width: 100%; min-width: 0; } }
