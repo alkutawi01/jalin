@@ -1,5 +1,5 @@
 import { SiteFooter, SiteHeader } from "../../../components/reader/StoryChrome";
-import { OG_SITE } from "../../../lib/seo";
+import { OG_SITE, DEFAULT_SHARE_IMAGE } from "../../../lib/seo";
 import JalinEmblem from "../../../components/reader/JalinEmblem";
 import { WorkCover } from "../../../components/reader/WorkCover";
 import { initContentRepository } from "../../../lib/content";
@@ -132,8 +132,10 @@ export async function generateMetadata({ params }: { params: Promise<{ type: str
       type: "website",
       title: meta.title,
       description: intro,
-      url: `/kategori/${type}`
-    }
+      url: `/kategori/${type}`,
+      images: [DEFAULT_SHARE_IMAGE]
+    },
+    twitter: { card: "summary_large_image", title: meta.title, description: intro, images: [DEFAULT_SHARE_IMAGE.url] }
   };
 }
 

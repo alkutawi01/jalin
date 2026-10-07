@@ -14,7 +14,7 @@ for (const page of ["tentang", "privasi", "terma"]) {
   const src = fs.readFileSync(path.join(__dirname, `../src/app/${page}/page.tsx`), "utf8").replace(/\r\n/g, "\n");
   const title = /title: "([^"]+)",\n  description: "([^"]+)"/.exec(src);
   assert(Boolean(title) && src.includes(`openGraph: { type: "website", siteName: "Jalin — oleh Adjung", title: "${title![1]}", description: "${title![2]}", url: "/${page}"`), `/${page}: og title, description and url are its own`);
-  assert(Boolean(title) && src.includes(`twitter: { card: "summary_large_image", title: "${title![1]}", description: "${title![2]}" }`), `/${page}: twitter title and description are its own`);
+  assert(Boolean(title) && src.includes(`twitter: { card: "summary_large_image", title: "${title![1]}", description: "${title![2]}", images: [DEFAULT_SHARE_IMAGE.url] }`), `/${page}: twitter title and description are its own, with the site's share picture`);
 }
 
 console.log(`\n${passed} passed, ${failed} failed`);

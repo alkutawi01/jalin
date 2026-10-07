@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
+import { DEFAULT_SHARE_IMAGE } from "../../lib/seo";
 import { InfoPage } from "../../components/reader/InfoPage";
 
 export const metadata: Metadata = {
   title: "Terma Penggunaan",
   description: "Cara karya dan ilustrasi di Jalin boleh digunakan.",
   alternates: { canonical: "/terma" },
-  openGraph: { type: "website", siteName: "Jalin — oleh Adjung", title: "Terma Penggunaan", description: "Cara karya dan ilustrasi di Jalin boleh digunakan.", url: "/terma", locale: "ms_MY" },
-  twitter: { card: "summary_large_image", title: "Terma Penggunaan", description: "Cara karya dan ilustrasi di Jalin boleh digunakan." }
+  openGraph: { type: "website", siteName: "Jalin — oleh Adjung", title: "Terma Penggunaan", description: "Cara karya dan ilustrasi di Jalin boleh digunakan.", url: "/terma", locale: "ms_MY", images: [DEFAULT_SHARE_IMAGE] },
+  twitter: { card: "summary_large_image", title: "Terma Penggunaan", description: "Cara karya dan ilustrasi di Jalin boleh digunakan.", images: [DEFAULT_SHARE_IMAGE.url] }
 };
 
 export default function TermsPage() {

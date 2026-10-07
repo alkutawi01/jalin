@@ -1,20 +1,21 @@
 import type { Metadata } from "next";
+import { DEFAULT_SHARE_IMAGE } from "../../lib/seo";
 import { InfoPage } from "../../components/reader/InfoPage";
 
 export const metadata: Metadata = {
   title: "Tentang Jalin",
-  description: "Jalin ialah tempat cerita berilustrasi untuk jiwa muda, terbitan Adjung Press.",
+  description: "Jalin ialah platform bacaan sastera berilustrasi Bahasa Melayu, terbitan Adjung Press.",
   alternates: { canonical: "/tentang" },
-  openGraph: { type: "website", siteName: "Jalin — oleh Adjung", title: "Tentang Jalin", description: "Jalin ialah tempat cerita berilustrasi untuk jiwa muda, terbitan Adjung Press.", url: "/tentang", locale: "ms_MY" },
-  twitter: { card: "summary_large_image", title: "Tentang Jalin", description: "Jalin ialah tempat cerita berilustrasi untuk jiwa muda, terbitan Adjung Press." }
+  openGraph: { type: "website", siteName: "Jalin — oleh Adjung", title: "Tentang Jalin", description: "Jalin ialah platform bacaan sastera berilustrasi Bahasa Melayu, terbitan Adjung Press.", url: "/tentang", locale: "ms_MY", images: [DEFAULT_SHARE_IMAGE] },
+  twitter: { card: "summary_large_image", title: "Tentang Jalin", description: "Jalin ialah platform bacaan sastera berilustrasi Bahasa Melayu, terbitan Adjung Press.", images: [DEFAULT_SHARE_IMAGE.url] }
 };
 
 export default function AboutPage() {
   return (
     <InfoPage
       kicker="Tentang"
-      title="Cerita untuk kita"
-      intro="Jalin ialah tempat cerita berilustrasi untuk jiwa muda: cerpen, novela dan siri yang boleh dibaca dengan tenang, satu bab pada satu masa."
+      title="Selami dunia melalui cerita"
+      intro="Jalin ialah platform bacaan sastera berilustrasi Bahasa Melayu yang mengajak pembaca menyelami dunia melalui cerpen, novela, cerita bersiri, fragmen dan sinopsis."
     >
       <h2>Apa yang ada di sini</h2>
       <p>
