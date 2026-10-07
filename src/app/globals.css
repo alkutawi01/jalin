@@ -3409,7 +3409,6 @@ html:has(.a-nav, .admin-login-page) { overflow: visible; }
   .hero-carousel-slide .hero-featured-cta { margin-top: 0; }
 }
 
-<<<<<<< Updated upstream
 /* Tablet (681–1050px): the page kept the phone's 20–24px side margin on a screen twice as wide, so the header, the carousel text and
    every section hugged the left edge; and the carousel's summary kept the 440px cap of the side-by-side layout although the text
    now has the full width under the picture. A 40px margin on both sides, and a summary that uses the line. */
@@ -3422,7 +3421,7 @@ html:has(.a-nav, .admin-login-page) { overflow: visible; }
    height, grew past its own column and covered the start of the text. Its width is its column's; the picture fills whatever height
    the row has (it is cropped by object-fit, never stretched). */
 @media (min-width: 701px) { .series-feature-media { width: 100%; min-width: 0; } }
-=======
+
 /* Home stats under the carousel: one slim line, how many entries each category holds (see lib/reader/site-stats.ts). Each figure links to its category. */
 .home-stats { padding-block: clamp(20px, 3.2vw, 28px); }
 .home-stats-list { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; align-items: baseline; gap: 10px 0; }
@@ -3441,4 +3440,3 @@ html:has(.a-nav, .admin-login-page) { overflow: visible; }
 .count-up { display: inline-block; position: relative; }
 .count-up-size { visibility: hidden; }
 .count-up-now { position: absolute; left: 0; top: 0; }
->>>>>>> Stashed changes
