@@ -32,7 +32,7 @@ export async function POST(
     const body = await request.json();
 
     if (!body.workId) {
-      return NextResponse.json({ error: "workId diperlukan." }, { status: 400 });
+      return NextResponse.json({ error: "Karya diperlukan." }, { status: 400 });
     }
 
     const entry = await attachEpisode(

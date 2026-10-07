@@ -17,7 +17,7 @@ export async function GET(
     const visualRequest = await getVisualRequest(numId);
 
     if (!visualRequest) {
-      return NextResponse.json({ error: "Visual request tidak ditemui." }, { status: 404 });
+      return NextResponse.json({ error: "Permintaan gambar tidak ditemui." }, { status: 404 });
     }
 
     return NextResponse.json(visualRequest);
@@ -43,7 +43,7 @@ export async function PATCH(
 
     const existing = await getVisualRequest(numId);
     if (!existing) {
-      return NextResponse.json({ error: "Visual request tidak ditemui." }, { status: 404 });
+      return NextResponse.json({ error: "Permintaan gambar tidak ditemui." }, { status: 404 });
     }
 
     const body = await request.json();
@@ -98,7 +98,7 @@ export async function DELETE(
 
     const existing = await getVisualRequest(numId);
     if (!existing) {
-      return NextResponse.json({ error: "Visual request tidak ditemui." }, { status: 404 });
+      return NextResponse.json({ error: "Permintaan gambar tidak ditemui." }, { status: 404 });
     }
 
     await deleteVisualRequest(numId);

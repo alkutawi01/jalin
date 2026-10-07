@@ -209,7 +209,7 @@ export default function EditVisualRequestPage() {
     async function loadRequest() {
       try {
         const res = await fetch(`/api/admin/visual-requests/${requestId}`);
-        if (!res.ok) throw new Error("Visual request tidak ditemui.");
+        if (!res.ok) throw new Error("Permintaan gambar tidak ditemui.");
         const r: VisualRequestData = await res.json();
         setRecord(r);
 

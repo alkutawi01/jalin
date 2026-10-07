@@ -26,16 +26,16 @@ export async function POST(request: NextRequest) {
     } = body;
 
     if (!submissionId || typeof submissionId !== "number") {
-      return NextResponse.json({ error: "submissionId diperlukan." }, { status: 400 });
+      return NextResponse.json({ error: "Penghantaran diperlukan." }, { status: 400 });
     }
     if (!provider || typeof provider !== "string") {
-      return NextResponse.json({ error: "provider diperlukan." }, { status: 400 });
+      return NextResponse.json({ error: "Penyedia diperlukan." }, { status: 400 });
     }
     if (!model || typeof model !== "string") {
-      return NextResponse.json({ error: "model diperlukan." }, { status: 400 });
+      return NextResponse.json({ error: "Model diperlukan." }, { status: 400 });
     }
     if (!submissionBrief || typeof submissionBrief !== "string") {
-      return NextResponse.json({ error: "submissionBrief diperlukan." }, { status: 400 });
+      return NextResponse.json({ error: "Arahan diperlukan." }, { status: 400 });
     }
 
     // Select adapter based on provider

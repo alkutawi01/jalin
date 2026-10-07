@@ -14,7 +14,7 @@ import type { ContributorKind } from "../db/types";
 
 function getAdminDb(): Kysely<Database> {
   if (!hasDb()) {
-    throw new Error("[ContributorService] Database not available.");
+    throw new Error("Pangkalan data tidak tersedia.");
   }
   return getDb();
 }
@@ -119,7 +119,7 @@ export async function createContributor(input: ContributorInput): Promise<Contri
 
   const contributor = await getContributor(input.slug);
   if (!contributor) {
-    throw new Error("Failed to create contributor.");
+    throw new Error("Penyumbang tidak dapat dibuat.");
   }
 
   return contributor;
@@ -192,7 +192,7 @@ export async function updateContributor(
   const targetSlug = input.slug || slug;
   const contributor = await getContributor(targetSlug);
   if (!contributor) {
-    throw new Error("Contributor not found after update.");
+    throw new Error("Penyumbang tidak ditemui selepas dikemas kini.");
   }
 
   return contributor;

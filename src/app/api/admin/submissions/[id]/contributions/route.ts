@@ -8,12 +8,12 @@ export async function GET(request: NextRequest) {
     const submissionId = searchParams.get("submissionId");
 
     if (!submissionId) {
-      return NextResponse.json({ error: "submissionId diperlukan." }, { status: 400 });
+      return NextResponse.json({ error: "Penghantaran diperlukan." }, { status: 400 });
     }
 
     const numId = parseDbId(submissionId);
     if (isNaN(numId)) {
-      return NextResponse.json({ error: "submissionId tidak sah." }, { status: 400 });
+      return NextResponse.json({ error: "Nombor penghantaran tidak sah." }, { status: 400 });
     }
 
     const contributions = await listContributionsForSubmission(numId);
@@ -31,10 +31,10 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     if (!body.submissionId) {
-      return NextResponse.json({ error: "submissionId diperlukan." }, { status: 400 });
+      return NextResponse.json({ error: "Penghantaran diperlukan." }, { status: 400 });
     }
     if (!body.roleLabel?.trim()) {
-      return NextResponse.json({ error: "roleLabel diperlukan." }, { status: 400 });
+      return NextResponse.json({ error: "Peranan diperlukan." }, { status: 400 });
     }
 
     const contribution = await createContribution({

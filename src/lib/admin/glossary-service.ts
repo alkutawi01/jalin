@@ -14,7 +14,7 @@ export class DuplicateTermError extends Error {}
 
 function getAdminDb(): Kysely<Database> {
   if (!hasDb()) {
-    throw new Error("[GlossaryService] Database not available.");
+    throw new Error("Pangkalan data tidak tersedia.");
   }
   return getDb();
 }
@@ -101,12 +101,12 @@ export async function createGlossaryTerm(input: GlossaryInput): Promise<Glossary
   });
 
   if (!result) {
-    throw new Error("Failed to create glossary term.");
+    throw new Error("Istilah glosari tidak dapat dibuat.");
   }
 
   const term = await getGlossaryTerm(result.id);
   if (!term) {
-    throw new Error("Glossary term not found after creation.");
+    throw new Error("Istilah glosari tidak ditemui selepas dibuat.");
   }
 
   return term;
@@ -139,7 +139,7 @@ export async function updateGlossaryTerm(
 
   const term = await getGlossaryTerm(id);
   if (!term) {
-    throw new Error("Glossary term not found after update.");
+    throw new Error("Istilah glosari tidak ditemui selepas dikemas kini.");
   }
 
   return term;

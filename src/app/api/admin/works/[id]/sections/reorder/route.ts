@@ -16,7 +16,7 @@ export async function POST(
     const body = await request.json();
 
     if (!Array.isArray(body.sectionIds)) {
-      return NextResponse.json({ error: "sectionIds diperlukan." }, { status: 400 });
+      return NextResponse.json({ error: "Susunan bab diperlukan." }, { status: 400 });
     }
 
     const sections = await reorderSections(id, body.sectionIds.map(Number));

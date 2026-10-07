@@ -30,16 +30,16 @@ export async function POST(
 
     // Validate required fields
     if (!body.provider?.trim()) {
-      return NextResponse.json({ error: "provider diperlukan." }, { status: 400 });
+      return NextResponse.json({ error: "Penyedia diperlukan." }, { status: 400 });
     }
     if (!body.model?.trim()) {
-      return NextResponse.json({ error: "model diperlukan." }, { status: 400 });
+      return NextResponse.json({ error: "Model diperlukan." }, { status: 400 });
     }
     if (!body.actualRole?.trim()) {
-      return NextResponse.json({ error: "actualRole diperlukan." }, { status: 400 });
+      return NextResponse.json({ error: "Peranan sebenar diperlukan." }, { status: 400 });
     }
     if (!body.identitySource) {
-      return NextResponse.json({ error: "identitySource diperlukan." }, { status: 400 });
+      return NextResponse.json({ error: "Sumber identiti diperlukan." }, { status: 400 });
     }
 
     const contribution = await registerIdentityHandshake(numId, {

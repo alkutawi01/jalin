@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
     const workId = searchParams.get("workId");
 
     if (!workId) {
-      return NextResponse.json({ error: "workId diperlukan." }, { status: 400 });
+      return NextResponse.json({ error: "Karya diperlukan." }, { status: 400 });
     }
 
     const terms = await listGlossaryForWork(workId);
@@ -28,13 +28,13 @@ export async function POST(request: NextRequest) {
 
     // Validation
     if (!body.workId) {
-      return NextResponse.json({ error: "workId diperlukan." }, { status: 400 });
+      return NextResponse.json({ error: "Karya diperlukan." }, { status: 400 });
     }
     if (typeof body.term !== "string" || !body.term.trim()) {
-      return NextResponse.json({ error: "term diperlukan." }, { status: 400 });
+      return NextResponse.json({ error: "Istilah diperlukan." }, { status: 400 });
     }
     if (typeof body.meaning !== "string" || !body.meaning.trim()) {
-      return NextResponse.json({ error: "meaning diperlukan." }, { status: 400 });
+      return NextResponse.json({ error: "Maksud diperlukan." }, { status: 400 });
     }
 
     const duplicate = findDuplicateTerm(await listGlossaryForWork(body.workId), body.term);

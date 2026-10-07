@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Tajuk diperlukan." }, { status: 400 });
     }
     if (!body.slug?.trim()) {
-      return NextResponse.json({ error: "Slug diperlukan." }, { status: 400 });
+      return NextResponse.json({ error: "Alamat pautan diperlukan." }, { status: 400 });
     }
     if (!body.type) {
       return NextResponse.json({ error: "Jenis diperlukan." }, { status: 400 });

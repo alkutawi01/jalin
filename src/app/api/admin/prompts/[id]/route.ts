@@ -17,7 +17,7 @@ export async function GET(
     const template = await getPromptTemplate(numId);
 
     if (!template) {
-      return NextResponse.json({ error: "Prompt template tidak ditemui." }, { status: 404 });
+      return NextResponse.json({ error: "Templat arahan tidak ditemui." }, { status: 404 });
     }
 
     return NextResponse.json(template);
@@ -43,7 +43,7 @@ export async function PATCH(
 
     const existing = await getPromptTemplate(numId);
     if (!existing) {
-      return NextResponse.json({ error: "Prompt template tidak ditemui." }, { status: 404 });
+      return NextResponse.json({ error: "Templat arahan tidak ditemui." }, { status: 404 });
     }
 
     const body = await request.json();
@@ -81,7 +81,7 @@ export async function DELETE(
 
     const existing = await getPromptTemplate(numId);
     if (!existing) {
-      return NextResponse.json({ error: "Prompt template tidak ditemui." }, { status: 404 });
+      return NextResponse.json({ error: "Templat arahan tidak ditemui." }, { status: 404 });
     }
 
     await deletePromptTemplate(numId);

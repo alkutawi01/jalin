@@ -33,7 +33,7 @@ export async function POST(
 
     if (!credits || !Array.isArray(credits)) {
       return NextResponse.json(
-        { error: "credits diperlukan (array)." },
+        { error: "Senarai kredit diperlukan." },
         { status: 400 }
       );
     }

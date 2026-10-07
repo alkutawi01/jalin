@@ -17,7 +17,7 @@ export async function GET(
     const submission = await getSubmission(numId);
 
     if (!submission) {
-      return NextResponse.json({ error: "Submission tidak ditemui." }, { status: 404 });
+      return NextResponse.json({ error: "Penghantaran tidak ditemui." }, { status: 404 });
     }
 
     return NextResponse.json(submission);
@@ -43,7 +43,7 @@ export async function PATCH(
 
     const existing = await getSubmission(numId);
     if (!existing) {
-      return NextResponse.json({ error: "Submission tidak ditemui." }, { status: 404 });
+      return NextResponse.json({ error: "Penghantaran tidak ditemui." }, { status: 404 });
     }
 
     const body = await request.json();
@@ -82,7 +82,7 @@ export async function DELETE(
 
     const existing = await getSubmission(numId);
     if (!existing) {
-      return NextResponse.json({ error: "Submission tidak ditemui." }, { status: 404 });
+      return NextResponse.json({ error: "Penghantaran tidak ditemui." }, { status: 404 });
     }
 
     await deleteSubmission(numId);

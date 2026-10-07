@@ -28,7 +28,7 @@ export interface RevisionResult {
 
 function getDbOrThrow(): Kysely<Database> {
   if (!hasDb()) {
-    throw new Error("[RevisionService] Database not available.");
+    throw new Error("Pangkalan data tidak tersedia.");
   }
   return getDb();
 }
@@ -352,14 +352,14 @@ export async function createRevisionTx(
 ): Promise<RevisionResult> {
   {
     const work = await trx.selectFrom("works").where("id", "=", workId).selectAll().executeTakeFirst();
-    if (!work) throw new Error("Work tidak ditemui.");
+    if (!work) throw new Error("Karya tidak ditemui.");
     if (work.status !== "published" && work.status !== "ready") {
-      throw new Error(`Work status "${work.status}" tidak boleh dipublikasikan.`);
+      throw new Error(`Karya berstatus "${work.status}" tidak boleh diterbitkan.`);
     }
 
     const input = await loadWorkForRevision(trx, workId);
     const snapshot = buildSnapshot(input);
-    if (!snapshot) throw new Error("Gagal membina snapshot.");
+    if (!snapshot) throw new Error("Salinan versi karya tidak dapat dibina.");
 
     const contentHash = snapshot.materialHash;
 
@@ -500,7 +500,7 @@ export async function revertRevision(workId: string, revisionId: string, actor: 
       .where("work_id", "=", workId)
       .selectAll()
       .executeTakeFirst();
-    if (!revision) throw new Error("Revision tidak ditemui.");
+    if (!revision) throw new Error("Versi karya tidak ditemui.");
 
     const snapshot = typeof revision.snapshot === "string" ? JSON.parse(revision.snapshot) : revision.snapshot;
     const nowIso = new Date().toISOString();
@@ -562,7 +562,7 @@ export async function restoreRevision(workId: string, revisionId: string, actor:
     .where("work_id", "=", workId)
     .selectAll()
     .executeTakeFirst();
-  if (!revision) throw new Error("Revision tidak ditemui.");
+  if (!revision) throw new Error("Versi karya tidak ditemui.");
 
   const snapshot = typeof revision.snapshot === "string" ? JSON.parse(revision.snapshot) : revision.snapshot;
   const nowIso = new Date().toISOString();

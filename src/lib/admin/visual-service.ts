@@ -13,7 +13,7 @@ import { isImageMarker } from "../reader/image-markers";
 
 function getAdminDb(): Kysely<Database> {
   if (!hasDb()) {
-    throw new Error("[VisualService] Database not available.");
+    throw new Error("Pangkalan data tidak tersedia.");
   }
   return getDb();
 }
@@ -108,12 +108,12 @@ export async function createVisual(input: VisualInput): Promise<VisualRecord> {
   });
 
   if (!result) {
-    throw new Error("Failed to create visual.");
+    throw new Error("Gambar tidak dapat dibuat.");
   }
 
   const visual = await getVisual(result.id);
   if (!visual) {
-    throw new Error("Visual not found after creation.");
+    throw new Error("Gambar tidak ditemui selepas dibuat.");
   }
 
   return visual;
@@ -147,7 +147,7 @@ export async function updateVisual(
   // at most one work-level hero (a hero has no marker) and a marker belongs to one picture within its own text (the work's or one chapter's).
   await db.transaction().execute(async (trx) => {
     const current = await trx.selectFrom("visuals").where("id", "=", id).selectAll().forUpdate().executeTakeFirst();
-    if (!current) throw new Error("Visual tidak ditemui.");
+    if (!current) throw new Error("Gambar tidak ditemui.");
     await trx.selectFrom("works").where("id", "=", current.work_id).select("id").forUpdate().executeTakeFirst();
     const role = input.role ?? current.role;
     const currentSection = (current as { section_slug?: string | null }).section_slug ?? null;
@@ -172,7 +172,7 @@ export async function updateVisual(
 
   const visual = await getVisual(id);
   if (!visual) {
-    throw new Error("Visual not found after update.");
+    throw new Error("Gambar tidak ditemui selepas dikemas kini.");
   }
 
   return visual;

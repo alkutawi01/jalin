@@ -19,7 +19,7 @@ interface SerializedWork {
  */
 async function getWorkData(workId: string) {
   if (!hasDb()) {
-    throw new Error("[SerializeWork] Database not available.");
+    throw new Error("Pangkalan data tidak tersedia.");
   }
 
   const db = getDb();
@@ -31,7 +31,7 @@ async function getWorkData(workId: string) {
     .executeTakeFirst();
 
   if (!work) {
-    throw new Error(`Work "${workId}" not found.`);
+    throw new Error(`Karya "${workId}" tidak ditemui.`);
   }
 
   const credits = await db

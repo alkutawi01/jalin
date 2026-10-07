@@ -16,7 +16,7 @@ export class DuplicateCreditError extends Error {}
 
 function getAdminDb(): Kysely<Database> {
   if (!hasDb()) {
-    throw new Error("[CreditService] Database not available.");
+    throw new Error("Pangkalan data tidak tersedia.");
   }
   return getDb();
 }
@@ -131,12 +131,12 @@ export async function createCredit(input: CreditInput): Promise<CreditRecord> {
   });
 
   if (!result) {
-    throw new Error("Failed to create credit.");
+    throw new Error("Kredit tidak dapat dibuat.");
   }
 
   const credit = await getCredit(result.id);
   if (!credit) {
-    throw new Error("Credit not found after creation.");
+    throw new Error("Kredit tidak ditemui selepas dibuat.");
   }
 
   return credit;
@@ -199,7 +199,7 @@ export async function updateCredit(
 
   const credit = await getCredit(id);
   if (!credit) {
-    throw new Error("Credit not found after update.");
+    throw new Error("Kredit tidak ditemui selepas dikemas kini.");
   }
 
   return credit;
@@ -253,7 +253,7 @@ export async function reorderCredits(
   // Check no duplicates
   const uniqueIds = new Set(creditIds);
   if (uniqueIds.size !== creditIds.length) {
-    throw new Error("Duplicate credit IDs in reorder request.");
+    throw new Error("Kredit yang sama disenaraikan dua kali dalam susunan baharu.");
   }
 
   // Use transaction for atomicity

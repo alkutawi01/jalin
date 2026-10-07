@@ -14,7 +14,7 @@ const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 function getAdminDb(): Kysely<Database> {
   if (!hasDb()) {
-    throw new Error("[SectionService] Database not available.");
+    throw new Error("Pangkalan data tidak tersedia.");
   }
   return getDb();
 }
@@ -47,10 +47,10 @@ async function assertNovelaWork(db: Kysely<Database> | Transaction<Database>, wo
     .select(["id", "type"])
     .executeTakeFirst();
   if (!work) {
-    throw new Error("Work tidak ditemui.");
+    throw new Error("Karya tidak ditemui.");
   }
   if (String(work.type) !== "novela") {
-    throw new Error("Reading section hanya untuk Work type=novela.");
+    throw new Error("Bab hanya untuk karya jenis Novela.");
   }
   return work;
 }
@@ -123,7 +123,7 @@ export async function createSection(input: SectionInput): Promise<SectionRecord>
           .select("id")
           .executeTakeFirst();
         if (clash) {
-          throw new Error(`Position ${nextPosition} sudah digunakan.`);
+          throw new Error(`Kedudukan ${nextPosition} sudah digunakan.`);
         }
       }
 
@@ -352,7 +352,7 @@ export async function reorderSections(
   }
   const unique = new Set(sectionIds);
   if (unique.size !== sectionIds.length) {
-    throw new Error("ID bab berulang dalam permintaan reorder.");
+    throw new Error("Bab yang sama berulang dalam susunan baharu.");
   }
 
   await db.transaction().execute(async (trx) => {

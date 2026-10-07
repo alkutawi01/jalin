@@ -19,7 +19,7 @@ export async function GET(
     const term = await getGlossaryTerm(termId);
 
     if (!term) {
-      return NextResponse.json({ error: "Glossary tidak ditemui." }, { status: 404 });
+      return NextResponse.json({ error: "Istilah glosari tidak ditemui." }, { status: 404 });
     }
 
     return NextResponse.json(term);
@@ -46,7 +46,7 @@ export async function PATCH(
     // Check if term exists
     const existing = await getGlossaryTerm(termId);
     if (!existing) {
-      return NextResponse.json({ error: "Glossary tidak ditemui." }, { status: 404 });
+      return NextResponse.json({ error: "Istilah glosari tidak ditemui." }, { status: 404 });
     }
 
     const body = await request.json();
@@ -101,7 +101,7 @@ export async function DELETE(
     // Check if term exists
     const existing = await getGlossaryTerm(termId);
     if (!existing) {
-      return NextResponse.json({ error: "Glossary tidak ditemui." }, { status: 404 });
+      return NextResponse.json({ error: "Istilah glosari tidak ditemui." }, { status: 404 });
     }
 
     await deleteGlossaryTerm(termId);
