@@ -6,6 +6,7 @@ import CopyButton from "../../../../components/admin/CopyButton";
 import { composeVisualPrompt } from "../../../../lib/admin/visual-generation/prompt-composer";
 import { confirmAction } from "../../../../lib/admin/dialogs";
 import LoadingBlock from "../../../../components/admin/LoadingBlock";
+import { MAX_UPLOAD_LABEL, uploadTooLargeMessage } from "../../../../lib/admin/upload-limit";
 
 const VISUAL_ROLES = [
   { value: "hero", label: "Utama" },
@@ -392,11 +393,13 @@ export default function EditVisualRequestPage() {
     setError(null);
     setSuccess(null);
     try {
+      const tooLarge = uploadTooLargeMessage(file.size);
+      if (tooLarge) throw new Error(tooLarge);
       const body = new FormData();
       body.append("file", file);
       if (uploadTool.trim()) body.append("tool", uploadTool.trim());
       const res = await fetch(`/api/admin/visual-requests/${requestId}/upload`, { method: "POST", body });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Gagal memuat naik imej.");
       setSuccess("Imej dimuat naik dan menunggu semakan. Semak imej, kemudian tekan Lulus.");
       const refreshed = await fetch(`/api/admin/visual-requests/${requestId}`);
@@ -696,7 +699,7 @@ export default function EditVisualRequestPage() {
               </h3>
               <p style={{ margin: "0 0 8px", fontSize: 13, opacity: 0.8 }}>
                 Untuk imej yang dibuat di luar Magnific. Direkod sebagai muat naik manual. Selepas dimuat naik anda masih perlu
-                menekan Luluskan, kemudian Pautkan ke karya. PNG/JPEG/WebP, maksimum 10 MB (disyorkan bawah 4 MB).
+                menekan Luluskan, kemudian Pautkan ke karya. PNG/JPEG/WebP, maksimum {MAX_UPLOAD_LABEL}.
               </p>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
                 <input

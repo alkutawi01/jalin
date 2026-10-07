@@ -1,6 +1,7 @@
 import { getDb } from "../db";
 import { detectImageType, MAX_MANUAL_UPLOAD_BYTES } from "./visual-generation/manual-upload";
 import { storeVisualAssetBytes } from "./visual-generation/asset-storage";
+import { MAX_UPLOAD_LABEL } from "./upload-limit";
 
 export type SeriesHeroResult = { ok: true; src: string } | { ok: false; status: number; error: string };
 export type SeriesHeroClearResult = { ok: true } | { ok: false; status: number; error: string };
@@ -18,7 +19,7 @@ function isMissingColumn(error: unknown): boolean {
 
 export async function setSeriesHero(seriesId: string, bytes: Buffer, alt: string): Promise<SeriesHeroResult> {
   if (bytes.length === 0) return { ok: false, status: 400, error: "Fail imej diperlukan." };
-  if (bytes.length > MAX_MANUAL_UPLOAD_BYTES) return { ok: false, status: 413, error: "Imej melebihi 10 MB." };
+  if (bytes.length > MAX_MANUAL_UPLOAD_BYTES) return { ok: false, status: 413, error: `Imej melebihi ${MAX_UPLOAD_LABEL}.` };
   const type = detectImageType(bytes);
   if (!type) return { ok: false, status: 400, error: "Hanya imej PNG, JPEG atau WebP diterima." };
 

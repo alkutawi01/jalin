@@ -6,6 +6,7 @@ import { confirmAction, toast } from "../../../../lib/admin/dialogs";
 import LoadingBlock from "../../../../components/admin/LoadingBlock";
 import AudiencePicker from "../../../../components/admin/AudiencePicker";
 import ImageFocusPicker, { type FocusValue } from "../../../../components/admin/ImageFocusPicker";
+import { MAX_UPLOAD_LABEL, uploadTooLargeMessage } from "../../../../lib/admin/upload-limit";
 
 /** An episode's status in the editor's words, as the works list shows it. */
 const EPISODE_STATUS: Record<string, string> = { draft: "Draf", review: "Semakan", ready: "Sedia", published: "Diterbitkan", archived: "Diarkibkan" };
@@ -259,6 +260,8 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
     setHeroBusy(true);
     setError(null);
     try {
+      const tooLarge = uploadTooLargeMessage(heroFile.size);
+      if (tooLarge) throw new Error(tooLarge);
       const body = new FormData();
       body.set("file", heroFile);
       body.set("alt", heroAlt);
@@ -360,7 +363,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
           </details>
         ) : null}
         <div className="admin-form-group">
-          <label htmlFor="series-hero-file">Fail imej (PNG, JPEG atau WebP, maksimum 10 MB)</label>
+          <label htmlFor="series-hero-file">Fail gambar (PNG, JPEG atau WebP, maksimum {MAX_UPLOAD_LABEL})</label>
           <input id="series-hero-file" type="file" accept="image/png,image/jpeg,image/webp" onChange={(e) => setHeroFile(e.target.files?.[0] ?? null)} />
         </div>
         <div className="admin-form-group">

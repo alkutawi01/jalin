@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { imageMarkerLabel } from "../../lib/reader/image-markers";
+import { MAX_UPLOAD_LABEL, uploadTooLargeMessage } from "../../lib/admin/upload-limit";
 
 /**
  * Upload an image straight from a work. One step: the file is
@@ -36,6 +37,8 @@ export default function WorkVisualUpload({ workId, onDone, hasHero, published, s
     setError(null);
     setSuccess(null);
     try {
+      const tooLarge = uploadTooLargeMessage(file.size);
+      if (tooLarge) throw new Error(tooLarge);
       const body = new FormData();
       body.append("file", file);
       body.append("role", role);
@@ -64,7 +67,7 @@ export default function WorkVisualUpload({ workId, onDone, hasHero, published, s
     <div className="admin-credit-form" style={{ marginBottom: 16 }}>
       <h4 style={{ margin: "0 0 8px" }}>Tambah gambar</h4>
       <p className="admin-form-hint">
-        Pilih imej (PNG/JPEG/WebP, maksimum 10 MB; disyorkan bawah 4 MB). Muat naik menyimpan dan memautkan gambar terus; tidak perlu tekan “Simpan teks &amp; maklumat” selepasnya.
+        Pilih imej (PNG/JPEG/WebP, maksimum {MAX_UPLOAD_LABEL}). Muat naik menyimpan dan memautkan gambar terus; tidak perlu tekan “Simpan teks &amp; maklumat” selepasnya.
       </p>
 
       {error ? <div className="admin-alert admin-alert-error" role="alert">{error}</div> : null}
