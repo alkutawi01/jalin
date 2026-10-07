@@ -1,6 +1,6 @@
 /** Structured data for work and chapter pages. */
 import { absoluteUrl, shareImageUrl, SITE_URL } from "../src/lib/seo";
-import { episodeJsonLd, jsonLdString, seriesJsonLd, workJsonLd } from "../src/lib/seo-jsonld";
+import { episodeJsonLd, jsonLdString, seriesJsonLd, siteJsonLd, workJsonLd } from "../src/lib/seo-jsonld";
 
 let passed = 0;
 let failed = 0;
@@ -49,6 +49,14 @@ const ep = episode["@graph"][0]!;
 assert(ep.position === 2 && (ep.isPartOf as { name: string }).name === "Siri A", "an episode says its position and its series");
 assert(!("audience" in ep), "no age range is published when the work states none");
 assert((episode["@graph"][1]!.itemListElement as unknown[]).length === 4, "the episode breadcrumb runs Jalin, Bersiri, series, episode");
+
+// the homepage: the site and its publisher
+const site = siteJsonLd("Apa itu Jalin.") as { "@graph": Array<Record<string, unknown>> };
+const [webSite, org] = site["@graph"];
+assert(webSite["@type"] === "WebSite" && webSite.name === "Jalin" && webSite.inLanguage === "ms" && webSite.description === "Apa itu Jalin." && String(webSite.url).startsWith("https://"), "the homepage says what the site is");
+assert(JSON.stringify(webSite.potentialAction).includes("/cari?q={search_term_string}") && (webSite.publisher as { "@id": string })["@id"] === org["@id"], "it points to the search page and to its publisher");
+assert(org["@type"] === "Organization" && org.slogan === "Selami dunia melalui cerita" && String(org.logo).endsWith("/brand/jalin-icon-color.svg") && (org.parentOrganization as { name: string }).name === "Adjung Press", "the publisher has a logo, the slogan and Adjung Press behind it");
+assert(!/remaja|jiwa muda|13/.test(JSON.stringify(site)), "nothing in it narrows the readers to an age");
 
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);

@@ -34,6 +34,8 @@ const hits = dirs.flatMap((d) => walk(path.join(root, d))).filter((file) => !fil
 });
 assert(hits.length === 0, `no public page says "jiwa muda", "untuk remaja" or the old slogan${hits.length ? ": " + hits.map((f) => path.relative(root, f)).join(", ") : ""}`);
 
+assert(read("src/lib/seo.ts").includes(`export const SITE_DESCRIPTION = "${description}";`) && read("src/app/page.tsx").includes("siteJsonLd(SITE_DESCRIPTION)"), "the homepage's structured data says the same sentence as its description");
+
 // The share picture of pages with no picture of their own: a 1200 x 630 PNG, light enough for every chat app's preview.
 const png = fs.readFileSync(path.join(root, "public/brand/og-default.png"));
 assert(png.subarray(1, 4).toString("ascii") === "PNG" && png.readUInt32BE(16) === 1200 && png.readUInt32BE(20) === 630 && png.length < 300 * 1024, "the default share picture is a 1200 x 630 PNG under 300 KB");

@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { jsonLdString, siteJsonLd } from "../lib/seo-jsonld";
+import { SITE_DESCRIPTION } from "../lib/seo";
 import Image from "next/image";
 import { SiteFooter, SiteHeader } from "../components/reader/StoryChrome";
 import HeroCarousel, { type HeroSlide } from "../components/reader/HeroCarousel";
@@ -352,6 +354,7 @@ export default async function Home() {
           </div>
         </section>
       </main>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdString(siteJsonLd(SITE_DESCRIPTION)) }} />
 
       <SiteFooter />
     </>

@@ -1,4 +1,4 @@
-import { SITE_URL, absoluteUrl, shareImageUrl } from "./seo";
+import { DEFAULT_SHARE_IMAGE, SITE_URL, absoluteUrl, shareImageUrl } from "./seo";
 import { audienceAgeRange } from "./audience";
 
 /** Structured data for the reader pages (schema.org). Only what is public: no credits' private fields, no rights notes. */
@@ -218,6 +218,43 @@ export function episodeJsonLd(work: JsonLdWork, series: { slug: string; title: s
         { name: series.title, path: seriesPath },
         { name: work.title, path }
       ])
+    ]
+  };
+}
+
+/**
+ * The homepage's structured data: what the site is (WebSite, with its search page) and who publishes it (Organization).
+ * The homepage had none, so a search engine knew the works but not the site they belong to.
+ */
+export function siteJsonLd(description: string): Record<string, unknown> {
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": `${SITE_URL}/#website`,
+        url: SITE_URL,
+        name: "Jalin",
+        alternateName: "Jalin — oleh Adjung",
+        description,
+        inLanguage: "ms",
+        publisher: { "@id": `${SITE_URL}/#organization` },
+        potentialAction: {
+          "@type": "SearchAction",
+          target: { "@type": "EntryPoint", urlTemplate: `${SITE_URL}/cari?q={search_term_string}` },
+          "query-input": "required name=search_term_string"
+        }
+      },
+      {
+        "@type": "Organization",
+        "@id": `${SITE_URL}/#organization`,
+        name: "Jalin",
+        url: SITE_URL,
+        logo: absoluteUrl("/brand/jalin-icon-color.svg"),
+        image: DEFAULT_SHARE_IMAGE.url,
+        slogan: "Selami dunia melalui cerita",
+        parentOrganization: { "@type": "Organization", name: "Adjung Press" }
+      }
     ]
   };
 }
