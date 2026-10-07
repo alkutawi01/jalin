@@ -43,7 +43,7 @@ export default function NewPromptPage() {
       });
 
       if (!res.ok) {
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
         throw new Error(data.error || "Gagal mencipta templat.");
       }
 

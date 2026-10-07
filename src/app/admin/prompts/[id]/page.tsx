@@ -97,7 +97,7 @@ export default function EditPromptPage() {
       });
 
       if (!res.ok) {
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
         throw new Error(data.error || "Gagal menyimpan.");
       }
 
@@ -117,7 +117,7 @@ export default function EditPromptPage() {
     try {
       const res = await fetch(`/api/admin/prompts/${promptId}`, { method: "DELETE" });
       if (!res.ok) {
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
         throw new Error(data.error || "Gagal memadam.");
       }
       window.location.href = "/admin/prompts";

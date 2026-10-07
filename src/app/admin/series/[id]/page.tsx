@@ -136,7 +136,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
-      let data = await res.json();
+      let data = await res.json().catch(() => ({}));
       if (res.status === 409 && String(data.error).includes("Perlu disahkan")) {
         // Changing the mode of a series with public episodes changes what readers see at once: say so, then ask again.
         if (!(await confirmAction(`${data.error} Teruskan?`, { danger: true, confirmLabel: "Ya, tukar mod" }))) { setSaving(false); return; }
@@ -145,7 +145,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ ...form, confirmModeChange: true }),
         });
-        data = await res.json();
+        data = await res.json().catch(() => ({}));
       }
       if (!res.ok) throw new Error(data.error || "Gagal menyimpan.");
       setSuccess("Siri disimpan.");
@@ -168,7 +168,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ workId: attachWorkId }),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Gagal menyertai episod.");
       setAttachWorkId("");
       setSuccess("Episod disertai.");
@@ -189,7 +189,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
     setError(null);
     try {
       const res = await fetch(`/api/admin/series/${id}/entries/${workId}`, { method: "DELETE" });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Gagal mengeluarkan episod.");
       await loadSeries();
       await loadUnattached();
@@ -221,7 +221,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ workIds: ids, confirm: true }),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Gagal menyusun.");
       await loadSeries();
     } catch (err) {
@@ -236,7 +236,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
     setError(null);
     try {
       const res = await fetch(`/api/admin/series/${id}`, { method: "DELETE" });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Gagal memadam siri.");
       router.push("/admin/series");
     } catch (err) {

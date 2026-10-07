@@ -260,7 +260,7 @@ export default function EditVisualRequestPage() {
       });
 
       if (!res.ok) {
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
         throw new Error(data.error || "Gagal menyimpan.");
       }
 
@@ -293,7 +293,7 @@ export default function EditVisualRequestPage() {
           editorialOverride: genOverride || undefined,
         }),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Gambar tidak dapat dijana.");
       if (data.pendingTask) {
         setSuccess(
@@ -337,7 +337,7 @@ export default function EditVisualRequestPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ provider: record?.provider || "magnific" }),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Status tidak dapat disemak.");
       if (data.pendingTask || data.status === "generating" || data.status === "queued") {
         setSuccess("Tugas masih berjalan. Semak status semula sebentar lagi.");
@@ -372,7 +372,7 @@ export default function EditVisualRequestPage() {
     setSuccess(null);
     try {
       const res = await fetch(`/api/admin/visual-requests/${requestId}/approve`, { method: "POST" });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Gagal meluluskan.");
       setSuccess("Visual diluluskan.");
       const refreshed = await fetch(`/api/admin/visual-requests/${requestId}`);
@@ -429,7 +429,7 @@ export default function EditVisualRequestPage() {
     setSuccess(null);
     try {
       const res = await fetch(`/api/admin/visual-requests/${requestId}/reject`, { method: "POST" });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Gagal menolak.");
       setSuccess("Visual ditolak.");
       const refreshed = await fetch(`/api/admin/visual-requests/${requestId}`);
@@ -452,7 +452,7 @@ export default function EditVisualRequestPage() {
     setSuccess(null);
     try {
       const res = await fetch(`/api/admin/visual-requests/${requestId}/attach`, { method: "POST" });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Gagal memautkan.");
       setSuccess(`Visual dipautkan (visual ID: ${data.visualId}).`);
       const refreshed = await fetch(`/api/admin/visual-requests/${requestId}`);
@@ -475,7 +475,7 @@ export default function EditVisualRequestPage() {
     try {
       const res = await fetch(`/api/admin/visual-requests/${requestId}`, { method: "DELETE" });
       if (!res.ok) {
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
         throw new Error(data.error || "Gagal memadam.");
       }
       window.location.href = "/admin/visual-requests";

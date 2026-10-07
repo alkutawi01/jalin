@@ -185,7 +185,7 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
           special: special || undefined
         })
       });
-      const data = await response.json();
+      const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.error ?? "Gagal menyediakan arahan.");
       const heading = needsManuscript ? "TEKS KARYA" : "MAKLUMAT KARYA SUMBER";
       const text = material.trim() ? `${data.prompt}\n\n=== ${heading} ===\n${material.trim()}\n` : data.prompt;
@@ -277,7 +277,7 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
         headers: { "Content-Type": "application/json" },
         body: requestBody(false)
       });
-      const data = await response.json();
+      const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.error ?? data.errors?.[0]?.message ?? "Gagal menyimpan draf.");
       if (Array.isArray(data.postWarnings) && data.postWarnings.length > 0) {
         setSaved({ workId: data.workId, problems: data.postWarnings });
