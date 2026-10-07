@@ -15,5 +15,8 @@ assert(src.includes('export const dynamic = "force-dynamic"'), "the sitemap is r
 assert(src.includes('.selectFrom("contributors").select("slug").where("is_visible", "=", true)'), "contributor pages come from the visible contributors in the database");
 assert(src.includes("...contributors.map((slug)") && src.includes("return CONTRIBUTOR_SLUGS;"), "the static pair is only the fallback");
 
+// A series page and its episodes had no lastmod while every other entry had one.
+assert(src.includes("repo.getEpisodeBySeriesAndSlug(series.slug, episode.slug)?.updatedAt ?? episode.publishedAt") && src.includes("...(latest ? { lastModified: latest } : {})"), "a series and its episodes say when they last changed");
+
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);
