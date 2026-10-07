@@ -3,97 +3,105 @@ import AiPersonaSettings from "../../../components/admin/AiPersonaSettings";
 import SiteCopySettings from "../../../components/admin/SiteCopySettings";
 import SiteThemeSettings from "../../../components/admin/SiteThemeSettings";
 import AudienceBandsSettings from "../../../components/admin/AudienceBandsSettings";
+import SettingsHashRedirect from "../../../components/admin/SettingsHashRedirect";
 import { loadPrompts } from "../../../lib/admin/authoring/prompt-store";
 import { RECIPE_KEYS, getRecipe, KIND_LABELS } from "../../../lib/admin/authoring/recipes";
+import { SETTINGS_TABS, settingsTabHref, settingsTabOf } from "../../../lib/admin/settings-tabs";
 import { hasDb } from "../../../lib/db";
 
 export const dynamic = "force-dynamic";
 
-export default async function SettingsPage() {
+/** The AI instructions are long and are only read when their tab is open. */
+async function AiPromptsPanel() {
   const first = await loadPrompts(RECIPE_KEYS[0]!);
   const recipes = await Promise.all(
     RECIPE_KEYS.map(async (key) => ({ recipe: getRecipe(key), prompts: await loadPrompts(key) }))
   );
+  return (
+    <>
+      <p className="admin-form-hint">Teks yang disalin oleh butang &quot;Salin arahan AI&quot; apabila menambah karya. Format jawapan dikawal oleh sistem dan tidak boleh disunting di sini.</p>
+      <details className="a-settings-fold">
+        <summary>Peraturan am (semua jenis karya)</summary>
+        <PromptEditor
+          target="global"
+          label="Peraturan am dan peraturan gambar"
+          initial={first.globalRules}
+          customised={first.globalCustomised}
+        />
+      </details>
+      {recipes.map(({ recipe, prompts }) => (
+        <details className="a-settings-fold" key={recipe.key}>
+          <summary>{KIND_LABELS[recipe.kind]} — {recipe.mode === "tulis" ? "chatbot menulis" : "data sahaja"}{prompts.recipeCustomised ? " · diubah suai" : ""}</summary>
+          <PromptEditor
+            target={recipe.key}
+            label={`${KIND_LABELS[recipe.kind]} — ${recipe.mode === "tulis" ? "chatbot menulis" : "data sahaja"}`}
+            description={recipe.description}
+            initial={prompts.recipeText}
+            customised={prompts.recipeCustomised}
+          />
+        </details>
+      ))}
+    </>
+  );
+}
+
+export default async function SettingsPage({ searchParams }: { searchParams: Promise<{ tab?: string | string[] }> }) {
+  const tab = settingsTabOf((await searchParams).tab);
+  const label = SETTINGS_TABS.find((t) => t.id === tab)!.label;
   const storage = Boolean(process.env.BLOB_READ_WRITE_TOKEN || process.env.OBJECT_STORAGE_BUCKET || process.env.OBJECT_STORAGE_ENDPOINT);
 
   return (
     <div className="admin-form-page">
+      <SettingsHashRedirect current={tab} />
       <header className="admin-page-header">
         <h1>Tetapan</h1>
-        <p className="admin-page-sub">Pilih bahagian di bawah. Apa yang paling kerap diubah ada di atas; arahan AI yang panjang dilipat.</p>
-        <nav className="a-settings-nav" aria-label="Bahagian Tetapan">
-          <a href="#teks-awam">Teks halaman awam</a>
-          <a href="#warna-blok">Warna blok laman utama</a>
-          <a href="#audiens">Audiens</a>
-          <a href="#nama-samaran">Nama samaran AI</a>
-          <a href="#arahan-ai">Arahan AI</a>
-          <a href="#alat-lain">Alat lain</a>
-          <a href="#status-sistem">Status sistem</a>
+        <p className="admin-page-sub">Setiap bahagian ada tabnya sendiri.</p>
+        {/* Real tabs: one panel on the page at a time, each tab its own address. */}
+        <nav className="a-settings-tabs" aria-label="Bahagian Tetapan">
+          {SETTINGS_TABS.map((t) => (
+            <a key={t.id} href={settingsTabHref(t.id)} className={t.id === tab ? "active" : undefined} aria-current={t.id === tab ? "page" : undefined}>
+              {t.label}
+            </a>
+          ))}
         </nav>
       </header>
 
-      <section className="admin-section" id="teks-awam">
-        <h2 className="admin-form-section-title">Teks halaman awam</h2>
-        <p className="admin-form-hint">Ayat pengenalan yang pembaca lihat di atas setiap halaman senarai (Cerpen, Novela, Bersiri dan lain-lain).</p>
-        <SiteCopySettings />
-      </section>
+      <section className="admin-section a-settings-panel" id={tab} aria-label={label}>
+        <h2 className="admin-form-section-title">{label}</h2>
 
-      <section className="admin-section" id="warna-blok">
-        <h2 className="admin-form-section-title">Warna blok laman utama</h2>
-        <SiteThemeSettings />
-      </section>
+        {tab === "teks-awam" ? (
+          <>
+            <p className="admin-form-hint">Ayat pengenalan yang pembaca lihat di atas setiap halaman senarai (Cerpen, Novela, Bersiri dan lain-lain).</p>
+            <SiteCopySettings />
+          </>
+        ) : null}
 
-      <section className="admin-section" id="audiens">
-        <h2 className="admin-form-section-title">Audiens</h2>
-        <AudienceBandsSettings />
-      </section>
+        {tab === "warna-blok" ? <SiteThemeSettings /> : null}
 
-      <section className="admin-section" id="nama-samaran">
-        <h2 className="admin-form-section-title">Nama samaran AI</h2>
-        <p className="admin-form-hint">Nama yang dipaparkan kepada pembaca bagi penulis AI.</p>
-        <AiPersonaSettings />
-      </section>
+        {tab === "audiens" ? <AudienceBandsSettings /> : null}
 
-      <section className="admin-section" id="arahan-ai">
-        <h2 className="admin-form-section-title">Arahan AI</h2>
-        <p className="admin-form-hint">Teks yang disalin oleh butang &quot;Salin arahan AI&quot; apabila menambah karya. Format jawapan dikawal oleh sistem dan tidak boleh disunting di sini.</p>
-        <details className="a-settings-fold">
-          <summary>Peraturan am (semua jenis karya)</summary>
-          <PromptEditor
-            target="global"
-            label="Peraturan am dan peraturan gambar"
-            initial={first.globalRules}
-            customised={first.globalCustomised}
-          />
-        </details>
-        {recipes.map(({ recipe, prompts }) => (
-          <details className="a-settings-fold" key={recipe.key}>
-            <summary>{KIND_LABELS[recipe.kind]} — {recipe.mode === "tulis" ? "chatbot menulis" : "data sahaja"}{prompts.recipeCustomised ? " · diubah suai" : ""}</summary>
-            <PromptEditor
-              target={recipe.key}
-              label={`${KIND_LABELS[recipe.kind]} — ${recipe.mode === "tulis" ? "chatbot menulis" : "data sahaja"}`}
-              description={recipe.description}
-              initial={prompts.recipeText}
-              customised={prompts.recipeCustomised}
-            />
-          </details>
-        ))}
-      </section>
+        {tab === "nama-samaran" ? (
+          <>
+            <p className="admin-form-hint">Nama yang dipaparkan kepada pembaca bagi penulis AI.</p>
+            <AiPersonaSettings />
+          </>
+        ) : null}
 
-      <section className="admin-section" id="alat-lain">
-        <h2 className="admin-form-section-title">Alat lain</h2>
-        <ul>
-          <li><a href="/admin/submissions">Penghantaran karya</a> — karya yang dihantar untuk disemak dan dinaikkan menjadi karya.</li>
-          <li><a href="/admin/prompts">Templat arahan lama</a> — templat arahan terdahulu; arahan semasa disunting di atas.</li>
-        </ul>
-      </section>
+        {tab === "arahan-ai" ? <AiPromptsPanel /> : null}
 
-      <section className="admin-section" id="status-sistem">
-        <h2 className="admin-form-section-title">Status sistem</h2>
-        <ul>
-          <li>Pangkalan data: {hasDb() ? "bersambung" : "tidak tersedia"}</li>
-          <li>Storan gambar: {storage ? "ditetapkan" : "belum ditetapkan (gambar yang dimuat naik tidak kekal)"}</li>
-        </ul>
+        {tab === "alat-lain" ? (
+          <ul>
+            <li><a href="/admin/submissions">Penghantaran karya</a> — karya yang dihantar untuk disemak dan dinaikkan menjadi karya.</li>
+            <li><a href="/admin/prompts">Templat arahan lama</a> — templat arahan terdahulu; arahan semasa disunting dalam tab Arahan AI.</li>
+          </ul>
+        ) : null}
+
+        {tab === "status-sistem" ? (
+          <ul>
+            <li>Pangkalan data: {hasDb() ? "bersambung" : "tidak tersedia"}</li>
+            <li>Storan gambar: {storage ? "ditetapkan" : "belum ditetapkan (gambar yang dimuat naik tidak kekal)"}</li>
+          </ul>
+        ) : null}
       </section>
     </div>
   );
