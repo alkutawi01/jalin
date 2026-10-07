@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { chapterPageLabel } from "../../../../lib/reader/chapter-label";
 import { notFound } from "next/navigation";
-import { absoluteUrl, clipDescription, shareImageUrl } from "../../../../lib/seo";
+import { OG_SITE, absoluteUrl, clipDescription, shareImage, shareImageUrl } from "../../../../lib/seo";
 import { chapterHeroOf } from "../../../../lib/reader/chapter-visuals";
 import { initContentRepository } from "../../../../lib/content";
 import { getWorkBySlug } from "../../../../lib/content/workLoader";
@@ -54,11 +54,14 @@ export async function generateMetadata({
     description: pageDescription,
     alternates: { canonical: canonicalPath },
     openGraph: {
+      ...OG_SITE,
       type: "article",
       title: pageTitle,
       description: pageDescription,
       url: canonicalPath,
-      images: hero?.src ? [{ url: shareImageUrl(hero.src) }] : undefined
+      images: hero?.src ? [shareImage(hero.src, hero.alt)] : undefined,
+      ...(work.publishedAt ? { publishedTime: work.publishedAt } : {}),
+      ...(work.updatedAt ? { modifiedTime: work.updatedAt } : {})
     },
     twitter: {
       card: hero?.src ? "summary_large_image" : "summary",
