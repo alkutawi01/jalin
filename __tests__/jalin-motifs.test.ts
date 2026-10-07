@@ -27,7 +27,9 @@ assert(boot.includes('.boot-screen,.page-loading{display:none!important}') && bo
 assert(read("src/app/layout.tsx").includes("<BootScreen />") && css.includes("body:has(.a-nav, .admin-login-page) .boot-screen { display: none; }") && boot.includes("<noscript>"), "it is in every page, and not in the admin or without JavaScript");
 
 assert(read("src/app/not-found.tsx").includes("<JalinEmblem animated"), "the 404 page shows the moving emblem");
-assert(read("src/app/loading.tsx").includes('<JalinEmblem animated tone="on-teal" variant="gelombang" size={104} label="Memuatkan" />'), "the loading screen shows the moving emblem, named for screen readers");
+// A root loading.tsx makes every page stream behind it, and a streamed page has already answered 200 when it finds the work does not
+// exist: every missing address was a "soft 404" (200) to search engines. The loading screen readers see is the BootScreen above.
+assert(!fs.existsSync(path.join(__dirname, "..", "src/app/loading.tsx")), "no root loading file, so a page that does not exist answers 404");
 assert(read("src/app/kategori/[type]/page.tsx").includes("<JalinEmblem size={72} />"), "an empty category shows the still emblem");
 
 assert(read("src/components/reader/StoryChrome.tsx").includes('<div className="end-rule"><LilitDivider /></div>'), "the end of a story shows the Lilit Naskhah divider");
