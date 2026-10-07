@@ -22,5 +22,10 @@ assert(css.includes("@media (min-width: 821px) and (max-width: 1050px) { .header
 assert(css.includes(".site-header:has(.header-search-field:not(.closing)) { background: #18343c;") && css.includes("opacity: 0; visibility: hidden; pointer-events: none;"), "with the search open the whole header bar turns teal and the menu leaves, so the field never lies over a menu link");
 assert(css.includes("filter: brightness(0) invert(.97)") && box.includes("closing") && box.includes("CLOSE_MS"), "the logo turns light on the teal bar, and the box shrinks back before it is removed");
 
+// A request that failed (no connection, a server fault) was shown as "Tiada tajuk atau penulis yang sepadan.": the reader was
+// told nothing matched a title that exists.
+assert(box.includes("setFailed(true);") && box.includes("setFailed(false);") && box.includes('{failed ? "Cadangan tidak dapat dimuatkan. Semak sambungan internet anda." : "Tiada tajuk atau penulis yang sepadan."}'), "suggestions that could not be fetched are not called \"no match\"");
+assert(box.indexOf('(error as Error).name !== "AbortError"') < box.indexOf("setFailed(true);"), "a request replaced by the next keystroke is not a failure");
+
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);
