@@ -44,6 +44,10 @@ assert(withAlt.url === shareImageUrl("/visuals/a/hero.png") && withAlt.alt === "
 assert(!("alt" in shareImage("/visuals/a/hero.png", "")) && !("alt" in shareImage("/visuals/a/hero.png", null)) && !("alt" in shareImage("/visuals/a/hero.png")), "a picture without a description has no empty alt");
 assert(read("src/app/kategori/[type]/[slug]/page.tsx").includes("publishedTime: work.publishedAt") && read("src/app/kategori/bersiri/[seriesSlug]/[episodeSlug]/page.tsx").includes("publishedTime: work.publishedAt"), "a work and an episode say when they were published");
 assert(read("src/app/penulis/[slug]/page.tsx").includes('type: "profile"'), "an author page is a profile");
+// A save is stamped a moment before its publication, so three works said they were modified seconds BEFORE they were published.
+for (const page of ["src/app/kategori/[type]/[slug]/page.tsx", "src/app/kategori/bersiri/[seriesSlug]/[episodeSlug]/page.tsx"]) {
+  assert(read(page).includes("modifiedTime: laterOf(work.updatedAt, work.publishedAt)") && !read(page).includes("modifiedTime: work.updatedAt"), `${page}: the modified time is never before the published time`);
+}
 
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);
