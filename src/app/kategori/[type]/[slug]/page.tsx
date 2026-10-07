@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { laterOf } from "../../../../lib/seo-jsonld";
 import { chapterPageLabel } from "../../../../lib/reader/chapter-label";
 import { notFound } from "next/navigation";
 import { OG_SITE, absoluteUrl, clipDescription, shareImage, shareImageUrl } from "../../../../lib/seo";
@@ -61,7 +62,7 @@ export async function generateMetadata({
       url: canonicalPath,
       images: hero?.src ? [shareImage(hero.src, hero.alt)] : undefined,
       ...(work.publishedAt ? { publishedTime: work.publishedAt } : {}),
-      ...(work.updatedAt ? { modifiedTime: work.updatedAt } : {})
+      ...(work.updatedAt ? { modifiedTime: laterOf(work.updatedAt, work.publishedAt) } : {})
     },
     twitter: {
       card: hero?.src ? "summary_large_image" : "summary",

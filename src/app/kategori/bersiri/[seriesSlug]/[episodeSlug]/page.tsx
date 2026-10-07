@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { laterOf } from "../../../../../lib/seo-jsonld";
 import { notFound } from "next/navigation";
 import { OG_SITE, absoluteUrl, clipDescription, shareImage } from "../../../../../lib/seo";
 import { episodeHeroOf } from "../../../../../lib/reader/chapter-visuals";
@@ -45,7 +46,7 @@ export async function generateMetadata({ params }: { params: Promise<{ seriesSlu
     title,
     description,
     alternates: { canonical: path },
-    openGraph: { ...OG_SITE, type: "article", title, description, url: path, images: image, ...(work.publishedAt ? { publishedTime: work.publishedAt } : {}), ...(work.updatedAt ? { modifiedTime: work.updatedAt } : {}) },
+    openGraph: { ...OG_SITE, type: "article", title, description, url: path, images: image, ...(work.publishedAt ? { publishedTime: work.publishedAt } : {}), ...(work.updatedAt ? { modifiedTime: laterOf(work.updatedAt, work.publishedAt) } : {}) },
     twitter: { card: image ? "summary_large_image" : "summary", title, description, images: image?.map((i) => i.url) }
   };
 }
