@@ -140,7 +140,7 @@ function WorkImageCard({ visual, body, onEdit, onReplace, onDelete }: {
         <img src={visual.src} alt={visual.alt || ""} />
       </a>
       <div className="work-image-card-detail">
-        <strong>{visual.role === "hero" ? "Gambar utama" : visual.section_slug && !visual.anchor ? `Hero bab (${visual.section_slug})` : visual.section_slug ? `Gambar dalam teks, bab ${visual.section_slug}` : numbered ? `${imageMarkerLabel(visual.anchor!)} · dalam teks` : `Gambar belum bernombor · ID imej #${visual.id}`}</strong>
+        <strong>{visual.role === "hero" ? "Gambar utama" : visual.section_slug && !visual.anchor ? `Gambar utama bab (${visual.section_slug})` : visual.section_slug ? `Gambar dalam teks, bab ${visual.section_slug}` : numbered ? `${imageMarkerLabel(visual.anchor!)} · dalam teks` : `Gambar belum bernombor · ID imej #${visual.id}`}</strong>
         <p>{visual.alt || "Teks alternatif belum diisi."}</p>
         {visual.section_slug && !visual.anchor ? (
           <p className="admin-form-hint">Dipaparkan di kepala bab itu.</p>
@@ -151,7 +151,7 @@ function WorkImageCard({ visual, body, onEdit, onReplace, onDelete }: {
             {!visual.anchor ? "Tiada penanda — gambar tidak muncul dalam karya."
               : isImageMarker(visual.anchor)
                 ? body.includes(visual.anchor) ? `${imageMarkerLabel(visual.anchor)} dipautkan. Alihkan penanda dalam manuskrip untuk memindahkan gambar.` : `${imageMarkerLabel(visual.anchor)} tiada dalam manuskrip tersimpan — gambar tidak muncul.`
-                : body.includes(visual.anchor) ? `Anchor petikan lama: “${visual.anchor.slice(0, 90)}${visual.anchor.length > 90 ? "…" : ""}”. Gambar ini belum dipautkan kepada nombor Gambar N; pilih penanda melalui Ubah butiran.` : "Anchor petikan lama tidak ditemui. Gambar ini belum dipautkan kepada nombor Gambar N; pilih penanda melalui Ubah butiran."}
+                : body.includes(visual.anchor) ? `Penanda petikan lama: “${visual.anchor.slice(0, 90)}${visual.anchor.length > 90 ? "…" : ""}”. Gambar ini belum dipautkan kepada nombor Gambar N; pilih penanda melalui Ubah butiran.` : "Penanda petikan lama tidak ditemui. Gambar ini belum dipautkan kepada nombor Gambar N; pilih penanda melalui Ubah butiran."}
           </p>
         ) : <p className="admin-form-hint">Dipaparkan pada kad dan kepala halaman karya.</p>}
         <div className="work-image-card-actions">
@@ -1328,7 +1328,7 @@ export default function EditWorkPage() {
       await loadVisuals();
       await loadReadiness();
       setMarkerMigration(null);
-      setSuccess(action === "apply" ? `${data.converted} gambar ditukar kepada penanda. Semak pratonton sebelum menerbitkan semula.` : `${data.restored} gambar dipulihkan kepada anchor asal.`);
+      setSuccess(action === "apply" ? `${data.converted} gambar ditukar kepada penanda. Semak pratonton sebelum menerbitkan semula.` : `${data.restored} gambar dipulihkan kepada penanda asal.`);
     } catch (error) {
       setMarkerMigrationError(errorText(error, "Penukaran gagal."));
     } finally {
@@ -2140,7 +2140,7 @@ export default function EditWorkPage() {
           </div>
 
           <div className="admin-form-group">
-            <label htmlFor="dek">Dek</label>
+            <label htmlFor="dek">Ringkasan</label>
             <textarea
               id="dek"
               className="admin-textarea"
@@ -2350,7 +2350,7 @@ export default function EditWorkPage() {
               maxLength={600}
               value={form.readerNote}
               onChange={(e) => dashChange(e, (value) => setForm((prev) => ({ ...prev, readerNote: value })))}
-              placeholder="Satu atau dua ayat pendek di bawah jadual Bentuk, Genre, Bacaan dan Versi."
+              placeholder="Satu atau dua ayat pendek di bawah jadual Jenis, Genre, Bacaan dan Versi."
             />
             <span className="admin-form-hint">
               Dipaparkan kepada pembaca di kad &quot;Tentang karya&quot; di tepi karya. Biarkan kosong jika tiada nota. Karya terbit hanya menunjukkan nota baharu selepas diterbitkan semula.
@@ -2500,7 +2500,7 @@ export default function EditWorkPage() {
                             className="admin-btn admin-btn-sm"
                             onClick={() => setEditingSection(section)}
                           >
-                            Edit
+                            Sunting
                           </button>
                           <button
                             type="button"
@@ -2601,7 +2601,7 @@ export default function EditWorkPage() {
                       guest_name: e.target.value ? undefined : prev?.guest_name,
                     }))}
                   >
-                    <option value="">-- Pilih --</option>
+                    <option value="">— Pilih —</option>
                     {contributors.filter((c) => c.kind !== "virtual").map((c) => (
                       <option key={c.slug} value={c.slug}>{c.display_name}</option>
                     ))}
@@ -2755,7 +2755,7 @@ export default function EditWorkPage() {
                               setEditingCredit(credit);
                             }}
                           >
-                            Edit
+                            Sunting
                           </button>
                           <button
                             type="button"
@@ -2843,7 +2843,7 @@ export default function EditWorkPage() {
                 <label htmlFor="edit-image-marker">Penanda dalam manuskrip</label>
                 <select id="edit-image-marker" value={editingVisual.anchor || ""} onChange={(e) => setEditingVisual((prev) => ({ ...prev, anchor: e.target.value }))}>
                   <option value="">Pilih penanda…</option>
-                  {editingVisual.anchor && !isImageMarker(editingVisual.anchor) && <option value={editingVisual.anchor}>Anchor lama — kekalkan sementara</option>}
+                  {editingVisual.anchor && !isImageMarker(editingVisual.anchor) && <option value={editingVisual.anchor}>Penanda lama (kekalkan sementara)</option>}
                   {imageMarkers(savedBody).map((marker) => (
                     <option key={marker} value={marker} disabled={visuals.some((visual) => visual.id !== editingVisual.id && visual.anchor === marker)}>{imageMarkerLabel(marker)}</option>
                   ))}
@@ -2905,7 +2905,7 @@ export default function EditWorkPage() {
               <ul>{markerMigration.plan.changes.map((change) => <li key={change.id}>Gambar #{change.id}: {change.from.slice(0, 75)} → {change.to}</li>)}</ul>
               {markerMigration.plan.skipped.length > 0 && <ul>{markerMigration.plan.skipped.map((item) => <li key={item.id}>Gambar #{item.id}: {item.reason}</li>)}</ul>}
               {markerMigration.plan.changes.length > 0 && <button type="button" className="admin-btn admin-btn-primary admin-btn-sm" disabled={markerMigrationBusy || dirty} onClick={() => void runMarkerMigration("apply")}>Sahkan penukaran</button>}
-              {markerMigration.canRestore && <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" disabled={markerMigrationBusy || dirty} onClick={() => void runMarkerMigration("restore")}>Pulihkan anchor asal</button>}
+              {markerMigration.canRestore && <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" disabled={markerMigrationBusy || dirty} onClick={() => void runMarkerMigration("restore")}>Pulihkan penanda asal</button>}
             </div>
           )}
           <div id="work-image-upload">
@@ -3025,7 +3025,7 @@ export default function EditWorkPage() {
                   aria-describedby="glossary-origin-hint"
                 />
                 <span id="glossary-origin-hint" className="admin-form-hint">
-                  Pilihan, untuk perkataan pinjaman. Cara sebut dan ejaan asal dipaparkan di bawah istilah dalam tooltip glosari. Kosongkan jika tidak berkenaan.
+                  Pilihan, untuk perkataan pinjaman. Cara sebut dan ejaan asal dipaparkan di bawah istilah dalam kotak glosari. Kosongkan jika tidak berkenaan.
                 </span>
               </div>
 
@@ -3122,7 +3122,7 @@ export default function EditWorkPage() {
                             className="admin-btn admin-btn-sm"
                             onClick={() => setEditingGlossary(term)}
                           >
-                            Edit
+                            Sunting
                           </button>
                           <button
                             type="button"
@@ -3249,7 +3249,7 @@ export default function EditWorkPage() {
             <h3>Sumber karya &amp; semakan hak</h3>
             {sourceRights?.sourceWork?.reviewedAt && (
               <span className="admin-status admin-status-ready">
-                Direviu {sourceRights.sourceWork.reviewedBy} · {new Date(sourceRights.sourceWork.reviewedAt).toLocaleString("ms-MY")}
+                Disemak oleh {sourceRights.sourceWork.reviewedBy} · {new Date(sourceRights.sourceWork.reviewedAt).toLocaleString("ms-MY")}
               </span>
             )}
           </div>
@@ -3268,7 +3268,7 @@ export default function EditWorkPage() {
               {sourceRights.rightsBlockers.length > 0 && (
                 <ul className="admin-alert admin-alert-error" role="alert" style={{ marginBottom: "0.75rem" }}>
                   {sourceRights.rightsBlockers.map((b) => (
-                    <li key={b.code + b.message}>[HAK] {b.message}</li>
+                    <li key={b.code + b.message}>Hak: {b.message}</li>
                   ))}
                 </ul>
               )}

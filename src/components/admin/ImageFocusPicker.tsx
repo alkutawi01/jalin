@@ -67,7 +67,7 @@ export default function ImageFocusPicker({
         <label>Mendatar ({value.x}%)<input type="range" min={0} max={100} value={value.x} onChange={(e) => onChange({ ...value, x: Number(e.target.value) })} /></label>
         <label>Menegak ({value.y}%)<input type="range" min={0} max={100} value={value.y} onChange={(e) => onChange({ ...value, y: Number(e.target.value) })} /></label>
         <label>Zum ({(value.zoom / 100).toFixed(1)}×)<input type="range" min={100} max={300} step={5} value={value.zoom} onChange={(e) => onChange({ ...value, zoom: Number(e.target.value) })} /></label>
-        <button type="button" className="admin-btn admin-btn-sm admin-btn-outline" onClick={() => onChange({ x: 50, y: 50, zoom: 100 })}>Set semula (tengah)</button>
+        <button type="button" className="admin-btn admin-btn-sm admin-btn-outline" onClick={() => onChange({ x: 50, y: 50, zoom: 100 })}>Tetapkan semula (tengah)</button>
       </div>
 
       <div className="a-focus-frames" aria-label="Pratonton bingkai">

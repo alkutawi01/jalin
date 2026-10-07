@@ -10,7 +10,7 @@ export const GUARDED_FIELDS = ["title", "slug", "body", "dek", "genre", "audienc
 export type GuardedField = (typeof GUARDED_FIELDS)[number];
 
 export const GUARDED_LABELS: Record<GuardedField, string> = {
-  title: "tajuk", slug: "alamat pautan", body: "teks", dek: "tajuk kecil", genre: "genre", audience: "audiens",
+  title: "tajuk", slug: "alamat pautan", body: "teks", dek: "ringkasan", genre: "genre", audience: "audiens",
   readingMinutes: "minit bacaan", editorNote: "catatan editor", readerNote: "nota pembaca", origin: "asal karya",
 };
 
