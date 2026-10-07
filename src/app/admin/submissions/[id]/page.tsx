@@ -388,7 +388,7 @@ export default function EditSubmissionPage() {
       <header className="admin-page-header">
         <div className="admin-page-header-row">
           <div>
-            <h1>Edit Penghantaran</h1>
+            <h1>Sunting penghantaran</h1>
             <p className="admin-page-sub">ID: {submissionId}</p>
           </div>
           <a href="/admin/submissions" className="admin-btn admin-btn-outline">
@@ -510,7 +510,7 @@ export default function EditSubmissionPage() {
             Kembali
           </a>
           <button type="submit" className="admin-btn admin-btn-primary" disabled={saving}>
-            {saving ? "Menyimpan..." : "Simpan Perubahan"}
+            {saving ? "Menyimpan…" : "Simpan"}
           </button>
         </div>
       </form>
@@ -683,7 +683,7 @@ export default function EditSubmissionPage() {
                 Batal
               </button>
               <button type="button" className="admin-btn admin-btn-primary" onClick={handleSaveContribution}>
-                Simpan Sumbangan
+                Simpan sumbangan
               </button>
             </div>
           </div>
@@ -815,7 +815,7 @@ export default function EditSubmissionPage() {
             onChange={(e) => setGenForm((prev) => ({ ...prev, submissionBrief: e.target.value }))}
             rows={4}
             className="admin-textarea"
-            placeholder="Nyatakan konsep, tema, atau arahan untuk penjanaan draf..."
+            placeholder="Nyatakan konsep, tema, atau arahan untuk penjanaan draf…"
           />
         </div>
 
@@ -826,7 +826,7 @@ export default function EditSubmissionPage() {
             onClick={handleGenerate}
             disabled={generating}
           >
-            {generating ? "Menjana..." : "Jana Draf"}
+            {generating ? "Menjana…" : "Jana draf"}
           </button>
         </div>
 
@@ -873,7 +873,7 @@ export default function EditSubmissionPage() {
 
       <section className="admin-section" style={{ marginTop: "2rem" }}>
         <div className="admin-credits-header">
-          <h3>Naikkan ke Karya</h3>
+          <h3>Naikkan ke karya</h3>
         </div>
 
         {form.resultWorkId ? (
@@ -1004,7 +1004,7 @@ export default function EditSubmissionPage() {
                 disabled={promoting || contributions.length === 0}
                 style={{ background: "#7c3aed", borderColor: "#7c3aed" }}
               >
-                {promoting ? "Memproses…" : "Naikkan ke Karya"}
+                {promoting ? "Memproses…" : "Naikkan ke karya"}
               </button>
             </div>
           </div>

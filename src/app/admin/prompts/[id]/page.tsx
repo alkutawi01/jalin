@@ -137,13 +137,13 @@ export default function EditPromptPage() {
       <header className="admin-page-header">
         <div className="admin-page-header-row">
           <div>
-            <h1>Edit Templat Arahan</h1>
+            <h1>Sunting templat arahan</h1>
             <p className="admin-page-sub">ID: {promptId}</p>
           </div>
           <div className="admin-page-header-actions">
             <a href="/admin/prompts" className="admin-btn admin-btn-outline">Kembali</a>
             <button type="button" onClick={handleDelete} className="admin-btn admin-btn-danger" disabled={deleting}>
-              {deleting ? "Memadam..." : "Padam"}
+              {deleting ? "Memadam…" : "Padam"}
             </button>
           </div>
         </div>
@@ -242,7 +242,7 @@ export default function EditPromptPage() {
         <div className="admin-form-actions">
           <a href="/admin/prompts" className="admin-btn admin-btn-outline">Kembali</a>
           <button type="submit" className="admin-btn admin-btn-primary" disabled={saving}>
-            {saving ? "Menyimpan..." : "Simpan Perubahan"}
+            {saving ? "Menyimpan…" : "Simpan"}
           </button>
         </div>
       </form>

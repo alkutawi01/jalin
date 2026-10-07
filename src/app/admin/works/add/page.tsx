@@ -59,7 +59,7 @@ export default function AddWorkPage() {
   return (
     <div className="admin-form-page">
       <header className="admin-page-header">
-        <h1>Tambah Karya</h1>
+        <h1>Tambah karya</h1>
         <p className="admin-page-sub">{picked ? `Bagaimana mahu memulakan ${KIND_LABELS[picked]}?` : "Pilih jenis karya. Jenis yang dipilih dikekalkan sehingga draf siap dan tidak boleh ditukar senyap oleh chatbot. Draf tidak diterbitkan secara automatik."}</p>
       </header>
       {error && <div className="admin-alert admin-alert-error" role="alert">{error}</div>}

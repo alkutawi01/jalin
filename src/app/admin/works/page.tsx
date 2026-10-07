@@ -114,7 +114,7 @@ export default async function AdminWorksPage({
               Permintaan gambar
             </a>
             <a href="/admin/works/add" className="admin-btn admin-btn-primary">
-              + Tambah Karya
+              + Tambah karya
             </a>
           </div>
         </div>

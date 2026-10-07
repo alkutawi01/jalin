@@ -495,13 +495,13 @@ export default function EditVisualRequestPage() {
       <header className="admin-page-header">
         <div className="admin-page-header-row">
           <div>
-            <h1>Edit Permintaan Visual</h1>
+            <h1>Sunting permintaan gambar</h1>
             <p className="admin-page-sub">ID: {requestId}</p>
           </div>
           <div className="admin-page-header-actions">
             <a href="/admin/visual-requests" className="admin-btn admin-btn-outline">Kembali</a>
             <button type="button" onClick={handleDelete} className="admin-btn admin-btn-danger" disabled={deleting}>
-              {deleting ? "Memadam..." : "Padam"}
+              {deleting ? "Memadam…" : "Padam"}
             </button>
           </div>
         </div>
@@ -720,7 +720,7 @@ export default function EditVisualRequestPage() {
                     e.target.value = "";
                   }}
                 />
-                {uploading ? <span>Memuat naik...</span> : null}
+                {uploading ? <span>Memuat naik…</span> : null}
               </div>
             </div>
           )}
@@ -936,7 +936,7 @@ export default function EditVisualRequestPage() {
         <div className="admin-form-actions">
           <a href="/admin/visual-requests" className="admin-btn admin-btn-outline">Kembali</a>
           <button type="submit" className="admin-btn admin-btn-primary" disabled={saving}>
-            {saving ? "Menyimpan..." : "Simpan Perubahan"}
+            {saving ? "Menyimpan…" : "Simpan"}
           </button>
         </div>
       </form>

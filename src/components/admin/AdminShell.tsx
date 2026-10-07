@@ -75,7 +75,7 @@ export default function AdminShell({ children }: { children: ReactNode }) {
   const nav = (
     <>
       <a href="/admin/works/add" className="a-btn a-btn-primary a-add">
-        <Icon name="plus" /> Tambah Karya
+        <Icon name="plus" /> Tambah karya
       </a>
       <nav className="a-nav" aria-label="Navigasi admin">
         {NAV.map((item) => (

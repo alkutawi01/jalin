@@ -233,7 +233,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
   }
 
   async function handleDelete() {
-    if (!(await confirmAction("Padam Siri ini? Hanya dibenarkan jika tiada episod. Karya episod tidak akan dipadam.", { danger: true, confirmLabel: "Ya, teruskan" }))) return;
+    if (!(await confirmAction("Padam siri ini? Hanya dibenarkan jika tiada episod. Karya episod tidak akan dipadam.", { danger: true, confirmLabel: "Ya, teruskan" }))) return;
     setError(null);
     try {
       const res = await fetch(`/api/admin/series/${id}`, { method: "DELETE" });
@@ -321,12 +321,12 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
       <header className="admin-page-header">
         <div className="admin-page-header-row">
           <div>
-            <h1>Sunting Siri</h1>
+            <h1>Sunting siri</h1>
             <p className="admin-page-sub">ID: {series.id}</p>
           </div>
           <div className="admin-page-header-actions">
             <button type="button" className="admin-btn admin-btn-danger" onClick={handleDelete}>
-              Padam Siri
+              Padam siri
             </button>
           </div>
         </div>
@@ -436,7 +436,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
         <div className="admin-form-actions">
           <a href="/admin/series" className="admin-btn admin-btn-outline">Kembali</a>
           <button type="submit" className="admin-btn admin-btn-primary" disabled={saving}>
-            {saving ? "Menyimpan..." : "Simpan Siri"}
+            {saving ? "Menyimpan…" : "Simpan"}
           </button>
         </div>
       </form>

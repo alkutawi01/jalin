@@ -75,7 +75,7 @@ export default async function AdminDashboard() {
   return (
     <div className="admin-dashboard">
       <header className="admin-page-header">
-        <h1>Papan Pemuka</h1>
+        <h1>Papan pemuka</h1>
         <p className="admin-page-sub">Pentadbiran Jalin</p>
       </header>
 
