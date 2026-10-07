@@ -84,6 +84,7 @@ const API_RULES: Rule[] = [
   { methods: WRITE, pattern: /^\/(submissions|contributions)(\/|$)/, permission: "submission.manage" },
   { methods: WRITE, pattern: /^\/editorial-issues(\/|$)/, permission: "work.write" },
   { methods: ["PUT", "POST", "PATCH", "DELETE"], pattern: /^\/editor-picks$/, permission: "editorial.curate" },
+  { methods: WRITE, pattern: /^\/ratings(\/|$)/, permission: "editorial.curate" }, // paste in, publish or turn away a rating
   { methods: WRITE, pattern: /^\/(contributors|ai-personas)(\/|$)/, permission: "contributor.manage" },
   { methods: ["POST"], pattern: /^\/authoring\/prompt$/, permission: "work.write" },
   { methods: WRITE, pattern: /^\/(site-copy|site-theme|audience-bands|authoring\/settings|prompts)(\/|$)/, permission: "site.manage" },

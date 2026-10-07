@@ -421,6 +421,35 @@ export interface EditorialRoles {
   created_at: ColumnType<Date, string | Date, string | Date>;
 }
 
+/** A chatbot's rating of a whole work or a whole finished series (migration 024). */
+export interface Ratings {
+  id: string;
+  target_kind: string;
+  target_id: string;
+  reviewer: string;
+  reviewer_key: string;
+  rubric_version: string;
+  ref_code: string;
+  text_hash: string;
+  text_words: number | null;
+  scores: ColumnType<unknown, string, string>;
+  reasons: ColumnType<unknown, string, string>;
+  evidence: ColumnType<unknown, string, string>;
+  overall: ColumnType<string, number | string, number | string>;
+  audience: string | null;
+  verdict: string;
+  review: string;
+  strengths: ColumnType<unknown, string, string>;
+  weaknesses: ColumnType<unknown, string, string>;
+  content_warnings: string | null;
+  raw_response: string;
+  status: ColumnType<string, string | undefined, string>;
+  is_current: ColumnType<boolean, boolean | undefined, boolean>;
+  created_by: string | null;
+  created_at: ColumnType<Date, string | Date | undefined, string | Date>;
+  updated_at: ColumnType<Date, string | Date | undefined, string | Date>;
+}
+
 export interface Database {
   works: Works;
   contributors: Contributors;
@@ -441,4 +470,5 @@ export interface Database {
   editorial_issues: EditorialIssues;
   editorial_issue_events: EditorialIssueEvents;
   editorial_roles: EditorialRoles;
+  ratings: Ratings;
 }

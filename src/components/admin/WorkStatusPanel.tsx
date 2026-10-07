@@ -158,6 +158,10 @@ export default function WorkStatusPanel({
           <a href={`/pratonton/${workId}`} className="a-btn">
             Pratonton
           </a>
+          {/* The whole text in one click, and (cerpen and novela) a chatbot's rating of it. An episode is rated with its whole series. */}
+          <a href={`/admin/penilaian/work/${workId}`} className="a-btn">
+            {type === "cerpen" || type === "novela" ? "Penilaian & teks penuh" : "Teks penuh"}
+          </a>
           {status === "published" ? (
             <a href={`/kategori/${type}/${slug}`} className="a-btn" target="_blank" rel="noreferrer">
               Lihat di laman
