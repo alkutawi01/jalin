@@ -54,7 +54,7 @@ export default function CreditRoleSelect({
           }
         }}
       >
-        <option value="">-- Pilih peranan --</option>
+        <option value="">— Pilih peranan —</option>
         {STANDARD_ROLES.map((role) => (
           <option key={role.value} value={role.value}>
             {role.label}

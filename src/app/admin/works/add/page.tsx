@@ -92,7 +92,7 @@ export default function AddWorkPage() {
           <div className="admin-form-group">
             <label htmlFor="series-choice">Siri</label>
             <select id="series-choice" value={seriesId} onChange={(event) => setSeriesId(event.target.value)}>
-              <option value="">-- Pilih siri --</option>
+              <option value="">— Pilih siri —</option>
               {series.map((item) => <option key={item.id} value={item.id}>{item.title} ({item.mode === "anthology" ? "antologi" : "bersambung"})</option>)}
             </select>
           </div>

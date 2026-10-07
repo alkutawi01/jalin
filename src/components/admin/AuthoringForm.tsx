@@ -379,7 +379,7 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
             disabled={busy !== "idle" || (needsManuscript && !material.trim())}
             onClick={copyPrompt}
           >
-            {busy === "prompt" ? "Menyediakan…" : "Salin Arahan AI"}
+            {busy === "prompt" ? "Menyediakan…" : "Salin arahan AI"}
           </button>
         </div>
         {copyNote ? <div className="admin-alert admin-alert-success" role="status">{copyNote}</div> : null}
@@ -465,7 +465,7 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
           {plan && review ? (
             <>
               <h3>Pratonton kad</h3>
-              <p className="admin-form-hint">Begini karya ini kelihatan pada halaman utama dan senarai. Gambar hero dimuat naik selepas draf disimpan.</p>
+              <p className="admin-form-hint">Begini karya ini kelihatan pada halaman utama dan senarai. Gambar utama dimuat naik selepas draf disimpan.</p>
               <div style={{ maxWidth: 340 }}>
                 <article className="latest-card">
                   <div className="latest-card-cover">
@@ -509,7 +509,7 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
                 <input id="f-slug" value={slug} onChange={(e) => setSlug(e.target.value)} placeholder="(dijana daripada tajuk)" />
               </div>
               <div className="admin-form-group">
-                <label htmlFor="f-dek">Dek</label>
+                <label htmlFor="f-dek">Ringkasan</label>
                 <textarea id="f-dek" className="admin-textarea" rows={4} value={dek} onChange={(e) => setDek(e.target.value)} />
               </div>
               <div className="admin-form-row">
@@ -664,7 +664,7 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
               ))}
 
               <h3>Glosari ({review.glossary.length})</h3>
-              <p className="admin-form-hint">Tooltip hanya muncul pada kemunculan pertama setiap istilah dalam halaman bacaan.</p>
+              <p className="admin-form-hint">Kotak glosari hanya muncul pada kemunculan pertama setiap istilah dalam halaman bacaan.</p>
               {review.glossary.length === 0 ? <p className="admin-form-hint">Tiada istilah glosari.</p> : null}
               {review.glossary.map((g, i) => (
                 <div key={i}>
@@ -730,7 +730,7 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
                 </div>
                 {glossaryProblems.filter((p) => p.term === g.term.trim()).map((p) => (
                   <p key={p.term} className="admin-form-hint" role="alert" style={{ color: "var(--a-warn, #8a5a00)" }}>
-                    "{p.term}" tidak ditemui sebagai perkataan penuh dalam teks, jadi tooltipnya tidak akan muncul.
+                    "{p.term}" tidak ditemui sebagai perkataan penuh dalam teks, jadi kotak glosarinya tidak akan muncul.
                     {p.suggestion ? ` Teks menulis "${p.suggestion}": eja istilah sama seperti dalam teks.` : " Eja istilah sama seperti dalam teks, atau buangnya."}
                   </p>
                 ))}
@@ -751,7 +751,7 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
               </p>
               {review.visuals.map((v, i) => (
                 <div className="admin-section" key={v.originalIndex} style={v.removed ? { opacity: 0.45 } : undefined}>
-                  <strong>{v.role === "hero" ? "Hero" : "Inline"}</strong> · {v.aspectRatio}
+                  <strong>{v.role === "hero" ? "Gambar utama" : "Gambar dalam teks"}</strong> · {v.aspectRatio}
                   {v.sectionSlug ? <> · {v.sectionSlug}</> : null}
                   {v.role === "inline" ? (
                     <p className="admin-form-hint">

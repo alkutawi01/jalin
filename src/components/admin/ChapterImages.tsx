@@ -108,8 +108,8 @@ export default function ChapterImages({
       {error ? <div className="admin-alert admin-alert-error" role="alert">{error}</div> : null}
 
       <div className="a-chapter-block">
-        <strong>Hero bab</strong>
-        <p className="admin-form-hint">Dipaparkan di kepala bab ini. Jika tiada, hero Novela digunakan.</p>
+        <strong>Gambar utama bab</strong>
+        <p className="admin-form-hint">Dipaparkan di kepala bab ini. Jika tiada, gambar utama Novela digunakan.</p>
         {hero ? (
           <div className="a-chapter-row">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -120,7 +120,7 @@ export default function ChapterImages({
               <p className="admin-form-hint">Untuk memilih bahagian gambar yang dipaparkan, buka tab Kandungan, bahagian Gambar dalam karya, dan tekan Ubah butiran.</p>
             </div>
           </div>
-        ) : fileInput("Muat naik hero bab", (file) => void send(file, "section"))}
+        ) : fileInput("Muat naik gambar utama bab", (file) => void send(file, "section"))}
       </div>
 
       <div className="a-chapter-block">

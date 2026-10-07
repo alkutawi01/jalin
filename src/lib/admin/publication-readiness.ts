@@ -415,7 +415,7 @@ export function evaluatePublicationReadinessFromData(
   }
   if (!work.dek || !work.dek.trim()) {
     contentWarnings.push(
-      issue("dek_missing", "Dek (ringkasan) belum diisi. Disyorkan untuk senarai awam.")
+      issue("dek_missing", "Ringkasan belum diisi. Disyorkan untuk senarai awam.")
     );
   }
   if (isSourcedWork(String(work.type), work.metadata)) {
