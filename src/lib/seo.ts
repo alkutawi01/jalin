@@ -34,6 +34,9 @@ export function shareImage(src: string, alt?: string | null): { url: string; alt
   return text ? { url: shareImageUrl(src), alt: text } : { url: shareImageUrl(src) };
 }
 
+/** What Jalin is, in one line for a search result: the homepage's description (layout) and its structured data. */
+export const SITE_DESCRIPTION = "Selami dunia melalui cerita di Jalin, platform cerpen, novela dan cerita bersiri berilustrasi dalam Bahasa Melayu. Terbitan Adjung Press.";
+
 export const META_DESCRIPTION_MAX = 160;
 
 /**
