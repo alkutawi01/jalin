@@ -46,7 +46,7 @@ export async function PATCH(
     return NextResponse.json((work.metadata?.characters as unknown[]) ?? []);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Ralat tidak diketahui.";
-    const status = message === "Work not found." ? 404 : 400;
+    const status = message === "Karya tidak ditemui." ? 404 : 400;
     return NextResponse.json({ error: message }, { status });
   }
 }

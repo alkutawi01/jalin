@@ -17,7 +17,7 @@ export async function POST(
     const body = await request.json();
 
     if (!Array.isArray(body.workIds) || body.workIds.length === 0) {
-      return NextResponse.json({ error: "workIds diperlukan." }, { status: 400 });
+      return NextResponse.json({ error: "Susunan episod diperlukan." }, { status: 400 });
     }
     const wanted = body.workIds.map(String);
 

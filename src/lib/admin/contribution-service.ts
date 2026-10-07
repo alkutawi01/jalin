@@ -20,7 +20,7 @@ import {
 
 function getAdminDb(): Kysely<Database> {
   if (!hasDb()) {
-    throw new Error("[ContributionService] Database not available.");
+    throw new Error("Pangkalan data tidak tersedia.");
   }
   return getDb();
 }

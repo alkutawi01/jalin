@@ -65,7 +65,7 @@ export async function applyManualUpload(
     .where("id", "=", visualRequestId)
     .selectAll()
     .executeTakeFirst();
-  if (!vr) return { ok: false, status: 404, error: "Visual request tidak ditemui." };
+  if (!vr) return { ok: false, status: 404, error: "Permintaan gambar tidak ditemui." };
   if (!REPLACEABLE_STATUSES.has(vr.status)) {
     return {
       ok: false,

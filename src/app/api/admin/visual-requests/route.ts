@@ -18,10 +18,10 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     if (!body.prompt?.trim()) {
-      return NextResponse.json({ error: "prompt diperlukan." }, { status: 400 });
+      return NextResponse.json({ error: "Arahan gambar diperlukan." }, { status: 400 });
     }
     if (!body.visualRole?.trim()) {
-      return NextResponse.json({ error: "visualRole diperlukan." }, { status: 400 });
+      return NextResponse.json({ error: "Jenis gambar diperlukan." }, { status: 400 });
     }
 
     const visualRequest = await createVisualRequest({

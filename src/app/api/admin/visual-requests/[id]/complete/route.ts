@@ -30,7 +30,7 @@ export async function POST(
 
     const body = await request.json().catch(() => null);
     if (!body || typeof body !== "object") {
-      return NextResponse.json({ error: "Body diperlukan." }, { status: 400 });
+      return NextResponse.json({ error: "Kandungan permintaan diperlukan." }, { status: 400 });
     }
 
     const {
@@ -59,7 +59,7 @@ export async function POST(
     }
     if (typeof providerAssetUrl !== "string" || !providerAssetUrl.trim()) {
       return NextResponse.json(
-        { error: "providerAssetUrl diperlukan." },
+        { error: "Alamat fail daripada penyedia diperlukan." },
         { status: 400 }
       );
     }
@@ -67,7 +67,7 @@ export async function POST(
       providerAssetUrl.startsWith("javascript:") ||
       (!providerAssetUrl.startsWith("https://") && !providerAssetUrl.startsWith("http://"))
     ) {
-      return NextResponse.json({ error: "providerAssetUrl tidak sah." }, { status: 400 });
+      return NextResponse.json({ error: "Alamat fail daripada penyedia tidak sah." }, { status: 400 });
     }
 
     const widthNum =

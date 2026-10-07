@@ -23,7 +23,7 @@ const last = attach.indexOf('.orderBy("position", "desc")');
 const write = attach.indexOf('.insertInto("series_entries")');
 assert(attach.includes("db.transaction().execute(async (trx) =>") && lock > 0 && lock < member && member < last && last < write, "membership and the last position are read, and the episode attached, in one turn per series");
 assert(!/await db\s*\.insertInto/.test(attach) && !attach.includes("getSeriesEntryForWork(workId)"), "on that transaction, not on another connection");
-assert(attach.includes('clash.code === "23505"') && attach.includes("Kedudukan episod ini sudah digunakan dalam Siri ini.") && attach.includes("Work ini sudah menjadi ahli sebuah Siri."), "a clash that still reaches the database is said in Malay");
+assert(attach.includes('clash.code === "23505"') && attach.includes("Kedudukan episod ini sudah digunakan dalam Siri ini.") && attach.includes("Karya ini sudah menjadi episod sebuah siri."), "a clash that still reaches the database is said in Malay");
 
 const route = read("src/app/api/admin/series/[id]/entries/route.ts");
 const message = 'Hanya Work type=bersiri boleh disertai Siri (sekarang: "cerpen").';

@@ -190,7 +190,7 @@ export async function pollVisualGeneration(
     .executeTakeFirst();
 
   if (!vr) {
-    return emptyResult(visualRequestId, "failed", "validation_error", "Visual request tidak ditemui.");
+    return emptyResult(visualRequestId, "failed", "validation_error", "Permintaan gambar tidak ditemui.");
   }
 
   if (!["queued", "generating"].includes(vr.status)) {
@@ -366,7 +366,7 @@ export async function executeVisualGeneration(
     .executeTakeFirst();
 
   if (!vr) {
-    return emptyResult(request.visualRequestId, "failed", "validation_error", "Visual request tidak ditemui.");
+    return emptyResult(request.visualRequestId, "failed", "validation_error", "Permintaan gambar tidak ditemui.");
   }
 
   // Bounded retries — fail closed on exhausted or non-retryable errors.
@@ -659,7 +659,7 @@ export async function approveVisualRequest(
     .executeTakeFirst();
 
   if (!vr) {
-    return { success: false, error: "Visual request tidak ditemui." };
+    return { success: false, error: "Permintaan gambar tidak ditemui." };
   }
 
   if (vr.status !== "under_review" && vr.status !== "generated") {
@@ -704,7 +704,7 @@ export async function rejectVisualRequest(
     .executeTakeFirst();
 
   if (!vr) {
-    return { success: false, error: "Visual request tidak ditemui." };
+    return { success: false, error: "Permintaan gambar tidak ditemui." };
   }
 
   if (vr.status !== "under_review" && vr.status !== "generated") {
@@ -767,7 +767,7 @@ export function validateAttachGate(input: AttachGateInput): AttachGateResult {
   }
 
   if (!input.work_id) {
-    return { ok: false, error: "Work ID diperlukan untuk pautan visual." };
+    return { ok: false, error: "Karya diperlukan untuk memautkan gambar." };
   }
 
   if (!input.provider || !input.provider.trim()) {
@@ -820,7 +820,7 @@ export async function attachVisualToWork(
     .executeTakeFirst();
 
   if (!vr) {
-    return { success: false, error: "Visual request tidak ditemui." };
+    return { success: false, error: "Permintaan gambar tidak ditemui." };
   }
 
   const gate = validateAttachGate({
@@ -849,7 +849,7 @@ export async function attachVisualToWork(
     .executeTakeFirst();
 
   if (!work) {
-    return { success: false, error: "Work tidak ditemui." };
+    return { success: false, error: "Karya tidak ditemui." };
   }
 
   const insertResult = await db

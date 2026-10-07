@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     if (!body.slug?.trim() || !body.title?.trim()) {
-      return NextResponse.json({ error: "slug dan title diperlukan." }, { status: 400 });
+      return NextResponse.json({ error: "Alamat pautan dan tajuk diperlukan." }, { status: 400 });
     }
 
     const series = await createSeries({

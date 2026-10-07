@@ -29,7 +29,7 @@ export async function generateWorkId(
 ): Promise<string> {
   const prefix = TYPE_PREFIX[workType];
   if (!prefix) {
-    throw new Error(`Unknown work type: ${workType}`);
+    throw new Error(`Jenis karya tidak dikenali: ${workType}`);
   }
 
   // Find all existing IDs with this prefix

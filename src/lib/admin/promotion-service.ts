@@ -76,7 +76,7 @@ export function validatePromotionEligibility(submission: {
     errors.push("Tajuk diperlukan.");
   }
   if (!submission.proposed_slug?.trim()) {
-    errors.push("Slug diperlukan.");
+    errors.push("Alamat pautan diperlukan.");
   }
   if (!submission.manuscript?.trim()) {
     errors.push("Manuskrip diperlukan.");
@@ -129,13 +129,13 @@ export async function promoteSubmissionToWork(
       .executeTakeFirst();
 
     if (!submission) {
-      throw new Error(`Submission #${options.submissionId} tidak ditemui.`);
+      throw new Error(`Penghantaran #${options.submissionId} tidak ditemui.`);
     }
 
     // 2. Validate eligibility
     const eligibilityErrors = validatePromotionEligibility(submission);
     if (eligibilityErrors.length > 0) {
-      throw new Error(`Submission tidak layak dipromosikan:\n${eligibilityErrors.join("\n")}`);
+      throw new Error(`Penghantaran belum boleh dinaikkan ke karya:\n${eligibilityErrors.join("\n")}`);
     }
 
     // 3. Determine slug

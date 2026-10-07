@@ -37,10 +37,10 @@ export async function POST(
     const body = await request.json();
 
     if (!body.slug?.trim()) {
-      return NextResponse.json({ error: "slug diperlukan." }, { status: 400 });
+      return NextResponse.json({ error: "Alamat pautan diperlukan." }, { status: 400 });
     }
     if (!body.body?.trim()) {
-      return NextResponse.json({ error: "body diperlukan." }, { status: 400 });
+      return NextResponse.json({ error: "Teks bab diperlukan." }, { status: 400 });
     }
 
     const section = await createSection({

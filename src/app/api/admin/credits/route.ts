@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
     const workId = searchParams.get("workId");
 
     if (!workId) {
-      return NextResponse.json({ error: "workId diperlukan." }, { status: 400 });
+      return NextResponse.json({ error: "Karya diperlukan." }, { status: 400 });
     }
 
     const credits = await listCreditsForWork(workId);
@@ -27,13 +27,13 @@ export async function POST(request: NextRequest) {
 
     // Validation
     if (!body.workId) {
-      return NextResponse.json({ error: "workId diperlukan." }, { status: 400 });
+      return NextResponse.json({ error: "Karya diperlukan." }, { status: 400 });
     }
     if (!body.roleLabel?.trim()) {
-      return NextResponse.json({ error: "roleLabel diperlukan." }, { status: 400 });
+      return NextResponse.json({ error: "Peranan diperlukan." }, { status: 400 });
     }
     if (!body.contributorSlug && !body.guestName) {
-      return NextResponse.json({ error: "contributor atau guestName diperlukan." }, { status: 400 });
+      return NextResponse.json({ error: "Penyumbang atau nama tetamu diperlukan." }, { status: 400 });
     }
 
     const duplicate = findDuplicateCredit(await listCreditsForWork(body.workId), {
@@ -71,7 +71,7 @@ export async function PATCH(request: NextRequest) {
     const body = await request.json();
 
     if (!body.workId || !body.creditIds) {
-      return NextResponse.json({ error: "workId dan creditIds diperlukan." }, { status: 400 });
+      return NextResponse.json({ error: "Karya dan susunan kredit diperlukan." }, { status: 400 });
     }
 
     const credits = await reorderCredits(body.workId, body.creditIds);

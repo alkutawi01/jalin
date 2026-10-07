@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     if (action === "backups" && workId) {
       const slug = searchParams.get("slug");
       if (!slug) {
-        return NextResponse.json({ error: "slug diperlukan." }, { status: 400 });
+        return NextResponse.json({ error: "Alamat pautan diperlukan." }, { status: 400 });
       }
       const backups = listBackups(slug);
       return NextResponse.json({ backups });
@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ status, preview });
     }
 
-    return NextResponse.json({ error: "Action tidak sah." }, { status: 400 });
+    return NextResponse.json({ error: "Tindakan tidak sah." }, { status: 400 });
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Ralat tidak diketahui." },
@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(result);
     }
 
-    return NextResponse.json({ error: "Action tidak sah." }, { status: 400 });
+    return NextResponse.json({ error: "Tindakan tidak sah." }, { status: 400 });
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Ralat tidak diketahui." },

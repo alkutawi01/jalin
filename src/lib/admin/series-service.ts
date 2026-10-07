@@ -16,7 +16,7 @@ const VALID_STATUSES = new Set(["ongoing", "completed"]);
 
 function getAdminDb(): Kysely<Database> {
   if (!hasDb()) {
-    throw new Error("[SeriesService] Database not available.");
+    throw new Error("Pangkalan data tidak tersedia.");
   }
   return getDb();
 }
@@ -275,7 +275,7 @@ export async function attachEpisode(
     .select(["id", "type", "slug", "title"])
     .executeTakeFirst();
   if (!work) {
-    throw new Error("Work tidak ditemui.");
+    throw new Error("Karya tidak ditemui.");
   }
   if (String(work.type) !== "bersiri") {
     throw new Error(
@@ -294,9 +294,9 @@ export async function attachEpisode(
       const existingMembership = await trx.selectFrom("series_entries").where("work_id", "=", workId).select("series_id").executeTakeFirst();
       if (existingMembership) {
         if (existingMembership.series_id === seriesId) {
-          throw new Error("Work ini sudah menjadi ahli Siri ini.");
+          throw new Error("Karya ini sudah menjadi episod siri ini.");
         }
-        throw new Error("Work ini sudah menjadi ahli Siri lain.");
+        throw new Error("Karya ini sudah menjadi episod siri lain.");
       }
 
       const maxEntry = await trx
@@ -319,7 +319,7 @@ export async function attachEpisode(
           .select("id")
           .executeTakeFirst();
         if (clash) {
-          throw new Error(`Position ${nextPosition} sudah digunakan dalam Siri ini.`);
+          throw new Error(`Kedudukan ${nextPosition} sudah digunakan dalam siri ini.`);
         }
       }
 
@@ -343,7 +343,7 @@ export async function attachEpisode(
       throw new Error(
         clash.constraint === "series_entries_series_position_key"
           ? "Kedudukan episod ini sudah digunakan dalam Siri ini. Muat semula senarai episod dan cuba lagi."
-          : "Work ini sudah menjadi ahli sebuah Siri."
+          : "Karya ini sudah menjadi episod sebuah siri."
       );
     }
     throw error;
@@ -451,7 +451,7 @@ export async function reorderSeriesEntries(
   }
   const unique = new Set(workIds);
   if (unique.size !== workIds.length) {
-    throw new Error("ID episod berulang dalam permintaan reorder.");
+    throw new Error("Episod yang sama berulang dalam susunan baharu.");
   }
 
   // Detect if any affected Work is published (caller must confirm).

@@ -10,7 +10,7 @@ import type { Database, WorkType, SubmissionStatus, SubmitterType } from "../db/
 
 function getAdminDb(): Kysely<Database> {
   if (!hasDb()) {
-    throw new Error("[SubmissionService] Database not available.");
+    throw new Error("Pangkalan data tidak tersedia.");
   }
   return getDb();
 }
@@ -89,7 +89,7 @@ export async function createSubmission(input: SubmissionInput): Promise<Submissi
 
   const submission = await getSubmission(result.id);
   if (!submission) {
-    throw new Error("Submission tidak ditemui selepas penciptaan.");
+    throw new Error("Penghantaran tidak ditemui selepas dibuat.");
   }
 
   return submission;
@@ -125,7 +125,7 @@ export async function updateSubmission(
 
   const submission = await getSubmission(id);
   if (!submission) {
-    throw new Error("Submission tidak ditemui selepas kemas kini.");
+    throw new Error("Penghantaran tidak ditemui selepas dikemas kini.");
   }
 
   return submission;

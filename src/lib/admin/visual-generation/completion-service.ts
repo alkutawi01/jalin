@@ -99,7 +99,7 @@ export async function failVisualGeneration(
     return {
       success: false,
       requestId: input.visualRequestId,
-      error: "Visual request tidak ditemui.",
+      error: "Permintaan gambar tidak ditemui.",
     };
   }
 
@@ -174,7 +174,7 @@ export async function completeVisualGeneration(
     return {
       success: false,
       requestId: input.visualRequestId,
-      error: "Visual request tidak ditemui.",
+      error: "Permintaan gambar tidak ditemui.",
     };
   }
 
@@ -241,7 +241,7 @@ export async function completeVisualGeneration(
     return {
       success: false,
       requestId: vr.id,
-      error: "providerAssetUrl diperlukan.",
+      error: "Alamat fail daripada penyedia diperlukan.",
       errorCategory: "validation_error",
     };
   }

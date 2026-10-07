@@ -10,7 +10,7 @@ import type { Database, VisualRole, VisualPlace, VisualRequestStatus } from "../
 
 function getAdminDb(): Kysely<Database> {
   if (!hasDb()) {
-    throw new Error("[VisualRequestService] Database not available.");
+    throw new Error("Pangkalan data tidak tersedia.");
   }
   return getDb();
 }
@@ -157,7 +157,7 @@ export async function createVisualRequest(input: VisualRequestInput): Promise<Vi
 
   const request = await getVisualRequest(result.id);
   if (!request) {
-    throw new Error("Visual request tidak ditemui selepas penciptaan.");
+    throw new Error("Permintaan gambar tidak ditemui selepas dibuat.");
   }
 
   return request;
@@ -201,7 +201,7 @@ export async function updateVisualRequest(
 
   const request = await getVisualRequest(id);
   if (!request) {
-    throw new Error("Visual request tidak ditemui selepas kemas kini.");
+    throw new Error("Permintaan gambar tidak ditemui selepas dikemas kini.");
   }
 
   return request;

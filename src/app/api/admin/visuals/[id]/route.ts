@@ -27,7 +27,7 @@ export async function GET(
     const visual = await getVisual(visualId);
 
     if (!visual) {
-      return NextResponse.json({ error: "Visual tidak ditemui." }, { status: 404 });
+      return NextResponse.json({ error: "Gambar tidak ditemui." }, { status: 404 });
     }
 
     return NextResponse.json(visual);
@@ -54,7 +54,7 @@ export async function PATCH(
     // Check if visual exists
     const existing = await getVisual(visualId);
     if (!existing) {
-      return NextResponse.json({ error: "Visual tidak ditemui." }, { status: 404 });
+      return NextResponse.json({ error: "Gambar tidak ditemui." }, { status: 404 });
     }
 
     const body = await request.json();
@@ -63,7 +63,7 @@ export async function PATCH(
     if (body.role) {
       const validRoles = ["hero", "inline", "section", "decorative"];
       if (!validRoles.includes(body.role)) {
-        return NextResponse.json({ error: "role tidak sah." }, { status: 400 });
+        return NextResponse.json({ error: "Jenis gambar tidak sah." }, { status: 400 });
       }
     }
 
@@ -125,7 +125,7 @@ export async function DELETE(
     // Check if visual exists
     const existing = await getVisual(visualId);
     if (!existing) {
-      return NextResponse.json({ error: "Visual tidak ditemui." }, { status: 404 });
+      return NextResponse.json({ error: "Gambar tidak ditemui." }, { status: 404 });
     }
 
     await deleteVisual(visualId);
