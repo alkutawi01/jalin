@@ -7,6 +7,7 @@ import LoadingBlock from "../../../../components/admin/LoadingBlock";
 import AudiencePicker from "../../../../components/admin/AudiencePicker";
 import ImageFocusPicker, { type FocusValue } from "../../../../components/admin/ImageFocusPicker";
 import { MAX_UPLOAD_LABEL, uploadTooLargeMessage } from "../../../../lib/admin/upload-limit";
+import { errorText } from "../../../../lib/admin/error-text";
 
 /** An episode's status in the editor's words, as the works list shows it. */
 const EPISODE_STATUS: Record<string, string> = { draft: "Draf", review: "Semakan", ready: "Sedia", published: "Diterbitkan", archived: "Diarkibkan" };
@@ -96,7 +97,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
       }
       setEntryWorks(map);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat memuatkan siri.");
+      setError(errorText(err, "Ralat memuatkan siri."));
     } finally {
       setLoading(false);
     }
@@ -152,7 +153,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
       await loadSeries();
       setTimeout(() => setSuccess(null), 4000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
     } finally {
       setSaving(false);
     }
@@ -176,7 +177,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
       await loadUnattached();
       setTimeout(() => setSuccess(null), 4000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
     } finally {
       setActionBusy(false);
     }
@@ -194,7 +195,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
       await loadSeries();
       await loadUnattached();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
     } finally {
       setActionBusy(false);
     }
@@ -225,7 +226,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
       if (!res.ok) throw new Error(data.error || "Gagal menyusun.");
       await loadSeries();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
     } finally {
       setActionBusy(false);
     }
@@ -240,7 +241,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
       if (!res.ok) throw new Error(data.error || "Gagal memadam siri.");
       router.push("/admin/series");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
     }
   }
 
@@ -273,7 +274,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
       toast("Gambar siri disimpan.", "success");
       await loadSeries();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
     } finally {
       setHeroBusy(false);
     }
@@ -295,7 +296,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
       toast("Bahagian gambar disimpan.", "success");
       await loadSeries();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
     } finally {
       setHeroBusy(false);
     }
@@ -309,7 +310,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
       if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || "Gagal membuang gambar siri.");
       await loadSeries();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
     } finally {
       setHeroBusy(false);
     }

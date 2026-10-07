@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { toast } from "../../lib/admin/dialogs";
 import { uploadTooLargeMessage } from "../../lib/admin/upload-limit";
+import { errorText } from "../../lib/admin/error-text";
 
 interface VisualLike {
   id: number;
@@ -69,7 +70,7 @@ export default function ChapterImages({
       toast(published ? "Gambar disimpan dalam draf. Pembaca belum melihatnya: tekan Terbitkan semula di atas karya." : "Gambar bab disimpan.", "success");
       onChanged();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
     } finally {
       setBusy(false);
     }
@@ -84,7 +85,7 @@ export default function ChapterImages({
       if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || "Gagal memadam gambar.");
       onChanged();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
     } finally {
       setBusy(false);
     }

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { KIND_DESCRIPTIONS, KIND_LABELS, WORK_KINDS, type WorkKind } from "../../../../lib/admin/authoring/recipes";
+import { errorText } from "../../../../lib/admin/error-text";
 
 interface SeriesChoice { id: string; title: string; mode: string }
 
@@ -50,7 +51,7 @@ export default function AddWorkPage() {
       if (!response.ok) throw new Error(data.error || "Draf gagal dibuat.");
       router.push(`/admin/works/${data.id}#content`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Draf gagal dibuat.");
+      setError(errorText(err, "Draf gagal dibuat."));
       setBusy(false);
     }
   }

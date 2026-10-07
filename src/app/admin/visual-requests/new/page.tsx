@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { errorText } from "../../../../lib/admin/error-text";
 
 const VISUAL_ROLES = [
   { value: "hero", label: "Utama" },
@@ -65,7 +66,7 @@ export default function NewVisualRequestPage() {
       const vr = await res.json();
       router.push(`/admin/visual-requests/${vr.id}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
       setSaving(false);
     }
   }

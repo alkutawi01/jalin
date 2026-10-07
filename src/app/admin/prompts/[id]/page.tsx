@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { confirmAction } from "../../../../lib/admin/dialogs";
 import LoadingBlock from "../../../../components/admin/LoadingBlock";
+import { errorText } from "../../../../lib/admin/error-text";
 
 const WORK_TYPES = [
   { value: "cerpen", label: "Cerpen" },
@@ -74,7 +75,7 @@ export default function EditPromptPage() {
           status: t.status,
         });
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Ralat memuatkan templat.");
+        setError(errorText(err, "Ralat memuatkan templat."));
       } finally {
         setLoading(false);
       }
@@ -104,7 +105,7 @@ export default function EditPromptPage() {
       setSuccess("Berjaya disimpan.");
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
     } finally {
       setSaving(false);
     }
@@ -122,7 +123,7 @@ export default function EditPromptPage() {
       }
       window.location.href = "/admin/prompts";
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
       setDeleting(false);
     }
   }

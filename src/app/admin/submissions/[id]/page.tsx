@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { confirmAction } from "../../../../lib/admin/dialogs";
 import LoadingBlock from "../../../../components/admin/LoadingBlock";
+import { errorText } from "../../../../lib/admin/error-text";
 
 const WORK_TYPES = [
   { value: "cerpen", label: "Cerpen" },
@@ -154,7 +155,7 @@ export default function EditSubmissionPage() {
           resultWorkId: sub.result_work_id || "",
         });
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Ralat memuatkan penghantaran.");
+        setError(errorText(err, "Ralat memuatkan penghantaran."));
       } finally {
         setLoading(false);
       }
@@ -243,7 +244,7 @@ export default function EditSubmissionPage() {
       loadGenerationHistory();
       loadContributions();
     } catch (err) {
-      setGenError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setGenError(errorText(err));
     } finally {
       setGenerating(false);
     }
@@ -288,7 +289,7 @@ export default function EditSubmissionPage() {
         setPromoteSuccess((prev) => `${prev}\nAmaran: ${data.warnings.join(", ")}`);
       }
     } catch (err) {
-      setPromoteError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setPromoteError(errorText(err));
     } finally {
       setPromoting(false);
     }
@@ -315,7 +316,7 @@ export default function EditSubmissionPage() {
       setSuccess("Berjaya disimpan.");
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
     } finally {
       setSaving(false);
     }
@@ -355,7 +356,7 @@ export default function EditSubmissionPage() {
       setEditingContribution(null);
       loadContributions();
     } catch (err) {
-      setContribError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setContribError(errorText(err));
     }
   }
 
@@ -370,7 +371,7 @@ export default function EditSubmissionPage() {
       }
       loadContributions();
     } catch (err) {
-      setContribError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setContribError(errorText(err));
     }
   }
 

@@ -7,6 +7,7 @@ import { composeVisualPrompt } from "../../../../lib/admin/visual-generation/pro
 import { confirmAction } from "../../../../lib/admin/dialogs";
 import LoadingBlock from "../../../../components/admin/LoadingBlock";
 import { MAX_UPLOAD_LABEL, uploadTooLargeMessage } from "../../../../lib/admin/upload-limit";
+import { errorText } from "../../../../lib/admin/error-text";
 
 const VISUAL_ROLES = [
   { value: "hero", label: "Utama" },
@@ -233,7 +234,7 @@ export default function EditVisualRequestPage() {
           model: r.model || "",
         });
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Permintaan gambar tidak dapat dimuatkan.");
+        setError(errorText(err, "Permintaan gambar tidak dapat dimuatkan."));
       } finally {
         setLoading(false);
       }
@@ -273,7 +274,7 @@ export default function EditVisualRequestPage() {
       setSuccess("Berjaya disimpan.");
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
     } finally {
       setSaving(false);
     }
@@ -321,7 +322,7 @@ export default function EditVisualRequestPage() {
         }));
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
     } finally {
       setGenerating(false);
     }
@@ -360,7 +361,7 @@ export default function EditVisualRequestPage() {
         }));
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
     } finally {
       setPolling(false);
     }
@@ -382,7 +383,7 @@ export default function EditVisualRequestPage() {
         setForm((prev) => ({ ...prev, status: r.status, approvalState: r.approval_state }));
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
     } finally {
       setApproving(false);
     }
@@ -416,7 +417,7 @@ export default function EditVisualRequestPage() {
         }));
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
     } finally {
       setUploading(false);
     }
@@ -439,7 +440,7 @@ export default function EditVisualRequestPage() {
         setForm((prev) => ({ ...prev, status: r.status, approvalState: r.approval_state }));
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
     } finally {
       setApproving(false);
     }
@@ -462,7 +463,7 @@ export default function EditVisualRequestPage() {
         setForm((prev) => ({ ...prev, status: r.status }));
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
     } finally {
       setAttaching(false);
     }
@@ -480,7 +481,7 @@ export default function EditVisualRequestPage() {
       }
       window.location.href = "/admin/visual-requests";
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
       setDeleting(false);
     }
   }
