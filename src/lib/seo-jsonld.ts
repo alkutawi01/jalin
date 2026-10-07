@@ -33,12 +33,16 @@ export function laterOf(modified: string, published?: string): string {
   return Number.isFinite(m) && Number.isFinite(p) && m < p ? published : modified;
 }
 
-/** An age range written in the work's audience field, or nothing: no age is assumed. */
+/**
+ * The age a work is suitable FROM, or nothing when its audience field states none. Only the starting age is published
+ * (Izzat, 7 Oct 2026: Jalin does not narrow its readers): "13 to 17" told a search engine the work is not for adults, and a
+ * band with no upper end was published as "up to 99".
+ */
 export function audienceOf(text?: string): { audience?: Record<string, unknown> } {
   // The stored value is band codes ("belia,dewasa"), a band label or an older age range; all give the ages they cover.
   const range = audienceAgeRange(text);
   if (!range) return {};
-  return { audience: { "@type": "PeopleAudience", suggestedMinAge: range.min, suggestedMaxAge: range.max } };
+  return { audience: { "@type": "PeopleAudience", suggestedMinAge: range.min } };
 }
 
 const publisher = { "@type": "Organization", name: "Jalin", url: SITE_URL };

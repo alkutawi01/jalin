@@ -35,7 +35,7 @@ export function buildWorkFillPrompt(input: WorkFillPromptInput): string {
   const existingTerms = input.glossaryTerms.length
     ? `Istilah yang SUDAH ada (jangan ulang): ${input.glossaryTerms.map((t) => t.replace(/\*/g, "")).join(", ")}.\n`
     : "";
-  return `Anda pembantu editorial Jalin (platform bacaan sastera berilustrasi untuk remaja 13–17 tahun). Tugas anda: MEMBANTU editor mengisi maklumat karya ${input.type} di bawah. Editor yang memutuskan; anda hanya mencadangkan.
+  return `Anda pembantu editorial Jalin (platform bacaan sastera berilustrasi dalam Bahasa Melayu). Tugas anda: MEMBANTU editor mengisi maklumat karya ${input.type} di bawah. Editor yang memutuskan; anda hanya mencadangkan.
 
 PRINSIP
 - Jangan reka fakta, nama atau peristiwa. Jika tidak pasti, kosongkan baris itu atau tulis "perlu semakan editor".
@@ -43,7 +43,7 @@ PRINSIP
 - Jawab dengan bahagian berformat di bawah sahaja: tiada pengenalan, tiada penutup, tiada nombor, tiada tanda markdown.
 
 [MAKLUMAT]
-Dek: (satu atau dua ayat yang menarik pembaca remaja tanpa membocorkan pengakhiran)
+Dek: (satu atau dua ayat yang menarik pembaca tanpa membocorkan pengakhiran)
 Genre: (satu genre dalam satu atau dua patah perkataan)
 
 [WATAK]

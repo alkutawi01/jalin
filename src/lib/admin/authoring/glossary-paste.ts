@@ -74,7 +74,7 @@ export function buildGlossaryPrompt(input: { type: string; body: string; existin
   const existing = input.existingTerms.length
     ? `\nIstilah yang SUDAH ada (jangan ulang): ${input.existingTerms.map((t) => t.replace(/\*/g, "")).join(", ")}.\n`
     : "";
-  return `Anda pembantu editorial Jalin (platform bacaan sastera berilustrasi untuk remaja 13–17 tahun). Tugas anda: cadangkan glosari untuk karya ${input.type} di bawah.
+  return `Anda pembantu editorial Jalin (platform bacaan sastera berilustrasi dalam Bahasa Melayu). Tugas anda: cadangkan glosari untuk karya ${input.type} di bawah.
 
 PERATURAN
 ${GLOSSARY_RULES}${existing}

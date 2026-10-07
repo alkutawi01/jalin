@@ -31,8 +31,8 @@ assert(chapterHeroOf([{ id: 9, role: "section", sectionSlug: "bab-1", anchor: "[
 
 assert(JSON.stringify(audienceOf(undefined)) === "{}", "no audience stated: no age is published");
 assert(JSON.stringify(audienceOf("Remaja")).includes("\"suggestedMinAge\":13") && JSON.stringify(audienceOf("tidak jelas")) === "{}", "a band name gives the ages of that band (Remaja is 13 to 17); other words publish nothing");
-const a = audienceOf("Remaja 13-17 tahun").audience as { suggestedMinAge: number; suggestedMaxAge: number };
-assert(a.suggestedMinAge === 13 && a.suggestedMaxAge === 17, "a stated range is published as written");
+const a = audienceOf("Remaja 13-17 tahun").audience as { suggestedMinAge: number; suggestedMaxAge?: number };
+assert(a.suggestedMinAge === 13 && a.suggestedMaxAge === undefined, "a stated range publishes the age it starts at, and no upper age");
 assert(JSON.stringify(audienceOf("18-12")) === "{}", "an impossible range is ignored");
 
 console.log(`\n${passed} passed, ${failed} failed`);

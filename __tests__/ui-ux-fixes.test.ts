@@ -32,7 +32,7 @@ assert(/if \(isTransientVisualError\(error\)\) \{[\s\S]{0,900}status: "poll_unre
 
 // 3. audience wording in the AI instruction
 const prompts = read("src/lib/admin/authoring/default-prompts.ts");
-assert(!/untuk pembaca remaja 13 hingga 17 tahun\./.test(prompts) && /semua peringkat umur, dengan remaja 13 hingga 17 tahun sebagai sasaran utama/.test(prompts), "the instruction says Jalin is for all ages, teens being the main audience");
+assert(!/untuk pembaca remaja 13 hingga 17 tahun\./.test(prompts) && /untuk pembaca semua peringkat umur\./.test(prompts) && !/sasaran utama/.test(prompts), "the instruction says Jalin is for all ages, teens being the main audience");
 
 // 4. glossary terms must occur as whole words
 const text = "Marilla kehilangan kerongsang ametisnya yang amat dihargai. Beg lusuh itu anggun.";
