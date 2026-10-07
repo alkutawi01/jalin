@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { toast } from "../../lib/admin/dialogs";
+import { uploadTooLargeMessage } from "../../lib/admin/upload-limit";
 
 interface VisualLike {
   id: number;
@@ -46,6 +47,8 @@ export default function ChapterImages({
     setBusy(true);
     setError("");
     try {
+      const tooLarge = uploadTooLargeMessage(file.size);
+      if (tooLarge) throw new Error(tooLarge);
       let res: Response;
       if (replaceId) {
         const body = new FormData();

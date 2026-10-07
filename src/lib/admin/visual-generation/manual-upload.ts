@@ -11,8 +11,9 @@
 import type { Kysely } from "kysely";
 import type { Database } from "../../db/types";
 import { storeVisualAssetBytes } from "./asset-storage";
+import { MAX_UPLOAD_BYTES, MAX_UPLOAD_LABEL } from "../upload-limit";
 
-export const MAX_MANUAL_UPLOAD_BYTES = 10 * 1024 * 1024;
+export const MAX_MANUAL_UPLOAD_BYTES = MAX_UPLOAD_BYTES;
 
 export type ManualImageType = { mime: "image/png" | "image/jpeg" | "image/webp"; ext: "png" | "jpg" | "webp" };
 
@@ -53,7 +54,7 @@ export async function applyManualUpload(
 ): Promise<ManualUploadResult> {
   if (bytes.length === 0) return { ok: false, status: 400, error: "Fail kosong." };
   if (bytes.length > MAX_MANUAL_UPLOAD_BYTES) {
-    return { ok: false, status: 413, error: "Fail melebihi 10 MB." };
+    return { ok: false, status: 413, error: `Fail melebihi ${MAX_UPLOAD_LABEL}.` };
   }
   const type = detectImageType(bytes);
   if (!type) {

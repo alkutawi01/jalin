@@ -28,6 +28,7 @@ import { buildWorkFillPrompt, parseWorkFill } from "../../../../lib/admin/author
 import { renderItalics, toggleItalicSelection } from "../../../../lib/reader/inline-italics";
 import VisualManuscriptEditor, { canEditVisually } from "../../../../components/admin/VisualManuscriptEditor";
 import PlacesEditor from "../../../../components/admin/PlacesEditor";
+import { uploadTooLargeMessage } from "../../../../lib/admin/upload-limit";
 
 const WORK_TYPES = [
   { value: "cerpen", label: "Cerpen" },
@@ -1641,6 +1642,8 @@ export default function EditWorkPage() {
     if (!ok) return;
     setVisualError(null);
     try {
+      const tooLarge = uploadTooLargeMessage(file.size);
+      if (tooLarge) throw new Error(tooLarge);
       const body = new FormData();
       body.append("file", file);
       const res = await fetch(`/api/admin/visuals/${id}/replace`, { method: "POST", body });
