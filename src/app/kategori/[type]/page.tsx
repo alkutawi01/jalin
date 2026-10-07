@@ -1,4 +1,5 @@
 import { SiteFooter, SiteHeader } from "../../../components/reader/StoryChrome";
+import { OG_SITE } from "../../../lib/seo";
 import JalinEmblem from "../../../components/reader/JalinEmblem";
 import { WorkCover } from "../../../components/reader/WorkCover";
 import { initContentRepository } from "../../../lib/content";
@@ -127,6 +128,8 @@ export async function generateMetadata({ params }: { params: Promise<{ type: str
     description: intro,
     alternates: { canonical: `/kategori/${type}` },
     openGraph: {
+      ...OG_SITE,
+      type: "website",
       title: meta.title,
       description: intro,
       url: `/kategori/${type}`

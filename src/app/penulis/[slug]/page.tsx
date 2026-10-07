@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import { OG_SITE } from "../../../lib/seo";
 import path from "node:path";
 import matter from "gray-matter";
 import ReactMarkdown from "react-markdown";
@@ -64,7 +65,7 @@ export async function generateMetadata({
     title: name,
     description,
     alternates: { canonical: `/penulis/${slug}` },
-    openGraph: { title: name, description, url: `/penulis/${slug}` }
+    openGraph: { ...OG_SITE, type: "profile", title: name, description, url: `/penulis/${slug}` }
   };
 }
 

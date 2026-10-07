@@ -17,7 +17,7 @@ assert(shareImageUrl("/visuals/a/hero.png") === `${SITE_URL}/_next/image?url=%2F
 assert(shareImageUrl("https://x.public.blob.vercel-storage.com/a b.png").includes("url=https%3A%2F%2Fx.public.blob.vercel-storage.com%2Fa%20b.png"), "a Blob picture is encoded into the same address");
 assert(read("next.config.mjs").includes("qualities: [75, 85]"), "quality 75 is allowed by the optimiser");
 for (const f of ["src/app/kategori/[type]/[slug]/page.tsx", "src/app/kategori/bersiri/[seriesSlug]/page.tsx", "src/app/kategori/bersiri/[seriesSlug]/[episodeSlug]/page.tsx", "src/lib/seo-jsonld.ts"]) {
-  assert(read(f).includes("shareImageUrl(") && !/absoluteUrl\((?:hero|series\.hero|work\.hero|series\.hero)[\w.]*src\)|absoluteUrl\((?:work|series)\.heroSrc\)/.test(read(f)), `${f} shares the optimised picture`);
+  assert((read(f).includes("shareImageUrl(") || read(f).includes("shareImage(")) && !/absoluteUrl\((?:hero|series\.hero|work\.hero|series\.hero)[\w.]*src\)|absoluteUrl\((?:work|series)\.heroSrc\)/.test(read(f)), `${f} shares the optimised picture`);
 }
 
 console.log(`\n${passed} passed, ${failed} failed`);

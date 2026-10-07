@@ -15,6 +15,18 @@ export function shareImageUrl(src: string): string {
   return `${SITE_URL}/_next/image?url=${encodeURIComponent(src)}&w=1200&q=75`;
 }
 
+/**
+ * What every page's share card says about the site. A page that sets its own openGraph replaces the layout's whole block (Next
+ * does not merge them), so works, lists and author pages had lost og:site_name and og:locale; each page now spreads this in.
+ */
+export const OG_SITE = { siteName: "Jalin — oleh Adjung", locale: "ms_MY" } as const;
+
+/** The share picture with its description, for a reader who cannot see it. */
+export function shareImage(src: string, alt?: string | null): { url: string; alt?: string } {
+  const text = (alt ?? "").trim();
+  return text ? { url: shareImageUrl(src), alt: text } : { url: shareImageUrl(src) };
+}
+
 export const META_DESCRIPTION_MAX = 160;
 
 /**
