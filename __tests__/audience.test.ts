@@ -56,5 +56,13 @@ const api = read("src/app/api/admin/audience-bands/route.ts");
 assert((api.match(/getCurrentAdmin\(\)/g) ?? []).length === 2 && api.includes("status: 401"), "both audience endpoints need a login");
 assert(read("src/app/api/admin/works/start-draft/route.ts").includes("audience: DEFAULT_AUDIENCE, dek: null") && read("src/lib/admin/import/plan.ts").includes("normalizeAudience(data.audience)"), "a new draft and an import start with a band code, not '13-17'");
 
+// An empty "Dari" box: the form sends NaN, JSON writes null, and the band was saved as "from age 0" without a word.
+const refused = (bands: unknown) => { try { validateBands(bands); return ""; } catch (error) { return (error as Error).message; } };
+const emptyFrom = JSON.parse(JSON.stringify([{ code: "", label: "Warga emas", min: NaN, max: null }]));
+assert(emptyFrom[0].min === null && refused(emptyFrom).includes("umur paling muda mesti nombor 0 hingga 99"), "an empty youngest age is refused, not saved as 0", refused(emptyFrom));
+assert(refused([{ label: "X", min: "" }]) !== "" && refused([{ label: "X" }]) !== "" && refused([{ label: "X", min: true }]) !== "" && refused([{ label: "X", min: [5] }]) !== "" && refused([{ label: "X", min: "5 tahun" }]) !== "", "nor is anything else that is not a number");
+assert(refused([{ label: "X", min: 5, max: true }]) !== "" && refused([{ label: "X", min: 5, max: "tua" }]) !== "", "an oldest age that is not a number is refused");
+assert(JSON.stringify(validateBands([{ label: "X", min: "5", max: " 9 " }, { label: "Y", min: 0, max: "" }, { label: "Z", min: 10, max: "  " }])) === JSON.stringify([{ code: "x", label: "X", min: 5, max: 9 }, { code: "y", label: "Y", min: 0, max: null }, { code: "z", label: "Z", min: 10, max: null }]), "numbers typed as text, age 0 itself, and an empty oldest age (and above) are kept");
+
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);
