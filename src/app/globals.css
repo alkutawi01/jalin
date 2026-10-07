@@ -3388,7 +3388,10 @@ body { overflow-wrap: break-word; }
 .boot-screen.boot-out { opacity: 0; visibility: hidden; pointer-events: none; }
 body:has(.a-nav, .admin-login-page) .boot-screen { display: none; }
 /* While the loading screen is up the page behind it neither scrolls nor shows its scroll bar. */
-html:has(.boot-screen:not(.boot-out)) { overflow: hidden; }
+/* The admin never shows the loading screen, so it never locks the page (a rule below with less weight lost to this one: an admin page whose loading screen lacked "boot-out", after a re-render, could not be scrolled).
+   On a public page the lock also lets go by itself after 8.5s, in case the script that adds "boot-out" never ran. */
+html:has(.boot-screen:not(.boot-out)):not(:has(.a-nav, .admin-login-page)) { overflow: hidden; animation: boot-unlock 0s linear 8.5s forwards; }
+@keyframes boot-unlock { to { overflow: visible; } }
 html:has(.a-nav, .admin-login-page) { overflow: visible; }
 @media print { .boot-screen { display: none; } }
 

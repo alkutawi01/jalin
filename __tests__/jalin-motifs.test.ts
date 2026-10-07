@@ -38,7 +38,7 @@ assert(lilit.includes('className="lilit-gap"') && css.includes(".lilit-divider .
 
 assert(!css.includes(".site-footer::before"), "the footer has no pattern band along its top edge (Izzat found it unattractive, 7 Oct 2026)");
 
-assert(css.includes("html:has(.boot-screen:not(.boot-out)) { overflow: hidden; }") && css.includes("html:has(.a-nav, .admin-login-page) { overflow: visible; }"), "the page behind the loading screen has no scroll bar and does not scroll (not in the admin)");
+assert(css.includes("html:has(.boot-screen:not(.boot-out)):not(:has(.a-nav, .admin-login-page)) { overflow: hidden;") && css.includes("@keyframes boot-unlock") && css.includes("html:has(.a-nav, .admin-login-page) { overflow: visible; }"), "the page behind the loading screen has no scroll bar and does not scroll (never in the admin, even if boot-out is missing; a public page lets go after 8.5s if the script never ran)");
 assert(css.includes(".work-cover img { animation: jalin-fade-in .3s ease-out; }") && !/\.hero-featured-visual img \{ animation: jalin-fade-in/.test(css), "the home hero picture runs no fade of its own; cards keep theirs");
 
 console.log(`\n${passed} passed, ${failed} failed`);
