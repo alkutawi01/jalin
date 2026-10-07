@@ -20,14 +20,14 @@ function assert(cond: boolean, msg: string) {
 
 const work = read("src/components/reader/WorkView.tsx");
 const episode = read("src/components/reader/EpisodeView.tsx");
-assert((work.match(/<MobileStoryInfo data=\{mobileInfo\} \/>/g) ?? []).length === 1, "a story or chapter page renders the info sheet");
-assert((episode.match(/<MobileStoryInfo data=\{mobileInfo\} \/>/g) ?? []).length === 1, "a series episode page renders it too (it built the data and never showed it)");
+assert((work.match(/<MobileStoryInfo data=\{mobileInfo\} \/>/g) ?? []).length === 2, "a story or chapter page renders the info sheet (above the text, and at the top of the right column on a tablet)");
+assert((episode.match(/<MobileStoryInfo data=\{mobileInfo\} \/>/g) ?? []).length === 2, "a series episode page renders it too (above the text, and at the top of the right column on a tablet)");
 for (const [name, source] of [["story", work], ["episode", episode]] as const) {
   const row = source.indexOf("mobile-info-row");
   const columns = source.indexOf("site-shell reading-grid", row); // the grid's class may carry "has-margin-notes"
   assert(row > 0 && columns > row, `on the ${name} page the trigger sits above the text, not at the end`);
 }
-assert(read("src/components/reader/MobileStoryInfo.tsx").includes("Tentang karya<span aria-hidden=\"true\"> ›</span>"), "the trigger says what it opens");
+assert(read("src/components/reader/MobileStoryInfo.tsx").includes("Tentang karya<svg className=\"mobile-info-chevron\""), "the trigger says what it opens");
 
 const css = read("src/app/globals.css");
 const start = css.indexOf("  .mobile-info-handle {");

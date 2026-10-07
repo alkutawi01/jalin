@@ -188,11 +188,13 @@ export function LeftRail({ rows, note, editorial = [], children }: { rows: WorkM
 }
 
 /** The right rail: who is in the story (Watak) and where it happens (Latar tempat). Level with the first paragraph. */
-export function RightRail({ characters, places = [], times = [] }: { characters: CharacterMeta[]; places?: PlaceMeta[]; times?: PlaceMeta[] }) {
+export function RightRail({ characters, places = [], times = [], info }: { characters: CharacterMeta[]; places?: PlaceMeta[]; times?: PlaceMeta[]; info?: ReactNode }) {
   if (characters.length === 0 && places.length === 0 && times.length === 0) return null;
   return (
     <aside className="right-rail" aria-label="Watak, latar tempat dan latar masa">
       <div className="rail-card sticky">
+        {/* On a tablet the left column is gone; its "Tentang karya" button sits here, above Watak, and stays in view as the card sticks. */}
+        {info ? <div className="rail-info">{info}</div> : null}
         {characters.length > 0 && (
           <>
             <div className="rail-label">Watak</div>

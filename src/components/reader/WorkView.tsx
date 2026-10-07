@@ -372,7 +372,7 @@ export default async function WorkView({
         ) : null}
 
         {/* On a narrow screen the side columns are gone; this is where a reader opens "Tentang karya" (and the characters, places and editorial). */}
-        <div className="site-shell mobile-info-row">
+        <div className={`site-shell mobile-info-row${characters.length + places.length + times.length > 0 ? " has-rail" : ""}`}>
           <MobileStoryInfo data={mobileInfo} />
         </div>
 
@@ -388,7 +388,7 @@ export default async function WorkView({
 
           {landing ? <NovelaIntro rows={chapterRows} /> : articleNode}
 
-          <RightRail characters={characters} places={places} times={times} />
+          <RightRail characters={characters} places={places} times={times} info={<MobileStoryInfo data={mobileInfo} />} />
           {!landing && footnotes.notes.length > 0 ? <FootnoteMargin notes={footnotes.notes.map((note) => ({ number: note.number, text: note.text }))} /> : null}
         </div>
 
