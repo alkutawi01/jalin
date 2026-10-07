@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { isAuthorAlias } from "../lib/reader/author-alias";
 import { SITE_URL } from "../lib/seo";
 import { initContentRepository } from "../lib/content";
 import { getAllWorks } from "../lib/content/workLoader";
@@ -16,7 +17,8 @@ async function contributorSlugs(): Promise<string[]> {
   if (process.env.CONTENT_SOURCE === "database" && hasDb()) {
     try {
       const rows = await getDb().selectFrom("contributors").select("slug").where("is_visible", "=", true).orderBy("slug").execute();
-      if (rows.length > 0) return rows.map((row) => row.slug);
+      // An older pen-name address is not listed beside the editor's record it shows (one page for one author).
+      if (rows.length > 0) return rows.map((row) => row.slug).filter((slug) => !isAuthorAlias(slug));
     } catch {
       /* fall back to the static list */
     }
