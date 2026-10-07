@@ -25,7 +25,7 @@ assert(withHeroAlt([{ role: "hero", src: "a.png", alt: " " }], "X")[0]!.alt === 
 assert(visuals[0]!.alt === "", "the list given is not changed");
 
 const source = fs.readFileSync(path.join(__dirname, "..", "src/lib/content/database-repository.ts"), "utf8");
-assert((source.match(/withHeroAlt\(/g) ?? []).length === 3, "both ways a work reaches readers (the live record and the published version) use it");
+assert((source.match(/withHeroAlt\(/g) ?? []).length === 2,"both ways a work reaches readers (the live record and the published version) use it");
 
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);
