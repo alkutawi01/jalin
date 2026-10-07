@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { errorText } from "../../lib/admin/error-text";
 
 interface Props {
   target: string;
@@ -25,12 +26,12 @@ export default function PromptEditor({ target, label, description, initial, cust
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ target, ...body })
       });
-      const data = await response.json();
+      const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.error ?? "Gagal.");
       setNote(done);
       return true;
     } catch (err) {
-      setNote(err instanceof Error ? err.message : "Ralat.");
+      setNote(errorText(err, "Ralat."));
       return false;
     } finally {
       setBusy(false);

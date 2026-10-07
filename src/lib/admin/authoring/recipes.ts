@@ -61,8 +61,8 @@ const RECIPES: Record<RecipeKey, Recipe> = {
     key: "cerpen.data",
     kind: "cerpen",
     mode: "data",
-    label: "Cerpen — chatbot sediakan maklumat",
-    description: "Cerpen sudah siap. Chatbot hanya mengeluarkan maklumat yang Jalin perlukan.",
+    label: "Cerpen — bot sembang sediakan maklumat",
+    description: "Cerpen sudah siap. Bot sembang hanya mengeluarkan maklumat yang Jalin perlukan.",
     needsManuscript: true,
     sections: ["KARYA", "WATAK", "LATAR", "GLOSARI", "GAMBAR"]
   },
@@ -70,8 +70,8 @@ const RECIPES: Record<RecipeKey, Recipe> = {
     key: "novela.data",
     kind: "novela",
     mode: "data",
-    label: "Novela — chatbot sediakan maklumat",
-    description: "Novela sudah siap. Chatbot mengeluarkan maklumat dan senarai bab.",
+    label: "Novela — bot sembang sediakan maklumat",
+    description: "Novela sudah siap. Bot sembang mengeluarkan maklumat dan senarai bab.",
     needsManuscript: true,
     sections: ["KARYA", "BAB", "WATAK", "LATAR", "GLOSARI", "GAMBAR"]
   },
@@ -79,8 +79,8 @@ const RECIPES: Record<RecipeKey, Recipe> = {
     key: "bersiri.data",
     kind: "bersiri",
     mode: "data",
-    label: "Bersiri — chatbot sediakan maklumat episod",
-    description: "Episod sudah siap. Chatbot mengeluarkan maklumat episod (dan maklumat siri jika siri baharu).",
+    label: "Bersiri — bot sembang sediakan maklumat episod",
+    description: "Episod sudah siap. Bot sembang mengeluarkan maklumat episod (dan maklumat siri jika siri baharu).",
     needsManuscript: true,
     sections: ["KARYA", "SIRI", "WATAK", "LATAR", "GLOSARI", "GAMBAR"]
   },
@@ -89,7 +89,7 @@ const RECIPES: Record<RecipeKey, Recipe> = {
     kind: "fragmen",
     mode: "data",
     label: "Fragmen — saya sudah ada teks",
-    description: "Fragmen sudah ada. Chatbot hanya mengeluarkan maklumat dan sumber asal.",
+    description: "Fragmen sudah ada. Bot sembang hanya mengeluarkan maklumat dan sumber asal.",
     needsManuscript: true,
     sections: ["KARYA", "SUMBER", "LATAR", "GLOSARI", "GAMBAR"]
   },
@@ -97,8 +97,8 @@ const RECIPES: Record<RecipeKey, Recipe> = {
     key: "fragmen.tulis",
     kind: "fragmen",
     mode: "tulis",
-    label: "Fragmen — chatbot menulis sepenuhnya",
-    description: "Anda beri karya sumber; chatbot menghasilkan fragmen dan semua maklumat.",
+    label: "Fragmen — bot sembang menulis sepenuhnya",
+    description: "Anda beri karya sumber; bot sembang menghasilkan fragmen dan semua maklumat.",
     needsManuscript: false,
     sections: ["KARYA", "SUMBER", "KANDUNGAN", "LATAR", "GLOSARI", "GAMBAR"]
   },
@@ -107,7 +107,7 @@ const RECIPES: Record<RecipeKey, Recipe> = {
     kind: "sinopsis",
     mode: "data",
     label: "Sinopsis — saya sudah ada teks",
-    description: "Sinopsis sudah ada. Chatbot hanya mengeluarkan maklumat dan sumber asal.",
+    description: "Sinopsis sudah ada. Bot sembang hanya mengeluarkan maklumat dan sumber asal.",
     needsManuscript: true,
     sections: ["KARYA", "SUMBER", "LATAR", "GLOSARI", "GAMBAR"]
   },
@@ -115,8 +115,8 @@ const RECIPES: Record<RecipeKey, Recipe> = {
     key: "sinopsis.tulis",
     kind: "sinopsis",
     mode: "tulis",
-    label: "Sinopsis — chatbot menulis sepenuhnya",
-    description: "Anda beri karya sumber; chatbot menghasilkan sinopsis dan semua maklumat.",
+    label: "Sinopsis — bot sembang menulis sepenuhnya",
+    description: "Anda beri karya sumber; bot sembang menghasilkan sinopsis dan semua maklumat.",
     needsManuscript: false,
     sections: ["KARYA", "SUMBER", "KANDUNGAN", "LATAR", "GLOSARI", "GAMBAR"]
   }

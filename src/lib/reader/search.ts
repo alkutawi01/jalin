@@ -313,7 +313,9 @@ export function filterDocs(docs: SearchDoc[], params: SearchParams): SearchDoc[]
     if (jenis && doc.type !== jenis) return false;
     if (genre && fold(displayableGenre(doc.genre) ?? "").trim() !== genre) return false;
     if (penulis && !doc.authors.some((a) => fold(a).trim() === penulis)) return false;
-    if (band && READING_BANDS[band]) {
+    // The word comes from the address: "toString" or "constructor" is a property of every object, not one of the bands, and calling
+    // its .test was a server error (500) from /cari?bacaan=toString.
+    if (band && Object.prototype.hasOwnProperty.call(READING_BANDS, band)) {
       if (doc.readingMinutes === undefined || !READING_BANDS[band].test(doc.readingMinutes)) return false;
     }
     return true;

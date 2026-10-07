@@ -3,18 +3,18 @@ import { DEFAULT_SHARE_IMAGE } from "../../lib/seo";
 import { InfoPage } from "../../components/reader/InfoPage";
 
 export const metadata: Metadata = {
-  title: "Dasar Privasi",
+  title: "Dasar privasi",
   description: "Apa yang Jalin kumpul dan tidak kumpul tentang pembaca.",
   alternates: { canonical: "/privasi" },
-  openGraph: { type: "website", siteName: "Jalin — oleh Adjung", title: "Dasar Privasi", description: "Apa yang Jalin kumpul dan tidak kumpul tentang pembaca.", url: "/privasi", locale: "ms_MY", images: [DEFAULT_SHARE_IMAGE] },
-  twitter: { card: "summary_large_image", title: "Dasar Privasi", description: "Apa yang Jalin kumpul dan tidak kumpul tentang pembaca.", images: [DEFAULT_SHARE_IMAGE.url] }
+  openGraph: { type: "website", siteName: "Jalin — oleh Adjung", title: "Dasar privasi", description: "Apa yang Jalin kumpul dan tidak kumpul tentang pembaca.", url: "/privasi", locale: "ms_MY", images: [DEFAULT_SHARE_IMAGE] },
+  twitter: { card: "summary_large_image", title: "Dasar privasi", description: "Apa yang Jalin kumpul dan tidak kumpul tentang pembaca.", images: [DEFAULT_SHARE_IMAGE.url] }
 };
 
 export default function PrivacyPage() {
   return (
     <InfoPage
       kicker="Dasar"
-      title="Dasar Privasi"
+      title="Dasar privasi"
       intro="Jalin dibina supaya anda boleh membaca tanpa diperhatikan. Inilah yang berlaku, dan tidak berlaku, apabila anda menggunakan laman ini."
       updated="4 Oktober 2026"
     >

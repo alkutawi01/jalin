@@ -6,6 +6,8 @@ import CopyButton from "../../../../components/admin/CopyButton";
 import { composeVisualPrompt } from "../../../../lib/admin/visual-generation/prompt-composer";
 import { confirmAction } from "../../../../lib/admin/dialogs";
 import LoadingBlock from "../../../../components/admin/LoadingBlock";
+import { MAX_UPLOAD_LABEL, uploadTooLargeMessage } from "../../../../lib/admin/upload-limit";
+import { errorText } from "../../../../lib/admin/error-text";
 
 const VISUAL_ROLES = [
   { value: "hero", label: "Utama" },
@@ -232,7 +234,7 @@ export default function EditVisualRequestPage() {
           model: r.model || "",
         });
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Permintaan gambar tidak dapat dimuatkan.");
+        setError(errorText(err, "Permintaan gambar tidak dapat dimuatkan."));
       } finally {
         setLoading(false);
       }
@@ -259,7 +261,7 @@ export default function EditVisualRequestPage() {
       });
 
       if (!res.ok) {
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
         throw new Error(data.error || "Gagal menyimpan.");
       }
 
@@ -272,7 +274,7 @@ export default function EditVisualRequestPage() {
       setSuccess("Berjaya disimpan.");
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
     } finally {
       setSaving(false);
     }
@@ -292,7 +294,7 @@ export default function EditVisualRequestPage() {
           editorialOverride: genOverride || undefined,
         }),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Gambar tidak dapat dijana.");
       if (data.pendingTask) {
         setSuccess(
@@ -320,7 +322,7 @@ export default function EditVisualRequestPage() {
         }));
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
     } finally {
       setGenerating(false);
     }
@@ -336,7 +338,7 @@ export default function EditVisualRequestPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ provider: record?.provider || "magnific" }),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Status tidak dapat disemak.");
       if (data.pendingTask || data.status === "generating" || data.status === "queued") {
         setSuccess("Tugas masih berjalan. Semak status semula sebentar lagi.");
@@ -359,7 +361,7 @@ export default function EditVisualRequestPage() {
         }));
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
     } finally {
       setPolling(false);
     }
@@ -371,7 +373,7 @@ export default function EditVisualRequestPage() {
     setSuccess(null);
     try {
       const res = await fetch(`/api/admin/visual-requests/${requestId}/approve`, { method: "POST" });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Gagal meluluskan.");
       setSuccess("Visual diluluskan.");
       const refreshed = await fetch(`/api/admin/visual-requests/${requestId}`);
@@ -381,7 +383,7 @@ export default function EditVisualRequestPage() {
         setForm((prev) => ({ ...prev, status: r.status, approvalState: r.approval_state }));
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
     } finally {
       setApproving(false);
     }
@@ -392,11 +394,13 @@ export default function EditVisualRequestPage() {
     setError(null);
     setSuccess(null);
     try {
+      const tooLarge = uploadTooLargeMessage(file.size);
+      if (tooLarge) throw new Error(tooLarge);
       const body = new FormData();
       body.append("file", file);
       if (uploadTool.trim()) body.append("tool", uploadTool.trim());
       const res = await fetch(`/api/admin/visual-requests/${requestId}/upload`, { method: "POST", body });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Gagal memuat naik imej.");
       setSuccess("Imej dimuat naik dan menunggu semakan. Semak imej, kemudian tekan Lulus.");
       const refreshed = await fetch(`/api/admin/visual-requests/${requestId}`);
@@ -413,7 +417,7 @@ export default function EditVisualRequestPage() {
         }));
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
     } finally {
       setUploading(false);
     }
@@ -426,7 +430,7 @@ export default function EditVisualRequestPage() {
     setSuccess(null);
     try {
       const res = await fetch(`/api/admin/visual-requests/${requestId}/reject`, { method: "POST" });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Gagal menolak.");
       setSuccess("Visual ditolak.");
       const refreshed = await fetch(`/api/admin/visual-requests/${requestId}`);
@@ -436,7 +440,7 @@ export default function EditVisualRequestPage() {
         setForm((prev) => ({ ...prev, status: r.status, approvalState: r.approval_state }));
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
     } finally {
       setApproving(false);
     }
@@ -449,7 +453,7 @@ export default function EditVisualRequestPage() {
     setSuccess(null);
     try {
       const res = await fetch(`/api/admin/visual-requests/${requestId}/attach`, { method: "POST" });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Gagal memautkan.");
       setSuccess(`Visual dipautkan (visual ID: ${data.visualId}).`);
       const refreshed = await fetch(`/api/admin/visual-requests/${requestId}`);
@@ -459,7 +463,7 @@ export default function EditVisualRequestPage() {
         setForm((prev) => ({ ...prev, status: r.status }));
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
     } finally {
       setAttaching(false);
     }
@@ -472,12 +476,12 @@ export default function EditVisualRequestPage() {
     try {
       const res = await fetch(`/api/admin/visual-requests/${requestId}`, { method: "DELETE" });
       if (!res.ok) {
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
         throw new Error(data.error || "Gagal memadam.");
       }
       window.location.href = "/admin/visual-requests";
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
       setDeleting(false);
     }
   }
@@ -491,13 +495,13 @@ export default function EditVisualRequestPage() {
       <header className="admin-page-header">
         <div className="admin-page-header-row">
           <div>
-            <h1>Edit Permintaan Visual</h1>
+            <h1>Sunting permintaan gambar</h1>
             <p className="admin-page-sub">ID: {requestId}</p>
           </div>
           <div className="admin-page-header-actions">
             <a href="/admin/visual-requests" className="admin-btn admin-btn-outline">Kembali</a>
             <button type="button" onClick={handleDelete} className="admin-btn admin-btn-danger" disabled={deleting}>
-              {deleting ? "Memadam..." : "Padam"}
+              {deleting ? "Memadam…" : "Padam"}
             </button>
           </div>
         </div>
@@ -696,7 +700,7 @@ export default function EditVisualRequestPage() {
               </h3>
               <p style={{ margin: "0 0 8px", fontSize: 13, opacity: 0.8 }}>
                 Untuk imej yang dibuat di luar Magnific. Direkod sebagai muat naik manual. Selepas dimuat naik anda masih perlu
-                menekan Luluskan, kemudian Pautkan ke karya. PNG/JPEG/WebP, maksimum 10 MB (disyorkan bawah 4 MB).
+                menekan Luluskan, kemudian Pautkan ke karya. PNG/JPEG/WebP, maksimum {MAX_UPLOAD_LABEL}.
               </p>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
                 <input
@@ -716,7 +720,7 @@ export default function EditVisualRequestPage() {
                     e.target.value = "";
                   }}
                 />
-                {uploading ? <span>Memuat naik...</span> : null}
+                {uploading ? <span>Memuat naik…</span> : null}
               </div>
             </div>
           )}
@@ -932,7 +936,7 @@ export default function EditVisualRequestPage() {
         <div className="admin-form-actions">
           <a href="/admin/visual-requests" className="admin-btn admin-btn-outline">Kembali</a>
           <button type="submit" className="admin-btn admin-btn-primary" disabled={saving}>
-            {saving ? "Menyimpan..." : "Simpan Perubahan"}
+            {saving ? "Menyimpan…" : "Simpan"}
           </button>
         </div>
       </form>

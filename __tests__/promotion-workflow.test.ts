@@ -199,7 +199,7 @@ assertNotIncludes(routeCode, "auto-publish", "Route does not auto-publish");
 console.log("\n=== Admin UI ===");
 
 const uiCode = fs.readFileSync("src/app/admin/submissions/[id]/page.tsx", "utf-8");
-assertIncludes(uiCode, "Naikkan ke Karya", "UI has promotion section");
+assertIncludes(uiCode, "Naikkan ke karya", "UI has promotion section");
 assertIncludes(uiCode, "handlePromote", "UI has promote handler");
 assertIncludes(uiCode, "creditConfigs", "UI has credit configuration");
 assertIncludes(uiCode, "resultWorkId", "UI shows resulting Work ID");

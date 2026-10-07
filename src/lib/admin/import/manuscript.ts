@@ -101,7 +101,7 @@ export function splitIntoSections(manuscript: string, sections: ParsedSection[])
     if (!found) {
       errors.push({
         code: "heading_not_found",
-        message: `Tajuk bab "${section.headingText ?? section.title}" (${section.slug}) tidak ditemui dalam manuskrip mengikut turutan. Semak bahawa manuskrip yang ditampal sama dengan yang diberi kepada chatbot.`,
+        message: `Tajuk bab "${section.headingText ?? section.title}" (${section.slug}) tidak ditemui dalam manuskrip mengikut turutan. Semak bahawa manuskrip yang ditampal sama dengan yang diberi kepada bot sembang.`,
         path: `sections.${section.slug}`
       });
       continue;

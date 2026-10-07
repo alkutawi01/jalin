@@ -235,7 +235,7 @@ export function readParserAnswer(answer: string, hints: { title?: string; slug?:
     errors.push(
       parseIssue(
         "json_not_found",
-        "Jawapan chatbot tidak dikenali. Salin KESELURUHAN jawapan chatbot (bermula dengan [KARYA]) dan tekan Tampal semula."
+        "Jawapan bot sembang tidak dikenali. Salin KESELURUHAN jawapan bot sembang (bermula dengan [KARYA]) dan tekan Tampal semula."
       )
     );
     return { data: null, errors, warnings, report: "" };
@@ -252,7 +252,7 @@ export function readParserAnswer(answer: string, hints: { title?: string; slug?:
       errors.push(
         parseIssue(
           "json_invalid",
-          `JSON tidak sah: ${error instanceof Error ? error.message : "tidak dapat dibaca"}. Minta chatbot menjana semula blok JSON.`
+          `JSON tidak sah: ${error instanceof Error ? error.message : "tidak dapat dibaca"}. Minta bot sembang menjana semula blok JSON.`
         )
       );
       return { data: null, errors, warnings, report: extracted.report };
@@ -309,7 +309,7 @@ function normaliseParserOutput(
   if (!slug) errors.push(parseIssue("slug_missing", "Slug tidak dapat ditentukan.", "slug"));
 
   const dek = text(raw.dek);
-  if (!dek) warnings.push(parseIssue("dek_missing", "Dek (ringkasan) tiada.", "dek"));
+  if (!dek) warnings.push(parseIssue("dek_missing", "Ringkasan tiada.", "dek"));
   const genre = text(raw.genre);
   if (!genre) warnings.push(parseIssue("genre_missing", "Genre tidak dinyatakan.", "genre"));
 

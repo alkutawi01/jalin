@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { confirmAction } from "../../../../lib/admin/dialogs";
 import LoadingBlock from "../../../../components/admin/LoadingBlock";
+import { errorText } from "../../../../lib/admin/error-text";
 
 const WORK_TYPES = [
   { value: "cerpen", label: "Cerpen" },
@@ -154,7 +155,7 @@ export default function EditSubmissionPage() {
           resultWorkId: sub.result_work_id || "",
         });
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Ralat memuatkan penghantaran.");
+        setError(errorText(err, "Ralat memuatkan penghantaran."));
       } finally {
         setLoading(false);
       }
@@ -222,7 +223,7 @@ export default function EditSubmissionPage() {
         }),
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
         throw new Error(data.error || "Gagal menjana.");
@@ -243,7 +244,7 @@ export default function EditSubmissionPage() {
       loadGenerationHistory();
       loadContributions();
     } catch (err) {
-      setGenError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setGenError(errorText(err));
     } finally {
       setGenerating(false);
     }
@@ -275,7 +276,7 @@ export default function EditSubmissionPage() {
         }),
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
         throw new Error(data.error || "Gagal mempromosikan.");
@@ -288,7 +289,7 @@ export default function EditSubmissionPage() {
         setPromoteSuccess((prev) => `${prev}\nAmaran: ${data.warnings.join(", ")}`);
       }
     } catch (err) {
-      setPromoteError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setPromoteError(errorText(err));
     } finally {
       setPromoting(false);
     }
@@ -308,14 +309,14 @@ export default function EditSubmissionPage() {
       });
 
       if (!res.ok) {
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
         throw new Error(data.error || "Gagal menyimpan.");
       }
 
       setSuccess("Berjaya disimpan.");
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
     } finally {
       setSaving(false);
     }
@@ -333,7 +334,7 @@ export default function EditSubmissionPage() {
           body: JSON.stringify(editingContribution),
         });
         if (!res.ok) {
-          const data = await res.json();
+          const data = await res.json().catch(() => ({}));
           throw new Error(data.error || "Gagal menyimpan sumbangan.");
         }
       } else {
@@ -347,7 +348,7 @@ export default function EditSubmissionPage() {
           }),
         });
         if (!res.ok) {
-          const data = await res.json();
+          const data = await res.json().catch(() => ({}));
           throw new Error(data.error || "Gagal mencipta sumbangan.");
         }
       }
@@ -355,7 +356,7 @@ export default function EditSubmissionPage() {
       setEditingContribution(null);
       loadContributions();
     } catch (err) {
-      setContribError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setContribError(errorText(err));
     }
   }
 
@@ -365,12 +366,12 @@ export default function EditSubmissionPage() {
     try {
       const res = await fetch(`/api/admin/contributions/${id}`, { method: "DELETE" });
       if (!res.ok) {
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
         throw new Error(data.error || "Gagal memadam sumbangan.");
       }
       loadContributions();
     } catch (err) {
-      setContribError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setContribError(errorText(err));
     }
   }
 
@@ -387,7 +388,7 @@ export default function EditSubmissionPage() {
       <header className="admin-page-header">
         <div className="admin-page-header-row">
           <div>
-            <h1>Edit Penghantaran</h1>
+            <h1>Sunting penghantaran</h1>
             <p className="admin-page-sub">ID: {submissionId}</p>
           </div>
           <a href="/admin/submissions" className="admin-btn admin-btn-outline">
@@ -509,7 +510,7 @@ export default function EditSubmissionPage() {
             Kembali
           </a>
           <button type="submit" className="admin-btn admin-btn-primary" disabled={saving}>
-            {saving ? "Menyimpan..." : "Simpan Perubahan"}
+            {saving ? "Menyimpan…" : "Simpan"}
           </button>
         </div>
       </form>
@@ -682,7 +683,7 @@ export default function EditSubmissionPage() {
                 Batal
               </button>
               <button type="button" className="admin-btn admin-btn-primary" onClick={handleSaveContribution}>
-                Simpan Sumbangan
+                Simpan sumbangan
               </button>
             </div>
           </div>
@@ -814,7 +815,7 @@ export default function EditSubmissionPage() {
             onChange={(e) => setGenForm((prev) => ({ ...prev, submissionBrief: e.target.value }))}
             rows={4}
             className="admin-textarea"
-            placeholder="Nyatakan konsep, tema, atau arahan untuk penjanaan draf..."
+            placeholder="Nyatakan konsep, tema, atau arahan untuk penjanaan draf…"
           />
         </div>
 
@@ -825,7 +826,7 @@ export default function EditSubmissionPage() {
             onClick={handleGenerate}
             disabled={generating}
           >
-            {generating ? "Menjana..." : "Jana Draf"}
+            {generating ? "Menjana…" : "Jana draf"}
           </button>
         </div>
 
@@ -872,7 +873,7 @@ export default function EditSubmissionPage() {
 
       <section className="admin-section" style={{ marginTop: "2rem" }}>
         <div className="admin-credits-header">
-          <h3>Naikkan ke Karya</h3>
+          <h3>Naikkan ke karya</h3>
         </div>
 
         {form.resultWorkId ? (
@@ -1003,7 +1004,7 @@ export default function EditSubmissionPage() {
                 disabled={promoting || contributions.length === 0}
                 style={{ background: "#7c3aed", borderColor: "#7c3aed" }}
               >
-                {promoting ? "Memproses…" : "Naikkan ke Karya"}
+                {promoting ? "Memproses…" : "Naikkan ke karya"}
               </button>
             </div>
           </div>

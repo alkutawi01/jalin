@@ -172,7 +172,7 @@ export function LeftRail({ rows, note, editorial = [], children }: { rows: WorkM
         {editorial.length > 0 && (
           <>
             <div className="rail-rule" />
-            <div className="rail-label">Editorial</div>
+            <div className="rail-label">Penyuntingan</div>
             {editorial.map((credit) => (
               <div className="editorial-meta" key={credit.role + "-" + credit.names.join("|")}>
                 <span>{credit.role}</span>
@@ -188,11 +188,13 @@ export function LeftRail({ rows, note, editorial = [], children }: { rows: WorkM
 }
 
 /** The right rail: who is in the story (Watak) and where it happens (Latar tempat). Level with the first paragraph. */
-export function RightRail({ characters, places = [], times = [] }: { characters: CharacterMeta[]; places?: PlaceMeta[]; times?: PlaceMeta[] }) {
+export function RightRail({ characters, places = [], times = [], info }: { characters: CharacterMeta[]; places?: PlaceMeta[]; times?: PlaceMeta[]; info?: ReactNode }) {
   if (characters.length === 0 && places.length === 0 && times.length === 0) return null;
   return (
     <aside className="right-rail" aria-label="Watak, latar tempat dan latar masa">
       <div className="rail-card sticky">
+        {/* On a tablet the left column is gone; its "Tentang karya" button sits here, above Watak, and stays in view as the card sticks. */}
+        {info ? <div className="rail-info">{info}</div> : null}
         {characters.length > 0 && (
           <>
             <div className="rail-label">Watak</div>
@@ -236,7 +238,7 @@ export function EditorNote({ note }: { note?: string }) {
   if (paragraphs.length === 0) return null;
   return (
     <aside className="site-shell editor-note" aria-labelledby="editor-note-title">
-      <h2 id="editor-note-title">Catatan Editor</h2>
+      <h2 id="editor-note-title">Catatan penyunting</h2>
       {paragraphs.map((paragraph, index) => (
         <p key={index}>{renderItalics(paragraph)}</p>
       ))}
@@ -256,8 +258,8 @@ export function StoryEnd({ title, label = "Tamat" }: { title: string; label?: st
 const FOOTER_EXPLORE = NAV_LINKS.filter((link) => link.match && link.match !== "home");
 const FOOTER_ABOUT = [
   { label: "Tentang Jalin", href: "/tentang" },
-  { label: "Dasar Privasi", href: "/privasi" },
-  { label: "Terma Penggunaan", href: "/terma" }
+  { label: "Dasar privasi", href: "/privasi" },
+  { label: "Terma penggunaan", href: "/terma" }
 ];
 
 export function SiteFooter() {

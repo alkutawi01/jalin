@@ -1,6 +1,6 @@
 /**
  * The two side columns of a story page (Izzat):
- *  - "Tentang karya" and "Editorial" on the left; "Watak" (and "Latar tempat") alone on the right;
+ *  - "Tentang karya" and "Penyuntingan" on the left; "Watak" (and "Latar tempat") alone on the right;
  *  - both start level with the first paragraph, not with the page header (on a chapter page the chapter head and its picture
  *    used to sit inside the middle column, so the side columns began at the breadcrumb);
  *  - one "Senarai Bab" on a chapter page, not two.
@@ -19,7 +19,7 @@ const read = (p: string) => fs.readFileSync(path.join(__dirname, "..", p), "utf8
 const chrome = read("src/components/reader/StoryChrome.tsx");
 const left = chrome.slice(chrome.indexOf("export function LeftRail"), chrome.indexOf("export function RightRail"));
 const right = chrome.slice(chrome.indexOf("export function RightRail"), chrome.indexOf("export function EditorNote"));
-assert(left.includes("Tentang karya") && left.includes(">Editorial<"), "the left column holds Tentang karya and Editorial");
+assert(left.includes("Tentang karya") && left.includes(">Penyuntingan<"), "the left column holds Tentang karya and Penyuntingan");
 assert(right.includes(">Watak<") && right.includes("Latar tempat") && !right.includes("Editorial"), "the right column holds Watak and Latar tempat, not Editorial");
 
 const story = read("src/components/reader/WorkView.tsx");

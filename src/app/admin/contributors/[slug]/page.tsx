@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
+import { errorText } from "../../../../lib/admin/error-text";
 
 const CONTRIBUTOR_TYPES = [
   { value: "human", label: "Manusia" },
@@ -54,7 +55,7 @@ export default function EditContributorPage() {
           isVisible: contributor.is_visible,
         });
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Ralat memuatkan penyumbang.");
+        setError(errorText(err, "Ralat memuatkan penyumbang."));
       } finally {
         setLoading(false);
       }
@@ -77,7 +78,7 @@ export default function EditContributorPage() {
       });
 
       if (!res.ok) {
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
         throw new Error(data.error || "Gagal menyimpan.");
       }
 
@@ -88,7 +89,7 @@ export default function EditContributorPage() {
       setSuccess("Berjaya disimpan.");
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
     } finally {
       setSaving(false);
     }
@@ -97,7 +98,7 @@ export default function EditContributorPage() {
   if (loading) {
     return (
       <div className="admin-loading">
-        <p>Memuatkan penyumbang...</p>
+        <p>Memuatkan penyumbang…</p>
       </div>
     );
   }
@@ -114,7 +115,7 @@ export default function EditContributorPage() {
   return (
     <div className="admin-form-page">
       <header className="admin-page-header">
-        <h1>Edit Penyumbang</h1>
+        <h1>Sunting penyumbang</h1>
         <p className="admin-page-sub">Alamat pautan: {contributorSlug}</p>
       </header>
 
@@ -207,7 +208,7 @@ export default function EditContributorPage() {
             className="admin-btn admin-btn-primary"
             disabled={saving}
           >
-            {saving ? "Menyimpan..." : "Simpan Perubahan"}
+            {saving ? "Menyimpan…" : "Simpan"}
           </button>
         </div>
       </form>

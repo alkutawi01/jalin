@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { confirmAction } from "../../../../lib/admin/dialogs";
 import LoadingBlock from "../../../../components/admin/LoadingBlock";
+import { errorText } from "../../../../lib/admin/error-text";
 
 const WORK_TYPES = [
   { value: "cerpen", label: "Cerpen" },
@@ -74,7 +75,7 @@ export default function EditPromptPage() {
           status: t.status,
         });
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Ralat memuatkan templat.");
+        setError(errorText(err, "Ralat memuatkan templat."));
       } finally {
         setLoading(false);
       }
@@ -97,14 +98,14 @@ export default function EditPromptPage() {
       });
 
       if (!res.ok) {
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
         throw new Error(data.error || "Gagal menyimpan.");
       }
 
       setSuccess("Berjaya disimpan.");
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
     } finally {
       setSaving(false);
     }
@@ -117,12 +118,12 @@ export default function EditPromptPage() {
     try {
       const res = await fetch(`/api/admin/prompts/${promptId}`, { method: "DELETE" });
       if (!res.ok) {
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
         throw new Error(data.error || "Gagal memadam.");
       }
       window.location.href = "/admin/prompts";
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
       setDeleting(false);
     }
   }
@@ -136,13 +137,13 @@ export default function EditPromptPage() {
       <header className="admin-page-header">
         <div className="admin-page-header-row">
           <div>
-            <h1>Edit Templat Arahan</h1>
+            <h1>Sunting templat arahan</h1>
             <p className="admin-page-sub">ID: {promptId}</p>
           </div>
           <div className="admin-page-header-actions">
             <a href="/admin/prompts" className="admin-btn admin-btn-outline">Kembali</a>
             <button type="button" onClick={handleDelete} className="admin-btn admin-btn-danger" disabled={deleting}>
-              {deleting ? "Memadam..." : "Padam"}
+              {deleting ? "Memadam…" : "Padam"}
             </button>
           </div>
         </div>
@@ -241,7 +242,7 @@ export default function EditPromptPage() {
         <div className="admin-form-actions">
           <a href="/admin/prompts" className="admin-btn admin-btn-outline">Kembali</a>
           <button type="submit" className="admin-btn admin-btn-primary" disabled={saving}>
-            {saving ? "Menyimpan..." : "Simpan Perubahan"}
+            {saving ? "Menyimpan…" : "Simpan"}
           </button>
         </div>
       </form>

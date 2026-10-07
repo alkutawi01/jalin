@@ -10,6 +10,7 @@ import type { SeriesMeta } from "../lib/content/types";
 import type { ImageCrop } from "../lib/content/types";
 import { cropStyle } from "../lib/reader/crop";
 import { displayableGenre } from "../lib/reader/genre-display";
+import { formatMalayDate } from "../lib/reader/format-date";
 import { getAllWorks } from "../lib/content/workLoader";
 import { getEditorPickSummaries, resolveHeroPicks } from "../lib/reader/editor-picks";
 import { projectPublicWorkSummary, type PublicWorkSummary } from "../lib/reader/public-projection";
@@ -24,15 +25,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = { alternates: { canonical: "/" } };
 
 function formatDate(date: string | undefined): string {
-  if (!date) return "—";
-  const day = /^\d{4}-\d{2}-\d{2}/.test(date) ? date.slice(0, 10) : date;
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) return "—";
-  const [year, month, dayNum] = day.split("-").map(Number);
-  const months = [
-    "Januari", "Februari", "Mac", "April", "Mei", "Jun",
-    "Julai", "Ogos", "September", "Oktober", "November", "Disember"
-  ];
-  return `${dayNum} ${months[(month ?? 1) - 1]} ${year}`;
+  return formatMalayDate(date) ?? "—";
 }
 
 const TYPE_LABELS: Record<string, string> = {
@@ -123,11 +116,14 @@ function CategoryCard({
   label,
   imageSrc,
   imageAlt,
+  imageCrop,
 }: {
   type: string;
   label: string;
   imageSrc?: string | null;
   imageAlt?: string | null;
+  /** The part of the picture its editor chose (the card showed the centre whatever was chosen). */
+  imageCrop?: ImageCrop;
 }) {
   const hasImage = !!imageSrc;
   return (
@@ -142,6 +138,7 @@ function CategoryCard({
           fill
           sizes="(max-width: 1050px) 45vw, 22vw"
           className="category-explorer-card-img"
+          style={cropStyle(imageCrop)}
         />
       ) : null}
       <div className="category-explorer-card-scrim" />
@@ -291,7 +288,7 @@ export default async function Home() {
   const alreadyShown = new Set<string>(editorialPicks.map((pick) => pick.slug));
   const latest = sorted.filter((work) => !alreadyShown.has(work.slug)).slice(0, 6);
 
-  const categoryImages = new Map<string, { src: string; alt: string; year: string }>();
+  const categoryImages = new Map<string, { src: string; alt: string; year: string; crop?: ImageCrop }>();
   for (const cat of CATEGORIES) {
     const withHero = sortedAll.find((work) => {
       const summary = projectPublicWorkSummary(work);
@@ -341,7 +338,7 @@ export default async function Home() {
         {latest.length > 0 ? <section className="latest-works" data-ground={grounds.latest}>
           <div className="site-shell">
             <header className="section-head">
-              <h2>Karya Terbaru</h2>
+              <h2>Karya terbaru</h2>
             </header>
             <div className="latest-grid">
               {latest.map((work) => (
@@ -357,7 +354,7 @@ export default async function Home() {
         <section className="category-explorer" data-ground={grounds.categories}>
           <div className="site-shell">
             <header className="section-head">
-              <h2>Jelajahi Kategori</h2>
+              <h2>Terokai kategori</h2>
             </header>
             <div className="category-explorer-grid">
               {CATEGORIES.map((cat) => {
@@ -368,6 +365,7 @@ export default async function Home() {
                     type={cat.type}
                     label={cat.label}
                     imageSrc={img?.src}
+                    imageCrop={img?.crop}
                     imageAlt={img?.alt}
                   />
                 );

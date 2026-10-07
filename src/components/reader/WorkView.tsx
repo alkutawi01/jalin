@@ -94,7 +94,7 @@ function buildMetaRows(work: Work | undefined): WorkMetaRow[] {
     : fragmenKind === "terjemahan" ? "Fragmen terjemahan"
       : TYPE_LABELS[work.type] ?? work.type;
   return [
-    { label: "Bentuk", value: formLabel },
+    { label: "Jenis", value: formLabel },
     ...(genre ? [{ label: "Genre", value: genre }] : []),
     { label: "Bacaan", value: work.readingMinutes ? `± ${work.readingMinutes} minit` : "—" },
     ...sourceRows(work.sourceWork),
@@ -114,7 +114,7 @@ function SectionIndexDetails({ items }: { items: { label: string; href: string }
   return (
     <details className="chapter-index">
       <summary style={{ cursor: "pointer", fontSize: "0.78rem", letterSpacing: "0.06em", textTransform: "uppercase", opacity: 1, color: "#4b5f64" }}>
-        Senarai Bab ({items.length})
+        Senarai bab ({items.length})
       </summary>
       <ol style={{ margin: "0.5rem 0 0", paddingLeft: "1.1rem", fontSize: "0.85rem", lineHeight: 1.55 }}>
         {items.map((item) => (
@@ -372,7 +372,7 @@ export default async function WorkView({
         ) : null}
 
         {/* On a narrow screen the side columns are gone; this is where a reader opens "Tentang karya" (and the characters, places and editorial). */}
-        <div className="site-shell mobile-info-row">
+        <div className={`site-shell mobile-info-row${characters.length + places.length + times.length > 0 ? " has-rail" : ""}`}>
           <MobileStoryInfo data={mobileInfo} />
         </div>
 
@@ -388,7 +388,7 @@ export default async function WorkView({
 
           {landing ? <NovelaIntro rows={chapterRows} /> : articleNode}
 
-          <RightRail characters={characters} places={places} times={times} />
+          <RightRail characters={characters} places={places} times={times} info={<MobileStoryInfo data={mobileInfo} />} />
           {!landing && footnotes.notes.length > 0 ? <FootnoteMargin notes={footnotes.notes.map((note) => ({ number: note.number, text: note.text }))} /> : null}
         </div>
 

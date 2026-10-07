@@ -72,7 +72,7 @@ export default function EpisodeView({
   const genre = displayableGenre(work.genre) ?? displayableGenre(series.genre);
 
   const workMeta: WorkMetaRow[] = [
-    { label: "Bentuk", value: typeLabel },
+    { label: "Jenis", value: typeLabel },
     { label: "Judul", value: series.title },
     { label: "Episod", value: episodeIndex >= 0 ? String(episodeIndex + 1) : "—" },
     ...(genre ? [{ label: "Genre", value: genre }] : []),
@@ -128,7 +128,7 @@ export default function EpisodeView({
 
 
         {/* On a narrow screen the side columns are gone; this is where a reader opens "Tentang karya" (and the characters, places and editorial). */}
-        <div className="site-shell mobile-info-row">
+        <div className={`site-shell mobile-info-row${characters.length + places.length + times.length > 0 ? " has-rail" : ""}`}>
           <MobileStoryInfo data={mobileInfo} />
         </div>
 
@@ -155,6 +155,7 @@ export default function EpisodeView({
                     src={node.src}
                     alt={node.alt}
                     rights={rights}
+                    crop={node.crop}
                   />
                 );
               }
@@ -163,7 +164,7 @@ export default function EpisodeView({
             <FootnoteList notes={footnotes.notes} />
           </article>
 
-          <RightRail characters={characters} places={places} times={times} />
+          <RightRail characters={characters} places={places} times={times} info={<MobileStoryInfo data={mobileInfo} />} />
           {footnotes.notes.length > 0 ? <FootnoteMargin notes={footnotes.notes.map((note) => ({ number: note.number, text: note.text }))} /> : null}
         </div>
 

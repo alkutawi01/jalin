@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "../../lib/admin/dialogs";
+import { errorText } from "../../lib/admin/error-text";
 
 export interface AdminWorkRow {
   id: string; title: string; slug: string; type: string; status: string;
@@ -83,7 +84,7 @@ export default function AdminWorksTable({ works, initialPicks }: { works: AdminW
       setNotice("");
       toast("Pilihan Editor disimpan. Laman utama dikemas kini.", "success");
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Pilihan Editor gagal disimpan.");
+      setError(errorText(caught, "Pilihan Editor gagal disimpan."));
     } finally {
       setSaving(false);
     }
@@ -95,7 +96,7 @@ export default function AdminWorksTable({ works, initialPicks }: { works: AdminW
     <>
       {error ? <div className="admin-alert admin-alert-error" role="alert">{error}</div> : null}
       <p className="admin-form-hint admin-pick-summary">
-        Hero laman utama: {saved.length}/{LIMIT} pilihan disimpan. Karusel bertukar secara automatik apabila sekurang-kurangnya dua karya disimpan.
+        Gambar utama laman utama: {saved.length}/{LIMIT} pilihan disimpan. Karusel bertukar secara automatik apabila sekurang-kurangnya dua karya disimpan.
       </p>
       <div className="admin-table-wrap">
         <table className="admin-table admin-works-table">

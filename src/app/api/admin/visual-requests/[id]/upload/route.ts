@@ -6,7 +6,7 @@ import { parseDbId } from "../../../../../../lib/admin/ids";
 
 /**
  * POST /api/admin/visual-requests/[id]/upload  (multipart/form-data)
- *   file: image (PNG/JPEG/WebP, <= 10 MB)
+ *   file: image (PNG/JPEG/WebP, <= 4 MB)
  *   tool: optional name of the tool that made the image (recorded as provenance)
  *
  * Stores an editor-supplied image and moves the request to `under_review`.

@@ -67,6 +67,16 @@ async function putVercelBlob(
     });
     return { ok: true, url: result.url };
   } catch (error) {
+    // The key holds a hash of the file, and a key is never overwritten: uploading the very same file again (an editor replacing a
+    // series' picture with the picture it already has) was refused as "already exists" and reported as "Imej tidak dapat disimpan
+    // secara kekal". The file asked for is the file already stored, so its address is the answer.
+    try {
+      const { head } = await import("@vercel/blob");
+      const existing = await head(key, { token: process.env.BLOB_READ_WRITE_TOKEN });
+      if (existing?.url && existing.size === body.length) return { ok: true, url: existing.url };
+    } catch {
+      /* not there: the upload failed for another reason */
+    }
     return { ok: false, error: error instanceof Error ? error.message : "Vercel Blob upload failed." };
   }
 }

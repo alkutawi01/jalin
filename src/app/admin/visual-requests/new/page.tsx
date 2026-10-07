@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { errorText } from "../../../../lib/admin/error-text";
 
 const VISUAL_ROLES = [
   { value: "hero", label: "Utama" },
@@ -58,14 +59,14 @@ export default function NewVisualRequestPage() {
       });
 
       if (!res.ok) {
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
         throw new Error(data.error || "Permintaan gambar tidak dapat dibuat.");
       }
 
       const vr = await res.json();
       router.push(`/admin/visual-requests/${vr.id}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
       setSaving(false);
     }
   }
@@ -75,7 +76,7 @@ export default function NewVisualRequestPage() {
       <header className="admin-page-header">
         <div className="admin-page-header-row">
           <div>
-            <h1>Permintaan Visual Baharu</h1>
+            <h1>Permintaan gambar baharu</h1>
             <p className="admin-page-sub">Cipta permintaan visual baharu</p>
           </div>
           <a href="/admin/visual-requests" className="admin-btn admin-btn-outline">Kembali</a>
@@ -197,7 +198,7 @@ export default function NewVisualRequestPage() {
         <div className="admin-form-actions">
           <a href="/admin/visual-requests" className="admin-btn admin-btn-outline">Kembali</a>
           <button type="submit" className="admin-btn admin-btn-primary" disabled={saving}>
-            {saving ? "Mencipta..." : "Cipta Permintaan"}
+            {saving ? "Menambah…" : "Tambah permintaan"}
           </button>
         </div>
       </form>

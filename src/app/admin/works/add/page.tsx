@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { KIND_DESCRIPTIONS, KIND_LABELS, WORK_KINDS, type WorkKind } from "../../../../lib/admin/authoring/recipes";
+import { errorText } from "../../../../lib/admin/error-text";
 
 interface SeriesChoice { id: string; title: string; mode: string }
 
@@ -46,11 +47,11 @@ export default function AddWorkPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ type, seriesId: type === "bersiri" ? seriesId || undefined : undefined }),
       });
-      const data = await response.json();
+      const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.error || "Draf gagal dibuat.");
       router.push(`/admin/works/${data.id}#content`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Draf gagal dibuat.");
+      setError(errorText(err, "Draf gagal dibuat."));
       setBusy(false);
     }
   }
@@ -58,18 +59,18 @@ export default function AddWorkPage() {
   return (
     <div className="admin-form-page">
       <header className="admin-page-header">
-        <h1>Tambah Karya</h1>
-        <p className="admin-page-sub">{picked ? `Bagaimana mahu memulakan ${KIND_LABELS[picked]}?` : "Pilih jenis karya. Jenis yang dipilih dikekalkan sehingga draf siap dan tidak boleh ditukar senyap oleh chatbot. Draf tidak diterbitkan secara automatik."}</p>
+        <h1>Tambah karya</h1>
+        <p className="admin-page-sub">{picked ? `Bagaimana mahu memulakan ${KIND_LABELS[picked]}?` : "Pilih jenis karya. Jenis yang dipilih dikekalkan sehingga draf siap dan tidak boleh ditukar senyap oleh bot sembang. Draf tidak diterbitkan secara automatik."}</p>
       </header>
       {error && <div className="admin-alert admin-alert-error" role="alert">{error}</div>}
       {!chooseSeries && picked ? <div className="admin-choice-grid">
         <button type="button" className="admin-choice" disabled={busy} onClick={() => void start(picked)}>
           <strong>Tulis sendiri</strong>
-          <span>Buka editor kosong. Anda menaip teks, kemudian menambah kredit, gambar dan glosari sendiri. Tiada chatbot terlibat.</span>
+          <span>Buka editor kosong. Anda menaip teks, kemudian menambah kredit, gambar dan glosari sendiri. Tiada bot sembang terlibat.</span>
         </button>
         <a className="admin-choice" href={`/admin/works/add/${picked}`}>
-          <strong>Guna chatbot</strong>
-          <span>Salin arahan, tampal jawapan chatbot. Sistem mengisi tajuk, glosari, watak dan permintaan gambar. Hasilnya draf yang sama seperti &quot;Tulis sendiri&quot;, tetapi sudah berisi dan boleh disunting.</span>
+          <strong>Guna bot sembang</strong>
+          <span>Salin arahan, tampal jawapan bot sembang. Sistem mengisi tajuk, glosari, watak dan permintaan gambar. Hasilnya draf yang sama seperti &quot;Tulis sendiri&quot;, tetapi sudah berisi dan boleh disunting.</span>
         </a>
         <button type="button" className="admin-btn admin-btn-outline" onClick={() => setPicked(null)}>← Tukar jenis</button>
       </div> : null}
@@ -91,7 +92,7 @@ export default function AddWorkPage() {
           <div className="admin-form-group">
             <label htmlFor="series-choice">Siri</label>
             <select id="series-choice" value={seriesId} onChange={(event) => setSeriesId(event.target.value)}>
-              <option value="">-- Pilih siri --</option>
+              <option value="">— Pilih siri —</option>
               {series.map((item) => <option key={item.id} value={item.id}>{item.title} ({item.mode === "anthology" ? "antologi" : "bersambung"})</option>)}
             </select>
           </div>

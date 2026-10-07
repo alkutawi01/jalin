@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { imageMarkerLabel } from "../../lib/reader/image-markers";
+import { MAX_UPLOAD_LABEL, uploadTooLargeMessage } from "../../lib/admin/upload-limit";
+import { errorText } from "../../lib/admin/error-text";
 
 /**
  * Upload an image straight from a work. One step: the file is
@@ -36,6 +38,8 @@ export default function WorkVisualUpload({ workId, onDone, hasHero, published, s
     setError(null);
     setSuccess(null);
     try {
+      const tooLarge = uploadTooLargeMessage(file.size);
+      if (tooLarge) throw new Error(tooLarge);
       const body = new FormData();
       body.append("file", file);
       body.append("role", role);
@@ -45,7 +49,7 @@ export default function WorkVisualUpload({ workId, onDone, hasHero, published, s
         body.append("place", "after");
       }
       const res = await fetch(`/api/admin/works/${workId}/visuals/upload`, { method: "POST", body });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Gagal memuat naik imej.");
       setSuccess(published ? "Gambar disimpan dalam draf. Pembaca belum melihatnya: tekan Terbitkan semula di atas karya." : "Gambar disimpan. Semak pratonton sebelum menerbitkan karya.");
       setFile(null);
@@ -54,7 +58,7 @@ export default function WorkVisualUpload({ workId, onDone, hasHero, published, s
       setAnchor("");
       onDone();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
     } finally {
       setBusy(false);
     }
@@ -64,7 +68,7 @@ export default function WorkVisualUpload({ workId, onDone, hasHero, published, s
     <div className="admin-credit-form" style={{ marginBottom: 16 }}>
       <h4 style={{ margin: "0 0 8px" }}>Tambah gambar</h4>
       <p className="admin-form-hint">
-        Pilih imej (PNG/JPEG/WebP, maksimum 10 MB; disyorkan bawah 4 MB). Muat naik menyimpan dan memautkan gambar terus; tidak perlu tekan “Simpan teks &amp; maklumat” selepasnya.
+        Pilih imej (PNG/JPEG/WebP, maksimum {MAX_UPLOAD_LABEL}). Muat naik menyimpan dan memautkan gambar terus; tidak perlu tekan “Simpan teks &amp; maklumat” selepasnya.
       </p>
 
       {error ? <div className="admin-alert admin-alert-error" role="alert">{error}</div> : null}
@@ -74,7 +78,7 @@ export default function WorkVisualUpload({ workId, onDone, hasHero, published, s
         <div className="admin-form-group">
           <label htmlFor="wvu-role">Jenis *</label>
           <select id="wvu-role" value={role} onChange={(e) => setRole(e.target.value)}>
-            <option value="hero" disabled={hasHero}>Hero (gambar utama)</option>
+            <option value="hero" disabled={hasHero}>Gambar utama</option>
             <option value="inline">Dalam teks</option>
           </select>
         </div>

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { glossaryTermsMissingFromText } from "../../lib/admin/glossary-check";
 import CopyButton from "./CopyButton";
 import { pasteAsMarkdown } from "./pasteMarkdown";
+import { errorText } from "../../lib/admin/error-text";
 
 type SeriesProp = { kind: "baharu" } | { kind: "sambung"; seriesId: string; title: string } | null;
 
@@ -185,14 +186,14 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
           special: special || undefined
         })
       });
-      const data = await response.json();
+      const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.error ?? "Gagal menyediakan arahan.");
       const heading = needsManuscript ? "TEKS KARYA" : "MAKLUMAT KARYA SUMBER";
       const text = material.trim() ? `${data.prompt}\n\n=== ${heading} ===\n${material.trim()}\n` : data.prompt;
       await navigator.clipboard.writeText(text);
-      setCopyNote("Arahan AI disalin. Tampal dalam chatbot (ChatGPT/Claude/Gemini), kemudian salin jawapannya.");
+      setCopyNote("Arahan AI disalin. Tampal dalam bot sembang (ChatGPT/Claude/Gemini), kemudian salin jawapannya.");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Gagal menyalin arahan.");
+      setError(errorText(err, "Gagal menyalin arahan."));
     } finally {
       setBusy("idle");
     }
@@ -239,7 +240,7 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
         }
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
     } finally {
       setBusy("idle");
     }
@@ -251,11 +252,11 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
     try {
       text = await navigator.clipboard.readText();
     } catch {
-      setError("Peranti tidak membenarkan tampal automatik. Tampal jawapan chatbot dalam kotak di bawah, kemudian tekan Semak.");
+      setError("Peranti tidak membenarkan tampal automatik. Tampal jawapan bot sembang dalam kotak di bawah, kemudian tekan Semak.");
       return;
     }
     if (!text.trim()) {
-      setError("Papan keratan kosong. Salin jawapan chatbot dahulu.");
+      setError("Papan keratan kosong. Salin jawapan bot sembang dahulu.");
       return;
     }
     setAnswer(text);
@@ -277,7 +278,7 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
         headers: { "Content-Type": "application/json" },
         body: requestBody(false)
       });
-      const data = await response.json();
+      const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.error ?? data.errors?.[0]?.message ?? "Gagal menyimpan draf.");
       if (Array.isArray(data.postWarnings) && data.postWarnings.length > 0) {
         setSaved({ workId: data.workId, problems: data.postWarnings });
@@ -286,7 +287,7 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
       }
       window.location.href = `/admin/works/${data.workId}`;
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
       setBusy("idle");
     }
   }
@@ -369,7 +370,7 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
           <span className="admin-step-num">2</span>Salin arahan AI
         </h2>
         <p className="admin-form-hint">
-          Tekan butang, kemudian tampal dalam chatbot pilihan anda{needsManuscript ? " (teks karya turut disertakan)" : ""}.
+          Tekan butang, kemudian tampal dalam bot sembang pilihan anda{needsManuscript ? " (teks karya turut disertakan)" : ""}.
         </p>
         <div className="admin-form-actions">
           <button
@@ -378,7 +379,7 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
             disabled={busy !== "idle" || (needsManuscript && !material.trim())}
             onClick={copyPrompt}
           >
-            {busy === "prompt" ? "Menyediakan…" : "Salin Arahan AI"}
+            {busy === "prompt" ? "Menyediakan…" : "Salin arahan AI"}
           </button>
         </div>
         {copyNote ? <div className="admin-alert admin-alert-success" role="status">{copyNote}</div> : null}
@@ -386,7 +387,7 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
 
       <section className="admin-section">
         <h2 className="admin-form-section-title">
-          <span className="admin-step-num">3</span>Tampal jawapan chatbot
+          <span className="admin-step-num">3</span>Tampal jawapan bot sembang
         </h2>
         <div className="admin-form-actions">
           <button type="button" className="admin-btn admin-btn-primary" disabled={busy !== "idle"} onClick={paste}>
@@ -400,7 +401,7 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
             rows={6}
             value={answer}
             onChange={(e) => setAnswer(e.target.value)}
-            placeholder="Tampal jawapan chatbot di sini…"
+            placeholder="Tampal jawapan bot sembang di sini…"
           />
           <div className="admin-form-actions">
             <button
@@ -464,7 +465,7 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
           {plan && review ? (
             <>
               <h3>Pratonton kad</h3>
-              <p className="admin-form-hint">Begini karya ini kelihatan pada halaman utama dan senarai. Gambar hero dimuat naik selepas draf disimpan.</p>
+              <p className="admin-form-hint">Begini karya ini kelihatan pada halaman utama dan senarai. Gambar utama dimuat naik selepas draf disimpan.</p>
               <div style={{ maxWidth: 340 }}>
                 <article className="latest-card">
                   <div className="latest-card-cover">
@@ -508,7 +509,7 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
                 <input id="f-slug" value={slug} onChange={(e) => setSlug(e.target.value)} placeholder="(dijana daripada tajuk)" />
               </div>
               <div className="admin-form-group">
-                <label htmlFor="f-dek">Dek</label>
+                <label htmlFor="f-dek">Ringkasan</label>
                 <textarea id="f-dek" className="admin-textarea" rows={4} value={dek} onChange={(e) => setDek(e.target.value)} />
               </div>
               <div className="admin-form-row">
@@ -663,7 +664,7 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
               ))}
 
               <h3>Glosari ({review.glossary.length})</h3>
-              <p className="admin-form-hint">Tooltip hanya muncul pada kemunculan pertama setiap istilah dalam halaman bacaan.</p>
+              <p className="admin-form-hint">Kotak glosari hanya muncul pada kemunculan pertama setiap istilah dalam halaman bacaan.</p>
               {review.glossary.length === 0 ? <p className="admin-form-hint">Tiada istilah glosari.</p> : null}
               {review.glossary.map((g, i) => (
                 <div key={i}>
@@ -729,7 +730,7 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
                 </div>
                 {glossaryProblems.filter((p) => p.term === g.term.trim()).map((p) => (
                   <p key={p.term} className="admin-form-hint" role="alert" style={{ color: "var(--a-warn, #8a5a00)" }}>
-                    "{p.term}" tidak ditemui sebagai perkataan penuh dalam teks, jadi tooltipnya tidak akan muncul.
+                    "{p.term}" tidak ditemui sebagai perkataan penuh dalam teks, jadi kotak glosarinya tidak akan muncul.
                     {p.suggestion ? ` Teks menulis "${p.suggestion}": eja istilah sama seperti dalam teks.` : " Eja istilah sama seperti dalam teks, atau buangnya."}
                   </p>
                 ))}
@@ -745,12 +746,12 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
 
               <h3>Gambar ({review.visuals.filter((v) => !v.removed).length})</h3>
               <p className="admin-form-hint">
-                Arahan gambar disediakan oleh chatbot. Anda boleh ubah sebelum menyimpan; selepas disimpan, arahan penuh boleh
+                Arahan gambar disediakan oleh bot sembang. Anda boleh ubah sebelum menyimpan; selepas disimpan, arahan penuh boleh
                 disalin dan imej dimuat naik di editor karya. Gambar dalam teks akan mendapat penanda bernombor yang boleh dialihkan dalam manuskrip.
               </p>
               {review.visuals.map((v, i) => (
                 <div className="admin-section" key={v.originalIndex} style={v.removed ? { opacity: 0.45 } : undefined}>
-                  <strong>{v.role === "hero" ? "Hero" : "Inline"}</strong> · {v.aspectRatio}
+                  <strong>{v.role === "hero" ? "Gambar utama" : "Gambar dalam teks"}</strong> · {v.aspectRatio}
                   {v.sectionSlug ? <> · {v.sectionSlug}</> : null}
                   {v.role === "inline" ? (
                     <p className="admin-form-hint">

@@ -11,7 +11,7 @@ export const STANDARD_ROLES: { value: string; label: string }[] = [
   // One "Penulis" only: the reader writes "Penulis bersama" by itself when two or more people hold it (reader/credit-projection.ts).
   { value: "initial_draft", label: "Penulis" },
   { value: "story_editor", label: "Penulis & penyemak" },
-  { value: "final_editor", label: "Editor" },
+  { value: "final_editor", label: "Penyunting" },
   { value: "author", label: "Pengarang asal" }
 ];
 

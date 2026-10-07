@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { errorText } from "../../../../lib/admin/error-text";
 
 const WORK_TYPES = [
   { value: "cerpen", label: "Cerpen" },
@@ -43,14 +44,14 @@ export default function NewPromptPage() {
       });
 
       if (!res.ok) {
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
         throw new Error(data.error || "Gagal mencipta templat.");
       }
 
       const template = await res.json();
       router.push(`/admin/prompts/${template.id}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
       setSaving(false);
     }
   }
@@ -60,7 +61,7 @@ export default function NewPromptPage() {
       <header className="admin-page-header">
         <div className="admin-page-header-row">
           <div>
-            <h1>Templat Arahan Baharu</h1>
+            <h1>Templat arahan baharu</h1>
             <p className="admin-page-sub">Cipta templat arahan baharu</p>
           </div>
           <a href="/admin/prompts" className="admin-btn admin-btn-outline">Kembali</a>
@@ -136,7 +137,7 @@ export default function NewPromptPage() {
         <div className="admin-form-actions">
           <a href="/admin/prompts" className="admin-btn admin-btn-outline">Kembali</a>
           <button type="submit" className="admin-btn admin-btn-primary" disabled={saving}>
-            {saving ? "Mencipta..." : "Cipta Templat"}
+            {saving ? "Menambah…" : "Tambah templat"}
           </button>
         </div>
       </form>

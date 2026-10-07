@@ -3,18 +3,18 @@ import { DEFAULT_SHARE_IMAGE } from "../../lib/seo";
 import { InfoPage } from "../../components/reader/InfoPage";
 
 export const metadata: Metadata = {
-  title: "Terma Penggunaan",
+  title: "Terma penggunaan",
   description: "Cara karya dan ilustrasi di Jalin boleh digunakan.",
   alternates: { canonical: "/terma" },
-  openGraph: { type: "website", siteName: "Jalin — oleh Adjung", title: "Terma Penggunaan", description: "Cara karya dan ilustrasi di Jalin boleh digunakan.", url: "/terma", locale: "ms_MY", images: [DEFAULT_SHARE_IMAGE] },
-  twitter: { card: "summary_large_image", title: "Terma Penggunaan", description: "Cara karya dan ilustrasi di Jalin boleh digunakan.", images: [DEFAULT_SHARE_IMAGE.url] }
+  openGraph: { type: "website", siteName: "Jalin — oleh Adjung", title: "Terma penggunaan", description: "Cara karya dan ilustrasi di Jalin boleh digunakan.", url: "/terma", locale: "ms_MY", images: [DEFAULT_SHARE_IMAGE] },
+  twitter: { card: "summary_large_image", title: "Terma penggunaan", description: "Cara karya dan ilustrasi di Jalin boleh digunakan.", images: [DEFAULT_SHARE_IMAGE.url] }
 };
 
 export default function TermsPage() {
   return (
     <InfoPage
       kicker="Dasar"
-      title="Terma Penggunaan"
+      title="Terma penggunaan"
       intro="Karya di Jalin ditulis dan dilukis dengan teliti. Terma ringkas ini menerangkan cara ia boleh digunakan."
       updated="4 Oktober 2026"
     >

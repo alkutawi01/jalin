@@ -5,6 +5,7 @@ import { WorkCover } from "../../../components/reader/WorkCover";
 import { cropStyle } from "../../../lib/reader/crop";
 import { initContentRepository } from "../../../lib/content";
 import { displayableGenre } from "../../../lib/reader/genre-display";
+import { formatMalayDate } from "../../../lib/reader/format-date";
 import { getWorksByType } from "../../../lib/content/workLoader";
 import type { Work, WorkType } from "../../../lib/content/types";
 import {
@@ -21,34 +22,34 @@ import { categoryIntro, DEFAULT_CATEGORY_INTROS, isCategoryType } from "@/lib/si
 
 const CATEGORY_META: Record<string, { title: string; intro: string; headerLabel: string }> = {
   cerpen: {
-    title: "Senarai Cerpen",
+    title: "Senarai cerpen",
     intro: DEFAULT_CATEGORY_INTROS.cerpen,
     headerLabel: "Cerpen",
   },
   novela: {
-    title: "Senarai Novela",
+    title: "Senarai novela",
     intro: DEFAULT_CATEGORY_INTROS.novela,
     headerLabel: "Novela",
   },
   bersiri: {
-    title: "Senarai Bersiri",
+    title: "Senarai bersiri",
     intro: DEFAULT_CATEGORY_INTROS.bersiri,
     headerLabel: "Bersiri",
   },
   fragmen: {
-    title: "Senarai Fragmen",
+    title: "Senarai fragmen",
     intro: DEFAULT_CATEGORY_INTROS.fragmen,
     headerLabel: "Fragmen",
   },
   sinopsis: {
-    title: "Senarai Sinopsis",
+    title: "Senarai sinopsis",
     intro: DEFAULT_CATEGORY_INTROS.sinopsis,
     headerLabel: "Sinopsis",
   },
 };
 
 const MODE_LABELS: Record<string, string> = {
-  continuous: "Bersambung",
+  continuous: "Berturutan",
   anthology: "Antologi",
 };
 
@@ -58,13 +59,7 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 function formatDate(date: string | undefined): string {
-  if (!date || !/^\d{4}-\d{2}-\d{2}/.test(date)) return "—";
-  const [year, month, day] = date.slice(0, 10).split("-").map(Number);
-  const months = [
-    "Januari", "Februari", "Mac", "April", "Mei", "Jun",
-    "Julai", "Ogos", "September", "Oktober", "November", "Disember"
-  ];
-  return `${day} ${months[(month ?? 1) - 1]} ${year}`;
+  return formatMalayDate(date) ?? "—";
 }
 
 function WorkCard({ work, type }: { work: PublicWorkSummary; type: string }) {
@@ -72,7 +67,7 @@ function WorkCard({ work, type }: { work: PublicWorkSummary; type: string }) {
   const reading = work.readingMinutes ? `± ${work.readingMinutes} minit` : null;
   const published = work.publishedAt;
   const year = (published ?? "2026").slice(0, 4);
-  const label = CATEGORY_META[type]?.headerLabel ?? type;
+  const label = categoryMeta(type)?.headerLabel ?? type;
   return (
     <article className="latest-card">
       <a href={`/kategori/${type}/${work.slug}`}>
@@ -121,7 +116,7 @@ function SeriesCard({ series, episodeCount }: { series: PublicSeriesSummary; epi
 
 export async function generateMetadata({ params }: { params: Promise<{ type: string }> }): Promise<Metadata> {
   const { type } = await params;
-  const meta = CATEGORY_META[type];
+  const meta = categoryMeta(type);
   if (!meta) return {};
   const intro = isCategoryType(type) ? await categoryIntro(type) : meta.intro;
   return {
@@ -145,7 +140,7 @@ function EmptyCategoryFallback({ currentType }: { currentType: string }) {
   return (
     <div className="category-empty">
       <JalinEmblem size={72} />
-      <p>Belum ada karya diterbitkan dalam kategori ini. Jelajahi kategori lain buat masa ini:</p>
+      <p>Belum ada karya diterbitkan dalam kategori ini. Terokai kategori lain buat masa ini:</p>
       <div className="category-empty-links">
         {others.map(({ type, label }) => (
           <a key={type} href={`/kategori/${type}`}>{label}</a>
@@ -153,6 +148,11 @@ function EmptyCategoryFallback({ currentType }: { currentType: string }) {
       </div>
     </div>
   );
+}
+
+/** The category an address names, or undefined: "constructor" and "__proto__" are not categories (they were shown as an empty one, answered 200). */
+function categoryMeta(type: string) {
+  return Object.prototype.hasOwnProperty.call(CATEGORY_META, type) ? CATEGORY_META[type] : undefined;
 }
 
 const CATEGORY_META_LIST = Object.entries(CATEGORY_META).map(([type, meta]) => ({
@@ -170,7 +170,7 @@ async function getWorks(type: string): Promise<Work[]> {
 
 export default async function CategoryPage({ params }: { params: Promise<{ type: string }> }) {
   const { type } = await params;
-  const meta = CATEGORY_META[type];
+  const meta = categoryMeta(type);
   if (!meta) notFound();
   const intro = isCategoryType(type) ? await categoryIntro(type) : meta.intro;
 

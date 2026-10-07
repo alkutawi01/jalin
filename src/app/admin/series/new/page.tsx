@@ -4,6 +4,7 @@ import AudiencePicker from "../../../../components/admin/AudiencePicker";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { slugify } from "../../../../lib/admin/import/text-utils";
+import { errorText } from "../../../../lib/admin/error-text";
 
 export default function NewSeriesPage() {
   const router = useRouter();
@@ -31,11 +32,11 @@ export default function NewSeriesPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Gagal mencipta siri.");
       router.push(`/admin/series/${data.id}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
       setSaving(false);
     }
   }
@@ -44,7 +45,7 @@ export default function NewSeriesPage() {
     <div className="admin-form-page">
       <header className="admin-page-header">
         <div>
-          <h1>Siri Baharu</h1>
+          <h1>Siri baharu</h1>
           <p className="admin-page-sub">Bekas editorial untuk episod Bersiri</p>
         </div>
       </header>
@@ -122,7 +123,7 @@ export default function NewSeriesPage() {
         <div className="admin-form-actions">
           <a href="/admin/series" className="admin-btn admin-btn-outline">Kembali</a>
           <button type="submit" className="admin-btn admin-btn-primary" disabled={saving}>
-            {saving ? "Mencipta..." : "Cipta Siri"}
+            {saving ? "Menambah…" : "Tambah siri"}
           </button>
         </div>
       </form>

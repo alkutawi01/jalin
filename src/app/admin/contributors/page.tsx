@@ -47,7 +47,7 @@ export default async function AdminContributorsPage() {
             </p>
           </div>
           <a href="/admin/contributors/new" className="admin-btn admin-btn-primary">
-            + Penyumbang Baharu
+            + Tambah penyumbang
           </a>
         </div>
       </header>

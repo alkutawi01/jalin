@@ -72,18 +72,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const seriesList = repo.getPublishedSeries();
   for (const series of seriesList) {
+    // Every other page in the sitemap says when it last changed; a series and its episodes did not. An episode's date is its work's
+    // (as for a cerpen), and the series' is the latest of its episodes'.
+    const episodeEntries = repo.getPublishedSeriesEpisodes(series.id).map((episode) => ({
+      url: `${SITE_URL}/kategori/bersiri/${series.slug}/${episode.slug}`,
+      lastModified: repo.getEpisodeBySeriesAndSlug(series.slug, episode.slug)?.updatedAt ?? episode.publishedAt,
+      changeFrequency: "weekly" as const,
+      priority: 0.5
+    }));
+    const latest = episodeEntries.map((entry) => entry.lastModified).filter((date): date is string => Boolean(date)).sort().pop();
     entries.push({
       url: `${SITE_URL}/kategori/bersiri/${series.slug}`,
+      ...(latest ? { lastModified: latest } : {}),
       changeFrequency: "weekly",
       priority: 0.6
     });
-    for (const episode of repo.getPublishedSeriesEpisodes(series.id)) {
-      entries.push({
-        url: `${SITE_URL}/kategori/bersiri/${series.slug}/${episode.slug}`,
-        changeFrequency: "weekly",
-        priority: 0.5
-      });
-    }
+    entries.push(...episodeEntries);
   }
 
   return entries;

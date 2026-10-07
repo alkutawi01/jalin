@@ -28,6 +28,8 @@ import { buildWorkFillPrompt, parseWorkFill } from "../../../../lib/admin/author
 import { renderItalics, toggleItalicSelection } from "../../../../lib/reader/inline-italics";
 import VisualManuscriptEditor, { canEditVisually } from "../../../../components/admin/VisualManuscriptEditor";
 import PlacesEditor from "../../../../components/admin/PlacesEditor";
+import { uploadTooLargeMessage } from "../../../../lib/admin/upload-limit";
+import { errorText } from "../../../../lib/admin/error-text";
 
 const WORK_TYPES = [
   { value: "cerpen", label: "Cerpen" },
@@ -138,7 +140,7 @@ function WorkImageCard({ visual, body, onEdit, onReplace, onDelete }: {
         <img src={visual.src} alt={visual.alt || ""} />
       </a>
       <div className="work-image-card-detail">
-        <strong>{visual.role === "hero" ? "Gambar utama" : visual.section_slug && !visual.anchor ? `Hero bab (${visual.section_slug})` : visual.section_slug ? `Gambar dalam teks, bab ${visual.section_slug}` : numbered ? `${imageMarkerLabel(visual.anchor!)} · dalam teks` : `Gambar belum bernombor · ID imej #${visual.id}`}</strong>
+        <strong>{visual.role === "hero" ? "Gambar utama" : visual.section_slug && !visual.anchor ? `Gambar utama bab (${visual.section_slug})` : visual.section_slug ? `Gambar dalam teks, bab ${visual.section_slug}` : numbered ? `${imageMarkerLabel(visual.anchor!)} · dalam teks` : `Gambar belum bernombor · ID imej #${visual.id}`}</strong>
         <p>{visual.alt || "Teks alternatif belum diisi."}</p>
         {visual.section_slug && !visual.anchor ? (
           <p className="admin-form-hint">Dipaparkan di kepala bab itu.</p>
@@ -149,7 +151,7 @@ function WorkImageCard({ visual, body, onEdit, onReplace, onDelete }: {
             {!visual.anchor ? "Tiada penanda — gambar tidak muncul dalam karya."
               : isImageMarker(visual.anchor)
                 ? body.includes(visual.anchor) ? `${imageMarkerLabel(visual.anchor)} dipautkan. Alihkan penanda dalam manuskrip untuk memindahkan gambar.` : `${imageMarkerLabel(visual.anchor)} tiada dalam manuskrip tersimpan — gambar tidak muncul.`
-                : body.includes(visual.anchor) ? `Anchor petikan lama: “${visual.anchor.slice(0, 90)}${visual.anchor.length > 90 ? "…" : ""}”. Gambar ini belum dipautkan kepada nombor Gambar N; pilih penanda melalui Ubah butiran.` : "Anchor petikan lama tidak ditemui. Gambar ini belum dipautkan kepada nombor Gambar N; pilih penanda melalui Ubah butiran."}
+                : body.includes(visual.anchor) ? `Penanda petikan lama: “${visual.anchor.slice(0, 90)}${visual.anchor.length > 90 ? "…" : ""}”. Gambar ini belum dipautkan kepada nombor Gambar N; pilih penanda melalui Ubah butiran.` : "Penanda petikan lama tidak ditemui. Gambar ini belum dipautkan kepada nombor Gambar N; pilih penanda melalui Ubah butiran."}
           </p>
         ) : <p className="admin-form-hint">Dipaparkan pada kad dan kepala halaman karya.</p>}
         <div className="work-image-card-actions">
@@ -320,7 +322,7 @@ export default function EditWorkPage() {
     const prompt = `Anda pembantu editorial Jalin. Jenis karya: ${form.type}. Tugas: ${focus}. Jawab dalam bahasa Melayu dengan butiran yang mudah dipindahkan ke tab ${activeTab}. Jangan mereka fakta, kredit, sumber atau peristiwa. Tanda maklumat yang tidak dapat disahkan sebagai 'perlu semakan editor'. ${form.type === "bersiri" ? "Episod ini sebahagian siri; minta ringkasan episod terdahulu dan nota canon jika belum diberi. Jangan anggap episod berdiri sendiri." : ""}\n\nMANUSKRIP:\n${form.body.trim() || "[Editor akan tampal manuskrip]"}`;
     try {
       await navigator.clipboard.writeText(prompt);
-      setAssistantNote("Arahan untuk tab ini telah disalin. Semak cadangan chatbot sebelum memasukkannya ke editor.");
+      setAssistantNote("Arahan untuk tab ini telah disalin. Semak cadangan bot sembang sebelum memasukkannya ke editor.");
     } catch {
       setAssistantNote("Salin gagal. Benarkan akses papan keratan dalam pelayar dan cuba lagi.");
     }
@@ -355,7 +357,7 @@ export default function EditWorkPage() {
       }
       toast(`${removed} istilah glosari dipadam.`, "success");
     } catch (err) {
-      setGlossaryError(`${err instanceof Error ? err.message : "Ralat tidak diketahui."} (${removed} daripada ${ids.length} sempat dipadam.)`);
+      setGlossaryError(`${errorText(err)} (${removed} daripada ${ids.length} sempat dipadam.)`);
     } finally {
       setSelectedTerms([]);
       setGlossaryBusy(false);
@@ -388,7 +390,7 @@ export default function EditWorkPage() {
     });
     try {
       await navigator.clipboard.writeText(prompt);
-      setFillNote(["Arahan disalin. Tampal ke chatbot, kemudian salin seluruh jawapannya dan tekan Tampal & isi."]);
+      setFillNote(["Arahan disalin. Tampal ke bot sembang, kemudian salin seluruh jawapannya dan tekan Tampal & isi."]);
       toast("Arahan disalin.", "success");
     } catch {
       setFillNote(["Salin gagal. Benarkan akses papan keratan dalam pelayar dan cuba lagi."]);
@@ -409,12 +411,12 @@ export default function EditWorkPage() {
       return;
     }
     if (!text.trim()) {
-      setFillNote(["Papan keratan kosong. Salin jawapan chatbot dahulu."]);
+      setFillNote(["Papan keratan kosong. Salin jawapan bot sembang dahulu."]);
       return;
     }
     const result = parseWorkFill(text);
     if (result.sections.length === 0) {
-      setFillNote(["Tiada bahagian [MAKLUMAT], [WATAK], [LATAR], [GLOSARI] atau [SUMBER] ditemui. Pastikan anda menyalin seluruh jawapan chatbot."]);
+      setFillNote(["Tiada bahagian [MAKLUMAT], [WATAK], [LATAR], [GLOSARI] atau [SUMBER] ditemui. Pastikan anda menyalin seluruh jawapan bot sembang."]);
       return;
     }
     setFillBusy(true);
@@ -498,7 +500,7 @@ export default function EditWorkPage() {
       if (result.sections.includes("GLOSARI")) {
         const g = parseGlossaryPaste(result.glossaryText, form.body, glossaryTerms.map((term) => term.term));
         if (g.none) {
-          notes.push("Glosari: chatbot menilai tiada istilah sukar.");
+          notes.push("Glosari: bot sembang menilai tiada istilah sukar.");
         } else {
           let added = 0;
           for (const [index, item] of g.items.entries()) {
@@ -555,15 +557,15 @@ export default function EditWorkPage() {
           });
           if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || "Gagal menyimpan sumber.");
           wrote += 1;
-          notes.push(`Sumber: ${Object.keys(body).length} medan diisi. Medan yang chatbot tidak tahu dibiarkan kosong. Hak dan bukti tidak diisi; semak di tab Sumber & Hak.`);
+          notes.push(`Sumber: ${Object.keys(body).length} medan diisi. Medan yang bot sembang tidak tahu dibiarkan kosong. Hak dan bukti tidak diisi; semak di tab Sumber & Hak.`);
         } else {
           notes.push("Sumber: tiada medan kosong untuk diisi.");
         }
       }
       notes.push("Tidak disentuh: teks karya, kredit, imej dan hak. Semak semua isi sebelum menerbitkan.");
-      toast("Maklumat daripada chatbot telah diisi.", "success");
+      toast("Maklumat daripada bot sembang telah diisi.", "success");
     } catch (err) {
-      notes.push(`Berhenti kerana ralat: ${err instanceof Error ? err.message : "ralat tidak diketahui"}. ${wrote > 0 ? "Bahagian di atas yang sudah diisi kekal tersimpan; tekan Tampal & isi semula untuk menyambung (yang sudah ada dilangkau, tiada yang berganda)." : "Tiada apa-apa disimpan."}`);
+      notes.push(`Berhenti kerana ralat: ${errorText(err, "ralat tidak diketahui")}. ${wrote > 0 ? "Bahagian di atas yang sudah diisi kekal tersimpan; tekan Tampal & isi semula untuk menyambung (yang sudah ada dilangkau, tiada yang berganda)." : "Tiada apa-apa disimpan."}`);
     } finally {
       setFillNote(notes);
       setFillBusy(false);
@@ -579,7 +581,7 @@ export default function EditWorkPage() {
     });
     try {
       await navigator.clipboard.writeText(prompt);
-      setGlossaryNote("Arahan glosari sudah disalin. Tampal ke chatbot, kemudian salin jawapannya dan tekan Tampal & import.");
+      setGlossaryNote("Arahan glosari sudah disalin. Tampal ke bot sembang, kemudian salin jawapannya dan tekan Tampal & import.");
       toast("Arahan glosari disalin.", "success");
     } catch {
       setGlossaryNote("Salin gagal. Benarkan akses papan keratan dalam pelayar dan cuba lagi.");
@@ -590,12 +592,12 @@ export default function EditWorkPage() {
   async function importGlossaryText(answer: string) {
     setGlossaryError(null);
     if (!answer.trim()) {
-      setGlossaryNote("Tiada teks untuk dibaca. Salin jawapan chatbot dahulu.");
+      setGlossaryNote("Tiada teks untuk dibaca. Salin jawapan bot sembang dahulu.");
       return;
     }
     const result = parseGlossaryPaste(answer, form.body, glossaryTerms.map((term) => term.term));
     if (result.none) {
-      setGlossaryNote("Chatbot menilai tiada istilah sukar dalam karya ini. Tiada apa-apa ditambah.");
+      setGlossaryNote("Bot sembang menilai tiada istilah sukar dalam karya ini. Tiada apa-apa ditambah.");
       return;
     }
     if (result.items.length === 0) {
@@ -630,7 +632,7 @@ export default function EditWorkPage() {
       setGlossaryNote(`${added} istilah ditambah${skipped ? `. Dilangkau: ${skipped}` : ""}. Semak maksudnya dalam jadual dan edit jika perlu.`);
       toast(`${added} istilah glosari ditambah.`, "success");
     } catch (err) {
-      setGlossaryError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setGlossaryError(errorText(err));
       if (added > 0) setGlossaryNote(`${added} istilah sempat ditambah sebelum ralat.`);
     } finally {
       setGlossaryBusy(false);
@@ -648,7 +650,7 @@ export default function EditWorkPage() {
       return;
     }
     if (!text.trim()) {
-      setGlossaryNote("Papan keratan kosong. Salin jawapan chatbot dahulu.");
+      setGlossaryNote("Papan keratan kosong. Salin jawapan bot sembang dahulu.");
       return;
     }
     await importGlossaryText(text);
@@ -872,7 +874,7 @@ export default function EditWorkPage() {
           else clearDraft(window.localStorage, workId);
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Ralat memuatkan karya.");
+        setError(errorText(err, "Ralat memuatkan karya."));
       } finally {
         setLoading(false);
       }
@@ -929,7 +931,7 @@ export default function EditWorkPage() {
           body: JSON.stringify(editingSection),
         });
         if (!res.ok) {
-          const data = await res.json();
+          const data = await res.json().catch(() => ({}));
           throw new Error(data.error || "Gagal menyimpan bab.");
         }
       } else {
@@ -939,7 +941,7 @@ export default function EditWorkPage() {
           body: JSON.stringify(editingSection),
         });
         if (!res.ok) {
-          const data = await res.json();
+          const data = await res.json().catch(() => ({}));
           throw new Error(data.error || "Gagal mencipta bab.");
         }
       }
@@ -949,7 +951,7 @@ export default function EditWorkPage() {
       await loadReadiness();
       setTimeout(() => setSectionSuccess(null), 4000);
     } catch (err) {
-      setSectionError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setSectionError(errorText(err));
     }
   }
 
@@ -975,7 +977,7 @@ export default function EditWorkPage() {
       await loadSections();
       await loadReadiness();
     } catch (err) {
-      setSectionError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setSectionError(errorText(err));
     }
   }
 
@@ -992,13 +994,13 @@ export default function EditWorkPage() {
         body: JSON.stringify({ sectionIds: ids }),
       });
       if (!res.ok) {
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
         throw new Error(data.error || "Gagal menyusun semula.");
       }
       await loadSections();
       await loadReadiness();
     } catch (err) {
-      setSectionError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setSectionError(errorText(err));
     }
   }
 
@@ -1015,7 +1017,7 @@ export default function EditWorkPage() {
       await loadSourceRights();
       await loadReadiness();
     } catch (err) {
-      setSourceError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setSourceError(errorText(err));
     }
   }
 
@@ -1055,14 +1057,14 @@ export default function EditWorkPage() {
         setSourceForm(loadedForm);
       }
     } catch (err) {
-      setSourceError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setSourceError(errorText(err));
     } finally {
       setSourceLoading(false);
     }
   }
 
   /** Small tag beside a field the chatbot filled in and no editor has reviewed yet. */
-  const tagFor = (key: string) => ((sourceRights?.chatbotFilledFields ?? []).includes(key) ? <em className="admin-form-hint">(dicadangkan chatbot)</em> : null);
+  const tagFor = (key: string) => ((sourceRights?.chatbotFilledFields ?? []).includes(key) ? <em className="admin-form-hint">(dicadangkan bot sembang)</em> : null);
 
   async function handleSaveProvenance() {
     setSourceSaving(true);
@@ -1092,7 +1094,7 @@ export default function EditWorkPage() {
           rightsEvidence: sourceForm.rightsEvidence || null,
         }),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Gagal menyimpan maklumat sumber.");
       setSourceSuccess(
         data.invalidatedApproval
@@ -1103,7 +1105,7 @@ export default function EditWorkPage() {
       await loadReadiness();
       setTimeout(() => setSourceSuccess(null), 5000);
     } catch (err) {
-      setSourceError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setSourceError(errorText(err));
     } finally {
       setSourceSaving(false);
     }
@@ -1143,7 +1145,7 @@ export default function EditWorkPage() {
           isbn: sourceForm.isbn || null,
         }),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Gagal menyemak hak.");
       setSourceSuccess(
         `Semakan hak direkod (oleh ${data.sourceWork?.reviewedBy ?? "admin"}).`
@@ -1152,7 +1154,7 @@ export default function EditWorkPage() {
       await loadReadiness();
       setTimeout(() => setSourceSuccess(null), 5000);
     } catch (err) {
-      setSourceError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setSourceError(errorText(err));
     } finally {
       setSourceSaving(false);
     }
@@ -1169,7 +1171,7 @@ export default function EditWorkPage() {
       }
       setReadiness(await res.json());
     } catch (err) {
-      setReadinessError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setReadinessError(errorText(err));
     } finally {
       setReadinessLoading(false);
     }
@@ -1198,14 +1200,14 @@ export default function EditWorkPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ republish: true, summary: "Kemas kini diterbitkan", changeType: "minor" })
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Gagal menerbitkan semula.");
       setPublishSuccess(data.changed ? "Versi baharu diterbitkan. Pembaca kini melihatnya." : "Tiada perubahan untuk diterbitkan.");
       toast(data.changed ? "Versi baharu diterbitkan. Pembaca kini melihatnya." : "Tiada perubahan untuk diterbitkan.", "success");
       await loadReadiness();
       setTimeout(() => setPublishSuccess(null), 5000);
     } catch (err) {
-      setPublishError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setPublishError(errorText(err));
     } finally {
       setPublishing(false);
     }
@@ -1220,7 +1222,7 @@ export default function EditWorkPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         throw new Error(data.error || "Gagal menerbitkan.");
       }
@@ -1238,7 +1240,7 @@ export default function EditWorkPage() {
       await loadReadiness();
       setTimeout(() => setPublishSuccess(null), 5000);
     } catch (err) {
-      setPublishError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setPublishError(errorText(err));
       await loadReadiness();
     } finally {
       setPublishing(false);
@@ -1296,11 +1298,11 @@ export default function EditWorkPage() {
     setMarkerMigrationError("");
     try {
       const res = await fetch(`/api/admin/works/${workId}/image-markers`);
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Pratonton gagal dimuatkan.");
       setMarkerMigration(data);
     } catch (error) {
-      setMarkerMigrationError(error instanceof Error ? error.message : "Pratonton gagal dimuatkan.");
+      setMarkerMigrationError(errorText(error, "Pratonton gagal dimuatkan."));
     } finally {
       setMarkerMigrationBusy(false);
     }
@@ -1316,7 +1318,7 @@ export default function EditWorkPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action, expectedBody: markerMigration.plan.originalBody, expectedChanges: markerMigration.plan.changes }),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Penukaran gagal.");
       const workRes = await fetch(`/api/admin/works/${workId}`);
       const work = await workRes.json();
@@ -1326,9 +1328,9 @@ export default function EditWorkPage() {
       await loadVisuals();
       await loadReadiness();
       setMarkerMigration(null);
-      setSuccess(action === "apply" ? `${data.converted} gambar ditukar kepada penanda. Semak pratonton sebelum menerbitkan semula.` : `${data.restored} gambar dipulihkan kepada anchor asal.`);
+      setSuccess(action === "apply" ? `${data.converted} gambar ditukar kepada penanda. Semak pratonton sebelum menerbitkan semula.` : `${data.restored} gambar dipulihkan kepada penanda asal.`);
     } catch (error) {
-      setMarkerMigrationError(error instanceof Error ? error.message : "Penukaran gagal.");
+      setMarkerMigrationError(errorText(error, "Penukaran gagal."));
     } finally {
       setMarkerMigrationBusy(false);
     }
@@ -1384,7 +1386,7 @@ export default function EditWorkPage() {
         body: JSON.stringify({ characters }),
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         throw new Error(data.error || "Gagal menyimpan watak.");
       }
@@ -1395,7 +1397,7 @@ export default function EditWorkPage() {
       await loadReadiness();
       setTimeout(() => setCharactersSuccess(null), 3000);
     } catch (err) {
-      setCharactersError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setCharactersError(errorText(err));
     } finally {
       setCharactersSaving(false);
     }
@@ -1429,7 +1431,7 @@ export default function EditWorkPage() {
       });
 
       if (!res.ok) {
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
         throw new Error(data.error || "Gagal menyimpan.");
       }
 
@@ -1444,7 +1446,7 @@ export default function EditWorkPage() {
       setTimeout(() => setSuccess(null), 3000);
       await loadReadiness();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
     } finally {
       setSaving(false);
     }
@@ -1468,7 +1470,7 @@ export default function EditWorkPage() {
       await loadCredits();
       await loadReadiness();
     } catch (err) {
-      setCreditError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setCreditError(errorText(err));
     } finally {
       setCreditToggleBusy(null);
     }
@@ -1506,7 +1508,7 @@ export default function EditWorkPage() {
         });
 
         if (!res.ok) {
-          const data = await res.json();
+          const data = await res.json().catch(() => ({}));
           throw new Error(data.error || "Gagal menyimpan kredit.");
         }
       } else {
@@ -1522,7 +1524,7 @@ export default function EditWorkPage() {
         });
 
         if (!res.ok) {
-          const data = await res.json();
+          const data = await res.json().catch(() => ({}));
           throw new Error(data.error || "Gagal mencipta kredit.");
         }
       }
@@ -1532,7 +1534,7 @@ export default function EditWorkPage() {
       // The status panel decides whether "Terbitkan semula" is offered, so it must see the new credit at once.
       await loadReadiness();
     } catch (err) {
-      setCreditError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setCreditError(errorText(err));
     } finally {
       creditSavingNow.current = false;
       setCreditSaving(false);
@@ -1548,14 +1550,14 @@ export default function EditWorkPage() {
       });
 
       if (!res.ok) {
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
         throw new Error(data.error || "Gagal memadam kredit.");
       }
 
       await loadCredits();
       await loadReadiness();
     } catch (err) {
-      setCreditError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setCreditError(errorText(err));
     }
   }
 
@@ -1603,7 +1605,7 @@ export default function EditWorkPage() {
         });
 
         if (!res.ok) {
-          const data = await res.json();
+          const data = await res.json().catch(() => ({}));
           throw new Error(data.error || "Gagal menyimpan visual.");
         }
       } else {
@@ -1619,7 +1621,7 @@ export default function EditWorkPage() {
         });
 
         if (!res.ok) {
-          const data = await res.json();
+          const data = await res.json().catch(() => ({}));
           throw new Error(data.error || "Gagal mencipta visual.");
         }
       }
@@ -1629,7 +1631,7 @@ export default function EditWorkPage() {
       await loadReadiness();
       toast("Butiran gambar disimpan.", "success");
     } catch (err) {
-      setVisualError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setVisualError(errorText(err));
     }
   }
 
@@ -1641,6 +1643,8 @@ export default function EditWorkPage() {
     if (!ok) return;
     setVisualError(null);
     try {
+      const tooLarge = uploadTooLargeMessage(file.size);
+      if (tooLarge) throw new Error(tooLarge);
       const body = new FormData();
       body.append("file", file);
       const res = await fetch(`/api/admin/visuals/${id}/replace`, { method: "POST", body });
@@ -1650,7 +1654,7 @@ export default function EditWorkPage() {
       await loadReadiness();
       toast(form.status === "published" ? "Gambar diganti dalam draf. Pembaca belum melihatnya: tekan Terbitkan semula di atas karya." : "Gambar diganti. Semak pratonton sebelum menerbitkan.", "success");
     } catch (err) {
-      setVisualError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setVisualError(errorText(err));
     }
   }
 
@@ -1673,7 +1677,7 @@ export default function EditWorkPage() {
       });
 
       if (!res.ok) {
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
         throw new Error(data.error || "Gagal memadam visual.");
       }
 
@@ -1681,7 +1685,7 @@ export default function EditWorkPage() {
       await loadReadiness();
       toast(markerInText ? `${label} dipadam. Penanda ${imageMarkerLabel(marker!)} masih ada dalam manuskrip.` : `${label} dipadam.`, "success");
     } catch (err) {
-      setVisualError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setVisualError(errorText(err));
     }
   }
 
@@ -1706,7 +1710,7 @@ export default function EditWorkPage() {
         });
 
         if (!res.ok) {
-          const data = await res.json();
+          const data = await res.json().catch(() => ({}));
           throw new Error(data.error || "Gagal menyimpan istilah glosari.");
         }
       } else {
@@ -1723,7 +1727,7 @@ export default function EditWorkPage() {
         });
 
         if (!res.ok) {
-          const data = await res.json();
+          const data = await res.json().catch(() => ({}));
           throw new Error(data.error || "Gagal menambah istilah glosari.");
         }
       }
@@ -1732,7 +1736,7 @@ export default function EditWorkPage() {
       await loadGlossary();
       await loadReadiness();
     } catch (err) {
-      setGlossaryError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setGlossaryError(errorText(err));
     }
   }
 
@@ -1745,14 +1749,14 @@ export default function EditWorkPage() {
       });
 
       if (!res.ok) {
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
         throw new Error(data.error || "Gagal memadam istilah glosari.");
       }
 
       await loadGlossary();
       await loadReadiness();
     } catch (err) {
-      setGlossaryError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setGlossaryError(errorText(err));
     }
   }
 
@@ -1794,7 +1798,7 @@ export default function EditWorkPage() {
       setTimeout(() => setPublishSuccess(null), 5000);
       loadPublishPreview();
     } catch (err) {
-      setPublishError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setPublishError(errorText(err));
     } finally {
       setPublishing(false);
     }
@@ -1831,7 +1835,7 @@ export default function EditWorkPage() {
       if (!res.ok) throw new Error("Gagal mengarkibkan.");
       router.push("/admin/works");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
       setSaving(false);
     }
   }
@@ -1851,7 +1855,7 @@ export default function EditWorkPage() {
       setDirty(false);
       router.push("/admin/works");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
       setSaving(false);
     }
   }
@@ -1873,7 +1877,7 @@ export default function EditWorkPage() {
         if (!res.ok) throw new Error("Gagal menyediakan karya untuk diterbitkan.");
         setForm((prev) => (prev ? { ...prev, status: "ready" } : prev));
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+        setError(errorText(err));
         setSaving(false);
         return;
       }
@@ -1897,7 +1901,7 @@ export default function EditWorkPage() {
       toast("Status dikemas kini.", "success");
       loadReadiness();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
     } finally {
       setSaving(false);
     }
@@ -2017,10 +2021,10 @@ export default function EditWorkPage() {
       </div>
       <p className="admin-form-hint a-work-save-help">Gambar, kredit, glosari dan bab disimpan melalui tindakan masing-masing — tidak memerlukan butang ini.</p>
 
-      <section className="a-assistant" id="chatbot-fill" aria-label="Isi maklumat dengan chatbot">
-        <h2>Isi maklumat dengan chatbot (sekali salin, sekali tampal)</h2>
+      <section className="a-assistant" id="chatbot-fill" aria-label="Isi maklumat dengan bot sembang">
+        <h2>Isi maklumat dengan bot sembang (sekali salin, sekali tampal)</h2>
         <p className="admin-form-hint">
-          Chatbot hanya membantu; editor yang memutuskan. Satu jawapan mengisi dek, genre, watak, latar tempat, latar masa, glosari{form.type === "fragmen" || form.type === "sinopsis" ? " dan maklumat sumber" : ""} yang masih kosong. Teks karya, kredit, imej dan hak tidak diisi, dan apa yang sudah anda tulis tidak diganti.
+          Bot sembang hanya membantu; editor yang memutuskan. Satu jawapan mengisi dek, genre, watak, latar tempat, latar masa, glosari{form.type === "fragmen" || form.type === "sinopsis" ? " dan maklumat sumber" : ""} yang masih kosong. Teks karya, kredit, imej dan hak tidak diisi, dan apa yang sudah anda tulis tidak diganti.
         </p>
         <div className="admin-form-actions">
           <button type="button" className="admin-btn admin-btn-outline" onClick={() => void copyFillPrompt()} disabled={fillBusy}>1. Salin arahan</button>
@@ -2092,11 +2096,11 @@ export default function EditWorkPage() {
       </div>
 
       {activeTab !== "glossary" && <details className="admin-advanced-field">
-        <summary>Bantuan chatbot untuk tab {TAB_NAMES[activeTab as Tab] ?? activeTab}</summary>
+        <summary>Bantuan bot sembang untuk tab {TAB_NAMES[activeTab as Tab] ?? activeTab}</summary>
         {activeTab === "characters" ? (
           <>
             <p className="admin-form-hint">
-              Satu arahan untuk <strong>watak, latar tempat dan latar masa</strong> (dan dek, genre dan glosari sekali): tekan <em>1. Salin arahan</em>, tampal ke chatbot, salin seluruh jawapannya, kemudian tekan <em>2. Tampal &amp; isi</em> di sini. Yang baharu ditambah; apa yang sudah ada tidak diganti. Latar masa ialah tahun atau era (contoh: 1969), bukan pagi, siang atau malam.
+              Satu arahan untuk <strong>watak, latar tempat dan latar masa</strong> (dan dek, genre dan glosari sekali): tekan <em>1. Salin arahan</em>, tampal ke bot sembang, salin seluruh jawapannya, kemudian tekan <em>2. Tampal &amp; isi</em> di sini. Yang baharu ditambah; apa yang sudah ada tidak diganti. Latar masa ialah tahun atau era (contoh: 1969), bukan pagi, siang atau malam.
             </p>
             <div className="admin-form-actions">
               <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={() => void copyFillPrompt()} disabled={fillBusy}>1. Salin arahan</button>
@@ -2109,7 +2113,7 @@ export default function EditWorkPage() {
             ) : null}
           </>
         ) : (
-          <p className="admin-form-hint">Salin arahan bersama manuskrip semasa, kemudian tampal ke chatbot pilihan anda. Jawapan untuk tab ini hanya nasihat: tiada tempat untuk menampalnya, jadi taip atau ubah sendiri di tab ini. (Dek, genre, watak, glosari dan sumber boleh diisi sekali gus melalui kotak &quot;Isi maklumat dengan chatbot&quot; di bahagian atas.) Editor kekal bertanggungjawab menyemaknya.</p>
+          <p className="admin-form-hint">Salin arahan bersama manuskrip semasa, kemudian tampal ke bot sembang pilihan anda. Jawapan untuk tab ini hanya nasihat: tiada tempat untuk menampalnya, jadi taip atau ubah sendiri di tab ini. (Dek, genre, watak, glosari dan sumber boleh diisi sekali gus melalui kotak &quot;Isi maklumat dengan bot sembang&quot; di bahagian atas.) Editor kekal bertanggungjawab menyemaknya.</p>
         )}
         {activeTab !== "characters" ? (
           <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={() => void copyAssistantPrompt()}>Salin arahan tab ini</button>
@@ -2136,7 +2140,7 @@ export default function EditWorkPage() {
           </div>
 
           <div className="admin-form-group">
-            <label htmlFor="dek">Dek</label>
+            <label htmlFor="dek">Ringkasan</label>
             <textarea
               id="dek"
               className="admin-textarea"
@@ -2346,7 +2350,7 @@ export default function EditWorkPage() {
               maxLength={600}
               value={form.readerNote}
               onChange={(e) => dashChange(e, (value) => setForm((prev) => ({ ...prev, readerNote: value })))}
-              placeholder="Satu atau dua ayat pendek di bawah jadual Bentuk, Genre, Bacaan dan Versi."
+              placeholder="Satu atau dua ayat pendek di bawah jadual Jenis, Genre, Bacaan dan Versi."
             />
             <span className="admin-form-hint">
               Dipaparkan kepada pembaca di kad &quot;Tentang karya&quot; di tepi karya. Biarkan kosong jika tiada nota. Karya terbit hanya menunjukkan nota baharu selepas diterbitkan semula.
@@ -2371,7 +2375,7 @@ export default function EditWorkPage() {
               className="admin-btn admin-btn-sm admin-btn-primary"
               onClick={() => setEditingSection({ slug: "", title: "", body: "" })}
             >
-              + Tambah Bab
+              + Tambah bab
             </button>
           </div>
           <p className="admin-form-hint">
@@ -2437,7 +2441,7 @@ export default function EditWorkPage() {
                   className="admin-btn admin-btn-primary"
                   onClick={handleSaveSection}
                 >
-                  Simpan Bab
+                  Simpan bab
                 </button>
               </div>
             </div>
@@ -2496,7 +2500,7 @@ export default function EditWorkPage() {
                             className="admin-btn admin-btn-sm"
                             onClick={() => setEditingSection(section)}
                           >
-                            Edit
+                            Sunting
                           </button>
                           <button
                             type="button"
@@ -2545,7 +2549,7 @@ export default function EditWorkPage() {
                 });
               }}
             >
-              + Tambah Kredit
+              + Tambah kredit
             </button>
           </div>
 
@@ -2597,7 +2601,7 @@ export default function EditWorkPage() {
                       guest_name: e.target.value ? undefined : prev?.guest_name,
                     }))}
                   >
-                    <option value="">-- Pilih --</option>
+                    <option value="">— Pilih —</option>
                     {contributors.filter((c) => c.kind !== "virtual").map((c) => (
                       <option key={c.slug} value={c.slug}>{c.display_name}</option>
                     ))}
@@ -2676,7 +2680,7 @@ export default function EditWorkPage() {
                   onClick={handleSaveCredit}
                   disabled={creditSaving}
                 >
-                  {creditSaving ? "Menyimpan…" : "Simpan Kredit"}
+                  {creditSaving ? "Menyimpan…" : "Simpan kredit"}
                 </button>
               </div>
             </div>
@@ -2751,7 +2755,7 @@ export default function EditWorkPage() {
                               setEditingCredit(credit);
                             }}
                           >
-                            Edit
+                            Sunting
                           </button>
                           <button
                             type="button"
@@ -2839,7 +2843,7 @@ export default function EditWorkPage() {
                 <label htmlFor="edit-image-marker">Penanda dalam manuskrip</label>
                 <select id="edit-image-marker" value={editingVisual.anchor || ""} onChange={(e) => setEditingVisual((prev) => ({ ...prev, anchor: e.target.value }))}>
                   <option value="">Pilih penanda…</option>
-                  {editingVisual.anchor && !isImageMarker(editingVisual.anchor) && <option value={editingVisual.anchor}>Anchor lama — kekalkan sementara</option>}
+                  {editingVisual.anchor && !isImageMarker(editingVisual.anchor) && <option value={editingVisual.anchor}>Penanda lama (kekalkan sementara)</option>}
                   {imageMarkers(savedBody).map((marker) => (
                     <option key={marker} value={marker} disabled={visuals.some((visual) => visual.id !== editingVisual.id && visual.anchor === marker)}>{imageMarkerLabel(marker)}</option>
                   ))}
@@ -2901,7 +2905,7 @@ export default function EditWorkPage() {
               <ul>{markerMigration.plan.changes.map((change) => <li key={change.id}>Gambar #{change.id}: {change.from.slice(0, 75)} → {change.to}</li>)}</ul>
               {markerMigration.plan.skipped.length > 0 && <ul>{markerMigration.plan.skipped.map((item) => <li key={item.id}>Gambar #{item.id}: {item.reason}</li>)}</ul>}
               {markerMigration.plan.changes.length > 0 && <button type="button" className="admin-btn admin-btn-primary admin-btn-sm" disabled={markerMigrationBusy || dirty} onClick={() => void runMarkerMigration("apply")}>Sahkan penukaran</button>}
-              {markerMigration.canRestore && <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" disabled={markerMigrationBusy || dirty} onClick={() => void runMarkerMigration("restore")}>Pulihkan anchor asal</button>}
+              {markerMigration.canRestore && <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" disabled={markerMigrationBusy || dirty} onClick={() => void runMarkerMigration("restore")}>Pulihkan penanda asal</button>}
             </div>
           )}
           <div id="work-image-upload">
@@ -2912,12 +2916,12 @@ export default function EditWorkPage() {
 
       {activeTab === "glossary" && (
         <div className="admin-glossary">
-          <section className="a-assistant" aria-label="Glosari dengan chatbot">
-            <h3>Glosari dengan chatbot</h3>
+          <section className="a-assistant" aria-label="Glosari dengan bot sembang">
+            <h3>Glosari dengan bot sembang</h3>
             <ol className="admin-form-hint">
               <li>Tekan <strong>Salin arahan</strong>. Arahan, format jawapan dan manuskrip disalin sekali gus.</li>
-              <li>Tampal ke chatbot pilihan anda dan tunggu jawapannya.</li>
-              <li>Salin jawapan chatbot, kemudian tekan <strong>Tampal &amp; import</strong>. Semua istilah dibaca dan ditambah terus.</li>
+              <li>Tampal ke bot sembang pilihan anda dan tunggu jawapannya.</li>
+              <li>Salin jawapan bot sembang, kemudian tekan <strong>Tampal &amp; import</strong>. Semua istilah dibaca dan ditambah terus.</li>
             </ol>
             <div className="admin-form-actions">
               <button type="button" className="admin-btn admin-btn-outline" onClick={() => void copyGlossaryPrompt()} disabled={glossaryBusy}>
@@ -3021,7 +3025,7 @@ export default function EditWorkPage() {
                   aria-describedby="glossary-origin-hint"
                 />
                 <span id="glossary-origin-hint" className="admin-form-hint">
-                  Pilihan, untuk perkataan pinjaman. Cara sebut dan ejaan asal dipaparkan di bawah istilah dalam tooltip glosari. Kosongkan jika tidak berkenaan.
+                  Pilihan, untuk perkataan pinjaman. Cara sebut dan ejaan asal dipaparkan di bawah istilah dalam kotak glosari. Kosongkan jika tidak berkenaan.
                 </span>
               </div>
 
@@ -3118,7 +3122,7 @@ export default function EditWorkPage() {
                             className="admin-btn admin-btn-sm"
                             onClick={() => setEditingGlossary(term)}
                           >
-                            Edit
+                            Sunting
                           </button>
                           <button
                             type="button"
@@ -3153,7 +3157,7 @@ export default function EditWorkPage() {
               className="admin-btn admin-btn-sm admin-btn-primary"
               onClick={addCharacterRow}
             >
-              + Tambah Watak
+              + Tambah watak
             </button>
           </div>
 
@@ -3231,7 +3235,7 @@ export default function EditWorkPage() {
               disabled={charactersSaving}
               onClick={handleSaveCharacters}
             >
-              {charactersSaving ? "Menyimpan..." : "Simpan Watak"}
+              {charactersSaving ? "Menyimpan…" : "Simpan watak"}
             </button>
           </div>
 
@@ -3245,7 +3249,7 @@ export default function EditWorkPage() {
             <h3>Sumber karya &amp; semakan hak</h3>
             {sourceRights?.sourceWork?.reviewedAt && (
               <span className="admin-status admin-status-ready">
-                Direviu {sourceRights.sourceWork.reviewedBy} · {new Date(sourceRights.sourceWork.reviewedAt).toLocaleString("ms-MY")}
+                Disemak oleh {sourceRights.sourceWork.reviewedBy} · {new Date(sourceRights.sourceWork.reviewedAt).toLocaleString("ms-MY")}
               </span>
             )}
           </div>
@@ -3264,7 +3268,7 @@ export default function EditWorkPage() {
               {sourceRights.rightsBlockers.length > 0 && (
                 <ul className="admin-alert admin-alert-error" role="alert" style={{ marginBottom: "0.75rem" }}>
                   {sourceRights.rightsBlockers.map((b) => (
-                    <li key={b.code + b.message}>[HAK] {b.message}</li>
+                    <li key={b.code + b.message}>Hak: {b.message}</li>
                   ))}
                 </ul>
               )}
@@ -3381,7 +3385,7 @@ export default function EditWorkPage() {
                   </span>
                   {(sourceRights?.chatbotFilledFields ?? []).length > 0 && (
                     <span className="admin-alert admin-alert-info" style={{ display: "block", margin: "0.5rem 0" }}>
-                      Chatbot mengisi: {(sourceRights?.chatbotFilledFields ?? []).join(", ")}. Semak setiap satu dengan naskhah sebenar; tanda ini hilang selepas anda merekod semakan hak.
+                      Bot sembang mengisi: {(sourceRights?.chatbotFilledFields ?? []).join(", ")}. Semak setiap satu dengan naskhah sebenar; tanda ini hilang selepas anda merekod semakan hak.
                     </span>
                   )}
                   <div className="admin-form-row">
@@ -3468,7 +3472,7 @@ export default function EditWorkPage() {
                     onClick={handleSaveProvenance}
                     disabled={sourceSaving}
                   >
-                    {sourceSaving ? "Menyimpan..." : "Simpan draf sumber"}
+                    {sourceSaving ? "Menyimpan…" : "Simpan draf sumber"}
                   </button>
                   <span className="admin-form-hint">Menyimpan butiran sumber sahaja, tanpa meluluskan status hak.</span>
                 </div>
@@ -3498,7 +3502,7 @@ export default function EditWorkPage() {
                     onClick={handleRightsReview}
                     disabled={sourceSaving}
                   >
-                    {sourceSaving ? "Merekod..." : "Sahkan keputusan hak"}
+                    {sourceSaving ? "Merekod…" : "Sahkan keputusan hak"}
                   </button>
                 </div>
               </div>

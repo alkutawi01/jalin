@@ -2,6 +2,8 @@
 
 import { useMemo, useState } from "react";
 import { toast } from "../../lib/admin/dialogs";
+import { uploadTooLargeMessage } from "../../lib/admin/upload-limit";
+import { errorText } from "../../lib/admin/error-text";
 
 interface VisualLike {
   id: number;
@@ -46,6 +48,8 @@ export default function ChapterImages({
     setBusy(true);
     setError("");
     try {
+      const tooLarge = uploadTooLargeMessage(file.size);
+      if (tooLarge) throw new Error(tooLarge);
       let res: Response;
       if (replaceId) {
         const body = new FormData();
@@ -66,7 +70,7 @@ export default function ChapterImages({
       toast(published ? "Gambar disimpan dalam draf. Pembaca belum melihatnya: tekan Terbitkan semula di atas karya." : "Gambar bab disimpan.", "success");
       onChanged();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
     } finally {
       setBusy(false);
     }
@@ -81,7 +85,7 @@ export default function ChapterImages({
       if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || "Gagal memadam gambar.");
       onChanged();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
     } finally {
       setBusy(false);
     }
@@ -104,8 +108,8 @@ export default function ChapterImages({
       {error ? <div className="admin-alert admin-alert-error" role="alert">{error}</div> : null}
 
       <div className="a-chapter-block">
-        <strong>Hero bab</strong>
-        <p className="admin-form-hint">Dipaparkan di kepala bab ini. Jika tiada, hero Novela digunakan.</p>
+        <strong>Gambar utama bab</strong>
+        <p className="admin-form-hint">Dipaparkan di kepala bab ini. Jika tiada, gambar utama Novela digunakan.</p>
         {hero ? (
           <div className="a-chapter-row">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -116,7 +120,7 @@ export default function ChapterImages({
               <p className="admin-form-hint">Untuk memilih bahagian gambar yang dipaparkan, buka tab Kandungan, bahagian Gambar dalam karya, dan tekan Ubah butiran.</p>
             </div>
           </div>
-        ) : fileInput("Muat naik hero bab", (file) => void send(file, "section"))}
+        ) : fileInput("Muat naik gambar utama bab", (file) => void send(file, "section"))}
       </div>
 
       <div className="a-chapter-block">

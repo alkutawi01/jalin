@@ -18,7 +18,7 @@ export const GROUNDS = [
   { key: "sand", label: "Peach muda", hex: "#f7ece4", tone: "light" },
   { key: "beige", label: "Peach", hex: "#d8b9a6", tone: "light" },
   { key: "ink", label: "Teal tua", hex: "#18343c", tone: "dark" },
-  { key: "clay", label: "Terracotta", hex: "#a76450", tone: "dark" },
+  { key: "clay", label: "Terakota", hex: "#a76450", tone: "dark" },
   { key: "black", label: "Hitam", hex: "#000000", tone: "dark" }
 ] as const;
 export type GroundKey = (typeof GROUNDS)[number]["key"];
@@ -28,8 +28,8 @@ export const HOME_BLOCKS = [
   { key: "hero", label: "Karya utama (karusel)", default: "paper" },
   { key: "stats", label: "Statistik (di bawah karusel)", default: "ink" },
   { key: "series", label: "Bersiri", default: "paper" },
-  { key: "latest", label: "Karya Terbaru", default: "paper" },
-  { key: "categories", label: "Jelajahi Kategori", default: "sand" }
+  { key: "latest", label: "Karya terbaru", default: "paper" },
+  { key: "categories", label: "Terokai kategori", default: "sand" }
 ] as const satisfies ReadonlyArray<{ key: string; label: string; default: GroundKey }>;
 export type HomeBlockKey = (typeof HOME_BLOCKS)[number]["key"];
 

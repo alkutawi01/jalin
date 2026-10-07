@@ -39,7 +39,7 @@ export default function ChapterPicker({ rows, currentSlug }: { rows: ChapterPick
 
   return (
     <details className="chapter-picker" ref={ref}>
-      <summary>Senarai Bab ({rows.length})</summary>
+      <summary>Senarai bab ({rows.length})</summary>
       <ol>
         {rows.map((row, index) => (
           <li key={row.slug}>

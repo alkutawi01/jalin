@@ -39,7 +39,7 @@ export default async function AdminSeriesPage() {
             <p className="admin-page-sub">{series.length} siri dalam pangkalan data</p>
           </div>
           <a href="/admin/series/new" className="admin-btn admin-btn-primary">
-            + Siri Baharu
+            + Tambah siri
           </a>
         </div>
       </header>

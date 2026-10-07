@@ -115,7 +115,7 @@ export async function POST(request: NextRequest) {
     if (result.plan && expectedType && result.plan.work.type !== expectedType) {
       errors.push({
         code: "type_mismatch",
-        message: `Anda memilih jenis ${expectedType}, tetapi jawapan chatbot menyebut ${result.plan.work.type}. Jenis tidak ditukar secara senyap. Minta chatbot menjawab semula untuk ${expectedType}, atau mulakan semula dengan jenis yang betul.`,
+        message: `Anda memilih jenis ${expectedType}, tetapi jawapan bot sembang menyebut ${result.plan.work.type}. Jenis tidak ditukar secara senyap. Minta bot sembang menjawab semula untuk ${expectedType}, atau mulakan semula dengan jenis yang betul.`,
         path: "type"
       });
     }

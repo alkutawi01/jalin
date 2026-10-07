@@ -6,6 +6,8 @@ import { confirmAction, toast } from "../../../../lib/admin/dialogs";
 import LoadingBlock from "../../../../components/admin/LoadingBlock";
 import AudiencePicker from "../../../../components/admin/AudiencePicker";
 import ImageFocusPicker, { type FocusValue } from "../../../../components/admin/ImageFocusPicker";
+import { MAX_UPLOAD_LABEL, uploadTooLargeMessage } from "../../../../lib/admin/upload-limit";
+import { errorText } from "../../../../lib/admin/error-text";
 
 /** An episode's status in the editor's words, as the works list shows it. */
 const EPISODE_STATUS: Record<string, string> = { draft: "Draf", review: "Semakan", ready: "Sedia", published: "Diterbitkan", archived: "Diarkibkan" };
@@ -95,7 +97,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
       }
       setEntryWorks(map);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat memuatkan siri.");
+      setError(errorText(err, "Ralat memuatkan siri."));
     } finally {
       setLoading(false);
     }
@@ -135,7 +137,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
-      let data = await res.json();
+      let data = await res.json().catch(() => ({}));
       if (res.status === 409 && String(data.error).includes("Perlu disahkan")) {
         // Changing the mode of a series with public episodes changes what readers see at once: say so, then ask again.
         if (!(await confirmAction(`${data.error} Teruskan?`, { danger: true, confirmLabel: "Ya, tukar mod" }))) { setSaving(false); return; }
@@ -144,14 +146,14 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ ...form, confirmModeChange: true }),
         });
-        data = await res.json();
+        data = await res.json().catch(() => ({}));
       }
       if (!res.ok) throw new Error(data.error || "Gagal menyimpan.");
       setSuccess("Siri disimpan.");
       await loadSeries();
       setTimeout(() => setSuccess(null), 4000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
     } finally {
       setSaving(false);
     }
@@ -167,7 +169,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ workId: attachWorkId }),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Gagal menyertai episod.");
       setAttachWorkId("");
       setSuccess("Episod disertai.");
@@ -175,7 +177,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
       await loadUnattached();
       setTimeout(() => setSuccess(null), 4000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
     } finally {
       setActionBusy(false);
     }
@@ -188,12 +190,12 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
     setError(null);
     try {
       const res = await fetch(`/api/admin/series/${id}/entries/${workId}`, { method: "DELETE" });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Gagal mengeluarkan episod.");
       await loadSeries();
       await loadUnattached();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
     } finally {
       setActionBusy(false);
     }
@@ -220,26 +222,26 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ workIds: ids, confirm: true }),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Gagal menyusun.");
       await loadSeries();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
     } finally {
       setActionBusy(false);
     }
   }
 
   async function handleDelete() {
-    if (!(await confirmAction("Padam Siri ini? Hanya dibenarkan jika tiada episod. Karya episod tidak akan dipadam.", { danger: true, confirmLabel: "Ya, teruskan" }))) return;
+    if (!(await confirmAction("Padam siri ini? Hanya dibenarkan jika tiada episod. Karya episod tidak akan dipadam.", { danger: true, confirmLabel: "Ya, teruskan" }))) return;
     setError(null);
     try {
       const res = await fetch(`/api/admin/series/${id}`, { method: "DELETE" });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Gagal memadam siri.");
       router.push("/admin/series");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
     }
   }
 
@@ -259,6 +261,8 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
     setHeroBusy(true);
     setError(null);
     try {
+      const tooLarge = uploadTooLargeMessage(heroFile.size);
+      if (tooLarge) throw new Error(tooLarge);
       const body = new FormData();
       body.set("file", heroFile);
       body.set("alt", heroAlt);
@@ -270,7 +274,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
       toast("Gambar siri disimpan.", "success");
       await loadSeries();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
     } finally {
       setHeroBusy(false);
     }
@@ -292,7 +296,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
       toast("Bahagian gambar disimpan.", "success");
       await loadSeries();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
     } finally {
       setHeroBusy(false);
     }
@@ -306,7 +310,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
       if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || "Gagal membuang gambar siri.");
       await loadSeries();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ralat tidak diketahui.");
+      setError(errorText(err));
     } finally {
       setHeroBusy(false);
     }
@@ -317,13 +321,13 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
       <header className="admin-page-header">
         <div className="admin-page-header-row">
           <div>
-            <h1>Sunting Siri</h1>
+            <h1>Sunting siri</h1>
             <p className="admin-page-sub">ID: {series.id}</p>
           </div>
           <div className="admin-page-header-actions">
             <a className="admin-btn admin-btn-outline" href={`/admin/penilaian/series/${series.id}`}>Penilaian & teks penuh</a>
             <button type="button" className="admin-btn admin-btn-danger" onClick={handleDelete}>
-              Padam Siri
+              Padam siri
             </button>
           </div>
         </div>
@@ -361,7 +365,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
           </details>
         ) : null}
         <div className="admin-form-group">
-          <label htmlFor="series-hero-file">Fail imej (PNG, JPEG atau WebP, maksimum 10 MB)</label>
+          <label htmlFor="series-hero-file">Fail gambar (PNG, JPEG atau WebP, maksimum {MAX_UPLOAD_LABEL})</label>
           <input id="series-hero-file" type="file" accept="image/png,image/jpeg,image/webp" onChange={(e) => setHeroFile(e.target.files?.[0] ?? null)} />
         </div>
         <div className="admin-form-group">
@@ -433,7 +437,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
         <div className="admin-form-actions">
           <a href="/admin/series" className="admin-btn admin-btn-outline">Kembali</a>
           <button type="submit" className="admin-btn admin-btn-primary" disabled={saving}>
-            {saving ? "Menyimpan..." : "Simpan Siri"}
+            {saving ? "Menyimpan…" : "Simpan"}
           </button>
         </div>
       </form>

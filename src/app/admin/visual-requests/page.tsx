@@ -36,7 +36,7 @@ export default async function AdminVisualRequestsPage() {
     return (
       <div className="admin-placeholder">
         <header className="admin-page-header">
-          <h1>Permintaan Visual</h1>
+          <h1>Permintaan gambar</h1>
           <p className="admin-page-sub">Pengurusan permintaan visual</p>
         </header>
         <div className="admin-placeholder-content">
@@ -54,11 +54,11 @@ export default async function AdminVisualRequestsPage() {
       <header className="admin-page-header">
         <div className="admin-page-header-row">
           <div>
-            <h1>Permintaan Visual</h1>
+            <h1>Permintaan gambar</h1>
             <p className="admin-page-sub">{requests.length} permintaan visual</p>
           </div>
           <a href="/admin/visual-requests/new" className="admin-btn admin-btn-primary">
-            + Permintaan Baharu
+            + Tambah permintaan
           </a>
         </div>
       </header>

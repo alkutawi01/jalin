@@ -18,11 +18,11 @@ const ROLE_LABELS: Record<string, string> = {
   author: "Pengarang asal",
   initial_draft: "Penulis",
   story_editor: "Penulis & penyemak",
-  final_editor: "Editor",
+  final_editor: "Penyunting",
   co_writer: "Penulis",
   language_editor: "Penyemak bahasa",
   fact_checker: "Penyemak fakta",
-  publication_editor: "Editor penerbitan",
+  publication_editor: "Penyunting penerbitan",
   translated_by: "Penterjemah",
   translation_editor: "Penyunting terjemahan"
 };
@@ -35,9 +35,15 @@ type ProjectedPerson = {
   maya: boolean;
 };
 
+/** Credits saved earlier hold the label text itself ("Editor"), not a key: they read as the new wording too. */
+const RENAMED_LABELS: Record<string, string> = { Editor: "Penyunting", "Editor penerbitan": "Penyunting penerbitan" };
+
 function projectRole(role: string): string | undefined {
   if (Object.prototype.hasOwnProperty.call(ROLE_LABELS, role)) {
     return ROLE_LABELS[role];
+  }
+  if (Object.prototype.hasOwnProperty.call(RENAMED_LABELS, role.trim())) {
+    return RENAMED_LABELS[role.trim()];
   }
   if (APPROVED_LABELS.has(role)) {
     return role;

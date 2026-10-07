@@ -48,7 +48,7 @@ export default function AiCreditPicker({
         const persona = personas.find((p) => p.ai === e.target.value);
         if (persona?.slug) onPick(persona.slug);
       }}>
-        <option value="">-- Pilih AI --</option>
+        <option value="">— Pilih AI —</option>
         {personas.map((p) => (
           // An AI with no pseudonym yet is still listed (it used to vanish, so the editor could not tell why Gemini was missing).
           <option key={p.ai} value={p.ai} disabled={!p.slug}>
