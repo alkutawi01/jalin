@@ -37,6 +37,10 @@ const shown: Array<[string, string]> = [
 ];
 for (const [file, text] of shown) assert(read(file).includes(text), `${file.replace("src/", "")} uses the crop`);
 
+// Two more places showed the centre whatever the editor chose: a picture inside an episode's text, and the category cards of the home page.
+assert(read("src/components/reader/EpisodeView.tsx").replace(/\s+/g, " ").includes("<EditorialImage key={index} src={node.src} alt={node.alt} rights={rights} crop={node.crop} />"),"a picture inside an episode's text uses its crop, as one inside a cerpen does");
+assert(read("src/app/page.tsx").includes("style={cropStyle(imageCrop)}") && read("src/app/page.tsx").includes("imageCrop={img?.crop}"), "the home page's category cards use the crop of the picture they show");
+
 const service = read("src/lib/admin/series-hero.ts");
 assert(service.includes("export async function setSeriesHeroCrop") && service.includes("const centred = x === 50 && y === 50 && zoom === 100;") && service.includes("hero_focus_x: centred ? null : x"), "the centre at no zoom is stored as nothing chosen");
 assert(service.includes("menjalankan migrasi 024 dahulu") && /hero_\(src\|alt\|focus_x\|focus_y\|zoom\)/.test(service), "before migration 024 the editor is told so, not shown a database error");
