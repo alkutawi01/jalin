@@ -35,10 +35,11 @@ assert(contributor.includes('{ "nara-zahin": "claude" }') && contributor.include
 assert(contributor.includes('.replace(/\\r\\n/g, "\\n").trim().replace(/^# .+\\n+/'), "a bio saved from the admin text box does not show its name twice");
 
 const settings = read("src/app/admin/settings/page.tsx");
+const tabs = read("src/lib/admin/settings-tabs.ts");
 for (const id of ["teks-awam", "nama-samaran", "arahan-ai", "alat-lain", "status-sistem"]) {
-  assert(settings.includes(`id="${id}"`) && settings.includes(`href="#${id}"`), `Tetapan has the section #${id} and an index link to it`);
+  assert(tabs.includes(`{ id: "${id}",`) && settings.includes(`tab === "${id}" ?`), `Tetapan has the tab ${id} and its panel`);
 }
-assert((settings.match(/<details className="a-settings-fold"/g) ?? []).length === 2 && settings.indexOf("teks-awam") < settings.indexOf("arahan-ai"), "the long AI instructions are folded and come after the texts editors change most");
+assert((settings.match(/<details className="a-settings-fold"/g) ?? []).length === 2 && tabs.indexOf("teks-awam") < tabs.indexOf("arahan-ai"), "the long AI instructions are folded and their tab comes after the texts editors change most");
 
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);

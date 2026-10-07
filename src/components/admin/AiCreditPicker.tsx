@@ -57,7 +57,7 @@ export default function AiCreditPicker({
         ))}
       </select>
       {personas.some((p) => !p.slug) ? (
-        <p className="admin-form-hint">AI yang belum ada nama samaran tidak boleh dipilih lagi: tetapkan namanya di <a href="/admin/settings#nama-samaran">Tetapan</a>, kemudian muat semula halaman ini.</p>
+        <p className="admin-form-hint">AI yang belum ada nama samaran tidak boleh dipilih lagi: tetapkan namanya di <a href="/admin/settings?tab=nama-samaran">Tetapan</a>, kemudian muat semula halaman ini.</p>
       ) : null}
       {picked ? <p className="admin-form-hint">Dipaparkan sebagai: {picked.displayName} (Maya)</p> : null}
     </div>
