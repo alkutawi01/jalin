@@ -99,42 +99,61 @@ export async function createSection(input: SectionInput): Promise<SectionRecord>
 
   await assertNovelaWork(db, input.workId);
 
-  const existing = await db
-    .selectFrom("reading_sections")
-    .where("work_id", "=", input.workId)
-    .select("position")
-    .orderBy("position", "desc")
-    .executeTakeFirst();
-  const nextPosition = input.position ?? (existing ? existing.position + 1 : 1);
+  // Two chapters added at the same moment both read the same last position, and the second was answered with the database's own
+  // words ('duplicate key value violates unique constraint "reading_sections_work_position_key"'); so was a chapter whose address
+  // another chapter already has. One chapter is added to a work at a time, and a clash is told in the editor's language.
+  let result: { id: number } | undefined;
+  try {
+    result = await db.transaction().execute(async (trx) => {
+      await sql`SELECT pg_advisory_xact_lock(hashtext(${"sections:" + input.workId}))`.execute(trx);
+      const existing = await trx
+        .selectFrom("reading_sections")
+        .where("work_id", "=", input.workId)
+        .select("position")
+        .orderBy("position", "desc")
+        .executeTakeFirst();
+      const nextPosition = input.position ?? (existing ? existing.position + 1 : 1);
 
-  // Validate position availability when explicit
-  if (input.position !== undefined) {
-    const clash = await db
-      .selectFrom("reading_sections")
-      .where("work_id", "=", input.workId)
-      .where("position", "=", nextPosition)
-      .select("id")
-      .executeTakeFirst();
-    if (clash) {
-      throw new Error(`Position ${nextPosition} sudah digunakan.`);
+      // Validate position availability when explicit
+      if (input.position !== undefined) {
+        const clash = await trx
+          .selectFrom("reading_sections")
+          .where("work_id", "=", input.workId)
+          .where("position", "=", nextPosition)
+          .select("id")
+          .executeTakeFirst();
+        if (clash) {
+          throw new Error(`Position ${nextPosition} sudah digunakan.`);
+        }
+      }
+
+      const now = new Date().toISOString();
+      return trx
+        .insertInto("reading_sections")
+        .values({
+          work_id: input.workId,
+          slug: input.slug,
+          title: input.title ?? null,
+          position: nextPosition,
+          body: input.body,
+          reading_minutes: input.readingMinutes ?? null,
+          created_at: now,
+          updated_at: now,
+        })
+        .returning("id")
+        .executeTakeFirst();
+    });
+  } catch (error) {
+    const clash = error as { code?: string; constraint?: string };
+    if (clash.code === "23505") {
+      throw new Error(
+        clash.constraint === "reading_sections_work_position_key"
+          ? "Kedudukan bab ini sudah digunakan. Muat semula senarai bab dan cuba lagi."
+          : "Alamat bab ini sudah digunakan oleh bab lain dalam karya yang sama. Pilih alamat lain."
+      );
     }
+    throw error;
   }
-
-  const now = new Date().toISOString();
-  const result = await db
-    .insertInto("reading_sections")
-    .values({
-      work_id: input.workId,
-      slug: input.slug,
-      title: input.title ?? null,
-      position: nextPosition,
-      body: input.body,
-      reading_minutes: input.readingMinutes ?? null,
-      created_at: now,
-      updated_at: now,
-    })
-    .returning("id")
-    .executeTakeFirst();
 
   if (!result) {
     throw new Error("Gagal mencipta bab.");
