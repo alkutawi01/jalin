@@ -294,6 +294,11 @@ export async function deleteUnpublishedWork(id: string): Promise<void> {
     await trx.deleteFrom("visuals").where("work_id", "=", id).execute();
     await trx.deleteFrom("credits").where("work_id", "=", id).execute();
     await trx.deleteFrom("glossary_terms").where("work_id", "=", id).execute();
+    // These two name the work without a link in the database, so nothing removed them: the editorial problems of a work that is
+    // gone stayed listed, and the submission the draft was made from stayed "sudah dipromosikan ke Work …" for a work that no
+    // longer exists, so it could never be promoted again.
+    await trx.deleteFrom("editorial_issues").where("work_id", "=", id).execute();
+    await trx.updateTable("work_submissions").set({ result_work_id: null, promoted_at: null, updated_at: new Date().toISOString() }).where("result_work_id", "=", id).execute();
     await trx.deleteFrom("works").where("id", "=", id).execute();
   });
 }
