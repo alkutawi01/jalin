@@ -45,7 +45,7 @@ export default function NewSeriesPage() {
     <div className="admin-form-page">
       <header className="admin-page-header">
         <div>
-          <h1>Siri Baharu</h1>
+          <h1>Siri baharu</h1>
           <p className="admin-page-sub">Bekas editorial untuk episod Bersiri</p>
         </div>
       </header>
@@ -123,7 +123,7 @@ export default function NewSeriesPage() {
         <div className="admin-form-actions">
           <a href="/admin/series" className="admin-btn admin-btn-outline">Kembali</a>
           <button type="submit" className="admin-btn admin-btn-primary" disabled={saving}>
-            {saving ? "Mencipta..." : "Cipta Siri"}
+            {saving ? "Menambah…" : "Tambah siri"}
           </button>
         </div>
       </form>

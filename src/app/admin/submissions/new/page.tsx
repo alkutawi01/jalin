@@ -62,7 +62,7 @@ export default function NewSubmissionPage() {
       <header className="admin-page-header">
         <div className="admin-page-header-row">
           <div>
-            <h1>Penghantaran Baharu</h1>
+            <h1>Penghantaran baharu</h1>
             <p className="admin-page-sub">Cipta penghantaran baharu</p>
           </div>
           <a href="/admin/submissions" className="admin-btn admin-btn-outline">Kembali</a>
@@ -144,7 +144,7 @@ export default function NewSubmissionPage() {
         <div className="admin-form-actions">
           <a href="/admin/submissions" className="admin-btn admin-btn-outline">Kembali</a>
           <button type="submit" className="admin-btn admin-btn-primary" disabled={saving}>
-            {saving ? "Mencipta..." : "Cipta Penghantaran"}
+            {saving ? "Menambah…" : "Tambah penghantaran"}
           </button>
         </div>
       </form>

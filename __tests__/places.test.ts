@@ -47,7 +47,7 @@ assert(api.includes("export async function GET") && api.includes("export async f
 const chrome = read("src/components/reader/StoryChrome.tsx");
 const right = chrome.slice(chrome.indexOf("export function RightRail"), chrome.indexOf("export function EditorNote"));
 assert(right.includes("Latar tempat") && right.includes("places.map"), "the right column shows Latar tempat");
-assert(read("src/components/reader/WorkView.tsx").includes("<RightRail characters={characters} places={places} times={times} />") && read("src/components/reader/EpisodeView.tsx").includes("<RightRail characters={characters} places={places} times={times} />"), "stories and series episodes both show the places");
+assert(read("src/components/reader/WorkView.tsx").includes("<RightRail characters={characters} places={places} times={times} info={<MobileStoryInfo data={mobileInfo} />} />") && read("src/components/reader/EpisodeView.tsx").includes("<RightRail characters={characters} places={places} times={times} info={<MobileStoryInfo data={mobileInfo} />} />"), "stories and series episodes both show the places");
 assert(read("src/components/reader/MobileStoryInfo.tsx").includes("sheet-tab-latar"), "the phone's Info sheet has a Latar tab");
 const editor = read("src/app/admin/works/[id]/page.tsx");
 assert(editor.includes("<PlacesEditor key={\"p\" + settingKey} workId={workId} />") && editor.includes("Watak &amp; latar"), "the editor has the places next to the characters");

@@ -17,8 +17,8 @@ const SETTINGS = {
     title: "Latar Tempat",
     noun: "latar tempat",
     nameLabel: "Nama tempat",
-    add: "+ Tambah Tempat",
-    save: "Simpan Latar Tempat",
+    add: "+ Tambah tempat",
+    save: "Simpan latar tempat",
     hint: "Di mana cerita ini berlaku: nama tempat dan beberapa patah kata (pilihan). Dipaparkan kepada pembaca di lajur kanan, di bawah Watak.",
     namePlaceholder: "Contoh: Beranda rumah Pak Long",
     descriptionPlaceholder: "Contoh: Tempat keluarga berkumpul"
@@ -29,8 +29,8 @@ const SETTINGS = {
     title: "Latar Masa",
     noun: "latar masa",
     nameLabel: "Tahun atau era",
-    add: "+ Tambah Masa",
-    save: "Simpan Latar Masa",
+    add: "+ Tambah masa",
+    save: "Simpan latar masa",
     hint: "Bila cerita ini berlaku: tahun, tempoh atau era (contoh: 1969, Era Darurat 1948–1960), BUKAN pagi, siang atau malam. Dipaparkan kepada pembaca di lajur kanan, di bawah Latar tempat.",
     namePlaceholder: "Contoh: Mei 1969",
     descriptionPlaceholder: "Contoh: Selepas rusuhan, waktu perintah berkurung"
@@ -155,7 +155,7 @@ export default function PlacesEditor({ workId, kind = "places" }: { workId: stri
       )}
       <div className="admin-form-actions">
         <button type="button" className="admin-btn admin-btn-primary" disabled={saving || !dirty} onClick={save}>
-          {saving ? "Menyimpan..." : cfg.save}
+          {saving ? "Menyimpan…" : cfg.save}
         </button>
         {dirty ? <span className="admin-form-hint" role="status"> Ada perubahan yang belum disimpan.</span> : null}
       </div>

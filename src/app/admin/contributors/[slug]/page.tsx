@@ -98,7 +98,7 @@ export default function EditContributorPage() {
   if (loading) {
     return (
       <div className="admin-loading">
-        <p>Memuatkan penyumbang...</p>
+        <p>Memuatkan penyumbang…</p>
       </div>
     );
   }
@@ -115,7 +115,7 @@ export default function EditContributorPage() {
   return (
     <div className="admin-form-page">
       <header className="admin-page-header">
-        <h1>Edit Penyumbang</h1>
+        <h1>Sunting penyumbang</h1>
         <p className="admin-page-sub">Alamat pautan: {contributorSlug}</p>
       </header>
 
@@ -208,7 +208,7 @@ export default function EditContributorPage() {
             className="admin-btn admin-btn-primary"
             disabled={saving}
           >
-            {saving ? "Menyimpan..." : "Simpan Perubahan"}
+            {saving ? "Menyimpan…" : "Simpan"}
           </button>
         </div>
       </form>

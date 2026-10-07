@@ -61,7 +61,7 @@ export default function NewPromptPage() {
       <header className="admin-page-header">
         <div className="admin-page-header-row">
           <div>
-            <h1>Templat Arahan Baharu</h1>
+            <h1>Templat arahan baharu</h1>
             <p className="admin-page-sub">Cipta templat arahan baharu</p>
           </div>
           <a href="/admin/prompts" className="admin-btn admin-btn-outline">Kembali</a>
@@ -137,7 +137,7 @@ export default function NewPromptPage() {
         <div className="admin-form-actions">
           <a href="/admin/prompts" className="admin-btn admin-btn-outline">Kembali</a>
           <button type="submit" className="admin-btn admin-btn-primary" disabled={saving}>
-            {saving ? "Mencipta..." : "Cipta Templat"}
+            {saving ? "Menambah…" : "Tambah templat"}
           </button>
         </div>
       </form>

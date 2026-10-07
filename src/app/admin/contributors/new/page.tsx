@@ -68,7 +68,7 @@ export default function NewContributorPage() {
   return (
     <div className="admin-form-page">
       <header className="admin-page-header">
-        <h1>Penyumbang Baharu</h1>
+        <h1>Penyumbang baharu</h1>
         <p className="admin-page-sub">Cipta penyumbang baharu dalam pangkalan data</p>
       </header>
 
@@ -122,7 +122,7 @@ export default function NewContributorPage() {
             className="admin-textarea admin-textarea--long"
             value={form.bio}
             onChange={(e) => setForm((prev) => ({ ...prev, bio: e.target.value }))}
-            placeholder="Bio ringkas penyumbang..."
+            placeholder="Bio ringkas penyumbang…"
             rows={8}
           />
         </div>
@@ -149,7 +149,7 @@ export default function NewContributorPage() {
             className="admin-btn admin-btn-primary"
             disabled={saving}
           >
-            {saving ? "Menyimpan..." : "Cipta Penyumbang"}
+            {saving ? "Menyimpan…" : "Tambah penyumbang"}
           </button>
         </div>
       </form>

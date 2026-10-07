@@ -85,7 +85,7 @@ export default function LoginPage() {
             className="admin-btn admin-btn-primary admin-btn-full"
             disabled={loading}
           >
-            {loading ? "Menyemak..." : "Log Masuk"}
+            {loading ? "Menyemak…" : "Log masuk"}
           </button>
         </form>
       </div>

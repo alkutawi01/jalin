@@ -2375,7 +2375,7 @@ export default function EditWorkPage() {
               className="admin-btn admin-btn-sm admin-btn-primary"
               onClick={() => setEditingSection({ slug: "", title: "", body: "" })}
             >
-              + Tambah Bab
+              + Tambah bab
             </button>
           </div>
           <p className="admin-form-hint">
@@ -2441,7 +2441,7 @@ export default function EditWorkPage() {
                   className="admin-btn admin-btn-primary"
                   onClick={handleSaveSection}
                 >
-                  Simpan Bab
+                  Simpan bab
                 </button>
               </div>
             </div>
@@ -2549,7 +2549,7 @@ export default function EditWorkPage() {
                 });
               }}
             >
-              + Tambah Kredit
+              + Tambah kredit
             </button>
           </div>
 
@@ -2680,7 +2680,7 @@ export default function EditWorkPage() {
                   onClick={handleSaveCredit}
                   disabled={creditSaving}
                 >
-                  {creditSaving ? "Menyimpan…" : "Simpan Kredit"}
+                  {creditSaving ? "Menyimpan…" : "Simpan kredit"}
                 </button>
               </div>
             </div>
@@ -3157,7 +3157,7 @@ export default function EditWorkPage() {
               className="admin-btn admin-btn-sm admin-btn-primary"
               onClick={addCharacterRow}
             >
-              + Tambah Watak
+              + Tambah watak
             </button>
           </div>
 
@@ -3235,7 +3235,7 @@ export default function EditWorkPage() {
               disabled={charactersSaving}
               onClick={handleSaveCharacters}
             >
-              {charactersSaving ? "Menyimpan..." : "Simpan Watak"}
+              {charactersSaving ? "Menyimpan…" : "Simpan watak"}
             </button>
           </div>
 
@@ -3472,7 +3472,7 @@ export default function EditWorkPage() {
                     onClick={handleSaveProvenance}
                     disabled={sourceSaving}
                   >
-                    {sourceSaving ? "Menyimpan..." : "Simpan draf sumber"}
+                    {sourceSaving ? "Menyimpan…" : "Simpan draf sumber"}
                   </button>
                   <span className="admin-form-hint">Menyimpan butiran sumber sahaja, tanpa meluluskan status hak.</span>
                 </div>
@@ -3502,7 +3502,7 @@ export default function EditWorkPage() {
                     onClick={handleRightsReview}
                     disabled={sourceSaving}
                   >
-                    {sourceSaving ? "Merekod..." : "Sahkan keputusan hak"}
+                    {sourceSaving ? "Merekod…" : "Sahkan keputusan hak"}
                   </button>
                 </div>
               </div>
