@@ -222,7 +222,7 @@ export default function EditSubmissionPage() {
         }),
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
         throw new Error(data.error || "Gagal menjana.");
@@ -275,7 +275,7 @@ export default function EditSubmissionPage() {
         }),
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
         throw new Error(data.error || "Gagal mempromosikan.");
@@ -308,7 +308,7 @@ export default function EditSubmissionPage() {
       });
 
       if (!res.ok) {
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
         throw new Error(data.error || "Gagal menyimpan.");
       }
 
@@ -333,7 +333,7 @@ export default function EditSubmissionPage() {
           body: JSON.stringify(editingContribution),
         });
         if (!res.ok) {
-          const data = await res.json();
+          const data = await res.json().catch(() => ({}));
           throw new Error(data.error || "Gagal menyimpan sumbangan.");
         }
       } else {
@@ -347,7 +347,7 @@ export default function EditSubmissionPage() {
           }),
         });
         if (!res.ok) {
-          const data = await res.json();
+          const data = await res.json().catch(() => ({}));
           throw new Error(data.error || "Gagal mencipta sumbangan.");
         }
       }
@@ -365,7 +365,7 @@ export default function EditSubmissionPage() {
     try {
       const res = await fetch(`/api/admin/contributions/${id}`, { method: "DELETE" });
       if (!res.ok) {
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
         throw new Error(data.error || "Gagal memadam sumbangan.");
       }
       loadContributions();

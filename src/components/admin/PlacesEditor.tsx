@@ -75,7 +75,7 @@ export default function PlacesEditor({ workId, kind = "places" }: { workId: stri
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ [cfg.path]: places })
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || `Gagal menyimpan ${cfg.noun}.`);
       setPlaces(data);
       setBaseline(JSON.stringify(data));

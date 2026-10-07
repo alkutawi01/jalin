@@ -46,7 +46,7 @@ export default function AddWorkPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ type, seriesId: type === "bersiri" ? seriesId || undefined : undefined }),
       });
-      const data = await response.json();
+      const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.error || "Draf gagal dibuat.");
       router.push(`/admin/works/${data.id}#content`);
     } catch (err) {

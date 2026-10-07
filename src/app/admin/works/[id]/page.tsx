@@ -930,7 +930,7 @@ export default function EditWorkPage() {
           body: JSON.stringify(editingSection),
         });
         if (!res.ok) {
-          const data = await res.json();
+          const data = await res.json().catch(() => ({}));
           throw new Error(data.error || "Gagal menyimpan bab.");
         }
       } else {
@@ -940,7 +940,7 @@ export default function EditWorkPage() {
           body: JSON.stringify(editingSection),
         });
         if (!res.ok) {
-          const data = await res.json();
+          const data = await res.json().catch(() => ({}));
           throw new Error(data.error || "Gagal mencipta bab.");
         }
       }
@@ -993,7 +993,7 @@ export default function EditWorkPage() {
         body: JSON.stringify({ sectionIds: ids }),
       });
       if (!res.ok) {
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
         throw new Error(data.error || "Gagal menyusun semula.");
       }
       await loadSections();
@@ -1093,7 +1093,7 @@ export default function EditWorkPage() {
           rightsEvidence: sourceForm.rightsEvidence || null,
         }),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Gagal menyimpan maklumat sumber.");
       setSourceSuccess(
         data.invalidatedApproval
@@ -1144,7 +1144,7 @@ export default function EditWorkPage() {
           isbn: sourceForm.isbn || null,
         }),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Gagal menyemak hak.");
       setSourceSuccess(
         `Semakan hak direkod (oleh ${data.sourceWork?.reviewedBy ?? "admin"}).`
@@ -1199,7 +1199,7 @@ export default function EditWorkPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ republish: true, summary: "Kemas kini diterbitkan", changeType: "minor" })
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Gagal menerbitkan semula.");
       setPublishSuccess(data.changed ? "Versi baharu diterbitkan. Pembaca kini melihatnya." : "Tiada perubahan untuk diterbitkan.");
       toast(data.changed ? "Versi baharu diterbitkan. Pembaca kini melihatnya." : "Tiada perubahan untuk diterbitkan.", "success");
@@ -1221,7 +1221,7 @@ export default function EditWorkPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         throw new Error(data.error || "Gagal menerbitkan.");
       }
@@ -1297,7 +1297,7 @@ export default function EditWorkPage() {
     setMarkerMigrationError("");
     try {
       const res = await fetch(`/api/admin/works/${workId}/image-markers`);
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Pratonton gagal dimuatkan.");
       setMarkerMigration(data);
     } catch (error) {
@@ -1317,7 +1317,7 @@ export default function EditWorkPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action, expectedBody: markerMigration.plan.originalBody, expectedChanges: markerMigration.plan.changes }),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Penukaran gagal.");
       const workRes = await fetch(`/api/admin/works/${workId}`);
       const work = await workRes.json();
@@ -1385,7 +1385,7 @@ export default function EditWorkPage() {
         body: JSON.stringify({ characters }),
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         throw new Error(data.error || "Gagal menyimpan watak.");
       }
@@ -1430,7 +1430,7 @@ export default function EditWorkPage() {
       });
 
       if (!res.ok) {
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
         throw new Error(data.error || "Gagal menyimpan.");
       }
 
@@ -1507,7 +1507,7 @@ export default function EditWorkPage() {
         });
 
         if (!res.ok) {
-          const data = await res.json();
+          const data = await res.json().catch(() => ({}));
           throw new Error(data.error || "Gagal menyimpan kredit.");
         }
       } else {
@@ -1523,7 +1523,7 @@ export default function EditWorkPage() {
         });
 
         if (!res.ok) {
-          const data = await res.json();
+          const data = await res.json().catch(() => ({}));
           throw new Error(data.error || "Gagal mencipta kredit.");
         }
       }
@@ -1549,7 +1549,7 @@ export default function EditWorkPage() {
       });
 
       if (!res.ok) {
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
         throw new Error(data.error || "Gagal memadam kredit.");
       }
 
@@ -1604,7 +1604,7 @@ export default function EditWorkPage() {
         });
 
         if (!res.ok) {
-          const data = await res.json();
+          const data = await res.json().catch(() => ({}));
           throw new Error(data.error || "Gagal menyimpan visual.");
         }
       } else {
@@ -1620,7 +1620,7 @@ export default function EditWorkPage() {
         });
 
         if (!res.ok) {
-          const data = await res.json();
+          const data = await res.json().catch(() => ({}));
           throw new Error(data.error || "Gagal mencipta visual.");
         }
       }
@@ -1676,7 +1676,7 @@ export default function EditWorkPage() {
       });
 
       if (!res.ok) {
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
         throw new Error(data.error || "Gagal memadam visual.");
       }
 
@@ -1709,7 +1709,7 @@ export default function EditWorkPage() {
         });
 
         if (!res.ok) {
-          const data = await res.json();
+          const data = await res.json().catch(() => ({}));
           throw new Error(data.error || "Gagal menyimpan istilah glosari.");
         }
       } else {
@@ -1726,7 +1726,7 @@ export default function EditWorkPage() {
         });
 
         if (!res.ok) {
-          const data = await res.json();
+          const data = await res.json().catch(() => ({}));
           throw new Error(data.error || "Gagal menambah istilah glosari.");
         }
       }
@@ -1748,7 +1748,7 @@ export default function EditWorkPage() {
       });
 
       if (!res.ok) {
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
         throw new Error(data.error || "Gagal memadam istilah glosari.");
       }
 
