@@ -48,7 +48,7 @@ console.log("reader credit projection tests\n");
   assert(json(editorial) === json([
     { role: "Penulis", names: ["Nara Zahin"] },
     { role: "Penulis & penyemak", names: ["Rafiq Naim"] },
-    { role: "Editor", names: ["Izzat Anas"] }
+    { role: "Penyunting", names: ["Izzat Anas"] }
   ]), "Existing cerpen editorial credit display is unchanged");
 
   const byline = projectBylineCredits(kerusi?.credits ?? []);
@@ -66,7 +66,7 @@ console.log("reader credit projection tests\n");
   assert(original.length === 1, "Sinopsis has exactly one 'Pengarang asal' credit");
   assert(original[0]?.names[0] === "Naguib Mahfouz", "Sinopsis source author name preserved");
   assert(
-    editorial.some((credit) => credit.role === "Penulis") && editorial.some((credit) => credit.role === "Editor"),
+    editorial.some((credit) => credit.role === "Penulis") && editorial.some((credit) => credit.role === "Penyunting"),
     "Sinopsis also credits the Jalin writers/editor under their own labels"
   );
   assert(!json(editorial).includes("author"), "No raw 'author' enum reaches the reader");
@@ -109,7 +109,7 @@ console.log("reader credit projection tests\n");
   const editorial = projectEditorialCredits(coWriter);
   assert(json(editorial) === json([
     { role: "Penulis bersama", names: ["Rafiq Naim", "Amir Syafiq"] },
-    { role: "Editor", names: ["Izzat Anas"] }
+    { role: "Penyunting", names: ["Izzat Anas"] }
   ]), "co_writer maps to a Malay label, written once with both co-writers listed under it");
 }
 
@@ -142,7 +142,7 @@ console.log("reader credit projection tests\n");
   const dbLabel: ContributorRef[] = [{ slug: "izzat-anas", role: "Penyunting akhir", byline: false }];
   assert(projectEditorialCredits(dbLabel).length === 1, "A role label chosen or added in admin (capitalised text) is shown; lowercase internal keys stay hidden");
   const approvedLabel: ContributorRef[] = [{ slug: "izzat-anas", role: "Editor", byline: false }];
-  assert(json(projectEditorialCredits(approvedLabel)) === json([{ role: "Editor", names: ["Izzat Anas"] }]), "Already-projected approved labels pass through");
+  assert(json(projectEditorialCredits(approvedLabel)) === json([{ role: "Penyunting", names: ["Izzat Anas"] }]), "Already-projected approved labels pass through");
 }
 
 // One person with several roles: shown once, roles joined by commas
@@ -156,7 +156,7 @@ console.log("reader credit projection tests\n");
   ];
   assert(json(projectEditorialCredits(credits)) === json([
     { role: "Penulis, Penterjemah", names: ["Rafiq Naim"] },
-    { role: "Editor", names: ["Izzat Anas"] }
+    { role: "Penyunting", names: ["Izzat Anas"] }
   ]), "The same person with two roles appears once, roles separated by a comma, in order, without repeating a role; a lone writer is \"Penulis\", not \"Penulis bersama\"");
   assert(projectEditorialCredits(credits.slice(0, 2)).length === 2, "Different people stay on their own lines");
 }
@@ -206,6 +206,14 @@ console.log("reader credit projection tests\n");
   };
   assert(json(projectPublicSeries(series).hero) === json(series.hero), "Series artwork reaches public listing cards");
   assert(projectPublicSeries({ ...series, hero: undefined }).hero === undefined, "Legacy series without artwork remains renderable");
+}
+
+// "Editor" is "Penyunting" (PRPM: the dictionary itself gives penyunting as the Malay word). A credit saved earlier with the text "Editor" reads the new way too.
+{
+  const old: ContributorRef[] = [{ slug: "izzat-anas", role: "Editor", byline: false }, { slug: "izzat-anas", role: "Editor penerbitan", byline: false }];
+  assert(json(projectEditorialCredits(old)) === json([{ role: "Penyunting, Penyunting penerbitan", names: ["Izzat Anas"] }]), "credits saved as \"Editor\" or \"Editor penerbitan\" read as Penyunting");
+  const keyed: ContributorRef[] = [{ slug: "izzat-anas", role: "final_editor", byline: false }, { slug: "izzat-anas", role: "publication_editor", byline: false }];
+  assert(json(projectEditorialCredits(keyed)) === json([{ role: "Penyunting, Penyunting penerbitan", names: ["Izzat Anas"] }]), "and so do the keys");
 }
 
 console.log(`\n${passed} passed, ${failed} failed`);

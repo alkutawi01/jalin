@@ -172,7 +172,7 @@ export function LeftRail({ rows, note, editorial = [], children }: { rows: WorkM
         {editorial.length > 0 && (
           <>
             <div className="rail-rule" />
-            <div className="rail-label">Editorial</div>
+            <div className="rail-label">Penyuntingan</div>
             {editorial.map((credit) => (
               <div className="editorial-meta" key={credit.role + "-" + credit.names.join("|")}>
                 <span>{credit.role}</span>

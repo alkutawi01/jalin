@@ -16,7 +16,7 @@ export const dynamic = "force-dynamic";
 export const dynamicParams = true;
 
 const MODE_LABELS: Record<string, string> = {
-  continuous: "Bersambung",
+  continuous: "Berturutan",
   anthology: "Antologi",
 };
 
