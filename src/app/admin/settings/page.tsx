@@ -31,10 +31,10 @@ async function AiPromptsPanel() {
       </details>
       {recipes.map(({ recipe, prompts }) => (
         <details className="a-settings-fold" key={recipe.key}>
-          <summary>{KIND_LABELS[recipe.kind]} — {recipe.mode === "tulis" ? "chatbot menulis" : "data sahaja"}{prompts.recipeCustomised ? " · diubah suai" : ""}</summary>
+          <summary>{KIND_LABELS[recipe.kind]} — {recipe.mode === "tulis" ? "bot sembang menulis" : "data sahaja"}{prompts.recipeCustomised ? " · diubah suai" : ""}</summary>
           <PromptEditor
             target={recipe.key}
-            label={`${KIND_LABELS[recipe.kind]} — ${recipe.mode === "tulis" ? "chatbot menulis" : "data sahaja"}`}
+            label={`${KIND_LABELS[recipe.kind]} — ${recipe.mode === "tulis" ? "bot sembang menulis" : "data sahaja"}`}
             description={recipe.description}
             initial={prompts.recipeText}
             customised={prompts.recipeCustomised}
