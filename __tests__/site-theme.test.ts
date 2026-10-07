@@ -35,7 +35,7 @@ assert(GROUNDS.every((g) => /^#[0-9a-f]{6}$/i.test(g.hex)) && new Set(GROUNDS.ma
 
 assert(GROUNDS.every((g) => css.includes(`.homepage [data-ground="${g.key}"] { --ground-bg: ${g.hex}; }`)), "every choice has its CSS rule with the same colour");
 assert(HOME_BLOCKS.every((b) => isGroundKey(b.default)), "every block's default is one of the choices");
-assert(DEFAULT_GROUNDS.hero === "paper" && DEFAULT_GROUNDS.series === "paper" && DEFAULT_GROUNDS.latest === "paper" && DEFAULT_GROUNDS.categories === "sand", "until someone picks, the page looks as it did (paper, with the peach-tinted category block)");
+assert(DEFAULT_GROUNDS.hero === "paper" && DEFAULT_GROUNDS.stats === "ink" && DEFAULT_GROUNDS.series === "paper" && DEFAULT_GROUNDS.latest === "paper" && DEFAULT_GROUNDS.categories === "sand", "until someone picks, the page looks as it did (paper, with the peach-tinted category block)");
 assert(isHomeBlockKey("hero") && !isHomeBlockKey("footer") && !isGroundKey("#ff0000") && !isGroundKey("red"), "only known blocks and theme colours are accepted");
 
 // Text on each ground: the colours the CSS gives the block must read at 4.5:1.

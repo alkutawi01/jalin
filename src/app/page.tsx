@@ -13,6 +13,8 @@ import { getEditorPickSummaries, resolveHeroPicks } from "../lib/reader/editor-p
 import { projectPublicWorkSummary, type PublicWorkSummary } from "../lib/reader/public-projection";
 import { renderAttribution } from "@/components/reader/Attribution";
 import { homeGrounds, type GroundKey } from "../lib/site-theme";
+import CountUp from "../components/reader/CountUp";
+import { computeSiteStats, statItems } from "../lib/reader/site-stats";
 
 export const dynamic = "force-dynamic";
 
@@ -268,6 +270,7 @@ export default async function Home() {
   const editorialPicks = resolveHeroPicks(pickSummaries, (episodeSlug) => seriesByEpisode.get(episodeSlug));
   const seriesHighlight = await getSeriesHighlight();
   const grounds = await homeGrounds();
+  const stats = statItems(computeSiteStats(allWorks, pickRepo.getPublishedSeries().length));
 
   // The hero is an editorial decision, never an automatic "newest work" slot.
   // Selected works rotate in the same hero presentation; everything else remains eligible for Karya Terbaru.
@@ -311,6 +314,23 @@ export default async function Home() {
         {allWorks.length === 0 ? (
           <section className="site-shell">
             <p className="section-sub">Karya pertama sedang disediakan. Kembali tidak lama lagi.</p>
+          </section>
+        ) : null}
+
+        {stats.length > 0 ? (
+          <section className="home-stats" data-ground={grounds.stats} aria-label="Isi Jalin mengikut kategori">
+            <div className="site-shell">
+              <ul className="home-stats-list">
+                {stats.map((item, index) => (
+                  <li key={item.key} className="home-stat">
+                    <a href={item.href}>
+                      <span className="home-stat-value"><CountUp value={item.count} delayMs={index * 120} /></span>
+                      <span className="home-stat-label">{item.label}</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </section>
         ) : null}
 
