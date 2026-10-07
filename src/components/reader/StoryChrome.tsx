@@ -236,7 +236,7 @@ export function EditorNote({ note }: { note?: string }) {
   if (paragraphs.length === 0) return null;
   return (
     <aside className="site-shell editor-note" aria-labelledby="editor-note-title">
-      <h2 id="editor-note-title">Catatan Editor</h2>
+      <h2 id="editor-note-title">Catatan penyunting</h2>
       {paragraphs.map((paragraph, index) => (
         <p key={index}>{renderItalics(paragraph)}</p>
       ))}
@@ -256,8 +256,8 @@ export function StoryEnd({ title, label = "Tamat" }: { title: string; label?: st
 const FOOTER_EXPLORE = NAV_LINKS.filter((link) => link.match && link.match !== "home");
 const FOOTER_ABOUT = [
   { label: "Tentang Jalin", href: "/tentang" },
-  { label: "Dasar Privasi", href: "/privasi" },
-  { label: "Terma Penggunaan", href: "/terma" }
+  { label: "Dasar privasi", href: "/privasi" },
+  { label: "Terma penggunaan", href: "/terma" }
 ];
 
 export function SiteFooter() {

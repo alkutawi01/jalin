@@ -47,7 +47,7 @@ export function NovelaIntro({ rows }: { rows: ChapterRow[] }): ReactNode {
   if (!first) return null;
   return (
     <article className="story-body novela-intro">
-      <h2 id="senarai-bab">Senarai Bab</h2>
+      <h2 id="senarai-bab">Senarai bab</h2>
       <ol className="chapter-list" aria-labelledby="senarai-bab">
         {rows.map((row, index) => (
           <li key={row.slug}>

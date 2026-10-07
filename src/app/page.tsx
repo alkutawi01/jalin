@@ -345,7 +345,7 @@ export default async function Home() {
         {latest.length > 0 ? <section className="latest-works" data-ground={grounds.latest}>
           <div className="site-shell">
             <header className="section-head">
-              <h2>Karya Terbaru</h2>
+              <h2>Karya terbaru</h2>
             </header>
             <div className="latest-grid">
               {latest.map((work) => (
@@ -361,7 +361,7 @@ export default async function Home() {
         <section className="category-explorer" data-ground={grounds.categories}>
           <div className="site-shell">
             <header className="section-head">
-              <h2>Jelajahi Kategori</h2>
+              <h2>Terokai kategori</h2>
             </header>
             <div className="category-explorer-grid">
               {CATEGORIES.map((cat) => {

@@ -28,8 +28,8 @@ export const HOME_BLOCKS = [
   { key: "hero", label: "Karya utama (karusel)", default: "paper" },
   { key: "stats", label: "Statistik (di bawah karusel)", default: "ink" },
   { key: "series", label: "Bersiri", default: "paper" },
-  { key: "latest", label: "Karya Terbaru", default: "paper" },
-  { key: "categories", label: "Jelajahi Kategori", default: "sand" }
+  { key: "latest", label: "Karya terbaru", default: "paper" },
+  { key: "categories", label: "Terokai kategori", default: "sand" }
 ] as const satisfies ReadonlyArray<{ key: string; label: string; default: GroundKey }>;
 export type HomeBlockKey = (typeof HOME_BLOCKS)[number]["key"];
 
