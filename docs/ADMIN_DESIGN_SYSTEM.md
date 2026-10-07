@@ -17,7 +17,7 @@ Kelas sedia ada `.admin-*` distailkan semula di bawah `.a-shell`, jadi setiap ha
 Komponen baharu bertanda `.a-*`: rangka (`.a-shell`, `.a-side`, `.a-topbar`, `.a-drawer`), `.a-btn`, `.a-nav-link`.
 
 ## Rangka
-Sidebar kiri (Papan Pemuka, Karya, Editorial, Tetapan), butang **Tambah Karya** tetap di atas, Laman awam dan Log keluar di bawah. Bawah 900px: bar atas dengan butang Menu dan laci. Halaman log masuk tanpa rangka.
+Sidebar kiri (Papan pemuka, Karya, Editorial, Tetapan), butang **Tambah karya** tetap di atas, Laman awam dan Log keluar di bawah. Bawah 900px: bar atas dengan butang Menu dan laci. Halaman log masuk tanpa rangka.
 
 ## Penyunting karya: simpan dan penanda gambar
 - Ganti, tambah, padam dan ubah butiran gambar disimpan terus oleh tindakan masing-masing. Butang peringkat halaman hanya menyimpan teks karya dan medan Maklumat; labelnya mesti menyatakan skop itu dan kekal di luar kad Kandungan/Maklumat.

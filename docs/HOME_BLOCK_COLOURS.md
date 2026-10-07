@@ -5,7 +5,7 @@ Status: dilaksanakan 2026-10-06 (arahan Izzat).
 ## Keputusan
 
 - Editor memilih warna latar bagi empat blok laman utama di **Tetapan > Warna blok laman utama**: Karya utama (karusel), Bersiri, Karya Terbaru, Jelajahi Kategori.
-- Pilihan **hanya daripada warna tema Jalin**, bukan warna bebas: Kertas, Putih, Peach muda, Peach, Teal tua, Terracotta, Hitam (warna logo ditambah putih dan hitam).
+- Pilihan **hanya daripada warna tema Jalin**, bukan warna bebas: Kertas, Putih, Peach muda, Peach, Teal tua, Terakota, Hitam (warna logo ditambah putih dan hitam).
 - Memilih warna menukar **warna elemen berkaitan secara automatik** supaya kontras kekal (WCAG AA, 4.5:1 untuk teks): teks, teks lembut, aksen, garis dan pil tarikh. Kad karya, kad kategori dan anak panah karusel kekal berwajah cerah.
 - Kepala dan kaki halaman tidak termasuk (komponen dikongsi semua halaman).
 - Sebelum sesiapa memilih, rupa laman tidak berubah (Kertas; blok kategori Peach muda).

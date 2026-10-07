@@ -34,7 +34,7 @@ function Icon({ name }: { name: keyof typeof ICONS }) {
 }
 
 const NAV: { href: string; label: string; icon: keyof typeof ICONS; match: (p: string) => boolean }[] = [
-  { href: "/admin", label: "Papan Pemuka", icon: "home", match: (p) => p === "/admin" },
+  { href: "/admin", label: "Papan pemuka", icon: "home", match: (p) => p === "/admin" },
   {
     href: "/admin/works",
     label: "Karya",
