@@ -6,6 +6,7 @@ import { BylineRow, SiteFooter, SiteHeader } from "../../../../components/reader
 import { projectBylineCredits } from "../../../../lib/reader/credit-projection";
 import type { BylineCredit } from "../../../../components/reader/types";
 import { WorkCover } from "../../../../components/reader/WorkCover";
+import { cropStyle } from "../../../../lib/reader/crop";
 import { initContentRepository } from "../../../../lib/content";
 import { displayableGenre } from "../../../../lib/reader/genre-display";
 import { OG_SITE, absoluteUrl, clipDescription, shareImage, DEFAULT_SHARE_IMAGE } from "../../../../lib/seo";
@@ -111,7 +112,7 @@ export default async function SeriesLandingPage({
               </div>
               {series.hero ? (
                 <figure className="series-hero">
-                  <Image src={series.hero.src} alt={series.hero.alt} fill sizes="(max-width: 900px) 100vw, 520px" priority />
+                  <Image src={series.hero.src} alt={series.hero.alt} fill sizes="(max-width: 900px) 100vw, 520px" priority style={cropStyle(series.hero.crop)} />
                   <div className="image-rights" aria-hidden="true">{`© ADJUNG ${(updated || "2026").slice(0, 4)}`}</div>
                 </figure>
               ) : null}

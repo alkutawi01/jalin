@@ -365,6 +365,10 @@ export interface Series {
   /** Optional until migration 020 has run; always treat as possibly undefined. */
   hero_src?: string | null;
   hero_alt?: string | null;
+  /** Optional until migration 024 has run. */
+  hero_focus_x?: number | null;
+  hero_focus_y?: number | null;
+  hero_zoom?: number | null;
   created_at: ColumnType<Date, string | Date, string | Date>;
   updated_at: ColumnType<Date, string | Date, string | Date>;
 }

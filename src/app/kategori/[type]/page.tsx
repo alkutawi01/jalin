@@ -2,6 +2,7 @@ import { SiteFooter, SiteHeader } from "../../../components/reader/StoryChrome";
 import { OG_SITE, DEFAULT_SHARE_IMAGE } from "../../../lib/seo";
 import JalinEmblem from "../../../components/reader/JalinEmblem";
 import { WorkCover } from "../../../components/reader/WorkCover";
+import { cropStyle } from "../../../lib/reader/crop";
 import { initContentRepository } from "../../../lib/content";
 import { displayableGenre } from "../../../lib/reader/genre-display";
 import { getWorksByType } from "../../../lib/content/workLoader";
@@ -105,7 +106,7 @@ function SeriesCard({ series, episodeCount }: { series: PublicSeriesSummary; epi
     <article className="series-list-card">
       <a href={`/kategori/bersiri/${series.slug}`}>
         <div className="series-list-media">
-          {series.hero ? <Image src={series.hero.src} alt={series.hero.alt || `Ilustrasi siri ${series.title}`} fill sizes="(max-width: 680px) 100vw, 360px" /> : <span>{series.title}</span>}
+          {series.hero ? <Image src={series.hero.src} alt={series.hero.alt || `Ilustrasi siri ${series.title}`} fill sizes="(max-width: 680px) 100vw, 360px" style={cropStyle(series.hero.crop)} /> : <span>{series.title}</span>}
         </div>
         <div className="series-list-body">
           <p className="series-list-meta">{genre || MODE_LABELS[series.mode] || series.mode} · {episodeCount} episod · {STATUS_LABELS[series.status] ?? series.status}</p>

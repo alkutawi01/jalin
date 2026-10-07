@@ -7,6 +7,8 @@ import HeroCarousel, { type HeroSlide } from "../components/reader/HeroCarousel"
 import { WorkCover } from "../components/reader/WorkCover";
 import { initContentRepository } from "../lib/content";
 import type { SeriesMeta } from "../lib/content/types";
+import type { ImageCrop } from "../lib/content/types";
+import { cropStyle } from "../lib/reader/crop";
 import { displayableGenre } from "../lib/reader/genre-display";
 import { getAllWorks } from "../lib/content/workLoader";
 import { getEditorPickSummaries, resolveHeroPicks } from "../lib/reader/editor-picks";
@@ -156,7 +158,7 @@ interface SeriesHighlightData {
   slug: string;
   title: string;
   genre?: string;
-  hero?: { src: string; alt: string };
+  hero?: { src: string; alt: string; crop?: ImageCrop };
   first: { slug: string; position: number };
   latest: { slug: string; position: number; title: string; readingMinutes?: number; publishedAt?: string };
   year: string;
@@ -218,7 +220,7 @@ function SeriesHighlight({ data, ground }: { data: SeriesHighlightData; ground: 
           <a className="series-feature-media" href={base}>
             {data.hero ? (
               <>
-                <Image src={data.hero.src} alt={data.hero.alt || `Ilustrasi siri ${data.title}`} fill sizes="(max-width: 700px) 100vw, (max-width: 924px) calc(100vw - 64px), 860px" />
+                <Image src={data.hero.src} alt={data.hero.alt || `Ilustrasi siri ${data.title}`} fill sizes="(max-width: 700px) 100vw, (max-width: 924px) calc(100vw - 64px), 860px" style={cropStyle(data.hero.crop)} />
                 <span className="image-rights" aria-hidden="true">© ADJUNG {data.year}</span>
               </>
             ) : null}

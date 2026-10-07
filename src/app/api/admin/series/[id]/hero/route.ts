@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentAdmin } from "../../../../../../lib/admin/auth";
-import { clearSeriesHero, setSeriesHero } from "../../../../../../lib/admin/series-hero";
+import { clearSeriesHero, setSeriesHero, setSeriesHeroCrop } from "../../../../../../lib/admin/series-hero";
 
 const SESSION_ENDED = "Sesi anda telah tamat. Log masuk semula.";
 
@@ -16,6 +16,20 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const result = await setSeriesHero(id, Buffer.from(await file.arrayBuffer()), alt);
     if (!result.ok) return NextResponse.json({ error: result.error }, { status: result.status });
     return NextResponse.json({ success: true, src: result.src }, { status: 201 });
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Ralat tidak diketahui." }, { status: 500 });
+  }
+}
+
+/** Choose the part of the series' picture that is shown: { focusX, focusY, zoom }. */
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  if (!(await getCurrentAdmin())) return NextResponse.json({ error: SESSION_ENDED }, { status: 401 });
+  try {
+    const { id } = await params;
+    const body = (await request.json().catch(() => ({}))) as { focusX?: unknown; focusY?: unknown; zoom?: unknown };
+    const result = await setSeriesHeroCrop(id, body);
+    if (!result.ok) return NextResponse.json({ error: result.error }, { status: result.status });
+    return NextResponse.json({ success: true });
   } catch (error) {
     return NextResponse.json({ error: error instanceof Error ? error.message : "Ralat tidak diketahui." }, { status: 500 });
   }

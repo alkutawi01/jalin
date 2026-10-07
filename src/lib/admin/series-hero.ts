@@ -13,7 +13,7 @@ function storageId(seriesId: string): number {
 }
 
 function isMissingColumn(error: unknown): boolean {
-  return /hero_(src|alt)|column .* does not exist/i.test(error instanceof Error ? error.message : String(error));
+  return /hero_(src|alt|focus_x|focus_y|zoom)|column .* does not exist/i.test(error instanceof Error ? error.message : String(error));
 }
 
 export async function setSeriesHero(seriesId: string, bytes: Buffer, alt: string): Promise<SeriesHeroResult> {
@@ -36,6 +36,9 @@ export async function setSeriesHero(seriesId: string, bytes: Buffer, alt: string
       .where("id", "=", seriesId)
       .set({ hero_src: stored.stableAssetPath, hero_alt: alt.trim(), updated_at: new Date().toISOString() } as never)
       .execute();
+    // A new picture starts centred: the part chosen for the old one means nothing on this one. (Its own statement, so a database
+    // without migration 024 still accepts the picture.)
+    await db.updateTable("series").where("id", "=", seriesId).set({ hero_focus_x: null, hero_focus_y: null, hero_zoom: null } as never).execute().catch(() => {});
   } catch (error) {
     if (isMissingColumn(error)) {
       return { ok: false, status: 409, error: "Pangkalan data belum dikemas kini untuk gambar siri. Pentadbir teknikal perlu menjalankan migrasi 020 dahulu." };
@@ -66,5 +69,35 @@ export async function clearSeriesHero(seriesId: string): Promise<SeriesHeroClear
   } catch (error) {
     if (!isMissingColumn(error)) throw error;
     return { ok: false, status: 409, error: "Pangkalan data belum dikemas kini untuk gambar siri. Pentadbir teknikal perlu menjalankan migrasi 020 dahulu." };
+  }
+}
+
+const clampCrop = (value: unknown, lo: number, hi: number, fallback: number) => {
+  const n = typeof value === "number" ? value : typeof value === "string" && value.trim() !== "" ? Number(value) : NaN;
+  return Number.isFinite(n) ? Math.round(Math.min(hi, Math.max(lo, n))) : fallback;
+};
+
+/**
+ * The part of the series' picture that matters: focus (0-100, percent from the left and from the top) and zoom (100-300).
+ * The centre at no zoom is stored as "nothing chosen". The file itself is never changed.
+ */
+export async function setSeriesHeroCrop(seriesId: string, input: { focusX?: unknown; focusY?: unknown; zoom?: unknown }): Promise<SeriesHeroClearResult> {
+  const x = clampCrop(input.focusX, 0, 100, 50);
+  const y = clampCrop(input.focusY, 0, 100, 50);
+  const zoom = clampCrop(input.zoom, 100, 300, 100);
+  const centred = x === 50 && y === 50 && zoom === 100;
+  try {
+    const series = await getDb().selectFrom("series").where("id", "=", seriesId).select(["id", "hero_src" as never]).executeTakeFirst();
+    if (!series) return { ok: false, status: 404, error: "Siri tidak ditemui." };
+    if (!(series as { hero_src?: string | null }).hero_src) return { ok: false, status: 400, error: "Siri ini belum mempunyai gambar. Muat naik gambar dahulu." };
+    await getDb()
+      .updateTable("series")
+      .where("id", "=", seriesId)
+      .set({ hero_focus_x: centred ? null : x, hero_focus_y: centred ? null : y, hero_zoom: centred ? null : zoom, updated_at: new Date().toISOString() } as never)
+      .execute();
+    return { ok: true };
+  } catch (error) {
+    if (!isMissingColumn(error)) throw error;
+    return { ok: false, status: 409, error: "Pangkalan data belum dikemas kini untuk bahagian gambar siri. Pentadbir teknikal perlu menjalankan migrasi 024 dahulu." };
   }
 }

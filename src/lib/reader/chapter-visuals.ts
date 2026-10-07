@@ -1,3 +1,5 @@
+import type { ImageCrop } from "../content/types";
+
 export interface ChapterVisualLike {
   role?: string | null;
   anchor?: string | null;
@@ -31,10 +33,11 @@ export function chapterHeroOf<T extends ChapterVisualLike>(visuals: T[], section
  * The picture an episode of a series is headed with: its own hero if it has one, otherwise the series' picture.
  * An episode does not need a picture of its own.
  */
-export function episodeHeroOf<T extends { src: string; alt?: string | null }, S extends { src: string; alt?: string | null }>(
+export function episodeHeroOf<T extends { src: string; alt?: string | null; crop?: ImageCrop }, S extends { src: string; alt?: string | null; crop?: ImageCrop }>(
   own: T | undefined,
   series: S | undefined
-): { src: string; alt: string } | undefined {
+): { src: string; alt: string; crop?: ImageCrop } | undefined {
   const pick = own?.src ? own : series?.src ? series : undefined;
-  return pick ? { src: pick.src, alt: pick.alt ?? "" } : undefined;
+  // The part of the picture its editor chose goes with it: it was dropped here, so an episode's heading picture was always centred.
+  return pick ? { src: pick.src, alt: pick.alt ?? "", ...(pick.crop ? { crop: pick.crop } : {}) } : undefined;
 }
