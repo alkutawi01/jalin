@@ -142,7 +142,7 @@ export async function createWork(input: WorkInput): Promise<WorkRecord> {
 
   // Check slug uniqueness
   if (await slugExists(input.slug)) {
-    throw new Error(`Slug "${input.slug}" already exists.`);
+    throw new Error(`Alamat pautan "${input.slug}" sudah digunakan. Pilih alamat lain.`);
   }
 
   const now = new Date().toISOString();
@@ -203,7 +203,7 @@ export async function updateWork(
   // Check slug uniqueness if slug is being changed
   if (input.slug) {
     if (await slugExists(input.slug, id)) {
-      throw new Error(`Slug "${input.slug}" already exists.`);
+      throw new Error(`Alamat pautan "${input.slug}" sudah digunakan. Pilih alamat lain.`);
     }
   }
 

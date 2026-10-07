@@ -178,6 +178,6 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     const message = error instanceof Error ? error.message : "Ralat tidak diketahui.";
-    return NextResponse.json({ error: message }, { status: message.includes("already exists") ? 409 : 500 });
+    return NextResponse.json({ error: message }, { status: message.includes("already exists") || message.includes("sudah digunakan") ? 409 : 500 });
   }
 }
