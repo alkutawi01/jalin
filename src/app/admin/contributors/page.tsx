@@ -41,7 +41,7 @@ export default async function AdminContributorsPage() {
       <header className="admin-page-header">
         <div className="admin-page-header-row">
           <div>
-            <h1>Editorial</h1>
+            <h1>Penyumbang</h1>
             <p className="admin-page-sub">
               {contributors.length} penyumbang: manusia dan AI (dengan nama samaran). Padanan AI dengan nama samaran ditetapkan di <a href="/admin/settings">Tetapan</a>.
             </p>

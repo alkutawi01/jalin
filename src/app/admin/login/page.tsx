@@ -25,7 +25,7 @@ export default function LoginPage() {
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error || "Login gagal.");
+        throw new Error(data.error || "Log masuk gagal.");
       }
 
       // Back to the page the editor was on when the session ended (a path inside the admin only).

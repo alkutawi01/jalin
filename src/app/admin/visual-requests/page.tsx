@@ -12,7 +12,7 @@ const STATUS_LABELS: Record<string, string> = {
   under_review: "Semakan",
   approved: "Diluluskan",
   rejected: "Ditolak",
-  attached: " Dipaut",
+  attached: "Dipaut",
 };
 
 const APPROVAL_LABELS: Record<string, string> = {

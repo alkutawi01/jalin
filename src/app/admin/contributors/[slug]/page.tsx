@@ -115,7 +115,7 @@ export default function EditContributorPage() {
     <div className="admin-form-page">
       <header className="admin-page-header">
         <h1>Edit Penyumbang</h1>
-        <p className="admin-page-sub">Slug: {contributorSlug}</p>
+        <p className="admin-page-sub">Alamat pautan: {contributorSlug}</p>
       </header>
 
       {error && (
@@ -193,9 +193,9 @@ export default function EditContributorPage() {
               checked={form.isVisible}
               onChange={(e) => setForm((prev) => ({ ...prev, isVisible: e.target.checked }))}
             />
-            Visible on public pages
+            Paparkan di halaman awam
           </label>
-          <span className="admin-form-hint">Sembunyikan penyumbang ini daripada senarai awam.</span>
+          <span className="admin-form-hint">Buang tanda ini untuk menyembunyikan penyumbang daripada senarai awam.</span>
         </div>
 
         <div className="admin-form-actions">
