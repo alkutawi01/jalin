@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Figtree } from "next/font/google";
 import "./globals.css";
-import { SITE_URL } from "../lib/seo";
+import { SITE_URL, DEFAULT_SHARE_IMAGE } from "../lib/seo";
 import BootScreen from "../components/reader/BootScreen";
 
 /**
@@ -15,10 +15,10 @@ const figtree = Figtree({ subsets: ["latin", "latin-ext"], display: "swap", vari
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "Jalin",
+    default: "Jalin: Cerpen, novela dan cerita bersiri berilustrasi",
     template: "%s · Jalin"
   },
-  description: "Fiksyen berilustrasi untuk jiwa muda.",
+  description: "Selami dunia melalui cerita di Jalin, platform cerpen, novela dan cerita bersiri berilustrasi dalam Bahasa Melayu. Terbitan Adjung Press.",
   icons: {
     icon: "/brand/jalin-favicon.svg",
     shortcut: "/brand/jalin-favicon.svg"
@@ -26,15 +26,17 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     siteName: "Jalin — oleh Adjung",
-    title: "Jalin — oleh Adjung",
-    description: "Fiksyen berilustrasi untuk jiwa muda.",
+    title: "Jalin: Cerpen, novela dan cerita bersiri berilustrasi",
+    description: "Selami dunia melalui cerita berilustrasi dalam Bahasa Melayu.",
     url: "/",
-    locale: "ms_MY"
+    locale: "ms_MY",
+    images: [DEFAULT_SHARE_IMAGE]
   },
   twitter: {
     card: "summary_large_image",
-    title: "Jalin — oleh Adjung",
-    description: "Fiksyen berilustrasi untuk jiwa muda."
+    title: "Jalin: Cerpen, novela dan cerita bersiri berilustrasi",
+    description: "Selami dunia melalui cerita berilustrasi dalam Bahasa Melayu.",
+    images: [DEFAULT_SHARE_IMAGE.url]
   }
 };
 

@@ -34,7 +34,11 @@ assert(audienceLabels("belia,dewasa", B) === "Belia · Dewasa", "labels for disp
 assert(JSON.stringify(audienceAgeRange("remaja", B)) === JSON.stringify({ min: 13, max: 17 }), "search engines get the ages: Remaja is 13 to 17");
 assert(JSON.stringify(audienceAgeRange("belia,dewasa", B)) === JSON.stringify({ min: 18, max: 99 }), "...and an open band reaches 99");
 assert(audienceAgeRange("", B) === null, "no band, no ages");
-assert(JSON.stringify(audienceOf("13-17")) === JSON.stringify({ audience: { "@type": "PeopleAudience", suggestedMinAge: 13, suggestedMaxAge: 17 } }) && JSON.stringify(audienceOf("remaja")).includes('"suggestedMinAge":13') && Object.keys(audienceOf("kata sahaja")).length === 0 && Object.keys(audienceOf(undefined)).length === 0, "the structured data reads codes, labels and old ranges");
+assert(JSON.stringify(audienceOf("13-17")) === JSON.stringify({ audience: { "@type": "PeopleAudience", suggestedMinAge: 13 } }) && JSON.stringify(audienceOf("remaja")).includes('"suggestedMinAge":13') && Object.keys(audienceOf("kata sahaja")).length === 0 && Object.keys(audienceOf(undefined)).length === 0, "the structured data reads codes, labels and old ranges");
+
+// only the age a work is suitable FROM is published: no upper age, so nothing says "not for adults" or "up to 99"
+assert(JSON.stringify(audienceOf("dewasa")) === JSON.stringify({ audience: { "@type": "PeopleAudience", suggestedMinAge: 30 } }) && JSON.stringify(audienceOf("belia,dewasa")).includes('"suggestedMinAge":18') && JSON.stringify(audienceOf("remaja")) === JSON.stringify({ audience: { "@type": "PeopleAudience", suggestedMinAge: 13 } }), "a band gives the age it starts at");
+assert(["remaja", "13-17", "belia", "dewasa", "kanak-kanak,remaja", "Remaja 13-17 tahun"].every((v) => !JSON.stringify(audienceOf(v)).includes("suggestedMaxAge")), "no upper age is ever published");
 
 // the bands an editor types
 const ok = validateBands([{ code: "remaja", label: " Remaja ", min: "13", max: 17 }, { label: "Orang tua", min: 60, max: "" }]);
@@ -47,7 +51,7 @@ assert(validateBands([{ label: "A", min: 1 }, { label: "A", min: 2 }]).map((b) =
 // wiring
 assert(read("src/app/admin/works/[id]/page.tsx").includes("<AudiencePicker value={form.audience}") && read("src/app/admin/series/[id]/page.tsx").includes("<AudiencePicker value={form.audience}") && read("src/app/admin/series/new/page.tsx").includes("<AudiencePicker value={form.audience}"), "the work and both series forms use the tick list, not a text box");
 const settings = read("src/app/admin/settings/page.tsx");
-assert(settings.includes('id="audiens"') && settings.includes("<AudienceBandsSettings />") && settings.includes('href="#audiens"'), "Tetapan has an Audiens section");
+assert(settings.includes('tab === "audiens" ? <AudienceBandsSettings /> : null') && read("src/lib/admin/settings-tabs.ts").includes('{ id: "audiens", label: "Audiens" }'), "Tetapan has an Audiens tab");
 const api = read("src/app/api/admin/audience-bands/route.ts");
 assert((api.match(/getCurrentAdmin\(\)/g) ?? []).length === 2 && api.includes("status: 401"), "both audience endpoints need a login");
 assert(read("src/app/api/admin/works/start-draft/route.ts").includes("audience: DEFAULT_AUDIENCE, dek: null") && read("src/lib/admin/import/plan.ts").includes("normalizeAudience(data.audience)"), "a new draft and an import start with a band code, not '13-17'");

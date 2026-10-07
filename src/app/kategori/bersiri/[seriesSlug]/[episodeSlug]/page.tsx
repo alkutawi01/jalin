@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
+import { laterOf } from "../../../../../lib/seo-jsonld";
 import { notFound } from "next/navigation";
-import { absoluteUrl, clipDescription, shareImageUrl } from "../../../../../lib/seo";
+import { OG_SITE, absoluteUrl, clipDescription, shareImage, DEFAULT_SHARE_IMAGE } from "../../../../../lib/seo";
 import { episodeHeroOf } from "../../../../../lib/reader/chapter-visuals";
 import { initContentRepository } from "../../../../../lib/content";
 import { getWorkBySlug } from "../../../../../lib/content/workLoader";
@@ -40,13 +41,13 @@ export async function generateMetadata({ params }: { params: Promise<{ seriesSlu
   const path = `/kategori/bersiri/${work.series.slug}/${work.slug}`;
   // An episode without a picture of its own shares the series' picture.
   const hero = episodeHeroOf(work.visuals.find((visual) => visual.role === "hero"), work.series.hero);
-  const image = hero?.src ? [{ url: shareImageUrl(hero.src) }] : undefined;
+  const image = [hero?.src ? shareImage(hero.src, hero.alt) : DEFAULT_SHARE_IMAGE];
   return {
     title,
     description,
     alternates: { canonical: path },
-    openGraph: { type: "article", title, description, url: path, images: image },
-    twitter: { card: image ? "summary_large_image" : "summary", title, description, images: image?.map((i) => i.url) }
+    openGraph: { ...OG_SITE, type: "article", title, description, url: path, images: image, ...(work.publishedAt ? { publishedTime: work.publishedAt } : {}), ...(work.updatedAt ? { modifiedTime: laterOf(work.updatedAt, work.publishedAt) } : {}) },
+    twitter: { card: "summary_large_image", title, description, images: image.map((i) => i.url) }
   };
 }
 

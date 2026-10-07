@@ -31,14 +31,15 @@ assert(/\.series-feature-media > \.image-rights \{ right: 0; bottom: 14px;/.test
 assert(css.includes("body { overflow-x: hidden; overflow-x: clip; container-type: inline-size; }") && (css.match(/width: 100cqw; max-width: 100cqw; margin-left: calc\(50% - 50cqw\);/g) ?? []).length === 3, "full-width pictures use the width the page really has (100cqw, scrollbar excluded), so the copyright notice at the right edge is not cut in a window with a scrollbar");
 
 const contributor = read("src/app/penulis/[slug]/page.tsx");
-assert(contributor.includes('{ "nara-zahin": "claude" }') && contributor.includes('.where("slug", "in", [slug, EDITOR_RECORD[slug] ?? slug])'), "the older address 'nara-zahin' shows what the editor writes for that person in Admin > Penyumbang");
+assert(read("src/lib/reader/author-alias.ts").includes('"nara-zahin": "claude"') && contributor.includes('.where("slug", "in", [slug, authorSlug(slug)])'), "the older address 'nara-zahin' shows what the editor writes for that person in Admin > Penyumbang");
 assert(contributor.includes('.replace(/\\r\\n/g, "\\n").trim().replace(/^# .+\\n+/'), "a bio saved from the admin text box does not show its name twice");
 
 const settings = read("src/app/admin/settings/page.tsx");
+const tabs = read("src/lib/admin/settings-tabs.ts");
 for (const id of ["teks-awam", "nama-samaran", "arahan-ai", "alat-lain", "status-sistem"]) {
-  assert(settings.includes(`id="${id}"`) && settings.includes(`href="#${id}"`), `Tetapan has the section #${id} and an index link to it`);
+  assert(tabs.includes(`{ id: "${id}",`) && settings.includes(`tab === "${id}" ?`), `Tetapan has the tab ${id} and its panel`);
 }
-assert((settings.match(/<details className="a-settings-fold"/g) ?? []).length === 2 && settings.indexOf("teks-awam") < settings.indexOf("arahan-ai"), "the long AI instructions are folded and come after the texts editors change most");
+assert((settings.match(/<details className="a-settings-fold"/g) ?? []).length === 2 && tabs.indexOf("teks-awam") < tabs.indexOf("arahan-ai"), "the long AI instructions are folded and their tab comes after the texts editors change most");
 
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);

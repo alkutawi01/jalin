@@ -1,0 +1,492 @@
+<title>Motif Jalin</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Layout: lembaran spesifikasi motif. Setiap motif ada pentas contoh pada warna latar sebenar Jalin, parameter, dan kod SVG yang boleh disalin. */
+:root {
+  --bg: #f6f2ea;
+  --panel: #fffdf8;
+  --fg: #18343c;
+  --fg-soft: #52656a;
+  --line: #ddd7cc;
+  --accent: #a76450;
+  --serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  /* pentas contoh: ditetapkan oleh pilihan warna latar */
+  --g: #fbf8f2;
+  --t: #18343c;
+  --m: #18343c;
+  --ma: .06;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg: #101a1d; --panel: #16242a; --fg: #eef0ea; --fg-soft: #a9b8bb; --line: #2b3d43; --accent: #e0a48f; color-scheme: dark; }
+}
+:root[data-theme="dark"] { --bg: #101a1d; --panel: #16242a; --fg: #eef0ea; --fg-soft: #a9b8bb; --line: #2b3d43; --accent: #e0a48f; color-scheme: dark; }
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--sans); font-size: 15px; line-height: 1.6; padding-inline: 16px; padding-block: 0 56px; }
+.wrap { max-width: 1040px; margin-inline: auto; display: grid; gap: 40px; }
+h1, h2, h3 { font-family: var(--serif); font-weight: 600; margin: 0; text-wrap: balance; letter-spacing: -.01em; }
+h1 { font-size: clamp(2rem, 5vw, 3.1rem); line-height: 1.1; }
+h2 { font-size: 1.6rem; line-height: 1.2; }
+h3 { font-size: 1.05rem; }
+p { margin: 0; }
+.lede { max-width: 62ch; color: var(--fg-soft); font-size: 1.05rem; }
+.eyebrow { font-family: var(--mono); font-size: .75rem; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+header { padding-block: 40px 0; display: grid; gap: 14px; }
+
+/* kawalan */
+.controls { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); border-block: 1px solid var(--line); padding-block: 12px; display: grid; gap: 10px; }
+.controls-row { display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center; }
+.swatches { display: flex; flex-wrap: wrap; gap: 8px; }
+.swatches label { cursor: pointer; }
+.swatches input { position: absolute; opacity: 0; pointer-events: none; }
+.sw { display: inline-flex; align-items: center; gap: 7px; padding: 5px 10px 5px 6px; border: 1px solid var(--line); border-radius: 999px; background: var(--panel); font-size: .8rem; }
+.sw i { width: 18px; height: 18px; border-radius: 50%; border: 1px solid color-mix(in srgb, var(--fg) 25%, transparent); background: var(--c); }
+.swatches input:checked + .sw { border-color: var(--fg); box-shadow: 0 0 0 1px var(--fg); }
+.swatches input:focus-visible + .sw { outline: 2px solid var(--accent); outline-offset: 2px; }
+.ctl { display: inline-flex; align-items: center; gap: 8px; font-size: .85rem; color: var(--fg-soft); }
+.ctl input[type=range] { width: 150px; accent-color: var(--accent); }
+.ctl select { font: inherit; font-size: .82rem; padding: 4px 8px; border: 1px solid var(--line); border-radius: 4px; background: var(--panel); color: var(--fg); }
+.ctl output { font-family: var(--mono); font-size: .8rem; min-width: 3.4em; color: var(--fg); }
+.ctl input[type=checkbox] { accent-color: var(--accent); width: 16px; height: 16px; }
+
+/* bahagian motif */
+section { display: grid; gap: 16px; }
+.head { display: grid; gap: 6px; }
+.grid2 { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+@media (max-width: 760px) { .grid2 { grid-template-columns: minmax(0, 1fr); } }
+.spec { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 14px 16px; display: grid; gap: 10px; min-width: 0; }
+.spec dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 3px 14px; font-family: var(--mono); font-size: .78rem; }
+.spec dt { color: var(--fg-soft); }
+.spec dd { margin: 0; }
+.spec p { font-size: .88rem; color: var(--fg-soft); }
+.btns { display: flex; flex-wrap: wrap; gap: 8px; }
+button { font: inherit; font-size: .82rem; padding: 7px 12px; border-radius: 4px; border: 1px solid var(--fg); background: transparent; color: var(--fg); cursor: pointer; }
+button:hover { background: var(--fg); color: var(--bg); }
+button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+details summary { cursor: pointer; font-size: .82rem; color: var(--fg-soft); }
+textarea.code { width: 100%; min-height: 120px; margin-top: 8px; font-family: var(--mono); font-size: .72rem; background: var(--bg); color: var(--fg); border: 1px solid var(--line); border-radius: 4px; padding: 8px; resize: vertical; }
+
+/* pentas */
+.stage { position: relative; background: var(--g); color: var(--t); border: 1px solid color-mix(in srgb, var(--t) 14%, transparent); border-radius: 6px; overflow: hidden; isolation: isolate; transition: background .25s, color .25s; min-width: 0; }
+.stage .fx { position: absolute; inset: 0; z-index: -1; pointer-events: none; color: var(--m); }
+.stage .fx svg { width: 100%; height: 100%; display: block; }
+.stage.quiet .fx { -webkit-mask-image: radial-gradient(ellipse 60% 90% at 30% 55%, rgba(0,0,0,.18), #000 78%); mask-image: radial-gradient(ellipse 60% 90% at 30% 55%, rgba(0,0,0,.18), #000 78%); }
+.hero { padding: clamp(28px, 6vw, 56px); min-height: 260px; display: grid; align-content: center; gap: 12px; }
+.hero .tag { font-family: var(--mono); font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; opacity: .75; }
+.hero .t { font-family: var(--serif); font-size: clamp(2rem, 5vw, 3rem); font-weight: 600; line-height: 1.08; }
+.hero .d { max-width: 46ch; opacity: .9; }
+.hero .pill { justify-self: start; border: 1px solid currentColor; border-radius: 999px; padding: 4px 12px; font-size: .78rem; margin-top: 6px; }
+.footband { padding: 0; }
+.footband .strip { height: 30px; color: var(--m); }
+.footband .strip svg { display: block; width: 100%; height: 100%; }
+.footband .row { padding: 18px 20px 22px; display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: space-between; font-size: .85rem; }
+.footband .row b { font-family: var(--serif); font-size: 1.1rem; font-weight: 600; }
+.dividers { padding: 26px 20px; display: grid; gap: 22px; justify-items: center; }
+.dividers p { font-family: var(--serif); font-size: 1.05rem; max-width: 36ch; text-align: center; }
+.dividers .div { color: var(--t); width: min(100%, 240px); }
+.dividers .div svg { display: block; width: 100%; height: auto; }
+.cardwrap { padding: 28px 20px; display: grid; place-items: center; }
+.card { position: relative; width: min(100%, 340px); background: color-mix(in srgb, var(--g) 96%, var(--t)); border: 1px solid color-mix(in srgb, var(--t) 16%, transparent); border-radius: 10px; padding: 38px 30px; display: grid; gap: 8px; }
+.card h3 { font-size: 1.25rem; }
+.card .meta { font-size: .8rem; opacity: .75; }
+.card .corner { position: absolute; width: 34px; height: 34px; color: var(--t); }
+.card .corner svg { display: block; width: 100%; height: 100%; }
+.card .tl { top: 5px; left: 5px; }
+.card .br { bottom: 5px; right: 5px; transform: rotate(180deg); }
+.badges { padding: 26px 16px; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 22px; text-align: center; }
+.badge { display: grid; gap: 8px; justify-items: center; }
+.badge .ic { width: 64px; height: 64px; color: var(--t); opacity: .85; }
+.badge .ic svg { display: block; width: 100%; height: 100%; }
+.badge b { font-family: var(--serif); font-size: 1.05rem; font-weight: 600; }
+.badge span { font-size: .8rem; opacity: .8; }
+/* Emblem sebenar: setiap helai anyaman masuk berturutan dari arah putarannya, bertahan, kemudian berpisah dan masuk semula. */
+.emblem svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.emblem .blade { transform-origin: 0 0; }
+.emblem.live.v-tenun .blade { animation: jalin-tenun 4.8s cubic-bezier(.45, 0, .2, 1) infinite; animation-delay: calc(var(--i) * 0.16s); }
+.emblem.live.v-tenun svg { animation: jalin-nafas 4.8s ease-in-out infinite; transform-origin: 50% 50%; }
+@keyframes jalin-tenun {
+  0%   { opacity: 0; transform: rotate(-62deg) scale(.78); }
+  26%  { opacity: 1; transform: rotate(0deg) scale(1); }
+  68%  { opacity: 1; transform: rotate(0deg) scale(1); }
+  92%  { opacity: 0; transform: rotate(46deg) scale(.88); }
+  100% { opacity: 0; transform: rotate(46deg) scale(.88); }
+}
+@keyframes jalin-nafas { 0%, 100% { transform: rotate(0deg) scale(.97); } 50% { transform: rotate(14deg) scale(1.02); } }
+@media (prefers-reduced-motion: reduce) { .emblem.live .blade, .emblem.live .blade path, .emblem.live svg { animation: none !important; opacity: 1 !important; stroke: none !important; stroke-dasharray: none !important; } .stage { transition: none; } }
+.emblem-big { width: min(100%, 220px); aspect-ratio: 1; margin-inline: auto; }
+.demo-row { padding: 26px 16px; display: grid; gap: 22px; justify-items: center; }
+/* Variasi skrin memuatkan. Semua memakai helai emblem sebenar; --i ialah turutan helai, --d arah (+1 atau -1). */
+.emblem.live.v-putar svg { animation: v-putar 10s cubic-bezier(.65, .05, .35, .95) infinite; }
+.emblem.live.v-putar .blade { animation: v-denyut-lembut 3.4s ease-in-out infinite; animation-delay: calc(var(--i) * 0.2s); }
+@keyframes v-putar { 0% { transform: rotate(0deg); } 45%, 55% { transform: rotate(180deg); } 100% { transform: rotate(360deg); } }
+@keyframes v-denyut-lembut { 0%, 100% { transform: scale(1); } 50% { transform: scale(.955); } }
+
+.emblem.live.v-mekar .blade { animation: v-mekar 4.2s cubic-bezier(.3, .7, .2, 1) infinite; animation-delay: calc(var(--i) * 0.11s); }
+@keyframes v-mekar {
+  0%   { opacity: 0; transform: scale(.2) rotate(-28deg); }
+  30%  { opacity: 1; transform: scale(1) rotate(0deg); }
+  76%  { opacity: 1; transform: scale(1) rotate(0deg); }
+  100% { opacity: 0; transform: scale(1.1) rotate(10deg); }
+}
+
+.emblem.live.v-gelombang .blade { animation: v-gelombang 2.7s ease-in-out infinite; animation-delay: calc(var(--i) * 0.2s); }
+.emblem.live.v-gelombang svg { animation: v-putar-perlahan 18s linear infinite; }
+@keyframes v-gelombang { 0%, 55%, 100% { opacity: .22; } 20%, 35% { opacity: 1; } }
+@keyframes v-putar-perlahan { to { transform: rotate(360deg); } }
+
+.emblem.live.v-lukis .blade path { animation: v-lukis 4.6s ease-in-out infinite; animation-delay: calc(var(--i) * 0.07s); stroke-dasharray: 1; stroke-linejoin: round; }
+@keyframes v-lukis {
+  0%   { stroke-dashoffset: 1; fill-opacity: 0; opacity: 1; }
+  42%  { stroke-dashoffset: 0; fill-opacity: 0; opacity: 1; }
+  62%  { stroke-dashoffset: 0; fill-opacity: 1; opacity: 1; }
+  86%  { stroke-dashoffset: 0; fill-opacity: 1; opacity: 1; }
+  100% { stroke-dashoffset: 0; fill-opacity: 1; opacity: 0; }
+}
+.emblem.v-lukis:not(.live) .blade path { stroke-dasharray: none; stroke: none; }
+
+.emblem.live.v-iris .blade { animation: v-iris 3.6s cubic-bezier(.55, 0, .25, 1) infinite; }
+@keyframes v-iris {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  50%      { transform: rotate(calc(var(--d) * 58deg)) scale(.82); }
+}
+
+.emblem.live.v-bina .blade { animation: v-bina 3.9s cubic-bezier(.45, 0, .2, 1) infinite; animation-delay: calc(var(--i) * 0.13s); }
+.emblem.live.v-bina svg { animation: v-bina-svg 3.9s ease-in-out infinite; }
+@keyframes v-bina { 0% { opacity: 0; transform: translate(calc(var(--d) * 70px), 40px) rotate(calc(var(--d) * -40deg)); } 28%, 74% { opacity: 1; transform: none; } 100% { opacity: 0; transform: translate(calc(var(--d) * -60px), -30px) rotate(calc(var(--d) * 30deg)); } }
+@keyframes v-bina-svg { 0%, 100% { transform: scale(.98); } 50% { transform: scale(1.02); } }
+
+.vars { padding: 22px 16px; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 18px 14px; }
+.var { display: grid; gap: 8px; justify-items: center; text-align: center; cursor: pointer; padding: 12px 8px 14px; border: 1px solid transparent; border-radius: 6px; }
+.var input { position: absolute; opacity: 0; pointer-events: none; }
+.var:has(input:checked) { border-color: color-mix(in srgb, var(--t) 40%, transparent); background: color-mix(in srgb, var(--t) 5%, transparent); }
+.var:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
+.var .ic { width: 104px; height: 104px; display: block; }
+.var b { font-family: var(--serif); font-size: 1rem; font-weight: 600; }
+.var span.d { font-size: .78rem; opacity: .8; max-width: 22ch; }
+.var span.k { font-family: var(--mono); font-size: .7rem; opacity: .65; }
+.loadmock { margin: 4px 16px 22px; border: 1px solid color-mix(in srgb, var(--t) 14%, transparent); border-radius: 6px; overflow: hidden; background: var(--g); }
+.loadmock.teal { background: #18343c; color: #fff; border-color: #18343c; }
+.loadmock.teal .body { min-height: 260px; }
+.loadmock .bar { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-bottom: 1px solid color-mix(in srgb, var(--t) 12%, transparent); font-family: var(--serif); font-size: 1.1rem; font-weight: 600; }
+.loadmock .bar span { font-family: var(--sans); font-size: .75rem; font-weight: 400; opacity: .7; }
+.loadmock .body { min-height: 230px; display: grid; place-items: center; align-content: center; gap: 10px; padding: 18px; }
+.loadmock .body small { font-size: .78rem; opacity: .75; }
+.sizes { display: flex; gap: 22px; align-items: end; justify-content: center; flex-wrap: wrap; padding: 4px 16px 20px; }
+.sizes .ic { display: block; }
+.note { border-left: 3px solid var(--accent); padding: 6px 0 6px 14px; color: var(--fg-soft); font-size: .9rem; max-width: 70ch; }
+ul.rules { margin: 0; padding-left: 1.1em; display: grid; gap: 4px; font-size: .9rem; color: var(--fg-soft); }
+ul.rules b { color: var(--fg); font-weight: 600; }
+.toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--fg); color: var(--bg); padding: 8px 14px; border-radius: 4px; font-size: .85rem; opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 10; }
+.toast.on { opacity: 1; }
+</style>
+
+<body>
+<div class="wrap">
+  <header>
+    <span class="eyebrow">Jalin · Bahasa visual</span>
+    <h1>Motif Jalin</h1>
+    <p class="lede">Satu sistem lima motif yang dibina daripada tindakan menganyam: jalur, silang, tindih, sambung. Semuanya dijana oleh kod, tanpa bentuk berpusat atau bintang, dan mengikut warna latar Jalin.</p>
+  </header>
+
+  <div class="controls" role="group" aria-label="Kawalan pratonton">
+    <div class="swatches" id="swatches" role="radiogroup" aria-label="Warna latar"></div>
+    <div class="controls-row">
+      <label class="ctl" for="ma">Kekuatan motif <input id="ma" type="range" min="0.02" max="0.14" step="0.005" value="0.06"> <output id="maOut">0.060</output></label>
+      <label class="ctl" for="quiet"><input id="quiet" type="checkbox" checked> Zon senyap di belakang teks</label>
+      <label class="ctl" for="spin"><input id="spin" type="checkbox" checked> Gerakkan emblem</label>
+      <label class="ctl" for="mode">Warna motif <select id="mode"><option value="tonal">Satu warna (ikut latar)</option><option value="brand" selected>Warna jenama</option></select></label>
+    </div>
+  </div>
+
+  <section id="s1">
+    <div class="head"><span class="eyebrow">1 · Corak utama</span><h2>Silang Jalin</h2><p class="lede">Dua keluarga jalur pada sudut ±45° yang bersilang atas-bawah secara bergilir. Tiada petak tertutup, jadi jalur masuk dan keluar tile seperti bahan yang berterusan. Dipakai pada latar blok laman utama dan pengepala kategori.</p></div>
+    <div class="grid2">
+      <div class="stage quiet" id="stage1">
+        <div class="fx" id="fx1"></div>
+        <div class="hero">
+          <span class="tag">Cerpen · Keluarga</span>
+          <span class="t">Anak Qasab</span>
+          <p class="d">Di paya Iraq selatan pada tahun 1986, seorang gadis empat belas tahun disuruh memilih qasab sebelum ke sekolah.</p>
+          <span class="pill">Baca selama 14 minit</span>
+        </div>
+      </div>
+      <div class="spec" id="spec1"></div>
+    </div>
+  </section>
+
+  <section id="s2">
+    <div class="head"><span class="eyebrow">2 · Corak sokongan</span><h2>Bidai Beralih</h2><p class="lede">Jalur mendatar yang diputus oleh jalur menegak pendek, baris kedua beralih 12 px. Lebih tenang daripada Silang Jalin, jadi ia untuk pita kaki dan ruang bacaan, tidak pernah bersama Silang Jalin pada blok yang sama.</p></div>
+    <div class="grid2">
+      <div class="stage footband" id="stage2">
+        <div class="strip" id="fx2"></div>
+        <div class="row"><b>Jalin</b><span>oleh Adjung</span><span>Cerpen · Novela · Bersiri · Fragmen · Sinopsis</span></div>
+      </div>
+      <div class="spec" id="spec2"></div>
+    </div>
+  </section>
+
+  <section id="s3">
+    <div class="head"><span class="eyebrow">3 · Pemisah</span><h2>Lilit Naskhah</h2><p class="lede">Dua garis hampir lurus yang bertukar kedudukan pada setiap silang. Bukan gelombang dan bukan arabesque. Untuk pemisah bab, antara maklumat dengan cerita, dan penghujung cerita.</p></div>
+    <div class="grid2">
+      <div class="stage"><div class="dividers" id="dividers"></div></div>
+      <div class="spec" id="spec3"></div>
+    </div>
+  </section>
+
+  <section id="s4">
+    <div class="head"><span class="eyebrow">4 · Hiasan sudut</span><h2>Lipatan Sudut</h2><p class="lede">Tiga jalur berbentuk L yang dilintasi satu jalur serong, seperti hujung anyaman yang dikemaskan. Hanya sudut kiri atas dan kanan bawah, supaya kad terasa editorial dan bukan bingkai sijil.</p></div>
+    <div class="grid2">
+      <div class="stage"><div class="cardwrap"><div class="card"><span class="corner tl" id="c1"></span><span class="corner br" id="c2"></span><h3>Lelaki dengan Seribu Masalah</h3><span class="meta">Cerpen · Keluarga · 15 minit</span><p>Roslan mengurus bengkel kecil di tepi rumah sambil mencatat satu demi satu masalah keluarga dan kerjanya.</p></div></div></div>
+      <div class="spec" id="spec4"></div>
+    </div>
+  </section>
+
+  <section id="s5">
+    <div class="head"><span class="eyebrow">5 · Skrin memuatkan</span><h2>Emblem Jalin yang bergerak</h2><p class="lede">Enam variasi, semuanya dibina daripada helai emblem sebenar dengan warna asalnya. Pilih satu untuk melihatnya pada skrin memuatkan, dan pada tiga saiz. Semuanya berhenti apabila pengguna menetapkan "kurangkan gerakan".</p></div>
+    <div class="stage" id="stage5">
+      <div class="vars" id="vars" role="radiogroup" aria-label="Variasi emblem"></div>
+      <div class="loadmock"><div class="bar">Jalin <span>Memuatkan halaman</span></div><div class="body"><span class="emblem live ic-big" id="bigEmblem" style="width:150px;height:150px;display:block"></span><small>Sebentar sahaja.</small></div></div>
+      <div class="loadmock teal"><div class="body"><span class="emblem live" id="whiteEmblem" style="width:130px;height:130px;display:block"></span><small>Skrin memuatkan: latar hijau tema, helai teal menjadi putih, warna lain kekal</small></div></div>
+      <div class="sizes" id="sizes"></div>
+    </div>
+    <div class="spec" id="spec5"></div>
+  </section>
+
+  <section>
+    <div class="head"><span class="eyebrow">Peraturan</span><h2>Apa yang dijaga</h2></div>
+    <ul class="rules">
+      <li><b>Tiada bentuk berpusat.</b> Tiada enam bucu, bintang, roset atau pusat dengan jejari, kerana ia mudah dibaca sebagai lambang agama. Ini keputusan jenama, bukan dakwaan hukum.</li>
+      <li><b>Tiada ketupat berlian berulang.</b> Yang diambil ialah logik silang jalur, bukan siluet ketupat.</li>
+      <li><b>Nama sendiri, bukan nama pusaka.</b> Silang Jalin, Bidai Beralih dan seterusnya ialah rekaan baharu. Tiada yang dilabel sebagai kelarai tradisional.</li>
+      <li><b>Teks menang.</b> Motif di belakang teks tidak melebihi 0.03 dan kontras teks sentiasa ditentukan oleh warna latar. Pada Teal tua, Terracotta dan Hitam motif bertukar kepada warna teks automatik.</li>
+      <li><b>Satu skala.</b> Jalur 1.5, 2 dan 3 px; asas jarak 8 px; hujung bulat; warna melalui <code>currentColor</code> dan pembolehubah CSS.</li>
+    </ul>
+    <p class="note">Ini prototaip. Setiap motif dijana oleh fungsi kecil, jadi parameter di bahagian spesifikasi boleh diubah dan SVG akhir dieksport dengan warna terpilih.</p>
+  </section>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  var GROUNDS = [
+    { id: 'kertas',   name: 'Kertas',      g: '#fbf8f2', t: '#18343c' },
+    { id: 'putih',    name: 'Putih',       g: '#fffefa', t: '#18343c' },
+    { id: 'peachm',   name: 'Peach muda',  g: '#f3e6db', t: '#18343c' },
+    { id: 'peach',    name: 'Peach',       g: '#d8b9a6', t: '#18343c' },
+    { id: 'teal',     name: 'Teal tua',    g: '#18343c', t: '#fbf8f2' },
+    { id: 'terra',    name: 'Terracotta',  g: '#a76450', t: '#fffefa' },
+    { id: 'hitam',    name: 'Hitam',       g: '#121414', t: '#fbf8f2' }
+  ];
+  var state = { ground: GROUNDS[0], ma: 0.06, mode: 'brand' };
+  var BRAND = { teal: '#18343c', terra: '#a76450', peach: '#d7ae96', paper: '#fbf8f2' };
+  function cols(g) {
+    var by = { kertas: ['teal', 'terra', 'peach'], putih: ['teal', 'terra', 'peach'], peachm: ['teal', 'terra', 'peach'], peach: ['teal', 'terra', 'paper'], teal: ['terra', 'peach', 'paper'], terra: ['teal', 'peach', 'paper'], hitam: ['terra', 'peach', 'paper'] }[g.id];
+    return state.mode === 'brand' ? { a: BRAND[by[0]], b: BRAND[by[1]], c: BRAND[by[2]] } : null;
+  }
+  var uid = 0;
+  var f = function (n) { return +n.toFixed(2); };
+
+  /* ---------- penjana SVG (gap = warna latar untuk kesan tindih) ---------- */
+  function silang(o) {
+    var N = 16, S = 2, GAP = 4.6, id = 'sj' + (++uid), body = '', a, b, i;
+    var A = '', B = '';
+    for (a = -4; a <= 4; a++) A += '<path d="M' + (-48) + ' ' + (-48 - 16 * a) + 'L' + 80 + ' ' + (80 - 16 * a) + '"/>';
+    for (b = -4; b <= 8; b++) B += '<path d="M' + (-48) + ' ' + (16 * b + 48) + 'L' + 80 + ' ' + (16 * b - 80) + '"/>';
+    var cross = '';
+    for (a = -4; a <= 8; a++) for (b = -4; b <= 8; b++) {
+      var x = 8 * (a + b), y = 8 * (b - a);
+      if (x < -10 || x > 42 || y < -10 || y > 42) continue;
+      var overA = (((a + b) % 2) + 2) % 2 === 0;
+      // arah jalur A (1,1), jalur B (1,-1)
+      var dx = 3.6, dy = overA ? 3.6 : -3.6;
+      var seg = 'M' + f(x - dx) + ' ' + f(y - dy) + 'L' + f(x + dx) + ' ' + f(y + dy);
+      cross += '<path d="' + seg + '" stroke="' + o.ground + '" stroke-width="' + GAP + '" stroke-linecap="butt"/>' +
+               '<path d="' + seg + '" stroke="currentColor" stroke-width="' + S + '" stroke-linecap="round"/>';
+    }
+    return '<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" aria-hidden="true">' +
+      '<defs><pattern id="' + id + '" width="32" height="32" patternUnits="userSpaceOnUse">' +
+      '<g fill="none" stroke="currentColor" stroke-width="' + S + '" stroke-linecap="round">' + A + B + '</g>' + cross + '</pattern></defs>' +
+      '<rect width="100%" height="100%" fill="url(#' + id + ')" opacity="' + o.opacity + '"/></svg>';
+  }
+
+  function bidai(o) {
+    var id = 'bd' + (++uid), W = 48, H = 24, T = 1.5;
+    var rows = '';
+    [[6, 0], [18, 12]].forEach(function (r) {
+      var y = r[0], s = r[1];
+      for (var k = -1; k <= 1; k++) {
+        var x0 = s + k * W;
+        rows += '<path d="M' + (x0) + ' ' + y + 'H' + (x0 + 40) + '"/>' +
+                '<path d="M' + (x0 + 44) + ' ' + (y - 5) + 'V' + (y + 5) + '"/>';
+      }
+    });
+    return '<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" aria-hidden="true">' +
+      '<defs><pattern id="' + id + '" width="' + W + '" height="' + H + '" patternUnits="userSpaceOnUse">' +
+      '<g fill="none" stroke="currentColor" stroke-width="' + T + '" stroke-linecap="round">' + rows + '</g></pattern></defs>' +
+      '<rect width="100%" height="100%" fill="url(#' + id + ')" opacity="' + o.opacity + '"/></svg>';
+  }
+
+  function lilit(o) {
+    var W = 192, H = 16, P = 64, A = 4, id = 'ln' + (++uid), mid = H / 2, i;
+    function path(sign) {
+      var d = '';
+      for (var x = 0; x <= W; x += 2) d += (x ? 'L' : 'M') + x + ' ' + f(mid + sign * A * Math.sin(2 * Math.PI * x / P));
+      return d;
+    }
+    var cl = o.col, ca = cl ? cl.a : 'currentColor', cb = cl ? cl.b : 'currentColor';
+    var out = '<path stroke="' + ca + '" d="' + path(1) + '"/><path stroke="' + cb + '" d="' + path(-1) + '"/>', k;
+    for (k = 1; k * 32 < W; k++) {
+      var x = k * 32, over = k % 2 === 0 ? 1 : -1, d = '';
+      for (var xx = x - 7; xx <= x + 7; xx += 1) d += (xx === x - 7 ? 'M' : 'L') + xx + ' ' + f(mid + over * A * Math.sin(2 * Math.PI * xx / P));
+      out += '<path d="' + d + '" stroke="' + o.ground + '" stroke-width="4" stroke-linecap="butt"/><path stroke="' + (over === 1 ? ca : cb) + '" d="' + d + '"/>';
+    }
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + W + ' ' + H + '" width="' + W + '" height="' + H + '" aria-hidden="true">' +
+      '<defs><linearGradient id="' + id + 'g"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".08" stop-color="#fff"/><stop offset=".92" stop-color="#fff"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>' +
+      '<mask id="' + id + '"><rect width="' + W + '" height="' + H + '" fill="url(#' + id + 'g)"/></mask></defs>' +
+      '<g mask="url(#' + id + ')" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' + out + '</g></svg>';
+  }
+
+  function sudut(o) {
+    var cl = o.col, K = cl ? { a: cl.a, b: cl.b, c: cl.c } : { a: 'currentColor', b: 'currentColor', c: 'currentColor' };
+    var s1 = 'M6 25V9a3 3 0 0 1 3-3H25', s2 = 'M12 25V15a3 3 0 0 1 3-3H25', s3 = 'M27 2L2 27';
+    function seg(cx, cy) { return 'M' + (cx - 3.4) + ' ' + (cy - 3.4) + 'L' + (cx + 3.4) + ' ' + (cy + 3.4); }
+    // titik silang bagi garis x+y=29: S1h (23,6), S2h (17,12), S2v (12,17), S1v (6,23); bergilir tindih
+    var pts = [[23, 6, 1], [17, 12, 0], [12, 17, 1], [6, 23, 0]], tie = '';
+    pts.forEach(function (p) {
+      var d = 'M' + (p[0] - 3.4) + ' ' + (p[1] + 3.4) + 'L' + (p[0] + 3.4) + ' ' + (p[1] - 3.4);
+      // p[2]=1: jalur serong di atas; 0: jalur serong di bawah (L di atas)
+      var legH = (p[1] === 6 || p[1] === 12);
+      var Lseg = legH ? 'M' + (p[0] - 3.6) + ' ' + p[1] + 'H' + (p[0] + 3.6) : 'M' + p[0] + ' ' + (p[1] - 3.6) + 'V' + (p[1] + 3.6);
+      var legCol = (p[0] === 23 || p[0] === 6) ? K.a : K.b;
+      if (p[2]) tie += '<path d="' + d + '" stroke="' + o.ground + '" stroke-width="4.4" stroke-linecap="butt"/><path stroke="' + K.c + '" d="' + d + '"/>';
+      else tie += '<path d="' + Lseg + '" stroke="' + o.ground + '" stroke-width="4.4" stroke-linecap="butt"/><path stroke="' + legCol + '" d="' + Lseg + '"/>';
+    });
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28" width="28" height="28" aria-hidden="true">' +
+      '<g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path stroke="' + K.a + '" d="' + s1 + '"/><path stroke="' + K.b + '" d="' + s2 + '"/><path stroke="' + K.c + '" d="' + s3 + '"/>' + tie + '</g></svg>';
+  }
+
+  var LOGO = {"defs":"<defs>\r\n\t<linearGradient id=\"Gradient1\" gradientUnits=\"userSpaceOnUse\" x1=\"1068.53\" y1=\"1262.03\" x2=\"1094.94\" y2=\"1258.21\">\r\n\t\t<stop class=\"stop0\" offset=\"0\" stop-opacity=\"1\" stop-color=\"rgb(16,37,48)\"/>\r\n\t\t<stop class=\"stop1\" offset=\"1\" stop-opacity=\"1\" stop-color=\"rgb(25,61,70)\"/>\r\n\t</linearGradient>\r\n\t<linearGradient id=\"Gradient2\" gradientUnits=\"userSpaceOnUse\" x1=\"907.5\" y1=\"658.046\" x2=\"1028.03\" y2=\"820.882\">\r\n\t\t<stop class=\"stop0\" offset=\"0\" stop-opacity=\"1\" stop-color=\"rgb(163,87,62)\"/>\r\n\t\t<stop class=\"stop1\" offset=\"1\" stop-opacity=\"1\" stop-color=\"rgb(198,132,111)\"/>\r\n\t</linearGradient>\r\n\t<linearGradient id=\"Gradient3\" gradientUnits=\"userSpaceOnUse\" x1=\"1248.36\" y1=\"624.441\" x2=\"1123.17\" y2=\"505.332\">\r\n\t\t<stop class=\"stop0\" offset=\"0\" stop-opacity=\"1\" stop-color=\"rgb(165,88,65)\"/>\r\n\t\t<stop class=\"stop1\" offset=\"1\" stop-opacity=\"1\" stop-color=\"rgb(187,116,95)\"/>\r\n\t</linearGradient>\r\n</defs>","paths":[["rgb(19,47,56)","M 1069.33 333.003 L 1070.49 333.142 L 1070.95 334.366 C 1047.68 369.981 1023.62 399.755 988.756 425.008 C 921.518 473.705 821.151 488.869 788.007 574.481 C 778.967 597.831 779.024 618.329 784.65 642.319 C 778.175 635.812 774.174 630.686 768.525 623.519 C 760.481 611.349 755.663 603.09 750.779 588.799 C 739.816 557.314 741.85 522.758 756.43 492.775 C 765.629 474.302 779.842 457.212 796.648 445.1 C 827.893 422.584 867.847 408.607 902.874 392.332 C 934.387 377.69 966.119 362.043 998.976 351.359 C 1022.26 343.789 1045.95 340.958 1069.33 333.003 z"],["rgb(19,47,56)","M 886.358 579.955 C 945.72 590.077 978.459 627.815 1020.61 666.251 C 1074.35 715.257 1146.45 773.462 1223.93 749.124 C 1216.01 755.756 1209.69 760.692 1201.29 766.711 C 1175.53 782.938 1145.46 790.991 1115.03 789.812 C 1050.58 787.467 998.58 744.63 951.183 705.681 C 924.826 684.022 908.109 670.972 884.991 646.097 C 883.561 618.266 884.229 608.094 886.358 579.955 z"],["rgb(19,47,56)","M 1020.7 235.413 C 1068.53 229.226 1127.29 252.204 1160.6 286.404 C 1208.1 335.168 1227.07 411.027 1227.06 477.302 C 1210.57 463.538 1193.12 453.193 1177.33 439.64 C 1143.2 408.018 1130.31 383.365 1107.44 343.418 C 1072.27 281.964 1007.82 242.803 935.893 268.162 C 963.03 248.472 987.194 238.381 1020.7 235.413 z"],["url(#Gradient3)","M 1228.34 388.547 C 1252.82 400.139 1282.76 430.588 1293.79 455.035 C 1345.42 569.487 1234.48 651.713 1147.26 693.479 C 1124.61 702.925 1118.23 704.828 1093.79 708.552 C 1168.54 636.148 1253.56 553.317 1238.36 439.352 C 1236 421.671 1232.36 405.886 1228.34 388.547 z"],["rgb(215,174,150)","M 881.452 497.002 L 882.732 497.589 C 884.418 506.253 874.852 566.45 873.132 579.174 C 871.606 590.941 870.376 602.745 869.444 614.574 C 864.669 672.413 872.375 719.974 910.644 765.195 C 890.587 758.294 881.264 753.851 863.701 742.161 C 843.901 728.13 827.515 709.82 815.758 688.591 C 785.073 633.435 792.169 565.273 841.337 523.587 C 854.157 512.719 866.809 505.141 881.452 497.002 z"],["rgb(169,93,70)","M 956.965 281.397 C 1001.88 277.528 1032.69 288.239 1066.94 317.01 C 1008.61 313.376 949.699 341.034 905.372 377.1 C 899.956 381.506 889.327 385.993 882.759 388.992 C 856.833 400.063 830.698 410.521 806.231 424.485 C 811.652 393.885 823.138 366.29 842.826 342.033 C 871.357 307.523 912.397 285.721 956.965 281.397 z"],["rgb(19,47,56)","M 1313.44 550.606 C 1317.2 554.011 1318.15 567.891 1318.91 572.993 C 1328.37 636.628 1294.95 706.409 1234.39 731.811 C 1200.28 746.12 1166.74 742.687 1133.38 728.996 C 1126.56 725.943 1119.72 722.346 1113.04 718.96 C 1134 714.014 1157.37 701.704 1176.46 691.514 C 1236.3 659.565 1292.68 617.948 1313.44 550.606 z"],["rgb(215,174,150)","M 1076.91 332.69 C 1082.01 336.249 1103.46 374.059 1109.06 381.974 C 1114.84 390.158 1121.19 400.402 1128.49 409.265 C 1139.5 422.471 1151.6 434.722 1164.67 445.888 C 1185.19 463.061 1213.02 476.919 1223.49 499.249 C 1222.29 512.489 1217.73 525.202 1213.11 537.564 L 1208.33 547.925 C 1137.31 527.74 1091.39 471.33 1083.78 398.129 C 1081.37 375.058 1083.14 355.367 1076.91 332.69 z"],["url(#Gradient2)","M 886.8 666.665 C 889.344 668.585 892.66 672.036 895.091 674.337 C 921.065 698.923 950.317 719.948 978.013 742.558 C 1003.5 763.365 1031.8 781.529 1062.59 793.384 C 1064.19 794 1064.32 793.842 1065.52 795.327 L 1063.73 796.244 C 971.186 821.059 896.437 758.421 886.8 666.665 z"]]};
+  var VARS = [
+    { id: 'tenun',     cls: 'v-tenun',     name: 'Tenun',     d: 'Helai masuk berturutan, bertahan, kemudian berpisah.', k: '4.8 s' },
+    { id: 'mekar',     cls: 'v-mekar',     name: 'Mekar',     d: 'Helai tumbuh dari tengah, lalu lenyap bersama.', k: '4.2 s' },
+    { id: 'bina',      cls: 'v-bina',      name: 'Bina',      d: 'Helai datang dari sisi berbeza dan disusun.', k: '3.9 s' },
+    { id: 'gelombang', cls: 'v-gelombang', name: 'Gelombang', d: 'Bentuk penuh sentiasa nampak; cahaya merayap pada helai.', k: '2.7 s' },
+    { id: 'lukis',     cls: 'v-lukis',     name: 'Lukis',     d: 'Garis tepi dilukis dahulu, kemudian warna mengisi.', k: '4.6 s' },
+    { id: 'iris',      cls: 'v-iris',      name: 'Iris',      d: 'Anyaman longgar dan ketat semula.', k: '3.6 s' },
+    { id: 'putar',     cls: 'v-putar',     name: 'Putar',     d: 'Putaran perlahan yang berhenti sebentar di tengah.', k: '10 s' }
+  ];
+  var STROKE = { 'url(#Gradient3)': 'rgb(176,102,80)', 'url(#Gradient2)': 'rgb(176,102,80)' };
+  function emblem(variant, white) {
+    var order = [0, 3, 1, 5, 6, 4, 2, 7, 8];
+    var draw = variant === 'lukis';
+    var p = LOGO.paths.map(function (pp, i) {
+      var idx = order.indexOf(i), stroke = draw ? ' pathLength="1" stroke="' + (STROKE[pp[0]] || pp[0]) + '" stroke-width="5"' : '';
+      return '<g transform="translate(1042 525)"><g class="blade" style="--i:' + idx + ';--d:' + (idx % 2 ? -1 : 1) + '"><path transform="translate(-1042 -525)" fill="' + (white && pp[0] === 'rgb(19,47,56)' ? '#fff' : pp[0]) + '"' + (white && draw && pp[0] === 'rgb(19,47,56)' ? stroke.replace(/stroke="[^"]+"/, 'stroke="#fff"') : stroke) + ' d="' + pp[1] + '"/></g></g>';
+    }).join('');
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="692 175 700 700" aria-hidden="true">' + LOGO.defs + p + '</svg>';
+  }
+  var variant = 'tenun';
+  function mount(el, v, live, white) { var d = VARS.filter(function (x) { return x.id === v; })[0]; el.className = el.className.replace(/\bv-\w+\b/g, '').replace(/\blive\b/g, '').trim() + ' emblem ' + d.cls + (live ? ' live' : ''); el.innerHTML = emblem(v, white); }
+  function simpul(o) {
+    var R = 22, A = 3.4, C = 32, ph = 0.3, a0 = 18 * Math.PI / 180, a1 = 342 * Math.PI / 180;
+    function pt(th, sign) { var r = R + sign * A * Math.sin(3 * th + ph); return [C + r * Math.cos(th - Math.PI / 2 + 0.3), C + r * Math.sin(th - Math.PI / 2 + 0.3)]; }
+    function arc(sign, t0, t1) { var d = ''; for (var t = t0; t <= t1 + 0.001; t += 0.04) { var p = pt(t, sign); d += (d ? 'L' : 'M') + f(p[0]) + ' ' + f(p[1]); } return d; }
+    var out = '<path d="' + arc(1, a0, a1) + '"/><path d="' + arc(-1, a0, a1) + '"/>';
+    for (var k = 0; k < 9; k++) {
+      var th = (k * Math.PI - ph) / 3;
+      if (th < a0 + 0.2 || th > a1 - 0.2) continue;
+      var sign = k % 2 === 0 ? 1 : -1, d = arc(sign, th - 0.15, th + 0.15);
+      out += '<path d="' + d + '" stroke="' + o.ground + '" stroke-width="5.6" stroke-linecap="butt"/><path d="' + d + '"/>';
+    }
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">' + out + '</g></svg>';
+  }
+
+  /* ---------- paparan ---------- */
+  var SPECS = {
+    1: { dl: [['tile', '32 × 32'], ['sudut', '±45°'], ['jalur', '2 px'], ['ulang', '16 px'], ['kelegapan', '0.045 – 0.075'], ['hujung', 'bulat']], p: 'Kelegapan 0.06 pada blok, tidak lebih 0.03 di belakang tajuk dan 0.025 di belakang teks bacaan.' },
+    2: { dl: [['tile', '48 × 24'], ['mendatar', '1.5 px'], ['menegak', '1.5 px'], ['alih baris', '12 px'], ['jurang', '8 px'], ['kelegapan', '0.035 – 0.06']], p: 'Dipotong menjadi jalur setinggi 24 – 32 px untuk pita kaki.' },
+    3: { dl: [['saiz', '192 × 16'], ['jalur', '1.5 px'], ['tempoh', '64 px'], ['amplitud', '4 px'], ['silang', '5'], ['pudar hujung', '8 %']], p: 'Hampir lurus supaya tidak kelihatan seperti ombak atau arabesque.' },
+    4: { dl: [['kotak', '28 × 28'], ['inset', '5 px'], ['jalur', '1.5 px'], ['jejari', '3 px'], ['kaki L', '18 – 22 px'], ['silang', '4']], p: 'Letakkan di sudut kiri atas dan kanan bawah sahaja.' },
+    5: { dl: [['sumber', 'jalin-icon-color.svg'], ['helai', '9'], ['variasi', '7'], ['kitaran', '2.7 – 10 s'], ['saiz', '32, 56, 96 px'], ['gerakan', 'transform dan opacity sahaja']], p: 'Warna emblem tidak berubah mengikut latar. Pada Teal tua dan Hitam, letakkan emblem pada panel kertas atau guna versi songsang. Dengan prefers-reduced-motion, emblem kekal statik. Skrin memuatkan menunggu 0.35 s sebelum muncul.' }
+  };
+
+  function specHTML(n, kind) {
+    var s = SPECS[n], dl = s.dl.map(function (r) { return '<dt>' + r[0] + '</dt><dd>' + r[1] + '</dd>'; }).join('');
+    return '<h3>Spesifikasi</h3><dl>' + dl + '</dl><p>' + s.p + '</p>' +
+      '<div class="btns"><button type="button" data-copy="' + kind + '">Salin SVG</button></div>' +
+      '<details><summary>Lihat kod</summary><textarea class="code" id="code-' + kind + '" readonly aria-label="Kod SVG ' + kind + '"></textarea></details>';
+  }
+  [[1, 'silang'], [2, 'bidai'], [3, 'lilit'], [4, 'sudut'], [5, 'emblem']].forEach(function (r) { document.getElementById('spec' + r[0]).innerHTML = specHTML(r[0], r[1]); });
+
+  function standalone(kind) {
+    var g = state.ground, o = { ground: g.g, opacity: state.ma };
+    if (kind === 'emblem') return emblem(variant);
+    var s = { silang: silang, bidai: bidai, lilit: lilit, sudut: sudut }[kind](o);
+    var col = g.t;
+    s = s.replace(/currentColor/g, col);
+    if (kind === 'silang' || kind === 'bidai') s = s.replace('<svg ', '<svg style="background:' + g.g + '" ');
+    return s;
+  }
+
+  function mix(a, b, p) { var h = function (x) { return [1, 3, 5].map(function (i) { return parseInt(x.slice(i, i + 2), 16); }); }, A = h(a), B = h(b); return '#' + A.map(function (v, i) { var c = Math.round(v * (1 - p) + B[i] * p); return (c < 16 ? '0' : '') + c.toString(16); }).join(''); }
+
+  var live = true;
+  function renderEmblems() {
+    var host = document.getElementById('vars');
+    if (!host.children.length) {
+      VARS.forEach(function (v, i) {
+        var l = document.createElement('label'); l.className = 'var';
+        l.innerHTML = '<input type="radio" name="var" id="var-' + v.id + '" value="' + v.id + '"' + (i === 0 ? ' checked' : '') + '><span class="ic emblem" data-vid="' + v.id + '"></span><b>' + v.name + '</b><span class="d">' + v.d + '</span><span class="k">' + v.k + '</span>';
+        host.appendChild(l);
+      });
+      host.addEventListener('change', function (e) { variant = e.target.value; renderEmblems(); });
+    }
+    host.querySelectorAll('.ic').forEach(function (el) { mount(el, el.getAttribute('data-vid'), live); });
+    mount(document.getElementById('bigEmblem'), variant, live);
+    mount(document.getElementById('whiteEmblem'), variant, live, true);
+    var sz = document.getElementById('sizes'); sz.innerHTML = '';
+    [32, 56, 96].forEach(function (n) { var e = document.createElement('span'); e.className = 'ic'; e.style.width = n + 'px'; e.style.height = n + 'px'; sz.appendChild(e); mount(e, variant, live); e.className += ''; });
+    var big = document.getElementById('bigEmblem'); big.style.width = '150px'; big.style.height = '150px';
+  }
+
+  function render() {
+    var g = state.ground, root = document.documentElement.style;
+    root.setProperty('--g', g.g); root.setProperty('--t', g.t); root.setProperty('--m', g.t); root.setProperty('--ma', state.ma);
+    var o = { ground: g.g, opacity: state.ma, col: cols(g) };
+    document.getElementById('fx1').innerHTML = silang(o);
+    document.getElementById('fx2').innerHTML = bidai({ ground: g.g, opacity: Math.min(state.ma * 1.2, 0.16) });
+    document.getElementById('dividers').innerHTML = '<div class="div">' + lilit(o) + '</div><p>Bahagian satu berakhir di sini, dan air masih belum surut.</p><div class="div">' + lilit(o) + '</div>';
+    var sd = sudut({ ground: mix(g.g, g.t, 0.04), opacity: state.ma, col: cols(g) });
+    document.getElementById('c1').innerHTML = sd; document.getElementById('c2').innerHTML = sd;
+    renderEmblems();
+    ['silang', 'bidai', 'lilit', 'sudut', 'emblem'].forEach(function (k) { var t = document.getElementById('code-' + k); if (t) t.value = standalone(k); });
+  }
+
+  /* ---------- kawalan ---------- */
+  var sw = document.getElementById('swatches');
+  GROUNDS.forEach(function (g, i) {
+    var l = document.createElement('label');
+    l.innerHTML = '<input type="radio" name="ground" id="g-' + g.id + '" value="' + i + '"' + (i === 0 ? ' checked' : '') + '><span class="sw" style="--c:' + g.g + '"><i></i>' + g.name + '</span>';
+    sw.appendChild(l);
+  });
+  sw.addEventListener('change', function (e) { state.ground = GROUNDS[+e.target.value]; render(); });
+  var ma = document.getElementById('ma');
+  ma.addEventListener('input', function () { state.ma = +ma.value; document.getElementById('maOut').textContent = state.ma.toFixed(3); render(); });
+  document.getElementById('quiet').addEventListener('change', function (e) { document.getElementById('stage1').classList.toggle('quiet', e.target.checked); });
+  document.getElementById('mode').addEventListener('change', function (e) { state.mode = e.target.value; render(); });
+  document.getElementById('spin').addEventListener('change', function (e) { live = e.target.checked; renderEmblems(); });
+
+  var tm;
+  function toast(t) { var el = document.getElementById('toast'); el.textContent = t; el.classList.add('on'); clearTimeout(tm); tm = setTimeout(function () { el.classList.remove('on'); }, 1600); }
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-copy]'); if (!b) return;
+    var kind = b.getAttribute('data-copy'), ta = document.getElementById('code-' + kind), code = ta.value;
+    var fallback = function () { var d = ta.closest('details'); if (d) d.open = true; ta.focus(); ta.select(); toast('Kod dipilih. Tekan Ctrl+C.'); };
+    try { navigator.clipboard.writeText(code).then(function () { toast('SVG disalin'); }, fallback); } catch (err) { fallback(); }
+  });
+
+  render();
+})();
+</script>

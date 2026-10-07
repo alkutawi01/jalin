@@ -1,4 +1,4 @@
-import { SITE_URL, absoluteUrl, shareImageUrl } from "./seo";
+import { DEFAULT_SHARE_IMAGE, SITE_URL, absoluteUrl, shareImageUrl } from "./seo";
 import { audienceAgeRange } from "./audience";
 
 /** Structured data for the reader pages (schema.org). Only what is public: no credits' private fields, no rights notes. */
@@ -33,12 +33,16 @@ export function laterOf(modified: string, published?: string): string {
   return Number.isFinite(m) && Number.isFinite(p) && m < p ? published : modified;
 }
 
-/** An age range written in the work's audience field, or nothing: no age is assumed. */
+/**
+ * The age a work is suitable FROM, or nothing when its audience field states none. Only the starting age is published
+ * (Izzat, 7 Oct 2026: Jalin does not narrow its readers): "13 to 17" told a search engine the work is not for adults, and a
+ * band with no upper end was published as "up to 99".
+ */
 export function audienceOf(text?: string): { audience?: Record<string, unknown> } {
   // The stored value is band codes ("belia,dewasa"), a band label or an older age range; all give the ages they cover.
   const range = audienceAgeRange(text);
   if (!range) return {};
-  return { audience: { "@type": "PeopleAudience", suggestedMinAge: range.min, suggestedMaxAge: range.max } };
+  return { audience: { "@type": "PeopleAudience", suggestedMinAge: range.min } };
 }
 
 const publisher = { "@type": "Organization", name: "Jalin", url: SITE_URL };
@@ -218,6 +222,43 @@ export function episodeJsonLd(work: JsonLdWork, series: { slug: string; title: s
         { name: series.title, path: seriesPath },
         { name: work.title, path }
       ])
+    ]
+  };
+}
+
+/**
+ * The homepage's structured data: what the site is (WebSite, with its search page) and who publishes it (Organization).
+ * The homepage had none, so a search engine knew the works but not the site they belong to.
+ */
+export function siteJsonLd(description: string): Record<string, unknown> {
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": `${SITE_URL}/#website`,
+        url: SITE_URL,
+        name: "Jalin",
+        alternateName: "Jalin — oleh Adjung",
+        description,
+        inLanguage: "ms",
+        publisher: { "@id": `${SITE_URL}/#organization` },
+        potentialAction: {
+          "@type": "SearchAction",
+          target: { "@type": "EntryPoint", urlTemplate: `${SITE_URL}/cari?q={search_term_string}` },
+          "query-input": "required name=search_term_string"
+        }
+      },
+      {
+        "@type": "Organization",
+        "@id": `${SITE_URL}/#organization`,
+        name: "Jalin",
+        url: SITE_URL,
+        logo: absoluteUrl("/brand/jalin-icon-color.svg"),
+        image: DEFAULT_SHARE_IMAGE.url,
+        slogan: "Selami dunia melalui cerita",
+        parentOrganization: { "@type": "Organization", name: "Adjung Press" }
+      }
     ]
   };
 }

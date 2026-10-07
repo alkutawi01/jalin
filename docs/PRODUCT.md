@@ -9,7 +9,7 @@ Jalin ialah subjenama Adjung.
 
 ## Audience
 
-Pembaca utama: remaja **13–17 tahun**.
+Pembaca: terbuka kepada semua. Sehingga 7 Okt 2026 dokumen ini menyebut "remaja 13–17 tahun" sebagai pembaca utama; Izzat memutuskan audiens tidak disempitkan. Slogan: **Selami dunia melalui cerita**. Jalin terbuka kepada semua pembaca: teks awam (tajuk, ringkasan, kad kongsi, halaman Tentang, arahan AI) tidak menyempitkan audiens kepada sesuatu umur seperti "remaja" atau "jiwa muda" (arahan Izzat, 7 Okt 2026).
 
 Nada kandungan: selamat hingga remaja matang, kira-kira pada spektrum novel KOMSAS sekolah. Tema seperti persahabatan, keluarga, kehilangan, tekanan, misteri, percintaan ringan dan isu sosial boleh hadir secara editorial. Kandungan seksual eksplisit, gore dan eksploitasi trauma tidak sesuai.
 
