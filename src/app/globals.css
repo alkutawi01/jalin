@@ -69,6 +69,33 @@ img { display: block; max-width: 100%; }
 @media (min-width: 821px) and (max-width: 1050px) { .header-search-wrap { width: 40px; height: 40px; } .header-search-panel { position: absolute; top: 1px; right: 0; z-index: 30; } }
 @media (max-width: 600px) { .header-search-input { font-size: 16px; } .header-search-panel { width: 168px; } .header-search-wrap { position: static; } .header-search-panel { position: static; } .header-search-wrap { position: relative; } .header-search-list { position: fixed; top: 84px; left: 16px; right: 16px; width: auto; } }
 .header-search:hover, .header-search:focus-visible, .header-search.active, .header-search.open { color: var(--ink); background: rgba(24, 52, 60, .07); }
+/* Opening: the field grows out of the icon (revealed from its right edge, no layout jump); closing shrinks it back first. The suggestions hang from the panel, not the field, so the clip never cuts them. */
+.header-search-field { animation: header-search-open .26s cubic-bezier(.2, .8, .2, 1) backwards; }
+.header-search-field.closing { animation: header-search-close .18s ease-in forwards; }
+.header-search { animation: header-search-icon .22s ease both; }
+@keyframes header-search-open { from { clip-path: inset(0 0 0 calc(100% - 40px) round 8px); opacity: .2; } to { clip-path: inset(0 0 0 0 round 8px); opacity: 1; } }
+@keyframes header-search-close { from { clip-path: inset(0 0 0 0 round 8px); opacity: 1; } to { clip-path: inset(0 0 0 calc(100% - 40px) round 8px); opacity: 0; } }
+@keyframes header-search-icon { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .header-search-field, .header-search-field.closing, .header-search { animation: none; } }
+/* Search open: the whole header bar turns the theme's deep teal at once, the menu leaves, and only the logo and the search field remain, so the field
+   never lies over a menu link. Pure CSS: the bar follows the field being on screen (it reverts as soon as the field starts to close). */
+.site-header { transition: background-color .28s ease, border-color .28s ease; }
+.header-wordmark img { transition: filter .28s ease; }
+.header-nav, .header-mobile-nav { transition: opacity .2s ease; }
+.header-search-wrap { width: 40px; height: 40px; }
+.header-search-panel { position: absolute; top: 1px; right: 0; width: min(440px, calc(100vw - 300px)); }
+.site-header:has(.header-search-field:not(.closing)) { background: #18343c; border-bottom-color: #18343c; }
+.site-header:has(.header-search-field:not(.closing)) .header-wordmark img { filter: brightness(0) invert(.97); }
+.site-header:has(.header-search-field:not(.closing)) .header-nav, .site-header:has(.header-search-field:not(.closing)) .header-mobile-nav { opacity: 0; visibility: hidden; pointer-events: none; }
+.site-header:has(.header-search-field:not(.closing)) .header-search-field { background: rgba(251, 248, 242, .12); border-color: rgba(251, 248, 242, .4); color: #fbf8f2; }
+.site-header:has(.header-search-field:not(.closing)) .header-search-field:focus-within { border-color: #fbf8f2; }
+.site-header:has(.header-search-field:not(.closing)) .header-search-input { color: #fbf8f2; color-scheme: dark; }
+.site-header:has(.header-search-field:not(.closing)) .header-search-input::placeholder { color: #fbf8f2; opacity: .7; }
+@media (max-width: 820px) {
+  .site-header .header-inner { position: relative; }
+  .site-header .header-search-wrap { position: static; }
+  .site-header .header-search-panel { top: 50%; right: 0; left: 132px; width: auto; transform: translateY(-50%); }
+}
 .header-wordmark {
   display: inline-flex;
   align-items: center;

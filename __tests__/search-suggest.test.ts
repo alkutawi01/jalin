@@ -56,7 +56,7 @@ assert(/\.header-search-all \{[^}]*justify-content: flex-start;[^}]*font-family:
 assert(/\.header-search-input \{[^}]*font-family: var\(--font-inter\)[^}]*font-size: 14px;/.test(css) && css.includes(".header-search-input::placeholder { font-size: inherit;") && /max-width: 600px\) \{ \.header-search-input \{ font-size: 16px; \}/.test(css), "the field is Inter 14 px (16 px on a phone), its hint the same size");
 
 const box = read("src/components/reader/HeaderSearch.tsx");
-assert(box.includes("event.preventDefault();\n    setOpen") && box.includes('href="/cari"'), "the icon opens the box, and is still a link to the search page when script does not run");
+assert(/event\.preventDefault\(\);[\s\S]*?setOpen\(true\)/.test(box) && box.includes('href="/cari"'), "the icon opens the box, and is still a link to the search page when script does not run");
 assert(box.includes('event.key === "Escape"') && box.includes("ArrowDown") && box.includes("ArrowUp"), "Escape closes the box; arrow keys move through the suggestions");
 assert(box.includes("controller.abort()") && box.includes("}, 200)"), "typing waits a moment and drops an answer that is no longer wanted");
 assert(box.includes("Lihat semua hasil untuk"), "the last choice goes to all results");

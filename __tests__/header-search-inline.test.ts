@@ -19,6 +19,8 @@ assert(box.includes('placeholder="Cari tajuk atau penulis"') && css.includes(".h
 assert(box.includes("{!open ? (") && box.includes("refocus.current"), "the icon is replaced by the field when open, and focus returns to the icon on Escape");
 
 assert(css.includes("@media (min-width: 821px) and (max-width: 1050px) { .header-search-wrap { width: 40px; height: 40px; } .header-search-panel { position: absolute;"), "on a mid-width screen the open field floats over the end of the tabs, so the tabs never push over the wordmark");
+assert(css.includes(".site-header:has(.header-search-field:not(.closing)) { background: #18343c;") && css.includes("opacity: 0; visibility: hidden; pointer-events: none;"), "with the search open the whole header bar turns teal and the menu leaves, so the field never lies over a menu link");
+assert(css.includes("filter: brightness(0) invert(.97)") && box.includes("closing") && box.includes("CLOSE_MS"), "the logo turns light on the teal bar, and the box shrinks back before it is removed");
 
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);
