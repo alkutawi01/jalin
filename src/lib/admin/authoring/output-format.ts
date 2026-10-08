@@ -7,6 +7,7 @@
  * (no JSON, no Markdown) is used because chatbots keep to it far more reliably.
  */
 
+import { DEK_RULE } from "./dek-rule";
 import { SELF_CHECK, exampleBlock } from "./format-guidance";
 import type { OutputSection, Recipe } from "./recipes";
 
@@ -33,7 +34,7 @@ function karya(recipe: Recipe): string {
     `Jenis: ${recipe.kind}`,
     "Tajuk: (tajuk karya)",
     "Slug: (huruf kecil latin dipisahkan tanda -, tanpa simbol)",
-    "Dek: (satu atau dua ayat, tanpa spoiler)",
+    `Dek: (${DEK_RULE})`,
     "Genre: (satu label, contoh drama, keluarga, misteri, sejarah)",
     "Penulis: (nama penulis jika dinyatakan dalam bahan)",
     "Anggaran bacaan: (nombor minit, perkataan dibahagi 200)"

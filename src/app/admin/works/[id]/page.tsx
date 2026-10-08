@@ -24,7 +24,8 @@ import { extractFootnotes, markFootnoteReferences } from "../../../../lib/reader
 import { stripImageMarkers } from "../../../../lib/reader/image-markers";
 import { classifyFragmen, isIndonesianLanguage, isMalayLanguage } from "../../../../lib/content/fragmen-kind";
 import { buildGlossaryPrompt, parseGlossaryPaste } from "../../../../lib/admin/authoring/glossary-paste";
-import { buildWorkFillPrompt, parseWorkFill } from "../../../../lib/admin/authoring/work-fill";
+import { buildWorkFillPrompt, looksLikePrompt, parseWorkFill } from "../../../../lib/admin/authoring/work-fill";
+import { dekWarning } from "../../../../lib/admin/authoring/dek-rule";
 import { renderItalics, toggleItalicSelection } from "../../../../lib/reader/inline-italics";
 import VisualManuscriptEditor, { canEditVisually } from "../../../../components/admin/VisualManuscriptEditor";
 import PlacesEditor from "../../../../components/admin/PlacesEditor";
@@ -414,9 +415,16 @@ export default function EditWorkPage() {
       setFillNote(["Papan keratan kosong. Salin jawapan bot sembang dahulu."]);
       return;
     }
+    // The copied prompt looks like an answer (it has the same headings) but its lines are only instructions: never read it.
+    if (looksLikePrompt(text)) {
+      setFillNote(["Yang disalin ialah arahan, bukan jawapan bot sembang. Tampal arahan itu kepada bot sembang, salin jawapannya, kemudian tekan Tampal & isi."]);
+      return;
+    }
     const result = parseWorkFill(text);
     if (result.sections.length === 0) {
-      setFillNote(["Tiada bahagian [MAKLUMAT], [WATAK], [LATAR], [GLOSARI] atau [SUMBER] ditemui. Pastikan anda menyalin seluruh jawapan bot sembang."]);
+      // Say what was actually read, so the editor sees at once whether it is the wrong text or a damaged answer.
+      const seen = text.trim().replace(/s+/g, " ");
+      setFillNote([`Tiada bahagian [MAKLUMAT], [WATAK], [LATAR], [GLOSARI] atau [SUMBER] ditemui. Papan keratan mengandungi ${text.length} aksara dan bermula dengan: "${seen.length > 70 ? seen.slice(0, 70) + "…" : seen}". Salin jawapan bot sembang (butang Salin pada jawapannya) dan terus tekan Tampal & isi.`]);
       return;
     }
     setFillBusy(true);
@@ -428,7 +436,12 @@ export default function EditWorkPage() {
       const patch: Record<string, string> = {};
       if (result.dek) {
         if (form.dek.trim()) notes.push("Dek: sudah ada, tidak diganti.");
-        else patch.dek = result.dek;
+        else {
+          patch.dek = result.dek;
+          // A dek is read before the story: a summary that tells the turn of the story is a spoiler. The editor decides.
+          const warning = dekWarning(result.dek);
+          if (warning) notes.push(warning);
+        }
       }
       if (result.genre) {
         if (form.genre.trim()) notes.push("Genre: sudah ada, tidak diganti.");
