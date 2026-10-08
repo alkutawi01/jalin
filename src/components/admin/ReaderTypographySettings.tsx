@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { toast } from "../../lib/admin/dialogs";
 
 interface Limits {
   min: number;
@@ -52,11 +53,15 @@ export default function ReaderTypographySettings() {
     setBusy(false);
     if (!res.ok) {
       setFailed(true);
-      return setNote(result.error || "Saiz teks karya tidak dapat disimpan.");
+      const text = result.error || "Saiz teks karya tidak dapat disimpan.";
+      setNote(text);
+      toast(text, "error");
+      return;
     }
     setBody(result.bodyPx === null ? "" : String(result.bodyPx));
     setHeading(result.headingEm === null ? "" : String(result.headingEm));
     setNote("Saiz teks karya disimpan.");
+    toast("Saiz teks karya disimpan.", "success");
   }
 
   if (!data) return <p className="admin-form-hint" role={failed ? "alert" : undefined}>{note ?? "Memuatkan…"}</p>;
