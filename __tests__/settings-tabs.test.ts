@@ -4,7 +4,7 @@
  */
 import fs from "node:fs";
 import path from "node:path";
-import { DEFAULT_SETTINGS_TAB, SETTINGS_TABS, movedTabTarget, settingsTabHref, settingsTabOf } from "../src/lib/admin/settings-tabs";
+import { DEFAULT_SETTINGS_TAB, SETTINGS_GROUPS, SETTINGS_TABS, movedTabTarget, settingsTabHref, settingsTabOf } from "../src/lib/admin/settings-tabs";
 import { isAllowed } from "../src/lib/admin/permissions";
 
 let passed = 0;
@@ -38,9 +38,13 @@ assert(redirect.includes("MOVED_TABS[id]"), "an old #status-sistem link goes to 
 
 const css = read("src/app/admin/admin.css");
 const tabsRule = (css.match(/.a-shell .a-settings-tabs {[^}]*}/) ?? [""])[0];
-assert(tabsRule.includes("flex-wrap: wrap") && !tabsRule.includes("overflow") && css.includes(".a-shell .a-settings-tabs a.active"), "the tabs wrap onto another line when they do not fit (none is ever cut off or scrolled out of view), and the open one is marked");
-assert(!read("src/components/admin/SettingsHashRedirect.tsx").includes("scrollIntoView"), "nothing scrolls the row of tabs");
-assert(/.a-shell .a-settings-tabs a {[^}]*min-height: 40px/.test(css), "a tab is tall enough to tap");
+assert(/.a-shell .a-settings-layout {[^}]*grid-template-columns: 230px/.test(css) && tabsRule.includes("flex-direction: column") && !tabsRule.includes("overflow") && css.includes(".a-shell .a-settings-tabs a.active"), "the parts are a column beside the panel (never cut off or scrolled sideways), and the open one is marked");
+assert(/@media \(max-width: 860px\) {[^}]*.a-settings-layout {[^}]*minmax\(0, 1fr\)/.test(css), "on a narrow screen the column moves above the panel");
+assert(!read("src/components/admin/SettingsHashRedirect.tsx").includes("scrollIntoView"), "nothing scrolls the list of parts");
+assert(/.a-shell .a-settings-tabs a {[^}]*min-height: 40px/.test(css), "a link is tall enough to tap");
+assert(SETTINGS_GROUPS.join() === "Laman awam,Penulisan dan AI,Lain-lain" && SETTINGS_TABS.every((t) => (SETTINGS_GROUPS as readonly string[]).includes(t.group)), "every part belongs to a group");
+assert(SETTINGS_GROUPS.every((g) => SETTINGS_TABS.some((t) => t.group === g)), "no group is empty");
+assert(page.includes("SETTINGS_GROUPS.map((group)") && page.includes('className="a-settings-group-title"') && page.includes('className="a-settings-layout"'), "the page lists the parts under their group headings");
 assert(!isAllowed("editor", "GET", "/admin/settings") && isAllowed("owner", "GET", "/admin/settings"), "who may open Tetapan is unchanged");
 
 console.log(`\n${passed} passed, ${failed} failed`);

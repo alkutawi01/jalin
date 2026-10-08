@@ -4,14 +4,17 @@
  * still means the same place.
  */
 export const SETTINGS_TABS = [
-  { id: "teks-awam", label: "Teks halaman awam" },
-  { id: "warna-blok", label: "Warna blok laman utama" },
-  { id: "saiz-teks", label: "Saiz teks karya" },
-  { id: "audiens", label: "Audiens" },
-  { id: "nama-samaran", label: "Nama samaran AI" },
-  { id: "arahan-ai", label: "Arahan AI" },
-  { id: "alat-lain", label: "Alat lain" }
+  { id: "teks-awam", label: "Teks halaman awam", group: "Laman awam" },
+  { id: "warna-blok", label: "Warna blok laman utama", group: "Laman awam" },
+  { id: "saiz-teks", label: "Saiz teks karya", group: "Laman awam" },
+  { id: "audiens", label: "Audiens", group: "Laman awam" },
+  { id: "nama-samaran", label: "Nama samaran AI", group: "Penulisan dan AI" },
+  { id: "arahan-ai", label: "Arahan AI", group: "Penulisan dan AI" },
+  { id: "alat-lain", label: "Alat lain", group: "Lain-lain" }
 ] as const;
+
+/** The parts of Tetapan are listed under these headings, in this order (what they change, not a flat row of buttons). */
+export const SETTINGS_GROUPS = ["Laman awam", "Penulisan dan AI", "Lain-lain"] as const;
 
 /**
  * Parts that used to be a tab of Tetapan and now live elsewhere. "Status sistem" is the state of the system, not a setting, so it is on
