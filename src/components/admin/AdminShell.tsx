@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import DialogHost from "./DialogHost";
 import { confirmAction } from "../../lib/admin/dialogs";
 import { can, type Permission, type Role } from "../../lib/admin/permissions";
+import { isSessionExpiredAnswer, SESSION_BANNER } from "../../lib/admin/session-expiry";
 
 /**
  * Admin app shell: a sidebar on wide screens, a top bar with a drawer on
@@ -54,6 +55,26 @@ const NAV: { href: string; label: string; icon: keyof typeof ICONS; match: (p: s
 export default function AdminShell({ children, role = "owner" }: { children: ReactNode; role?: Role }) {
   const pathname = usePathname() ?? "";
   const [open, setOpen] = useState(false);
+  const [sessionEnded, setSessionEnded] = useState(false);
+
+  // The first answer of the admin API that says "the session has ended" raises the banner (see session-expiry.ts).
+  useEffect(() => {
+    const original = window.fetch;
+    window.fetch = async (...args) => {
+      const response = await original(...args);
+      try {
+        const input = args[0];
+        const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
+        if (isSessionExpiredAnswer(url, response.status)) setSessionEnded(true);
+      } catch {
+        /* the banner is a convenience; never break a request over it */
+      }
+      return response;
+    };
+    return () => {
+      window.fetch = original;
+    };
+  }, []);
 
   useEffect(() => setOpen(false), [pathname]);
   useEffect(() => {
@@ -149,6 +170,17 @@ export default function AdminShell({ children, role = "owner" }: { children: Rea
       ) : null}
 
       <main className="a-main">
+        {sessionEnded ? (
+          <div className="a-session-banner" role="alert">
+            <p>
+              <strong>{SESSION_BANNER.title}</strong> {SESSION_BANNER.body}
+            </p>
+            <div className="a-session-banner-actions">
+              <a className="admin-btn admin-btn-primary admin-btn-sm" href="/admin/login" target="_blank" rel="noopener">{SESSION_BANNER.link}</a>
+              <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={() => setSessionEnded(false)}>{SESSION_BANNER.dismiss}</button>
+            </div>
+          </div>
+        ) : null}
         <div className="a-container">{children}</div>
       </main>
     </div>
