@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { errorText } from "../../../lib/admin/error-text";
+import { confirmAction, toast } from "../../../lib/admin/dialogs";
 import type { StaffUser } from "../../../lib/admin/user-service";
 
 type Role = StaffUser["role"];
@@ -41,33 +42,49 @@ export default function UsersPanel({ initialUsers, roleNames }: { initialUsers: 
       setUsers((list) => [...list, data.user]);
       setInvitation({ title: `Jemputan untuk ${data.user.displayName}`, text: data.invitation });
       setForm({ displayName: "", username: "", email: "", role: "editor" });
+      toast(`Akaun ${data.user.displayName} dicipta. Salin jemputan dan hantar.`, "success");
     } catch (err) {
-      setError(errorText(err));
+      const text = errorText(err);
+      setError(text);
+      toast(`Akaun tidak dapat dicipta: ${text}`, "error");
     } finally {
       setBusy(false);
     }
   }
 
   async function change(user: StaffUser, patch: { role?: Role; active?: boolean }) {
-    if (patch.active === false && !window.confirm(`Matikan akaun ${user.displayName}? Orang ini tidak dapat log masuk lagi.`)) return;
+    if (patch.active === false && !(await confirmAction(`Matikan akaun ${user.displayName}? Orang ini tidak dapat log masuk lagi.`, { confirmLabel: "Ya, matikan akaun", danger: true }))) return;
     setError(null);
     try {
       const data = await api(`/api/admin/users/${user.id}`, "PATCH", patch);
       replace(data.user);
+      // Every change says it worked (a role chosen from the list used to change with no word at all).
+      toast(
+        patch.active === false ? `Akaun ${user.displayName} dimatikan.`
+          : patch.active === true ? `Akaun ${user.displayName} diaktifkan.`
+          : `Peranan ${user.displayName} ditukar kepada ${roleNames[data.user.role as Role] ?? data.user.role}.`,
+        "success"
+      );
     } catch (err) {
-      setError(errorText(err));
+      const text = errorText(err);
+      setError(text);
+      toast(`${user.displayName}: ${text}`, "error");
+      // The list still shows the old role: the select is driven by the saved user, so a refused choice springs back by itself.
     }
   }
 
   async function reset(user: StaffUser) {
-    if (!window.confirm(`Tetapkan semula kata laluan ${user.displayName}? Kata laluan lama tidak lagi berfungsi.`)) return;
+    if (!(await confirmAction(`Tetapkan semula kata laluan ${user.displayName}? Kata laluan lama tidak lagi berfungsi.`, { confirmLabel: "Ya, tetapkan semula", danger: true }))) return;
     setError(null);
     try {
       const data = await api(`/api/admin/users/${user.id}/reset-password`, "POST");
       replace(data.user);
       setInvitation({ title: `Kata laluan baharu untuk ${user.displayName}`, text: data.invitation });
+      toast(`Kata laluan ${user.displayName} ditetapkan semula. Salin jemputan di atas dan hantar.`, "success");
     } catch (err) {
-      setError(errorText(err));
+      const text = errorText(err);
+      setError(text);
+      toast(`${user.displayName}: ${text}`, "error");
     }
   }
 
