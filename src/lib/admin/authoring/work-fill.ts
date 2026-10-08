@@ -6,6 +6,7 @@
  * and it never overwrites something the editor has already written.
  */
 import { GLOSSARY_FORMAT, GLOSSARY_RULES } from "./glossary-paste";
+import { DEK_RULE } from "./dek-rule";
 import { isSourcedWork } from "../../content/source-origin";
 
 export interface WorkFillPromptInput {
@@ -43,7 +44,7 @@ PRINSIP
 - Jawab dengan bahagian berformat di bawah sahaja: tiada pengenalan, tiada penutup, tiada nombor, tiada tanda markdown.
 
 [MAKLUMAT]
-Dek: (satu atau dua ayat yang menarik pembaca tanpa membocorkan pengakhiran)
+Dek: (${DEK_RULE})
 Genre: (satu genre dalam satu atau dua patah perkataan)
 
 [WATAK]
@@ -242,12 +243,37 @@ function uniqueByName<T extends { name: string }>(items: T[]): T[] {
   });
 }
 
+/** Characters that are invisible but sit inside a copied line: zero-width spaces and joiners, direction marks, the BOM. */
+const INVISIBLE = /[​-‏‪-‮⁠﻿]/g;
+
+/**
+ * A heading as it may arrive from a chatbot's copy button: markdown escapes (\[MAKLUMAT\]), full-width or lenticular brackets,
+ * invisible characters. Used only to recognise a heading; the lines kept as content are not rewritten.
+ */
+function headingForm(line: string): string {
+  return line.replace(INVISIBLE, "").replace(/ /g, " ").normalize("NFKC").replace(/[【〔]/g, "[").replace(/[】〕]/g, "]").replace(/\\([[\]_*#>:-])/g, "$1");
+}
+
+/**
+ * A value that is still the prompt's own placeholder, "(satu genre dalam satu atau dua patah perkataan)": the copied PROMPT was pasted,
+ * not the chatbot's answer. Such text must never be written into a work.
+ */
+export function isPlaceholder(value: string): boolean {
+  const v = value.trim();
+  return v.length >= 8 && v.startsWith("(") && v.endsWith(")");
+}
+
+/** The copied prompt itself (its opening line and its manuscript heading), not an answer. */
+export function looksLikePrompt(text: string): boolean {
+  return /Anda pembantu editorial Jalin/i.test(text) && /\nPRINSIP\b/.test(text);
+}
+
 export function parseWorkFill(answer: string): WorkFillResult {
-  const lines = answer.replace(/\r\n/g, "\n").replace(/^```[a-z]*\s*$/gim, "").split("\n");
+  const lines = answer.replace(/\r\n/g, "\n").replace(INVISIBLE, "").replace(/ /g, " ").replace(/^```[a-z]*\s*$/gim, "").split("\n");
   const sections: Record<string, string[]> = {};
   let current: string | null = null;
   for (const line of lines) {
-    const m = SECTION.exec(line);
+    const m = SECTION.exec(headingForm(line));
     if (m) {
       current = m[1]!.toUpperCase();
       sections[current] = sections[current] ?? [];
@@ -287,12 +313,13 @@ export function parseWorkFill(answer: string): WorkFillResult {
       }
     : null;
 
+  const real = (v: string) => (isPlaceholder(v) ? "" : v);
   return {
-    dek: clean(field(info, /dek/)),
-    genre: clean(field(info, /genre/)),
-    characters: uniqueByName(characters),
-    places: uniqueByName(setting.places),
-    times: uniqueByName(setting.times),
+    dek: real(clean(field(info, /dek/))),
+    genre: real(clean(field(info, /genre/))),
+    characters: uniqueByName(characters.filter((c) => !isPlaceholder(c.name) && !isPlaceholder(c.role))),
+    places: uniqueByName(setting.places.filter((p) => !isPlaceholder(p.name))),
+    times: uniqueByName(setting.times.filter((t) => !isPlaceholder(t.name))),
     glossaryText: ["[GLOSARI]", ...(sections.GLOSARI ?? [])].join("\n"),
     source: source && Object.values(source).some((v) => v !== "" && v !== null) ? source : null,
     sections: Object.keys(sections)
