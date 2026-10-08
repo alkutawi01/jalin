@@ -46,6 +46,10 @@ assert(SETTINGS_GROUPS.join() === "Laman awam,Penulisan dan AI,Lain-lain" && SET
 assert(SETTINGS_GROUPS.every((g) => SETTINGS_TABS.some((t) => t.group === g)), "no group is empty");
 assert(page.includes("SETTINGS_GROUPS.map((group)") && page.includes('className="a-settings-group-title"') && page.includes('className="a-settings-layout"'), "the page lists the parts under their group headings");
 assert(!isAllowed("editor", "GET", "/admin/settings") && isAllowed("owner", "GET", "/admin/settings"), "who may open Tetapan is unchanged");
+// The menu links sit in list items, so the "link inside running text" rule (underlined, accent colour) caught them (seen in a screenshot).
+assert(page.includes('"a-nav-plain active" : "a-nav-plain"'), "each menu link carries a-nav-plain");
+assert(css.includes(".a-shell li a:not(.admin-btn):not(.a-nav-plain),"), "the running-text link rule leaves a-nav-plain links alone");
+assert(/\.a-shell \.a-settings-tabs a \{ color: var\(--a-ink\); text-decoration: none;/.test(css), "a menu link is plain dark text, not underlined");
 
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);
