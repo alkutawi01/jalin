@@ -6,6 +6,7 @@ import { dashChange } from "@/lib/admin/auto-dash";
 import { clearDraft, draftDiffers, pickDraftFields, readDraft, saveDraft, type StoredDraft } from "@/lib/admin/local-draft";
 import { pasteAsMarkdown } from "@/components/admin/pasteMarkdown";
 import ImageFocusPicker from "@/components/admin/ImageFocusPicker";
+import { useAdminCan } from "@/components/admin/AdminRole";
 import ChapterImages from "@/components/admin/ChapterImages";
 import { useState, useEffect, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
@@ -699,6 +700,8 @@ export default function EditWorkPage() {
   /** The latest form, so a save can tell whether the editor kept typing while it was in flight. */
   const formRef = useRef<typeof form | null>(null);
   const [everPublic, setEverPublic] = useState(false);
+  const canPublish = useAdminCan("work.publish");
+  const canDelete = useAdminCan("work.delete");
   /** What this page last loaded or saved of the fields that two tabs can fight over; sent with every save (see stale-write.ts). */
   const baseRef = useRef<Record<string, string> | null>(null);
   const baseOf = (f: { title: string; slug: string; body: string; dek: string; genre: string; audience: string; readingMinutes: string; editorNote: string; readerNote: string; origin: string }) => ({
@@ -3545,7 +3548,8 @@ export default function EditWorkPage() {
           )}
         </div>
       )}
-      {form.status !== "archived" ? (
+      {/* Archiving a work that is public takes it off the site, so it needs the same permission as publishing (the server checks too). */}
+      {form.status !== "archived" && (form.status !== "published" || canPublish) ? (
         <div className="a-danger-zone">
           <div>
             <strong>Arkibkan karya ini</strong>
@@ -3557,7 +3561,7 @@ export default function EditWorkPage() {
         </div>
       ) : null}
       {/* The server refuses to delete anything that was ever public (it can only be archived), so the button is not offered for it. */}
-      {form.status !== "published" && !everPublic ? (
+      {form.status !== "published" && !everPublic && canDelete ? (
         <div className="a-danger-zone">
           <div>
             <strong>Padam karya ini</strong>

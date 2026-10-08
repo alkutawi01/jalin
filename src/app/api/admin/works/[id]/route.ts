@@ -8,6 +8,7 @@ import { getCurrentAdmin } from "../../../../../lib/admin/auth";
 import { getDb, hasDb } from "../../../../../lib/db";
 import { imageMarkers, isImageMarker } from "../../../../../lib/reader/image-markers";
 import { logActivity, workSaveSummary } from "../../../../../lib/admin/activity";
+import { can, roleFromClaim } from "../../../../../lib/admin/permissions";
 
 export async function GET(
   request: NextRequest,
@@ -42,6 +43,15 @@ export async function PATCH(
     const existing = await getWork(id);
     if (!existing) {
       return NextResponse.json({ error: "Karya tidak ditemui." }, { status: 404 });
+    }
+
+    // Taking a public work off the site is the counterpart of publishing it: only whoever may publish may archive a published work.
+    if (body.status === "archived" && existing.status === "published") {
+      const admin = await getCurrentAdmin();
+      const role = admin ? roleFromClaim(admin.role) : null;
+      if (!role || !can(role, "work.publish")) {
+        return NextResponse.json({ error: "Hanya pemilik boleh mengarkibkan karya yang sudah terbit." }, { status: 403 });
+      }
     }
 
     // A form that loaded an older copy must not wipe what another tab saved since (see stale-write.ts).
