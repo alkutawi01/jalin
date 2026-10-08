@@ -6,6 +6,7 @@
  * Blockers prevent publish; warnings never do.
  */
 
+import { placeholderFields } from "./authoring/placeholder";
 import { isSourcedWork } from "../content/source-origin";
 import type { WorkStatus, WorkType } from "../db/types";
 import { isDerivativeType } from "../credit-roles";
@@ -412,6 +413,13 @@ export function evaluatePublicationReadinessFromData(
     String(work.type) === "novela" && (input.readingSections?.length ?? 0) > 0;
   if (bodyEmpty && !novelaWithSections) {
     contentBlockers.push(issue("body_missing", "Manuskrip masih kosong."));
+  }
+  // Text still in the prompt's own brackets, "(satu genre dalam satu atau dua patah perkataan)", would be shown to readers as it is.
+  const leftover = placeholderFields(work, glossary);
+  if (leftover.length > 0) {
+    contentBlockers.push(
+      issue("placeholder_text", `Teks arahan (dalam kurungan) masih ada dalam: ${leftover.join(", ")}. Ganti atau padam sebelum menerbitkan.`)
+    );
   }
   if (!work.dek || !work.dek.trim()) {
     contentWarnings.push(
