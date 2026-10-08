@@ -8,7 +8,7 @@
 import { Kysely, sql } from "kysely";
 import { getDb, hasDb } from "../db";
 import type { Database } from "../db/types";
-import { isDerivativeType } from "../credit-roles";
+import { isDerivativeType, roleNotAllowed } from "../credit-roles";
 import { findDuplicateCredit } from "./metadata-rules";
 
 /** The same person in the same role is already credited on this work. */
@@ -102,6 +102,10 @@ export async function createCredit(input: CreditInput): Promise<CreditRecord> {
     }
   }
 
+  const workRow = await db.selectFrom("works").where("id", "=", input.workId).select("type").executeTakeFirst();
+  const notAllowed = roleNotAllowed(workRow?.type, input.roleLabel);
+  if (notAllowed) throw new Error(notAllowed);
+
   const now = new Date().toISOString();
   const byline = input.byline && (await bylineAllowed(db, input.workId));
 
@@ -175,6 +179,13 @@ export async function updateCredit(
     if (!contributor) {
       throw new Error(`Penyumbang "${input.contributorSlug}" tidak ditemui. Muat semula halaman dan pilih semula.`);
     }
+  }
+
+  if (input.roleLabel !== undefined) {
+    const current = await getCredit(id);
+    const workRow = current ? await db.selectFrom("works").where("id", "=", current.work_id).select("type").executeTakeFirst() : undefined;
+    const notAllowed = roleNotAllowed(workRow?.type, input.roleLabel);
+    if (notAllowed) throw new Error(notAllowed);
   }
 
   const updateData: Record<string, unknown> = {};
