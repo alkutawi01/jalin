@@ -68,13 +68,15 @@ export default function EpisodeView({
   const episodeIndex = episodes.findIndex((e) => e.slug === work.slug);
   const prevEpisode = episodeIndex > 0 ? episodes[episodeIndex - 1] : undefined;
   const nextEpisode = episodeIndex >= 0 && episodeIndex < episodes.length - 1 ? episodes[episodeIndex + 1] : undefined;
+  // The episode number is the one the editor gave it (position), as on the homepage and the series page; its place in the list is not the number when an episode is unpublished.
+  const episodeNumber = episodeIndex >= 0 ? episodes[episodeIndex]!.position : undefined;
   const typeLabel = TYPE_LABELS["bersiri"];
   const genre = displayableGenre(work.genre) ?? displayableGenre(series.genre);
 
   const workMeta: WorkMetaRow[] = [
     { label: "Jenis", value: typeLabel },
     { label: "Judul", value: series.title },
-    { label: "Episod", value: episodeIndex >= 0 ? String(episodeIndex + 1) : "—" },
+    { label: "Episod", value: episodeNumber !== undefined ? String(episodeNumber) : "—" },
     ...(genre ? [{ label: "Genre", value: genre }] : []),
     { label: "Bacaan", value: work.readingMinutes ? `± ${work.readingMinutes} minit` : "—" },
     {
@@ -118,7 +120,7 @@ export default function EpisodeView({
           dek={work.dek ?? ""}
           contextLine={
             <>
-              {episodeIndex >= 0 ? `Episod ${episodeIndex + 1} · ` : ""}
+              {episodeNumber !== undefined ? `Episod ${episodeNumber} · ` : ""}
               <a href={`/kategori/bersiri/${series.slug}`}>{series.title}</a>
             </>
           }
@@ -170,8 +172,8 @@ export default function EpisodeView({
 
         <ContinueNav
           name="Selepas episod ini"
-          next={nextEpisode ? { href: `/kategori/bersiri/${series.slug}/${nextEpisode.slug}`, label: `Episod ${episodeIndex + 2}`, title: nextEpisode.title } : undefined}
-          prev={prevEpisode ? { href: `/kategori/bersiri/${series.slug}/${prevEpisode.slug}`, label: `Episod ${episodeIndex}`, title: prevEpisode.title } : undefined}
+          next={nextEpisode ? { href: `/kategori/bersiri/${series.slug}/${nextEpisode.slug}`, label: `Episod ${nextEpisode.position}`, title: nextEpisode.title } : undefined}
+          prev={prevEpisode ? { href: `/kategori/bersiri/${series.slug}/${prevEpisode.slug}`, label: `Episod ${prevEpisode.position}`, title: prevEpisode.title } : undefined}
           back={{ href: `/kategori/bersiri/${series.slug}`, label: "Semua episod" }}
           endNote={series.status === "completed" ? "Ini episod terakhir siri ini." : "Ini episod terkini. Episod seterusnya belum diterbitkan."}
         />
@@ -202,7 +204,7 @@ export default function EpisodeView({
                 sections: []
               },
               { slug: series.slug, title: series.title },
-              episodeIndex >= 0 ? episodeIndex + 1 : 1
+              episodeNumber ?? 1
             )
           )
         }}
