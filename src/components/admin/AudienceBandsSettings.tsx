@@ -23,7 +23,7 @@ export default function AudienceBandsSettings() {
 
   const load = useCallback(async () => {
     const res = await fetch("/api/admin/audience-bands");
-    if (!res.ok) return setError("Gagal memuatkan peringkat audiens.");
+    if (!res.ok) return setError("Peringkat audiens tidak dapat dimuatkan.");
     const data = (await res.json()) as { bands: AudienceBand[]; defaults: AudienceBand[] };
     setRows(data.bands.map(toRow));
     setDefaults(data.defaults);

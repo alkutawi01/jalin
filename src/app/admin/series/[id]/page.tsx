@@ -148,7 +148,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
         });
         data = await res.json().catch(() => ({}));
       }
-      if (!res.ok) throw new Error(data.error || "Gagal menyimpan.");
+      if (!res.ok) throw new Error(data.error || "Tidak dapat disimpan.");
       setSuccess("Siri disimpan.");
       await loadSeries();
       setTimeout(() => setSuccess(null), 4000);
@@ -170,7 +170,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
         body: JSON.stringify({ workId: attachWorkId }),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || "Gagal menyertai episod.");
+      if (!res.ok) throw new Error(data.error || "Episod tidak dapat disertakan.");
       setAttachWorkId("");
       setSuccess("Episod disertai.");
       await loadSeries();
@@ -191,7 +191,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
     try {
       const res = await fetch(`/api/admin/series/${id}/entries/${workId}`, { method: "DELETE" });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || "Gagal mengeluarkan episod.");
+      if (!res.ok) throw new Error(data.error || "Episod tidak dapat dikeluarkan.");
       await loadSeries();
       await loadUnattached();
     } catch (err) {
@@ -211,10 +211,10 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
     try {
       const res = await fetch(`/api/admin/series/${id}/entries/${workId}/inherit`, { method: "POST" });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || "Gagal mengisi daripada siri.");
+      if (!res.ok) throw new Error(data.error || "Tidak dapat diisi daripada siri.");
       toast(data.message, "success");
     } catch (err) {
-      setError(errorText(err, "Gagal mengisi daripada siri."));
+      setError(errorText(err, "Tidak dapat diisi daripada siri."));
     } finally {
       setActionBusy(false);
     }
@@ -242,7 +242,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
         body: JSON.stringify({ workIds: ids, confirm: true }),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || "Gagal menyusun.");
+      if (!res.ok) throw new Error(data.error || "Tidak dapat disusun.");
       await loadSeries();
     } catch (err) {
       setError(errorText(err));
@@ -257,7 +257,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
     try {
       const res = await fetch(`/api/admin/series/${id}`, { method: "DELETE" });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || "Gagal memadam siri.");
+      if (!res.ok) throw new Error(data.error || "Siri tidak dapat dipadam.");
       router.push("/admin/series");
     } catch (err) {
       setError(errorText(err));
@@ -287,7 +287,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
       body.set("alt", heroAlt);
       const res = await fetch(`/api/admin/series/${id}/hero`, { method: "POST", body });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || "Gagal memuat naik gambar siri.");
+      if (!res.ok) throw new Error(data.error || "Gambar siri tidak dapat dimuat naik.");
       setHeroFile(null);
       setHeroCrop(null);
       toast("Gambar siri disimpan.", "success");
@@ -326,7 +326,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
     setHeroBusy(true);
     try {
       const res = await fetch(`/api/admin/series/${id}/hero`, { method: "DELETE" });
-      if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || "Gagal membuang gambar siri.");
+      if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || "Gambar siri tidak dapat dibuang.");
       await loadSeries();
     } catch (err) {
       setError(errorText(err));

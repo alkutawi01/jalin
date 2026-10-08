@@ -226,7 +226,7 @@ export default function EditSubmissionPage() {
       const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        throw new Error(data.error || "Gagal menjana.");
+        throw new Error(data.error || "Tidak dapat dijana.");
       }
 
       if (data.status === "succeeded") {
@@ -279,7 +279,7 @@ export default function EditSubmissionPage() {
       const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        throw new Error(data.error || "Gagal mempromosikan.");
+        throw new Error(data.error || "Tidak dapat dipromosikan.");
       }
 
       setPromoteSuccess(`Karya ${data.workId} dibuat. ${data.promotedCreditCount} kredit disalin.`);
@@ -310,7 +310,7 @@ export default function EditSubmissionPage() {
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "Gagal menyimpan.");
+        throw new Error(data.error || "Tidak dapat disimpan.");
       }
 
       setSuccess("Berjaya disimpan.");
@@ -335,7 +335,7 @@ export default function EditSubmissionPage() {
         });
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
-          throw new Error(data.error || "Gagal menyimpan sumbangan.");
+          throw new Error(data.error || "Sumbangan tidak dapat disimpan.");
         }
       } else {
         const res = await fetch("/api/admin/contributions", {
@@ -349,7 +349,7 @@ export default function EditSubmissionPage() {
         });
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
-          throw new Error(data.error || "Gagal mencipta sumbangan.");
+          throw new Error(data.error || "Sumbangan tidak dapat dicipta.");
         }
       }
 
@@ -367,7 +367,7 @@ export default function EditSubmissionPage() {
       const res = await fetch(`/api/admin/contributions/${id}`, { method: "DELETE" });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "Gagal memadam sumbangan.");
+        throw new Error(data.error || "Sumbangan tidak dapat dipadam.");
       }
       loadContributions();
     } catch (err) {

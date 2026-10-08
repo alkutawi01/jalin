@@ -195,13 +195,13 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
         })
       });
       const data = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(data.error ?? "Gagal menyediakan arahan.");
+      if (!response.ok) throw new Error(data.error ?? "Arahan tidak dapat disediakan.");
       const heading = needsManuscript ? "TEKS KARYA" : "MAKLUMAT KARYA SUMBER";
       const text = material.trim() ? `${data.prompt}\n\n=== ${heading} ===\n${material.trim()}\n` : data.prompt;
       await navigator.clipboard.writeText(text);
       setCopyNote("Arahan AI disalin. Tampal dalam bot sembang (ChatGPT/Claude/Gemini), kemudian salin jawapannya.");
     } catch (err) {
-      setError(errorText(err, "Gagal menyalin arahan."));
+      setError(errorText(err, "Arahan tidak dapat disalin."));
     } finally {
       setBusy("idle");
     }
@@ -287,7 +287,7 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
         body: requestBody(false)
       });
       const data = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(data.error ?? data.errors?.[0]?.message ?? "Gagal menyimpan draf.");
+      if (!response.ok) throw new Error(data.error ?? data.errors?.[0]?.message ?? "Draf tidak dapat disimpan.");
       if (Array.isArray(data.postWarnings) && data.postWarnings.length > 0) {
         setSaved({ workId: data.workId, problems: data.postWarnings });
         setBusy("idle");

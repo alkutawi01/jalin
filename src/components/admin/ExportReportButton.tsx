@@ -7,7 +7,7 @@ export function ExportReportButton() {
     try {
       const response = await fetch("/api/admin/editorial-report");
       if (!response.ok) {
-        toast("Gagal memuat turun laporan", "error");
+        toast("Laporan tidak dapat dimuat turun.", "error");
         return;
       }
       

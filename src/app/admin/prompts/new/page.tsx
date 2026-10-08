@@ -45,7 +45,7 @@ export default function NewPromptPage() {
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "Gagal mencipta templat.");
+        throw new Error(data.error || "Templat tidak dapat dicipta.");
       }
 
       const template = await res.json();
