@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import AdminShell from "../../components/admin/AdminShell";
+import { AdminRoleProvider } from "../../components/admin/AdminRole";
 import { getCurrentAdmin } from "../../lib/admin/auth";
 import { roleFromClaim } from "../../lib/admin/permissions";
 import "./admin.css";
@@ -19,5 +20,10 @@ export default async function AdminLayout({
 }) {
   // The menu shows only what this person may open (the server refuses the rest anyway).
   const user = await getCurrentAdmin();
-  return <AdminShell role={(user && roleFromClaim(user.role)) || "owner"}>{children}</AdminShell>;
+  const role = (user && roleFromClaim(user.role)) || "owner";
+  return (
+    <AdminRoleProvider role={role}>
+      <AdminShell role={role}>{children}</AdminShell>
+    </AdminRoleProvider>
+  );
 }

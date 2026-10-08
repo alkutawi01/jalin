@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { useAdminCan } from "./AdminRole";
 
 /**
  * Top of a work's admin page: what it is, where it stands (a status stepper),
@@ -91,6 +92,7 @@ export default function WorkStatusPanel({
   dirty?: boolean;
   onGoTab: (tab: string) => void;
 }) {
+  const canPublish = useAdminCan("work.publish");
   const stepIndex = STEPS.findIndex((s) => s.value === status);
   // The stepper already shows the status, so a work that is merely still "Draf" is not a checklist problem.
   const realBlockers = readiness ? readiness.blockers.filter((b) => b.code !== STATUS_ONLY) : [];
@@ -139,6 +141,23 @@ export default function WorkStatusPanel({
       disabled: !allClear,
       hint: allClear ? "Pembaca akan melihat versi draf ini." : "Selesaikan bahagian yang ditandakan di bawah dahulu."
     };
+  }
+
+  // Only the owner publishes. For anyone else the last step they can take is "Tandakan sedia"; after that the work waits for the owner.
+  let waitingNote: string | null = null;
+  if (!canPublish && next) {
+    if (next.label === "Terbitkan semula") {
+      next = null;
+      waitingNote = "Perubahan ini menunggu pemilik menerbitkan semula.";
+    } else if (next.label === "Terbitkan" && status === "ready") {
+      next = null;
+      waitingNote = "Sedia diterbitkan. Menunggu pemilik menerbitkannya.";
+    } else if (next.label === "Terbitkan") {
+      // Draft or in review and all clear: the next step is the one an editor can take.
+      next = status === "draft"
+        ? { label: "Hantar untuk semakan", run: () => onChangeStatus("review") }
+        : { label: "Tandakan sedia", run: () => onChangeStatus("ready"), hint: "Pemilik yang menerbitkan karya selepas ini." };
+    }
   }
 
   if (dirty && next && (next.label === "Terbitkan semula" || next.label === "Terbitkan" || next.label === "Tandakan sedia")) {
@@ -201,6 +220,7 @@ export default function WorkStatusPanel({
         {status === "archived" ? <li className="a-step is-current">Diarkibkan</li> : null}
       </ol>
       {next?.hint ? <p className="a-status-hint">{next.hint}</p> : null}
+      {waitingNote ? <p className="a-status-hint" role="status">{waitingNote}</p> : null}
 
       {status !== "archived" && (status !== "published" || issueCount > 0) ? (
         <div className="a-check">
