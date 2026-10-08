@@ -3576,7 +3576,7 @@ export default function EditWorkPage() {
             <strong>Arkibkan karya ini</strong>
             <p className="admin-form-hint">Karya diarkibkan dan tidak lagi dipaparkan. Ia boleh dipulihkan kemudian.</p>
           </div>
-          <button type="button" className="a-btn a-btn-danger-outline" onClick={handleArchive} disabled={saving}>
+          <button type="button" className="admin-btn admin-btn-danger" onClick={handleArchive} disabled={saving}>
             Arkibkan
           </button>
         </div>
@@ -3588,7 +3588,7 @@ export default function EditWorkPage() {
             <strong>Padam karya ini</strong>
             <p className="admin-form-hint">Padam terus karya yang tidak pernah diterbitkan (cth. karya ujian). Tidak boleh dipulihkan.</p>
           </div>
-          <button type="button" className="a-btn a-btn-danger-outline" onClick={handleDeleteWork} disabled={saving}>
+          <button type="button" className="admin-btn admin-btn-danger" onClick={handleDeleteWork} disabled={saving}>
             Padam
           </button>
         </div>

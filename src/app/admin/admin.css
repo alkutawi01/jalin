@@ -143,7 +143,6 @@
 }
 
 /* ── Buttons ─────────────────────────────────────────── */
-.a-btn,
 .a-shell .admin-btn {
   display: inline-flex;
   align-items: center;
@@ -163,19 +162,11 @@
   text-decoration: none;
   transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
 }
-.a-btn:hover,
 .a-shell .admin-btn:hover { background: #f3efe6; border-color: var(--a-ink-soft); }
-.a-btn:focus-visible,
 .a-shell .admin-btn:focus-visible,
 .a-nav-link:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--a-focus); }
-.a-btn-primary,
 .a-shell .admin-btn-primary { background: var(--a-ink); border-color: var(--a-ink); color: #fff; }
-.a-btn-primary:hover,
 .a-shell .admin-btn-primary:hover { background: #0f2830; border-color: #0f2830; }
-.a-btn:disabled { cursor: not-allowed; opacity: .5; }
-.a-btn-primary:disabled,
-.a-btn-primary:disabled:hover { background: var(--a-ink); border-color: var(--a-ink); }
-.a-btn-quiet { min-height: 34px; padding: 6px 12px; }
 .a-shell .admin-btn-outline { background: var(--a-surface); }
 .a-shell .admin-btn-danger { background: var(--a-surface); color: var(--a-danger); border-color: #e3b5b0; }
 .a-shell .admin-btn-danger:hover { background: var(--a-danger-bg); border-color: var(--a-danger); }
@@ -197,8 +188,8 @@
 .a-shell .admin-form-hint { display: block; font-size: 12.5px; color: var(--a-muted); margin: 6px 0 0; }
 .a-shell code { font-family: var(--a-mono); font-size: 12px; background: #f0ebe0; border-radius: 4px; padding: 1px 5px; }
 .a-shell a { color: var(--a-accent); }
-.a-shell a.a-btn, .a-shell a.a-nav-link, .a-shell a.admin-btn, .a-shell a.a-brand { color: inherit; }
-.a-shell a.a-btn-primary, .a-shell a.admin-btn-primary { color: #fff; }
+.a-shell a.a-nav-link, .a-shell a.admin-btn, .a-shell a.a-brand { color: inherit; }
+.a-shell a.admin-btn-primary { color: #fff; }
 
 /* ── Cards, sections ─────────────────────────────────── */
 .a-shell .admin-section {
@@ -400,8 +391,9 @@
 @media (max-width: 480px) { .a-shell .a-todo-table td { padding: 12px 10px; } }
 
 /* ── Phase 2: dialogs, toasts, loading, empty states ─── */
-.a-btn-danger { background: var(--a-danger); border-color: var(--a-danger); color: #fff; }
-.a-btn-danger:hover { background: #8a2a21; border-color: #8a2a21; }
+/* The solid red button of a destructive confirm dialog. */
+.a-shell .admin-btn-danger-solid { background: var(--a-danger); border-color: var(--a-danger); color: #fff; }
+.a-shell .admin-btn-danger-solid:hover { background: #8a2a21; border-color: #8a2a21; }
 .a-modal-backdrop { position: fixed; inset: 0; z-index: 300; background: rgba(15, 32, 38, 0.45); display: flex; align-items: center; justify-content: center; padding: 20px; }
 .a-modal { width: 100%; max-width: 420px; background: var(--a-surface); border-radius: var(--a-radius-lg); box-shadow: 0 24px 60px -20px rgba(15, 32, 38, 0.5); padding: 22px 24px; font-family: var(--a-font); color: var(--a-ink); }
 .a-modal h2 { font-family: var(--a-font); font-size: 17px; margin: 0 0 8px; }
@@ -438,7 +430,7 @@
 .a-step.is-current .a-step-dot { background: var(--a-ink); color: #fff; }
 .a-check { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--a-line); }
 .a-check-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-.a-check-head .a-btn { margin-left: auto; }
+.a-check-head .admin-btn { margin-left: auto; }
 .a-check-state { font-size: 13px; font-weight: 600; color: var(--a-muted); }
 .a-check-state.is-ok { color: var(--a-ok); }
 .a-check-state.is-bad { color: var(--a-warn); }
@@ -455,8 +447,6 @@
 .a-danger-zone { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-top: 40px; padding: 16px 18px; border: 1px solid #efc4bf; border-radius: var(--a-radius-lg); background: #fdf5f3; }
 .a-danger-zone strong { color: var(--a-danger); }
 .a-danger-zone p { margin: 2px 0 0; }
-.a-btn-danger-outline { background: var(--a-surface); color: var(--a-danger); border-color: #e3b5b0; }
-.a-btn-danger-outline:hover { background: var(--a-danger-bg); border-color: var(--a-danger); }
 
 .a-filterbar { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 14px; }
 .a-filterbar input[type="search"] { flex: 1 1 220px; width: auto; min-height: 38px; padding: 8px 12px; border: 1px solid var(--a-line-strong); border-radius: var(--a-radius); background: var(--a-surface); font: inherit; }
@@ -482,8 +472,8 @@
 .a-assistant ol { margin: 0 0 12px; padding-left: 20px; }
 .a-assistant textarea { width: 100%; margin: 8px 0; }
 /* Links inside running text are underlined, so they are not told apart from the text by colour alone. */
-.a-shell p a:not(.a-btn):not(.admin-btn),
-.a-shell li a:not(.a-btn):not(.admin-btn),
+.a-shell p a:not(.admin-btn),
+.a-shell li a:not(.admin-btn),
 .a-shell .admin-form-hint a {
   color: #8f503e; /* accent as text colour: 6:1 on the surface */
   text-decoration: underline;
@@ -495,8 +485,6 @@
 @media (pointer: coarse) {
   .a-shell .admin-btn,
   .a-shell .admin-btn-sm,
-  .a-shell .a-btn,
-  .a-shell .a-btn-quiet,
   .a-shell .a-nav-link,
   .a-shell .admin-tab,
   .a-shell .admin-filter-btn {

@@ -31,7 +31,8 @@ const touchSelectors = [...block.matchAll(/([^{}]+)\{[^{}]*min-height:\s*44px[^{
 assert(touchSelectors.length >= 7, `the block raises ${touchSelectors.length} kinds of control to 44px`);
 
 // The rules outside the block that set a smaller min-height on the same classes
-const outside = css.slice(0, start) + css.slice(end + 3);
+// Comments are not selectors (a comment above a rule would otherwise be read as part of its selector).
+const outside = (css.slice(0, start) + css.slice(end + 3)).replace(/\/\*[^]*?\*\//g, "");
 for (const selector of touchSelectors) {
   const lastClass = selector.match(/\.[\w-]+$/)?.[0];
   if (!lastClass) continue;
@@ -43,7 +44,7 @@ for (const selector of touchSelectors) {
   }
 }
 
-for (const needed of [".a-shell .admin-btn", ".a-shell .admin-btn-sm", ".a-shell .admin-filter-btn", ".a-shell .a-btn", ".a-shell .a-nav-link"]) {
+for (const needed of [".a-shell .admin-btn", ".a-shell .admin-btn-sm", ".a-shell .admin-filter-btn", ".a-shell .a-nav-link"]) {
   assert(touchSelectors.includes(needed), `${needed} is 44px on a touch screen`);
 }
 
