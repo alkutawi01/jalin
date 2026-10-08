@@ -723,10 +723,10 @@ export default function EditSubmissionPage() {
                       {c.ai_provider ? (
                         <span style={{ fontSize: "0.8em", color: "#6b7280" }}>
                           {c.ai_provider}/{c.ai_model || "?"}
-                          {c.ai_actual_role && <span style={{ color: "#9ca3af" }}> ({c.ai_actual_role})</span>}
+                          {c.ai_actual_role && <span className="a-faint-text"> ({c.ai_actual_role})</span>}
                         </span>
                       ) : (
-                        <span style={{ color: "#9ca3af" }}>—</span>
+                        <span className="a-faint-text">—</span>
                       )}
                     </td>
                     <td>
@@ -757,8 +757,8 @@ export default function EditSubmissionPage() {
           <h3>Penjanaan AI</h3>
         </div>
 
-        <div className="admin-section" style={{ marginBottom: "1rem", padding: "0.75rem", background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: "6px" }}>
-          <p style={{ margin: 0, fontSize: "0.85rem", color: "#1e40af" }}>
+        <div className="admin-section a-info-box">
+          <p className="a-info-text">
             Penjanaan akan mencipta draf submission baharu. Tidak akan mewujudkan Work atau menerbitkan secara automatik.
           </p>
         </div>
@@ -904,8 +904,8 @@ export default function EditSubmissionPage() {
           </div>
         ) : (
           <div>
-            <div className="admin-section" style={{ marginBottom: "1rem", padding: "0.75rem", background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: "6px" }}>
-              <p style={{ margin: 0, fontSize: "0.85rem", color: "#1e40af" }}>
+            <div className="admin-section a-info-box">
+              <p className="a-info-text">
                 Menaikkan penghantaran membuat sebuah karya berstatus Sedia. Karya itu tidak diterbitkan secara automatik.
               </p>
             </div>
@@ -931,7 +931,7 @@ export default function EditSubmissionPage() {
               </p>
 
               {contributions.length === 0 ? (
-                <p style={{ fontSize: "0.85rem", color: "#9ca3af" }}>Tiada sumbangan untuk dikonfigurasi.</p>
+                <p className="a-faint-text a-small">Tiada sumbangan untuk dikonfigurasi.</p>
               ) : (
                 <div className="admin-table-wrap">
                   <table className="admin-table">
@@ -960,7 +960,7 @@ export default function EditSubmissionPage() {
                             <td>
                               <strong>{c.ai_persona || c.guest_name || c.contributor_slug || "—"}</strong>
                               {c.ai_provider && (
-                                <span style={{ fontSize: "0.75em", color: "#9ca3af", marginLeft: "4px" }}>
+                                <span className="a-aside">
                                   ({c.ai_provider})
                                 </span>
                               )}

@@ -516,49 +516,49 @@ export default function EditVisualRequestPage() {
           {/* Three clearly separated lifecycle panels */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
             <div>
-              <h3 style={{ margin: "0 0 8px", fontSize: 14, textTransform: "uppercase", opacity: 0.7 }}>1. Penjanaan</h3>
+              <h3 className="a-eyebrow">1. Penjanaan</h3>
               <p style={{ margin: 0 }}>
                 <strong>{STATUS_LABEL[record.status] ?? record.status}</strong>
                 {record.error_category && (
                   <span style={{ color: "#c0392b" }}> — {record.error_category}: {record.error_message}</span>
                 )}
               </p>
-              <p style={{ margin: "4px 0 0", fontSize: 12, opacity: 0.7 }}>
+              <p className="a-meta-line">
                 Cara: {EXECUTION_MODES[record.execution_mode || "magnific_api"] || record.execution_mode || "magnific_api"}
               </p>
               {record.provider_request_id && (
-                <p style={{ margin: "4px 0 0", fontSize: 12, opacity: 0.7 }}>Nombor tugas: {record.provider_request_id}</p>
+                <p className="a-meta-line">Nombor tugas: {record.provider_request_id}</p>
               )}
               {record.provider_creation_id && (
-                <p style={{ margin: "4px 0 0", fontSize: 12, opacity: 0.7 }}>Nombor ciptaan: {record.provider_creation_id}</p>
+                <p className="a-meta-line">Nombor ciptaan: {record.provider_creation_id}</p>
               )}
               {record.asset_width && record.asset_height && (
-                <p style={{ margin: "4px 0 0", fontSize: 12, opacity: 0.7 }}>
+                <p className="a-meta-line">
                   {record.asset_width}×{record.asset_height} {record.asset_mime_type}
                 </p>
               )}
-              <p style={{ margin: "4px 0 0", fontSize: 12, opacity: 0.7 }}>
+              <p className="a-meta-line">
                 Fail gambar:{" "}
                 {record.asset_finalized
                   ? "Sudah disimpan (muktamad)"
                   : "Belum disimpan; belum boleh dipautkan"}
               </p>
-              <p style={{ margin: "4px 0 0", fontSize: 12, opacity: 0.7 }}>
+              <p className="a-meta-line">
                 Percubaan: {record.retry_count}
                 {record.last_webhook_id ? " · makluman penyedia diterima" : ""}
               </p>
             </div>
             <div>
-              <h3 style={{ margin: "0 0 8px", fontSize: 14, textTransform: "uppercase", opacity: 0.7 }}>
+              <h3 className="a-eyebrow">
                 2. Semakan editorial
               </h3>
               <p style={{ margin: 0 }}>
                 <strong>{APPROVAL_LABEL[record.approval_state] ?? record.approval_state}</strong>
               </p>
               {record.approved_by && (
-                <p style={{ margin: "4px 0 0", fontSize: 12, opacity: 0.7 }}>Oleh: {record.approved_by}</p>
+                <p className="a-meta-line">Oleh: {record.approved_by}</p>
               )}
-              <p style={{ margin: "4px 0 0", fontSize: 12, opacity: 0.7 }}>
+              <p className="a-meta-line">
                 {record.status === "under_review"
                   ? "Menunggu kelulusan editor"
                   : record.status === "approved"
@@ -569,19 +569,19 @@ export default function EditVisualRequestPage() {
               </p>
             </div>
             <div>
-              <h3 style={{ margin: "0 0 8px", fontSize: 14, textTransform: "uppercase", opacity: 0.7 }}>
+              <h3 className="a-eyebrow">
                 3. Pautan ke karya
               </h3>
               <p style={{ margin: 0 }}>
                 <strong>{record.status === "attached" ? "Dipaut" : "Belum dipaut"}</strong>
               </p>
-              <p style={{ margin: "4px 0 0", fontSize: 12, opacity: 0.7 }}>
+              <p className="a-meta-line">
                 Karya: {record.work_id || "—"}
               </p>
-              <p style={{ margin: "4px 0 0", fontSize: 12, opacity: 0.7 }}>
+              <p className="a-meta-line">
                 Alamat fail tersimpan: {record.source_asset_path || "(belum ada)"}
               </p>
-              <p style={{ margin: "4px 0 0", fontSize: 12, opacity: 0.7 }}>
+              <p className="a-meta-line">
                 Pautan ≠ penerbitan
               </p>
             </div>
@@ -672,7 +672,7 @@ export default function EditVisualRequestPage() {
           </div>
 
           <div style={{ marginTop: 16, paddingTop: 12, borderTop: "1px solid #ddd" }}>
-            <h3 style={{ margin: "0 0 8px", fontSize: 14, textTransform: "uppercase", opacity: 0.7 }}>
+            <h3 className="a-eyebrow">
               Arahan penuh untuk penjana imej
             </h3>
             <p style={{ margin: "0 0 8px", fontSize: 13, opacity: 0.8 }}>
@@ -695,7 +695,7 @@ export default function EditVisualRequestPage() {
 
           {["draft", "failed", "generated", "under_review", "rejected"].includes(record.status) && (
             <div style={{ marginTop: 16, paddingTop: 12, borderTop: "1px solid #ddd" }}>
-              <h3 style={{ margin: "0 0 8px", fontSize: 14, textTransform: "uppercase", opacity: 0.7 }}>
+              <h3 className="a-eyebrow">
                 Atau muat naik imej sendiri
               </h3>
               <p style={{ margin: "0 0 8px", fontSize: 13, opacity: 0.8 }}>
