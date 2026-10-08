@@ -54,7 +54,7 @@ const settings = read("src/app/admin/settings/page.tsx");
 assert(settings.includes('tab === "audiens" ? <AudienceBandsSettings /> : null') && read("src/lib/admin/settings-tabs.ts").includes('{ id: "audiens", label: "Audiens" }'), "Tetapan has an Audiens tab");
 const api = read("src/app/api/admin/audience-bands/route.ts");
 assert((api.match(/getCurrentAdmin\(\)/g) ?? []).length === 2 && api.includes("status: 401"), "both audience endpoints need a login");
-assert(read("src/app/api/admin/works/start-draft/route.ts").includes("audience: DEFAULT_AUDIENCE, dek: null") && read("src/lib/admin/import/plan.ts").includes("normalizeAudience(data.audience)"), "a new draft and an import start with a band code, not '13-17'");
+assert(read("src/app/api/admin/works/start-draft/route.ts").includes("audience: defaults.audience, dek: null") && read("src/lib/admin/series-inheritance.ts").includes("inheritance?.audience ?? DEFAULT_AUDIENCE") && read("src/lib/admin/import/plan.ts").includes("normalizeAudience(present(options.seriesDefaults?.audience) ?? data.audience)"), "a new draft and an import start with a band code, not '13-17'");
 
 // An empty "Dari" box: the form sends NaN, JSON writes null, and the band was saved as "from age 0" without a word.
 const refused = (bands: unknown) => { try { validateBands(bands); return ""; } catch (error) { return (error as Error).message; } };

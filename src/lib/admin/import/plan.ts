@@ -123,6 +123,12 @@ export interface ImportOptions {
   series?:
     | { kind: "baharu"; title?: string; mode?: "continuous" | "anthology"; dek?: string }
     | { kind: "sambung"; seriesId: string };
+  /**
+   * What the series itself says (only when the episode continues one). The chatbot answered without knowing the series, so its
+   * genre and audience give way to these; a genre the editor typed over the suggestion still wins.
+   */
+  /** What a continuing series gives the episode; `hasByline`: its inherited credits already include a name under the title. */
+  seriesDefaults?: { genre?: string | null; audience?: string | null; hasByline?: boolean };
 }
 
 /** Chatbots often wrap a quoted passage in an extra pair of quotation marks. */
@@ -160,7 +166,7 @@ export function buildImportPlan(answer: string, manuscript: string, options: Imp
   const overrides = options.overrides ?? {};
   data.title = present(overrides.title) ?? data.title;
   data.dek = present(overrides.dek) ?? data.dek;
-  data.genre = present(overrides.genre) ?? data.genre;
+  data.genre = present(overrides.genre) ?? present(options.seriesDefaults?.genre) ?? data.genre;
   const slug = present(overrides.slug) ?? present(options.slugOverride) ?? (present(overrides.title) ? slugify(data.title) : data.slug);
 
   let bodyForWork = "";
@@ -236,7 +242,7 @@ export function buildImportPlan(answer: string, manuscript: string, options: Imp
     // The name under a sinopsis' or fragmen's title is the original author, shown automatically; their writer is only in the editorial block.
     credits.push({ guestName: writer, roleLabel: "initial_draft", byline: !isDerivative, isPublic: true, sortOrder: credits.length + 1 });
   }
-  if (!isDerivative && !credits.some((c) => c.byline)) {
+  if (!isDerivative && !credits.some((c) => c.byline) && !options.seriesDefaults?.hasByline) {
     warnings.push({
       code: "byline_missing",
       message: "Belum ada penulis dikreditkan. Isi nama penulis sebenar (kredit awam) sebelum terbit; penerbitan memerlukan sekurang-kurangnya satu kredit yang ditanda ‘Nama di bawah tajuk’."
@@ -423,7 +429,7 @@ export function buildImportPlan(answer: string, manuscript: string, options: Imp
       slug,
       type: data.type,
       genre: data.genre,
-      audience: normalizeAudience(data.audience),
+      audience: normalizeAudience(present(options.seriesDefaults?.audience) ?? data.audience),
       dek: data.dek,
       readingMinutes,
       body: bodyForWork,

@@ -201,6 +201,25 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
     }
   }
 
+  /** Fills what this episode is missing from the series and the episode before it. Nothing already written is replaced. */
+  async function handleInherit(workId: string) {
+    if (actionBusy) return;
+    // Credits can become public with the episode, so the editor is asked first and told what is copied and what is not.
+    if (!(await confirmAction("Isi episod ini daripada siri? Hanya yang belum ada akan ditambah: genre, audiens, watak, latar tempat, dan kredit (jika episod ini belum ada nama di bawah tajuk). Tiada yang sedia ada diganti.", { confirmLabel: "Ya, isi" }))) return;
+    setActionBusy(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/admin/series/${id}/entries/${workId}/inherit`, { method: "POST" });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Gagal mengisi daripada siri.");
+      toast(data.message, "success");
+    } catch (err) {
+      setError(errorText(err, "Gagal mengisi daripada siri."));
+    } finally {
+      setActionBusy(false);
+    }
+  }
+
   async function handleMove(index: number, direction: -1 | 1) {
     if (!series || actionBusy) return;
     const ids = series.entries.map((e) => e.work_id);
@@ -493,11 +512,21 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
                         </div>
                       </td>
                       <td>
-                        <button type="button" className="admin-btn admin-btn-sm admin-btn-danger"
-                          disabled={actionBusy}
-                          onClick={() => handleDetach(entry.work_id)}>
-                          Keluarkan
-                        </button>
+                        <div className="admin-table-actions">
+                          {entry.position > 1 && work && !["published", "archived"].includes(work.status) ? (
+                            <button type="button" className="admin-btn admin-btn-sm admin-btn-outline"
+                              disabled={actionBusy}
+                              title="Isi genre, khalayak, kredit, watak dan latar yang masih kosong daripada siri dan episod sebelumnya. Apa yang sudah anda tulis tidak diganti."
+                              onClick={() => handleInherit(entry.work_id)}>
+                              Isi daripada siri
+                            </button>
+                          ) : null}
+                          <button type="button" className="admin-btn admin-btn-sm admin-btn-danger"
+                            disabled={actionBusy}
+                            onClick={() => handleDetach(entry.work_id)}>
+                            Keluarkan
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );

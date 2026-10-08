@@ -40,11 +40,19 @@ interface Summary {
   series: { kind: string; title?: string } | null;
 }
 
+/** ": 4 kredit, 6 watak, 2 latar tempat" for the items that are not zero; empty when there are none. */
+function inheritedParts(i: { credits: number; characters: number; places: number }): string {
+  const parts = [i.credits ? `${i.credits} kredit` : "", i.characters ? `${i.characters} watak` : "", i.places ? `${i.places} latar tempat` : ""].filter(Boolean);
+  return parts.length ? `: ${parts.join(", ")}` : "";
+}
+
 interface CheckResponse {
   ok: boolean;
   errors: Issue[];
   warnings: Issue[];
   plan?: Summary | null;
+  /** What an episode that continues a series will also be given when it is saved. */
+  inherited?: { fromPosition: number; fromTitle: string; credits: number; characters: number; places: number } | null;
   canCreate?: boolean;
   error?: string;
 }
@@ -806,6 +814,11 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
                 {plan.stats.storedWords} perkataan
                 {plan.credits.length ? ` · kredit: ${plan.credits.map((c) => `${c.guestName} (${c.roleLabel})`).join(", ")}` : ""}
               </p>
+              {result?.inherited ? (
+                <p className="admin-form-hint">
+                  Episod ini menyambung siri, jadi genre dan audiens mengikut siri. Semasa disimpan, ia juga menerima daripada Episod {result.inherited.fromPosition} ({result.inherited.fromTitle}){inheritedParts(result.inherited)}. Semak di tab Kredit dan Watak selepas itu.
+                </p>
+              ) : null}
             </>
           ) : null}
 
