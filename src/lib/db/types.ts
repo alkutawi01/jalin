@@ -382,6 +382,24 @@ export interface SeriesEntries {
   updated_at: ColumnType<Date, string | Date, string | Date>;
 }
 
+export interface AdminUsers {
+  id: string;
+  username: string;
+  email: string | null;
+  display_name: string;
+  role: "chief_editor" | "editor";
+  password_hash: string;
+  must_change_password: Generated<boolean>;
+  active: Generated<boolean>;
+  failed_attempts: Generated<number>;
+  locked_until: ColumnType<Date | null, string | Date | null, string | Date | null>;
+  last_login_at: ColumnType<Date | null, string | Date | null, string | Date | null>;
+  password_changed_at: ColumnType<Date | null, string | Date | null, string | Date | null>;
+  created_by: string | null;
+  created_at: Generated<Date>;
+  updated_at: Generated<Date>;
+}
+
 export interface EditorialAuditRuns {
   id: string;
   generated_at: ColumnType<Date, string | Date, string | Date>;
@@ -441,4 +459,5 @@ export interface Database {
   editorial_issues: EditorialIssues;
   editorial_issue_events: EditorialIssueEvents;
   editorial_roles: EditorialRoles;
+  admin_users: AdminUsers;
 }

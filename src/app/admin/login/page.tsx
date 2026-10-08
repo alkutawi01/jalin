@@ -29,6 +29,13 @@ export default function LoginPage() {
         throw new Error(data.error || "Log masuk gagal.");
       }
 
+      const data = await res.json().catch(() => ({} as { mustChangePassword?: boolean }));
+      // A temporary password must be replaced before anything else.
+      if (data.mustChangePassword) {
+        router.push("/admin/ubah-kata-laluan");
+        router.refresh();
+        return;
+      }
       // Back to the page the editor was on when the session ended (a path inside the admin only).
       router.push(safeReturnTo(new URLSearchParams(window.location.search).get("returnTo")));
       router.refresh();
@@ -53,16 +60,18 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} className="admin-login-form">
           <div className="admin-form-group">
-            <label htmlFor="email">E-mel</label>
+            <label htmlFor="email">Nama pengguna atau e-mel</label>
             <input
               id="email"
               name="email"
-              type="email"
+              type="text"
               autoComplete="username"
+              autoCapitalize="none"
+              spellCheck={false}
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@jalin.adjung.com"
+              placeholder="nama pengguna atau e-mel"
             />
           </div>
 

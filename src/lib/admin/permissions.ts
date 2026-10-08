@@ -29,7 +29,7 @@ export const PERMISSIONS = [
   "editorial.curate", // editor's picks
   "contributor.manage", // personas and contributors
   "site.manage", // site copy, theme, audience bands, writing prompts and their settings
-  "user.manage" // staff accounts (not built yet)
+  "user.manage" // staff accounts: invite, change role, switch off, reset password
 ] as const;
 export type Permission = (typeof PERMISSIONS)[number];
 
@@ -60,6 +60,8 @@ const ID = "[^/]+";
 /** First match wins, so the specific rules come before the general ones. Addresses are matched without the "/api/admin" start. */
 const API_RULES: Rule[] = [
   { methods: "*", pattern: /^\/auth\//, permission: "session.use" },
+  // Staff accounts: never open to the generic read rule below, or every editor could list the others.
+  { methods: "*", pattern: /^\/users(\/|$)/, permission: "user.manage" },
 
   { methods: "*", pattern: new RegExp(`^/works/${ID}/publish$`), permission: "work.publish" },
   { methods: "*", pattern: /^\/publish$/, permission: "work.publish" },
@@ -93,6 +95,8 @@ const API_RULES: Rule[] = [
 ];
 
 const PAGE_RULES: Rule[] = [
+  { methods: READ, pattern: /^\/admin\/pengguna(\/|$)/, permission: "user.manage" },
+  { methods: READ, pattern: /^\/admin\/ubah-kata-laluan$/, permission: "session.use" },
   { methods: READ, pattern: /^\/admin\/(settings|prompts)(\/|$)/, permission: "site.manage" },
   { methods: READ, pattern: /^\/admin\/contributors(\/|$)/, permission: "contributor.manage" },
   { methods: READ, pattern: /^\/admin\/pilihan-editor(\/|$)/, permission: "editorial.curate" },
