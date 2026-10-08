@@ -4,13 +4,16 @@
  * written twice. A table that cannot be a list of cards (the dashboard's to-do rows) opts out with the class a-todo-table.
  */
 
-/** The label for each cell of a row: the header of the column the cell starts in. A cell that spans several columns, or sits under an empty header, gets none. */
+/** A column of buttons needs no name above them: "Aksi" over a lone Edit button only costs a line on every card. */
+const ACTION_HEADERS = new Set(["aksi", "tindakan"]);
+
+/** The label for each cell of a row: the header of the column the cell starts in. A cell that spans several columns, sits under an empty header, or is the column of actions, gets none. */
 export function cellLabels(headers: string[], spans: number[]): (string | null)[] {
   let column = 0;
   return spans.map((span) => {
     const label = span === 1 ? (headers[column] ?? "").replace(/\s+/g, " ").trim() : "";
     column += span;
-    return label || null;
+    return label && !ACTION_HEADERS.has(label.toLowerCase()) ? label : null;
   });
 }
 
