@@ -136,7 +136,8 @@ export async function middleware(request: NextRequest) {
     if (pathname.startsWith("/api/")) {
       return NextResponse.json({ error: "Anda tidak mempunyai kebenaran untuk tindakan ini." }, { status: 403 });
     }
-    return NextResponse.redirect(new URL("/admin", request.url));
+    // To the dashboard, which says why the page did not open (a silent redirect left a person wondering what went wrong).
+    return NextResponse.redirect(new URL("/admin?terhad=1", request.url));
   }
 
   return NextResponse.next();

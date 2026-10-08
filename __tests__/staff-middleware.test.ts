@@ -1,5 +1,7 @@
 /** The middleware with real signed cookies: a staff role is limited by the permission map, and a temporary password opens nothing else. */
 import crypto from "node:crypto";
+import fs from "node:fs";
+import path from "node:path";
 process.env.ADMIN_SECRET = "test-secret-for-middleware";
 (process.env as Record<string, string>).NODE_ENV = "test";
 import { NextRequest } from "next/server";
@@ -24,7 +26,10 @@ async function call(method: string, path: string, claims?: Record<string, unknow
 
   assert((await call("GET", "/api/admin/users", owner)).next, "the owner reaches the users API");
   assert((await call("GET", "/api/admin/users", editor)).status === 403 && (await call("GET", "/api/admin/users", chief)).status === 403, "an editor and a chief editor get 403 on the users API");
-  assert((await call("GET", "/admin/pengguna", editor)).location.endsWith("/admin"), "an editor sent from the Pengguna page back to the dashboard");
+  assert((await call("GET", "/admin/pengguna", editor)).location.endsWith("/admin?terhad=1"), "an editor sent from the Pengguna page to the dashboard, marked so it can say why");
+  assert((await call("GET", "/admin/series/new", editor)).location.endsWith("/admin?terhad=1") && (await call("GET", "/admin/series/new", chief)).next, "the same for a page of a permission the role lacks (new series: not an editor, yes a chief editor)");
+  const dashboard = fs.readFileSync(path.join(__dirname, "..", "src/app/admin/page.tsx"), "utf8");
+  assert(dashboard.includes('(await searchParams)?.terhad ?? "") === "1"') && dashboard.includes("Halaman itu tidak dibuka kerana peranan anda tidak mempunyai kebenaran untuknya.") && dashboard.includes('role="alert"'), "the dashboard says why the page did not open (only for the exact mark; the address is never echoed)");
   assert((await call("POST", "/api/admin/works/1/publish", chief)).status === 403 && (await call("POST", "/api/admin/works/1/publish", owner)).next, "only the owner publishes");
   assert((await call("POST", "/api/admin/works", editor)).next, "an editor may write works");
   assert((await call("GET", "/api/admin/works", { ...editor, role: "superuser" })).status === 401, "an unknown role in a signed token is refused");
