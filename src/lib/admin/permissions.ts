@@ -30,12 +30,13 @@ export const PERMISSIONS = [
   "contributor.manage", // personas and contributors
   "site.manage", // site copy, theme, audience bands, writing prompts and their settings
   "typography.manage", // the size of the story text and its sub-headings (Tetapan > Saiz teks karya)
+  "activity.read", // who changed what (the Aktiviti page)
   "user.manage" // staff accounts: invite, change role, switch off, reset password
 ] as const;
 export type Permission = (typeof PERMISSIONS)[number];
 
 const EDITOR: Permission[] = ["session.use", "content.read", "work.write", "credit.write", "glossary.write", "visual.write"];
-const CHIEF_EDITOR: Permission[] = [...EDITOR, "visual.review", "ai.generate", "series.manage", "source.manage", "submission.manage", "editorial.curate", "typography.manage"];
+const CHIEF_EDITOR: Permission[] = [...EDITOR, "visual.review", "ai.generate", "series.manage", "source.manage", "submission.manage", "editorial.curate", "typography.manage", "activity.read"];
 
 export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
   owner: PERMISSIONS,
@@ -98,6 +99,7 @@ const API_RULES: Rule[] = [
 
 const PAGE_RULES: Rule[] = [
   { methods: READ, pattern: /^\/admin\/pengguna(\/|$)/, permission: "user.manage" },
+  { methods: READ, pattern: /^\/admin\/aktiviti$/, permission: "activity.read" },
   { methods: READ, pattern: /^\/admin\/ubah-kata-laluan$/, permission: "session.use" },
   { methods: READ, pattern: /^\/admin\/settings\/saiz-teks$/, permission: "typography.manage" },
   { methods: READ, pattern: /^\/admin\/(settings|prompts)(\/|$)/, permission: "site.manage" },

@@ -7,6 +7,7 @@ import { episodesHiddenByArchiving } from "../../../../../lib/admin/series-hidde
 import { getCurrentAdmin } from "../../../../../lib/admin/auth";
 import { getDb, hasDb } from "../../../../../lib/db";
 import { imageMarkers, isImageMarker } from "../../../../../lib/reader/image-markers";
+import { logActivity, workSaveSummary } from "../../../../../lib/admin/activity";
 
 export async function GET(
   request: NextRequest,
@@ -168,6 +169,7 @@ export async function PATCH(
       origin: body.origin === undefined ? undefined : body.origin === "sumber" ? "sumber" : "asli",
     });
 
+    await logActivity({ action: "work.update", subjectType: "work", subjectId: id, workId: id, summary: workSaveSummary(existing.title, body), collapse: true });
     return NextResponse.json(work);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Ralat tidak diketahui.";
@@ -187,7 +189,9 @@ export async function DELETE(
       return NextResponse.json({ error: "Sesi anda telah tamat. Log masuk semula." }, { status: 401 });
     }
     const { id } = await params;
+    const doomed = await getWork(id);
     await deleteUnpublishedWork(id);
+    await logActivity({ action: "work.delete", subjectType: "work", subjectId: id, workId: id, summary: doomed?.title ?? id });
     return NextResponse.json({ success: true });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Ralat tidak diketahui.";

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { listWorks, listWorksByIds, createWork } from "../../../../lib/admin/work-service";
 import { listUnattachedEpisodes } from "../../../../lib/admin/series-service";
+import { logActivity, cleanSummary } from "../../../../lib/admin/activity";
 
 /** GET /api/admin/works; ?tanpaSiri=1 for the Bersiri episodes that belong to no series yet; ?ids=a,b,c for just those works. */
 export async function GET(request: NextRequest) {
@@ -56,6 +57,7 @@ export async function POST(request: NextRequest) {
       version: body.version || "v1.0",
     });
 
+    await logActivity({ action: "work.create", subjectType: "work", subjectId: (work as { id?: string }).id, workId: (work as { id?: string }).id, summary: `${cleanSummary(body.title)} (${body.type})` });
     return NextResponse.json(work, { status: 201 });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Ralat tidak diketahui.";

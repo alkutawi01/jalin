@@ -6,6 +6,7 @@ import {
 } from "../../../../../../../lib/admin/section-service";
 import { getCurrentAdmin } from "../../../../../../../lib/admin/auth";
 import { parseDbId } from "../../../../../../../lib/admin/ids";
+import { logActivity } from "../../../../../../../lib/admin/activity";
 
 export async function GET(
   request: NextRequest,
@@ -65,6 +66,7 @@ export async function PATCH(
       readingMinutes: body.readingMinutes,
     });
 
+    await logActivity({ action: "section.update", subjectType: "section", subjectId: id, workId, summary: String(existing.title || existing.slug), collapse: true });
     return NextResponse.json(section);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Ralat tidak diketahui.";
@@ -105,6 +107,7 @@ export async function DELETE(
     }
 
     await deleteSection(id, { confirmPublic: new URL(request.url).searchParams.get("confirm") === "1" });
+    await logActivity({ action: "section.delete", subjectType: "section", subjectId: id, workId, summary: String(existing.title || existing.slug) });
     return NextResponse.json({ success: true });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Ralat tidak diketahui.";

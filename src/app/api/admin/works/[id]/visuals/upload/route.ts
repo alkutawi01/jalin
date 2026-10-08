@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCurrentAdmin } from "../../../../../../../lib/admin/auth";
 import { getDb, hasDb } from "../../../../../../../lib/db";
 import { uploadVisualForWork } from "../../../../../../../lib/admin/visual-generation/work-visual-upload";
+import { logActivity } from "../../../../../../../lib/admin/activity";
 
 /**
  * POST /api/admin/works/[id]/visuals/upload  (multipart/form-data)
@@ -50,6 +51,7 @@ export async function POST(
         { status: result.status }
       );
     }
+    await logActivity({ action: "visual.upload", subjectType: "visual", subjectId: result.visualId, workId: id, summary: `Gambar ${text("role") || "inline"}` });
     return NextResponse.json(
       { success: true, visualId: result.visualId, visualRequestId: result.visualRequestId, assetPath: result.assetPath },
       { status: 201 }

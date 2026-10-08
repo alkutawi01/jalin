@@ -4,6 +4,7 @@ import {
   createSection,
 } from "../../../../../../lib/admin/section-service";
 import { getCurrentAdmin } from "../../../../../../lib/admin/auth";
+import { logActivity } from "../../../../../../lib/admin/activity";
 
 export async function GET(
   request: NextRequest,
@@ -52,6 +53,7 @@ export async function POST(
       readingMinutes: body.readingMinutes ?? null,
     });
 
+    await logActivity({ action: "section.create", subjectType: "section", subjectId: (section as { id?: number }).id, workId: id, summary: String(body.title || body.slug) });
     return NextResponse.json(section, { status: 201 });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Ralat tidak diketahui.";
