@@ -4,7 +4,7 @@ import { isAllowed, roleFromClaim, type Role } from "./lib/admin/permissions";
 /**
  * Validate session token using Web Crypto API (Edge-compatible).
  */
-async function validateSessionToken(token: string): Promise<Role | null> {
+async function validateSessionToken(token: string): Promise<{ role: Role; mustChangePassword: boolean } | null> {
   try {
     const [payload, signature] = token.split(".");
     if (!payload || !signature) {
@@ -59,7 +59,8 @@ async function validateSessionToken(token: string): Promise<Role | null> {
     }
 
     // The role the session says it has ("admin" is today's single account: the owner).
-    return roleFromClaim(parsed.role);
+    const role = roleFromClaim(parsed.role);
+    return role ? { role, mustChangePassword: parsed.mcp === true } : null;
   } catch {
     return null;
   }
@@ -101,8 +102,8 @@ export async function middleware(request: NextRequest) {
   }
 
   // Validate session token (HMAC + expiry + role)
-  const role = await validateSessionToken(sessionCookie.value);
-  if (!role) {
+  const session = await validateSessionToken(sessionCookie.value);
+  if (!session) {
     // Invalid/forged/expired session - reject and clear cookie
     if (pathname.startsWith("/api/")) {
       const response = NextResponse.json(
@@ -118,6 +119,16 @@ export async function middleware(request: NextRequest) {
     const response = NextResponse.redirect(loginUrl);
     response.cookies.delete("jalin-admin-session");
     return response;
+  }
+
+  const { role } = session;
+
+  // A staff account still on its temporary password may only choose its own (and sign out): nothing else opens before that.
+  if (session.mustChangePassword && pathname !== "/admin/ubah-kata-laluan" && !pathname.startsWith("/api/admin/auth/")) {
+    if (pathname.startsWith("/api/")) {
+      return NextResponse.json({ error: "Pilih kata laluan baharu dahulu." }, { status: 403 });
+    }
+    return NextResponse.redirect(new URL("/admin/ubah-kata-laluan", request.url));
   }
 
   // A valid session still needs the permission this address and method ask for (see lib/admin/permissions).
