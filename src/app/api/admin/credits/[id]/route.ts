@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCredit, updateCredit, deleteCredit, listCreditsForWork } from "../../../../../lib/admin/credit-service";
 import { creditErrorStatus, findDuplicateCredit } from "../../../../../lib/admin/metadata-rules";
 import { parseDbId } from "../../../../../lib/admin/ids";
+import { creditSummary, logActivity } from "../../../../../lib/admin/activity";
 
 export async function GET(
   request: NextRequest,
@@ -71,6 +72,7 @@ export async function PATCH(
       sortOrder: body.sortOrder,
     });
 
+    await logActivity({ action: "credit.update", subjectType: "credit", subjectId: creditId, workId: existing.work_id, summary: creditSummary(nextSlug ?? nextGuest, String(body.roleLabel ?? existing.role_label).trim()) });
     return NextResponse.json(credit);
   } catch (error) {
     return NextResponse.json(
@@ -99,6 +101,7 @@ export async function DELETE(
     }
 
     await deleteCredit(creditId);
+    await logActivity({ action: "credit.delete", subjectType: "credit", subjectId: creditId, workId: existing.work_id, summary: creditSummary(existing.contributor_slug ?? existing.guest_name, existing.role_label) });
 
     return NextResponse.json({ success: true });
   } catch (error) {

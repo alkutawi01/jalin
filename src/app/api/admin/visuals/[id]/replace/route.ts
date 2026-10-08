@@ -3,6 +3,7 @@ import { getCurrentAdmin } from "../../../../../../lib/admin/auth";
 import { getDb, hasDb } from "../../../../../../lib/db";
 import { replaceVisualImage } from "../../../../../../lib/admin/visual-generation/work-visual-upload";
 import { parseDbId } from "../../../../../../lib/admin/ids";
+import { logActivity } from "../../../../../../lib/admin/activity";
 
 /**
  * POST /api/admin/visuals/[id]/replace  (multipart/form-data)
@@ -35,6 +36,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       actor: admin.email || admin.id
     });
     if (!result.ok) return NextResponse.json({ error: result.error }, { status: result.status });
+    const owner = await getDb().selectFrom("visuals").select("work_id").where("id", "=", visualId).executeTakeFirst().catch(() => undefined);
+    await logActivity({ action: "visual.replace", subjectType: "visual", subjectId: visualId, workId: owner?.work_id ?? null, summary: `Gambar #${visualId}` });
     return NextResponse.json({ success: true, visualId: result.visualId, assetPath: result.assetPath });
   } catch (error) {
     return NextResponse.json({ error: error instanceof Error ? error.message : "Ralat tidak diketahui." }, { status: 500 });

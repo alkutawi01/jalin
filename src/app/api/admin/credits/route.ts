@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { listCreditsForWork, createCredit, reorderCredits, DuplicateCreditError } from "../../../../lib/admin/credit-service";
 import { creditErrorStatus, findDuplicateCredit } from "../../../../lib/admin/metadata-rules";
+import { creditSummary, logActivity } from "../../../../lib/admin/activity";
 
 export async function GET(request: NextRequest) {
   try {
@@ -55,6 +56,7 @@ export async function POST(request: NextRequest) {
       sortOrder: body.sortOrder || 0,
     });
 
+    await logActivity({ action: "credit.create", subjectType: "credit", subjectId: (credit as { id?: number }).id, workId: String(body.workId), summary: creditSummary(body.contributorSlug || body.guestName, body.roleLabel) });
     return NextResponse.json(credit, { status: 201 });
   } catch (error) {
     // A second request that lost the race to the first: the same answer as the check above.
@@ -75,6 +77,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     const credits = await reorderCredits(body.workId, body.creditIds);
+    await logActivity({ action: "credit.reorder", subjectType: "credit", workId: String(body.workId), summary: "Susunan kredit diubah." });
     return NextResponse.json(credits);
   } catch (error) {
     return NextResponse.json(

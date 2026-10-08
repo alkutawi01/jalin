@@ -382,6 +382,19 @@ export interface SeriesEntries {
   updated_at: ColumnType<Date, string | Date, string | Date>;
 }
 
+export interface AdminActivity {
+  id: Generated<string>;
+  at: Generated<Date>;
+  actor_id: string;
+  actor_name: string;
+  actor_role: string;
+  action: string;
+  subject_type: string;
+  subject_id: string | null;
+  work_id: string | null;
+  summary: string;
+}
+
 export interface AdminUsers {
   id: string;
   username: string;
@@ -460,4 +473,5 @@ export interface Database {
   editorial_issue_events: EditorialIssueEvents;
   editorial_roles: EditorialRoles;
   admin_users: AdminUsers;
+  admin_activity: AdminActivity;
 }
