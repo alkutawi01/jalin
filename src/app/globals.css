@@ -510,6 +510,34 @@ dd { margin: 0; color: var(--ink); text-align: left; }
   color: var(--ink-soft);
   font-size: 15px;
 }
+.collection-refresh {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--clay-text);
+  font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.collection-refresh:hover:not(:disabled) { border-color: var(--clay-text); }
+.collection-refresh:disabled { opacity: .6; cursor: progress; }
+.collection-error {
+  margin: 16px 0 0;
+  color: var(--ink-soft);
+  font-size: 14px;
+}
+.latest-card-series {
+  margin: 0 0 8px;
+  color: var(--ink-soft);
+  font-size: 14px;
+  line-height: 1.4;
+}
 .latest-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
