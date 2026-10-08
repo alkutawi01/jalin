@@ -40,7 +40,7 @@ export function creditErrorStatus(error: unknown): number {
   const message = error instanceof Error ? error.message : "";
   if (message.includes("tidak ditemui")) return 404;
   if (message.includes("telah berubah")) return 409;
-  if (message.startsWith("Pilih penyumbang")) return 400;
+  if (message.startsWith("Pilih penyumbang") || message.startsWith("Peranan \"")) return 400;
   return 500;
 }
 

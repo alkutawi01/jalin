@@ -9,7 +9,7 @@
 import { placeholderFields } from "./authoring/placeholder";
 import { isSourcedWork } from "../content/source-origin";
 import type { WorkStatus, WorkType } from "../db/types";
-import { isDerivativeType } from "../credit-roles";
+import { isDerivativeType, roleNotAllowed } from "../credit-roles";
 import { classifyFragmen, fragmenTextHash, isIndonesianLanguage, isMalayLanguage, readFragmenTextReview } from "../content/fragmen-kind";
 
 /** A work type as an editor reads it ("Novela"), not the stored key ("novela"). */
@@ -442,6 +442,11 @@ export function evaluatePublicationReadinessFromData(
 
   // --- Credits ---
   const publicCredits = credits.filter((c) => c.is_public);
+  // A role that does not belong to this type of work ("Idea asal" on a sinopsis or fragmen) is never published, even if it was saved before the rule.
+  for (const credit of credits) {
+    const message = roleNotAllowed(String(work.type), credit.role_label);
+    if (message) contentBlockers.push(issue("credit_role_not_allowed", message));
+  }
   // Sinopsis and fragmen have no "Nama di bawah tajuk": the name there is the original author, taken from the source record,
   // which the rights gate below already requires. Jalin's contributors appear in the editorial block only (credit-roles.ts).
   const derivativeType = isDerivativeType(String(work.type));
