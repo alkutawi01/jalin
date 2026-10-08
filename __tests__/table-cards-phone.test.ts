@@ -13,9 +13,10 @@ const read = (p: string) => fs.readFileSync(path.join(__dirname, "..", p), "utf8
 
 // The labels
 assert(JSON.stringify(cellLabels(["Tajuk", "Alamat", "Jenis"], [1, 1, 1])) === JSON.stringify(["Tajuk", "Alamat", "Jenis"]), "each cell takes the name of its column");
-assert(JSON.stringify(cellLabels(["Tajuk", "", "Aksi"], [1, 1, 1])) === JSON.stringify(["Tajuk", null, "Aksi"]), "a column with no name gives its cell no label");
+assert(JSON.stringify(cellLabels(["Tajuk", "", "Status"], [1, 1, 1])) === JSON.stringify(["Tajuk", null, "Status"]), "a column with no name gives its cell no label");
 assert(JSON.stringify(cellLabels(["A", "B", "C", "D"], [2, 1, 1])) === JSON.stringify([null, "C", "D"]), "a cell spanning two columns has no label and the next cell keeps its own column");
 assert(JSON.stringify(cellLabels(["A", "B"], [2])) === JSON.stringify([null]) && JSON.stringify(cellLabels(["A"], [1, 1])) === JSON.stringify(["A", null]), "an empty-state row (one wide cell) and a row longer than the header never throw");
+assert(JSON.stringify(cellLabels(["Tajuk", "Aksi"], [1, 1])) === JSON.stringify(["Tajuk", null]) && JSON.stringify(cellLabels(["Nama", " Tindakan "], [1, 1])) === JSON.stringify(["Nama", null]), "the column of actions (Aksi, Tindakan) has no name above its buttons");
 assert(cellLabels(["  Dari   (tahun) "], [1])[0] === "Dari (tahun)", "spaces inside a heading are tidied");
 
 // The module and its wiring
