@@ -353,7 +353,7 @@ export default function EditWorkPage() {
         const res = await fetch(`/api/admin/glossary/${id}`, { method: "DELETE" });
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
-          throw new Error(data.error || "Gagal memadam istilah glosari.");
+          throw new Error(data.error || "Istilah glosari tidak dapat dipadam.");
         }
         removed += 1;
       }
@@ -976,7 +976,7 @@ export default function EditWorkPage() {
   }
 
   async function handleDeleteSection(id: number) {
-    if (!(await confirmAction("Pasti ingin memadam bab ini? Gambar bab ini turut dikeluarkan dan susunan selebihnya akan dirapatkan.", { danger: true, confirmLabel: "Ya, teruskan" }))) return;
+    if (!(await confirmAction("Pasti ingin memadam bab ini? Gambar bab ini turut dikeluarkan dan susunan selebihnya akan dirapatkan.", { danger: true, confirmLabel: "Ya, padam bab" }))) return;
     setSectionError(null);
     try {
       let res = await fetch(`/api/admin/works/${workId}/sections/${id}`, { method: "DELETE" });
@@ -987,17 +987,20 @@ export default function EditWorkPage() {
           if (!(await confirmAction(`${data.error} Padam bab ini juga?`, { danger: true, confirmLabel: "Ya, padam" }))) return;
           res = await fetch(`/api/admin/works/${workId}/sections/${id}?confirm=1`, { method: "DELETE" });
         } else {
-          throw new Error(data.error || "Gagal memadam bab.");
+          throw new Error(data.error || "Bab tidak dapat dipadam.");
         }
       }
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "Gagal memadam bab.");
+        throw new Error(data.error || "Bab tidak dapat dipadam.");
       }
       await loadSections();
       await loadReadiness();
+      toast(form.status === "published" ? "Bab dipadam daripada draf. Pembaca belum melihat perubahan: tekan Terbitkan semula di atas karya." : "Bab dipadam.", "success");
     } catch (err) {
-      setSectionError(errorText(err));
+      const text = errorText(err);
+      setSectionError(text);
+      toast(text, "error");
     }
   }
 
@@ -1562,7 +1565,7 @@ export default function EditWorkPage() {
   }
 
   async function handleDeleteCredit(id: number) {
-    if (!(await confirmAction("Pasti ingin memadam kredit ini?", { danger: true, confirmLabel: "Ya, teruskan" }))) return;
+    if (!(await confirmAction("Pasti ingin memadam kredit ini?", { danger: true, confirmLabel: "Ya, padam kredit" }))) return;
 
     try {
       const res = await fetch(`/api/admin/credits/${id}`, {
@@ -1571,13 +1574,16 @@ export default function EditWorkPage() {
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "Gagal memadam kredit.");
+        throw new Error(data.error || "Kredit tidak dapat dipadam.");
       }
 
       await loadCredits();
       await loadReadiness();
+      toast(form.status === "published" ? "Kredit dipadam daripada draf. Pembaca belum melihat perubahan: tekan Terbitkan semula di atas karya." : "Kredit dipadam.", "success");
     } catch (err) {
-      setCreditError(errorText(err));
+      const text = errorText(err);
+      setCreditError(text);
+      toast(text, "error");
     }
   }
 
@@ -1698,14 +1704,16 @@ export default function EditWorkPage() {
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "Gagal memadam visual.");
+        throw new Error(data.error || "Gambar tidak dapat dipadam.");
       }
 
       await loadVisuals();
       await loadReadiness();
       toast(markerInText ? `${label} dipadam. Penanda ${imageMarkerLabel(marker!)} masih ada dalam manuskrip.` : `${label} dipadam.`, "success");
     } catch (err) {
-      setVisualError(errorText(err));
+      const text = errorText(err);
+      setVisualError(text);
+      toast(text, "error");
     }
   }
 
@@ -1761,7 +1769,7 @@ export default function EditWorkPage() {
   }
 
   async function handleDeleteGlossary(id: number) {
-    if (!(await confirmAction("Pasti ingin memadam istilah glosari ini?", { danger: true, confirmLabel: "Ya, teruskan" }))) return;
+    if (!(await confirmAction("Pasti ingin memadam istilah glosari ini?", { danger: true, confirmLabel: "Ya, padam istilah" }))) return;
 
     try {
       const res = await fetch(`/api/admin/glossary/${id}`, {
@@ -1770,13 +1778,16 @@ export default function EditWorkPage() {
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "Gagal memadam istilah glosari.");
+        throw new Error(data.error || "Istilah glosari tidak dapat dipadam.");
       }
 
       await loadGlossary();
       await loadReadiness();
+      toast(form.status === "published" ? "Istilah glosari dipadam daripada draf. Pembaca belum melihat perubahan: tekan Terbitkan semula di atas karya." : "Istilah glosari dipadam.", "success");
     } catch (err) {
-      setGlossaryError(errorText(err));
+      const text = errorText(err);
+      setGlossaryError(text);
+      toast(text, "error");
     }
   }
 
@@ -1829,7 +1840,7 @@ export default function EditWorkPage() {
   }, [workId]);
 
   async function handleArchive() {
-    if (!(await confirmAction("Pasti ingin mengarkibkan karya ini?", { danger: true, confirmLabel: "Ya, teruskan" }))) return;
+    if (!(await confirmAction("Pasti ingin mengarkibkan karya ini?", { danger: true, confirmLabel: "Ya, arkibkan karya" }))) return;
 
     setSaving(true);
     setError(null);
@@ -1843,7 +1854,7 @@ export default function EditWorkPage() {
       if (res.status === 409) {
         // In a continuous series the episodes after this one would disappear for readers: say which, and ask again.
         const data = await res.json().catch(() => ({}));
-        if (!data.confirmHidesLater) throw new Error(data.error || "Gagal mengarkibkan.");
+        if (!data.confirmHidesLater) throw new Error(data.error || "Karya tidak dapat diarkibkan.");
         if (!(await confirmAction(`${data.error} Teruskan mengarkibkan?`, { danger: true, confirmLabel: "Ya, arkibkan" }))) { setSaving(false); return; }
         res = await fetch(`/api/admin/works/${workId}`, {
           method: "PATCH",
@@ -1852,10 +1863,17 @@ export default function EditWorkPage() {
         });
       }
 
-      if (!res.ok) throw new Error("Gagal mengarkibkan.");
+      if (!res.ok) {
+        // The server says why (for example that only the owner archives a public work); that sentence is what the person needs.
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Karya tidak dapat diarkibkan.");
+      }
+      toast("Karya diarkibkan.", "success");
       router.push("/admin/works");
     } catch (err) {
-      setError(errorText(err));
+      const text = errorText(err);
+      setError(text);
+      toast(text, "error");
       setSaving(false);
     }
   }
@@ -1869,13 +1887,16 @@ export default function EditWorkPage() {
       const res = await fetch(`/api/admin/works/${workId}`, { method: "DELETE" });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "Gagal memadam karya.");
+        throw new Error(data.error || "Karya tidak dapat dipadam.");
       }
       clearDraft(window.localStorage, workId);
       setDirty(false);
+      toast("Karya dipadam.", "success");
       router.push("/admin/works");
     } catch (err) {
-      setError(errorText(err));
+      const text = errorText(err);
+      setError(text);
+      toast(text, "error");
       setSaving(false);
     }
   }
