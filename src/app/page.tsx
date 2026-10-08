@@ -9,6 +9,7 @@ import { initContentRepository } from "../lib/content";
 import type { SeriesMeta } from "../lib/content/types";
 import type { ImageCrop } from "../lib/content/types";
 import { cropStyle } from "../lib/reader/crop";
+import { seriesAuthorNames } from "../lib/reader/series-authors";
 import { displayableGenre } from "../lib/reader/genre-display";
 import { formatMalayDate } from "../lib/reader/format-date";
 import { getAllWorks } from "../lib/content/workLoader";
@@ -158,6 +159,8 @@ interface SeriesHighlightData {
   hero?: { src: string; alt: string; crop?: ImageCrop };
   first: { slug: string; position: number };
   latest: { slug: string; position: number; title: string; readingMinutes?: number; publishedAt?: string };
+  /** Names under the series' title across its published episodes (the series page shows the same names). */
+  authors: string[];
   year: string;
 }
 
@@ -172,6 +175,7 @@ async function getSeriesHighlight(): Promise<SeriesHighlightData | null> {
       hero: { src: "https://hinxqignbwjdoi92.public.blob.vercel-storage.com/assets/visuals/vr-5894790-v1-54cf7d5e.png", alt: "Ilustrasi siri Satu Daerah yang Paling Sunyi" },
       first: { slug: "garing-bukan-hangit", position: 1 },
       latest: { slug: "garing-bukan-hangit", position: 1, title: "Garing, Bukan Hangit" },
+      authors: [],
       year: "2026",
     };
   }
@@ -198,6 +202,7 @@ async function getSeriesHighlight(): Promise<SeriesHighlightData | null> {
       hero: latestHero ?? series.hero,
       first: { slug: ordered[0]!.slug, position: ordered[0]!.position },
       latest: { slug: latest.slug, position: latest.position, title: latest.title, readingMinutes: latestSummary?.readingMinutes, publishedAt: latest.publishedAt },
+      authors: seriesAuthorNames(ordered.map((e) => repo.getWork(e.slug)?.credits)),
       year: (at || "2026").slice(0, 4),
       at
     };
@@ -229,6 +234,7 @@ function SeriesHighlight({ data, ground }: { data: SeriesHighlightData; ground: 
             </span>
           </a>
           <div className="series-feature-footer">
+            {data.authors.length > 0 ? <p className="series-feature-byline">{`Oleh ${data.authors.join(", ")}`}</p> : null}
             <div className="series-feature-latest">
               <span className="home-eyebrow series-feature-latest-label">Episod terkini · Episod {data.latest.position}</span>
               <a className="series-feature-latest-title" href={`${base}/${data.latest.slug}`}>{data.latest.title}</a>
