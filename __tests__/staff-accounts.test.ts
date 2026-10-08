@@ -6,7 +6,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { generateTempPassword, hashPassword, passwordProblem, verifyPassword } from "../src/lib/admin/passwords";
 import { cleanUsername, invitationText, isStaffRole, UserInputError } from "../src/lib/admin/user-service";
-import { isAllowed, permissionFor } from "../src/lib/admin/permissions";
+import { can, isAllowed, permissionFor } from "../src/lib/admin/permissions";
 
 let passed = 0, failed = 0;
 function assert(c: boolean, m: string) { if (c) { passed++; console.log(`  ✓ ${m}`); } else { failed++; console.error(`  ✗ ${m}`); } }
@@ -52,6 +52,13 @@ for (const f of ["src/app/api/admin/users/route.ts", "src/app/api/admin/users/[i
   // The users routes arrive with the Pengguna page (a later PR); once they exist they must hold.
   if (!fs.existsSync(path.join(__dirname, "..", f))) continue;
   assert(read(f).includes('admin.role !== "admin"') || read(f).includes('admin.role === "admin"'), `${f} also checks for the owner itself`);
+}
+// The menu follows the role (only when the shell carries it: the Pengguna page PR).
+const shell = read("src/components/admin/AdminShell.tsx");
+if (shell.includes("needs:")) {
+  assert(can("owner", "user.manage") && !can("chief_editor", "user.manage") && !can("editor", "user.manage"), "only the owner is offered Pengguna in the menu");
+  assert(can("owner", "site.manage") && !can("editor", "site.manage"), "an editor is not offered Tetapan");
+  assert(shell.includes("NAV.filter((item) => !item.needs || can(role, item.needs))") && shell.includes('pathname.startsWith("/admin/ubah-kata-laluan")'), "the menu is filtered by role and the password page has no menu");
 }
 const mig = read("src/lib/db/migrations/025_admin_users.ts");
 assert(mig.includes("CREATE TABLE IF NOT EXISTS admin_users") && mig.includes("CHECK (role IN ('chief_editor', 'editor'))") && !/owner/.test(mig.replace(/\/\*[^]*?\*\//, "").replace(/The owner[^\n]*/g, "")), "the table is additive and has no owner role");
