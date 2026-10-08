@@ -5,6 +5,7 @@ import { linkLabels } from "./link-labels";
 import { usePathname } from "next/navigation";
 import DialogHost from "./DialogHost";
 import { confirmAction } from "../../lib/admin/dialogs";
+import { can, type Permission, type Role } from "../../lib/admin/permissions";
 
 /**
  * Admin app shell: a sidebar on wide screens, a top bar with a drawer on
@@ -33,7 +34,7 @@ function Icon({ name }: { name: keyof typeof ICONS }) {
   );
 }
 
-const NAV: { href: string; label: string; icon: keyof typeof ICONS; match: (p: string) => boolean }[] = [
+const NAV: { href: string; label: string; icon: keyof typeof ICONS; match: (p: string) => boolean; needs?: Permission }[] = [
   { href: "/admin", label: "Papan pemuka", icon: "home", match: (p) => p === "/admin" },
   {
     href: "/admin/works",
@@ -42,11 +43,12 @@ const NAV: { href: string; label: string; icon: keyof typeof ICONS; match: (p: s
     match: (p) => (p.startsWith("/admin/works") && !p.startsWith("/admin/works/add")) || p.startsWith("/admin/visual-requests")
   },
   { href: "/admin/series", label: "Siri", icon: "series", match: (p) => p.startsWith("/admin/series") },
-  { href: "/admin/contributors", label: "Penyumbang", icon: "people", match: (p) => p.startsWith("/admin/contributors") },
-  { href: "/admin/settings", label: "Tetapan", icon: "settings", match: (p) => p.startsWith("/admin/settings") }
+  { href: "/admin/contributors", label: "Penyumbang", icon: "people", match: (p) => p.startsWith("/admin/contributors"), needs: "contributor.manage" },
+  { href: "/admin/pengguna", label: "Pengguna", icon: "people", match: (p) => p.startsWith("/admin/pengguna"), needs: "user.manage" },
+  { href: "/admin/settings", label: "Tetapan", icon: "settings", match: (p) => p.startsWith("/admin/settings"), needs: "site.manage" }
 ];
 
-export default function AdminShell({ children }: { children: ReactNode }) {
+export default function AdminShell({ children, role = "owner" }: { children: ReactNode; role?: Role }) {
   const pathname = usePathname() ?? "";
   const [open, setOpen] = useState(false);
 
@@ -70,7 +72,7 @@ export default function AdminShell({ children }: { children: ReactNode }) {
     return () => observer.disconnect();
   }, []);
 
-  if (pathname.startsWith("/admin/login")) return <>{children}</>;
+  if (pathname.startsWith("/admin/login") || pathname.startsWith("/admin/ubah-kata-laluan")) return <>{children}</>;
 
   const nav = (
     <>
@@ -78,7 +80,7 @@ export default function AdminShell({ children }: { children: ReactNode }) {
         <Icon name="plus" /> Tambah karya
       </a>
       <nav className="a-nav" aria-label="Navigasi admin">
-        {NAV.map((item) => (
+        {NAV.filter((item) => !item.needs || can(role, item.needs)).map((item) => (
           <a
             key={item.href}
             href={item.href}
