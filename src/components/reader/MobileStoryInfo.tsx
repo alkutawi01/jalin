@@ -10,11 +10,13 @@ type Tab = "karya" | "watak" | "latar" | "editorial" | "bab";
 export default function MobileStoryInfo({ data }: { data: StoryInfoData }) {
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<Tab>("karya");
+  const hasCharacters = data.characters.length > 0;
   const hasSetting = (data.places?.length ?? 0) > 0 || (data.times?.length ?? 0) > 0;
   const [dragY, setDragY] = useState(0);
   const startY = useRef<number | null>(null);
   const edgeStart = useRef<{ x: number; y: number } | null>(null);
   const handleRef = useRef<HTMLButtonElement>(null);
+  const sheetRef = useRef<HTMLElement>(null);
   const wasOpen = useRef(false);
 
   // The sheet behaves as a dialog: focus moves in, the page behind does not scroll, and focus returns to Info on close.
@@ -36,7 +38,21 @@ export default function MobileStoryInfo({ data }: { data: StoryInfoData }) {
   }, [open]);
 
   useEffect(() => {
-    function onKeyDown(event: KeyboardEvent) { if (event.key === "Escape") setOpen(false); }
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") setOpen(false);
+      if (event.key !== "Tab" || !open || !sheetRef.current) return;
+      const focusable = [...sheetRef.current.querySelectorAll<HTMLElement>('button:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')];
+      if (focusable.length === 0) return;
+      const first = focusable[0]!;
+      const last = focusable[focusable.length - 1]!;
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
     function onTouchStart(event: TouchEvent) {
       if (open || event.touches.length !== 1) return;
       const touch = event.touches[0];
@@ -78,16 +94,26 @@ export default function MobileStoryInfo({ data }: { data: StoryInfoData }) {
     <button ref={handleRef} type="button" className="mobile-info-handle" onClick={() => setOpen(true)} aria-expanded={open} aria-controls="mobile-story-info">Tentang karya<span aria-hidden="true"> ›</span></button>
     {open && <div className="mobile-info-layer">
       <button type="button" className="mobile-info-backdrop" aria-label="Tutup maklumat karya" onClick={() => setOpen(false)} />
-      <section id="mobile-story-info" role="dialog" aria-modal="true" className="mobile-info-sheet" style={{ transform: "translateY(" + dragY + "px)" }} aria-label="Maklumat karya">
+      <section ref={sheetRef} id="mobile-story-info" role="dialog" aria-modal="true" className="mobile-info-sheet" style={{ transform: "translateY(" + dragY + "px)" }} aria-labelledby="mobile-story-info-title">
         <div className="sheet-drag-zone" onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={onPointerUp}>
           <span className="sheet-grabber" />
+        </div>
+        <div className="sheet-heading">
+          <div>
+            <span className="sheet-eyebrow">Rujukan pembaca</span>
+            <h2 id="mobile-story-info-title">Tentang karya</h2>
+          </div>
+          <button type="button" className="sheet-close" onClick={() => setOpen(false)} aria-label="Tutup maklumat karya">
+            <span aria-hidden="true">×</span>
+            Tutup
+          </button>
         </div>
         <div
           className="sheet-tabs"
           role="tablist"
           aria-label="Maklumat cerita"
           onKeyDown={(event) => {
-            const tabs: Tab[] = ["karya", "watak", ...(hasSetting ? (["latar"] as Tab[]) : []), "editorial", ...(data.bab && data.bab.length > 0 ? (["bab"] as Tab[]) : [])];
+            const tabs: Tab[] = ["karya", ...(hasCharacters ? (["watak"] as Tab[]) : []), ...(hasSetting ? (["latar"] as Tab[]) : []), "editorial", ...(data.bab && data.bab.length > 0 ? (["bab"] as Tab[]) : [])];
             const index = tabs.indexOf(tab);
             if (event.key === "ArrowRight") {
               event.preventDefault();
@@ -114,18 +140,20 @@ export default function MobileStoryInfo({ data }: { data: StoryInfoData }) {
           >
             Karya
           </button>
-          <button
-            type="button"
-            id="sheet-tab-watak"
-            role="tab"
-            aria-selected={tab === "watak"}
-            aria-controls="sheet-panel-watak"
-            tabIndex={tab === "watak" ? 0 : -1}
-            className={tab === "watak" ? "active" : ""}
-            onClick={() => setTab("watak")}
-          >
-            Watak
-          </button>
+          {hasCharacters ? (
+            <button
+              type="button"
+              id="sheet-tab-watak"
+              role="tab"
+              aria-selected={tab === "watak"}
+              aria-controls="sheet-panel-watak"
+              tabIndex={tab === "watak" ? 0 : -1}
+              className={tab === "watak" ? "active" : ""}
+              onClick={() => setTab("watak")}
+            >
+              Watak
+            </button>
+          ) : null}
           {hasSetting ? (
             <button
               type="button"

@@ -31,7 +31,7 @@ assert(read("src/components/reader/StoryChrome.tsx").includes('<div className="e
 const lilit = read("src/components/reader/LilitDivider.tsx");
 assert(lilit.includes('className="lilit-gap"') && css.includes(".lilit-divider .lilit-gap { stroke: var(--paper); }"), "the over strand sits on a paper-coloured gap, so no mask is needed");
 
-assert(css.includes(".site-footer::before { content: \"\"; position: absolute; inset: 0 0 auto 0; height: 30px; background: url(/brand/motif/bidai-light.svg)"), "the footer has the Bidai Beralih band");
+assert(/\.site-footer::before\s*\{[\s\S]*?content:\s*"";[\s\S]*?position:\s*absolute;[\s\S]*?inset:\s*0 0 auto;[\s\S]*?height:\s*30px;[\s\S]*?background:\s*url\(\/brand\/motif\/bidai-light\.svg\)/.test(css), "the footer has the Bidai Beralih band");
 const bidai = read("public/brand/motif/bidai-light.svg");
 assert(bidai.includes('width="48" height="24"') && !/<polygon|<circle/.test(bidai), "the band is the 48 x 24 strand tile, with no star or radial shape");
 

@@ -27,7 +27,10 @@ for (const [name, source] of [["story", work], ["episode", episode]] as const) {
   const columns = source.indexOf("site-shell reading-grid", row); // the grid's class may carry "has-margin-notes"
   assert(row > 0 && columns > row, `on the ${name} page the trigger sits above the text, not at the end`);
 }
-assert(read("src/components/reader/MobileStoryInfo.tsx").includes("Tentang karya<span aria-hidden=\"true\"> ›</span>"), "the trigger says what it opens");
+const mobileInfo = read("src/components/reader/MobileStoryInfo.tsx");
+assert(mobileInfo.includes("Tentang karya<span aria-hidden=\"true\"> ›</span>"), "the trigger says what it opens");
+assert(mobileInfo.includes("const hasCharacters = data.characters.length > 0") && mobileInfo.includes("{hasCharacters ? ("), "an empty Watak tab is not offered");
+assert(mobileInfo.includes('...(hasCharacters ? (["watak"] as Tab[]) : [])'), "keyboard navigation skips the absent Watak tab");
 
 const css = read("src/app/globals.css");
 const start = css.indexOf("  .mobile-info-handle {");
