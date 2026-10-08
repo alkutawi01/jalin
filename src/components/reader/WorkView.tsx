@@ -22,6 +22,7 @@ import StoryMarkdown from "./StoryMarkdown";
 import FootnoteList from "./FootnoteList";
 import FootnoteMargin from "./FootnoteMargin";
 import ReadingProgress from "./ReadingProgress";
+import ReaderTypography from "./ReaderTypography";
 import { extractFootnotes, markFootnoteReferences } from "../../lib/reader/footnotes";
 import { WorkCover } from "./WorkCover";
 import { extractInlineChapters } from "../../lib/reader/inline-chapters";
@@ -335,6 +336,7 @@ export default async function WorkView({
   return (
     <>
       <SiteHeader active={type as WorkType} />
+      <ReaderTypography />
       {landing ? null : <ReadingProgress />}
 
       <main id="kandungan" tabIndex={-1}>

@@ -2,6 +2,7 @@ import PromptEditor from "../../../components/admin/PromptEditor";
 import AiPersonaSettings from "../../../components/admin/AiPersonaSettings";
 import SiteCopySettings from "../../../components/admin/SiteCopySettings";
 import SiteThemeSettings from "../../../components/admin/SiteThemeSettings";
+import ReaderTypographySettings from "../../../components/admin/ReaderTypographySettings";
 import AudienceBandsSettings from "../../../components/admin/AudienceBandsSettings";
 import SettingsHashRedirect from "../../../components/admin/SettingsHashRedirect";
 import { loadPrompts } from "../../../lib/admin/authoring/prompt-store";
@@ -77,6 +78,8 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
         ) : null}
 
         {tab === "warna-blok" ? <SiteThemeSettings /> : null}
+
+        {tab === "saiz-teks" ? <ReaderTypographySettings /> : null}
 
         {tab === "audiens" ? <AudienceBandsSettings /> : null}
 
