@@ -252,7 +252,7 @@ export function StoryEnd({ title }: { title: string }) {
   );
 }
 
-const FOOTER_READ = NAV_LINKS.filter((link) => ["cerpen", "novela", "bersiri"].includes(link.match ?? ""));
+const FOOTER_EXPLORE = NAV_LINKS.filter((link) => link.match !== "home");
 const FOOTER_ABOUT = [
   { label: "Tentang Jalin", href: "/tentang" },
   { label: "Dasar Privasi", href: "/privasi" },
@@ -267,18 +267,12 @@ export function SiteFooter() {
         <div className="footer-brand">
           <img className="footer-logo" src="/brand/jalin-logo-reversed.svg" alt="Jalin — oleh Adjung" />
           <p className="footer-message">Selami dunia melalui cerita.</p>
-          <a className="footer-search" href="/cari">
-            Cari cerita
-            <svg viewBox="0 0 20 20" aria-hidden="true">
-              <path d="M4 10h11m-4-4 4 4-4 4" />
-            </svg>
-          </a>
         </div>
         <div className="footer-nav-grid">
-          <nav className="footer-col" aria-label="Baca karya">
-            <h2>Baca</h2>
+          <nav className="footer-col" aria-label="Terokai karya">
+            <h2>Terokai</h2>
             <ul>
-              {FOOTER_READ.map((link) => (
+              {FOOTER_EXPLORE.map((link) => (
                 <li key={link.href}><a href={link.href}>{link.label}</a></li>
               ))}
             </ul>
@@ -294,8 +288,7 @@ export function SiteFooter() {
         </div>
       </div>
       <div className="site-shell footer-base">
-        <p>© {year} Adjung Press</p>
-        <p>Jalin oleh Adjung</p>
+        <p>© {year} Adjung Press. Hak cipta terpelihara.</p>
       </div>
     </footer>
   );

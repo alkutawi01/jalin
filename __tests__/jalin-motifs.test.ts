@@ -1,4 +1,4 @@
-/** Jalin motifs in the site: the emblem (loader, 404, empty state), the story-end divider and the footer's Bidai Beralih band. */
+/** Jalin motifs in the site: the emblem (loader, 404, empty state) and the story-end divider. */
 import fs from "node:fs";
 import path from "node:path";
 
@@ -31,9 +31,7 @@ assert(read("src/components/reader/StoryChrome.tsx").includes('<div className="e
 const lilit = read("src/components/reader/LilitDivider.tsx");
 assert(lilit.includes('className="lilit-gap"') && css.includes(".lilit-divider .lilit-gap { stroke: var(--paper); }"), "the over strand sits on a paper-coloured gap, so no mask is needed");
 
-assert(/\.site-footer::before\s*\{[\s\S]*?content:\s*"";[\s\S]*?position:\s*absolute;[\s\S]*?inset:\s*0 0 auto;[\s\S]*?height:\s*30px;[\s\S]*?background:\s*url\(\/brand\/motif\/bidai-light\.svg\)/.test(css), "the footer has the Bidai Beralih band");
-const bidai = read("public/brand/motif/bidai-light.svg");
-assert(bidai.includes('width="48" height="24"') && !/<polygon|<circle/.test(bidai), "the band is the 48 x 24 strand tile, with no star or radial shape");
+assert(!css.includes(".site-footer::before"), "the footer has no decorative top motif");
 
 assert(css.includes("html:has(.boot-screen:not(.boot-out)) { overflow: hidden; }") && css.includes("html:has(.a-nav, .admin-login-page) { overflow: visible; }"), "the page behind the loading screen has no scroll bar and does not scroll (not in the admin)");
 assert(css.includes(".work-cover img { animation: jalin-fade-in .3s ease-out; }") && !/\.hero-featured-visual img \{ animation: jalin-fade-in/.test(css), "the home hero picture runs no fade of its own; cards keep theirs");
