@@ -7,8 +7,8 @@ import AudienceBandsSettings from "../../../components/admin/AudienceBandsSettin
 import SettingsHashRedirect from "../../../components/admin/SettingsHashRedirect";
 import { loadPrompts } from "../../../lib/admin/authoring/prompt-store";
 import { RECIPE_KEYS, getRecipe, KIND_LABELS } from "../../../lib/admin/authoring/recipes";
-import { SETTINGS_TABS, settingsTabHref, settingsTabOf } from "../../../lib/admin/settings-tabs";
-import { hasDb } from "../../../lib/db";
+import { redirect } from "next/navigation";
+import { SETTINGS_TABS, movedTabTarget, settingsTabHref, settingsTabOf } from "../../../lib/admin/settings-tabs";
 
 export const dynamic = "force-dynamic";
 
@@ -47,9 +47,11 @@ async function AiPromptsPanel() {
 }
 
 export default async function SettingsPage({ searchParams }: { searchParams: Promise<{ tab?: string | string[] }> }) {
-  const tab = settingsTabOf((await searchParams).tab);
+  const asked = (await searchParams).tab;
+  const moved = movedTabTarget(asked);
+  if (moved) redirect(moved);
+  const tab = settingsTabOf(asked);
   const label = SETTINGS_TABS.find((t) => t.id === tab)!.label;
-  const storage = Boolean(process.env.BLOB_READ_WRITE_TOKEN || process.env.OBJECT_STORAGE_BUCKET || process.env.OBJECT_STORAGE_ENDPOINT);
 
   return (
     <div className="admin-form-page">
@@ -96,13 +98,6 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
           <ul>
             <li><a href="/admin/submissions">Penghantaran karya</a> — karya yang dihantar untuk disemak dan dinaikkan menjadi karya.</li>
             <li><a href="/admin/prompts">Templat arahan lama</a> — templat arahan terdahulu; arahan semasa disunting dalam tab Arahan AI.</li>
-          </ul>
-        ) : null}
-
-        {tab === "status-sistem" ? (
-          <ul>
-            <li>Pangkalan data: {hasDb() ? "bersambung" : "tidak tersedia"}</li>
-            <li>Storan gambar: {storage ? "ditetapkan" : "belum ditetapkan (gambar yang dimuat naik tidak kekal)"}</li>
           </ul>
         ) : null}
       </section>

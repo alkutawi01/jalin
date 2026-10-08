@@ -14,6 +14,11 @@ import { buildContentChecks } from "../../lib/admin/dashboard-labels";
 
 export const dynamic = "force-dynamic";
 
+/** Whether uploaded pictures have somewhere lasting to go (the state of the system, shown under Status sistem). */
+function imageStorageSet(): boolean {
+  return Boolean(process.env.BLOB_READ_WRITE_TOKEN || process.env.OBJECT_STORAGE_BUCKET || process.env.OBJECT_STORAGE_ENDPOINT);
+}
+
 async function loadSeriesOf(): Promise<Map<string, string>> {
   try {
     const rows = await getDb().selectFrom("series_entries").select(["series_id", "work_id"]).execute();
@@ -151,6 +156,21 @@ export default async function AdminDashboard() {
           </div>
         ))}
       </div>
+
+      <section className="admin-section" id="status-sistem" aria-label="Status sistem">
+        <h2>Status sistem</h2>
+        <ul className="a-system-status">
+          <li>
+            <span>Pangkalan data</span>
+            <span className={`a-chip ${hasDb() ? "a-chip-pass" : "a-chip-fail"}`}>{hasDb() ? "Bersambung" : "Tidak tersedia"}</span>
+          </li>
+          <li>
+            <span>Storan gambar</span>
+            <span className={`a-chip ${imageStorageSet() ? "a-chip-pass" : "a-chip-warning"}`}>{imageStorageSet() ? "Ditetapkan" : "Belum ditetapkan"}</span>
+            {imageStorageSet() ? null : <span className="admin-form-hint">Gambar yang dimuat naik tidak kekal.</span>}
+          </li>
+        </ul>
+      </section>
 
       <section className="admin-section" aria-label="Semakan kandungan">
         <h2>Semakan kandungan</h2>

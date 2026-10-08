@@ -10,9 +10,19 @@ export const SETTINGS_TABS = [
   { id: "audiens", label: "Audiens" },
   { id: "nama-samaran", label: "Nama samaran AI" },
   { id: "arahan-ai", label: "Arahan AI" },
-  { id: "alat-lain", label: "Alat lain" },
-  { id: "status-sistem", label: "Status sistem" }
+  { id: "alat-lain", label: "Alat lain" }
 ] as const;
+
+/**
+ * Parts that used to be a tab of Tetapan and now live elsewhere. "Status sistem" is the state of the system, not a setting, so it is on
+ * the dashboard; an old link or bookmark to the tab goes there.
+ */
+export const MOVED_TABS: Record<string, string> = { "status-sistem": "/admin#status-sistem" };
+
+export function movedTabTarget(value: string | string[] | undefined): string | null {
+  const one = Array.isArray(value) ? value[0] : value;
+  return one && Object.hasOwn(MOVED_TABS, one) ? MOVED_TABS[one]! : null;
+}
 
 export type SettingsTabId = (typeof SETTINGS_TABS)[number]["id"];
 export const DEFAULT_SETTINGS_TAB: SettingsTabId = SETTINGS_TABS[0].id;

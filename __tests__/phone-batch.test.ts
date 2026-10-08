@@ -39,7 +39,7 @@ assert(contributor.includes('.replace(/\\r\\n/g, "\\n").trim().replace(/^# .+\\n
 
 const settings = read("src/app/admin/settings/page.tsx");
 const tabs = read("src/lib/admin/settings-tabs.ts");
-for (const id of ["teks-awam", "nama-samaran", "arahan-ai", "alat-lain", "status-sistem"]) {
+for (const id of ["teks-awam", "nama-samaran", "arahan-ai", "alat-lain"]) {
   assert(tabs.includes(`{ id: "${id}",`) && settings.includes(`tab === "${id}" ?`), `Tetapan has the tab ${id} and its panel`);
 }
 assert((settings.match(/<details className="a-settings-fold"/g) ?? []).length === 2 && tabs.indexOf("teks-awam") < tabs.indexOf("arahan-ai"), "the long AI instructions are folded and their tab comes after the texts editors change most");
