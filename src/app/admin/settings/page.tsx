@@ -70,7 +70,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
             <ul>
               {SETTINGS_TABS.filter((t) => t.group === group).map((t) => (
                 <li key={t.id}>
-                  <a href={settingsTabHref(t.id)} className={t.id === tab ? "active" : undefined} aria-current={t.id === tab ? "page" : undefined}>
+                  <a href={settingsTabHref(t.id)} className={t.id === tab ? "a-nav-plain active" : "a-nav-plain"} aria-current={t.id === tab ? "page" : undefined}>
                     {t.label}
                   </a>
                 </li>
