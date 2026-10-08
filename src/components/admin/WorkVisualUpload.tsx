@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { imageMarkerLabel } from "../../lib/reader/image-markers";
 import { MAX_UPLOAD_LABEL, uploadTooLargeMessage } from "../../lib/admin/upload-limit";
 import { errorText } from "../../lib/admin/error-text";
+import FilePicker from "./FilePicker";
 
 /**
  * Upload an image straight from a work. One step: the file is
@@ -84,13 +85,7 @@ export default function WorkVisualUpload({ workId, onDone, hasHero, published, s
         </div>
         <div className="admin-form-group">
           <label htmlFor="wvu-file">Fail imej *</label>
-          <input
-            id="wvu-file"
-            ref={fileInputRef}
-            type="file"
-            accept="image/png,image/jpeg,image/webp"
-            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-          />
+          <FilePicker id="wvu-file" inputRef={fileInputRef} accept="image/png,image/jpeg,image/webp" selectedName={file?.name ?? null} onFile={setFile} />
         </div>
       </div>
 

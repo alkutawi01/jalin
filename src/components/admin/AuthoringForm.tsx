@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { glossaryTermsMissingFromText } from "../../lib/admin/glossary-check";
 import CopyButton from "./CopyButton";
+import FilePicker from "./FilePicker";
 import { pasteAsMarkdown } from "./pasteMarkdown";
 import { errorText } from "../../lib/admin/error-text";
 
@@ -354,9 +355,9 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
         />
         {needsManuscript ? (
           <p className="admin-form-hint">
-            <label>
-              Atau pilih fail: <input type="file" accept=".txt,.md,text/plain,text/markdown" onChange={(e) => loadFile(e.target.files?.[0])} />
-            </label>
+            <span>
+              Atau pilih fail: <FilePicker accept=".txt,.md,text/plain,text/markdown" onFile={(file) => loadFile(file ?? undefined)} />
+            </span>
             <br />
             Fail teks sahaja (.txt atau .md), maksimum 2 MB. Fail Word (.docx) dan PDF tidak boleh dibaca terus: salin teksnya dan tampal di atas.
           </p>

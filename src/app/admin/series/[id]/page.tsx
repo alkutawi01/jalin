@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, use } from "react";
 import { useRouter } from "next/navigation";
 import { confirmAction, toast } from "../../../../lib/admin/dialogs";
 import LoadingBlock from "../../../../components/admin/LoadingBlock";
+import FilePicker from "../../../../components/admin/FilePicker";
 import AudiencePicker from "../../../../components/admin/AudiencePicker";
 import ImageFocusPicker, { type FocusValue } from "../../../../components/admin/ImageFocusPicker";
 import { MAX_UPLOAD_LABEL, uploadTooLargeMessage } from "../../../../lib/admin/upload-limit";
@@ -384,7 +385,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
         ) : null}
         <div className="admin-form-group">
           <label htmlFor="series-hero-file">Fail gambar (PNG, JPEG atau WebP, maksimum {MAX_UPLOAD_LABEL})</label>
-          <input id="series-hero-file" type="file" accept="image/png,image/jpeg,image/webp" onChange={(e) => setHeroFile(e.target.files?.[0] ?? null)} />
+          <FilePicker id="series-hero-file" accept="image/png,image/jpeg,image/webp" selectedName={heroFile?.name ?? null} onFile={setHeroFile} />
         </div>
         <div className="admin-form-group">
           <label htmlFor="series-hero-alt">Teks alternatif (pilihan)</label>
