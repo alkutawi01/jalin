@@ -707,7 +707,11 @@ export default function EditWorkPage() {
   });
   /** Which side lists failed to load (so an empty list is never mistaken for "nothing here"). */
   const [loadFailures, setLoadFailures] = useState<Record<string, string>>({});
+  // A tab's count is shown only once its list has been fetched: before that "(0)" looked like the real number.
+  const [loadedLists, setLoadedLists] = useState<Record<string, boolean>>({});
+  const countOf = (key: string, n: number) => (loadedLists[key] ? ` (${n})` : "");
   function noteLoad(key: string, label: string, ok: boolean) {
+    setLoadedLists((prev) => (prev[key] ? prev : { ...prev, [key]: true }));
     setLoadFailures((prev) => {
       if (ok) {
         if (!(key in prev)) return prev;
@@ -2073,7 +2077,7 @@ export default function EditWorkPage() {
             aria-pressed={activeTab === "sections"}
             onClick={() => selectTab("sections")}
           >
-            Bab ({sections.length})
+            Bab{countOf("sections", sections.length)}
           </button>
         )}
         <button
@@ -2081,21 +2085,21 @@ export default function EditWorkPage() {
           aria-pressed={activeTab === "credits"}
           onClick={() => selectTab("credits")}
         >
-          Kredit ({credits.length})
+          Kredit{countOf("credits", credits.length)}
         </button>
         <button
           className={`admin-tab ${activeTab === "glossary" ? "admin-tab-active" : ""}`}
           aria-pressed={activeTab === "glossary"}
           onClick={() => selectTab("glossary")}
         >
-          Glosari ({glossaryTerms.length})
+          Glosari{countOf("glossary", glossaryTerms.length)}
         </button>
         <button
           className={`admin-tab ${activeTab === "characters" ? "admin-tab-active" : ""}`}
           aria-pressed={activeTab === "characters"}
           onClick={() => selectTab("characters")}
         >
-          Watak &amp; latar ({characters.length})
+          Watak &amp; latar{countOf("characters", characters.length)}
         </button>
         {isSourced(form.type, form.origin) && (
           <button

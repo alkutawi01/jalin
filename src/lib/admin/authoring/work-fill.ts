@@ -7,6 +7,7 @@
  */
 import { GLOSSARY_FORMAT, GLOSSARY_RULES } from "./glossary-paste";
 import { DEK_RULE } from "./dek-rule";
+import { isPlaceholder } from "./placeholder";
 import { isSourcedWork } from "../../content/source-origin";
 
 export interface WorkFillPromptInput {
@@ -254,14 +255,7 @@ function headingForm(line: string): string {
   return line.replace(INVISIBLE, "").replace(/ /g, " ").normalize("NFKC").replace(/[【〔]/g, "[").replace(/[】〕]/g, "]").replace(/\\([[\]_*#>:-])/g, "$1");
 }
 
-/**
- * A value that is still the prompt's own placeholder, "(satu genre dalam satu atau dua patah perkataan)": the copied PROMPT was pasted,
- * not the chatbot's answer. Such text must never be written into a work.
- */
-export function isPlaceholder(value: string): boolean {
-  const v = value.trim();
-  return v.length >= 8 && v.startsWith("(") && v.endsWith(")");
-}
+export { isPlaceholder };
 
 /** The copied prompt itself (its opening line and its manuscript heading), not an answer. */
 export function looksLikePrompt(text: string): boolean {

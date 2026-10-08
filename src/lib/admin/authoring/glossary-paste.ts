@@ -1,3 +1,4 @@
+import { isPlaceholder } from "./placeholder";
 /**
  * Glossary tab: the prompt the editor copies and the parser for what the chatbot answers.
  *
@@ -137,7 +138,7 @@ export function parseGlossaryPaste(answer: string, body: string, existingTerms: 
   const flush = () => {
     if (term === null && meaning.length === 0) return;
     const m = meaning.join(" ").trim();
-    if (term && m && !NO_MEANING.test(m)) {
+    if (term && m && !NO_MEANING.test(m) && !isPlaceholder(term) && !isPlaceholder(m)) {
       pairs.push({
         term,
         meaning: m,

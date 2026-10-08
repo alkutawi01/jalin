@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { getCurrentAdmin } from "../../../lib/admin/auth";
 import { buildLiveSnapshot } from "../../../lib/admin/revision-service";
-import { hasDb } from "../../../lib/db";
+import { getDb, hasDb } from "../../../lib/db";
 import { initContentRepository } from "../../../lib/content";
 import { workFromSnapshot } from "../../../lib/content/database-repository";
 import type { SeriesEpisodeRef } from "../../../lib/content/types";
@@ -34,6 +34,14 @@ export default async function PreviewPage({
   if (!snapshot) notFound();
   const work = workFromSnapshot(snapshot, id);
   if (!work) notFound();
+  // Names come from the contributors table, as on the published page. Without this the preview falls back to a fixed list in the code
+  // ("mimo" there is another person, and some slugs are missing), so it showed bylines a reader would never see.
+  const credited = [...new Set(work.credits.map((credit) => credit.slug).filter((slug) => slug && !slug.startsWith("guest:")))];
+  if (credited.length > 0) {
+    const rows = await getDb().selectFrom("contributors").where("slug", "in", credited).where("is_visible", "=", true).select(["slug", "display_name", "kind"]).execute();
+    const byslug = new Map(rows.map((row) => [String(row.slug), { displayName: String(row.display_name), kind: row.kind === "virtual" ? ("virtual" as const) : ("human" as const) }]));
+    work.credits = work.credits.map((credit) => ({ ...credit, ...byslug.get(credit.slug) }));
+  }
   const published = snapshot.status === "published";
 
   const banner = (
