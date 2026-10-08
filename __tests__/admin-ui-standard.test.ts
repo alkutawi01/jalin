@@ -22,7 +22,7 @@ function tsxFiles(dir: string, found: string[] = []): string[] {
 const sources = [...tsxFiles(path.join(root, "src/app/admin")), ...tsxFiles(path.join(root, "src/components/admin"))].map((f) => fs.readFileSync(f, "utf8"));
 
 // Ceilings (the 8 Okt 2026 baseline). Lower them as the admin is tidied.
-const CEILING = { fontSizes: 14, radii: 9, hexOutsideTokens: 48, aBtnUses: 11, inlineStyles: 118 };
+const CEILING = { fontSizes: 14, radii: 9, hexOutsideTokens: 48, aBtnUses: 0, inlineStyles: 118 };
 
 const distinct = (re: RegExp) => new Set([...css.matchAll(re)].map((m) => m[1]!.trim())).size;
 const fontSizes = distinct(/font-size:\s*([^;}]+)/g);
@@ -31,7 +31,7 @@ const rootBlock = (css.match(/:root[^{]*{[^}]*}/) ?? [""])[0];
 const inRoot = new Set([...rootBlock.matchAll(/#[0-9a-fA-F]{3,8}\b/g)].map((m) => m[0].toLowerCase()));
 const hexOutside = [...css.matchAll(/#[0-9a-fA-F]{3,8}\b/g)].map((m) => m[0].toLowerCase()).filter((h) => !inRoot.has(h)).length;
 const count = (re: RegExp) => sources.reduce((n, s) => n + (s.match(re) ?? []).length, 0);
-const aBtn = count(/className="[^"]*\ba-btn\b/g);
+const aBtn = count(/className=(?:"[^"]*|\{`[^`]*)(?<![\w-])a-btn(?:-[\w-]+)?(?![\w-])/g) + (css.match(/\.a-btn(?:-[\w-]+)?(?![\w-])/g) ?? []).length;
 const inline = count(/style=\{\{/g);
 
 assert(fontSizes <= CEILING.fontSizes, `distinct font sizes in admin.css: ${fontSizes} (ceiling ${CEILING.fontSizes}; the standard is 8)`);

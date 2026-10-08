@@ -37,14 +37,14 @@ Rujukan: Shopify Polaris (susun atur Tetapan), GitHub Primer (borang), GitLab Pa
 ## 4. Senarai kerja (ikut kesan)
 
 1. [selesai] Status sistem ke papan pemuka; Tetapan: Simpan jelas dan submenu berkumpulan; halaman karya ikut peranan.
-2. Satukan `a-btn` ke `admin-btn` (11 kegunaan).
+2. [selesai] Satukan `a-btn` ke `admin-btn` (`-danger-solid` untuk dialog merosakkan; `-sm` untuk butang kecil).
 3. Rapatkan 14 saiz huruf kepada 8; 9 jejari kepada 3.
 4. Gantikan 26 warna hex dengan token.
-5. Halaman Siri: sembunyikan "+ Tambah siri" dan "Edit" daripada peranan tanpa `series.manage`.
-6. Sesi tamat: pautan "Log masuk semula" dan nota bahawa draf setempat selamat; halaman terhad dialihkan dengan penjelasan.
+5. [selesai] Halaman Siri ikut peranan.
+6. [selesai] Sesi tamat: pautan "Log masuk semula"; halaman terhad dialihkan dengan penjelasan.
 7. Jadual yang tergulung ke tepi pada telefon ditukar kepada senarai kad (Pengguna dan Aktiviti sudah).
 8. Kurangkan 118 gaya sebaris kepada kelas.
-9. Sasaran sentuh: penapis papan pemuka (33px) dan pautan senarai karya (18px).
+9. [selesai] Sasaran sentuh 44px pada peranti sentuh.
 
 ## 5. Angka asas (8 Okt 2026) yang dijaga ujian
 
@@ -55,5 +55,5 @@ Nilai ini hanya boleh turun, tidak naik. Apabila satu kerja menurunkannya, kemas
 | Saiz huruf berlainan dalam `admin.css` | 14 |
 | Jejari berlainan | 9 |
 | Penggunaan hex di luar `:root` | 48 |
-| Kegunaan `a-btn` dalam TSX | 11 |
+| Kegunaan `a-btn` dalam TSX dan CSS | 0 (dahulu 11) |
 | Objek `style={{` sebaris dalam TSX admin | 118 |

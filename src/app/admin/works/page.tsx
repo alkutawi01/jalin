@@ -129,8 +129,8 @@ export default async function AdminWorksPage({
             <option key={value} value={value}>{label}</option>
           ))}
         </select>
-        <button type="submit" className="a-btn a-btn-primary">Cari</button>
-        {query || typeFilter || filter ? <a href="/admin/works" className="a-btn">Kosongkan semua penapis</a> : null}
+        <button type="submit" className="admin-btn admin-btn-primary">Cari</button>
+        {query || typeFilter || filter ? <a href="/admin/works" className="admin-btn">Kosongkan semua penapis</a> : null}
       </form>
 
       {query || typeFilter || filter ? (

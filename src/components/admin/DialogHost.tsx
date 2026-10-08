@@ -74,13 +74,13 @@ export default function DialogHost() {
             <h2 id="a-modal-title">{request.title ?? "Sahkan tindakan"}</h2>
             <p>{request.message}</p>
             <div className="a-modal-actions">
-              <button ref={cancelRef} type="button" className="a-btn" onClick={() => answer(false)}>
+              <button ref={cancelRef} type="button" className="admin-btn" onClick={() => answer(false)}>
                 {request.cancelLabel ?? "Batal"}
               </button>
               <button
                 ref={confirmRef}
                 type="button"
-                className={`a-btn ${request.danger ? "a-btn-danger" : "a-btn-primary"}`}
+                className={`admin-btn ${request.danger ? "admin-btn-danger-solid" : "admin-btn-primary"}`}
                 onClick={() => answer(true)}
               >
                 {request.confirmLabel ?? "Teruskan"}

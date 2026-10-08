@@ -100,7 +100,7 @@ export default function AdminShell({ children, role = "owner" }: { children: Rea
 
   const nav = (
     <>
-      <a href="/admin/works/add" className="a-btn a-btn-primary a-add">
+      <a href="/admin/works/add" className="admin-btn admin-btn-primary a-add">
         <Icon name="plus" /> Tambah karya
       </a>
       <nav className="a-nav" aria-label="Navigasi admin">
@@ -155,7 +155,7 @@ export default function AdminShell({ children, role = "owner" }: { children: Rea
         </a>
         <button
           type="button"
-          className="a-btn a-btn-quiet"
+          className="admin-btn admin-btn-sm"
           aria-expanded={open}
           aria-controls="a-drawer"
           onClick={() => setOpen((v) => !v)}

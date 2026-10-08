@@ -174,18 +174,18 @@ export default function WorkStatusPanel({
           <h1>{title || "(belum bertajuk)"}</h1>
         </div>
         <div className="a-status-actions">
-          <a href={`/pratonton/${workId}`} className="a-btn">
+          <a href={`/pratonton/${workId}`} className="admin-btn">
             Pratonton
           </a>
           {status === "published" ? (
-            <a href={`/kategori/${type}/${slug}`} className="a-btn" target="_blank" rel="noreferrer">
+            <a href={`/kategori/${type}/${slug}`} className="admin-btn" target="_blank" rel="noreferrer">
               Lihat di laman
             </a>
           ) : null}
           {next ? (
             <button
               type="button"
-              className="a-btn a-btn-primary"
+              className="admin-btn admin-btn-primary"
               onClick={next.run}
               disabled={busy || next.disabled}
               title={next.hint}
@@ -233,7 +233,7 @@ export default function WorkStatusPanel({
                 {allClear ? "Semua lulus" : `${failing.length} bahagian belum lulus`}
               </span>
             ) : null}
-            <button type="button" className="a-btn a-btn-quiet" onClick={onRecheck} disabled={loading}>
+            <button type="button" className="admin-btn admin-btn-sm" onClick={onRecheck} disabled={loading}>
               Segarkan semakan
             </button>
           </div>
