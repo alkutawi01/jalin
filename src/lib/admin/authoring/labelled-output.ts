@@ -12,6 +12,7 @@
 import { SECTION_NAMES } from "./output-format";
 import { DEFAULT_AUDIENCE } from "../../audience";
 import type { OutputSection } from "./recipes";
+import { isPlaceholder } from "./placeholder";
 
 export interface LabelledParse {
   raw: Record<string, unknown>;
@@ -266,6 +267,8 @@ export function parseLabelledAnswer(answer: string): LabelledParse | null {
     if (sections.length > 0) sections[sections.length - 1]!.lines.push(line);
   }
   if (!sections.some((s) => s.name === "KARYA")) return null;
+  // The prompt's own format block pasted back (its Tajuk line is still the instruction, and its example follows): not an answer.
+  if (/^\s*[*_#>\-\s]*Tajuk\s*:\s*\(tajuk karya\)/im.test(source)) return null;
 
   const raw: Record<string, unknown> = {};
   const found: OutputSection[] = [];
@@ -364,5 +367,18 @@ export function parseLabelledAnswer(answer: string): LabelledParse | null {
     }
   }
 
-  return { raw, sectionsFound: found };
+  return { raw: withoutPlaceholders(raw) as Record<string, unknown>, sectionsFound: found };
+}
+
+/**
+ * The format block of the prompt, pasted back instead of an answer, parses like an answer: "(tajuk karya)", "(nama watak)" and the
+ * example character would become the work's data. Any value that is still the prompt's own bracketed instruction is blanked, at any depth.
+ */
+function withoutPlaceholders(value: unknown): unknown {
+  if (typeof value === "string") return isPlaceholder(value) ? "" : value;
+  if (Array.isArray(value)) return value.map(withoutPlaceholders);
+  if (value && typeof value === "object") {
+    return Object.fromEntries(Object.entries(value as Record<string, unknown>).map(([k, v]) => [k, withoutPlaceholders(v)]));
+  }
+  return value;
 }
