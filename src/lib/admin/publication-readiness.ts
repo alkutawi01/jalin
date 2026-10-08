@@ -605,8 +605,10 @@ export function evaluatePublicationReadinessFromData(
 
   // --- Rights (source provenance gate) ---
   if (work.type === "fragmen") {
-    const textLanguage = typeof work.metadata?.fragmenTextLanguage === "string"
+    const rawTextLanguage = typeof work.metadata?.fragmenTextLanguage === "string"
       ? work.metadata.fragmenTextLanguage.trim() : "";
+    // Semua kandungan Jalin dalam Bahasa Melayu: bahasa petikan yang tidak diisi dianggap Bahasa Melayu.
+    const textLanguage = rawTextLanguage || "Bahasa Melayu";
     const kind = classifyFragmen(input.sourceWork?.original_language, textLanguage);
     const fragmentIssue = (code: string, message: string) => {
       (alreadyPublished ? rightsWarnings : rightsBlockers).push(issue(code, message));

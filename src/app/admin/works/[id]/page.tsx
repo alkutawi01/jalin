@@ -1034,7 +1034,7 @@ export default function EditWorkPage() {
       setSourceRights(data);
       if (data.sourceWork) {
         const loadedForm = {
-          fragmenTextLanguage: data.fragmenTextLanguage || "",
+          fragmenTextLanguage: data.fragmenTextLanguage || "Bahasa Melayu",
           originalTitle: data.sourceWork.originalTitle || "",
           author: data.sourceWork.author || "",
           originalLanguage: data.sourceWork.originalLanguage || "",
@@ -3317,22 +3317,10 @@ export default function EditWorkPage() {
                 </div>
                 {form.type === "fragmen" && (
                   <div className="admin-form-group">
-                    <label htmlFor="fragmen-text-language">Bahasa petikan yang diterbitkan *</label>
-                    <input
-                      id="fragmen-text-language"
-                      type="text"
-                      value={sourceForm.fragmenTextLanguage}
-                      onChange={(e) => setSourceForm((p) => ({ ...p, fragmenTextLanguage: e.target.value }))}
-                      placeholder="Bahasa Melayu atau Bahasa Indonesia"
-                    />
                     <span className="admin-form-hint">
-                      {sourceForm.fragmenTextLanguage.trim() && !isMalayLanguage(sourceForm.fragmenTextLanguage) && !(isIndonesianLanguage(sourceForm.fragmenTextLanguage) && classifyFragmen(sourceForm.originalLanguage, sourceForm.fragmenTextLanguage) === "asal")
-                        ? "Fragmen asal Indonesia boleh diterbitkan. Untuk bahasa lain, sediakan terjemahan Melayu serta kredit penterjemah dan asas teks."
-                        : classifyFragmen(sourceForm.originalLanguage, sourceForm.fragmenTextLanguage) === "asal"
-                        ? "Fragmen asal: petikan Melayu atau Indonesia dikekalkan dalam bahasa sumber. Hak sumber tetap perlu disemak."
-                        : classifyFragmen(sourceForm.originalLanguage, sourceForm.fragmenTextLanguage) === "terjemahan"
-                          ? "Fragmen terjemahan: jelaskan asas terjemahan di bawah dan tambah kredit Penterjemah sebenar. Hak sumber tetap perlu disemak."
-                          : "Isi bahasa asal dan bahasa petikan. Jenis Fragmen ditentukan daripada perbandingan kedua-duanya."}
+                      {classifyFragmen(sourceForm.originalLanguage, sourceForm.fragmenTextLanguage) === "asal"
+                        ? "Fragmen asal: petikan dikekalkan dalam bahasa sumber. Hak sumber tetap perlu disemak."
+                        : "Fragmen terjemahan: jelaskan asas terjemahan di bawah dan tambah kredit Penterjemah sebenar. Hak sumber tetap perlu disemak."}
                     </span>
                     {(isMalayLanguage(sourceForm.fragmenTextLanguage) || sourceForm.fragmenTextLanguage.trim() !== "") ? (
                       <label className="admin-checkbox-label" style={{ marginTop: 8 }}>
@@ -3343,7 +3331,7 @@ export default function EditWorkPage() {
                           onChange={(e) => void confirmMalayText(e.target.checked)}
                         />
                         <span>
-                          Saya sudah membaca teks Fragmen ini dan mengesahkan teksnya benar-benar ditulis dalam bahasa yang dinyatakan di atas.
+                          Saya sudah membaca teks Fragmen ini dan mengesahkan terjemahannya betul.
                         </span>
                       </label>
                     ) : null}

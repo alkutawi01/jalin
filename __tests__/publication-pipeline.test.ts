@@ -348,8 +348,10 @@ console.log("\n=== Readiness: visuals ===");
   const fragmenMissingLanguage = evaluatePublicationReadinessFromData(validInput({
     work: baseWork({ type: "fragmen" }), sourceWork: approvedSourceForVisualPolicy,
   }));
-  assert(fragmenMissingLanguage.blockers.some((b) => b.code === "fragmen_text_language_missing"),
-    "fragmen requires published excerpt language");
+  assert(!fragmenMissingLanguage.blockers.some((b) => b.code === "fragmen_text_language_missing"),
+    "fragmen without an explicit excerpt language defaults to Bahasa Melayu");
+  assert(fragmenMissingLanguage.blockers.some((b) => b.code === "fragmen_text_unreviewed"),
+    "defaulted-language fragmen still needs the editor text review");
 
   const fragmenTranslated = evaluatePublicationReadinessFromData(validInput({
     work: baseWork({ type: "fragmen", metadata: fragmenMeta("Bahasa Melayu") }),
