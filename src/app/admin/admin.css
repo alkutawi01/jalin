@@ -653,3 +653,22 @@
 .a-shell .a-aside { margin-left: 4px; font-size: 12px; color: var(--a-faint); }
 .a-shell .a-info-box { margin-bottom: 1rem; padding: 0.75rem; background: var(--a-info-bg); border: 1px solid var(--a-info-line); border-radius: var(--a-radius-sm); }
 .a-shell .a-info-text { margin: 0; font-size: 13px; color: var(--a-info); }
+
+/* A table is a list of cards on a phone: every row a card, every cell a line, the column's name above its value (data-label, set by
+   table-labels.ts). It no longer scrolls sideways with its last columns and actions out of sight. The dashboard's to-do rows keep their own layout. */
+@media (max-width: 700px) {
+  .a-shell .admin-table-wrap { overflow-x: visible; }
+  .a-shell .admin-table:not(.a-todo-table) thead { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); border: 0; }
+  .a-shell .admin-table:not(.a-todo-table),
+  .a-shell .admin-table:not(.a-todo-table) tbody,
+  .a-shell .admin-table:not(.a-todo-table) tr,
+  .a-shell .admin-table:not(.a-todo-table) td { display: block; width: 100%; }
+  .a-shell .admin-table:not(.a-todo-table) tr { padding: 12px 14px; border-bottom: 1px solid var(--a-line); }
+  .a-shell .admin-table:not(.a-todo-table) tr:last-child { border-bottom: 0; }
+  .a-shell .admin-table:not(.a-todo-table) td,
+  .a-shell .admin-table:not(.a-todo-table) td:nth-child(n+3) { padding: 4px 0; border: 0; white-space: normal; min-width: 0; }
+  .a-shell .admin-table:not(.a-todo-table) tbody tr:hover td { background: transparent; }
+  .a-shell .admin-table:not(.a-todo-table) td:not([data-label]) { text-align: left; }
+  .a-shell .admin-table:not(.a-todo-table) td[data-label]::before { content: attr(data-label); display: block; margin-bottom: 1px; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--a-muted); }
+  .a-shell .admin-table:not(.a-todo-table) td code { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+}

@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import { linkLabels } from "./link-labels";
+import { labelTableCells } from "./table-labels";
 import { usePathname } from "next/navigation";
 import DialogHost from "./DialogHost";
 import { confirmAction } from "../../lib/admin/dialogs";
@@ -83,14 +84,16 @@ export default function AdminShell({ children, role = "owner" }: { children: Rea
     return () => document.removeEventListener("keydown", onKey);
   }, []);
 
-  // Forms are drawn and redrawn by the pages themselves; tie each label to its box whenever the page changes.
+  // Forms and tables are drawn and redrawn by the pages themselves; tie each label to its box, and name each table cell after its column
+  // (the phone layout shows a table as cards), whenever the page changes.
   useEffect(() => {
-    linkLabels(document);
+    const tidy = () => { linkLabels(document); labelTableCells(document); };
+    tidy();
     let queued = false;
     const observer = new MutationObserver(() => {
       if (queued) return;
       queued = true;
-      requestAnimationFrame(() => { queued = false; linkLabels(document); });
+      requestAnimationFrame(() => { queued = false; tidy(); });
     });
     observer.observe(document.body, { childList: true, subtree: true });
     return () => observer.disconnect();
