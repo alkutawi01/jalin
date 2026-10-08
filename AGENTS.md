@@ -58,3 +58,4 @@ Jalin bukan platform novel penuh. Novel dan Novel Pendek tidak berada dalam taxo
 5. docs/VISUAL_BIBLE.md
 6. docs/CONTENT_MODEL.md
 7. docs/ARCHITECTURE.md
+8. docs/ADMIN_UI_STANDARD.md (every change under /admin follows it; `__tests__/admin-ui-standard.test.ts` keeps its numbers from rising)
