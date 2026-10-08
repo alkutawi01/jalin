@@ -1,209 +1,319 @@
-# Kajian: akaun pembaca, tetapan bacaan, langganan dan kod tebus
+# Kajian dan pelan: akaun pembaca, tetapan bacaan, Jalin Plus dan kod tebus
 
-Tarikh: 8 Okt 2026. Status: **kajian dan cadangan sahaja. Tiada kod ditulis, tiada skema diubah.**
-Permintaan asal (Izzat): log masuk pengguna awam untuk tanda sambung bacaan, pelarasan saiz font, kecerahan, baki tempoh langganan, profil dan lain-lain; dan ciri paling besar: sistem menjana kod, mencetaknya dengan pencetak label haba, kod dilekatkan pada kad, diedar kepada pembeli, pembeli log masuk Jalin dan menebus kod itu untuk langganan 1 bulan, 6 bulan atau 1 tahun.
+Versi 2, 8 Okt 2026. Status keseluruhan: **cadangan yang belum diluluskan. Tiada kod ditulis, tiada skema diubah.**
+Disemak dalam 20 sesi dengan ChatGPT (skor pelan: 8.0/10 pada sesi 1, **8.5/10 pada sesi 20**, keyakinan 94%). Skor ini menilai kualiti perancangan dan kawalan risiko, bukan kebarangkalian kejayaan perniagaan. Log penuh setiap sesi: [KAJIAN_AKAUN_KOD_TEBUS_LOG_SESI.md](KAJIAN_AKAUN_KOD_TEBUS_LOG_SESI.md).
 
-AGENTS.md peraturan 1 dan 14 menghendaki keputusan produk yang dikunci tidak diubah tanpa arahan manusia, dan perubahan besar pada schema, auth atau deployment didokumenkan dahulu. Dokumen ini ialah langkah "dokumenkan dahulu" itu.
+Permintaan asal Izzat: log masuk pengguna awam untuk sambung bacaan, saiz font, kecerahan, baki langganan, profil dan lain-lain; dan ciri paling besar: sistem menjana kod, mencetaknya pada pencetak label haba, kod dilekatkan pada kad, diedar kepada pembeli, pembeli log masuk Jalin dan menebus kod untuk langganan 1 bulan, 6 bulan atau 1 tahun.
 
-## 1. Perkara pertama: ini mengubah keputusan produk yang sedia ada
+Dokumen ini ialah langkah "dokumenkan dahulu" yang dikehendaki AGENTS.md (peraturan 1 dan 14) sebelum mengubah keputusan produk, auth atau skema.
 
-| Dokumen | Apa yang tertulis hari ini | Kesan permintaan ini |
+## Cara membaca status
+
+Setiap perkara ditanda dengan salah satu:
+
+| Tanda | Maksud |
+|---|---|
+| **DICADANGKAN** | Syor daripada kajian ini. Belum diputuskan oleh Izzat. |
+| **BELUM DIUJI** | Anggapan atau angka yang mesti dibuktikan melalui ujian sebenar. |
+| **DISAHKAN DALAM KOD** | Diperiksa terus dalam repositori. |
+| **PERLU DISAHKAN PROFESIONAL** | Undang-undang, cukai, perakaunan, privasi: kajian ini bukan nasihat profesional. |
+
+Belum ada satu pun keputusan berstatus DIPUTUSKAN. Itu kerja Izzat (bahagian 9).
+
+## 1. Keputusan terpenting: ini mengubah janji produk
+
+| Dokumen | Hari ini | Kesan |
 |---|---|---|
-| `docs/PRODUCT.md` (Access) | "Semua kandungan percuma ketika pelancaran." Model kandungan hendaklah membolehkan akses subscriber/promosi ditambah kemudian. | Langganan berbayar menjadi kenyataan. Pintu sudah disediakan di atas kertas, belum di kod. |
-| `docs/MVP_MASTER_PLAN.md` | "paid subscription UI" dan "subscriptions/paywall" disenarai sebagai **bukan** MVP. | Perlu ditandakan sebagai fasa selepas MVP, dengan keputusan Izzat. |
-| `docs/PRODUCT.md` (Accounts) | Akaun asas: simpan karya, sejarah bacaan, sambung bacaan. Tiada komen, profil sosial, follower, badge. | "Profil" mesti dihadkan kepada profil peribadi (nama paparan, tetapan, langganan), bukan profil sosial. |
-| `AGENTS.md` pembuka | Teks awam tidak menyempitkan audiens. Jalin terbuka kepada semua pembaca. | Dinding bayar menyempitkan akses kepada sebahagian karya. Keputusan: apa yang dikunci? (soalan 2, bahagian 9) |
+| `PRODUCT.md` (Access) | "Semua kandungan percuma ketika pelancaran." | Berubah jika langganan wujud. |
+| `MVP_MASTER_PLAN.md` | Paid subscription dan paywall bukan MVP. | Mesti ditanda fasa selepas MVP. |
+| `PRODUCT.md` (Accounts) | Akaun asas: simpan, sejarah, sambung bacaan. Tiada profil sosial. | "Profil" dihadkan kepada profil peribadi. |
+| `AGENTS.md` | Jalin terbuka kepada semua pembaca. | Dinding bayar sepenuhnya bercanggah. Dielak dengan model akses awal (bahagian 2). |
 
-Keputusan Izzat diperlukan sebelum sebarang pembinaan. Cadangan saya: kemas kini PRODUCT.md dan MVP_MASTER_PLAN.md setelah Izzat memutuskan soalan di bahagian 9.
+## 2. Apa sebenarnya yang dijual: Jalin Plus ialah eksperimen akses awal (DICADANGKAN)
 
-## 2. Keadaan sebenar kod hari ini (disemak, bukan andaian)
+- **Bukan** penguncian karya sedia ada. Karya yang sudah percuma kekal percuma.
+- **Jalin Plus** = keahlian yang membolehkan baca episod/bab baharu terpilih **lebih awal** (cadangan: satu episod setiap minggu, dibuka percuma 7 hari kemudian, maksimum 14 hari). Semua episod akses awal akhirnya dibuka percuma kepada semua pembaca.
+- **Percuma sentiasa:** tetapan bacaan, simpan karya, sambung bacaan, glosari asas, kredit dan sumber.
+- **Kontrak kepercayaan pembaca (4 peraturan):** tiada karya percuma ditarik ke belakang dinding; setiap episod akses awal ada tarikh buka percuma yang diumumkan dan tidak boleh dilewatkan; akaun percuma kekal ada ciri asas; manfaat berbayar dilabel jelas sebelum beli.
+- **Skor strategi (ChatGPT):** A "premium dikunci" 6/10; B "Jalin Plus" 8/10; C "akses penuh berbayar" 3/10.
+- **Syarat sebelum menjual (BELUM DIUJI):** sekurang-kurangnya 8 episod siap dan lulus semakan editorial (4 sebagai penampan); empat minggu terbit mengikut jadual; sekurang-kurangnya 30 pembaca kembali membaca siri dan sebahagian berminat akses awal. Angka ini ambang percubaan, bukan statistik sah.
+- **Pilihan yang sama sahnya:** selepas Fasa 0, Izzat boleh memutuskan untuk **tidak** membina Jalin Plus. Akaun percuma dan pengalaman bacaan yang lebih baik tetap bernilai. Alternatif jujur: kad sokongan sukarela yang telus, tanpa janji akses eksklusif.
+- **Risiko terbesar bukan teknologi, tetapi janji editorial.** Langganan 12 bulan menjual keyakinan terhadap terbitan masa depan. Jangan jual tempoh panjang jika jadual tidak boleh dijamin.
 
-- **Tiada akaun pembaca.** Satu-satunya auth ialah log masuk admin (`src/lib/admin/auth.ts`): kuki sesi `jalin-admin-session`, pemilik (ADMIN_SECRET) dan akaun staf dalam jadual `admin_users` (migrasi 025). Ia sengaja dibuat untuk pemilik dan staf, bukan untuk orang awam. Jangan guna semula untuk pembaca.
-- **Pangkalan data:** Neon Postgres melalui Kysely, migrasi bernombor hingga 025. Jadual penting: works, series, credits, visuals, glossary_terms, work_revisions, admin_users. Tetapan ringan disimpan dalam `prompt_templates` (skop dan versi), bukan jadual tetapan sebenar.
-- **Halaman awam dirender mengikut permintaan** (`force-dynamic` pada laman utama, senarai kategori, karya, bersiri). Ini baik untuk dinding bayar kerana tiada cache awam yang membocorkan teks berkunci, tetapi laman utama juga tidak di-cache oleh CDN. Beban pada Neon bertambah apabila pembaca ramai.
-- **Antara muka bacaan:** hanya garis kemajuan nipis di atas skrin (`ReadingProgress.tsx`). Tiada kawalan saiz font, kecerahan atau tema pembaca. Tema ialah warna editorial tetap (`site-theme.ts`) yang dipilih admin, bukan pilihan pembaca. Tiada penyimpanan keutamaan pembaca (tiada localStorage pembaca).
-- **Emel:** tiada penghantar emel (tiada Resend, Nodemailer, SendGrid dsb. dalam dependency). Log masuk tanpa kata laluan dan pemulihan akaun memerlukan satu.
-- **Pengepala keselamatan:** `Permissions-Policy` melarang `usb=()`. Ini bermakna cetakan terus ke pencetak label melalui WebUSB tidak boleh tanpa mengubah pengepala itu. Cadangan di bahagian 6 tidak memerlukannya.
-- **Hos:** Vercel (wilayah sin1), had pelancaran 100 deploy sehari pada pelan percuma pernah dicapai pada projek lain, jadi kerja besar mesti dibatch.
-- **Rujukan dalaman berguna:** projek **Labelism** (repo `Labelism`, `public/label.html`) sudah menjana label QR dengan pustaka `qrcodejs` dan CSS cetak. Ia boleh dijadikan model untuk susun atur label, bukan untuk dipakai semula terus (ia projek berasingan, English-only, dan Cloudflare).
+### Mesej kad (draf, DICADANGKAN)
 
-## 3. Tiga lapisan ciri, dari mudah ke susah
+> Jalin Plus, Keahlian 1 Bulan. Baca episod terpilih tujuh hari lebih awal dan sokong penerbitan Jalin. Keahlian ini bukan pembelian atau pemilikan karya. Semua episod akses awal akan dibuka percuma kepada semua pembaca selepas tempoh tersebut.
 
-| Lapisan | Ciri | Perlu log masuk? | Kesukaran |
-|---|---|---|---|
-| A | Saiz font, kecerahan, tema (cerah/gelap/sepia), lebar teks | Tidak. Simpan dalam penyemak imbas | Rendah |
-| B | Akaun pembaca: sambung bacaan merentas peranti, simpan karya, sejarah, profil asas, tetapan disegerakkan | Ya | Sederhana |
-| C | Langganan: baki tempoh, penebusan kod, dinding bayar, jana dan cetak kod | Ya | Tinggi |
+Ayat terlarang: "Akses eksklusif selamanya", "Semua karya premium", "Baca tanpa had" sebagai keistimewaan berbayar, "Menyokong penulis secara langsung" tanpa mekanisme sebenar, janji episod harian yang tidak mampu dipenuhi. AI tidak dijadikan tarikan pemasaran.
 
-Cadangan: lapisan A dibina dahulu dan boleh diterbitkan tanpa menunggu keputusan perniagaan. Ia nilai segera kepada semua pembaca.
+## 3. Keadaan sebenar kod hari ini (DISAHKAN DALAM KOD)
 
-## 4. Lapisan A: tetapan bacaan (tanpa akaun)
+- **Tiada akaun pembaca.** Satu-satunya auth ialah log masuk admin (`src/lib/admin/auth.ts`: kuki `jalin-admin-session`, ADMIN_SECRET, jadual `admin_users`). Jangan guna semula untuk pembaca.
+- **Pangkalan data:** Neon Postgres melalui Kysely, migrasi bernombor hingga 025. Tetapan ringan disimpan dalam `prompt_templates`.
+- **Halaman awam dirender mengikut permintaan** (`force-dynamic`). Ini bukan kawalan keselamatan: teks berkunci mesti dihalang di pelayan sebelum dihantar.
+- **Carian mengindeks teks cerita penuh dan boleh memaparkan petikan** (`src/lib/reader/search.ts`). Ini risiko kebocoran sebenar untuk apa-apa kandungan berkunci.
+- **Tiada ID blok/perenggan yang stabil** dalam kandungan (hanya ID pada tajuk h2 dan nota kaki). Sambung bacaan tepat dalam bab belum boleh dipercayai.
+- **Tiada penghantar emel.** `Permissions-Policy` semasa melarang `usb=()`.
+- **Pembangunan tempatan menulis ke pangkalan data produksi** (localhost menggunakan DATABASE_URL produksi). Ini ditinggikan oleh sesi 19 sebagai risiko terbesar projek (bahagian 4).
+- **Tiada kawalan saiz font, kecerahan atau tema pembaca.** Hanya garis kemajuan nipis (`ReadingProgress.tsx`).
 
-- Saiz teks (5 langkah), jarak baris, kecerahan (lapisan peredup pada teks bacaan sahaja, bukan kecerahan skrin sebenar yang tidak boleh diubah oleh web), tema bacaan (cerah, sepia, gelap), lebar lajur.
-- Simpan dalam `localStorage`, dengan nilai lalai sama seperti hari ini supaya pembaca baharu tidak nampak perubahan. Selepas log masuk (lapisan B), segerakkan ke akaun.
-- AGENTS.md: lajur bacaan mesti mengekalkan lebar dan margin stabil pada laptop dan monitor besar. Pelarasan lebar teks mesti dihadkan dalam julat selamat.
-- Mod gelap menyentuh ilustrasi (House Style, kelegapan, teks berimej). Perlu semakan visual setiap kategori sebelum diterbitkan.
-- Kecerahan: jujurkan label dalam UI ("Redupkan halaman"), kerana laman web tidak mengawal kecerahan peranti.
+## 4. Fasa 0 mandatori: lindungi Jalin produksi dahulu (DICADANGKAN)
 
-## 5. Lapisan B: akaun pembaca
+Penilaian sesi 19: risiko terbesar ialah akses produksi yang terlalu luas, bukan tekaan kod. Sebelum sebarang ciri baharu:
 
-### 5.1 Cara log masuk (keputusan perlu)
+1. **Asingkan DB pembangunan daripada produksi** (kredensial berasingan yang tidak boleh menulis ke produksi). Semua skrip dan ujian yang mengubah data **mesti gagal secara automatik** jika sambungan menghala ke produksi. Semak identiti pangkalan data pada permulaan skrip, bukan nama DATABASE_URL sahaja.
+2. **Audit admin sebenar:** ADMIN_SECRET, sesi admin (24 jam), MFA, penguncian selepas percubaan gagal, notifikasi log masuk baharu. Catat bukti, bukan sekadar "PASS".
+3. **Peraturan mengikat agen AI:** tiada tulis DB produksi lalai; tiada baca atau paparkan HMAC, ADMIN_SECRET atau env produksi; tiada jana, aktif atau tebus kod komersial tanpa kelulusan Izzat; tiada migrasi produksi langsung daripada localhost.
+4. **Repo awam:** anggap penyerang tahu semua kod (prinsip Kerckhoffs). Jangan masukkan kunci HMAC, ADMIN_SECRET, URL DB berkredensial, token penyedia, kod sebenar, seed penjanaan, `.env` atau artefak cetak. Imbasan rahsia dalam CI; pembolehubah Vercel bertanda Sensitive.
+5. **Sahkan pelan Vercel:** dokumentasi Vercel (ikut ChatGPT, PERLU DISAHKAN) menyatakan pelan Hobby untuk kegunaan peribadi bukan komersial. Sahkan pelan dan kelayakan sebelum menjual kad. Hobby juga had 100 deploy sehari dan cron sekali sehari.
 
-| Pilihan | Kelebihan | Kelemahan |
+## 5. Spesifikasi teknikal (DICADANGKAN; semua BELUM DIUJI melainkan dinyatakan)
+
+### 5.1 Tetapan bacaan (lapisan A, tanpa akaun, boleh dibina dahulu)
+
+- Saiz fon isi 16/18/20/22/24 px (lalai 18); jarak baris 1.5/1.75/2.0; lebar teks 60/68/74ch; tema cerah/sepia/gelap; fon serif/sans; "redup" 0-20% langkah 5% (boleh ditangguh jika ujian kontras belum siap). Guna rem. Ubah teks isi sahaja, bukan seluruh UI.
+- Nota kaki margin turun ke bawah perenggan bila ruang tak cukup. Glosari boleh dibuka dengan sentuhan dan papan kekunci. Imej, crop dan warna ilustrasi tidak berubah.
+- Mod gelap: **jangan songsangkan atau gelapkan ilustrasi** secara automatik; guna warna semantik untuk permukaan; ilustrasi kekal warna asal dengan latar neutral; teks dalam imej disemak berasingan.
+- Tema tanpa kilat salah: kuki ialah sumber untuk render pelayan, localStorage sandaran; kuki tema hanya nilai yang dibenarkan.
+- WCAG 2.2 AA (kontras 4.5:1, zum 200%, sasaran sentuh ~44 px), hormati prefers-color-scheme dan prefers-reduced-motion. Label "Redupkan halaman" (web tidak boleh mengawal kecerahan peranti).
+
+### 5.2 Akaun pembaca (lapisan B)
+
+- **Log masuk:** kod 6 digit sekali guna melalui emel (OTP). Tolak kata laluan V1. Google fasa berikut. Tangguh pautan sihir dan telefon/WhatsApp. **Batasan:** pembeli tanpa emel aktif tidak boleh menebus V1 (Izzat terima atau biayai kaedah lain).
+- **OTP:** CSPRNG; sah 5 minit; maks 5 cubaan setiap cabaran; hantar semula jeda 60 saat; maks 5 hantaran/jam/emel; had IP dan kuota global; disimpan sebagai HMAC-SHA256 berkunci terikat ID cabaran; sekali guna dan atomik; respons sama untuk emel berdaftar dan tidak (termasuk status HTTP dan masa); tiada OTP dalam log atau dipulangkan ke pelayar.
+- **Penyedia emel:** pilih dan sahkan domain penghantar (SPF, DKIM, DMARC), uji Gmail/Yahoo/Outlook **sebelum** bina login. Soalan untuk penyedia: had, kos, bounce, lokasi data.
+- **Sesi:** kuki `__Host-jalin-reader` (HttpOnly, Secure, SameSite=Lax, tanpa Domain), hash token di DB, 7 hari ("ingat saya" 30 hari), log keluar semua peranti, Origin/CSRF. **Jangan guna semula `jalin-admin-session`.**
+- **Pemulihan:** pemilikan kad bukan bukti ambil alih akaun. Tukar emel perlu sesi sah + sahkan alamat baru + beritahu alamat lama. Emel hilang = bekukan perubahan sensitif; hanya admin berkebenaran khas boleh memindahkan hak, dengan audit.
+- **Sambung bacaan:** simpan work_id, section_id, block_id, offset_ratio, revision_id, updated_at; **bukan peratus tatal** (itu hanya untuk garis kemajuan). Simpan per peranti; tawar "Sambung dari tempat terakhir" dan "Mula dari awal"; jangan tatal automatik. Debounce 5-10 saat, visibilitychange/pagehide, salinan setempat dahulu. **Prasyarat:** ID blok stabil dalam pipeline kandungan (belum ada). Jika ditangguh, V1 hanya sambung ikut bab dan tidak mendakwa kedudukan tepat.
+- **Penanda dan sejarah:** Simpan karya, Baru dibaca (10-20 terakhir), Sambung bacaan. Tiada nota awam, perkongsian aktiviti atau analitik tabiat. Sejarah boleh dipadam berasingan.
+
+### 5.3 Privasi (PERLU DISAHKAN PROFESIONAL sebelum pendaftaran awam dibuka)
+
+- Pengurangan data: emel, nama paparan (tidak wajib), kemajuan bacaan, karya disimpan, tetapan, log keselamatan (7-30 hari), rekod tebus. Tiada tarikh lahir, telefon atau identiti ibu bapa.
+- Kemajuan bacaan dan karya disimpan mendedahkan minat peribadi: hanya pemilik boleh lihat; akses kecemasan diaudit; editor dan admin biasa tidak nampak.
+- Bawah 18: V1 tiada pengumpulan umur; privasi ketat untuk semua (tiada profil awam, mesej, iklan tersasar, analitik tingkah laku terperinci). Soalan peguam: syarat sah daftar dan tebus oleh pembaca bawah 18, persetujuan ibu bapa.
+- Hak pengguna: lihat data, betul nama/emel, eksport JSON, padam akaun (aliran: sahkan semula, tunjuk kesan pada langganan, sesi dibatal, data dipadam atau dinyahkenal; rekod transaksi diasing). Jangan dakwa "anonim" jika masih boleh dipautkan.
+- Halaman Notis Privasi dan Terma (BM dan Inggeris); satu kotak wajib baca dan setuju semasa daftar; persetujuan pemasaran berasingan dan tidak ditanda awal; kuki sesi/keutamaan sahaja (perlu disahkan sama ada sepanduk diperlukan).
+- ChatGPT merujuk Akta 709 (PDPA 2010), pindaan 2024, garis panduan JPDP dan tempoh 72 jam untuk pemberitahuan kebocoran: **semua perlu disahkan profesional, belum disemak sendiri.**
+- Pelan insiden: dalam 24 jam pertama lantik penyelaras, sekat akses, simpan bukti, tentukan skop, hubungi penasihat; jangan tunggu bukti lengkap sebelum menilai kewajipan notifikasi.
+
+### 5.4 Model data (jadual baharu sahaja; tiada ubah `works` atau auth admin)
+
+| Jadual | Catatan penting |
+|---|---|
+| `reader_accounts` | public_id UUID; email_normalized unik untuk akaun aktif (normalisasi konservatif: jangan buang titik atau +tag); status deletion_requested/deleted |
+| `reader_sessions`, `reader_auth_challenges` | token_hash; cabaran: email_lookup_mac, otp_mac, key_id, purpose, attempt_count 0-5; satu cabaran aktif setiap emel+purpose |
+| `reader_prefs`, `reading_progress`, `saved_works` | satu baris setiap karya, bukan log setiap halaman |
+| `products` + versi produk | duration_months dan access_scope; versi immutable |
+| `code_batches` | status pengeluaran sendiri; jana melalui fungsi transaksi yang mengunci batch dan mengesahkan jumlah |
+| `physical_cards` | satu kad = satu kod (V1), code_id UNIQUE NOT NULL; nombor siri awam |
+| `redeem_codes` | code_mac + key_id, UNIQUE(key_id, code_mac); state hanya generated/issued/revoked ("ditebus" = wujud baris `redemptions`) |
+| `redemptions`, `redemption_attempts` | tebus berjaya (code_id UNIQUE) berasingan daripada semua cubaan |
+| `entitlements` (lejar) + `entitlement_periods` (unjuran) | lejar peristiwa tidak berubah (GRANT, ADMIN_GRANT, REVOKE, ADJUST_POSITIVE/NEGATIVE, REFUND_RECORDED, TRANSFER_OUT/IN, COMPENSATION_GRANT); tiada UPDATE/DELETE; unjuran boleh dibina semula penuh |
+| `card_inventory_events` | printed, packed, dispatched, sold, lost, damaged, returned, activated, dengan channel dan idempotency_key |
+| `email_outbox` | emel selepas commit; sekurang-kurangnya sekali |
+| `admin_actions` | actor, permission, action, target, request_id, sebab, sebelum/selepas, hasil; tidak boleh dipadam |
+
+Invarian yang dikuatkuasakan pangkalan data: satu kod ditebus sekali; satu tebusan = satu grant (grant merujuk `redemption_id` UNIQUE, disahkan atomik dalam fungsi DB); lejar tidak boleh diubah; ends_at > starts_at; versi produk tidak berubah retroaktif; permintaan berulang tidak memberi hak berganda.
+
+Migrasi: tambah jadual sahaja; deploy kod di belakang feature flag; **jangan guna try/catch yang membenarkan tebus berjaya jika jadual belum wujud**, tutup ciri dengan mesej penyelenggaraan; migrasi produksi dijalankan sekali melalui pipeline terkawal, bukan oleh setiap instans.
+
+### 5.5 Peraturan langganan (lejar)
+
+- **Tarikh:** kalendar Gregorian, Asia/Kuala_Lumpur, simpan UTC. Tempoh `[starts_at, ends_at)`, tamat eksklusif. Jika hari sasaran tiada, guna hari terakhir bulan. Kes (disemak betul): 31 Jan 2027 10:00 +1 bulan = 28 Feb 2027 10:00; 29 Feb 2024 +12 bulan = 28 Feb 2025; 30 Ogos 2026 +6 bulan = 28 Feb 2027; 30 Ogos 2027 +6 bulan = 29 Feb 2028; penambahan berperingkat 31 Jan +1 +1 = 28 Mac. Papar "Akses sehingga 28 Februari 2027, 10:00 pagi (MYT)".
+- **Penindanan:** `start = max(now, tamat semasa)` untuk skop sama; had 24 bulan baki; kod ditolak kerana had kekal boleh ditebus; tiada tempoh ihsan V1.
+- **Pembatalan satu grant tidak menggerakkan grant seterusnya.** Jurang dibetulkan admin dengan peristiwa baharu, bukan pengiraan semula tersembunyi.
+- Kebenaran: sokongan hanya siasat; langganan beri/laras dalam had; batal dan pindah kebenaran lebih tinggi dengan audit.
+- `rebuildEntitlements` mesti deterministik: jalan 100 kali sama; unjuran produksi == bina semula. Penguncian per akaun (`SELECT ... FOR UPDATE`), urutan kunci konsisten.
+- Tiada percubaan percuma automatik V1; promosi manual melalui ADMIN_GRANT.
+- Episod terlepas jadual: umum pada hari sama; pampasan pelanjutan 7 hari setiap minggu terlepas (maks 30 hari) melalui COMPENSATION_GRANT, konsisten untuk kohort terjejas.
+
+### 5.6 Kod tebus
+
+- **Format:** 12 aksara rawak Crockford base32 (abjad `0123456789ABCDEFGHJKMNPQRSTVWXYZ`, CSPRNG) + 1 aksara semak = 13 aksara, paparan `XXXX-XXXX-XXXX-C`. Entropi 60 bit. Risiko tekaan = N x percubaan / 2^60: dengan 1,000 percubaan dan 1,000 kod aktif kira-kira 8.7 x 10^-13 (80 bit: 8.3 x 10^-19); dengan 100,000 kod aktif 8.7 x 10^-11 (80 bit: 8.3 x 10^-17) (angka disemak). Untuk kad yang lebih banyak, 16 aksara rawak (80 bit) memberi margin lebih. **Bekukan panjang kod sebelum cetak komersial.**
+- **Aksara semak:** pengesan kesilapan taip, bukan kawalan keselamatan. ChatGPT mengesyorkan Damm tetapi **tidak dapat mengesahkan** ia wujud untuk tertib 32. Keputusan algoritma dibuat melalui ujian lengkap (semua kesilapan satu aksara dan semua pertukaran bersebelahan dikesan), bukan dengan meneka.
+- Produk **tidak** dalam bahagian rawak; jenis dipaparkan pada kad dan metadata batch.
+- **Simpan MAC sahaja** (HMAC-SHA256, input `jalin-redeem-v1:<kod>`, kunci >= 256 bit dalam rahsia persekitaran, `key_id` untuk putaran). Kod bersih tidak disimpan di mana-mana.
+- **Jana dan cetak dalam satu aliran:** kod bersih dihantar sekali melalui HTTPS ke pelayar admin, PDF dijana dalam pelayar, `Cache-Control: no-store`, tiada kod dalam URL, log atau storan pelayar. Batch: PENDING_PRINT > PRINT_CONFIRMED atau VOIDED. Respons terputus atau tab ditutup = batal batch dan jana ganti. Cetak semula = batal dan jana baharu (V1).
+- **Kunci HMAC:** simpan dalam pengurus kata laluan ber-MFA dengan salinan luar talian, bukan dalam repo atau bersama sandaran DB. Kunci hilang = kod lama tidak boleh disahkan (ganti batch). Kunci bocor = henti tebus, nilai, batal kod berisiko, ganti kad.
+- **Input:** terima huruf kecil, ruang, sengkang; O->0, I/L->1. Semua percubaan (termasuk checksum salah) dikira dalam had kadar: awal 5/akaun/15 minit, 20/IP/jam, had global (tala melalui ujian; IP berkongsi di sekolah/pejabat).
+- **QR hanya ke `https://jalin.adjung.com/tebus`, tanpa kod.** Imbas tidak menggunakan kod. Pembeli log masuk, taip kod, tekan Tebus.
+
+### 5.7 Aliran tebus (satu transaksi, tiada semakan awal)
+
+- **Tiada endpoint "semak kod" berasingan** (orakel kesahan kod). Aliran: log masuk > lihat emel bertopeng > masukkan kod > "Tebus Kod" > satu transaksi atomik. Produk yang tercetak pada kad ialah apa yang pembeli lihat sebelum tebus. Orakel tidak hilang sepenuhnya (setiap cubaan ada hasil), jadi had kadar wajib kekal.
+- Urutan `POST /api/tebus`: sesi pembaca, Origin/CSRF, bentuk dan saiz input, had kadar, normalisasi dan checksum, MAC untuk semua key_id sah; kemudian transaksi: semak kunci idempotensi, kunci baris akaun, kunci baris kod, semak issued dan belum revoked/redeemed, had timbunan, kira tempoh, INSERT redemption (code_id UNIQUE), INSERT GRANT (redemption_id UNIQUE), INSERT outbox, kemas kini unjuran, simpan hasil idempotensi, COMMIT. Emel, had kadar dan pemantauan di luar transaksi.
+- Sambungan terputus selepas commit: permintaan berulang dengan kunci idempotensi sama memulangkan kejayaan asal.
+- **Mesej awam:** satu mesej umum untuk tidak sah, tiada, sudah digunakan, belum aktif, dibatalkan: "Kod tidak dapat ditebus. Semak kod pada kad atau hubungi sokongan Jalin." Berjaya: "Kod berjaya ditebus. Keahlian anda aktif sehingga [tarikh dan waktu MYT]."
+- **Suis Hentikan Penebusan** disimpan dalam DB dan disemak di pelayan (bukan pembolehubah env), tanpa deploy; tidak menjejaskan ahli sedia ada.
+- Amaran kepada Izzat (digabung ikut insiden): >= 20 percubaan gagal dalam 10 minit; >= 3 cubaan kod belum aktif berkaitan satu batch dalam 30 minit; >= 5 ralat pelayan dalam 10 minit; OTP melonjak; sebarang ketidakpadanan lejar.
+
+### 5.8 Kad fizikal, inventori dan pengaktifan
+
+- **Dua identiti:** nombor siri awam (contoh format `JLN-27-000123`, bukan muktamad) untuk inventori; kod rahsia untuk tebus (di bawah pelekat calar atau dalam sampul).
+- Status berasingan: **sold** (inventori), **issued** (kod boleh ditebus), **redeemed** (rekod tebus). Jangan disatukan.
+- **Pengaktifan ikut saluran:** jualan sendiri = aktif satu siri semasa jualan; acara = kelompok kecil sebelum sesi; pengedar = aktif ikut laporan jualan harian (CSV atau borang; WhatsApp bukan satu-satunya rekod), atau stok pradiaktif kecil (~20 kad) ditanda risiko lebih tinggi; pos dalam talian = aktif semasa pesanan disahkan hantar. **Jangan aktifkan semua kad sebaik diserah kepada pengedar.**
+- Kad hilang/rosak/dipulangkan/dicuri: peristiwa inventori masing-masing; kad ganti hanya selepas semak bukti (siri dan resit boleh disalin); jika kod lama belum ditebus, batal dan jana baharu; jika sudah ditebus, tiada hak kedua tanpa siasatan dan audit.
+- Rekonsiliasi: tunjuk jumlah mengikut peringkat pergerakan dan mengikut status semasa **berasingan** (bukan kategori eksklusif). Kekerapan: tiap batch 50 kad; mingguan 500; harian 5,000 ketika pengedaran aktif.
+- Kandungan kad: nama produk, kod dan siri berasingan, QR ke /tebus, arahan 3 langkah, sokongan, terma ringkas dan pautan penuh, tarikh akhir tebus jika dasar ada. Harga tidak wajib dicetak (maklumat harga jelas semasa jualan; PERLU DISAHKAN). Nama pengedar tidak dicetak.
+
+### 5.9 Pencetakan
+
+- **Syor V1: PDF saiz tepat dijana dalam pelayar** (pdf-lib atau serupa; milimeter, fon terbenam, QR vektor), dicetak pada Actual Size 100%. CSS `window.print()` kurang boleh diramal. Cetak mentah (ZPL/TSPL/ESC-POS melalui WebUSB) hanya jika model pencetak disahkan dan pengeluaran melebihi ~500 label sesi; jika digunakan, longgarkan `usb=()` terhad pada laluan admin sahaja.
+- **Bahan label:** direct thermal sensitif terhadap haba, cahaya dan geseran (rujukan Zebra oleh ChatGPT: PERLU DISAHKAN). Jangan lekat pelekat calar biasa terus pada kertas haba. Untuk percubaan 50 kad: kod bercetak laser dalam sampul legap, atau label A4 laser.
+- **Pemisahan fizikal:** QR ke /tebus dan nombor siri pada permukaan kad yang kekal; kod rahsia di bahagian terlindung atau dalam sampul.
+- Tipografi: monospace >= 11-12 pt (sasaran ujian), dua baris jika perlu. QR ~25-30 mm termasuk kawasan senyap, hitam atas putih, ECC M/Q (rujukan DENSO WAVE: PERLU DISAHKAN).
+- **Ujian fizikal wajib (Izzat sendiri):** cetak 20 label dengan kod palsu; semak ukuran dan marj; imbas QR dengan tiga telefon (termasuk lama, cahaya malap); taip semua kod; simpan seminggu dalam beg dan uji geseran; uji cahaya, lembap, haba sederhana berasingan; uji lapisan calar; ulang selepas 30 hari. Lulus: 20/20 jelas, semua QR boleh diimbas, tiada kerosakan. Ujian seminggu atau 30 hari tidak membuktikan ketahanan 12 bulan.
+- **Jangan beli pencetak haba atau cetak kod aktif sebelum ujian bahan dan model selesai.**
+- Cetakan pihak ketiga: anggap fail kod sebagai rahsia bernilai (kawalan akses, larangan salinan, pemusnahan).
+
+### 5.10 Admin (4 ruang kerja + kecemasan)
+
+Admin > Langganan > **Ringkasan | Kad & Batch | Pembaca | Operasi & Audit**, ditambah halaman Kecemasan (owner sahaja). Tiada skrin pengedar berasingan V1 (pengedar = medan saluran + import CSV). Tindakan pukal: pratonton (layak, sudah aktif, dibatalkan, tak jumpa), taip pengesahan, tiada kejayaan separa tanpa laporan.
+
+Kebenaran baharu pada `permissions.ts`: `subscription.view`, `voucher.issue`, `voucher.activate`, `entitlement.grant`, `entitlement.revoke`, `subscription.emergency`; semak di setiap endpoint pelayan (menu tersembunyi bukan kawalan). **Staf editorial tiada kuasa langganan dan tidak nampak emel atau kemajuan bacaan.** Tiada sesiapa boleh lihat kod bersih selepas pengeluaran. Pengganti kelulusan dua orang untuk pengasas tunggal: pengesahan semula, taip frasa pengesahan, sebab wajib, notifikasi kepada owner.
+
+Wajib sebelum kad pertama dijual: carian siri, jana/cetak/sahkan batch, batal/aktifkan, carian akaun terhad, beri/batal hak, audit, semakan baki, suis kecemasan, prosedur sokongan. Ditangguh: carta, push, portal pengedar, app imbas khas, laporan kewangan automatik, eksport peribadi pukal.
+
+Prosedur sokongan (setiap satu ada senarai semak dan templat jawapan BM dalam log sesi 12): tak terima OTP; kod ditolak (guna nombor siri, jangan minta kod penuh); kod ditebus akaun salah; kad rosak; pulangan; pengedar lapor jualan.
+
+### 5.11 Akses awal dan dinding bayar
+
+- Kunci di **pelayan sebelum dihantar** kepada pelayar; satu fungsi `canReadSection()` untuk semua laluan.
+- Medan bab/episod: `published_at`, `members_only_until` (> published_at), `access_policy` (PUBLIC atau EARLY_ACCESS), `free_release_original_at` (dibekukan untuk audit). Tarikh buka percuma hanya boleh diawalkan, tidak dilewatkan selepas diumumkan. Sinopsis, dek, judul, kredit dan maklumat siri sentiasa awam.
+- **Senarai semak kebocoran:** HTML awal; RSC/Flight payload (jangan hantar Markdown mentah dalam props); JSON-LD (tiada articleBody); OG/meta; sitemap; **carian dan /api/cari/cadangan (indeks dan petikan mesti ditapis)**; /api/koleksi-cerita; imej bab eksklusif; /pratonton; cetak dan salin; RSS masa depan; cache CDN (respons peribadi private, no-store).
+- SEO (rujukan Google oleh ChatGPT: PERLU DISAHKAN): halaman metadata akses awal diindeks; JSON-LD `isAccessibleForFree: false` sepanjang akses awal; Googlebot menerima versi bukan ahli yang sama (tiada cloaking); tiada janji kedudukan.
+- Jangan guna kuki bertandatangan sebagai sumber kuasa utama entitlement V1. Bab percuma tidak perlukan pertanyaan entitlement.
+- **Ujian kenari CI:** rentetan unik dalam bab ujian terkunci diperiksa dalam HTML, RSC, JSON-LD, sitemap, carian, API, cache dan pratonton; CI gagal jika bocor.
+- UX bukan ahli: "Episod ini boleh dibaca oleh ahli Jalin Plus sekarang dan akan tersedia percuma mulai [tarikh], [waktu] (MYT)", dengan butang Tebus dan Log masuk. Tiada pemasa desakan atau ancaman kehilangan akses. Tiada janji DRM.
+
+### 5.12 Pengalaman pembaca (skrin)
+
+Skrin: `/tebus`, `/log-masuk`, `/sahkan-emel`, `/tebus/berjaya`, `/akaun`. Header: pautan kecil "Log masuk" bertukar "Akaun" (menu mobile sedia ada); **tiada modal pendaftaran** ketika membaca karya percuma. Akaun Saya: 1 Langganan Saya, 2 Sambung Bacaan, 3 Karya Disimpan, 4 Tetapan Bacaan, 5 Lagi > Privasi dan Data, 6 Lagi > Keselamatan. Tiada statistik tabiat atau profil sosial. Teks BM lengkap untuk semua keadaan ada dalam log sesi 15 (nada tenang; larangan "Jangan terlepas", pemasa, amaran berlebihan).
+
+Kebolehcapaian: sasaran sentuh 44 px, label kelihatan, aria-live, bukan warna sahaja, tema gelap, zum 200%. Enam senario ujian dengan 5 orang bukan teknikal; sasaran 4/5 tanpa bantuan, median < 90 saat (sasaran reka bentuk, BELUM DIUJI).
+
+### 5.13 Operasi, kebolehpercayaan dan kos
+
+- Cron **bukan** prasyarat log masuk, tebus atau tamat langganan (semua berdasarkan transaksi dan waktu pelayan). Cron hanya untuk penyelenggaraan dan semakan integriti. OTP dihantar segera; emel selepas tebus melalui outbox.
+- Neon: pooled connection yang menyokong transaksi Kysely; indeks wajib; sasaran p95 awal (BELUM DIUJI): 500 pembaca/hari < 800 ms, 5,000 < 1,200 ms; ujian k6.
+- **Bahaya restore DB:** memulihkan DB ke masa lalu boleh menghilangkan rekod tebus sedangkan kad fizikal masih ada: kod boleh ditebus dua kali. Sebelum membuka semula tebus selepas restore, bandingkan rekod transaksi, audit dan salinan bebas; **kekal tertutup jika integriti tak terbukti.** Eksport MAC berkala luar DB masih ada jurang masa: perlu rekonsiliasi dan dasar fail-closed. Sahkan PITR dan pelan Neon sebenar.
+- Semakan integriti harian automatik: unjuran == bina semula; redemption tanpa grant; batch ada jumlah tepat; kod dibatal tak ditebus selepas batal; cron terakhir selesai; outbox tertunda.
+- Persekitaran: staging dengan Neon branch berasingan, HMAC berlainan, emel sandbox; feature flag setiap modul; jangan salin emel pembaca sebenar.
+- Kos bulanan simulasi (formula, bukan sebut harga): ~RM3-780/bulan termasuk emel, Neon, Vercel, domain, cetakan, sokongan; tidak termasuk penghasilan karya atau pembangunan.
+
+## 6. Model ancaman ringkas
+
+12 ancaman teratas (sesi 19): 1 agen atau pembangun tersilap menulis DB produksi (kritikal); 2 akaun admin diambil alih (kritikal); 3 rahsia bocor melalui log, repo atau alat AI (kritikal); 4 kod cetakan bocor atau dicuri; 5 teks akses awal bocor melalui carian atau RSC; 6 tebusan berganda selepas restore; 7 bot merentas akaun/IP; 8 akaun pembaca diambil alih melalui emel; 9 CSRF; 10 kebergantungan npm dikompromi; 11 pengedar atau staf salah guna pengaktifan; 12 kegagalan OTP atau emel. Pembetulan 1-3 sebelum pembangunan berisiko, 4-10 sebelum jualan, 11-12 sebelum pengedaran berkembang.
+
+Jika DB atau env bocor: DB sahaja = emel dan MAC terdedah (putar kredensial, semak log); DB + kunci HMAC = penyerang boleh menguji calon kod luar talian (putar kunci, henti tebus, ganti batch); env + akses jalan kod = anggap kompromi serius (putar semua).
+
+Ujian keselamatan: OWASP ASVS Tahap 1 sebagai rujukan (bukan pensijilan), npm audit, imbasan rahsia CI, Semgrep, OWASP ZAP pada staging, Playwright (pembaca tidak boleh memanggil API admin; CSRF salah ditolak), 20 tebus serentak, serangan berbilang akaun/IP, kenari, simulasi kehilangan respons dan restore. Jika ada bajet, bayar penilai luar untuk auth/admin, tebus serentak dan kawalan akses.
+
+## 7. Perniagaan dan pematuhan (PERLU DISAHKAN PROFESIONAL)
+
+Soalan untuk akauntan dan peguam (keutamaan P0): bilakah hasil diiktiraf (jual, tebus atau sepanjang tempoh); adakah langganan tertakluk pada SST, ambang pendaftaran; keperluan e-Invois, resit dan rekod pengedar; hak pembeli apabila kod gagal atau manfaat berubah; bolehkah kad belum ditebus ada tarikh luput. P1: rekod liabiliti kad belum ditebus; pengedar sebagai ejen berkomisen atau membeli semula; bawah umur dan kad hadiah; kesesuaian entiti Adjung, pendaftaran perniagaan dan akaun bank. Bawa: identiti penjual, contoh kad, harga, terma, carta aliran tebus, kontrak pengedar, tempoh, contoh rekod jual-tebus-pulang.
+
+Dasar terma (tajuk keputusan, bukan klausa): produk = keahlian akses awal bukan pemilikan karya; tempoh bermula selepas tebus; tiada pembaharuan automatik V1; kod belum ditebus (tempoh sah dan penggantian); pulangan (bezakan belum tebus, sudah tebus, perkhidmatan gagal; **ChatGPT menolak polisi mutlak "tiada pulangan selepas tebus"**, PERLU DISAHKAN); penggantungan; perubahan manfaat; kad hadiah (penerima buat akaun sendiri); umur.
+
+Model unit hipotesis (aritmetik disemak; BELUM DIUJI): anggap kos kad RM2, komisen pengedar 20%, pembangunan RM4,000 sebagai andaian. Harga ujian RM10/35/60 untuk 1/6/12 bulan memberi margin sumbangan RM5, RM24.50, RM44 setiap kad; kad untuk menampung RM4,000 ialah 800, 164, 91. Rumus: M = P - C_kad - C_komisen - C_operasi - C_pos; N = ceil(4000 / M). Ini margin tunai, **bukan** keuntungan: tidak termasuk kos editorial setahun, stok tidak terjual, pulangan dan masa Izzat. Laporkan dua angka berasingan.
+
+Kad fizikal berbanding bayaran dalam talian: kad dahulu hanya jika ada saluran fizikal yang boleh diuji. Jika pembeli kebanyakan dalam talian dan kos pos/sokongan tinggi, bayaran dalam talian (penyedia berhos, jangan bina pemprosesan kad sendiri; skop PCI perlu disahkan) mungkin lebih ekonomik.
+
+## 8. Fasa pembinaan dan kriteria "siap"
+
+Setiap fasa memerlukan **demonstrasi sebenar, keputusan ujian tersimpan dan pengesahan Izzat.** Status "selesai" daripada agen AI sahaja tidak mencukupi.
+
+| Fasa | Usaha relatif | Kriteria penerimaan (boleh dilihat Izzat) |
 |---|---|---|
-| Pautan atau kod emel (tanpa kata laluan) | Tiada kata laluan untuk dicuri atau dilupa; sesuai pembaca biasa | Perlu penghantar emel dan kebolehhantaran emel yang baik |
-| Log masuk Google | Pantas; ramai pengguna Malaysia ada | Bergantung pihak ketiga; perlu persetujuan OAuth |
-| Emel dan kata laluan | Biasa difahami | Kita simpan hash kata laluan, perlu pemulihan, lebih banyak risiko |
+| **0 Keputusan dan perlindungan produksi** | Sederhana | 10 keputusan direkod; DB pembangunan diasing dan skrip mutasi menolak DB produksi; admin diaudit dengan bukti; pelan Vercel/Neon disahkan; penyedia emel dipilih; label laser dan sampul diuji |
+| 1 Tetapan bacaan setempat | Kecil-sederhana | 5 saiz, 3 jarak, 3 lebar, 3 tema kekal selepas tutup dan buka; tidak merosakkan ilustrasi atau nota kaki; lulus zum 200%; demo tanpa log masuk |
+| 2 Akaun dan sambung bacaan (2A identiti, 2B kemajuan) | **Sangat besar** | Daftar/log masuk OTP; log keluar; simpan karya; sambung bab (dan kedudukan jika ID blok siap); eksport dan padam data; tetapan diselaras; demo dua telefon |
+| 3 Lejar dan admin asas | Besar | Cari pembaca; beri 1 bulan manual; tarikh tamat tepat; tambah 6 bulan; batal grant tertentu; audit; bina semula unjuran tanpa perubahan; demo kes 31 Januari |
+| 4 Enjin kod (kod UJIAN sahaja) | **Sangat besar** | Kod dijana; tebus sekali; salah ditolak; dua klik tak gandakan; suis kecemasan; kunci lama selepas putaran; **restore DB tak gandakan grant**; 20 tebus serentak |
+| 5 Kad dan inventori (kad ujian, tiada nilai komersial) | Besar | PDF tepat; sahkan batch; cari siri; aktifkan; batal rosak; rekonsiliasi 50 kad ujian; rekod kehilangan; demo 50 kad fizikal tanpa jualan |
+| 6 Akses awal dan keselamatan | **Sangat besar** | Ahli baca episod awal; bukan ahli nampak dek sahaja; tarikh buka dipaparkan; selepas tarikh semua boleh baca; carian tak bocor; JSON-LD dan RSC bersih; sesi tamat halang akses baharu |
+| **7 Pelancaran terkawal dan penilaian** | Sederhana | 5 pengguna dalaman lulus; 4 minggu jadual dipatuhi; 50 kad 1 bulan dijual sendiri; rekod jual dan tebus sepadan; keputusan teruskan, laras atau hentikan |
 
-Cadangan: **kod sekali guna melalui emel** sebagai asas, Google sebagai tambahan kemudian. Elakkan kata laluan sendiri.
+**Jualan sebenar hanya bermula di Fasa 7**, bukan Fasa 5 (pembeli tidak patut membayar untuk manfaat yang belum berfungsi).
 
-### 5.2 Model data dicadangkan (lakaran, bukan migrasi)
+Laluan kritikal ke jualan pertama: 0 > 2 > 3 > 4 > 5 > 6 > 7. Fasa 1 boleh selari dengan audit Fasa 0. Fasa 4 tidak boleh mendahului Fasa 3. Fasa 5 dan 6 boleh selari selepas kontrak data muktamad. ID blok boleh ditangguh jika V1 hanya sambung ikut bab. Bahagian paling mungkin tersasar: Fasa 2, 4 dan 6.
 
-```
-reader_accounts   id, email (unik, huruf kecil), display_name, created_at, last_seen_at, deleted_at
-reader_sessions   id, account_id, token_hash, expires_at, user_agent_short, created_at
-reader_prefs      account_id, font_step, theme, dim, width, updated_at
-reading_progress  account_id, work_id, section_slug, scroll_ratio, updated_at  (satu baris setiap karya)
-saved_works       account_id, work_id, created_at
-```
+Strategi ujian: unit TypeScript (tarikh, checksum, normalisasi, dasar akses, peralihan keadaan); integrasi pada Postgres **sebenar** (Neon branch ujian, data sintetik; kunci baris, 20 transaksi serentak, rollback, indeks unik); Playwright untuk aliran pembaca dan admin; kenari CI; k6; ujian restore. Pipeline mesti menolak DATABASE_URL produksi untuk ujian yang mengubah data.
 
-- Kuki sesi berasingan daripada kuki admin (nama dan skop berbeza), `HttpOnly`, `Secure`, `SameSite=Lax`.
-- Simpan hanya hash token sesi.
-- Had kadar untuk permintaan kod emel (per emel dan per IP).
-- Sambung bacaan: simpan selepas berhenti menatal (debounce), bukan setiap saat, untuk elak beban pada Neon.
+Gate: G0 audit dan keputusan lengkap; G2 akaun selamat dan data boleh dieksport/dipadam; G3 lejar boleh dibina semula tepat; G4 tiada tebus berganda termasuk selepas restore; G5 50 kad ujian sepadan dengan inventori; G6 semua ujian kenari lulus dan stok editorial tersedia; GO LIVE: lima pengguna dalaman lulus, penerimaan Izzat, pelan komersial dan pematuhan disahkan. Rollback melalui feature flag; jangan rollback skema secara merosakkan selepas akaun atau grant sebenar wujud (migrasi serasi ke belakang, pembetulan ke hadapan); kod fizikal yang sudah diedar tidak boleh ditarik balik.
 
-### 5.3 Privasi
+## 9. Keputusan yang hanya Izzat boleh buat
 
-- Halaman `/privasi` sudah ada. Mesti dikemas kini apabila akaun wujud: data apa dikumpul (emel, sejarah bacaan), tujuan, tempoh simpan, cara padam akaun.
-- Akta Perlindungan Data Peribadi 2010 (PDPA) Malaysia terpakai kepada data peribadi dalam urusan komersial. Saya bukan peguam. Draf privasi dan terma langganan patut disemak peguam atau diluluskan Izzat sebelum dibuka kepada orang awam.
-- Cadangan privasi lalai: jangan paparkan sejarah bacaan kepada sesiapa, tiada profil awam, butang "Padam akaun dan semua data saya".
+**Sebelum Fasa 1**
+1. Asingkan DB pembangunan daripada produksi? (syor: wajib)
+2. Kekalkan semua karya sedia ada percuma? (syor: ya)
+3. Teruskan Jalin Plus sebagai eksperimen, bukan produk tetap, dan terima pilihan untuk tidak membinanya selepas Fasa 0? (syor: ya)
 
-### 5.4 Profil
+**Sebelum Fasa 2**
+4. OTP emel sebagai kaedah masuk utama; pembeli tanpa emel tidak boleh menebus V1? (syor: ya)
+5. Sambung bacaan tepat perenggan wajib V1? (syor: tidak, ikut bab dahulu)
+6. Tempoh "ingat saya", siapa admin pemulihan akaun, bajet emel.
 
-Hanya: nama paparan (pilihan), emel, tetapan bacaan, langganan, sejarah, karya disimpan, padam akaun. Tiada avatar awam, follower atau komen (selaras PRODUCT.md).
+**Sebelum Fasa 4**
+7. Kod 60 atau 80 bit? (syor: 80 bit jika format kad belum dimuktamadkan; jangan ubah selepas cetak)
+8. Kod tidak boleh diperiksa sebelum ditebus? (syor: tiada semakan awal)
+9. Penebusan dihentikan jika integriti DB diragui? (syor: ya)
 
-## 6. Lapisan C: langganan dan kod tebus
+**Sebelum jualan**
+10. Percubaan pertama: 50 kad satu bulan, dijual sendiri, tanpa pengedar dan tanpa komisen, hanya selepas 8 episod siap dan 4 minggu jadual dipatuhi? (syor: ya)
+11. Harga percubaan, entiti penjual dan resit, dasar pulangan, kad luput dan gangguan perkhidmatan (selepas nasihat profesional).
+12. Polisi kad hilang dan rosak, siapa boleh mengaktifkan, membatalkan dan mengesahkan stok, dan had laporan lewat pengedar.
+13. Dasar ilustrasi eksklusif dan sama ada halaman akses awal diindeks.
 
-### 6.1 Konsep
+## 10. Andaian yang masih boleh membatalkan pelan, dan cara menguji paling murah
 
-1. Admin memilih produk (1 bulan, 6 bulan, 12 bulan) dan kuantiti, lalu menjana **kelompok kod**.
-2. Sistem mencetak kod pada label haba. Label dilekatkan pada kad.
-3. Kad diedar atau dijual **di luar sistem** (kedai, acara, dalam talian). Jalin tidak mengendalikan bayaran, jadi **tiada pintu gerbang pembayaran perlu dibina.**
-4. Pembeli log masuk, memasukkan atau mengimbas kod, dan akaunnya mendapat tempoh langganan.
+| Andaian belum terbukti | Ujian paling murah |
+|---|---|
+| Pembaca mahu membayar untuk akses 7 hari lebih awal | Tinjau pembaca siri yang benar-benar aktif; tanya kesanggupan membayar |
+| Izzat mampu menerbitkan setiap minggu | Jalankan 4 minggu jadual sebenar tanpa menjual |
+| Pembaca kembali mengikuti siri | Ukur bacaan berulang secara minimum dan berasaskan persetujuan |
+| OTP tidak menyusahkan pembeli | Uji lima orang menggunakan telefon sendiri |
+| Kad fizikal ada margin munasabah | Rekod kos sebenar 20-50 kad contoh |
+| Kad laser dalam sampul cukup tahan | Ujian bahan, simpanan dan kebolehbacaan fizikal |
+| Sistem boleh pulih tanpa grant berganda | Simulasi restore pada DB ujian dengan rekod luaran |
+| Izzat sanggup mengurus sokongan, stok dan penerbitan | Catat minit kerja sebenar setiap minggu selama sebulan |
 
-### 6.2 Jadual dan status
+Andaian 1 dan 2 paling menentukan: jika pembaca tidak menghargai akses awal, keselamatan teknikal yang sempurna tidak menjadikan Jalin Plus berdaya maju.
 
-```
-code_batches   id, product_term (1m/6m/12m), quantity, created_by, created_at, note
-redeem_codes   id, batch_id, code_hash (unik), status, created_at, activated_at,
-               redeemed_by, redeemed_at, voided_at, void_reason
-entitlements   id, account_id, source (code/promosi/manual), starts_at, ends_at,
-               code_id (boleh null), created_at       -- lejar, sambungan sahaja ditambah
-redemption_log id, code_id, account_id, ip_hash, outcome, created_at   -- semua cubaan, termasuk gagal
-```
+## 11. Dua minggu pertama yang paling bernilai (sprint pengurangan risiko, bukan sprint langganan)
 
-Status kod: `dijana` → `dicetak` → `diaktifkan` → `ditebus`, atau `dibatalkan` pada bila-bila masa sebelum ditebus.
-
-**Mengapa status "diaktifkan"?** Kad yang dicuri atau digambar di kedai sebelum dijual tidak boleh ditebus sebelum Izzat mengaktifkan kelompok (atau kad individu) yang dijual. Ini perlindungan murah terhadap kecurian kad dan kod yang bocor.
-
-### 6.3 Kod itu sendiri
-
-- Panjang dan entropi: 12 aksara dalam abjad Crockford base32 (tanpa 0/O/1/I/L) ialah kira-kira 60 bit entropi, ditambah aksara semak. Cukup untuk menahan tekaan dengan had kadar. Paparkan berkelompok: `K7QF-2M9X-HD4R`.
-- **Simpan hash sahaja** (HMAC-SHA256 dengan rahsia pelayan), bukan kod bersih. Pangkalan data yang bocor tidak mendedahkan kod yang masih sah.
-- Akibatnya: kod bersih hanya wujud pada masa menjana. **Cetak mesti berlaku dalam aliran yang sama** (paparan cetak dibuka serta-merta; kod tidak disimpan di mana-mana). Cetak semula kad yang rosak = batalkan kod lama dan jana yang baharu.
-- Kod QR mengandungi pautan seperti `https://jalin.adjung.com/tebus#K7QF-2M9X-HD4R`. Bahagian selepas `#` **tidak dihantar ke pelayan** dan tidak masuk log akses. Halaman tebus membacanya dengan JavaScript. Pembeli yang tidak log masuk dibawa log masuk dahulu, lalu kod diteruskan.
-- Penebusan mesti **atomik** dalam satu pernyataan pangkalan data (kemas kini status hanya jika masih `diaktifkan`, dan tulis `entitlement` dalam transaksi yang sama). Dua orang yang menebus serentak: seorang sahaja berjaya.
-- Had kadar: beberapa cubaan gagal setiap akaun dan setiap IP dalam satu jam, kemudian tunggu. Mesej ralat tidak membezakan "tidak wujud" dan "sudah ditebus" untuk orang yang meneka.
-
-### 6.4 Peraturan tempoh
-
-- Penebusan dikira daripada **lebih lewat antara sekarang dan tarikh tamat semasa** (menyambung, bukan menindih).
-- Beberapa kod boleh ditebus berturutan dan ditimbun.
-- Baki dikira daripada lejar `entitlements` (tarikh tamat paling lewat), bukan satu medan yang disunting. Setiap perubahan boleh diaudit.
-- Zon masa: simpan UTC, papar waktu Malaysia (UTC+8). Tarikh tamat dipaparkan sebagai tarikh penuh, bukan "30 hari".
-- 1 bulan = tarikh yang sama bulan depan (bukan 30 hari tepat). Sahkan dengan Izzat.
-- Pembatalan selepas penebusan (rungutan, tersilap): admin boleh menambah entitlement negatif atau menamatkan awal dengan sebab direkod. Jangan padam baris.
-
-### 6.5 Cetakan label haba
-
-Maklumat yang tidak diketahui: **model pencetak, lebar label, dan sama ada ia pencetak Windows biasa**. Soalan ini menentukan cara, tetapi ada laluan yang berfungsi untuk hampir semua pencetak:
-
-| Cara | Terangkan | Pro | Kontra |
-|---|---|---|---|
-| **1. Cetak penyemak imbas dengan CSS `@page`** | Halaman "Cetak kod" yang saiznya sama dengan label (contohnya 50×30 mm), satu label satu halaman, QR dan kod berkelompok | Berfungsi dengan pemacu Windows mana-mana pencetak label; tiada perisian tambahan; Labelism sudah buktikan corak ini | Pengguna mesti pilih saiz kertas dan marj sifar sekali; ada risiko penyimpangan saiz mengikut pemacu |
-| **2. Jana PDF saiz tepat** | Pelayan atau penyemak imbas menjana PDF pada saiz label, dicetak terus | Susun atur konsisten, boleh diuji tanpa pencetak | Satu langkah tambahan untuk membuka dan mencetak PDF |
-| 3. Cetak mentah (ZPL, TSPL, ESC/POS) melalui WebUSB atau ejen tempatan | Terus ke pencetak | Paling laju untuk ratusan label | Pengepala `usb=()` perlu dilonggarkan; kebanyakan pencetak murah tidak sokong; risiko keselamatan lebih besar |
-
-Cadangan: bermula dengan **cara 1 dan 2** (halaman cetak sepadan label, eksport PDF sebagai sandaran). Cara 3 hanya jika jumlah cetakan sebenar melebihi apa yang boleh dikendalikan dengan cara 1, selepas ujian sebenar.
-
-Susun atur label yang dicadangkan: kod QR di kiri, kod berkelompok di bawah dalam fon monospace jelas, tempoh (contoh "6 BULAN") dan nombor siri kelompok kecil. Tiada nama atau perkataan yang membuat orang menyangka ia baucar tunai.
-
-**Ujian fizikal wajib** sebelum pengeluaran: imbas dengan sekurang-kurangnya 3 telefon (Android dan iPhone) pada label sebenar yang dilekatkan pada kad, dalam cahaya malap. Pencetak haba kadang-kadang menghasilkan QR yang terlalu rapat untuk kamera lama. (Nota: ujian fizikal itu mesti dibuat oleh Izzat sendiri, saya tidak boleh mendakwa ia sudah dibuat.)
-
-### 6.6 Keselamatan fizikal kad
-
-Label haba yang dilekatkan terbuka bermakna sesiapa yang melihat atau menggambar kad boleh mencuri kod. Pilihan, daripada paling murah:
-
-1. Lapisan tampal calar (scratch-off) atau pelekat tamper-evident di atas kod.
-2. Kod dicetak dalam sampul kecil atau di sebalik kad.
-3. Status "diaktifkan" (bahagian 6.2) supaya kad tidak boleh ditebus sebelum dijual.
-
-Cadangan: pilihan 3 sentiasa, ditambah 1 atau 2 untuk kad yang dijual di kedai awam.
-
-### 6.7 Dinding bayar dan akses kandungan
-
-- Halaman karya dirender mengikut permintaan, jadi pemeriksaan akses boleh dibuat di pelayan setiap permintaan tanpa mengubah seni bina.
-- **Perlu diputuskan: apa yang dikunci.** Pilihan: semua karya terbitan baharu selepas tarikh tertentu; kategori tertentu (contoh novela dan bersiri); bab pertama percuma, bab selanjutnya berkunci; cerpen sentiasa percuma.
-- Teks berkunci tidak boleh hadir dalam HTML awam, JSON-LD, RSS atau hasil carian. Perlu semak `seo-jsonld.ts`, `sitemap.ts`, `cari` dan `koleksi-cerita` supaya tiada petikan penuh bocor.
-- SEO: halaman berkunci patut paparkan tajuk, dek dan sebahagian awal (petikan), dengan tanda data berstruktur untuk kandungan berbayar supaya Google tidak anggap sebagai penyamaran (cloaking). Perlu pertimbangan teliti.
-- AGENTS.md menyatakan Jalin terbuka kepada semua pembaca. Jika sebahagian dikunci, teks awam (Tentang) mesti jujur tentang apa yang percuma dan apa yang berlanggan.
-
-## 7. Risiko
-
-| Risiko | Kesan | Mitigasi |
+| Hari | Kerja | Hasil |
 |---|---|---|
-| Kod dicuri atau digambar sebelum dijual | Kerugian langsung | Status diaktifkan, pelekat tampal calar, hash sahaja disimpan |
-| Tekaan kod beramai-ramai | Langganan percuma | Entropi 60 bit, had kadar, log cubaan, pemadaman akaun penyalahguna |
-| Dua tebusan serentak | Langganan dua kali | Kemas kini atomik dan kekangan unik |
-| Pencetak menghasilkan QR tidak boleh diimbas | Kad tidak berguna | Ujian fizikal wajib; kod boleh ditaip sebagai sandaran |
-| Pembeli kehilangan akses (lupa emel akaun) | Aduan sokongan | Admin boleh cari akaun melalui emel dan sambung entitlement dengan sebab direkod |
-| Kebocoran data peribadi (emel, sejarah) | Reputasi dan undang-undang | Hash sesi, tiada simpan kod bersih, privasi lalai, padam akaun, semakan peguam |
-| Beban Neon dan Vercel meningkat (akaun, sambung bacaan, semakan akses setiap permintaan) | Kos dan kelembapan | Debounce sambung bacaan, indeks pada jadual baharu, pantau had pelan semasa |
-| Perniagaan: SST, e-invois, polisi pulangan dan tamat tempoh kad belum guna | Pematuhan | Rujuk akauntan dan peguam. Saya tidak memberi nasihat undang-undang atau cukai |
-| Perubahan produk besar tanpa kelulusan | Bercanggah AGENTS.md | Dokumen ini; kemas kini PRODUCT.md selepas keputusan |
+| 1-2 | Asingkan DB; jadikan skrip mutasi gagal jika sambungan ke produksi | Jalin produksi dilindungi |
+| 3-4 | Audit ADMIN_SECRET, sesi admin, env, fail konfigurasi dan akses agen; catat bukti | Status keselamatan admin diketahui |
+| 5-7 | Pilih siri utama; jadualkan empat episod; kira episod yang benar-benar lulus semakan | Jadual editorial nyata |
+| 8-10 | Tunjuk konsep Plus kepada sekurang-kurangnya lima pembaca Jalin; tanya kesanggupan membayar | Maklum balas awal |
+| 11-14 | Cetak 10 kad palsu (laser + sampul); uji imbas dan baca; rekod kos; laporan keputusan satu halaman | Kos kad dan keputusan go/no-go |
 
-## 8. Fasa pembinaan dicadangkan
+Semua ini berguna walaupun Jalin Plus akhirnya dibatalkan.
 
-Anggaran kasar usaha bergantung pada kelajuan semakan. Saya tidak berjanji tarikh.
+## 12. Pelan keluar yang jujur
 
-| Fasa | Kandungan | Bergantung kepada | Nilai |
+Hentikan jualan kad baharu jika: dua episod mingguan berturut-turut gagal diterbitkan; penampan editorial jatuh di bawah dua episod siap; masalah tebus sah berulang tanpa penyelesaian; tiada bukti penggunaan manfaat selepas percubaan 50 kad. Jika jualan dihentikan: manfaat pelanggan sedia ada dihormati sehingga tamat; jika manfaat tak dapat disediakan, tawarkan pelanjutan atau penyelesaian kewangan yang munasabah (hak pengguna perlu disahkan profesional); kad belum ditebus ditangani mengikut dasar yang diluluskan; karya percuma tidak terjejas. Jangan menilai kegagalan kandungan hanya daripada kadar jualan (mungkin harga, lokasi atau penerangan produk).
+
+## 13. Muka surat keputusan go/no-go (templat, diisi oleh Izzat)
+
+| Gerbang | Status | Bukti ujian (pautan) | Risiko terbuka |
 |---|---|---|---|
-| 0 | Keputusan Izzat atas soalan di bahagian 9; kemas kini PRODUCT.md dan MVP_MASTER_PLAN.md | Izzat | Mengelak kerja sia-sia |
-| 1 | Tetapan bacaan (saiz font, jarak, tema, redup) dalam penyemak imbas | Tiada | Nilai segera untuk semua pembaca |
-| 2 | Akaun pembaca: log masuk kod emel, sesi, sambung bacaan, karya disimpan, padam akaun, privasi dikemas kini | Fasa 0; penghantar emel | Asas untuk semua yang lain |
-| 3 | Lejar entitlement, halaman profil dan baki langganan, alat admin untuk beri tempoh secara manual (promosi) | Fasa 2 | Langganan dapat diuji tanpa kod fizikal |
-| 4 | Jana kelompok kod, status, halaman cetak label, PDF label, ujian fizikal | Fasa 3; model pencetak | Pengeluaran kad |
-| 5 | Halaman tebus (log masuk, imbas QR, taip kod), had kadar, log cubaan | Fasa 4 | Pembeli boleh menebus |
-| 6 | Dinding bayar mengikut peraturan yang diputuskan, semakan kebocoran teks, SEO | Fasa 3 dan keputusan Izzat | Langganan benar-benar bernilai |
-| 7 | Laporan admin (kod dijana, dicetak, diaktifkan, ditebus), pembatalan, sokongan | Fasa 5 | Operasi harian |
+| G0 audit dan keputusan | | | |
+| G2 akaun selamat | | | |
+| G3 lejar boleh dibina semula | | | |
+| G4 tiada tebus berganda (termasuk restore) | | | |
+| G5 50 kad ujian sepadan | | | |
+| G6 kenari lulus dan stok editorial | | | |
+| GO LIVE | | | |
 
-Susunan fasa 4 dan 5 boleh ditukar, tetapi **fasa 6 tidak sepatutnya diterbitkan sebelum fasa 3 dan 5 stabil** supaya tiada pembaca terkunci tanpa jalan masuk.
+Diluluskan oleh: ______ (nama), tarikh: ______. Laporan agen AI tidak dianggap kelulusan Izzat.
 
-## 9. Soalan yang hanya Izzat boleh jawab
+## 14. Apa yang ChatGPT tersilap atau tidak pasti (untuk kejujuran)
 
-1. Cara log masuk pembaca: kod emel sahaja, atau tambah Google?
-2. Apa yang dikunci untuk pelanggan? (semua karya baharu? novela dan bersiri sahaja? bab pertama percuma?)
-3. Adakah pembaca tanpa akaun masih boleh membaca semua yang percuma seperti hari ini? (cadangan: ya)
-4. Harga dan di mana kad dijual (kedai fizikal, acara, dalam talian)? Ini menentukan keperluan perlindungan kad.
-5. Model dan lebar pencetak label haba, dan komputer yang akan digunakan? (menentukan saiz label dan cara cetak)
-6. Adakah kad boleh tamat tempoh jika tidak ditebus? (kesan undang-undang pengguna: rujuk peguam)
-7. Berapa peranti boleh log masuk serentak satu akaun? (cadangan: tiada had sebenar pada peringkat awal, kecuali penyalahgunaan)
-8. Pelan pulangan: boleh batalkan kod yang sudah ditebus, atau tidak?
-9. Siapa yang menyokong pelanggan (lupa akaun, kad rosak)? Satu alamat emel sokongan perlu wujud.
-10. Domain dan emel penghantar: `jalin.adjung.com` atau alamat emel berjenama? (kesan kebolehhantaran emel)
-
-## 10. Cadangan langkah seterusnya
-
-1. Izzat jawab soalan 1 hingga 5 sekurang-kurangnya (cukup untuk memulakan fasa 0 hingga 3).
-2. Bina fasa 1 (tetapan bacaan) sebagai kemenangan awal tanpa risiko.
-3. Sambil itu, Izzat menguji label sebenar dengan satu QR contoh pada pencetak dan kad, supaya saiz label dan kebolehbacaan diketahui sebelum fasa 4.
+- ChatGPT menganggap Jalin menyasar remaja pada sesi 1; dibetulkan: Jalin terbuka kepada semua pembaca.
+- ChatGPT mencadangkan checksum "Crockford mod 37" yang memerlukan simbol di luar abjad kod, dan kemudian Damm tertib 32 yang beliau akui tidak dapat disahkan. Keputusan diserahkan kepada ujian lengkap.
+- ChatGPT mencadangkan semakan awal kod sebelum tebus; dibantah dan ditarik balik pada sesi 19.
+- Rujukan luar (PDPA/JPDP, Vercel, Neon, Zebra, DENSO WAVE, Google, MDN) datang daripada ChatGPT dan **belum disemak sendiri**.
