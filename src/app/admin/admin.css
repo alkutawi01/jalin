@@ -672,3 +672,31 @@
   .a-shell .admin-table:not(.a-todo-table) td[data-label]::before { content: attr(data-label); display: block; margin-bottom: 1px; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--a-muted); }
   .a-shell .admin-table:not(.a-todo-table) td code { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
 }
+
+/* The same cards, by the width of the table's own box rather than the window: with the sidebar open a 900px window leaves a table barely
+   600px, too narrow for seven columns. Tables outside a .admin-table-wrap keep the window rule above. */
+.a-shell .admin-table-wrap { container: admin-table / inline-size; }
+@container admin-table (max-width: 760px) {
+  .a-shell .admin-table:not(.a-todo-table) thead { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); border: 0; }
+  .a-shell .admin-table:not(.a-todo-table),
+  .a-shell .admin-table:not(.a-todo-table) tbody,
+  .a-shell .admin-table:not(.a-todo-table) tr,
+  .a-shell .admin-table:not(.a-todo-table) td { display: block; width: 100%; }
+  .a-shell .admin-table:not(.a-todo-table) tr { padding: 12px 14px; border-bottom: 1px solid var(--a-line); }
+  .a-shell .admin-table:not(.a-todo-table) tr:last-child { border-bottom: 0; }
+  .a-shell .admin-table:not(.a-todo-table) td,
+  .a-shell .admin-table:not(.a-todo-table) td:nth-child(n+3) { padding: 4px 0; border: 0; white-space: normal; min-width: 0; }
+  .a-shell .admin-table:not(.a-todo-table) tbody tr:hover td { background: transparent; }
+  .a-shell .admin-table:not(.a-todo-table) td:not([data-label]) { text-align: left; }
+  .a-shell .admin-table:not(.a-todo-table) td[data-label]::before { content: attr(data-label); display: block; margin-bottom: 1px; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--a-muted); }
+  .a-shell .admin-table:not(.a-todo-table) td code { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+}
+
+/* Wide enough for two columns of fields (480 to 760px): the title, the tick box and the actions take the full width, the rest sit in pairs. */
+@container admin-table (min-width: 480px) and (max-width: 760px) {
+  .a-shell .admin-table:not(.a-todo-table) tr { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 20px; }
+  .a-shell .admin-table:not(.a-todo-table) td { width: auto; }
+  .a-shell .admin-table:not(.a-todo-table) td:not([data-label]),
+  .a-shell .admin-table:not(.a-todo-table) td.admin-table-title,
+  .a-shell .admin-table:not(.a-todo-table) td:last-child { grid-column: 1 / -1; }
+}

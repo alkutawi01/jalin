@@ -35,5 +35,12 @@ assert(phone.includes("thead { position: absolute;") && !/thead \{[^}]*display: 
 assert((phone.match(/:not\(\.a-todo-table\)/g) ?? []).length >= 8, "every rule leaves the dashboard to-do table alone");
 assert(phone.includes("white-space: normal") && phone.includes("td:nth-child(n+3)"), "the no-wrap rule for later columns is overridden");
 
+// The same cards by the width of the table's own box (a 900px window with the sidebar open leaves a table about 600px wide)
+assert(css.includes(".a-shell .admin-table-wrap { container: admin-table / inline-size; }"), "a table's box is a container, so the layout follows its width, not the window's");
+const boxStart = css.indexOf("@container admin-table (max-width: 760px) {");
+const box = boxStart < 0 ? "" : css.slice(boxStart, css.indexOf("\n}\n", boxStart) + 3);
+assert(box.includes("td[data-label]::before { content: attr(data-label)") && box.includes("td { display: block; width: 100%; }") && (box.match(/:not\(\.a-todo-table\)/g) ?? []).length >= 8, "inside a narrow box the rows stack as cards, with the same rules as the phone layout");
+assert(/@container admin-table \(min-width: 480px\) and \(max-width: 760px\) {[^}]*repeat\(2, minmax\(0, 1fr\)\)/.test(css) && css.includes("td:last-child { grid-column: 1 / -1; }"), "a box wide enough for two columns puts the fields in pairs, with the title and the actions across the full width");
+
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);
