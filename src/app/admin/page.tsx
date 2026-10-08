@@ -75,7 +75,9 @@ async function getTodo() {
   }
 }
 
-export default async function AdminDashboard() {
+export default async function AdminDashboard({ searchParams }: { searchParams?: Promise<{ terhad?: string | string[] }> }) {
+  // The page a person asked for is not for their role (see middleware.ts): say so instead of landing here without a word.
+  const notAllowed = ((await searchParams)?.terhad ?? "") === "1";
   const stats = await getStats();
   const works = await getTodo();
   const checks = stats.editorialHealth ? buildContentChecks(stats.editorialHealth) : null;
@@ -92,6 +94,13 @@ export default async function AdminDashboard() {
         <h1>Papan pemuka</h1>
         <p className="admin-page-sub">Pentadbiran Jalin</p>
       </header>
+
+      {notAllowed ? (
+        <div className="admin-alert admin-alert-error" role="alert">
+          Halaman itu tidak dibuka kerana peranan anda tidak mempunyai kebenaran untuknya. Hubungi pemilik jika anda memerlukannya.{" "}
+          <a href="/admin">Tutup</a>
+        </div>
+      ) : null}
 
       <section className="admin-section" aria-label="Yang perlu dibuat">
         <h2>Yang perlu dibuat</h2>
