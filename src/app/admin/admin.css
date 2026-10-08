@@ -643,3 +643,6 @@
 .a-shell .a-session-banner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; margin: 0 0 16px; padding: 12px 16px; border: 1px solid var(--a-danger); border-radius: var(--a-radius); background: var(--a-danger-bg); color: var(--a-ink); }
 .a-shell .a-session-banner p { margin: 0; flex: 1 1 320px; font-size: 14px; }
 .a-shell .a-session-banner-actions { display: flex; gap: 8px; }
+.a-shell .a-toast { display: flex; align-items: flex-start; gap: 12px; }
+.a-shell .a-toast > span { flex: 1 1 auto; }
+.a-shell .a-toast-close { flex: none; padding: 0 2px; border: 0; background: transparent; color: inherit; font: inherit; font-weight: 700; text-decoration: underline; cursor: pointer; }
