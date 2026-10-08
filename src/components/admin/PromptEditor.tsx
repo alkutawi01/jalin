@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { errorText } from "../../lib/admin/error-text";
+import { toast } from "../../lib/admin/dialogs";
 
 interface Props {
   target: string;
@@ -29,9 +30,12 @@ export default function PromptEditor({ target, label, description, initial, cust
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.error ?? "Gagal.");
       setNote(done);
+      toast(done, "success");
       return true;
     } catch (err) {
-      setNote(errorText(err, "Ralat."));
+      const text = errorText(err, "Ralat.");
+      setNote(text);
+      toast(text, "error");
       return false;
     } finally {
       setBusy(false);

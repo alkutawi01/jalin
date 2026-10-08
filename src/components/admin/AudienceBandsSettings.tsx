@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import type { AudienceBand } from "../../lib/audience";
+import { toast } from "../../lib/admin/dialogs";
 
 interface Row {
   code: string;
@@ -44,9 +45,15 @@ export default function AudienceBandsSettings() {
     const res = await fetch("/api/admin/audience-bands", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ bands }) });
     const data = await res.json().catch(() => ({}));
     setSaving(false);
-    if (!res.ok) return setError(data.error || "Gagal menyimpan.");
+    if (!res.ok) {
+      const text = data.error || "Peringkat audiens tidak dapat disimpan.";
+      setError(text);
+      toast(text, "error");
+      return;
+    }
     setRows((data.bands as AudienceBand[]).map(toRow));
     setNote("Peringkat audiens disimpan.");
+    toast("Peringkat audiens disimpan.", "success");
   }
 
   if (!rows) return <p className="admin-form-hint">{error ?? "Memuatkan…"}</p>;

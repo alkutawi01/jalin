@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { toast } from "../../lib/admin/dialogs";
 
 interface Ground {
   key: string;
@@ -19,12 +20,12 @@ interface Block {
 export default function SiteThemeSettings() {
   const [grounds, setGrounds] = useState<Ground[] | null>(null);
   const [blocks, setBlocks] = useState<Block[]>([]);
-  const [note, setNote] = useState<string | null>(null);
+  const [note, setNote] = useState<{ text: string; failed: boolean } | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     const res = await fetch("/api/admin/site-theme");
-    if (!res.ok) return setNote("Gagal memuatkan warna blok laman utama.");
+    if (!res.ok) return setNote({ text: "Warna blok laman utama tidak dapat dimuatkan.", failed: true });
     const data = (await res.json()) as { grounds: Ground[]; blocks: Block[] };
     setGrounds(data.grounds);
     setBlocks(data.blocks);
@@ -36,7 +37,7 @@ export default function SiteThemeSettings() {
 
   async function pick(block: Block, ground: Ground) {
     if (ground.key === block.current || busy) return;
-    setNote(null);
+    setNote({ text: "Menyimpan…", failed: false });
     setBusy(block.key);
     const res = await fetch("/api/admin/site-theme", {
       method: "POST",
@@ -45,19 +46,28 @@ export default function SiteThemeSettings() {
     });
     const data = await res.json().catch(() => ({}));
     setBusy(null);
-    if (!res.ok) return setNote(data.error || "Gagal menyimpan.");
-    setNote(`${block.label}: ${ground.label}.`);
+    if (!res.ok) {
+      const text = `Warna blok ${block.label} tidak dapat disimpan: ${data.error || "ralat tidak diketahui"}`;
+      setNote({ text, failed: true });
+      toast(text, "error");
+      return;
+    }
+    const text = `Warna blok ${block.label} disimpan: ${ground.label}. Sudah kelihatan di laman awam.`;
+    setNote({ text, failed: false });
+    toast(text, "success");
     load();
   }
 
-  if (!grounds) return <p className="admin-form-hint">{note ?? "Memuatkan…"}</p>;
+  if (!grounds) return <p className="admin-form-hint" role={note?.failed ? "alert" : undefined}>{note?.text ?? "Memuatkan…"}</p>;
 
   return (
     <>
       <p className="admin-form-hint">
         Pilih warna latar bagi setiap blok laman utama. Hanya warna tema Jalin ditawarkan; teks dalam blok bertukar cerah atau gelap sendiri supaya kekal
-        boleh dibaca. Perubahan kelihatan pada laman awam serta-merta. Kepala dan kaki halaman tidak berubah.
+        boleh dibaca. Memilih sesuatu warna terus menyimpannya, dan perubahan kelihatan pada laman awam serta-merta. Kepala dan kaki halaman tidak berubah.
       </p>
+      {/* The result sits above the list, where the editor is looking, not under the last block. */}
+      <p className={`a-save-status${note?.failed ? " is-bad" : ""}`} role={note?.failed ? "alert" : "status"}>{note?.text ?? ""}</p>
       <div className="a-ground-list">
         {blocks.map((block) => (
           <fieldset className="a-ground-row" key={block.key} disabled={busy === block.key}>
@@ -84,7 +94,6 @@ export default function SiteThemeSettings() {
           </fieldset>
         ))}
       </div>
-      {note ? <p className="admin-form-hint" role="status">{note}</p> : null}
     </>
   );
 }
