@@ -181,11 +181,13 @@ async function getSeriesHighlight(): Promise<SeriesHighlightData | null> {
     const episodes = repo.getPublishedSeriesEpisodes(series.id);
     if (episodes.length === 0) continue;
     const ordered = [...episodes].sort((a, b) => a.position - b.position);
-    const latest = [...episodes].sort((a, b) => (b.publishedAt ?? "").localeCompare(a.publishedAt ?? ""))[0]!;
+    // "Episod terkini" is the highest-numbered episode, not the one saved last: republishing episode 1 must not make it the newest.
+    const latest = ordered[ordered.length - 1]!;
+    const newestAt = episodes.reduce((m, e) => ((e.publishedAt ?? "") > m ? (e.publishedAt ?? "") : m), "");
     const latestWork = repo.getEpisodeBySeriesAndSlug(series.slug, latest.slug);
     const latestSummary = latestWork ? projectPublicWorkSummary(latestWork) : undefined;
     const latestHero = latestSummary?.hero;
-    const at = latest.publishedAt ?? "";
+    const at = newestAt;
     if (best && best.at >= at) continue;
     best = {
       slug: series.slug,

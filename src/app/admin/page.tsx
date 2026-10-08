@@ -14,6 +14,15 @@ import { buildContentChecks } from "../../lib/admin/dashboard-labels";
 
 export const dynamic = "force-dynamic";
 
+async function loadSeriesOf(): Promise<Map<string, string>> {
+  try {
+    const rows = await getDb().selectFrom("series_entries").select(["series_id", "work_id"]).execute();
+    return new Map(rows.map((r) => [String(r.work_id), String(r.series_id)]));
+  } catch {
+    return new Map();
+  }
+}
+
 async function getStats() {
   if (!hasDb()) {
     return {
@@ -38,7 +47,7 @@ async function getStats() {
 
   return {
     contentSource: useDb ? "database" : "markdown",
-    counts: countWorks(works),
+    counts: countWorks(works, await loadSeriesOf()),
     editorialHealth,
   };
 }
