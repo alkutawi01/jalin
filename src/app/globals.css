@@ -3494,3 +3494,8 @@ html:has(.a-nav, .admin-login-page) { overflow: visible; }
   .work-head-text .story-head h1, .work-head-text h1 { font-size: clamp(40px, 4.2vw, 56px); }
   .dek { font-size: 18px; line-height: 1.55; }
 }
+
+/* Narrow two-column work head (901-1050px): the dek sits in a ~400px column beside the picture, so it is a little smaller there (Izzat, 8 Okt). */
+@media (min-width: 901px) and (max-width: 1050px) {
+  .work-head-text .dek { font-size: 17px; line-height: 1.55; }
+}

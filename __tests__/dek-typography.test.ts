@@ -36,5 +36,8 @@ assert(!premise.includes("font-style: italic"), "the series premise is regular t
 const listTitle = css.split("\n").find((line) => line.startsWith(".series-list-body h2 {")) ?? "";
 assert(listTitle.includes("font-weight: 700"), "a Bersiri list title is bold like a Cerpen list title");
 
+const narrow = css.match(/@media \(min-width: 901px\) and \(max-width: 1050px\) \{\s*\.work-head-text \.dek \{ font-size: (\d+)px/);
+assert(!!narrow && Number(narrow[1]) < 20, `the dek in the narrow side-by-side work head is smaller than the base 20px (${narrow?.[1]}px)`);
+
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);
