@@ -8,7 +8,7 @@ import SettingsHashRedirect from "../../../components/admin/SettingsHashRedirect
 import { loadPrompts } from "../../../lib/admin/authoring/prompt-store";
 import { RECIPE_KEYS, getRecipe, KIND_LABELS } from "../../../lib/admin/authoring/recipes";
 import { redirect } from "next/navigation";
-import { SETTINGS_TABS, movedTabTarget, settingsTabHref, settingsTabOf } from "../../../lib/admin/settings-tabs";
+import { SETTINGS_GROUPS, SETTINGS_TABS, movedTabTarget, settingsTabHref, settingsTabOf } from "../../../lib/admin/settings-tabs";
 
 export const dynamic = "force-dynamic";
 
@@ -58,16 +58,27 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
       <SettingsHashRedirect current={tab} />
       <header className="admin-page-header">
         <h1>Tetapan</h1>
-        <p className="admin-page-sub">Setiap bahagian ada tabnya sendiri.</p>
-        {/* Real tabs: one panel on the page at a time, each tab its own address. */}
-        <nav className="a-settings-tabs" aria-label="Bahagian Tetapan">
-          {SETTINGS_TABS.map((t) => (
-            <a key={t.id} href={settingsTabHref(t.id)} className={t.id === tab ? "active" : undefined} aria-current={t.id === tab ? "page" : undefined}>
-              {t.label}
-            </a>
-          ))}
-        </nav>
+        <p className="admin-page-sub">Pilih bahagian di sebelah kiri.</p>
       </header>
+
+      <div className="a-settings-layout">
+      {/* One panel at a time, each part its own address; the parts are grouped by what they change. */}
+      <nav className="a-settings-tabs" aria-label="Bahagian Tetapan">
+        {SETTINGS_GROUPS.map((group) => (
+          <div className="a-settings-group" key={group}>
+            <h2 className="a-settings-group-title">{group}</h2>
+            <ul>
+              {SETTINGS_TABS.filter((t) => t.group === group).map((t) => (
+                <li key={t.id}>
+                  <a href={settingsTabHref(t.id)} className={t.id === tab ? "active" : undefined} aria-current={t.id === tab ? "page" : undefined}>
+                    {t.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </nav>
 
       <section className="admin-section a-settings-panel" id={tab} aria-label={label}>
         <h2 className="admin-form-section-title">{label}</h2>
@@ -101,6 +112,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
           </ul>
         ) : null}
       </section>
+      </div>
     </div>
   );
 }
