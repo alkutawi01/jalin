@@ -79,7 +79,7 @@ export default function EditContributorPage() {
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "Gagal menyimpan.");
+        throw new Error(data.error || "Tidak dapat disimpan.");
       }
 
       const saved: ContributorData = await res.json();

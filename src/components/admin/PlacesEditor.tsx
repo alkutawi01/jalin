@@ -52,7 +52,7 @@ export default function PlacesEditor({ workId, kind = "places" }: { workId: stri
 
   const load = useCallback(async () => {
     const res = await fetch(`/api/admin/works/${workId}/${cfg.path}`);
-    if (!res.ok) return setError(`Gagal memuatkan ${cfg.noun}.`);
+    if (!res.ok) return setError(`Senarai ${cfg.noun} tidak dapat dimuatkan.`);
     const data = (await res.json()) as Place[];
     setPlaces(data);
     setBaseline(JSON.stringify(data));
@@ -77,7 +77,7 @@ export default function PlacesEditor({ workId, kind = "places" }: { workId: stri
         body: JSON.stringify({ [cfg.path]: places })
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || `Gagal menyimpan ${cfg.noun}.`);
+      if (!res.ok) throw new Error(data.error || `Senarai ${cfg.noun} tidak dapat disimpan.`);
       setPlaces(data);
       setBaseline(JSON.stringify(data));
       setSuccess(`${cfg.title.replace("Latar", "Latar")} disimpan.`);

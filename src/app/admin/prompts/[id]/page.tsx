@@ -99,7 +99,7 @@ export default function EditPromptPage() {
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "Gagal menyimpan.");
+        throw new Error(data.error || "Tidak dapat disimpan.");
       }
 
       setSuccess("Berjaya disimpan.");
@@ -119,7 +119,7 @@ export default function EditPromptPage() {
       const res = await fetch(`/api/admin/prompts/${promptId}`, { method: "DELETE" });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "Gagal memadam.");
+        throw new Error(data.error || "Tidak dapat dipadam.");
       }
       window.location.href = "/admin/prompts";
     } catch (err) {

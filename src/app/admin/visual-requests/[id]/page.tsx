@@ -262,7 +262,7 @@ export default function EditVisualRequestPage() {
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "Gagal menyimpan.");
+        throw new Error(data.error || "Tidak dapat disimpan.");
       }
 
       const refreshed = await fetch(`/api/admin/visual-requests/${requestId}`);
@@ -374,7 +374,7 @@ export default function EditVisualRequestPage() {
     try {
       const res = await fetch(`/api/admin/visual-requests/${requestId}/approve`, { method: "POST" });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || "Gagal meluluskan.");
+      if (!res.ok) throw new Error(data.error || "Tidak dapat diluluskan.");
       setSuccess("Visual diluluskan.");
       const refreshed = await fetch(`/api/admin/visual-requests/${requestId}`);
       if (refreshed.ok) {
@@ -401,7 +401,7 @@ export default function EditVisualRequestPage() {
       if (uploadTool.trim()) body.append("tool", uploadTool.trim());
       const res = await fetch(`/api/admin/visual-requests/${requestId}/upload`, { method: "POST", body });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || "Gagal memuat naik imej.");
+      if (!res.ok) throw new Error(data.error || "Imej tidak dapat dimuat naik.");
       setSuccess("Imej dimuat naik dan menunggu semakan. Semak imej, kemudian tekan Lulus.");
       const refreshed = await fetch(`/api/admin/visual-requests/${requestId}`);
       if (refreshed.ok) {
@@ -431,7 +431,7 @@ export default function EditVisualRequestPage() {
     try {
       const res = await fetch(`/api/admin/visual-requests/${requestId}/reject`, { method: "POST" });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || "Gagal menolak.");
+      if (!res.ok) throw new Error(data.error || "Tidak dapat ditolak.");
       setSuccess("Visual ditolak.");
       const refreshed = await fetch(`/api/admin/visual-requests/${requestId}`);
       if (refreshed.ok) {
@@ -454,7 +454,7 @@ export default function EditVisualRequestPage() {
     try {
       const res = await fetch(`/api/admin/visual-requests/${requestId}/attach`, { method: "POST" });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || "Gagal memautkan.");
+      if (!res.ok) throw new Error(data.error || "Tidak dapat dipautkan.");
       setSuccess(`Visual dipautkan (visual ID: ${data.visualId}).`);
       const refreshed = await fetch(`/api/admin/visual-requests/${requestId}`);
       if (refreshed.ok) {
@@ -477,7 +477,7 @@ export default function EditVisualRequestPage() {
       const res = await fetch(`/api/admin/visual-requests/${requestId}`, { method: "DELETE" });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "Gagal memadam.");
+        throw new Error(data.error || "Tidak dapat dipadam.");
       }
       window.location.href = "/admin/visual-requests";
     } catch (err) {

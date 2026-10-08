@@ -31,7 +31,7 @@ export default function CopyButton({ text, label }: { text: string; label: strin
         setTimeout(() => setState("idle"), 2000);
       }}
     >
-      {state === "done" ? "Disalin" : state === "failed" ? "Gagal — salin manual" : label}
+      {state === "done" ? "Disalin" : state === "failed" ? "Tidak dapat disalin: salin sendiri" : label}
     </button>
   );
 }

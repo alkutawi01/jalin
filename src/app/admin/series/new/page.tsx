@@ -33,7 +33,7 @@ export default function NewSeriesPage() {
         body: JSON.stringify(form),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || "Gagal mencipta siri.");
+      if (!res.ok) throw new Error(data.error || "Siri tidak dapat dicipta.");
       router.push(`/admin/series/${data.id}`);
     } catch (err) {
       setError(errorText(err));

@@ -54,7 +54,7 @@ export default function NewContributorPage() {
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "Gagal menyimpan.");
+        throw new Error(data.error || "Tidak dapat disimpan.");
       }
 
       router.push("/admin/contributors");

@@ -50,7 +50,7 @@ export default function WorkVisualUpload({ workId, onDone, hasHero, published, s
       }
       const res = await fetch(`/api/admin/works/${workId}/visuals/upload`, { method: "POST", body });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || "Gagal memuat naik imej.");
+      if (!res.ok) throw new Error(data.error || "Imej tidak dapat dimuat naik.");
       setSuccess(published ? "Gambar disimpan dalam draf. Pembaca belum melihatnya: tekan Terbitkan semula di atas karya." : "Gambar disimpan. Semak pratonton sebelum menerbitkan karya.");
       setFile(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
