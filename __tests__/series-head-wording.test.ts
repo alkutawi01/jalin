@@ -25,7 +25,7 @@ assert(series.includes("ongoing: \"Masih diteruskan\""), "an ongoing series read
 
 const episode = read("src/components/reader/EpisodeView.tsx");
 assert(episode.includes("{ label: \"Judul\", value: series.title }") && !episode.includes("{ label: \"Siri\",") && !episode.includes("Tajuk siri"), "the row that holds the series name is called 'Judul', like the title row of every other kind of work");
-assert(episode.includes("`Episod ${episodeIndex + 1} · `") && episode.includes("String(episodeIndex + 1)") && !episode.includes("daripada"), "the episode number has no 'daripada N'");
+assert(episode.includes("`Episod ${episodeNumber} · `") && episode.includes("String(episodeNumber)") && !episode.includes("daripada"), "the episode number has no 'daripada N'");
 assert(episode.includes("\"Tamat\" : \"Masih diteruskan\""), "the status row reads Tamat or Masih diteruskan");
 
 assert(read("src/app/kategori/[type]/page.tsx").includes("ongoing: \"Masih diteruskan\""), "the Bersiri list says the same");

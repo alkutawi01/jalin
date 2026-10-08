@@ -34,8 +34,8 @@ export async function generateMetadata({ params }: { params: Promise<{ seriesSlu
   const { repo, isDb, work } = await resolveEpisode(seriesSlug, episodeSlug);
   if (!work || work.type !== "bersiri" || !work.series) return {};
   const episodes = isDb ? repo.getPublishedSeriesEpisodes(work.series.id) : [];
-  const index = episodes.findIndex((e) => e.slug === work.slug);
-  const label = index >= 0 ? `Episod ${index + 1}: ` : "";
+  const mine = episodes.find((e) => e.slug === work.slug);
+  const label = mine ? `Episod ${mine.position}: ` : "";
   const title = `${label}${work.title} · ${work.series.title}`;
   const description = clipDescription(work.dek ?? `${work.title}, ${work.series.title}. Siri Jalin.`);
   const path = `/kategori/bersiri/${work.series.slug}/${work.slug}`;
