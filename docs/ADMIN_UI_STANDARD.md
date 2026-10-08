@@ -39,7 +39,7 @@ Rujukan: Shopify Polaris (susun atur Tetapan), GitHub Primer (borang), GitLab Pa
 1. [selesai] Status sistem ke papan pemuka; Tetapan: Simpan jelas dan submenu berkumpulan; halaman karya ikut peranan.
 2. [selesai] Satukan `a-btn` ke `admin-btn` (`-danger-solid` untuk dialog merosakkan; `-sm` untuk butang kecil).
 3. [selesai] 14 saiz huruf dirapatkan kepada 8; 9 jejari kepada 3 langkah (dengan bulatan dan pil).
-4. Gantikan 26 warna hex dengan token.
+4. [selesai] 26 warna hex di luar `:root` digantikan dengan token (sembilan token baharu: `--a-white`, `--a-sunk`, `--a-ink-deep`, `--a-danger-deep`, `--a-danger-line`, `--a-warn-line`, `--a-ok-line`, `--a-faint`, `--a-accent-text`).
 5. [selesai] Halaman Siri ikut peranan.
 6. [selesai] Sesi tamat: pautan "Log masuk semula"; halaman terhad dialihkan dengan penjelasan.
 7. Jadual yang tergulung ke tepi pada telefon ditukar kepada senarai kad (Pengguna dan Aktiviti sudah).
@@ -54,6 +54,6 @@ Nilai ini hanya boleh turun, tidak naik. Apabila satu kerja menurunkannya, kemas
 | --- | --- |
 | Saiz huruf berlainan dalam `admin.css` | 8 (dahulu 14) |
 | Jejari berlainan | 5: tiga langkah, bulatan, pil (dahulu 9) |
-| Penggunaan hex di luar `:root` | 48 |
+| Penggunaan hex di luar `:root` | 0 (dahulu 48) |
 | Kegunaan `a-btn` dalam TSX dan CSS | 0 (dahulu 11) |
 | Objek `style={{` sebaris dalam TSX admin | 118 |

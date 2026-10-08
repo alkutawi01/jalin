@@ -22,7 +22,7 @@ function tsxFiles(dir: string, found: string[] = []): string[] {
 const sources = [...tsxFiles(path.join(root, "src/app/admin")), ...tsxFiles(path.join(root, "src/components/admin"))].map((f) => fs.readFileSync(f, "utf8"));
 
 // Ceilings (the 8 Okt 2026 baseline). Lower them as the admin is tidied.
-const CEILING = { fontSizes: 8, radii: 5, hexOutsideTokens: 47, aBtnUses: 0, inlineStyles: 118 };
+const CEILING = { fontSizes: 8, radii: 5, hexOutsideTokens: 0, aBtnUses: 0, inlineStyles: 118 };
 
 const distinct = (re: RegExp) => new Set([...css.matchAll(re)].map((m) => m[1]!.trim())).size;
 const fontSizes = distinct(/font-size:\s*([^;}]+)/g);
