@@ -43,7 +43,7 @@ Rujukan: Shopify Polaris (susun atur Tetapan), GitHub Primer (borang), GitLab Pa
 5. [selesai] Halaman Siri ikut peranan.
 6. [selesai] Sesi tamat: pautan "Log masuk semula"; halaman terhad dialihkan dengan penjelasan.
 7. Jadual yang tergulung ke tepi pada telefon ditukar kepada senarai kad (Pengguna dan Aktiviti sudah).
-8. Kurangkan 118 gaya sebaris kepada kelas.
+8. [sedang jalan] Kurangkan gaya sebaris kepada kelas: 118 kepada 94 (gaya berulang dan warna keras sudah jadi kelas); baki ialah gaya sekali guna.
 9. [selesai] Sasaran sentuh 44px pada peranti sentuh.
 
 ## 5. Angka asas (8 Okt 2026) yang dijaga ujian
@@ -56,4 +56,4 @@ Nilai ini hanya boleh turun, tidak naik. Apabila satu kerja menurunkannya, kemas
 | Jejari berlainan | 5: tiga langkah, bulatan, pil (dahulu 9) |
 | Penggunaan hex di luar `:root` | 0 (dahulu 48) |
 | Kegunaan `a-btn` dalam TSX dan CSS | 0 (dahulu 11) |
-| Objek `style={{` sebaris dalam TSX admin | 118 |
+| Objek `style={{` sebaris dalam TSX admin | 94 (dahulu 118) |
