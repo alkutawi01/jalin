@@ -105,6 +105,8 @@ const PAGE_RULES: Rule[] = [
   { methods: READ, pattern: /^\/admin\/(settings|prompts)(\/|$)/, permission: "site.manage" },
   { methods: READ, pattern: /^\/admin\/contributors(\/|$)/, permission: "contributor.manage" },
   { methods: READ, pattern: /^\/admin\/pilihan-editor(\/|$)/, permission: "editorial.curate" },
+  // The list of series is for every role; creating or editing one is for whoever may manage series.
+  { methods: READ, pattern: /^\/admin\/series\/[^/]+$/, permission: "series.manage" },
   { methods: READ, pattern: /^\/admin(\/|$)/, permission: "content.read" }
 ];
 

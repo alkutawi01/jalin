@@ -1,5 +1,7 @@
 import { listSeries } from "../../../lib/admin/series-service";
 import { hasDb } from "../../../lib/db";
+import { getCurrentAdmin } from "../../../lib/admin/auth";
+import { can, roleFromClaim } from "../../../lib/admin/permissions";
 
 export const dynamic = "force-dynamic";
 
@@ -29,6 +31,9 @@ export default async function AdminSeriesPage() {
   }
 
   const series = await listSeries();
+  // Only the chief editor and the owner manage series; an editor sees the list but is not offered what the server would refuse.
+  const admin = await getCurrentAdmin();
+  const canManage = can((admin && roleFromClaim(admin.role)) || "owner", "series.manage");
 
   return (
     <div className="admin-works">
@@ -38,9 +43,11 @@ export default async function AdminSeriesPage() {
             <h1>Siri</h1>
             <p className="admin-page-sub">{series.length} siri dalam pangkalan data</p>
           </div>
-          <a href="/admin/series/new" className="admin-btn admin-btn-primary">
-            + Tambah siri
-          </a>
+          {canManage ? (
+            <a href="/admin/series/new" className="admin-btn admin-btn-primary">
+              + Tambah siri
+            </a>
+          ) : null}
         </div>
       </header>
 
@@ -65,7 +72,7 @@ export default async function AdminSeriesPage() {
             ) : (
               series.map((s) => (
                 <tr key={s.id}>
-                  <td className="admin-table-title"><a href={`/admin/series/${s.id}`} className="a-work-title-link">{s.title}</a></td>
+                  <td className="admin-table-title">{canManage ? <a href={`/admin/series/${s.id}`} className="a-work-title-link">{s.title}</a> : s.title}</td>
                   <td><code>{s.slug}</code></td>
                   <td>{MODE_LABELS[s.mode] ?? s.mode}</td>
                   <td>
@@ -74,11 +81,13 @@ export default async function AdminSeriesPage() {
                     </span>
                   </td>
                   <td>
-                    <div className="admin-table-actions">
-                      <a href={`/admin/series/${s.id}`} className="admin-btn admin-btn-sm">
-                        Edit
-                      </a>
-                    </div>
+                    {canManage ? (
+                      <div className="admin-table-actions">
+                        <a href={`/admin/series/${s.id}`} className="admin-btn admin-btn-sm">
+                          Edit
+                        </a>
+                      </div>
+                    ) : null}
                   </td>
                 </tr>
               ))
