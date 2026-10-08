@@ -66,6 +66,7 @@
 |----------|---------|-----------|
 | JALIN_EDITORIAL_ARCHITECTURE.md | Cross-reference index for editorial architecture | Index -- points to sources |
 | JALIN_MASTER_PLAN_AI_HANDOFF.md | Consolidated decisions for AI agents | Medium -- AI reference |
+| KAJIAN_AKAUN_PEMBACA_DAN_KOD_TEBUS.md | Kajian akaun pembaca, tetapan bacaan, langganan dan kod tebus berpencetak (cadangan, belum diluluskan) | Medium -- cadangan menunggu keputusan Izzat |
 
 ---
 
