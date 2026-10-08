@@ -4,7 +4,7 @@
  */
 import fs from "node:fs";
 import path from "node:path";
-import { DEFAULT_SETTINGS_TAB, SETTINGS_TABS, settingsTabHref, settingsTabOf } from "../src/lib/admin/settings-tabs";
+import { DEFAULT_SETTINGS_TAB, SETTINGS_TABS, movedTabTarget, settingsTabHref, settingsTabOf } from "../src/lib/admin/settings-tabs";
 import { isAllowed } from "../src/lib/admin/permissions";
 
 let passed = 0;
@@ -14,13 +14,14 @@ function assert(cond: boolean, msg: string) {
 }
 const read = (p: string) => fs.readFileSync(path.join(__dirname, "..", p), "utf8").replace(/\r\n/g, "\n");
 
-assert(SETTINGS_TABS.map((t) => t.id).join() === "teks-awam,warna-blok,saiz-teks,audiens,nama-samaran,arahan-ai,alat-lain,status-sistem" && DEFAULT_SETTINGS_TAB === "teks-awam", "eight tabs, the texts editors change most first");
+assert(SETTINGS_TABS.map((t) => t.id).join() === "teks-awam,warna-blok,saiz-teks,audiens,nama-samaran,arahan-ai,alat-lain" && DEFAULT_SETTINGS_TAB === "teks-awam", "seven tabs, the texts editors change most first (Status sistem is on the dashboard)");
+assert(movedTabTarget("status-sistem") === "/admin#status-sistem" && movedTabTarget(["status-sistem", "x"]) === "/admin#status-sistem" && movedTabTarget("audiens") === null && movedTabTarget(undefined) === null && movedTabTarget("toString") === null, "an old link to the Status sistem tab goes to the dashboard");
 assert(settingsTabOf("audiens") === "audiens" && settingsTabOf(["arahan-ai", "x"]) === "arahan-ai", "an address opens the tab it names");
 assert(settingsTabOf(undefined) === "teks-awam" && settingsTabOf("") === "teks-awam" && settingsTabOf("tiada") === "teks-awam" && settingsTabOf("<script>") === "teks-awam", "nothing, or a tab that does not exist, opens the first tab");
 assert(settingsTabHref("teks-awam") === "/admin/settings" && settingsTabHref("nama-samaran") === "/admin/settings?tab=nama-samaran", "each tab has its own address; the first is the plain one");
 
 const page = read("src/app/admin/settings/page.tsx");
-assert(page.includes("settingsTabOf((await searchParams).tab)") && page.includes('className="a-settings-tabs"') && page.includes('aria-current={t.id === tab ? "page" : undefined}'), "the page reads the tab from its address and marks the open tab for a screen reader");
+assert(page.includes("settingsTabOf(asked)") && page.includes("if (moved) redirect(moved)") && page.includes('className="a-settings-tabs"') && page.includes('aria-current={t.id === tab ? "page" : undefined}'), "the page reads the tab from its address and marks the open tab for a screen reader");
 for (const tab of SETTINGS_TABS) {
   assert(page.includes(`tab === "${tab.id}" ?`), `the panel of ${tab.id} is drawn only when its tab is open`);
 }
@@ -30,6 +31,10 @@ assert(page.includes("async function AiPromptsPanel()") && page.indexOf("loadPro
 const redirect = read("src/components/admin/SettingsHashRedirect.tsx");
 assert(page.includes("<SettingsHashRedirect current={tab} />") && redirect.includes("window.location.hash") && redirect.includes("window.location.replace(settingsTabHref(tab.id))"), "an old link to a section (#nama-samaran) is taken to that tab");
 assert(read("src/components/admin/AiCreditPicker.tsx").includes('href="/admin/settings?tab=nama-samaran"'), "the credit picker links straight to the tab");
+
+const dashboard = read("src/app/admin/page.tsx");
+assert(dashboard.includes('id="status-sistem"') && dashboard.includes("<h2>Status sistem</h2>") && dashboard.includes("Pangkalan data") && dashboard.includes("Storan gambar") && !page.includes("hasDb()"), "Status sistem is on the dashboard (database and picture storage), no longer in Tetapan");
+assert(redirect.includes("MOVED_TABS[id]"), "an old #status-sistem link goes to the dashboard too");
 
 const css = read("src/app/admin/admin.css");
 const tabsRule = (css.match(/.a-shell .a-settings-tabs {[^}]*}/) ?? [""])[0];
