@@ -20,7 +20,7 @@ Rujukan: Shopify Polaris (susun atur Tetapan), GitHub Primer (borang), GitLab Pa
 ## 2. Token (satu sumber kebenaran: `:root` dalam `admin.css`)
 
 - **Saiz huruf (8 langkah sahaja):** 11, 12, 13, 14, 16, 20, 26, 30 px. Teks isi 14; label dan butang 13–14; bantuan 12–13; tajuk bahagian 16–20; tajuk halaman 26.
-- **Jejari:** `--a-radius-sm` 6px (input, butang), `--a-radius` 10px (kad), pil 999px (penanda). Tiada nilai lain.
+- **Jejari:** `--a-radius-sm` 6px (gambar kecil, kod), `--a-radius` 8px (butang, input, kad kecil), `--a-radius-lg` 12px (kad besar), 50% (bulatan) dan pil 999px (penanda). Tiada nilai px lain.
 - **Jarak:** gandaan 4px (4, 8, 12, 16, 24, 32).
 - **Warna:** hanya token `--a-*`. Tiada hex baharu di luar `:root`. Status: `--a-ok`, `--a-warn`, `--a-danger` dengan latar `-bg`-nya.
 
@@ -38,7 +38,7 @@ Rujukan: Shopify Polaris (susun atur Tetapan), GitHub Primer (borang), GitLab Pa
 
 1. [selesai] Status sistem ke papan pemuka; Tetapan: Simpan jelas dan submenu berkumpulan; halaman karya ikut peranan.
 2. [selesai] Satukan `a-btn` ke `admin-btn` (`-danger-solid` untuk dialog merosakkan; `-sm` untuk butang kecil).
-3. Rapatkan 14 saiz huruf kepada 8; 9 jejari kepada 3.
+3. [selesai] 14 saiz huruf dirapatkan kepada 8; 9 jejari kepada 3 langkah (dengan bulatan dan pil).
 4. Gantikan 26 warna hex dengan token.
 5. [selesai] Halaman Siri ikut peranan.
 6. [selesai] Sesi tamat: pautan "Log masuk semula"; halaman terhad dialihkan dengan penjelasan.
@@ -52,8 +52,8 @@ Nilai ini hanya boleh turun, tidak naik. Apabila satu kerja menurunkannya, kemas
 
 | Ukuran | Asas |
 | --- | --- |
-| Saiz huruf berlainan dalam `admin.css` | 14 |
-| Jejari berlainan | 9 |
+| Saiz huruf berlainan dalam `admin.css` | 8 (dahulu 14) |
+| Jejari berlainan | 5: tiga langkah, bulatan, pil (dahulu 9) |
 | Penggunaan hex di luar `:root` | 48 |
 | Kegunaan `a-btn` dalam TSX dan CSS | 0 (dahulu 11) |
 | Objek `style={{` sebaris dalam TSX admin | 118 |
