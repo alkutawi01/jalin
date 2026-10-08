@@ -15,7 +15,9 @@ const SCOPE = "ai_persona";
 const KNOWN_SLUG: Record<string, string> = {
   ChatGPT: "chatgpt", // Rafiq Naim
   Claude: "nara-zahin", // confirmed by the product owner
-  "Mimo (OpenCode)": "mimo"
+  "Mimo (OpenCode)": "mimo",
+  Gemini: "jamili-guga", // Jamili Guga (the writing test of 6 Oct 2026 gave this persona its profile)
+  Grok: "irfan-zuhri" // Irfan Zuhri (named by the product owner, 8 Oct 2026)
 };
 
 export const DEFAULT_AIS = ["ChatGPT", "Claude", "Gemini", "Mimo (OpenCode)", "Grok", "Copilot", "DeepSeek"];
