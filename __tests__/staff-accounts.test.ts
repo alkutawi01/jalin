@@ -58,7 +58,7 @@ const shell = read("src/components/admin/AdminShell.tsx");
 if (shell.includes("needs:")) {
   assert(can("owner", "user.manage") && !can("chief_editor", "user.manage") && !can("editor", "user.manage"), "only the owner is offered Pengguna in the menu");
   assert(can("owner", "site.manage") && !can("editor", "site.manage"), "an editor is not offered Tetapan");
-  assert(shell.includes("NAV.filter((item) => !item.needs || can(role, item.needs))") && shell.includes('pathname.startsWith("/admin/ubah-kata-laluan")'), "the menu is filtered by role and the password page has no menu");
+  assert(shell.includes("NAV.filter((item) => (!item.needs || can(role, item.needs)) && !(item.unless && can(role, item.unless)))") && shell.includes('pathname.startsWith("/admin/ubah-kata-laluan")'), "the menu is filtered by role and the password page has no menu");
 }
 const mig = read("src/lib/db/migrations/025_admin_users.ts");
 assert(mig.includes("CREATE TABLE IF NOT EXISTS admin_users") && mig.includes("CHECK (role IN ('chief_editor', 'editor'))") && !/owner/.test(mig.replace(/\/\*[^]*?\*\//, "").replace(/The owner[^\n]*/g, "")), "the table is additive and has no owner role");

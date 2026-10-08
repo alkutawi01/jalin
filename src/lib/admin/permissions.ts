@@ -29,12 +29,13 @@ export const PERMISSIONS = [
   "editorial.curate", // editor's picks
   "contributor.manage", // personas and contributors
   "site.manage", // site copy, theme, audience bands, writing prompts and their settings
+  "typography.manage", // the size of the story text and its sub-headings (Tetapan > Saiz teks karya)
   "user.manage" // staff accounts: invite, change role, switch off, reset password
 ] as const;
 export type Permission = (typeof PERMISSIONS)[number];
 
 const EDITOR: Permission[] = ["session.use", "content.read", "work.write", "credit.write", "glossary.write", "visual.write"];
-const CHIEF_EDITOR: Permission[] = [...EDITOR, "visual.review", "ai.generate", "series.manage", "source.manage", "submission.manage", "editorial.curate"];
+const CHIEF_EDITOR: Permission[] = [...EDITOR, "visual.review", "ai.generate", "series.manage", "source.manage", "submission.manage", "editorial.curate", "typography.manage"];
 
 export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
   owner: PERMISSIONS,
@@ -89,6 +90,7 @@ const API_RULES: Rule[] = [
   { methods: WRITE, pattern: /^\/(contributors|ai-personas)(\/|$)/, permission: "contributor.manage" },
   { methods: ["POST"], pattern: /^\/authoring\/prompt$/, permission: "work.write" },
   { methods: WRITE, pattern: /^\/(site-copy|site-theme|audience-bands|authoring\/settings|prompts)(\/|$)/, permission: "site.manage" },
+  { methods: WRITE, pattern: /^\/reader-typography(\/|$)/, permission: "typography.manage" },
 
   // Everything else that only reads.
   { methods: READ, pattern: /^\//, permission: "content.read" }
@@ -97,6 +99,7 @@ const API_RULES: Rule[] = [
 const PAGE_RULES: Rule[] = [
   { methods: READ, pattern: /^\/admin\/pengguna(\/|$)/, permission: "user.manage" },
   { methods: READ, pattern: /^\/admin\/ubah-kata-laluan$/, permission: "session.use" },
+  { methods: READ, pattern: /^\/admin\/settings\/saiz-teks$/, permission: "typography.manage" },
   { methods: READ, pattern: /^\/admin\/(settings|prompts)(\/|$)/, permission: "site.manage" },
   { methods: READ, pattern: /^\/admin\/contributors(\/|$)/, permission: "contributor.manage" },
   { methods: READ, pattern: /^\/admin\/pilihan-editor(\/|$)/, permission: "editorial.curate" },

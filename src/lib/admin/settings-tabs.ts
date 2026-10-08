@@ -6,6 +6,7 @@
 export const SETTINGS_TABS = [
   { id: "teks-awam", label: "Teks halaman awam" },
   { id: "warna-blok", label: "Warna blok laman utama" },
+  { id: "saiz-teks", label: "Saiz teks karya" },
   { id: "audiens", label: "Audiens" },
   { id: "nama-samaran", label: "Nama samaran AI" },
   { id: "arahan-ai", label: "Arahan AI" },
