@@ -41,6 +41,7 @@ const view = read("src/components/reader/StoryCollection.tsx");
 const lib = read("src/lib/reader/story-collection.ts");
 const api = read("src/app/api/koleksi-cerita/route.ts");
 assert(!page.includes("Karya terbaru") && view.includes("Koleksi cerita"), "the section is called 'Koleksi cerita' and nothing on the page still says 'Karya terbaru'");
+assert(read("src/lib/site-theme.ts").includes('label: "Koleksi cerita"') && !read("src/lib/site-theme.ts").includes("Karya terbaru"), "Tetapan > Warna blok calls the block 'Koleksi cerita' too");
 assert(page.includes("pickCollection(await buildStoryPool())") && !/slice\(0,\s*6\)/.test(page), "the homepage no longer takes the six newest");
 assert(lib.includes('work.type === "bersiri"') && lib.includes("/kategori/bersiri/${info.series.slug}/${work.slug}"), "series episodes are in the pool and link to their address under the series");
 assert(view.includes("Daripada {card.seriesTitle}") && !/Daripada[^\n]*<a /.test(view), "'Daripada <siri>' is plain text, not a link");
