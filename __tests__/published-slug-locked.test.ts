@@ -16,6 +16,6 @@ assert(guard > 0 && route.slice(guard, guard + 260).includes("published_revision
 assert(guard < route.indexOf("await updateWork(id"), "and does so before writing");
 const page = fs.readFileSync(path.join(__dirname, "../src/app/admin/works/[id]/page.tsx"), "utf8").replace(/\r\n/g, "\n");
 assert(page.includes("readOnly={everPublic}") && page.includes("slug-locked") && page.includes("setEverPublic(Boolean(work.published_at"), "the editor shows the address as locked, with the reason");
-assert(page.includes('form.status !== "published" && !everPublic ? ('), "a work once public and now archived is not offered the delete button the server would refuse");
+assert(page.includes('form.status !== "published" && !everPublic && canDelete ? ('), "a work once public and now archived is not offered the delete button the server would refuse");
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);
