@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import AdminShell from "../../components/admin/AdminShell";
+import { getCurrentAdmin } from "../../lib/admin/auth";
+import { roleFromClaim } from "../../lib/admin/permissions";
 import "./admin.css";
 
 export const metadata: Metadata = {
@@ -10,10 +12,12 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function AdminLayout({
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <AdminShell>{children}</AdminShell>;
+  // The menu shows only what this person may open (the server refuses the rest anyway).
+  const user = await getCurrentAdmin();
+  return <AdminShell role={(user && roleFromClaim(user.role)) || "owner"}>{children}</AdminShell>;
 }

@@ -14,16 +14,22 @@
 
 import { cookies } from "next/headers";
 import crypto from "crypto";
+import { hasDb } from "../db";
+import { authenticateStaff, getStaff, isStaffRole, type StaffRole } from "./user-service";
 
 export interface AdminUser {
   id: string;
   name: string;
   email: string;
-  role: "admin";
+  /** "admin" is the owner (ADMIN_SECRET); the other two are staff accounts from the admin_users table. */
+  role: "admin" | StaffRole;
+  /** A temporary password is still in use: the account may only change its password. */
+  mustChangePassword?: boolean;
 }
 
 const SESSION_COOKIE = "jalin-admin-session";
-const SESSION_EXPIRY = 24 * 60 * 60 * 1000; // 24 hours
+const SESSION_EXPIRY = 24 * 60 * 60 * 1000; // 24 hours (owner)
+const STAFF_SESSION_EXPIRY = 12 * 60 * 60 * 1000; // 12 hours (staff accounts)
 
 /**
  * Get the admin secret. Fails closed if not configured.
@@ -89,7 +95,18 @@ export async function getCurrentAdmin(): Promise<AdminUser | null> {
   }
 
   // Validate session token
-  return validateSession(sessionToken);
+  const user = validateSession(sessionToken);
+  if (!user || user.role === "admin") return user;
+
+  // A staff account is checked against the table on every server-side check: switching an account off, or changing its role,
+  // takes effect at once (the token alone would stay valid until it expires).
+  try {
+    const row = await getStaff(user.id.replace(/^u-/, ""));
+    if (!row || !row.active || row.role !== user.role) return null;
+    return { ...user, name: row.displayName, mustChangePassword: row.mustChangePassword };
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -97,6 +114,40 @@ export async function getCurrentAdmin(): Promise<AdminUser | null> {
  * Returns session token if valid.
  * FAIL CLOSED: missing config = deny all.
  */
+export type SignInOutcome = { token: string } | { error: "invalid" | "locked" | "inactive" };
+
+/**
+ * Sign in as the owner (e-mail on the allowed list + ADMIN_SECRET) or as a staff account (username or e-mail + own password).
+ * The owner is tried first, so nothing changes for the owner; a staff account never gets the owner role.
+ */
+export async function signIn(identifier: string, password: string): Promise<SignInOutcome> {
+  const owner = await loginAdmin(identifier, password);
+  if (owner) return { token: owner };
+  if (!hasDb() || !getAdminSecret()) return { error: "invalid" };
+  try {
+    const result = await authenticateStaff(identifier, password);
+    if (!result.ok) return { error: result.reason };
+    return {
+      token: signSession({
+        id: `u-${result.user.id}`,
+        name: result.user.displayName,
+        email: result.user.email ?? result.user.username,
+        role: result.user.role,
+        mcp: result.user.mustChangePassword,
+        expires: Date.now() + STAFF_SESSION_EXPIRY
+      })
+    };
+  } catch (error) {
+    console.error("[AdminAuth] Staff sign-in error:", error);
+    return { error: "invalid" };
+  }
+}
+
+/** A new session for a staff account that has just chosen its own password (the temporary-password flag is gone). */
+export function staffSessionToken(user: { id: string; displayName: string; email: string | null; username: string; role: StaffRole }): string {
+  return signSession({ id: `u-${user.id}`, name: user.displayName, email: user.email ?? user.username, role: user.role, mcp: false, expires: Date.now() + STAFF_SESSION_EXPIRY });
+}
+
 export async function loginAdmin(email: string, password: string): Promise<string | null> {
   // Check if admin secret is configured
   const adminSecret = getAdminSecret();
@@ -162,14 +213,14 @@ export async function logoutAdmin(): Promise<void> {
 /**
  * Set session cookie.
  */
-export async function setSessionCookie(token: string): Promise<void> {
+export async function setSessionCookie(token: string, staff = false): Promise<void> {
   const cookieStore = await cookies();
   cookieStore.set(SESSION_COOKIE, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
-    maxAge: SESSION_EXPIRY / 1000,
+    maxAge: (staff ? STAFF_SESSION_EXPIRY : SESSION_EXPIRY) / 1000,
   });
 }
 
@@ -234,6 +285,12 @@ function validateSession(token: string): AdminUser | null {
     // Check expiry
     if (data.expires && data.expires < Date.now()) {
       return null;
+    }
+
+    // A staff account: the table decides (see getCurrentAdmin); here only the signed claims are read.
+    if (isStaffRole(data.role)) {
+      if (typeof data.id !== "string" || !data.id.startsWith("u-")) return null;
+      return { id: data.id, name: data.name, email: data.email, role: data.role, mustChangePassword: data.mcp === true };
     }
 
     // Check role
