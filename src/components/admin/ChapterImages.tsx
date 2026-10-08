@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { toast } from "../../lib/admin/dialogs";
+import { confirmAction, toast } from "../../lib/admin/dialogs";
 import { uploadTooLargeMessage } from "../../lib/admin/upload-limit";
 import { errorText } from "../../lib/admin/error-text";
 
@@ -66,26 +66,31 @@ export default function ChapterImages({
         res = await fetch(`/api/admin/works/${workId}/visuals/upload`, { method: "POST", body });
       }
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || "Gagal memuat naik gambar.");
+      if (!res.ok) throw new Error(data.error || "Gambar tidak dapat dimuat naik.");
       toast(published ? "Gambar disimpan dalam draf. Pembaca belum melihatnya: tekan Terbitkan semula di atas karya." : "Gambar bab disimpan.", "success");
       onChanged();
     } catch (err) {
-      setError(errorText(err));
+      const text = errorText(err);
+      setError(text);
+      toast(text, "error");
     } finally {
       setBusy(false);
     }
   }
 
   async function remove(id: number) {
-    if (!window.confirm("Padam gambar ini?")) return;
+    if (!(await confirmAction("Padam gambar ini daripada bab?", { confirmLabel: "Ya, padam gambar", danger: true }))) return;
     setBusy(true);
     setError("");
     try {
       const res = await fetch(`/api/admin/visuals/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || "Gagal memadam gambar.");
+      if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || "Gambar tidak dapat dipadam.");
+      toast(published ? "Gambar dipadam daripada draf. Pembaca belum melihat perubahan: tekan Terbitkan semula di atas karya." : "Gambar dipadam.", "success");
       onChanged();
     } catch (err) {
-      setError(errorText(err));
+      const text = errorText(err);
+      setError(text);
+      toast(text, "error");
     } finally {
       setBusy(false);
     }
