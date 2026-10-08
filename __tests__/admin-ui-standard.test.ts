@@ -22,7 +22,7 @@ function tsxFiles(dir: string, found: string[] = []): string[] {
 const sources = [...tsxFiles(path.join(root, "src/app/admin")), ...tsxFiles(path.join(root, "src/components/admin"))].map((f) => fs.readFileSync(f, "utf8"));
 
 // Ceilings (the 8 Okt 2026 baseline). Lower them as the admin is tidied.
-const CEILING = { fontSizes: 14, radii: 9, hexOutsideTokens: 48, aBtnUses: 0, inlineStyles: 118 };
+const CEILING = { fontSizes: 8, radii: 5, hexOutsideTokens: 47, aBtnUses: 0, inlineStyles: 118 };
 
 const distinct = (re: RegExp) => new Set([...css.matchAll(re)].map((m) => m[1]!.trim())).size;
 const fontSizes = distinct(/font-size:\s*([^;}]+)/g);
@@ -34,8 +34,13 @@ const count = (re: RegExp) => sources.reduce((n, s) => n + (s.match(re) ?? []).l
 const aBtn = count(/className=(?:"[^"]*|\{`[^`]*)(?<![\w-])a-btn(?:-[\w-]+)?(?![\w-])/g) + (css.match(/\.a-btn(?:-[\w-]+)?(?![\w-])/g) ?? []).length;
 const inline = count(/style=\{\{/g);
 
-assert(fontSizes <= CEILING.fontSizes, `distinct font sizes in admin.css: ${fontSizes} (ceiling ${CEILING.fontSizes}; the standard is 8)`);
-assert(radii <= CEILING.radii, `distinct border radii: ${radii} (ceiling ${CEILING.radii}; the standard is 3)`);
+assert(fontSizes <= CEILING.fontSizes, `distinct font sizes in admin.css: ${fontSizes} (ceiling ${CEILING.fontSizes}: 11, 12, 13, 14, 16, 20, 26, 30)`);
+const SCALE = new Set(["11px", "12px", "13px", "14px", "16px", "20px", "26px", "30px", "inherit"]);
+const offScale = [...new Set([...css.matchAll(/font-size:\s*([^;}]+)/g)].map((m) => m[1]!.trim()))].filter((v) => !SCALE.has(v));
+assert(offScale.length === 0, `every font size is a step of the scale${offScale.length ? `; off the scale: ${offScale.join(", ")}` : ""}`);
+assert(radii <= CEILING.radii, `distinct border radii: ${radii} (ceiling ${CEILING.radii}: three sizes, a circle and a pill)`);
+assert(/--a-radius-sm:\s*6px/.test(css) && /--a-radius:\s*8px/.test(css) && /--a-radius-lg:\s*12px/.test(css), "the three radius tokens are 6px, 8px and 12px");
+assert(![...css.matchAll(/border-radius:\s*(\d+)px/g)].some((m) => !["999"].includes(m[1]!)), "no radius is written as a plain pixel value (only the tokens, 50% and the 999px pill)");
 assert(hexOutside <= CEILING.hexOutsideTokens, `colours written outside the tokens: ${hexOutside} (ceiling ${CEILING.hexOutsideTokens}; the standard is 0)`);
 assert(aBtn <= CEILING.aBtnUses, `uses of the old a-btn button family: ${aBtn} (ceiling ${CEILING.aBtnUses}; the standard is 0, use admin-btn)`);
 assert(inline <= CEILING.inlineStyles, `inline style objects in admin components: ${inline} (ceiling ${CEILING.inlineStyles})`);
