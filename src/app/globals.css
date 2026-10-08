@@ -3162,16 +3162,30 @@ main:focus { outline: none; }
 }
 @media (max-width: 720px) {
   .site-footer { padding-top: 48px; }
-  .footer-grid { grid-template-columns: 1fr; gap: 26px; padding-bottom: 26px; }
+  .footer-grid { grid-template-columns: 1fr; gap: 30px; padding-bottom: 26px; }
   .footer-brand { max-width: 100%; }
   .site-footer .footer-logo { width: 116px; margin: -20px 0 -7px; }
   .footer-message { max-width: 31ch; font-size: 1.05rem; }
-  .footer-search { width: 100%; margin-top: 16px; }
-  .footer-nav-grid { gap: 24px; padding-top: 0; }
+  .footer-search { width: fit-content; min-width: 164px; margin-top: 16px; padding-inline: 18px; gap: 28px; }
+  .footer-nav-grid { display: block; padding-top: 0; }
+  .footer-col {
+    display: grid;
+    grid-template-columns: 72px minmax(0, 1fr);
+    align-items: start;
+    gap: 12px;
+    padding: 16px 0;
+    border-top: 1px solid var(--footer-line);
+  }
+  .footer-col:last-child { border-bottom: 1px solid var(--footer-line); }
+  .footer-col h2 { padding-top: 13px; }
+  .footer-col ul { display: flex; flex-wrap: wrap; gap: 0 22px; }
+  .footer-col a { min-height: 44px; }
   .footer-base { align-items: flex-start; padding: 15px 0 19px; }
 }
 @media (max-width: 360px) {
-  .footer-nav-grid { grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 16px; }
+  .footer-col { grid-template-columns: 1fr; gap: 2px; }
+  .footer-col h2 { padding-top: 0; }
+  .footer-col ul { gap: 0 18px; }
   .footer-col a { font-size: 14px; }
   .footer-base { display: grid; gap: 3px; }
 }
@@ -3191,8 +3205,6 @@ main:focus { outline: none; }
 .info-body a:hover, .info-body a:focus-visible { text-decoration-color: currentColor; }
 .info-updated { margin: 40px 0 0; padding-top: 16px; border-top: 1px solid var(--line); font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 13px; color: var(--ink-soft); }
 @media (max-width: 680px) { .info-page { padding-top: 36px; padding-bottom: 48px; } .info-body { font-size: 1.05rem; } }
-.site-footer .footer-col { display: block; }
-
 /* Which series and episode a story belongs to: a quiet line under the dek, like the byline, not a trail of capitals. */
 .story-context-line { margin: 14px 0 0; font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 14px; color: var(--ink-soft); }
 /* The series link looks like the author names under it (ink, semibold, no line); the line appears on hover and focus. */
