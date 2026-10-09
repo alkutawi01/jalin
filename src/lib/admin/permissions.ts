@@ -31,7 +31,8 @@ export const PERMISSIONS = [
   "site.manage", // site copy, theme, audience bands, writing prompts and their settings
   "typography.manage", // the size of the story text and its sub-headings (Tetapan > Saiz teks karya)
   "activity.read", // who changed what (the Aktiviti page)
-  "user.manage" // staff accounts: invite, change role, switch off, reset password
+  "user.manage", // staff accounts: invite, change role, switch off, reset password
+  "subscription.manage" // reader accounts, access, card codes, shared codes and the stop switch (the owner only)
 ] as const;
 export type Permission = (typeof PERMISSIONS)[number];
 
@@ -64,6 +65,8 @@ const API_RULES: Rule[] = [
   { methods: "*", pattern: /^\/auth\//, permission: "session.use" },
   // Staff accounts: never open to the generic read rule below, or every editor could list the others.
   { methods: "*", pattern: /^\/users(\/|$)/, permission: "user.manage" },
+  // Readers, access and codes: never open to the generic read rule below, or every editor could list readers' e-mail addresses.
+  { methods: "*", pattern: /^\/langganan(\/|$)/, permission: "subscription.manage" },
 
   { methods: "*", pattern: new RegExp(`^/works/${ID}/publish$`), permission: "work.publish" },
   { methods: "*", pattern: /^\/publish$/, permission: "work.publish" },
@@ -99,6 +102,7 @@ const API_RULES: Rule[] = [
 
 const PAGE_RULES: Rule[] = [
   { methods: READ, pattern: /^\/admin\/pengguna(\/|$)/, permission: "user.manage" },
+  { methods: READ, pattern: /^\/admin\/langganan(\/|$)/, permission: "subscription.manage" },
   { methods: READ, pattern: /^\/admin\/aktiviti$/, permission: "activity.read" },
   { methods: READ, pattern: /^\/admin\/ubah-kata-laluan$/, permission: "session.use" },
   { methods: READ, pattern: /^\/admin\/settings\/saiz-teks$/, permission: "typography.manage" },

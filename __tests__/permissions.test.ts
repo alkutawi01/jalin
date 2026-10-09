@@ -78,6 +78,16 @@ assert(isAllowed("editor", "POST", "/api/admin/authoring/prompt") && isAllowed("
 assert(!isAllowed("editor", "GET", "/admin/settings") && !isAllowed("chief_editor", "GET", "/admin/contributors") && isAllowed("editor", "GET", "/admin/works") && isAllowed("editor", "GET", "/admin"), "the settings and contributor pages are the owner's; the works pages are everyone's");
 assert(isAllowed("editor", "POST", "/api/admin/auth/logout"), "everyone can log out");
 
+// Readers, access and codes (Langganan): the owner only, every method, because they show e-mail addresses and give or take access.
+const langganan: [string, string][] = [
+  ["GET", "/api/admin/langganan/pembaca"], ["GET", "/api/admin/langganan/pembaca/abc"], ["POST", "/api/admin/langganan/pembaca/abc/beri"], ["POST", "/api/admin/langganan/entitlements/abc/batal"],
+  ["POST", "/api/admin/langganan/batch"], ["POST", "/api/admin/langganan/batch/abc"], ["GET", "/api/admin/langganan/label-ujian"], ["POST", "/api/admin/langganan/kod/JLN-26-000001"],
+  ["POST", "/api/admin/langganan/kod-kongsi"], ["PATCH", "/api/admin/langganan/kod-kongsi/abc"], ["POST", "/api/admin/langganan/suis"],
+  ["GET", "/admin/langganan"], ["GET", "/admin/langganan/kad"], ["GET", "/admin/langganan/kod-kongsi"], ["GET", "/admin/langganan/pembaca"]
+];
+assert(langganan.every(([m, u]) => isAllowed("owner", m, u) && !isAllowed("chief_editor", m, u) && !isAllowed("editor", m, u)), "the Langganan pages and their API are for the owner only, reads included");
+assert(!can("chief_editor", "subscription.manage") && !can("editor", "subscription.manage") && can("owner", "subscription.manage"), "only the owner holds the subscription permission");
+
 // 5) fail closed
 assert(permissionFor("POST", "/api/admin/something-new") === null && !isAllowed("editor", "POST", "/api/admin/something-new") && !isAllowed("chief_editor", "DELETE", "/api/admin/something-new") && isAllowed("owner", "POST", "/api/admin/something-new"), "an address with no rule is for the owner only");
 assert(permissionFor("GET", "/api/admin/works/") === permissionFor("GET", "/api/admin/works"), "a trailing slash does not change the answer");
