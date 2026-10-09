@@ -2252,7 +2252,7 @@ export default function EditWorkPage() {
                 <li><code>**tebal**</code> → <strong>tebal</strong>; <code>*condong*</code> → <em>condong</em>. Gunakan condong untuk judul karya yang disebut dalam prosa.</li>
                 <li><code>## Tajuk bahagian</code> pada baris sendiri → tajuk bahagian; <code>---</code> (atau <code>***</code>, <code>* * *</code>, <code>___</code>) pada baris sendiri → pemisah adegan.</li>
                 <li><code>&gt; Petikan</code> → petikan; <code>[teks pautan](https://contoh.com)</code> → pautan; <code>- Butiran</code> → senarai. Format ini disunting dalam mod Markdown.</li>
-                <li>Nota sisi: letakkan kursor di tempat nombor patut berada, tekan <strong>+ Nota sisi</strong> dan taip isinya; nombor dan nota ditulis untuk anda. (Dalam Markdown ia ialah <code>[^1]</code> dalam ayat dan baris <code>[^1]: isi nota</code> di hujung.)</li>
+                <li>Nota sisi: letakkan kursor di tempat nombor patut berada, tekan ikon <strong>Nota sisi</strong> di bar alat (mod Visual) atau butang <strong>+ Nota sisi</strong> (mod Markdown) dan taip isinya; nombor dan nota ditulis untuk anda. (Dalam Markdown ia ialah <code>[^1]</code> dalam ayat dan baris <code>[^1]: isi nota</code> di hujung.)</li>
                 <li><code>[[gambar:1]]</code> pada baris sendiri → lokasi gambar dalam teks. Alihkan baris penanda untuk mengalihkan gambar.</li>
                 <li>Kotak mesej: <code>:::mesej</code>, isi mesej, kemudian <code>:::</code> pada baris sendiri. Untuk e-mel, gunakan <code>:::emel</code>. Tiada nombor telefon atau alamat diperlukan.</li>
               </ul>

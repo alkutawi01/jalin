@@ -4,20 +4,38 @@ import { useId, useState } from "react";
 import { cleanFootnoteText } from "../../lib/admin/footnote-insert";
 
 /**
- * "+ Nota sisi": the editor types the note's words and the editor of the manuscript puts the number at the cursor and the note at the
- * end (lib/admin/footnote-insert.ts). Used beside the visual editor and the Markdown box, so nobody has to type "[^1]".
+ * The box for a side note: the editor types the note's words, and the manuscript editor puts the number at the cursor and the note at the
+ * end (lib/admin/footnote-insert.ts), so nobody has to type "[^1]".
+ *
+ * Beside the Markdown box it brings its own "+ Nota sisi" button. In the visual editor the button is an icon in the toolbar like the
+ * others (the editor owns `open`), and this draws only the box.
  */
-export default function FootnoteInserter({ onInsert }: { onInsert: (text: string) => boolean }) {
-  const [open, setOpen] = useState(false);
+export default function FootnoteInserter({
+  onInsert,
+  open: controlledOpen,
+  onOpenChange
+}: {
+  onInsert: (text: string) => boolean;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}) {
+  const [ownOpen, setOwnOpen] = useState(false);
   const [text, setText] = useState("");
   const id = useId();
+  const controlled = controlledOpen !== undefined;
+  const open = controlled ? controlledOpen : ownOpen;
 
+  function setOpen(value: boolean) {
+    if (!controlled) setOwnOpen(value);
+    onOpenChange?.(value);
+  }
   function close() {
     setOpen(false);
     setText("");
   }
 
   if (!open) {
+    if (controlled) return null;
     return (
       <div className="a-footnote-inserter">
         <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={() => setOpen(true)}>+ Nota sisi</button>
