@@ -681,7 +681,7 @@
 .a-shell .a-rt-section { margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--a-line); }
 .a-shell .a-rt-section h3 { margin: 0 0 4px; }
 .a-shell .a-rt-devices { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 4px; }
-.a-shell .admin-table tr.is-active-row > td { background: var(--a-accent-soft); }
+.a-shell .admin-table tr.is-active-row { box-shadow: inset 3px 0 0 var(--a-accent); }
 .a-shell .a-small { font-size: 13px; }
 .a-shell .a-aside { margin-left: 4px; font-size: 12px; color: var(--a-faint); }
 .a-shell .a-info-box { margin-bottom: 1rem; padding: 0.75rem; background: var(--a-info-bg); border: 1px solid var(--a-info-line); border-radius: var(--a-radius-sm); }

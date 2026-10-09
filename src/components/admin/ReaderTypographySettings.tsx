@@ -140,7 +140,7 @@ export default function ReaderTypographySettings() {
                 <tr key={device.id} className={device.id === active ? "is-active-row" : undefined}>
                   <td>
                     <strong>{device.label}</strong>
-                    <span className="a-meta-line">{device.range}</span>
+                    <div className="a-meta-line">{device.range}</div>
                   </td>
                   <td>
                     <input aria-label={`Teks karya (px), ${device.label}`} className="admin-input" type="number" inputMode="decimal" min={bodyPx.min} max={bodyPx.max} step={bodyPx.step} value={boxes[device.id].body} placeholder={`${device.defaults.bodyPx} (asal)`} onFocus={() => setActive(device.id)} onChange={(e) => set(device.id, "body", e.target.value)} />
