@@ -87,9 +87,16 @@ Versi awal mempunyai akaun asas untuk:
 
 Tiada komen, profil sosial, follower atau badge pada MVP.
 
+**Pindaan 9 Okt 2026 (arahan Izzat, pemilik produk):** akaun pembaca kelak juga menjadi syarat untuk membaca (lihat Access). Tetapan bacaan (saiz font, kecerahan, tema) hanya boleh diubah oleh pembaca yang mempunyai akaun. Akaun menggunakan kod sekali guna melalui emel (OTP), maksimum 2 peranti aktif bagi satu akaun. Belum dilaksanakan.
+
 ## Access
 
-Semua kandungan percuma ketika pelancaran. Content model hendaklah membolehkan akses subscriber/promosi ditambah kemudian tanpa rombakan besar.
+**Pindaan 9 Okt 2026 (arahan Izzat, pemilik produk), menggantikan "semua kandungan percuma":** Jalin ialah satu produk, bukan dua peringkat. Tiada "Jalin Plus". Jalin ialah manfaat yang disertakan dengan produk syarikat Izzat (pembelian produk memberi akses 12 bulan) dan alat pemasaran, bukan perniagaan langganan.
+
+- Hanya pembaca berdaftar boleh membaca teks penuh. Pelawat belum daftar nampak halaman pengenalan dan beberapa karya teaser pilihan Izzat.
+- Percubaan percuma 14 hari bermula apabila akaun didaftar. Selepas itu, tanpa langganan, pembaca nampak senarai karya dan sinopsis sahaja.
+- Langganan ditebus melalui kod pada kad (1 bulan RM15, 6 bulan RM30, 1 tahun RM50 sebagai harga rujukan kad; kod kongsi bertempoh dan berhad untuk promosi juga dirancang). Sekolah yang berhenti membeli tidak menamatkan akses pelajar yang sudah menebus.
+- **Status: belum dilaksanakan.** Pendaftaran wajib dan dinding bayar dihidupkan serentak dengan jualan kad pertama, tidak lebih awal, supaya percubaan tidak tamat tanpa cara membayar. Sehingga itu semua kandungan kekal percuma dan terbuka. Rujuk docs/KAJIAN_AKAUN_PEMBACA_DAN_KOD_TEBUS.md (bahagian 14 hingga 17).
 
 ## Publishing model
 

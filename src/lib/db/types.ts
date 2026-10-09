@@ -474,4 +474,87 @@ export interface Database {
   editorial_roles: EditorialRoles;
   admin_users: AdminUsers;
   admin_activity: AdminActivity;
+  reader_accounts: ReaderAccounts;
+  reader_trial_claims: ReaderTrialClaims;
+  reader_auth_challenges: ReaderAuthChallenges;
+  reader_devices: ReaderDevices;
+  reader_prefs: ReaderPrefs;
+  saved_works: SavedWorks;
+  reading_progress: ReadingProgress;
+  reader_auth_events: ReaderAuthEvents;
+}
+
+export interface ReaderAccounts {
+  id: Generated<string>;
+  email: string;
+  email_normalized: string;
+  display_name: string | null;
+  status: Generated<"active" | "deletion_requested" | "deleted">;
+  email_verified_at: Date | null;
+  trial_starts_at: Date | null;
+  trial_ends_at: Date | null;
+  created_at: Generated<Date>;
+  last_login_at: Date | null;
+  deletion_requested_at: Date | null;
+}
+
+export interface ReaderTrialClaims {
+  email_mac: string;
+  key_id: string;
+  claimed_at: Generated<Date>;
+}
+
+export interface ReaderAuthChallenges {
+  id: Generated<string>;
+  email_lookup_mac: string;
+  otp_mac: string;
+  key_id: string;
+  purpose: Generated<"login">;
+  attempt_count: Generated<number>;
+  created_at: Generated<Date>;
+  expires_at: Date;
+  consumed_at: Date | null;
+}
+
+export interface ReaderDevices {
+  id: Generated<string>;
+  account_id: string;
+  token_hash: string;
+  label: Generated<string>;
+  created_at: Generated<Date>;
+  last_seen_at: Generated<Date>;
+  revoked_at: Date | null;
+  revoked_reason: "signed_out" | "replaced" | "sign_out_all" | "account_deleted" | "security" | null;
+}
+
+export interface ReaderPrefs {
+  account_id: string;
+  font_size_px: Generated<number>;
+  line_height_x100: Generated<number>;
+  text_width_ch: Generated<number>;
+  theme: Generated<"cerah" | "sepia" | "gelap">;
+  font_family: Generated<"serif" | "sans">;
+  dim_percent: Generated<number>;
+  updated_at: Generated<Date>;
+}
+
+export interface SavedWorks {
+  account_id: string;
+  work_id: string;
+  saved_at: Generated<Date>;
+}
+
+export interface ReadingProgress {
+  account_id: string;
+  work_id: string;
+  section_slug: string | null;
+  updated_at: Generated<Date>;
+}
+
+export interface ReaderAuthEvents {
+  id: Generated<string>;
+  kind: "request" | "verify_fail";
+  scope: "email" | "ip" | "global";
+  key_mac: string;
+  at: Generated<Date>;
 }

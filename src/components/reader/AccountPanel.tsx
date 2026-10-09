@@ -1,0 +1,181 @@
+"use client";
+
+import { useState } from "react";
+
+type Device = { id: string; label: string; lastSeenAt: string };
+type Prefs = { fontSizePx: number; lineHeightX100: number; textWidthCh: number; theme: "cerah" | "sepia" | "gelap"; fontFamily: "serif" | "sans"; dimPercent: number };
+
+const SIZES = [16, 18, 20, 22, 24];
+const THEMES: { value: Prefs["theme"]; label: string }[] = [{ value: "cerah", label: "Cerah" }, { value: "sepia", label: "Sepia" }, { value: "gelap", label: "Gelap" }];
+const SPACING: { value: number; label: string }[] = [{ value: 150, label: "Rapat" }, { value: 175, label: "Biasa" }, { value: 200, label: "Longgar" }];
+const WIDTHS: { value: number; label: string }[] = [{ value: 60, label: "Sempit" }, { value: 68, label: "Biasa" }, { value: 74, label: "Luas" }];
+const DIMS = [0, 5, 10, 15, 20];
+
+const THEME_COLOURS: Record<Prefs["theme"], { bg: string; fg: string }> = {
+  cerah: { bg: "#fbf8f2", fg: "#18343c" },
+  sepia: { bg: "#f1e4cc", fg: "#3b2f1e" },
+  gelap: { bg: "#17191a", fg: "#e7e2d8" },
+};
+
+function formatDate(iso: string | null): string {
+  if (!iso) return "";
+  const date = new Date(iso);
+  return Number.isNaN(date.getTime()) ? "" : date.toLocaleDateString("ms-MY", { day: "numeric", month: "long", year: "numeric" });
+}
+
+/** The signed-in reader's page: the trial, the name, reading settings with a preview, and the devices. Saved by the account, not the browser. */
+export default function AccountPanel(props: {
+  email: string;
+  displayName: string | null;
+  trialEndsAt: string | null;
+  trialActive: boolean;
+  thisDeviceId: string;
+  devices: Device[];
+  prefs: Prefs;
+}) {
+  const [name, setName] = useState(props.displayName ?? "");
+  const [savedName, setSavedName] = useState(props.displayName ?? "");
+  const [editingName, setEditingName] = useState(false);
+  const [prefs, setPrefs] = useState<Prefs>(props.prefs);
+  const [devices, setDevices] = useState<Device[]>(props.devices);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  async function call(path: string, method: string, body?: unknown) {
+    const response = await fetch(path, { method, headers: { "Content-Type": "application/json" }, body: body ? JSON.stringify(body) : undefined });
+    let data: Record<string, unknown> = {};
+    try { data = await response.json(); } catch { /* not JSON */ }
+    return { ok: response.ok, status: response.status, data };
+  }
+
+  async function saveName() {
+    setError(""); setMessage("");
+    const { ok, data } = await call("/api/akaun/profil", "PATCH", { displayName: name });
+    if (!ok) { setError(String(data.error ?? "Nama tidak dapat disimpan.")); return; }
+    setSavedName(String(data.displayName ?? ""));
+    setName(String(data.displayName ?? ""));
+    setEditingName(false);
+    setMessage("Nama disimpan.");
+  }
+
+  async function savePrefs(change: Partial<Prefs>) {
+    const next = { ...prefs, ...change };
+    setPrefs(next);
+    setError(""); setMessage("");
+    const { ok, data } = await call("/api/akaun/tetapan", "PUT", next);
+    if (!ok) { setError(String(data.error ?? "Tetapan tidak dapat disimpan.")); return; }
+    setPrefs(data.prefs as Prefs);
+  }
+
+  async function removeDevice(id: string) {
+    setBusy(true); setError(""); setMessage("");
+    const { ok, data } = await call("/api/akaun/peranti/keluarkan", "POST", { deviceId: id });
+    setBusy(false);
+    if (!ok) { setError(String(data.error ?? "Peranti tidak dapat dikeluarkan.")); return; }
+    setDevices((list) => list.filter((d) => d.id !== id));
+    setMessage("Peranti dikeluarkan.");
+  }
+
+  async function signOut(path: string) {
+    setBusy(true);
+    await call(path, "POST", {});
+    window.location.href = "/log-masuk";
+  }
+
+  const colours = THEME_COLOURS[prefs.theme];
+  const previewStyle = {
+    background: colours.bg,
+    color: colours.fg,
+    fontSize: `${prefs.fontSizePx}px`,
+    lineHeight: prefs.lineHeightX100 / 100,
+    maxWidth: `${prefs.textWidthCh}ch`,
+    fontFamily: prefs.fontFamily === "serif" ? 'Georgia, "Times New Roman", serif' : 'var(--font-inter), Inter, ui-sans-serif, sans-serif',
+    filter: prefs.dimPercent ? `brightness(${1 - prefs.dimPercent / 100})` : undefined,
+  } as const;
+
+  return (
+    <div className="auth-account">
+      <h1 className="auth-title">Akaun saya</h1>
+
+      {props.trialEndsAt ? (
+        <p className={`auth-trial${props.trialActive ? "" : " auth-trial--ended"}`}>
+          {props.trialActive ? `Percubaan percuma tamat ${formatDate(props.trialEndsAt)}` : `Percubaan percuma tamat pada ${formatDate(props.trialEndsAt)}`}
+        </p>
+      ) : null}
+
+      <div className="auth-row">
+        <span>{props.email}</span>
+      </div>
+      <div className="auth-row">
+        {editingName ? (
+          <span className="auth-inline">
+            <input className="auth-input auth-input--small" aria-label="Nama" maxLength={60} value={name} onChange={(e) => setName(e.target.value)} placeholder="Nama anda" />
+            <button type="button" className="auth-link" onClick={saveName}>Simpan</button>
+            <button type="button" className="auth-link" onClick={() => { setName(savedName); setEditingName(false); }}>Batal</button>
+          </span>
+        ) : (
+          <>
+            <span>{savedName || "Tiada nama"}</span>
+            <button type="button" className="auth-link" onClick={() => setEditingName(true)}>{savedName ? "Ubah nama" : "Tambah nama"}</button>
+          </>
+        )}
+      </div>
+
+      <h2 className="auth-subtitle">Tetapan bacaan</h2>
+      <div className="auth-row"><span>Saiz huruf</span>
+        <span className="auth-inline">
+          <button type="button" className="auth-step" aria-label="Kecilkan huruf" disabled={prefs.fontSizePx === SIZES[0]} onClick={() => savePrefs({ fontSizePx: SIZES[Math.max(0, SIZES.indexOf(prefs.fontSizePx) - 1)] })}>A−</button>
+          <span className="auth-value">{prefs.fontSizePx}</span>
+          <button type="button" className="auth-step" aria-label="Besarkan huruf" disabled={prefs.fontSizePx === SIZES[SIZES.length - 1]} onClick={() => savePrefs({ fontSizePx: SIZES[Math.min(SIZES.length - 1, SIZES.indexOf(prefs.fontSizePx) + 1)] })}>A+</button>
+        </span>
+      </div>
+      <div className="auth-row"><span>Tema</span>
+        <span className="auth-choices" role="group" aria-label="Tema">
+          {THEMES.map((t) => <button key={t.value} type="button" className="auth-choice" aria-pressed={prefs.theme === t.value} onClick={() => savePrefs({ theme: t.value })}>{t.label}</button>)}
+        </span>
+      </div>
+      <div className="auth-row"><span>Jenis huruf</span>
+        <span className="auth-choices" role="group" aria-label="Jenis huruf">
+          <button type="button" className="auth-choice" aria-pressed={prefs.fontFamily === "serif"} onClick={() => savePrefs({ fontFamily: "serif" })}>Serif</button>
+          <button type="button" className="auth-choice" aria-pressed={prefs.fontFamily === "sans"} onClick={() => savePrefs({ fontFamily: "sans" })}>Sans</button>
+        </span>
+      </div>
+      <div className="auth-row"><span>Jarak baris</span>
+        <span className="auth-choices" role="group" aria-label="Jarak baris">
+          {SPACING.map((s) => <button key={s.value} type="button" className="auth-choice" aria-pressed={prefs.lineHeightX100 === s.value} onClick={() => savePrefs({ lineHeightX100: s.value })}>{s.label}</button>)}
+        </span>
+      </div>
+      <div className="auth-row"><span>Lebar teks</span>
+        <span className="auth-choices" role="group" aria-label="Lebar teks">
+          {WIDTHS.map((w) => <button key={w.value} type="button" className="auth-choice" aria-pressed={prefs.textWidthCh === w.value} onClick={() => savePrefs({ textWidthCh: w.value })}>{w.label}</button>)}
+        </span>
+      </div>
+      <div className="auth-row"><span>Redupkan halaman</span>
+        <span className="auth-choices" role="group" aria-label="Redupkan halaman">
+          {DIMS.map((d) => <button key={d} type="button" className="auth-choice" aria-pressed={prefs.dimPercent === d} onClick={() => savePrefs({ dimPercent: d })}>{d}%</button>)}
+        </span>
+      </div>
+      <div className="auth-preview" style={previewStyle} aria-label="Contoh teks dengan tetapan ini">
+        <p>Hujan turun perlahan sepanjang petang itu. Aina menutup buku, dan mendengar bunyi titik di atas bumbung.</p>
+      </div>
+      <p className="auth-fine">Tetapan disimpan pada akaun anda. Ia dipakai pada halaman bacaan tidak lama lagi.</p>
+
+      <h2 className="auth-subtitle">Peranti ({devices.length} daripada 2)</h2>
+      {devices.map((device) => (
+        <div className="auth-row" key={device.id}>
+          <span>{device.label}{device.id === props.thisDeviceId ? " (ini)" : ""}</span>
+          {device.id === props.thisDeviceId ? <span /> : <button type="button" className="auth-link" disabled={busy} onClick={() => removeDevice(device.id)}>Keluarkan</button>}
+        </div>
+      ))}
+
+      {error ? <p className="auth-error" role="alert">{error}</p> : null}
+      {message ? <p className="auth-notice" role="status">{message}</p> : null}
+
+      <div className="auth-actions">
+        <button type="button" className="auth-button auth-button--ghost" disabled={busy} onClick={() => signOut("/api/akaun/keluar")}>Log keluar</button>
+        <button type="button" className="auth-button auth-button--ghost" disabled={busy} onClick={() => signOut("/api/akaun/keluar-semua")}>Keluar dari semua peranti</button>
+      </div>
+    </div>
+  );
+}

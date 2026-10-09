@@ -10,6 +10,7 @@ import type { BylineCredit, CharacterMeta, EditorialCredit, PlaceMeta, WorkMetaR
 import { NAV_LINKS, SiteNavLinks } from "./nav-links";
 import HeaderSearch from "./HeaderSearch";
 import MobileNavMenu from "./MobileNavMenu";
+import { readerAccountsEnabled } from "../../lib/reader-auth/enabled";
 
 function SiteNav({ active, className }: { active?: string; className: string }) {
   return <SiteNavLinks active={active} className={className} links={NAV_LINKS} />;
@@ -29,6 +30,7 @@ export function SiteHeader({ active }: { active?: string }) {
         <div className="header-main">
           <SiteNav active={active} className="header-nav" />
           <HeaderSearch active={active === "cari"} />
+          {readerAccountsEnabled() ? <a className="header-account" href="/akaun">Akaun</a> : null}
         </div>
         <MobileNavMenu active={active} />
       </div>

@@ -1,0 +1,19 @@
+import { NextResponse } from "next/server";
+import { getDb } from "../../../../lib/db";
+import { clearReaderCookie, currentSession, isSameOrigin, noStore, notFoundWhenOff } from "../../../../lib/reader-auth/http";
+import { signOutEverywhere } from "../../../../lib/reader-auth/service";
+
+export const dynamic = "force-dynamic";
+
+/** Sign every device of this account out, this one included. */
+export async function POST(request: Request) {
+  const off = notFoundWhenOff();
+  if (off) return off;
+  if (!isSameOrigin(request)) return NextResponse.json({ error: "Permintaan tidak dibenarkan." }, { status: 403 });
+  const current = await currentSession(request);
+  if (!current) return noStore(NextResponse.json({ error: "Anda belum log masuk." }, { status: 401 }));
+  await signOutEverywhere(getDb(), current.session.account.id);
+  const response = noStore(NextResponse.json({ ok: true }));
+  clearReaderCookie(response);
+  return response;
+}

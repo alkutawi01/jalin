@@ -6,7 +6,7 @@ Dokumen ini ialah arahan kerja bersama untuk semua AI/agent yang menyentuh repos
 
 Jalin — oleh Adjung ialah platform bacaan sastera berilustrasi dalam Bahasa Melayu.
 
-Slogan: **Selami dunia melalui cerita**. Jalin terbuka kepada semua pembaca: teks awam (tajuk, ringkasan, kad kongsi, halaman Tentang, arahan AI) tidak menyempitkan audiens kepada sesuatu umur seperti "remaja" atau "jiwa muda" (arahan Izzat, 7 Okt 2026).
+Slogan: **Selami dunia melalui cerita**. Jalin terbuka kepada semua pembaca (dan seluruh peringkat umur; **pindaan 9 Okt 2026, arahan Izzat:** pada masa depan teks penuh memerlukan akaun berdaftar, percubaan 14 hari dan langganan melalui kod pada kad; belum dilaksanakan, sehingga itu semua kandungan kekal terbuka, lihat docs/PRODUCT.md bahagian Access): teks awam (tajuk, ringkasan, kad kongsi, halaman Tentang, arahan AI) tidak menyempitkan audiens kepada sesuatu umur seperti "remaja" atau "jiwa muda" (arahan Izzat, 7 Okt 2026).
 
 Kategori utama:
 
@@ -36,6 +36,7 @@ Jalin bukan platform novel penuh. Novel dan Novel Pendek tidak berada dalam taxo
 23. Kredit mesti berdasarkan sumbangan sebenar. Jangan menyamakan penyunting, penyemak fakta atau penyelidik dengan “Penulis” jika mereka tidak menulis karya.
 24. Novela ialah satu Work lengkap long-form, bukan Bersiri dan bukan Novel penuh.
 25. **Sinopsis dan fragmen hanya diambil daripada karya (novel) sebenar yang sudah diterbitkan di tempat lain**, bukan pertama kali terbit dalam Jalin (arahan Izzat, 5 Okt 2026). Nama di bawah tajuk bagi kedua-dua jenis ini hanyalah pengarang karya asal, dipaparkan automatik daripada rekod Sumber; "Nama di bawah tajuk" tidak terpakai pada mana-mana kredit mereka. Nama penyumbang Jalin disebut di blok Editorial sahaja.
+26. **Pangkalan data (arahan Izzat, 9 Okt 2026):** kerja tempatan (dev server, skrip, ujian) hanya menggunakan cabang Neon `pembangunan` atau pangkalan data pada mesin sendiri; `src/lib/db/env.ts` menolak hos lain melainkan ALLOW_NON_DEV_DATABASE=yes ditetapkan dengan sengaja untuk satu arahan. Jangan simpan URL pangkalan data produksi dalam .env.local. Jangan hidupkan pendaftaran wajib atau dinding bayar sebelum jualan kad pertama (Fasa 7 dalam docs/KAJIAN_AKAUN_PEMBACA_DAN_KOD_TEBUS.md).
 
 ## Working style
 
