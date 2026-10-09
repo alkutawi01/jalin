@@ -145,7 +145,9 @@ export default function UsersPanel({ initialUsers, roleNames }: { initialUsers: 
       <section className="admin-section" aria-label="Jemput pengguna">
         <h2>Jemput pengguna</h2>
         <form onSubmit={invite} className="admin-form">
-          <p className="admin-form-hint">Tidak perlu tahu nama, e-mel atau nama pengguna orang itu. Pilih peranan; kata nama dan kata laluan sementara dibuat untuk anda dalam satu jemputan yang siap disalin.</p>
+          <div className="admin-form-group">
+            <p className="admin-form-hint">Tidak perlu tahu nama, e-mel atau nama pengguna orang itu. Pilih peranan; kata nama dan kata laluan sementara dibuat untuk anda dalam satu jemputan yang siap disalin.</p>
+          </div>
           <div className="admin-form-group">
             <label htmlFor="u-role">Peranan</label>
             <select id="u-role" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value as Role })}>
