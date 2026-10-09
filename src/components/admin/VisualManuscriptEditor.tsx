@@ -2,7 +2,7 @@
 
 import { dashInSelection, quotesInAllBlocks } from "../../lib/admin/auto-dash";
 import { pastedHtmlToMarkdown } from "../../lib/admin/paste-format";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { nextImageMarker } from "../../lib/reader/image-markers";
 import { splitCommunicationBlocks } from "../../lib/reader/communication-blocks";
 import { confirmAction, toast } from "../../lib/admin/dialogs";
@@ -11,7 +11,7 @@ import FootnoteInserter from "./FootnoteInserter";
 
 const MARKER = /^\[\[gambar:[1-9]\d*\]\]$/;
 
-type ToolbarIconName = "bold" | "italic" | "paragraph" | "heading" | "scene" | "image" | "message" | "email";
+type ToolbarIconName = "bold" | "italic" | "paragraph" | "heading" | "scene" | "image" | "message" | "email" | "note";
 
 function ToolbarIcon({ name }: { name: ToolbarIconName }) {
   if (name === "bold") return <span className="visual-manuscript-glyph visual-manuscript-glyph-bold" aria-hidden="true">B</span>;
@@ -23,6 +23,7 @@ function ToolbarIcon({ name }: { name: ToolbarIconName }) {
     {name === "image" && <><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8" cy="9" r="1.4"/><path d="m4 17 5-5 3 3 3-3 5 5"/></>}
     {name === "message" && <path d="M4 5h16v11H9l-5 4V5Z"/>}
     {name === "email" && <><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></>}
+    {name === "note" && <><path d="M5 4h14v10l-6 6H5Z"/><path d="M13 20v-6h6"/><path d="M8.5 9h7"/></>}
   </svg>;
 }
 
@@ -115,6 +116,7 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
   const emittedRef = useRef<string | null>(null);
   const selectionRef = useRef<Range | null>(null);
   const caretRef = useRef<{ block: number; offset: number } | null>(null);
+  const [noteOpen, setNoteOpen] = useState(false);
 
   useEffect(() => {
     const editor = editorRef.current;
@@ -327,8 +329,10 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
       <button type="button" onClick={() => insertBlock("image")} aria-label="Sisip penanda gambar" data-label="Penanda gambar"><ToolbarIcon name="image" /></button>
       <button type="button" onClick={() => insertBlock("mesej")} aria-label="Sisip kotak mesej" data-label="Kotak mesej"><ToolbarIcon name="message" /></button>
       <button type="button" onClick={() => insertBlock("emel")} aria-label="Sisip kotak e-mel" data-label="Kotak e-mel"><ToolbarIcon name="email" /></button>
+      <span className="visual-manuscript-toolbar-divider" aria-hidden="true" />
+      <button type="button" onClick={() => setNoteOpen((open) => !open)} aria-label="Sisip nota sisi" aria-expanded={noteOpen} data-label="Nota sisi"><ToolbarIcon name="note" /></button>
     </div>
-    <FootnoteInserter onInsert={insertFootnoteAtCursor} />
+    <FootnoteInserter open={noteOpen} onOpenChange={setNoteOpen} onInsert={insertFootnoteAtCursor} />
     <div ref={editorRef} className="visual-manuscript-surface" contentEditable role="textbox" aria-label="Manuskrip visual" aria-multiline="true" suppressContentEditableWarning onInput={sync} onKeyDown={(event) => {
       // Enter inside a message or e-mail box starts a new line in that box (the browser would split it into a second box).
       if (event.key !== "Enter" || event.shiftKey || event.nativeEvent.isComposing) return;
@@ -370,6 +374,6 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
         sync();
       })();
     }} />
-    <p className="admin-form-hint">Letakkan kursor di tempat nombor patut berada, kemudian tekan + Nota sisi; nota ditulis di hujung manuskrip sebagai baris bernombor, jangan padamkannya. Pilih teks untuk Tebal atau Condong. Penanda gambar boleh dibuang di sini; simpan teks untuk menerapkan perubahan. Gambar yang sudah dimuat naik dipadam secara berasingan melalui kadnya.</p>
+    <p className="admin-form-hint">Letakkan kursor di tempat nombor patut berada, kemudian tekan ikon nota di bar alat (Nota sisi); nota ditulis di hujung manuskrip sebagai baris bernombor, jangan padamkannya. Pilih teks untuk Tebal atau Condong. Penanda gambar boleh dibuang di sini; simpan teks untuk menerapkan perubahan. Gambar yang sudah dimuat naik dipadam secara berasingan melalui kadnya.</p>
   </div>;
 }
