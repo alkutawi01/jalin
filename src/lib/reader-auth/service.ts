@@ -53,7 +53,10 @@ async function inTransaction<T>(db: Db, run: (trx: Db) => Promise<T>): Promise<T
   return db.isTransaction ? run(db) : (db as Kysely<Database>).transaction().execute((trx) => run(trx));
 }
 
-async function countEvents(db: Db, kind: "request" | "verify_fail", scope: "email" | "ip" | "global", keyMac: string, since: Date): Promise<number> {
+export type EventKind = "request" | "verify_fail" | "redeem_fail";
+export type EventScope = "email" | "ip" | "global" | "account";
+
+export async function countEvents(db: Db, kind: EventKind, scope: EventScope, keyMac: string, since: Date): Promise<number> {
   const row = await db
     .selectFrom("reader_auth_events")
     .select(sql<string>`count(*)`.as("n"))
@@ -65,7 +68,7 @@ async function countEvents(db: Db, kind: "request" | "verify_fail", scope: "emai
   return Number(row.n);
 }
 
-async function recordEvent(db: Db, kind: "request" | "verify_fail", scope: "email" | "ip" | "global", keyMac: string, at: Date) {
+export async function recordEvent(db: Db, kind: EventKind, scope: EventScope, keyMac: string, at: Date) {
   await db.insertInto("reader_auth_events").values({ kind, scope, key_mac: keyMac, at }).execute();
 }
 

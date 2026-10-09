@@ -105,6 +105,7 @@ export default function AccountPanel(props: {
       ) : null}
       {props.access.state === "subscribed" ? <p className="auth-trial">Langganan aktif sehingga {formatDate(props.access.endsAt)}</p> : null}
       {props.access.state === "expired" ? <p className="auth-trial auth-trial--ended">Akses anda tamat pada {formatDate(props.access.endsAt)}</p> : null}
+      <a className="auth-button auth-button--ghost auth-redeem-link" href="/tebus">Tebus kod langganan</a>
 
       <div className="auth-row">
         <span>{props.email}</span>

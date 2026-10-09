@@ -1,5 +1,6 @@
 /** Reader sign-in: the pure pieces (addresses, keyed hashes, codes, tokens, mailer choice) and the request helpers. */
 import {
+  loadCodeKey,
   constantTimeEqualHex,
   emailLookupMac,
   generateOtp,
@@ -38,6 +39,10 @@ const hex = "ab".repeat(32);
 const key = loadMacKey({ READER_MAC_KEY_ID: "k1", READER_MAC_KEY: hex });
 assert(key.keyId === "k1" && key.key.length === 32, "a 64-hex key loads");
 assert(throws(() => loadMacKey({ READER_MAC_KEY_ID: "k1", READER_MAC_KEY: "ab".repeat(16) })) && throws(() => loadMacKey({ READER_MAC_KEY: hex })) && throws(() => loadMacKey({})), "a short key, a missing id or no key is refused");
+const codeEnv = { CODE_MAC_KEY_ID: "c1", CODE_MAC_KEY: "cd".repeat(32), READER_MAC_KEY: hex };
+assert(loadCodeKey(codeEnv).keyId === "c1" && loadCodeKey(codeEnv).key.length === 32, "a 64-hex code key loads");
+assert(throws(() => loadCodeKey({ CODE_MAC_KEY_ID: "c1", CODE_MAC_KEY: "cd".repeat(16) })) && throws(() => loadCodeKey({ CODE_MAC_KEY: "cd".repeat(32) })) && throws(() => loadCodeKey({})), "a short code key, a missing id or no key is refused");
+assert(throws(() => loadCodeKey({ CODE_MAC_KEY_ID: "c1", CODE_MAC_KEY: hex, READER_MAC_KEY: hex.toUpperCase() })), "the code key must differ from the sign-in key");
 const other = loadMacKey({ READER_MAC_KEY_ID: "k2", READER_MAC_KEY: "cd".repeat(32) });
 assert(emailLookupMac(key, "a@b.my") === emailLookupMac(key, "a@b.my") && emailLookupMac(key, "a@b.my") !== emailLookupMac(other, "a@b.my"), "a keyed hash is stable and depends on the key");
 assert(new Set([emailLookupMac(key, "a@b.my"), trialClaimMac(key, "a@b.my"), ipMac(key, "a@b.my")]).size === 3, "the same text hashes differently for different purposes");

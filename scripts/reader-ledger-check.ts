@@ -111,7 +111,7 @@ async function main() {
   } catch (error) {
     failed++; console.error("  ✗ unexpected error in the concurrent part:", error);
   } finally {
-    await sql`TRUNCATE entitlements`.execute(db);
+    await sql`TRUNCATE redemptions, shared_redemptions, entitlements`.execute(db);
     await sql`DELETE FROM reader_accounts WHERE email_normalized LIKE '%@e2e.invalid'`.execute(db);
     await closeDb();
   }
