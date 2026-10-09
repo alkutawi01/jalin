@@ -29,6 +29,8 @@ import { buildWorkFillPrompt, looksLikePrompt, parseWorkFill } from "../../../..
 import { dekWarning } from "../../../../lib/admin/authoring/dek-rule";
 import { renderItalics, toggleItalicSelection } from "../../../../lib/reader/inline-italics";
 import VisualManuscriptEditor, { canEditVisually } from "../../../../components/admin/VisualManuscriptEditor";
+import FootnoteInserter from "../../../../components/admin/FootnoteInserter";
+import { insertFootnote } from "../../../../lib/admin/footnote-insert";
 import PlacesEditor from "../../../../components/admin/PlacesEditor";
 import { uploadTooLargeMessage } from "../../../../lib/admin/upload-limit";
 import { errorText } from "../../../../lib/admin/error-text";
@@ -683,6 +685,21 @@ export default function EditWorkPage() {
     setDirty(true);
     setSelectedImageAnchor(insertion.marker);
     toast(`Penanda ${insertion.marker} disisipkan. Simpan teks & maklumat sebelum memuat naik gambar.`, "success");
+  }
+
+  /** A side note in the Markdown box: the number at the cursor, the note's words at the end of the text. */
+  function addFootnote(text: string): boolean {
+    const textarea = manuscriptRef.current;
+    const inserted = insertFootnote(form.body, textarea ? textarea.selectionStart : form.body.length, text);
+    if (!inserted) return false;
+    setForm((prev) => ({ ...prev, body: inserted.body }));
+    setDirty(true);
+    toast(`Nota ${inserted.label} disisipkan. Pembaca melihatnya di sisi teks.`, "success");
+    window.requestAnimationFrame(() => {
+      textarea?.focus();
+      textarea?.setSelectionRange(inserted.caret, inserted.caret);
+    });
+    return true;
   }
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -2224,6 +2241,7 @@ export default function EditWorkPage() {
                 className="admin-textarea"
               />
               <span className="admin-form-hint">Gunakan Markdown. Ganti baris kosong untuk perenggan baharu.</span>
+              <FootnoteInserter onInsert={addFootnote} />
             </>}
             {manuscriptMode === "markdown" && !canEditVisually(form.body) && <span className="admin-form-hint">Manuskrip ini menggunakan sintaks yang belum disokong oleh mod Visual. Teruskan dalam Markdown supaya format asal tidak berubah.</span>}
             <details className="admin-advanced-field">
@@ -2234,6 +2252,7 @@ export default function EditWorkPage() {
                 <li><code>**tebal**</code> → <strong>tebal</strong>; <code>*condong*</code> → <em>condong</em>. Gunakan condong untuk judul karya yang disebut dalam prosa.</li>
                 <li><code>## Tajuk bahagian</code> pada baris sendiri → tajuk bahagian; <code>---</code> (atau <code>***</code>, <code>* * *</code>, <code>___</code>) pada baris sendiri → pemisah adegan.</li>
                 <li><code>&gt; Petikan</code> → petikan; <code>[teks pautan](https://contoh.com)</code> → pautan; <code>- Butiran</code> → senarai. Format ini disunting dalam mod Markdown.</li>
+                <li>Nota sisi: letakkan kursor di tempat nombor patut berada, tekan <strong>+ Nota sisi</strong> dan taip isinya; nombor dan nota ditulis untuk anda. (Dalam Markdown ia ialah <code>[^1]</code> dalam ayat dan baris <code>[^1]: isi nota</code> di hujung.)</li>
                 <li><code>[[gambar:1]]</code> pada baris sendiri → lokasi gambar dalam teks. Alihkan baris penanda untuk mengalihkan gambar.</li>
                 <li>Kotak mesej: <code>:::mesej</code>, isi mesej, kemudian <code>:::</code> pada baris sendiri. Untuk e-mel, gunakan <code>:::emel</code>. Tiada nombor telefon atau alamat diperlukan.</li>
               </ul>
