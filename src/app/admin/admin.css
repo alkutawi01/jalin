@@ -772,8 +772,8 @@
   .a-shell .admin-table.a-compact-table th.a-col-fit, .a-shell .admin-table.a-compact-table td.a-col-fit, .a-shell .admin-table.a-compact-table th.admin-pick-column, .a-shell .admin-table.a-compact-table td.admin-pick-cell { width: 1%; }
   .a-shell .admin-table.a-compact-table th, .a-shell .admin-table.a-compact-table td.admin-pick-cell { padding-inline: 8px; }
   .a-shell .admin-table.a-compact-table .admin-table-actions { justify-content: flex-end; flex-wrap: nowrap; }
-  /* Only the headings of the tick, title, kind and status columns are centred; the values keep their own alignment (the title stays at the left). */
-  .a-shell .admin-table.a-compact-table th:nth-child(-n+2), .a-shell .admin-table.a-compact-table th:nth-child(6), .a-shell .admin-table.a-compact-table th:nth-child(7) { text-align: center; }
+  /* Only some headings are centred (the tick, the status and the actions); Tajuk and Jenis stay at the left. The values keep their own alignment. */
+  .a-shell .admin-table.a-compact-table th:nth-child(1), .a-shell .admin-table.a-compact-table th:nth-child(7), .a-shell .admin-table.a-compact-table th:last-child { text-align: center; }
   .a-shell .admin-table.a-compact-table .admin-work-blocker { display: none; }
 }
 @container admin-table (min-width: 561px) and (max-width: 759px) {
