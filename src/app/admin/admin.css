@@ -602,11 +602,11 @@
 /* Tetapan's parts: a row of tabs above the open panel, so the panel keeps the whole width of the page (a column beside it made every form narrow).
    The three groups stay in order; their headings are read by a screen reader only. A row that does not fit wraps; nothing scrolls sideways. */
 .a-shell .a-settings-layout { display: block; margin-top: 8px; }
-.a-shell .a-settings-tabs { display: flex; flex-wrap: wrap; justify-content: flex-start; gap: 0 2px; margin: 0 0 20px; border-bottom: 1px solid var(--a-line); }
+.a-shell .a-settings-tabs { display: flex; flex-wrap: wrap; justify-content: flex-start; gap: 0; margin: 0 0 20px; border-bottom: 1px solid var(--a-line); }
 .a-shell .a-settings-group, .a-shell .a-settings-tabs ul { display: contents; }
 .a-shell .a-settings-group-title { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
-.a-shell .a-settings-tabs ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 2px; }
-.a-shell .a-settings-tabs a { color: var(--a-ink); text-decoration: none; display: flex; align-items: center; min-height: 40px; padding: 0 10px; margin-bottom: -1px; border-bottom: 3px solid transparent; border-radius: var(--a-radius-sm); font-size: 14px; font-weight: 500; }
+.a-shell .a-settings-tabs ul { list-style: none; margin: 0; padding: 0; }
+.a-shell .a-settings-tabs a { color: var(--a-ink); text-decoration: none; display: flex; align-items: center; min-height: 40px; padding: 0 9px; margin-bottom: -1px; border-bottom: 3px solid transparent; border-radius: var(--a-radius-sm); font-size: 14px; font-weight: 500; }
 .a-shell .a-settings-tabs a:hover { background: var(--a-sunk); }
 .a-shell .a-settings-tabs a:focus-visible { outline: 2px solid var(--a-accent); outline-offset: -2px; }
 .a-shell .a-settings-tabs a.active { border-bottom-color: var(--a-accent); font-weight: 700; }
