@@ -665,6 +665,18 @@
 /* Inside the visual editor the row sits between the toolbar and the text, like a second toolbar row. */
 .a-shell .visual-manuscript .a-footnote-inserter { margin: 0; padding: 8px 10px; border-bottom: 1px solid var(--a-line); }
 .a-shell .visual-manuscript .a-footnote-panel { border: 0; background: transparent; }
+/* The list of every side note, under the manuscript: one row each, with its number, the words before it and its own box. */
+.a-shell .a-note-list { margin: 16px 0; padding: 14px 16px; border: 1px solid var(--a-line); border-radius: var(--a-radius); background: var(--a-surface); }
+.a-shell .a-note-list h3 { margin: 0 0 4px; font-size: 14px; }
+.a-shell .a-note-list h4 { margin: 0 0 4px; font-size: 13px; }
+.a-shell .a-note-list ol { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 14px; }
+.a-shell .a-note-item { display: grid; gap: 6px; padding-top: 14px; border-top: 1px solid var(--a-line); }
+.a-shell .a-note-item:first-child { padding-top: 0; border-top: 0; }
+.a-shell .a-note-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; }
+.a-shell .a-note-number { font-weight: 700; font-size: 13px; }
+.a-shell .a-note-context { font-size: 13px; color: var(--a-muted); overflow-wrap: anywhere; }
+.a-shell .a-note-text { margin: 0; font-size: 14px; overflow-wrap: anywhere; }
+.a-shell .a-note-problem { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--a-warn-line); }
 .a-shell .a-small { font-size: 13px; }
 .a-shell .a-aside { margin-left: 4px; font-size: 12px; color: var(--a-faint); }
 .a-shell .a-info-box { margin-bottom: 1rem; padding: 0.75rem; background: var(--a-info-bg); border: 1px solid var(--a-info-line); border-radius: var(--a-radius-sm); }

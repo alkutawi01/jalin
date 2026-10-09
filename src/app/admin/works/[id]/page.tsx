@@ -31,6 +31,8 @@ import { renderItalics, toggleItalicSelection } from "../../../../lib/reader/inl
 import VisualManuscriptEditor, { canEditVisually } from "../../../../components/admin/VisualManuscriptEditor";
 import FootnoteInserter from "../../../../components/admin/FootnoteInserter";
 import { insertFootnote } from "../../../../lib/admin/footnote-insert";
+import SideNoteList from "../../../../components/admin/SideNoteList";
+import { footnoteReferenceRange } from "../../../../lib/admin/footnote-edit";
 import PlacesEditor from "../../../../components/admin/PlacesEditor";
 import { uploadTooLargeMessage } from "../../../../lib/admin/upload-limit";
 import { errorText } from "../../../../lib/admin/error-text";
@@ -700,6 +702,42 @@ export default function EditWorkPage() {
       textarea?.setSelectionRange(inserted.caret, inserted.caret);
     });
     return true;
+  }
+
+  /** From the list of notes to the number in the text: the cursor goes there and the text scrolls to it, in either editor. */
+  function jumpToFootnote(label: string) {
+    if (manuscriptMode === "markdown") {
+      const textarea = manuscriptRef.current;
+      const place = footnoteReferenceRange(form.body, label);
+      if (!textarea || !place) return;
+      textarea.focus();
+      textarea.setSelectionRange(place.start, place.end);
+      // A browser scrolls a text box to the cursor when it gains focus, not when the cursor is moved: leave and come back.
+      textarea.blur();
+      textarea.focus();
+      textarea.scrollIntoView({ block: "nearest" });
+      return;
+    }
+    const surface = document.querySelector<HTMLElement>(".visual-manuscript-surface");
+    if (!surface) return;
+    const token = `[^${label}]`;
+    const walker = document.createTreeWalker(surface, NodeFilter.SHOW_TEXT);
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+      const text = node.textContent ?? "";
+      const at = text.indexOf(token);
+      if (at < 0 || text.slice(at + token.length).startsWith(":")) continue;
+      // A line that is itself a note (it starts with its label and a colon) is the words, not the number.
+      if ((node.parentElement?.textContent ?? "").trimStart().startsWith(`${token}:`)) continue;
+      const range = document.createRange();
+      range.setStart(node, at);
+      range.setEnd(node, at + token.length);
+      surface.focus();
+      const selection = window.getSelection();
+      selection?.removeAllRanges();
+      selection?.addRange(range);
+      node.parentElement?.scrollIntoView({ block: "center", behavior: "smooth" });
+      return;
+    }
   }
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -2244,6 +2282,11 @@ export default function EditWorkPage() {
               <FootnoteInserter onInsert={addFootnote} />
             </>}
             {manuscriptMode === "markdown" && !canEditVisually(form.body) && <span className="admin-form-hint">Manuskrip ini menggunakan sintaks yang belum disokong oleh mod Visual. Teruskan dalam Markdown supaya format asal tidak berubah.</span>}
+            <SideNoteList
+              body={form.body}
+              onChange={(body) => { setForm((prev) => ({ ...prev, body })); setDirty(true); }}
+              onJump={jumpToFootnote}
+            />
             <details className="admin-advanced-field">
               <summary>Panduan penulisan &amp; Markdown</summary>
               <p>Dalam mod Visual, pilih teks dan gunakan butang pemformatan. Mod Markdown memberi kawalan penuh. Kedua-duanya menyimpan manuskrip yang sama.</p>
