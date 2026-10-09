@@ -32,8 +32,8 @@ for (const bad of ["ab", "A B", "-abc", "a".repeat(31), "siti@x.com", ""]) {
   assert(thrown, `username "${bad.slice(0, 12)}" is refused with a Malay message`);
 }
 assert(isStaffRole("editor") && isStaffRole("chief_editor") && !isStaffRole("owner") && !isStaffRole("admin"), "only editor and chief_editor can be given to an account; nobody is made owner");
-const text = invitationText({ displayName: "Siti", username: "siti", role: "editor" }, "Kp4t-Xm9w-Rb2n", "https://jalin.adjung.com");
-assert(text.includes("https://jalin.adjung.com/admin/login") && text.includes("Nama pengguna: siti") && text.includes("Kata laluan sementara: Kp4t-Xm9w-Rb2n") && text.includes("penyunting"), "the invitation carries the address, username, temporary password and role");
+const text = invitationText({ username: "siti", role: "editor" }, "Kp4t-Xm9w-Rb2n", "https://jalin.adjung.com");
+assert(text.includes("https://jalin.adjung.com/admin/login") && text.includes("Kata nama sementara: siti") && text.includes("Kata laluan sementara: Kp4t-Xm9w-Rb2n") && text.includes("penyunting"), "the invitation carries the address, username, temporary password and role");
 
 // Permissions
 assert(permissionFor("GET", "/api/admin/users") === "user.manage" && permissionFor("POST", "/api/admin/users/abc/reset-password") === "user.manage" && permissionFor("PATCH", "/api/admin/users/abc") === "user.manage", "every users route needs user.manage (a plain read of the list does not fall to content.read)");

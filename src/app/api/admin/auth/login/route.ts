@@ -31,7 +31,9 @@ export async function POST(request: NextRequest) {
         ? "Terlalu banyak percubaan. Cuba lagi selepas 15 minit."
         : outcome.error === "inactive"
           ? "Akaun ini telah dimatikan. Hubungi pemilik Jalin."
-          : "Nama pengguna atau kata laluan tidak sah.";
+          : outcome.error === "expired"
+            ? "Jemputan ini telah tamat tempoh. Minta pemilik Jalin menghantar jemputan yang baharu."
+            : "Nama pengguna atau kata laluan tidak sah.";
       return NextResponse.json({ error: message }, { status: outcome.error === "locked" ? 429 : 401 });
     }
 

@@ -114,7 +114,7 @@ export async function getCurrentAdmin(): Promise<AdminUser | null> {
  * Returns session token if valid.
  * FAIL CLOSED: missing config = deny all.
  */
-export type SignInOutcome = { token: string } | { error: "invalid" | "locked" | "inactive" };
+export type SignInOutcome = { token: string } | { error: "invalid" | "locked" | "inactive" | "expired" };
 
 /**
  * Sign in as the owner (e-mail on the allowed list + ADMIN_SECRET) or as a staff account (username or e-mail + own password).

@@ -13,6 +13,15 @@ const ROLE_HELP: Record<Role, string> = {
   chief_editor: "Semua yang penyunting boleh, serta menyemak gambar, mengurus siri dan sumber, menjana dengan AI dan memilih Pilihan Editor. Tidak boleh menerbitkan."
 };
 
+/** What the list says of an account that has not been used yet: still waiting for the first sign-in (until when), or the invitation ran out. */
+function inviteState(user: StaffUser): string {
+  if (!user.mustChangePassword) return "";
+  if (user.lastLoginAt || !user.inviteExpiresAt) return " · belum tukar kata laluan";
+  const end = new Date(user.inviteExpiresAt);
+  if (end.getTime() < Date.now()) return " · jemputan tamat tempoh";
+  return ` · menunggu log masuk pertama (sah hingga ${end.toLocaleDateString("ms-MY", { timeZone: "Asia/Kuala_Lumpur", day: "numeric", month: "short" })})`;
+}
+
 async function api(url: string, method: string, body?: unknown) {
   const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: body === undefined ? undefined : JSON.stringify(body) });
   const data = await res.json().catch(() => ({}));
@@ -22,7 +31,7 @@ async function api(url: string, method: string, body?: unknown) {
 
 export default function UsersPanel({ initialUsers, roleNames }: { initialUsers: StaffUser[]; roleNames: Record<Role, string> }) {
   const [users, setUsers] = useState(initialUsers);
-  const [form, setForm] = useState({ displayName: "", username: "", email: "", role: "editor" as Role });
+  const [form, setForm] = useState({ note: "", role: "editor" as Role });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [invitation, setInvitation] = useState<{ title: string; text: string } | null>(null);
@@ -38,11 +47,12 @@ export default function UsersPanel({ initialUsers, roleNames }: { initialUsers: 
     setBusy(true);
     setError(null);
     try {
-      const data = await api("/api/admin/users", "POST", form);
+      // Only the role is needed: the username and password are made here, and the person gives their own name when they first sign in.
+      const data = await api("/api/admin/users", "POST", { displayName: form.note, role: form.role });
       setUsers((list) => [...list, data.user]);
-      setInvitation({ title: `Jemputan untuk ${data.user.displayName}`, text: data.invitation });
-      setForm({ displayName: "", username: "", email: "", role: "editor" });
-      toast(`Akaun ${data.user.displayName} dicipta. Salin jemputan dan hantar.`, "success");
+      setInvitation({ title: form.note.trim() ? `Jemputan untuk ${data.user.displayName}` : "Jemputan baharu", text: data.invitation });
+      setForm({ note: "", role: form.role });
+      toast("Jemputan sedia. Salin dan hantar kepada orang itu.", "success");
     } catch (err) {
       const text = errorText(err);
       setError(text);
@@ -74,7 +84,11 @@ export default function UsersPanel({ initialUsers, roleNames }: { initialUsers: 
   }
 
   async function reset(user: StaffUser) {
-    if (!(await confirmAction(`Tetapkan semula kata laluan ${user.displayName}? Kata laluan lama tidak lagi berfungsi.`, { confirmLabel: "Ya, tetapkan semula", danger: true }))) return;
+    const unused = user.mustChangePassword && !user.lastLoginAt;
+    if (!(await confirmAction(
+      unused ? `Hantar jemputan baharu untuk ${user.displayName}? Kata laluan sementara yang lama tidak lagi berfungsi.` : `Tetapkan semula kata laluan ${user.displayName}? Kata laluan lama tidak lagi berfungsi.`,
+      { confirmLabel: unused ? "Ya, jemputan baharu" : "Ya, tetapkan semula", danger: true }
+    ))) return;
     setError(null);
     try {
       const data = await api(`/api/admin/users/${user.id}/reset-password`, "POST");
@@ -119,8 +133,8 @@ export default function UsersPanel({ initialUsers, roleNames }: { initialUsers: 
       {invitation ? (
         <section className="admin-section" aria-label={invitation.title}>
           <h2>{invitation.title}</h2>
-          <p className="admin-form-hint">Kata laluan sementara hanya dipaparkan sekali. Salin dan hantar melalui e-mel atau WhatsApp sekarang.</p>
-          <textarea ref={box} className="admin-input" readOnly rows={9} value={invitation.text} onFocus={(e) => e.currentTarget.select()} aria-label="Teks jemputan" />
+          <p className="admin-form-hint">Kata nama dan kata laluan sementara hanya dipaparkan sekali. Ubah ayat jika perlu, kemudian salin dan hantar melalui WhatsApp, e-mel atau mesej.</p>
+          <textarea ref={box} className="admin-input" rows={11} value={invitation.text} onChange={(e) => setInvitation({ ...invitation, text: e.target.value })} aria-label="Teks jemputan" />
           <div className="admin-form-actions">
             <button type="button" className="admin-btn admin-btn-primary" onClick={copy}>{copied ? "Disalin" : "Salin jemputan"}</button>
             <button type="button" className="admin-btn" onClick={() => setInvitation(null)}>Tutup</button>
@@ -131,19 +145,7 @@ export default function UsersPanel({ initialUsers, roleNames }: { initialUsers: 
       <section className="admin-section" aria-label="Jemput pengguna">
         <h2>Jemput pengguna</h2>
         <form onSubmit={invite} className="admin-form">
-          <div className="admin-form-group">
-            <label htmlFor="u-name">Nama</label>
-            <input id="u-name" value={form.displayName} onChange={(e) => setForm({ ...form, displayName: e.target.value })} required maxLength={80} />
-          </div>
-          <div className="admin-form-group">
-            <label htmlFor="u-username">Nama pengguna</label>
-            <input id="u-username" value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} required autoCapitalize="none" spellCheck={false} />
-            <p className="admin-form-hint">Huruf kecil, nombor, titik, sengkang atau garis bawah (3 hingga 30 aksara).</p>
-          </div>
-          <div className="admin-form-group">
-            <label htmlFor="u-email">E-mel (tidak wajib)</label>
-            <input id="u-email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
-          </div>
+          <p className="admin-form-hint">Tidak perlu tahu nama, e-mel atau nama pengguna orang itu. Pilih peranan; kata nama dan kata laluan sementara dibuat untuk anda dalam satu jemputan yang siap disalin.</p>
           <div className="admin-form-group">
             <label htmlFor="u-role">Peranan</label>
             <select id="u-role" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value as Role })}>
@@ -152,7 +154,12 @@ export default function UsersPanel({ initialUsers, roleNames }: { initialUsers: 
             </select>
             <p className="admin-form-hint">{ROLE_HELP[form.role]}</p>
           </div>
-          <button type="submit" className="admin-btn admin-btn-primary" disabled={busy}>{busy ? "Mencipta…" : "Cipta akaun dan sediakan jemputan"}</button>
+          <div className="admin-form-group">
+            <label htmlFor="u-note">Catatan untuk saya (tidak wajib)</label>
+            <input id="u-note" value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} maxLength={80} placeholder="cth. kenalan WhatsApp, Aisyah" />
+            <p className="admin-form-hint">Hanya untuk senarai Pasukan supaya anda ingat siapa. Orang itu menaip nama sendiri semasa log masuk kali pertama.</p>
+          </div>
+          <button type="submit" className="admin-btn admin-btn-primary" disabled={busy}>{busy ? "Menyediakan…" : "Sediakan jemputan"}</button>
         </form>
       </section>
 
@@ -166,14 +173,14 @@ export default function UsersPanel({ initialUsers, roleNames }: { initialUsers: 
               <li key={u.id} className="admin-user-card">
                 <div className="admin-user-main">
                   <strong>{u.displayName}</strong>
-                  <div className="admin-form-hint">{u.username}{!u.active ? " · dimatikan" : ""}{u.mustChangePassword ? " · belum tukar kata laluan" : ""} · Log masuk terakhir: {u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleString("ms-MY", { timeZone: "Asia/Kuala_Lumpur", dateStyle: "medium", timeStyle: "short" }) : "belum pernah"}</div>
+                  <div className="admin-form-hint">{u.username}{!u.active ? " · dimatikan" : ""}{inviteState(u)} · Log masuk terakhir: {u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleString("ms-MY", { timeZone: "Asia/Kuala_Lumpur", dateStyle: "medium", timeStyle: "short" }) : "belum pernah"}</div>
                 </div>
                 <div className="admin-user-actions">
                   <select aria-label={`Peranan ${u.displayName}`} value={u.role} onChange={(e) => change(u, { role: e.target.value as Role })}>
                     <option value="editor">{roleNames.editor}</option>
                     <option value="chief_editor">{roleNames.chief_editor}</option>
                   </select>
-                  <button type="button" className="admin-btn" onClick={() => reset(u)}>Tetapkan semula kata laluan</button>
+                  <button type="button" className="admin-btn" onClick={() => reset(u)}>{u.mustChangePassword && !u.lastLoginAt ? "Hantar jemputan semula" : "Tetapkan semula kata laluan"}</button>
                   <button type="button" className="admin-btn" onClick={() => change(u, { active: !u.active })}>{u.active ? "Matikan" : "Aktifkan"}</button>
                 </div>
               </li>
