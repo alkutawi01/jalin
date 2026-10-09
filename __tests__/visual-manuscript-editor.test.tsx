@@ -34,7 +34,8 @@ assert.match(rendered, /Aku sudah sampai/);
 assert.match(rendered, /Selepas/);
 
 const editorMarkup = renderToStaticMarkup(<VisualManuscriptEditor value="" onChange={() => {}} existingAnchors={[]} onMarkerInserted={() => {}} />);
-assert.equal((editorMarkup.match(/data-label=/g) ?? []).length, 8, "all editor controls have visible tooltip labels");
+assert.equal((editorMarkup.match(/data-label=/g) ?? []).length, 9, "all editor controls have visible tooltip labels (the ninth is Nota sisi)");
+assert.match(editorMarkup, /aria-label="Sisip nota sisi"/, "the side-note control has an accessible name");
 assert.match(editorMarkup, /aria-label="Sisip kotak e-mel"/, "icon-only editor controls have accessible names");
 assert.match(editorMarkup, /<svg/, "toolbar uses symbols rather than text-only actions");
 assert.match(editorMarkup, /Penanda gambar boleh dibuang di sini/, "visual editor explains marker removal");
