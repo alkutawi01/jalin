@@ -812,3 +812,7 @@
   .a-shell .admin-table.a-compact-table.a-compact-table td:last-child .admin-table-actions { justify-content: stretch; }
   .a-shell .admin-table.a-compact-table.a-compact-table td:last-child .admin-btn { flex: 1 1 0; justify-content: center; }
 }
+
+/* A picture an editor uploads (the Editorial page's top picture, a person's picture): shown at a fixed width above its upload controls. */
+.a-shell .a-profile-figure { margin: 0 0 12px; max-width: 520px; }
+.a-shell .a-profile-figure img { display: block; width: 100%; border-radius: var(--a-radius-lg); }

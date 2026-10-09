@@ -5,6 +5,8 @@
  */
 export const SETTINGS_TABS = [
   { id: "teks-awam", label: "Teks halaman awam", group: "Laman awam" },
+  { id: "halaman-editorial", label: "Halaman Editorial", group: "Laman awam" },
+  { id: "halaman-tentang", label: "Halaman Tentang Kami", group: "Laman awam" },
   { id: "warna-blok", label: "Warna blok laman utama", group: "Laman awam" },
   { id: "saiz-teks", label: "Saiz teks karya", group: "Laman awam" },
   { id: "audiens", label: "Audiens", group: "Laman awam" },

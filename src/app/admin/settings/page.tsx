@@ -1,6 +1,8 @@
 import PromptEditor from "../../../components/admin/PromptEditor";
 import AiPersonaSettings from "../../../components/admin/AiPersonaSettings";
 import SiteCopySettings from "../../../components/admin/SiteCopySettings";
+import EditorialPageSettings from "../../../components/admin/EditorialPageSettings";
+import AboutPageSettings from "../../../components/admin/AboutPageSettings";
 import SiteThemeSettings from "../../../components/admin/SiteThemeSettings";
 import ReaderTypographySettings from "../../../components/admin/ReaderTypographySettings";
 import AudienceBandsSettings from "../../../components/admin/AudienceBandsSettings";
@@ -89,6 +91,10 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
             <SiteCopySettings />
           </>
         ) : null}
+
+        {tab === "halaman-editorial" ? <EditorialPageSettings /> : null}
+
+        {tab === "halaman-tentang" ? <AboutPageSettings /> : null}
 
         {tab === "warna-blok" ? <SiteThemeSettings /> : null}
 

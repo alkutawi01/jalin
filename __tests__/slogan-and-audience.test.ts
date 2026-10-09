@@ -21,7 +21,7 @@ assert(description.startsWith("Selami dunia melalui cerita di Jalin") && descrip
 assert(layout.includes('template: "%s · Jalin"') && layout.includes('description: "Selami dunia melalui cerita berilustrasi dalam Bahasa Melayu."'), "other pages keep their own title before '· Jalin'; the share card has the short line");
 
 assert(read("src/components/reader/StoryChrome.tsx").includes('<p className="footer-tagline">Selami dunia melalui cerita</p>'), "the footer carries the slogan, without a full stop");
-const about = read("src/app/tentang/page.tsx");
+const about = read("src/app/tentang/page.tsx") + read("src/lib/about-page.ts");
 assert(about.includes('title="Selami dunia melalui cerita"') && about.includes("mengajak pembaca menyelami dunia melalui cerpen, novela, cerita bersiri, fragmen dan sinopsis."), "the About page opens with the slogan and says what there is to read");
 
 // no public page narrows the readers to an age

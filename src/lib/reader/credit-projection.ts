@@ -38,7 +38,7 @@ type ProjectedPerson = {
 /** Credits saved earlier hold the label text itself ("Editor"), not a key: they read as the new wording too. */
 const RENAMED_LABELS: Record<string, string> = { Editor: "Penyunting", "Editor penerbitan": "Penyunting penerbitan" };
 
-function projectRole(role: string): string | undefined {
+export function projectRole(role: string): string | undefined {
   if (Object.prototype.hasOwnProperty.call(ROLE_LABELS, role)) {
     return ROLE_LABELS[role];
   }

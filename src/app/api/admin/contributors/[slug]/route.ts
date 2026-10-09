@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getContributor, updateContributor } from "../../../../../lib/admin/contributor-service";
+import { setContributorPost } from "../../../../../lib/admin/contributor-profile";
 
 export async function GET(
   request: NextRequest,
@@ -56,7 +57,13 @@ export async function PATCH(
       isVisible: body.isVisible,
     });
 
-    return NextResponse.json(contributor);
+    // The editorial post is saved with the rest; its own check (both fields or neither) can refuse it.
+    if (body.postTitle !== undefined || body.postDuty !== undefined) {
+      const post = await setContributorPost(contributor.slug, String(body.postTitle ?? ""), String(body.postDuty ?? ""));
+      if (!post.ok) return NextResponse.json({ error: post.error }, { status: post.status });
+    }
+
+    return NextResponse.json(await getContributor(contributor.slug));
   } catch (error) {
     const message = error instanceof Error ? error.message : "Ralat tidak diketahui.";
     const status = message.includes("already exists") || message.includes("sudah digunakan") ? 409

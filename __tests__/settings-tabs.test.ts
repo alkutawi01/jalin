@@ -14,7 +14,7 @@ function assert(cond: boolean, msg: string) {
 }
 const read = (p: string) => fs.readFileSync(path.join(__dirname, "..", p), "utf8").replace(/\r\n/g, "\n");
 
-assert(SETTINGS_TABS.map((t) => t.id).join() === "teks-awam,warna-blok,saiz-teks,audiens,nama-samaran,arahan-ai,alat-lain" && DEFAULT_SETTINGS_TAB === "teks-awam", "seven tabs, the texts editors change most first (Status sistem is on the dashboard)");
+assert(SETTINGS_TABS.map((t) => t.id).join() === "teks-awam,halaman-editorial,halaman-tentang,warna-blok,saiz-teks,audiens,nama-samaran,arahan-ai,alat-lain" && DEFAULT_SETTINGS_TAB === "teks-awam", "nine tabs, the texts editors change most first, Halaman Editorial next (Status sistem is on the dashboard)");
 assert(movedTabTarget("status-sistem") === "/admin#status-sistem" && movedTabTarget(["status-sistem", "x"]) === "/admin#status-sistem" && movedTabTarget("audiens") === null && movedTabTarget(undefined) === null && movedTabTarget("toString") === null, "an old link to the Status sistem tab goes to the dashboard");
 assert(settingsTabOf("audiens") === "audiens" && settingsTabOf(["arahan-ai", "x"]) === "arahan-ai", "an address opens the tab it names");
 assert(settingsTabOf(undefined) === "teks-awam" && settingsTabOf("") === "teks-awam" && settingsTabOf("tiada") === "teks-awam" && settingsTabOf("<script>") === "teks-awam", "nothing, or a tab that does not exist, opens the first tab");

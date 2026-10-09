@@ -65,6 +65,9 @@ export interface Contributors {
   bio: string | null;
   disclosure: string | null;
   is_visible: boolean;
+  /** Migration 031: what the public Editorial page shows for this person. */
+  post_title: string | null;
+  post_duty: string | null;
   created_at: ColumnType<Date, string | Date, string | Date>;
   updated_at: ColumnType<Date, string | Date, string | Date>;
 }

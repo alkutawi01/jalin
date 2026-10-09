@@ -3101,7 +3101,8 @@ main:focus { outline: none; }
 .info-page { max-width: 720px; padding-top: 64px; padding-bottom: 80px; }
 .info-page h1 { margin: 8px 0 14px; font-size: clamp(2.1rem, 5.2vw, 3.1rem); line-height: 1.12; font-weight: 500; font-style: normal; }
 .info-page .dek { margin: 0 0 36px; }
-.info-emblem { margin: 0 0 18px; line-height: 0; }
+.info-brand { margin: 0 0 40px; padding-bottom: 28px; border-bottom: 1px solid var(--line); text-align: center; line-height: 0; }
+.info-brand img { width: min(300px, 74%); height: auto; aspect-ratio: 2048 / 1536; margin: -36px auto -30px; }
 .info-body { font-family: Georgia, "Times New Roman", serif; font-size: 1.12rem; line-height: 1.8; color: var(--ink); }
 .info-body h2 { margin: 36px 0 10px; font-size: 1.35rem; font-weight: 500; font-style: normal; }
 .info-body h2::before { content: ""; display: block; width: 32px; height: 3px; margin-bottom: 12px; border-radius: 3px; background: var(--clay); }
@@ -3111,10 +3112,6 @@ main:focus { outline: none; }
 /* A link inside a paragraph keeps a line (colour alone is not enough), but a thin, soft one that does not cut through the letters. */
 .info-body a { color: var(--clay-text); text-decoration-line: underline; text-decoration-thickness: 1px; text-decoration-color: rgba(160, 96, 76, .38); text-underline-offset: 4px; text-decoration-skip-ink: none; }
 .info-body a:hover, .info-body a:focus-visible { text-decoration-color: currentColor; }
-.people-list { list-style: none; padding-left: 0 !important; margin: 0 0 14px; display: grid; gap: 14px; }
-.people-list li { margin: 0; display: grid; gap: 2px; }
-.people-name { font-weight: 600; }
-.people-about { font-size: 1rem; line-height: 1.6; color: var(--ink-soft); }
 .info-updated { margin: 40px 0 0; padding-top: 16px; border-top: 1px solid var(--line); font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 13px; color: var(--ink-soft); }
 @media (max-width: 680px) { .info-page { padding-top: 36px; padding-bottom: 48px; } .info-body { font-size: 1.05rem; } }
 .site-footer .footer-col { display: block; }
@@ -3623,8 +3620,63 @@ html:has(.a-nav, .admin-login-page) { overflow: visible; }
 .auth-redeem-link { display: block; margin: 0 0 8px; text-align: center; text-decoration: none; box-sizing: border-box; }
 .auth-code--long { letter-spacing: .08em; font-size: 17px; }
 
-/* The header now has eight links (five kinds of content, Editorial, Tentang Kami); between the phone menu and a full laptop width they are set a little tighter so none wraps or runs under the wordmark. */
-@media (min-width: 821px) and (max-width: 1100px) {
-  .header-inner { grid-template-columns: auto 1fr; column-gap: 24px; }
-  .header-nav { gap: 14px; font-size: 15px; }
+/* The Kandungan menu: a button in the header bar that opens the five kinds of content, in two groups; in the phone menu the same five sit under a plain label. */
+.header-nav > * + * { position: relative; }
+.header-nav > * + *::before { content: "|"; position: absolute; left: -15px; top: 50%; transform: translateY(-52%); color: rgba(24, 52, 60, .3); font-weight: 300; font-size: 17px; line-height: 1; pointer-events: none; }
+.nav-menu { display: inline-flex; }
+.nav-menu-button { display: inline-flex; align-items: center; gap: 7px; min-height: 40px; padding: 0; border: 0; background: none; font: inherit; letter-spacing: inherit; color: #5d696b; cursor: pointer; }
+.nav-menu-button::after { content: ""; width: 6px; height: 6px; margin-top: -3px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(45deg); transition: transform .18s ease, margin .18s ease; }
+.nav-menu-button[aria-expanded="true"]::after { margin-top: 3px; transform: rotate(-135deg); }
+.nav-menu-button:hover, .nav-menu-button:focus-visible, .nav-menu-button[aria-expanded="true"] { color: var(--ink); }
+.nav-menu-button.active { color: var(--ink); border-bottom: 1px solid var(--clay); padding-bottom: 5px; }
+.nav-menu-panel { position: absolute; top: calc(100% + 6px); left: -16px; z-index: 40; width: 236px; padding: 8px; border: 1px solid var(--line); border-radius: 14px; background: var(--white); box-shadow: 0 22px 48px -18px rgba(24,52,60,.34), 0 2px 6px rgba(24,52,60,.06); animation: nav-menu-in .16s ease-out; }
+.nav-menu-panel::before { content: ""; position: absolute; top: -6px; left: 28px; width: 10px; height: 10px; border-top: 1px solid var(--line); border-left: 1px solid var(--line); background: var(--white); transform: rotate(45deg); }
+.header-nav .nav-menu-panel a { display: flex; align-items: center; min-height: 38px; padding: 0 12px; border-radius: 9px; border-bottom: 0; color: var(--ink); font-size: 15px; }
+.header-nav .nav-menu-panel a:hover, .header-nav .nav-menu-panel a:focus-visible { background: rgba(167,100,80,.1); outline: none; }
+.header-nav .nav-menu-panel a.active { padding-bottom: 0; background: rgba(167,100,80,.12); color: var(--clay-text); font-weight: 600; }
+.header-nav .nav-menu-panel a.active::after { content: ""; width: 6px; height: 6px; margin-left: auto; border-radius: 50%; background: var(--clay); }
+@keyframes nav-menu-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .nav-menu-panel { animation: none; } .nav-menu-button::after { transition: none; } }
+.nav-group-label { display: block; padding: 6px 12px 2px; color: var(--ink-soft); font-size: 11px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; }
+.nav-sep { display: block; height: 1px; margin: 6px 4px; background: var(--line); }
+.header-mobile-nav-links .nav-group-link { padding-left: 20px; }
+
+/* Editorial: who is behind Jalin. A wide page for the cards, a reading column for the words; people are named, never pictured. */
+.editorial-page { max-width: 1100px; padding-top: 64px; padding-bottom: 80px; }
+.editorial-intro { max-width: 720px; }
+.editorial-intro h1 { margin: 8px 0 14px; font-size: clamp(2.1rem, 5.2vw, 3.1rem); line-height: 1.12; font-weight: 500; font-style: normal; }
+.editorial-intro .dek { margin: 0 0 18px; }
+.editorial-definition { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: 1.05rem; line-height: 1.7; color: var(--ink-soft); }
+.editorial-section { margin-top: 56px; }
+.editorial-section h2 { margin: 0 0 20px; font-size: 1.35rem; font-weight: 500; font-style: normal; }
+.editorial-section h2::before { content: ""; display: block; width: 32px; height: 3px; margin-bottom: 12px; border-radius: 3px; background: var(--clay); }
+.editorial-disclosure { max-width: 720px; margin: 0 0 24px; font-family: Georgia, "Times New Roman", serif; font-size: 1.05rem; line-height: 1.7; color: var(--ink); }
+.team-card { display: flex; align-items: center; min-height: 96px; padding: 20px 24px; border: 1px solid var(--line); border-radius: 14px; background: var(--white); color: var(--ink); transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease; }
+.team-card:hover, .team-card:focus-visible { border-color: var(--clay); box-shadow: 0 20px 44px -18px rgba(24,52,60,.28); transform: translateY(-2px); outline: none; }
+.team-card-body { display: grid; gap: 4px; min-width: 0; }
+.team-card-name { font-family: Georgia, "Times New Roman", serif; font-size: 1.2rem; font-weight: 500; line-height: 1.25; }
+.team-card-virtual, .team-card-role { font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--clay-text); }
+.team-card-roles, .team-card-note { font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 14px; line-height: 1.5; color: var(--ink-soft); }
+.team-card--editor { padding: 28px 32px; }
+.team-card--editor .team-card-name { font-size: 1.5rem; }
+.team-card--editor .team-card-note { max-width: 56ch; }
+.team-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+.ways-grid { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 48px; margin: 0; }
+.ways-item { padding: 18px 0; border-top: 1px solid var(--line); }
+.ways-item h3 { margin: 0 0 6px; font-family: Georgia, "Times New Roman", serif; font-size: 1.1rem; font-weight: 600; }
+.ways-item p { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: 1.02rem; line-height: 1.65; color: var(--ink-soft); }
+@media (max-width: 1050px) { .team-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; } .editorial-section { margin-top: 44px; } }
+@media (max-width: 680px) {
+  .editorial-page { padding-top: 36px; padding-bottom: 48px; }
+  .editorial-section { margin-top: 36px; }
+  .team-grid { grid-template-columns: 1fr; gap: 12px; }
+  .team-card { padding: 14px 18px; min-height: 44px; }
+  .team-card--editor { padding: 18px; }
+  .team-card--editor .team-card-name { font-size: 1.3rem; }
+  .ways-grid { grid-template-columns: 1fr; }
 }
+
+/* Editorial: the picture the editor adds across the top, kept inside the page width. */
+.editorial-hero { margin: 40px 0 0; }
+.editorial-hero img { display: block; width: 100%; aspect-ratio: 2 / 1; object-fit: cover; border-radius: 14px; }
+@media (max-width: 680px) { .editorial-hero { margin-top: 28px; } .editorial-hero img { aspect-ratio: 4 / 3; } }

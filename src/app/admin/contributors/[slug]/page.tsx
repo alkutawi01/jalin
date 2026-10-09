@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { errorText } from "../../../../lib/admin/error-text";
 
@@ -17,6 +17,8 @@ interface ContributorData {
   bio: string | null;
   disclosure: string | null;
   is_visible: boolean;
+  post_title?: string | null;
+  post_duty?: string | null;
   created_at: string;
 }
 
@@ -37,32 +39,35 @@ export default function EditContributorPage() {
     bio: "",
     disclosure: "",
     isVisible: true,
+    postTitle: "",
+    postDuty: "",
   });
 
-  useEffect(() => {
-    async function loadContributor() {
-      try {
-        const res = await fetch(`/api/admin/contributors/${contributorSlug}`);
-        if (!res.ok) throw new Error("Penyumbang tidak ditemui.");
-        const contributor: ContributorData = await res.json();
-
-        setForm({
-          displayName: contributor.display_name,
-          slug: contributor.slug,
-          kind: contributor.kind,
-          bio: contributor.bio || "",
-          disclosure: contributor.disclosure || "",
-          isVisible: contributor.is_visible,
-        });
-      } catch (err) {
-        setError(errorText(err, "Ralat memuatkan penyumbang."));
-      } finally {
-        setLoading(false);
-      }
+  const loadContributor = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/admin/contributors/${contributorSlug}`);
+      if (!res.ok) throw new Error("Penyumbang tidak ditemui.");
+      const contributor: ContributorData = await res.json();
+      setForm({
+        displayName: contributor.display_name,
+        slug: contributor.slug,
+        kind: contributor.kind,
+        bio: contributor.bio || "",
+        disclosure: contributor.disclosure || "",
+        isVisible: contributor.is_visible,
+        postTitle: contributor.post_title || "",
+        postDuty: contributor.post_duty || "",
+      });
+    } catch (err) {
+      setError(errorText(err, "Ralat memuatkan penyumbang."));
+    } finally {
+      setLoading(false);
     }
-
-    loadContributor();
   }, [contributorSlug]);
+
+  useEffect(() => {
+    void loadContributor();
+  }, [loadContributor]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -188,6 +193,33 @@ export default function EditContributorPage() {
         </div>
 
         <div className="admin-form-group">
+          <label htmlFor="postTitle">Jawatan editorial</label>
+          <input
+            id="postTitle"
+            type="text"
+            maxLength={80}
+            value={form.postTitle}
+            onChange={(e) => setForm((prev) => ({ ...prev, postTitle: e.target.value }))}
+            placeholder="Contoh: Editor dan pemilik Jalin"
+          />
+          <span className="admin-form-hint">Hanya untuk orang yang memegang jawatan editorial sebenar. Orang yang ada jawatan dipaparkan di bahagian Penyuntingan dan penerbitan pada halaman Editorial; yang lain dipaparkan bersama penulis dan penyumbang. Kosongkan jika tiada.</span>
+        </div>
+
+        <div className="admin-form-group">
+          <label htmlFor="postDuty">Tanggungjawab jawatan</label>
+          <textarea
+            id="postDuty"
+            className="admin-textarea"
+            rows={3}
+            maxLength={240}
+            value={form.postDuty}
+            onChange={(e) => setForm((prev) => ({ ...prev, postDuty: e.target.value }))}
+            placeholder="Satu ayat tentang apa yang diputuskan atau dipertanggungjawabkan"
+          />
+          <span className="admin-form-hint">Isi kedua-dua jawatan dan tanggungjawab, atau kosongkan kedua-duanya.</span>
+        </div>
+
+        <div className="admin-form-group">
           <label className="admin-checkbox-label">
             <input
               type="checkbox"
@@ -212,6 +244,7 @@ export default function EditContributorPage() {
           </button>
         </div>
       </form>
+
     </div>
   );
 }
