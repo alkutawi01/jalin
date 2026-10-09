@@ -482,6 +482,13 @@ export interface Database {
   saved_works: SavedWorks;
   reading_progress: ReadingProgress;
   reader_auth_events: ReaderAuthEvents;
+  entitlements: Entitlements;
+  code_batches: CodeBatches;
+  redeem_codes: RedeemCodes;
+  redemptions: Redemptions;
+  shared_codes: SharedCodes;
+  shared_redemptions: SharedRedemptions;
+  reader_switches: ReaderSwitches;
 }
 
 export interface ReaderAccounts {
@@ -553,8 +560,90 @@ export interface ReadingProgress {
 
 export interface ReaderAuthEvents {
   id: Generated<string>;
-  kind: "request" | "verify_fail";
-  scope: "email" | "ip" | "global";
+  kind: "request" | "verify_fail" | "redeem_fail";
+  scope: "email" | "ip" | "global" | "account";
   key_mac: string;
   at: Generated<Date>;
+}
+
+export interface Entitlements {
+  id: Generated<string>;
+  account_id: string | null;
+  kind: "TRIAL" | "CARD" | "SHARED" | "ADMIN";
+  starts_at: Date;
+  ends_at: Date;
+  source_ref: string | null;
+  reason: string | null;
+  created_by: string | null;
+  created_at: Generated<Date>;
+  revoked_at: Date | null;
+  revoked_by: string | null;
+  revoke_reason: string | null;
+}
+
+export interface CodeBatches {
+  id: Generated<string>;
+  batch_number: string;
+  months: number;
+  quantity: number;
+  status: Generated<"PENDING_PRINT" | "PRINT_CONFIRMED" | "VOIDED">;
+  order_ref: string | null;
+  note: string | null;
+  key_id: string;
+  created_by: string | null;
+  created_at: Generated<Date>;
+  confirmed_at: Date | null;
+  voided_at: Date | null;
+  void_reason: string | null;
+}
+
+export interface RedeemCodes {
+  id: Generated<string>;
+  batch_id: string;
+  serial: string;
+  code_mac: string;
+  key_id: string;
+  state: Generated<"generated" | "issued" | "revoked">;
+  issued_at: Date | null;
+  revoked_at: Date | null;
+  revoke_reason: string | null;
+  created_at: Generated<Date>;
+}
+
+export interface Redemptions {
+  id: Generated<string>;
+  code_id: string;
+  account_id: string | null;
+  entitlement_id: string;
+  redeemed_at: Generated<Date>;
+}
+
+export interface SharedCodes {
+  id: Generated<string>;
+  code: string;
+  grant_unit: "days" | "months";
+  grant_amount: number;
+  max_redemptions: number;
+  redeemed_count: Generated<number>;
+  expires_at: Date | null;
+  status: Generated<"active" | "paused" | "revoked">;
+  channel: string | null;
+  note: string | null;
+  created_by: string | null;
+  created_at: Generated<Date>;
+}
+
+export interface SharedRedemptions {
+  id: Generated<string>;
+  shared_code_id: string;
+  account_id: string | null;
+  entitlement_id: string;
+  redeemed_at: Generated<Date>;
+}
+
+export interface ReaderSwitches {
+  key: string;
+  value: string;
+  updated_at: Generated<Date>;
+  updated_by: string | null;
 }

@@ -14,6 +14,9 @@ config({ path: ".env.local", override: true });
 import fs from "node:fs";
 import { sql } from "kysely";
 import { closeDb, getDb } from "../src/lib/db";
+import { addGrant, listLedger } from "../src/lib/reader-auth/entitlements";
+import { confirmBatchPrinted, createBatch, createSharedCode, issueCodes, setRedeemHalted } from "../src/lib/reader-auth/redeem";
+import { loadCodeKey } from "../src/lib/reader-auth/primitives";
 
 const BASE = process.env.READER_E2E_BASE ?? "http://localhost:3100";
 const OFF_BASE = process.env.READER_E2E_OFF_BASE;
@@ -150,6 +153,9 @@ async function main() {
     assert(trialDays > 13.9 && trialDays < 14.1, "the trial is 14 days", trialDays);
     const cookie = good.setCookies.find((c) => c.startsWith("jalin-reader="))!;
     assert(!!cookie && /HttpOnly/i.test(cookie) && /SameSite=lax/i.test(cookie) && /Path=\//i.test(cookie) && !/Domain=/i.test(cookie), "the cookie is HttpOnly, SameSite=Lax, Path=/, with no Domain", cookie);
+    const acct = await sql<{ id: string }>`SELECT id FROM reader_accounts WHERE email_normalized = ${emailA} AND status <> 'deleted'`.execute(db);
+    const ledgerRows = await listLedger(db, acct.rows[0].id);
+    assert(ledgerRows.length === 1 && ledgerRows[0].kind === "TRIAL" && Math.abs(ledgerRows[0].endsAt.getTime() - new Date(good.json.trialEndsAt).getTime()) < 1000, "registration wrote the 14-day trial into the access ledger");
     const reuse = await new Device("x").req("/api/akaun/sahkan", { method: "POST", body: { email: emailA, code: code1 } });
     assert(reuse.status === 400, "the same code cannot be used twice");
     const me = await A.req("/api/akaun/saya");
@@ -280,6 +286,67 @@ async function main() {
     assert((await C.req("/api/akaun/saya")).json?.signedIn === false && (await E.req("/api/akaun/saya")).json?.signedIn === false, "every device is signed out");
     assert((await new Device("z").req("/api/akaun/keluar-semua", { method: "POST", body: {} })).status === 401, "a visitor cannot sign anyone out everywhere");
 
+    // ---------------------------------------------------------------- the ledger on the account page
+    console.log("\nAccess shown on the account page");
+    const G = new Device("Pembaca langganan");
+    const gsign = await signIn(G, "e2e-langgan@e2e.invalid");
+    const gAcc = await sql<{ id: string }>`SELECT id FROM reader_accounts WHERE email_normalized = 'e2e-langgan@e2e.invalid'`.execute(db);
+    const trialView = await G.req("/akaun");
+    assert(gsign.verified?.status === 200 && (await G.req("/api/akaun/saya")).json.access.state === "trial" && trialView.text.includes("Percubaan percuma tamat"), "a new reader is shown as in trial with the date");
+    const given = await addGrant(db, { accountId: gAcc.rows[0].id, kind: "ADMIN", grant: { unit: "months", amount: 6 }, reason: "e2e", createdBy: "e2e" });
+    const afterGrant = await G.req("/api/akaun/saya");
+    assert(given.added && afterGrant.json.access.state === "trial" && afterGrant.json.access.endsAt !== afterGrant.json.access.currentPeriodEndsAt && (await G.req("/akaun")).text.includes("bersambung sehingga"), "a grant added during the trial shows as continuing after it");
+    await sql`UPDATE reader_accounts SET trial_ends_at = trial_ends_at`.execute(db);
+
+    // ---------------------------------------------------------------- redeeming codes
+    console.log("\nRedeeming codes");
+    const key = loadCodeKey();
+    const R = new Device("Penebus");
+    await signIn(R, "e2e-tebus@e2e.invalid");
+    const batchMade = await createBatch(db, { codeKey: key }, { batchNumber: "E2E-001", months: 6, quantity: 3, createdBy: "e2e" });
+    await confirmBatchPrinted(db, batchMade.batchId);
+    await issueCodes(db, { batchId: batchMade.batchId });
+    const pageVisitor = await v.req("/tebus");
+    assert(pageVisitor.status === 307 && (pageVisitor.headers.get("location") ?? "").endsWith("/log-masuk"), "/tebus sends a visitor to /log-masuk");
+    const pageReader = await R.req("/tebus");
+    assert(pageReader.status === 200 && pageReader.text.includes("Tebus kod langganan") && /noindex/.test(pageReader.text), "/tebus shows the form to a signed-in reader and is noindex");
+    assert((await R.req("/akaun")).text.includes('href="/tebus"'), "the account page links to /tebus");
+    assert((await v.req("/api/akaun/tebus", { method: "POST", body: { code: batchMade.codes[0].code, batch: "E2E-001" } })).status === 401, "a visitor cannot redeem");
+    assert((await R.req("/api/akaun/tebus", { method: "POST", body: { code: batchMade.codes[0].code, batch: "E2E-001" }, origin: "https://evil.example" })).status === 403, "a redeem request from another site is refused");
+    for (const [label, raw] of [["not json", "{{{"], ["an array", "[1]"], ["empty", ""], ["a number", JSON.stringify({ code: 5 })]] as const) {
+      assert((await R.req("/api/akaun/tebus", { method: "POST", raw })).status === 400, `redeeming with ${label} is a clean 400`);
+    }
+    await clearThrottle(); // every failed try counts toward the limit, so the earlier bad bodies are cleared before the next checks
+    const refusedWrongBatch = await R.req("/api/akaun/tebus", { method: "POST", body: { code: batchMade.codes[0].code, batch: "E2E-999" } });
+    const refusedNonsense = await R.req("/api/akaun/tebus", { method: "POST", body: { code: "bukan kod", batch: "E2E-001" } });
+    assert(refusedWrongBatch.status === 400 && refusedNonsense.status === 400 && refusedWrongBatch.text === refusedNonsense.text, "a wrong batch and nonsense get the identical refusal");
+    await clearThrottle();
+    const okRedeem = await R.req("/api/akaun/tebus", { method: "POST", body: { code: batchMade.codes[0].code.toLowerCase(), batch: " e2e-001 " } });
+    assert(okRedeem.status === 200 && okRedeem.json?.ok === true && /Kod berjaya ditebus\. Akses anda aktif sehingga .+\(MYT\)\./.test(okRedeem.json.message), "the right code and batch redeem with a message that gives the date", okRedeem.text);
+    const afterRedeem = await R.req("/api/akaun/saya");
+    assert(afterRedeem.json.access.state === "trial" && afterRedeem.json.access.endsAt !== afterRedeem.json.access.currentPeriodEndsAt, "the card period continues after the trial, as agreed");
+    assert((await R.req("/akaun")).text.includes("bersambung sehingga"), "and the account page says so");
+    const again = await R.req("/api/akaun/tebus", { method: "POST", body: { code: batchMade.codes[0].code, batch: "E2E-001" } });
+    assert(again.status === 200 && again.json?.ok === true, "pressing it a second time is answered ok");
+    const thief = new Device("Pencuri");
+    await signIn(thief, "e2e-pencuri@e2e.invalid");
+    await clearThrottle();
+    const stolen = await thief.req("/api/akaun/tebus", { method: "POST", body: { code: batchMade.codes[0].code, batch: "E2E-001" } });
+    assert(stolen.status === 400 && stolen.text === refusedNonsense.text, "another reader using the same code gets the same refusal as a nonsense code");
+    const sharedMade = await createSharedCode(db, { grant: { unit: "days", amount: 7 }, maxRedemptions: 1, channel: "e2e" });
+    const sharedOk = await thief.req("/api/akaun/tebus", { method: "POST", body: { code: sharedMade.code } });
+    assert(sharedOk.status === 200 && sharedOk.json?.ok === true, "a shared code redeems with the code alone");
+    assert((await thief.req("/api/akaun/tebus", { method: "POST", body: { code: sharedMade.code } })).status === 409, "the same reader using it again is told so");
+    assert((await R.req("/api/akaun/tebus", { method: "POST", body: { code: sharedMade.code } })).status === 400, "when the limit is reached the next reader is refused like any wrong code");
+    await setRedeemHalted(db, true, "e2e");
+    assert((await R.req("/api/akaun/tebus", { method: "POST", body: { code: batchMade.codes[1].code, batch: "E2E-001" } })).status === 503, "with the stop switch on, redeeming answers 503");
+    await setRedeemHalted(db, false, "e2e");
+    await clearThrottle();
+    await sql`DELETE FROM reader_auth_events WHERE kind = 'redeem_fail'`.execute(db);
+    let limited = -1;
+    for (let i = 0; i < 7; i++) { const r = await R.req("/api/akaun/tebus", { method: "POST", body: { code: "AAAA-AAAA-AAAA-AAAA-A", batch: "E2E-001" } }); if (r.status === 429 && limited < 0) limited = i; }
+    assert(limited === 5, "after five wrong tries the answer is 429", limited);
+
     // ---------------------------------------------------------------- the trial is once
     console.log("\nThe trial is given once");
     await sql`UPDATE reader_accounts SET status = 'deleted' WHERE email_normalized = ${emailA}`.execute(db);
@@ -296,6 +363,8 @@ async function main() {
     assert(refused, "a non-development database host is refused outside Vercel and CI");
   } finally {
     const del = await sql`DELETE FROM reader_accounts WHERE email_normalized LIKE '%@e2e.invalid'`.execute(db);
+    await sql`TRUNCATE redemptions, shared_redemptions, redeem_codes, code_batches, shared_codes, entitlements`.execute(db);
+    await sql`DELETE FROM reader_switches WHERE key = 'redeem_halted'`.execute(db);
     await sql`DELETE FROM reader_auth_challenges`.execute(db);
     await sql`DELETE FROM reader_auth_events`.execute(db);
     await sql`DELETE FROM reader_trial_claims`.execute(db);

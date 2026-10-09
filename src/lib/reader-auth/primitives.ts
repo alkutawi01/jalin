@@ -31,6 +31,16 @@ export function loadMacKey(env: Record<string, string | undefined> = process.env
   return { keyId, key: Buffer.from(hex, "hex") };
 }
 
+/** The key for redeem codes is a different secret from the sign-in key, so a leak of one does not open the other. */
+export function loadCodeKey(env: Record<string, string | undefined> = process.env): MacKey {
+  const keyId = env.CODE_MAC_KEY_ID?.trim();
+  const hex = env.CODE_MAC_KEY?.trim();
+  if (!keyId) throw new Error("CODE_MAC_KEY_ID is not set.");
+  if (!hex || !/^[0-9a-fA-F]{64}$/.test(hex)) throw new Error("CODE_MAC_KEY must be 64 hex characters (256 bits).");
+  if (env.READER_MAC_KEY && env.READER_MAC_KEY.trim().toLowerCase() === hex.toLowerCase()) throw new Error("CODE_MAC_KEY must differ from READER_MAC_KEY.");
+  return { keyId, key: Buffer.from(hex, "hex") };
+}
+
 function mac(key: MacKey, label: string, value: string): string {
   return createHmac("sha256", key.key).update(`jalin-reader-v1:${label}:${value}`).digest("hex");
 }

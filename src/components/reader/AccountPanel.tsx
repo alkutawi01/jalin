@@ -27,8 +27,7 @@ function formatDate(iso: string | null): string {
 export default function AccountPanel(props: {
   email: string;
   displayName: string | null;
-  trialEndsAt: string | null;
-  trialActive: boolean;
+  access: { state: "trial" | "subscribed" | "expired" | "none"; endsAt: string | null; currentPeriodEndsAt: string | null };
   thisDeviceId: string;
   devices: Device[];
   prefs: Prefs;
@@ -98,11 +97,15 @@ export default function AccountPanel(props: {
     <div className="auth-account">
       <h1 className="auth-title">Akaun saya</h1>
 
-      {props.trialEndsAt ? (
-        <p className={`auth-trial${props.trialActive ? "" : " auth-trial--ended"}`}>
-          {props.trialActive ? `Percubaan percuma tamat ${formatDate(props.trialEndsAt)}` : `Percubaan percuma tamat pada ${formatDate(props.trialEndsAt)}`}
+      {props.access.state === "trial" ? (
+        <p className="auth-trial">
+          Percubaan percuma tamat {formatDate(props.access.currentPeriodEndsAt)}
+          {props.access.endsAt && props.access.endsAt !== props.access.currentPeriodEndsAt ? `. Langganan anda bersambung sehingga ${formatDate(props.access.endsAt)}.` : ""}
         </p>
       ) : null}
+      {props.access.state === "subscribed" ? <p className="auth-trial">Langganan aktif sehingga {formatDate(props.access.endsAt)}</p> : null}
+      {props.access.state === "expired" ? <p className="auth-trial auth-trial--ended">Akses anda tamat pada {formatDate(props.access.endsAt)}</p> : null}
+      <a className="auth-button auth-button--ghost auth-redeem-link" href="/tebus">Tebus kod langganan</a>
 
       <div className="auth-row">
         <span>{props.email}</span>
