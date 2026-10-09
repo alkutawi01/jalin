@@ -97,6 +97,27 @@ function inlineMarkdown(node: Node): string {
   return body;
 }
 
+/**
+ * The note chip right next to the cursor, on the side Backspace (before) or Delete (after) works on. A browser does not always delete a chip
+ * at the end of a line in one key press, so the editor does it itself (through the browser's own editing command, which Undo can take back).
+ */
+function noteChipBeside(selection: Selection, direction: "before" | "after"): HTMLElement | null {
+  const node = selection.anchorNode;
+  if (!node || !selection.isCollapsed) return null;
+  const offset = selection.anchorOffset;
+  let neighbour: Node | null = null;
+  if (node.nodeType === Node.TEXT_NODE) {
+    const length = node.textContent?.length ?? 0;
+    if (direction === "before" && offset === 0) neighbour = node.previousSibling;
+    else if (direction === "after" && offset === length) neighbour = node.nextSibling;
+  } else {
+    neighbour = direction === "before" ? node.childNodes[offset - 1] ?? null : node.childNodes[offset] ?? null;
+  }
+  // An empty piece of text between the cursor and the chip does not count.
+  while (neighbour && neighbour.nodeType === Node.TEXT_NODE && !neighbour.textContent) neighbour = direction === "before" ? neighbour.previousSibling : neighbour.nextSibling;
+  return neighbour instanceof HTMLElement && neighbour.dataset.note ? neighbour : null;
+}
+
 /** The chips are numbered as a reader sees the notes: by the first of each in the text. Done on every change, so adding, moving and deleting keep the numbers right. */
 function renumberNotes(root: HTMLElement) {
   const numbers = new Map<string, number>();
@@ -418,6 +439,12 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
     selection?.addRange(range);
     notesRef.current.definitions.set(label, noteWithText(label, clean));
     document.execCommand("insertHTML", false, noteChipHtml(label, 0, clean));
+    // Making room for the chip, the browser turns the ordinary spaces beside it into non-breaking ones, which would be saved in the manuscript.
+    const placed = chipOf(label);
+    const before = placed?.previousSibling;
+    const after = placed?.nextSibling;
+    if (before?.nodeType === Node.TEXT_NODE && before.textContent?.endsWith(" ")) before.textContent = before.textContent.replace(/ $/, " ");
+    if (after?.nodeType === Node.TEXT_NODE && after.textContent?.startsWith(" ")) after.textContent = after.textContent.replace(/^ /, " ");
     sync();
     rememberSelection();
     toast(`Nota ${label} disisipkan. Pembaca melihatnya di sisi teks.`, "success");
@@ -447,6 +474,21 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
         event.preventDefault();
         openNote(chip);
         return;
+      }
+      // Backspace or Delete next to a note's number removes the number (and so the note); Undo brings both back.
+      if ((event.key === "Backspace" || event.key === "Delete") && !event.nativeEvent.isComposing) {
+        const selection = window.getSelection();
+        const beside = selection ? noteChipBeside(selection, event.key === "Backspace" ? "before" : "after") : null;
+        if (selection && beside) {
+          event.preventDefault();
+          const range = document.createRange();
+          range.selectNode(beside);
+          selection.removeAllRanges();
+          selection.addRange(range);
+          document.execCommand("delete");
+          sync();
+          return;
+        }
       }
       // Enter inside a message or e-mail box starts a new line in that box (the browser would split it into a second box).
       if (event.key !== "Enter" || event.shiftKey || event.nativeEvent.isComposing) return;
