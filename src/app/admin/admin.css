@@ -182,6 +182,13 @@
 .a-shell .admin-btn-danger { background: var(--a-surface); color: var(--a-danger); border-color: var(--a-danger-line); }
 .a-shell .admin-btn-danger:hover { background: var(--a-danger-bg); border-color: var(--a-danger); }
 .a-shell .admin-btn-sm { min-height: 32px; padding: 5px 12px; font-size: 13px; }
+/* FilePicker: the real input stays (the keyboard and screen readers still work through it) but is drawn as nothing; the button around it shows the focus. */
+.a-shell .a-file-picker { display: inline-flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.a-shell .a-file-picker label { position: relative; cursor: pointer; margin: 0; }
+.a-shell .a-file-picker label.is-disabled { cursor: not-allowed; opacity: 0.5; }
+.a-shell .a-file-picker input[type="file"] { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: inherit; }
+.a-shell .a-file-picker label:focus-within { box-shadow: 0 0 0 3px var(--a-focus); }
+.a-shell .a-file-picker-name { font-size: 13px; color: var(--a-muted); overflow-wrap: anywhere; }
 .a-shell .admin-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .a-shell .admin-btn-primary:disabled { background: var(--a-ink); border-color: var(--a-ink); }
 

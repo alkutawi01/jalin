@@ -6,6 +6,7 @@ import CopyButton from "../../../../components/admin/CopyButton";
 import { composeVisualPrompt } from "../../../../lib/admin/visual-generation/prompt-composer";
 import { confirmAction } from "../../../../lib/admin/dialogs";
 import LoadingBlock from "../../../../components/admin/LoadingBlock";
+import FilePicker from "../../../../components/admin/FilePicker";
 import { MAX_UPLOAD_LABEL, uploadTooLargeMessage } from "../../../../lib/admin/upload-limit";
 import { errorText } from "../../../../lib/admin/error-text";
 
@@ -710,15 +711,12 @@ export default function EditVisualRequestPage() {
                   placeholder="Alat yang digunakan (cth. ChatGPT)"
                   style={{ padding: "6px 10px", width: 240 }}
                 />
-                <input
-                  type="file"
+                <FilePicker
                   accept="image/png,image/jpeg,image/webp"
                   disabled={uploading}
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) void handleUpload(file);
-                    e.target.value = "";
-                  }}
+                  selectedName={null}
+                  clearAfterPick
+                  onFile={(file) => { if (file) void handleUpload(file); }}
                 />
                 {uploading ? <span>Memuat naik…</span> : null}
               </div>
