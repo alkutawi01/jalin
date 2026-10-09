@@ -78,13 +78,14 @@ export default function SiteCopySettings() {
         Ayat di bawah tajuk setiap halaman senarai awam (contoh: &quot;Senarai Bersiri&quot;). Tekan Simpan selepas menyunting.
         Kosongkan kotak untuk kembali kepada ayat asal. Perubahan kelihatan pada laman awam dalam beberapa saat.
       </p>
-      <table className="admin-table">
+      <div className="admin-table-wrap">
+      <table className="admin-table a-form-list">
         <tbody>
           {intros.map((intro) => {
             const isChanged = (values[intro.type] ?? "").trim() !== (intro.saved || intro.default);
             return (
               <tr key={intro.type}>
-                <td style={{ width: "20%" }}>
+                <td>
                   <strong>{LABELS[intro.type] ?? intro.type}</strong>
                   {isChanged ? <span className="admin-form-hint">Belum disimpan</span> : null}
                 </td>
@@ -103,6 +104,7 @@ export default function SiteCopySettings() {
           })}
         </tbody>
       </table>
+      </div>
       <div className="admin-form-actions">
         <button type="submit" className="admin-btn admin-btn-primary" disabled={busy || changed.length === 0}>{busy ? "Menyimpan…" : "Simpan"}</button>
         <span className="admin-form-hint" role={status?.failed ? "alert" : "status"}>

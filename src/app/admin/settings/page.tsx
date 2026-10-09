@@ -58,7 +58,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
       <SettingsHashRedirect current={tab} />
       <header className="admin-page-header">
         <h1>Tetapan</h1>
-        <p className="admin-page-sub">Pilih bahagian di sebelah kiri.</p>
+        <p className="admin-page-sub">Pilih bahagian di bawah.</p>
       </header>
 
       <div className="a-settings-layout">

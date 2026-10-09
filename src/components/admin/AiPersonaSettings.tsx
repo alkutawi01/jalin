@@ -84,13 +84,14 @@ export default function AiPersonaSettings() {
           <option key={n} value={n} />
         ))}
       </datalist>
-      <table className="admin-table">
+      <div className="admin-table-wrap">
+      <table className="admin-table a-form-list">
         <tbody>
           {personas.map((p) => {
             const isChanged = (names[p.ai] ?? "").trim() !== (p.displayName ?? "");
             return (
               <tr key={p.ai}>
-                <td style={{ width: "35%" }}>
+                <td>
                   <strong>{p.ai}</strong>
                   {isChanged ? <span className="admin-form-hint">Belum disimpan</span> : null}
                 </td>
@@ -108,6 +109,7 @@ export default function AiPersonaSettings() {
           })}
         </tbody>
       </table>
+      </div>
       <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
         <input
           style={{ flex: 1 }}

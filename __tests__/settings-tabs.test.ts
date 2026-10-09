@@ -38,8 +38,11 @@ assert(redirect.includes("MOVED_TABS[id]"), "an old #status-sistem link goes to 
 
 const css = read("src/app/admin/admin.css");
 const tabsRule = (css.match(/.a-shell .a-settings-tabs {[^}]*}/) ?? [""])[0];
-assert(/.a-shell .a-settings-layout {[^}]*grid-template-columns: 230px/.test(css) && tabsRule.includes("flex-direction: column") && !tabsRule.includes("overflow") && css.includes(".a-shell .a-settings-tabs a.active"), "the parts are a column beside the panel (never cut off or scrolled sideways), and the open one is marked");
-assert(/@media \(max-width: 860px\) {[^}]*.a-settings-layout {[^}]*minmax\(0, 1fr\)/.test(css), "on a narrow screen the column moves above the panel");
+// Izzat, 9 Okt 2026: a column of links beside the panel made every form narrow (the Audiens table was cut off). The parts are a row of tabs above it.
+const layoutRule = (css.match(/.a-shell .a-settings-layout {[^}]*}/) ?? [""])[0];
+assert(layoutRule.includes("display: block") && !layoutRule.includes("grid-template-columns") && !/\.a-settings-tabs \{[^}]*position: sticky/.test(css), "the panel has the whole width: no column beside it");
+assert(tabsRule.includes("display: flex") && tabsRule.includes("flex-wrap: wrap") && !tabsRule.includes("flex-direction: column") && !tabsRule.includes("overflow") && css.includes(".a-shell .a-settings-tabs a.active"), "the parts are a row of tabs above the panel that wraps (never cut off or scrolled sideways), and the open one is marked");
+assert(css.includes(".a-shell .a-settings-group, .a-shell .a-settings-tabs ul { display: contents; }") && /a-settings-group-title \{[^}]*clip: rect\(0 0 0 0\)/.test(css), "the groups flow as one row; their headings stay for a screen reader");
 assert(!read("src/components/admin/SettingsHashRedirect.tsx").includes("scrollIntoView"), "nothing scrolls the list of parts");
 assert(/.a-shell .a-settings-tabs a {[^}]*min-height: 40px/.test(css), "a link is tall enough to tap");
 assert(SETTINGS_GROUPS.join() === "Laman awam,Penulisan dan AI,Lain-lain" && SETTINGS_TABS.every((t) => (SETTINGS_GROUPS as readonly string[]).includes(t.group)), "every part belongs to a group");

@@ -29,7 +29,7 @@ Rujukan: Shopify Polaris (susun atur Tetapan), GitHub Primer (borang), GitLab Pa
 - **Butang:** satu keluarga `admin-btn` (`-primary`, `-outline`, `-danger`, `-quiet`, `-sm`). `a-btn` ialah sistem lama dan dibuang. Satu `-primary` setiap kawasan; selebihnya `-outline` atau `-quiet`; `-danger` hanya untuk yang tak boleh diundur dan dijauhkan daripada tindakan biasa.
 - **Borang:** label di atas, bantuan di bawah, ralat menggantikan bantuan, medan penuh lebar dalam lajur 640px. Butang Simpan di hujung borang dan `role="status"` di sebelahnya.
 - **Jadual:** untuk 3 lajur atau lebih pada desktop; pada telefon bertukar kepada senarai kad (tiada skrol sisi, tindakan sentiasa kelihatan).
-- **Navigasi:** menu sisi utama ikut peranan; sub-menu Tetapan berkumpulan di sebelah kiri (230px), di atas panel pada skrin sempit.
+- **Navigasi:** menu sisi utama ikut peranan; sub-menu Tetapan ialah baris tab di atas panel (bukan lajur di tepi), supaya borang memakai lebar penuh halaman.
 - **Maklum balas:** `toast()` untuk hasil tindakan, `role="alert"` untuk ralat yang menyekat, `role="status"` untuk kemajuan. Ayat seragam: "X disimpan." / "X tidak dapat disimpan: sebab."
 - **Dialog pengesahan:** menyebut kesannya dalam satu ayat; butang pengesahan menamakan tindakan ("Ya, padam selama-lamanya"), bukan "OK".
 - **Sasaran sentuh:** sekurang-kurangnya 40px tinggi (44px pada telefon) bagi butang dan pautan yang berdiri sendiri.
