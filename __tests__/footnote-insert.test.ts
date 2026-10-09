@@ -43,6 +43,7 @@ assert(!made.body.includes("Nota pertama.") && made.body.includes("[^2]Dia"), "t
 
 // The screens
 const visual = read("src/components/admin/VisualManuscriptEditor.tsx");
+assert(visual.includes("caretRef.current = { block, offset: before.toString().length }") && visual.includes("editor.children[caret.block]"), "the visual editor keeps the cursor as a place (block, characters in), because a saved Range is lost when the editor redraws its text");
 const page = read("src/app/admin/works/[id]/page.tsx");
 assert(visual.includes("<FootnoteInserter onInsert={insertFootnoteAtCursor} />") && visual.includes("nextFootnoteLabel(value)") && visual.includes("isFootnoteDefinition("), "the visual editor has the button and keeps the number out of a note's own line");
 assert(page.includes("<FootnoteInserter onInsert={addFootnote} />") && page.includes("insertFootnote(form.body, textarea ? textarea.selectionStart : form.body.length, text)"), "the Markdown box has it too");

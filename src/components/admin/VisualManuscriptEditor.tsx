@@ -114,6 +114,7 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
   const editorRef = useRef<HTMLDivElement>(null);
   const emittedRef = useRef<string | null>(null);
   const selectionRef = useRef<Range | null>(null);
+  const caretRef = useRef<{ block: number; offset: number } | null>(null);
 
   useEffect(() => {
     const editor = editorRef.current;
@@ -136,7 +137,19 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
 
   function rememberSelection() {
     const selection = window.getSelection();
-    if (selection?.rangeCount && editorRef.current?.contains(selection.anchorNode)) selectionRef.current = selection.getRangeAt(0).cloneRange();
+    const editor = editorRef.current;
+    if (selection?.rangeCount && editor?.contains(selection.anchorNode)) {
+      selectionRef.current = selection.getRangeAt(0).cloneRange();
+      // Also as a place (which block, how many characters in): the saved range is lost when the editor redraws its text before the first edit.
+      const range = selection.getRangeAt(0);
+      const block = [...editor.children].findIndex((child) => child.contains(range.startContainer));
+      if (block >= 0) {
+        const before = document.createRange();
+        before.selectNodeContents(editor.children[block]!);
+        before.setEnd(range.startContainer, range.startOffset);
+        caretRef.current = { block, offset: before.toString().length };
+      }
+    }
   }
 
   function format(command: "bold" | "italic") {
@@ -260,18 +273,29 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
     if (!editor || !clean) return false;
     const label = nextFootnoteLabel(value);
     const reference = `[^${label}]`;
-    const saved = selectionRef.current;
-    const insideEditor = saved && editor.contains(saved.startContainer);
-    // A cursor in a note's own line (or none at all) would put the number inside the note: use the end of the story's text instead.
-    const startNode = insideEditor ? (saved.startContainer.nodeType === Node.ELEMENT_NODE ? saved.startContainer as Element : saved.startContainer.parentElement) : null;
-    const paragraph = startNode?.closest("p,h2") ?? null;
-    const inNote = !!paragraph && isFootnoteDefinition(paragraph.textContent ?? "");
+    // The cursor is a place (block and characters in), found again in whatever the editor now holds. A cursor in a note's own line, in a
+    // heading or box, or none at all, would put the number somewhere wrong: the end of the story's text is used instead.
+    const caret = caretRef.current;
+    const block = caret ? editor.children[caret.block] ?? null : null;
+    const usable = !!block && block.tagName === "P" && !isFootnoteDefinition(block.textContent ?? "");
     editor.focus();
     const selection = window.getSelection();
     const range = document.createRange();
-    if (insideEditor && !inNote && paragraph?.parentElement === editor) {
-      range.setStart(saved.startContainer, saved.startOffset);
-      range.collapse(true);
+    if (usable && caret) {
+      const walker = document.createTreeWalker(block!, NodeFilter.SHOW_TEXT);
+      let remaining = caret.offset;
+      let placed = false;
+      for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+        const length = node.textContent?.length ?? 0;
+        if (remaining <= length) {
+          range.setStart(node, remaining);
+          placed = true;
+          break;
+        }
+        remaining -= length;
+      }
+      if (!placed) range.selectNodeContents(block!);
+      range.collapse(placed);
     } else {
       const prose = [...editor.children].filter((child) => child.tagName === "P" && (child.textContent ?? "").trim() && !isFootnoteDefinition(child.textContent ?? ""));
       const last = prose[prose.length - 1] ?? null;
