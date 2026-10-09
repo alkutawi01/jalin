@@ -3090,6 +3090,11 @@ main:focus { outline: none; }
 .footnote-ref { font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: .68em; font-weight: 700; line-height: 0; margin-left: 1px; }
 .footnote-ref a { color: var(--clay-text); text-decoration: none; padding: 0 2px; border-radius: 3px; scroll-margin-top: 150px; }
 .footnote-ref a:hover, .footnote-ref a:focus-visible { text-decoration: underline; text-underline-offset: 2px; }
+/* The number is about 9 by 15px: on a touch screen the link reaches 12px further each way so a thumb can hit it (the look is unchanged). */
+@media (pointer: coarse) {
+  .footnote-ref a { position: relative; }
+  .footnote-ref a::after { content: ""; position: absolute; inset: -12px; }
+}
 .footnotes { margin-top: 56px; padding-top: 24px; border-top: 1px solid var(--line); font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 15px; line-height: 1.6; color: var(--ink-soft); }
 .footnotes-title { margin: 0 0 14px; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--clay-text); font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-weight: 700; }
 .footnotes ol { margin: 0; padding-left: 1.5em; }
