@@ -23,5 +23,13 @@ assert(/--a-rail-w: 68px/.test(css), "a closed menu is a narrow rail");
 assert(/\.a-main \{ margin-left: var\(--a-side-now\)/.test(css), "the page makes room for exactly the width the menu has");
 assert(/@media \(max-width: 1099px\)[^]*?:not\(\[data-menu="open"\]\)/.test(css), "with no choice made the menu starts closed on a narrow window");
 
+// Izzat, 9 Okt 2026: three menus shared one icon, which in the closed menu (icons only) made them impossible to tell apart.
+const navBlock = shell.slice(shell.indexOf("const NAV"), shell.indexOf("const MENU_KEY"));
+const icons = [...navBlock.matchAll(/label: "([^"]+)",\s*icon: "([^"]+)"/g)].map((m) => ({ label: m[1]!, icon: m[2]! }));
+// "Saiz teks karya" replaces Tetapan for a chief editor (unless: "site.manage"), so the two never show together.
+const shown = icons.filter((item) => item.label !== "Saiz teks karya");
+assert(shown.length >= 8, `the scan sees the menu items (${shown.length})`);
+assert(new Set(shown.map((item) => item.icon)).size === shown.length, "every item that can show together has its own icon (" + shown.map((item) => item.icon).join(", ") + ")");
+
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);
