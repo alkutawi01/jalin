@@ -785,4 +785,13 @@
 /* On a phone the works card keeps what an editor needs: the title, the kind, the status and the actions. The rest is in the title's tooltip and the work's own page. */
 @container admin-table (max-width: 560px) {
   .a-shell .admin-table.a-compact-table td.a-col-wide:nth-child(n+1), .a-shell .admin-table.a-compact-table td.a-col-minor:nth-child(n+1), .a-shell .admin-table.a-compact-table td.a-cell-clip:not(.admin-table-title) { display: none; }
+  /* Compact: tick and title on the first line, kind and status beside each other on the second, the two actions sharing the third. */
+  .a-shell .admin-table.a-compact-table.a-compact-table tr { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding: 10px 12px; }
+  .a-shell .admin-table.a-compact-table.a-compact-table td, .a-shell .admin-table.a-compact-table.a-compact-table td:nth-child(n+3) { width: auto; padding: 0; }
+  .a-shell .admin-table.a-compact-table.a-compact-table td[data-label]::before { content: none; display: none; }
+  .a-shell .admin-table.a-compact-table.a-compact-table td.admin-pick-cell { flex: none; }
+  .a-shell .admin-table.a-compact-table.a-compact-table td.admin-table-title { flex: 1 1 0; min-width: 0; overflow-wrap: anywhere; }
+  .a-shell .admin-table.a-compact-table.a-compact-table td:last-child { flex: 1 1 100%; }
+  .a-shell .admin-table.a-compact-table.a-compact-table td:last-child .admin-table-actions { justify-content: stretch; }
+  .a-shell .admin-table.a-compact-table.a-compact-table td:last-child .admin-btn { flex: 1 1 0; justify-content: center; }
 }
