@@ -6,8 +6,9 @@ import { getAllWorks } from "../lib/content/workLoader";
 import type { WorkType } from "../lib/content/types";
 import { getDb, hasDb } from "../lib/db";
 
-// Read on every request, like the pages it lists: a work published after the last deploy must be in the sitemap at once.
-export const dynamic = "force-dynamic";
+// Cache the public sitemap for five minutes to avoid waking Neon on each crawler request.
+// New publications appear on the next revalidation, without requiring a deployment.
+export const revalidate = 300;
 
 const CATEGORY_TYPES: WorkType[] = ["cerpen", "novela", "bersiri", "fragmen", "sinopsis"];
 const CONTRIBUTOR_SLUGS = ["nara-zahin", "rafiq-naim"];

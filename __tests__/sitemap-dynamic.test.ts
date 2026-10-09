@@ -1,6 +1,6 @@
 /**
- * Audit finding: sitemap.xml was prerendered at build time (X-Vercel-Cache: PRERENDER), so a work published after the last deploy was missing
- * from it, and its contributor URLs were a fixed pair that bylines do not link to.
+ * Sitemap regression: a bounded ISR interval avoids a database wake-up per crawler hit,
+ * while newly published works and contributors enter the sitemap within five minutes.
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -11,7 +11,7 @@ function assert(cond: boolean, msg: string) {
   if (cond) { passed++; console.log(`  ✓ ${msg}`); } else { failed++; console.error(`  ✗ ${msg}`); }
 }
 const src = fs.readFileSync(path.join(__dirname, "../src/app/sitemap.ts"), "utf8").replace(/\r\n/g, "\n");
-assert(src.includes('export const dynamic = "force-dynamic"'), "the sitemap is read on every request");
+assert(src.includes("export const revalidate = 300;") && !src.includes('export const dynamic = "force-dynamic"'), "the sitemap is ISR-cached for five minutes instead of queried on every request");
 assert(src.includes('.selectFrom("contributors").select("slug").where("is_visible", "=", true)'), "contributor pages come from the visible contributors in the database");
 assert(src.includes("...contributors.map((slug)") && src.includes("return CONTRIBUTOR_SLUGS;"), "the static pair is only the fallback");
 
