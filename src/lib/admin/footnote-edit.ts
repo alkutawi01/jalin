@@ -212,6 +212,37 @@ export function footnoteReferenceRange(body: string, label: string): { start: nu
   return null;
 }
 
+export interface FootnoteDefinition {
+  label: string;
+  /** The note exactly as it is written in the manuscript (all its lines). */
+  raw: string;
+  /** Its words as one paragraph. */
+  text: string;
+}
+
+/**
+ * The manuscript without its notes, and the notes as written, for an editor that shows the numbers in the text and keeps the notes apart
+ * (the visual editor). Putting `prose` and the notes back together (notes after the text, one blank line between them) gives a manuscript
+ * the reader reads the same way. A manuscript with no notes is returned untouched.
+ */
+export function splitFootnotes(body: string): { prose: string; definitions: FootnoteDefinition[] } {
+  const lines = linesOf(body);
+  const blocks = definitionBlocks(lines);
+  if (blocks.length === 0) return { prose: body, definitions: [] };
+  const gone = new Set<number>();
+  blocks.forEach((block) => {
+    for (let i = block.start; i < block.end; i++) gone.add(i);
+    // As in removeFootnote: the blank lines after a note go with it when a blank line (or nothing) came before it.
+    if (block.start === 0 || lines[block.start - 1]!.trim() === "") {
+      for (let i = block.end; i < lines.length && lines[i]!.trim() === ""; i++) gone.add(i);
+    }
+  });
+  return {
+    prose: lines.filter((_, i) => !gone.has(i)).join("\n").replace(/\s+$/, ""),
+    definitions: blocks.map((block) => ({ label: block.label, raw: lines.slice(block.start, block.end).join("\n"), text: block.text }))
+  };
+}
+
 /** The lines as text, with no blank lines left at the end. Nothing else in the manuscript is reflowed. */
 function tidy(lines: string[]): string {
   return lines.join("\n").replace(/\s+$/, "");

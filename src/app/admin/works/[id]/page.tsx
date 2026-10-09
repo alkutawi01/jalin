@@ -720,6 +720,14 @@ export default function EditWorkPage() {
     }
     const surface = document.querySelector<HTMLElement>(".visual-manuscript-surface");
     if (!surface) return;
+    // A number that has its note is a chip in the visual editor.
+    const chip = surface.querySelector<HTMLElement>(`[data-note="${label}"]`);
+    if (chip) {
+      chip.scrollIntoView({ block: "center", behavior: "smooth" });
+      chip.focus({ preventScroll: true });
+      return;
+    }
+    // A number with no note is plain text.
     const token = `[^${label}]`;
     const walker = document.createTreeWalker(surface, NodeFilter.SHOW_TEXT);
     for (let node = walker.nextNode(); node; node = walker.nextNode()) {

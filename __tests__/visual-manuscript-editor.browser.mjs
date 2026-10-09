@@ -53,16 +53,16 @@ try {
   await page.getByRole("button", { name: "Tebalkan teks terpilih" }).click();
   assert.match(await page.evaluate(() => window.currentMarkdown), /\*\*Perenggan\*\* pertama/);
 
-  await page.getByRole("button", { name: "Perenggan", exact: true }).click();
+  await page.getByRole("button", { name: "Sisip perenggan", exact: true }).click();
   await editor.pressSequentially("Perenggan baharu.");
   await page.getByRole("button", { name: "Sumber" }).click();
   assert.match(await page.evaluate(() => window.currentMarkdown), /Perenggan baharu\./);
   assert.match(await page.evaluate(() => window.currentMarkdown), /\[\[gambar:1\]\]/);
   assert.match(await page.evaluate(() => window.currentMarkdown), /## Bab 1/);
 
-  await page.getByRole("button", { name: "Penanda gambar" }).click();
+  await page.getByRole("button", { name: "Sisip penanda gambar" }).click();
   assert.match(await page.evaluate(() => window.currentMarkdown), /\[\[gambar:2\]\]/);
-  await page.getByRole("button", { name: "Kotak mesej" }).click();
+  await page.getByRole("button", { name: "Sisip kotak mesej" }).click();
   await editor.pressSequentially("Aku sudah sampai.");
   assert.match(await page.evaluate(() => window.currentMarkdown), /:::mesej\nAku sudah sampai\.\n:::/);
   await page.getByRole("button", { name: "Tukar mod" }).click();
