@@ -7,10 +7,11 @@ export async function POST(request: NextRequest) {
   const admin = await getCurrentAdmin();
   if (!admin) return NextResponse.json({ error: "Sesi anda telah tamat. Log masuk semula." }, { status: 401 });
   if (admin.role === "admin") return NextResponse.json({ error: "Kata laluan pemilik ditetapkan oleh pelayan, bukan di sini." }, { status: 400 });
-  let body: { current?: unknown; next?: unknown } | null = null;
+  type Body = { current?: unknown; next?: unknown; username?: unknown; displayName?: unknown; email?: unknown };
+  let body: Body | null = null;
   try {
     const parsed: unknown = await request.json();
-    body = parsed && typeof parsed === "object" ? (parsed as { current?: unknown; next?: unknown }) : null;
+    body = parsed && typeof parsed === "object" ? (parsed as Body) : null;
   } catch {
     body = null;
   }
@@ -19,7 +20,8 @@ export async function POST(request: NextRequest) {
   }
   const userId = admin.id.replace(/^u-/, "");
   try {
-    await changeOwnPassword(userId, body.current, body.next);
+    // At the first sign-in the name, a lasting username and an e-mail come with the new password (the service ignores them later).
+    await changeOwnPassword(userId, body.current, body.next, { username: body.username, displayName: body.displayName, email: body.email });
     const user = (await getStaff(userId))!;
     await setSessionCookie(staffSessionToken(user), true);
     return NextResponse.json({ success: true });

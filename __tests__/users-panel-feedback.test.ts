@@ -13,11 +13,11 @@ const panel = fs.readFileSync(path.join(__dirname, "..", "src/app/admin/pengguna
 assert(!panel.includes("window.confirm"), "no browser confirm box any more");
 assert(panel.includes('import { confirmAction, toast } from "../../../lib/admin/dialogs"'), "the admin's own dialog and toast are used");
 assert(/confirmAction\(`Matikan akaun \$\{user\.displayName\}\?[^`]*`, \{ confirmLabel: "Ya, matikan akaun", danger: true \}\)/.test(panel), "switching an account off asks in the admin dialog, names the action on the button and is styled destructive");
-assert(/confirmAction\(`Tetapkan semula kata laluan[^`]*`, \{ confirmLabel: "Ya, tetapkan semula", danger: true \}\)/.test(panel), "a password reset asks the same way");
+assert(/Tetapkan semula kata laluan \$\{user\.displayName\}\?[^`]*`/.test(panel) && panel.includes('confirmLabel: unused ? "Ya, jemputan baharu" : "Ya, tetapkan semula", danger: true'), "a password reset (or a new invitation) asks the same way: named button, destructive style");
 assert(panel.includes("await confirmAction(") && (panel.match(/await confirmAction\(/g) ?? []).length === 2, "the answer is awaited before anything is sent");
 
 // Every change says what happened
-for (const sentence of ["dimatikan.", "diaktifkan.", "ditukar kepada", "ditetapkan semula. Salin jemputan di atas dan hantar.", "dicipta. Salin jemputan dan hantar."]) {
+for (const sentence of ["dimatikan.", "diaktifkan.", "ditukar kepada", "ditetapkan semula. Salin jemputan di atas dan hantar.", "Jemputan sedia. Salin dan hantar kepada orang itu."]) {
   assert(panel.includes(sentence), `a success message: "...${sentence}"`);
 }
 assert((panel.match(/"success"/g) ?? []).length >= 3, "success is announced for create, change (role, switch on or off) and reset");
