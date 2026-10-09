@@ -511,7 +511,7 @@ export default function EditVisualRequestPage() {
       {record && (
         <div className="admin-form" style={{ marginBottom: 24, padding: 16, border: "1px solid var(--border, #ddd)", borderRadius: 8 }}>
           {/* Three clearly separated lifecycle panels */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
+          <div className="a-step-panels">
             <div>
               <h3 className="a-eyebrow">1. Penjanaan</h3>
               <p style={{ margin: 0 }}>
