@@ -14,6 +14,7 @@ config({ path: ".env.local", override: true });
 import fs from "node:fs";
 import { sql } from "kysely";
 import { closeDb, getDb } from "../src/lib/db";
+import { addGrant, listLedger } from "../src/lib/reader-auth/entitlements";
 
 const BASE = process.env.READER_E2E_BASE ?? "http://localhost:3100";
 const OFF_BASE = process.env.READER_E2E_OFF_BASE;
@@ -150,6 +151,9 @@ async function main() {
     assert(trialDays > 13.9 && trialDays < 14.1, "the trial is 14 days", trialDays);
     const cookie = good.setCookies.find((c) => c.startsWith("jalin-reader="))!;
     assert(!!cookie && /HttpOnly/i.test(cookie) && /SameSite=lax/i.test(cookie) && /Path=\//i.test(cookie) && !/Domain=/i.test(cookie), "the cookie is HttpOnly, SameSite=Lax, Path=/, with no Domain", cookie);
+    const acct = await sql<{ id: string }>`SELECT id FROM reader_accounts WHERE email_normalized = ${emailA} AND status <> 'deleted'`.execute(db);
+    const ledgerRows = await listLedger(db, acct.rows[0].id);
+    assert(ledgerRows.length === 1 && ledgerRows[0].kind === "TRIAL" && Math.abs(ledgerRows[0].endsAt.getTime() - new Date(good.json.trialEndsAt).getTime()) < 1000, "registration wrote the 14-day trial into the access ledger");
     const reuse = await new Device("x").req("/api/akaun/sahkan", { method: "POST", body: { email: emailA, code: code1 } });
     assert(reuse.status === 400, "the same code cannot be used twice");
     const me = await A.req("/api/akaun/saya");
@@ -280,6 +284,18 @@ async function main() {
     assert((await C.req("/api/akaun/saya")).json?.signedIn === false && (await E.req("/api/akaun/saya")).json?.signedIn === false, "every device is signed out");
     assert((await new Device("z").req("/api/akaun/keluar-semua", { method: "POST", body: {} })).status === 401, "a visitor cannot sign anyone out everywhere");
 
+    // ---------------------------------------------------------------- the ledger on the account page
+    console.log("\nAccess shown on the account page");
+    const G = new Device("Pembaca langganan");
+    const gsign = await signIn(G, "e2e-langgan@e2e.invalid");
+    const gAcc = await sql<{ id: string }>`SELECT id FROM reader_accounts WHERE email_normalized = 'e2e-langgan@e2e.invalid'`.execute(db);
+    const trialView = await G.req("/akaun");
+    assert(gsign.verified?.status === 200 && (await G.req("/api/akaun/saya")).json.access.state === "trial" && trialView.text.includes("Percubaan percuma tamat"), "a new reader is shown as in trial with the date");
+    const given = await addGrant(db, { accountId: gAcc.rows[0].id, kind: "ADMIN", grant: { unit: "months", amount: 6 }, reason: "e2e", createdBy: "e2e" });
+    const afterGrant = await G.req("/api/akaun/saya");
+    assert(given.added && afterGrant.json.access.state === "trial" && afterGrant.json.access.endsAt !== afterGrant.json.access.currentPeriodEndsAt && (await G.req("/akaun")).text.includes("bersambung sehingga"), "a grant added during the trial shows as continuing after it");
+    await sql`UPDATE reader_accounts SET trial_ends_at = trial_ends_at`.execute(db);
+
     // ---------------------------------------------------------------- the trial is once
     console.log("\nThe trial is given once");
     await sql`UPDATE reader_accounts SET status = 'deleted' WHERE email_normalized = ${emailA}`.execute(db);
@@ -296,6 +312,7 @@ async function main() {
     assert(refused, "a non-development database host is refused outside Vercel and CI");
   } finally {
     const del = await sql`DELETE FROM reader_accounts WHERE email_normalized LIKE '%@e2e.invalid'`.execute(db);
+    await sql`TRUNCATE entitlements`.execute(db);
     await sql`DELETE FROM reader_auth_challenges`.execute(db);
     await sql`DELETE FROM reader_auth_events`.execute(db);
     await sql`DELETE FROM reader_trial_claims`.execute(db);

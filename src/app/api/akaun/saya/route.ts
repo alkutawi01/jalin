@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getDb } from "../../../../lib/db";
 import { currentSession, noStore, notFoundWhenOff } from "../../../../lib/reader-auth/http";
 import { listDevices } from "../../../../lib/reader-auth/service";
+import { getAccess } from "../../../../lib/reader-auth/entitlements";
 
 export const dynamic = "force-dynamic";
 
@@ -12,11 +13,13 @@ export async function GET(request: Request) {
   const current = await currentSession(request);
   if (!current) return noStore(NextResponse.json({ signedIn: false }));
   const devices = await listDevices(getDb(), current.session.account.id);
+  const access = await getAccess(getDb(), current.session.account.id);
   const { account } = current.session;
   return noStore(
     NextResponse.json({
       signedIn: true,
       account: { email: account.email, displayName: account.displayName, trialStartsAt: account.trialStartsAt, trialEndsAt: account.trialEndsAt },
+      access: { state: access.state, endsAt: access.endsAt, currentPeriodEndsAt: access.currentPeriodEndsAt },
       thisDeviceId: current.session.device.id,
       devices,
     })

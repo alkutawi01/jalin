@@ -482,6 +482,7 @@ export interface Database {
   saved_works: SavedWorks;
   reading_progress: ReadingProgress;
   reader_auth_events: ReaderAuthEvents;
+  entitlements: Entitlements;
 }
 
 export interface ReaderAccounts {
@@ -557,4 +558,19 @@ export interface ReaderAuthEvents {
   scope: "email" | "ip" | "global";
   key_mac: string;
   at: Generated<Date>;
+}
+
+export interface Entitlements {
+  id: Generated<string>;
+  account_id: string | null;
+  kind: "TRIAL" | "CARD" | "SHARED" | "ADMIN";
+  starts_at: Date;
+  ends_at: Date;
+  source_ref: string | null;
+  reason: string | null;
+  created_by: string | null;
+  created_at: Generated<Date>;
+  revoked_at: Date | null;
+  revoked_by: string | null;
+  revoke_reason: string | null;
 }

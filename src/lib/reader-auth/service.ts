@@ -12,6 +12,7 @@ import { sql } from "kysely";
 import { randomUUID } from "node:crypto";
 import type { Database } from "../db/types";
 import { TRIAL_DAYS } from "../subscription/periods";
+import { addTrial } from "./entitlements";
 import {
   constantTimeEqualHex,
   emailLookupMac,
@@ -218,6 +219,7 @@ export async function verifyLoginCode(
         .returningAll()
         .executeTakeFirstOrThrow();
       isNewAccount = true;
+      if (trialStarts && trialEnds) await addTrial(trx, account.id, trialStarts, trialEnds);
     }
 
     const active = await trx

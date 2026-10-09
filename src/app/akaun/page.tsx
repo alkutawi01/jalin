@@ -6,6 +6,7 @@ import { getDb } from "../../lib/db";
 import { readerAccountsEnabled } from "../../lib/reader-auth/http";
 import { currentReaderSession } from "../../lib/reader-auth/server";
 import { getPrefs, listDevices } from "../../lib/reader-auth/service";
+import { getAccess } from "../../lib/reader-auth/entitlements";
 
 export const dynamic = "force-dynamic";
 
@@ -19,8 +20,7 @@ export default async function AccountPage() {
   const session = await currentReaderSession();
   if (!session) redirect("/log-masuk");
   const db = getDb();
-  const [devices, prefs] = await Promise.all([listDevices(db, session.account.id), getPrefs(db, session.account.id)]);
-  const trialEndsAt = session.account.trialEndsAt;
+  const [devices, prefs, access] = await Promise.all([listDevices(db, session.account.id), getPrefs(db, session.account.id), getAccess(db, session.account.id)]);
   return (
     <>
       <SiteHeader />
@@ -29,8 +29,7 @@ export default async function AccountPage() {
           <AccountPanel
             email={session.account.email}
             displayName={session.account.displayName}
-            trialEndsAt={trialEndsAt ? trialEndsAt.toISOString() : null}
-            trialActive={!!trialEndsAt && trialEndsAt.getTime() > Date.now()}
+            access={{ state: access.state, endsAt: access.endsAt ? access.endsAt.toISOString() : null, currentPeriodEndsAt: access.currentPeriodEndsAt ? access.currentPeriodEndsAt.toISOString() : null }}
             thisDeviceId={session.device.id}
             devices={devices.map((d) => ({ id: d.id, label: d.label, lastSeenAt: d.lastSeenAt.toISOString() }))}
             prefs={prefs}
