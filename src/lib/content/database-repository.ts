@@ -164,7 +164,18 @@ export class DatabaseContentRepository implements ContentRepository {
     let dbSections = await db.selectFrom("reading_sections").orderBy("position", "asc").selectAll().execute();
     const dbSeries = await db.selectFrom("series").selectAll().execute();
     const dbEntries = await db.selectFrom("series_entries").orderBy("position", "asc").selectAll().execute();
-    const dbRevisions = await db.selectFrom("work_revisions").selectAll().execute();
+    // Public readers need only the frozen snapshots that are currently published.
+    // Do not transfer every historical/draft revision on each repository refresh.
+    const publishedRevisionIds = dbWorks
+      .filter((row) => row.status === "published" && row.published_revision_id)
+      .map((row) => String(row.published_revision_id));
+    const dbRevisions = publishedRevisionIds.length > 0
+      ? await db.selectFrom("work_revisions")
+          .select(["id", "snapshot"])
+          .where("id", "in", publishedRevisionIds)
+          .execute()
+      : [];
+    const publishedRevisionsById = new Map(dbRevisions.map((row) => [String(row.id), row]));
 
     // Load published revision snapshots for published works
     // Only load revisions that match published_revision_id, not just the latest
@@ -175,7 +186,7 @@ export class DatabaseContentRepository implements ContentRepository {
       
       if (publishedRevId) {
         // Load the specific published revision
-        const publishedRev = dbRevisions.find(r => String(r.id) === publishedRevId);
+        const publishedRev = publishedRevisionsById.get(publishedRevId);
         if (publishedRev) {
           const snapshot = typeof publishedRev.snapshot === "string" ? JSON.parse(publishedRev.snapshot) : publishedRev.snapshot;
           this.revisionSnapshots.set(wid, snapshot);
