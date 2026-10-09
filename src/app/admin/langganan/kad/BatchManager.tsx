@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { confirmAction, toast } from "../../../../lib/admin/dialogs";
+import { errorText } from "../../../../lib/admin/error-text";
 import { api, fmtDate, Notice } from "../../../../components/admin/langganan-ui";
 
 type Batch = {
@@ -71,7 +72,7 @@ export default function BatchManager({ initialBatches, suggested }: { initialBat
       toast("Kelompok dibuat.", "success");
       setTimeout(() => window.location.reload(), 2500);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Kelompok tidak berjaya dibuat.");
+      setError(errorText(e, "Kelompok tidak berjaya dibuat."));
     } finally {
       setBusy(false);
     }
@@ -84,7 +85,7 @@ export default function BatchManager({ initialBatches, suggested }: { initialBat
       toast(action === "confirm" ? "Cetakan disahkan." : action === "issue" ? `${data.issued ?? 0} kod diaktifkan.` : "Kelompok dibatalkan.", "success");
       setTimeout(() => window.location.reload(), 800);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Tidak berjaya.");
+      setError(errorText(e, "Tidak berjaya."));
     }
   }
 
@@ -96,7 +97,7 @@ export default function BatchManager({ initialBatches, suggested }: { initialBat
       const data = await api<{ code: CodeInfo }>(`/api/admin/langganan/kod/${encodeURIComponent(serial.trim())}`, "GET");
       setFound(data.code);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Tidak dijumpai.");
+      setError(errorText(err, "Tidak dijumpai."));
     }
   }
 
@@ -109,7 +110,7 @@ export default function BatchManager({ initialBatches, suggested }: { initialBat
       setFound({ ...found, state: "revoked", revokeReason });
       setRevokeReason("");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Tidak berjaya.");
+      setError(errorText(err, "Tidak berjaya."));
     }
   }
 

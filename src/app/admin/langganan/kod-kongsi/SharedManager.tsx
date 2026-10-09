@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { confirmAction, toast } from "../../../../lib/admin/dialogs";
+import { errorText } from "../../../../lib/admin/error-text";
 import { api, fmtDate, Notice } from "../../../../components/admin/langganan-ui";
 
 type Row = { id: string; code: string; grantText: string; maxRedemptions: number; redeemedCount: number; expiresAt: string | null; status: "active" | "paused" | "revoked"; channel: string | null; note: string | null; createdAt: string };
@@ -33,7 +34,7 @@ export default function SharedManager({ initialRows }: { initialRows: Row[] }) {
       const list = await api<{ codes: Row[] }>("/api/admin/langganan/kod-kongsi", "GET");
       setRows(list.codes);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Kod tidak dapat dibuat.");
+      setError(errorText(err, "Kod tidak dapat dibuat."));
     } finally {
       setBusy(false);
     }
@@ -47,7 +48,7 @@ export default function SharedManager({ initialRows }: { initialRows: Row[] }) {
       setRows((list) => list.map((r) => (r.id === row.id ? { ...r, status } : r)));
       toast(status === "active" ? "Kod disambung semula." : status === "paused" ? "Kod dijeda." : "Kod dibatalkan.", "success");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Tidak berjaya.");
+      setError(errorText(err, "Tidak berjaya."));
     }
   }
 
