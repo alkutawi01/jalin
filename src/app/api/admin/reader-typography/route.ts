@@ -16,10 +16,10 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   const admin = await getCurrentAdmin();
   if (!admin) return NextResponse.json({ error: SESSION_ENDED }, { status: 401 });
-  const body = (await request.json().catch(() => null)) as { bodyPx?: unknown; headingEm?: unknown } | null;
+  const body = (await request.json().catch(() => null)) as { bodyPx?: unknown; headingEm?: unknown; devices?: unknown } | null;
   if (!body || typeof body !== "object") return NextResponse.json({ error: "Permintaan tidak sah." }, { status: 400 });
   try {
-    const saved = await saveReaderTypography({ bodyPx: body.bodyPx, headingEm: body.headingEm });
+    const saved = await saveReaderTypography({ bodyPx: body.bodyPx, headingEm: body.headingEm, devices: body.devices });
     return NextResponse.json({ ok: true, ...saved });
   } catch (error) {
     if (error instanceof TypographyInputError) return NextResponse.json({ error: error.message }, { status: 400 });

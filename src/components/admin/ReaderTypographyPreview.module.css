@@ -1,0 +1,44 @@
+/*
+ * The mock-up of one reader screen (ReaderTypographyPreview.tsx). Its own file because everything inside the screen is sized by variables the
+ * component sets from the device table (the page is drawn at the real size of that screen, then scaled), and the admin stylesheet keeps its
+ * font sizes and radii to a short scale. Colours are the reader's own tokens (globals.css), so the page looks as it does on the site.
+ */
+
+.figure { margin: 0; }
+
+.stage { display: flex; justify-content: center; padding: 8px 0 28px; }
+.stageReal { justify-content: flex-start; overflow: auto; max-height: 560px; }
+
+.device { position: relative; flex: none; margin-bottom: var(--rt-foot, 0px); padding: var(--rt-bezel, 12px); border-radius: var(--rt-radius, 12px); background: var(--a-ink-deep); box-shadow: var(--a-shadow); }
+.isPhone, .isTablet { box-sizing: content-box; }
+.isLaptop::after,
+.isMonitor::after { content: ""; position: absolute; top: 100%; left: 50%; height: var(--rt-foot, 0px); transform: translateX(-50%); background: var(--a-ink-deep); }
+.isLaptop::after { width: 118%; border-radius: 0 0 var(--rt-radius, 12px) var(--rt-radius, 12px); }
+.isMonitor::after { width: 22%; clip-path: polygon(18% 0, 82% 0, 100% 100%, 0 100%); }
+
+.viewport { overflow: hidden; border-radius: var(--rt-screen-radius, 6px); background: var(--paper); }
+
+.screen { width: var(--rt-w); height: var(--rt-h); overflow: hidden; transform-origin: top left; background: var(--paper); color: var(--ink); font-family: Georgia, "Times New Roman", serif; text-align: left; }
+
+.header { display: flex; align-items: center; justify-content: space-between; height: var(--rt-header); padding: 0 max(20px, calc((var(--rt-w) - var(--rt-shell)) / 2)); border-bottom: 1px solid var(--line); }
+.header img { width: var(--rt-logo); height: auto; }
+.nav, .menu { display: flex; gap: 22px; font-family: ui-sans-serif, system-ui, sans-serif; font-size: var(--rt-ui); color: var(--ink); }
+
+.head { margin: 0 auto; padding: 48px 20px 36px; text-align: center; }
+.eyebrow { margin: 0; font-family: ui-sans-serif, system-ui, sans-serif; font-size: var(--rt-small); font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--clay-text); }
+:global(.a-shell) .head h1 { margin: 18px 0 20px; font-family: inherit; font-size: var(--rt-title); font-weight: 500; line-height: .96; letter-spacing: -.04em; color: var(--ink); }
+:global(.a-shell) .head .dek { max-width: 600px; margin: 0 auto; font-size: var(--rt-dek); line-height: 1.6; font-style: italic; color: var(--ink-soft); }
+
+.page { display: grid; grid-template-columns: var(--rt-cols); justify-content: var(--rt-justify); gap: 40px; width: var(--rt-shell); margin: 0 auto; align-items: start; }
+
+.body { min-width: 0; font-size: var(--rt-body); line-height: var(--rt-lh); color: var(--ink); }
+:global(.a-shell) .body p { margin: 0 0 var(--rt-gap); font-size: inherit; line-height: inherit; color: inherit; }
+:global(.a-shell) .body h2 { margin: var(--rt-h2m); font-family: inherit; font-size: var(--rt-h2); font-weight: 700; line-height: var(--rt-h2lh); letter-spacing: normal; text-transform: none; color: var(--ink); }
+
+.rail { display: grid; gap: 14px; padding-top: 6px; }
+.rail span { display: block; height: 10px; border-radius: 2px; background: var(--line); }
+.rail span:nth-child(odd) { width: 60%; }
+.rail span:nth-child(even) { width: 90%; }
+
+.caption { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; font-size: 13px; color: var(--a-muted); }
+.scale { color: var(--a-faint); }
