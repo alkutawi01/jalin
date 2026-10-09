@@ -443,8 +443,8 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
     const placed = chipOf(label);
     const before = placed?.previousSibling;
     const after = placed?.nextSibling;
-    if (before?.nodeType === Node.TEXT_NODE && before.textContent?.endsWith(" ")) before.textContent = before.textContent.replace(/ $/, " ");
-    if (after?.nodeType === Node.TEXT_NODE && after.textContent?.startsWith(" ")) after.textContent = after.textContent.replace(/^ /, " ");
+    if (before?.nodeType === Node.TEXT_NODE && before.textContent?.endsWith("\u00a0")) before.textContent = before.textContent.replace(/\u00a0$/, " ");
+    if (after?.nodeType === Node.TEXT_NODE && after.textContent?.startsWith("\u00a0")) after.textContent = after.textContent.replace(/^\u00a0/, " ");
     sync();
     rememberSelection();
     toast(`Nota ${label} disisipkan. Pembaca melihatnya di sisi teks.`, "success");
