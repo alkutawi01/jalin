@@ -2,11 +2,13 @@
 
 import { dashInSelection, quotesInAllBlocks } from "../../lib/admin/auto-dash";
 import { pastedHtmlToMarkdown } from "../../lib/admin/paste-format";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { nextImageMarker } from "../../lib/reader/image-markers";
 import { splitCommunicationBlocks } from "../../lib/reader/communication-blocks";
 import { confirmAction, toast } from "../../lib/admin/dialogs";
-import { cleanFootnoteText, isFootnoteDefinition, nextFootnoteLabel } from "../../lib/admin/footnote-insert";
+import { cleanFootnoteText, nextFootnoteLabel } from "../../lib/admin/footnote-insert";
+import { splitFootnotes } from "../../lib/admin/footnote-edit";
+import { buildNoteContext, joinProseAndNotes, noteChipHtml, noteWithText, notesToWrite, withNoteChips, type NoteContext } from "../../lib/admin/visual-notes";
 import FootnoteInserter from "./FootnoteInserter";
 
 const MARKER = /^\[\[gambar:[1-9]\d*\]\]$/;
@@ -36,17 +38,19 @@ function unescapeLiteral(value: string): string {
   return value.replace(/\\([\\*])/g, "$1");
 }
 
-function inlineHtml(value: string): string {
+/** The numbers of side notes in the text become chips when `notes` is given (see lib/admin/visual-notes.ts). */
+function inlineHtml(value: string, notes?: NoteContext): string {
+  const text = (part: string) => (notes ? withNoteChips(escapeHtml(unescapeLiteral(part)), notes) : escapeHtml(unescapeLiteral(part)));
   return value.split(/((?<!\\)\*\*[^*\n]+?(?<!\\)\*\*|(?<!\\)\*[^*\n]+?(?<!\\)\*)/g).map((part) => {
-    if (part.startsWith("**") && part.endsWith("**") && part.length > 4) return `<strong>${escapeHtml(unescapeLiteral(part.slice(2, -2)))}</strong>`;
-    if (part.startsWith("*") && part.endsWith("*") && part.length > 2) return `<em>${escapeHtml(unescapeLiteral(part.slice(1, -1)))}</em>`;
-    return escapeHtml(unescapeLiteral(part)).replace(/\n/g, "<br>");
+    if (part.startsWith("**") && part.endsWith("**") && part.length > 4) return `<strong>${text(part.slice(2, -2))}</strong>`;
+    if (part.startsWith("*") && part.endsWith("*") && part.length > 2) return `<em>${text(part.slice(1, -1))}</em>`;
+    return text(part).replace(/\n/g, "<br>");
   }).join("");
 }
 
-/** Keep unsupported Markdown in the source editor; never silently flatten it. */
+/** Keep unsupported Markdown in the source editor; never silently flatten it. The side notes are kept apart by the editor, so only the text counts. */
 export function canEditVisually(markdown: string): boolean {
-  const segments = splitCommunicationBlocks(markdown);
+  const segments = splitCommunicationBlocks(splitFootnotes(markdown).prose);
   if (segments.some((segment) => segment.content.includes(":::"))) return false;
   const blocks = segments.flatMap((segment) => segment.kind === "prose" ? segment.content.split(/\n{2,}/) : [segment.content]);
   if (blocks.some((block) => block.split("\n").length > 1 && block.split("\n").some((line) => MARKER.test(line.trim()) || /^(---|\*\*\*)$/.test(line.trim()) || /^## /.test(line)))) return false;
@@ -65,7 +69,7 @@ export function canEditVisually(markdown: string): boolean {
   });
 }
 
-function toHtml(markdown: string): string {
+function toHtml(markdown: string, notes?: NoteContext): string {
   if (!markdown.trim()) return "<p><br></p>";
   return splitCommunicationBlocks(markdown).map((segment) => segment.kind === "prose" ? segment.content.split(/\n{2,}/).map((block) => {
     const trimmed = block.trim();
@@ -75,20 +79,34 @@ function toHtml(markdown: string): string {
       return `<div class="visual-manuscript-marker" contenteditable="false" data-marker="${trimmed}"><span data-marker-label>Gambar ${number}</span><button type="button" data-remove-marker aria-label="Buang penanda Gambar ${number}" title="Buang penanda Gambar ${number}">Buang</button></div>`;
     }
     if (/^(---|\*\*\*)$/.test(trimmed)) return '<hr class="visual-manuscript-break">';
-    if (trimmed.startsWith("## ")) return `<h2>${inlineHtml(trimmed.slice(3))}</h2>`;
-    return `<p>${inlineHtml(block)}</p>`;
-  }).join("") : `<div class="visual-manuscript-communication visual-manuscript-communication-${segment.kind}" data-communication="${segment.kind}">${inlineHtml(segment.content)}</div>`).join("");
+    if (trimmed.startsWith("## ")) return `<h2>${inlineHtml(trimmed.slice(3), notes)}</h2>`;
+    return `<p>${inlineHtml(block, notes)}</p>`;
+  }).join("") : `<div class="visual-manuscript-communication visual-manuscript-communication-${segment.kind}" data-communication="${segment.kind}">${inlineHtml(segment.content, notes)}</div>`).join("");
 }
 
 function inlineMarkdown(node: Node): string {
   if (node.nodeType === Node.TEXT_NODE) return (node.textContent ?? "").replace(/\\/g, "\\\\").replace(/\*/g, "\\*");
   if (!(node instanceof HTMLElement)) return "";
   if (node.tagName === "BR") return "\n";
+  // A side note's chip is written back as its number in the text; the note's words are written after the text (see sync).
+  if (node.tagName === "SUP" && node.dataset.note) return `[^${node.dataset.note}]`;
   const body = [...node.childNodes].map(inlineMarkdown).join("");
   if (node.tagName === "STRONG" || node.tagName === "B") return `**${body}**`;
   if (node.tagName === "EM" || node.tagName === "I") return `*${body}*`;
   if (node.tagName === "DIV" || node.tagName === "P") return `${body}\n`;
   return body;
+}
+
+/** The chips are numbered as a reader sees the notes: by the first of each in the text. Done on every change, so adding, moving and deleting keep the numbers right. */
+function renumberNotes(root: HTMLElement) {
+  const numbers = new Map<string, number>();
+  root.querySelectorAll<HTMLElement>("[data-note]").forEach((chip) => {
+    const label = chip.dataset.note!;
+    if (!numbers.has(label)) numbers.set(label, numbers.size + 1);
+    const number = numbers.get(label)!;
+    if (chip.textContent !== String(number)) chip.textContent = String(number);
+    chip.setAttribute("aria-label", `Nota ${number}: sunting`);
+  });
 }
 
 function fromHtml(root: HTMLElement): string {
@@ -117,10 +135,23 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
   const selectionRef = useRef<Range | null>(null);
   const caretRef = useRef<{ block: number; offset: number } | null>(null);
   const [noteOpen, setNoteOpen] = useState(false);
+  /** The side notes of the manuscript: the words are kept here (not in the text of the editor) and written after the text on every change. */
+  const notesRef = useRef<NoteContext>({ numbers: {}, definitions: new Map(), orphans: [] });
+  /** What was last drawn into the editor from `value`; null once the editor has sent text of its own. */
+  const drawnRef = useRef<string | null>(null);
+  const [editing, setEditing] = useState<{ label: string; number: number; text: string; rect: { left: number; top: number; bottom: number } } | null>(null);
+  const popoverRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const editor = editorRef.current;
-    if (editor && value !== emittedRef.current) editor.innerHTML = toHtml(value);
+    // The text is drawn again only when it came from somewhere else (the Markdown box, the list of notes, a reset), never because the page redrew.
+    if (editor && value !== emittedRef.current && value !== drawnRef.current) {
+      const { prose, context } = buildNoteContext(value);
+      notesRef.current = context;
+      editor.innerHTML = toHtml(prose, context);
+      drawnRef.current = value;
+      setEditing(null);
+    }
     editor?.querySelectorAll<HTMLElement>("[data-marker]").forEach((block) => {
       const marker = block.dataset.marker;
       const label = block.querySelector<HTMLElement>("[data-marker-label]");
@@ -132,10 +163,86 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
     const editor = editorRef.current;
     if (!editor) return;
     dashInSelection();
-    const next = fromHtml(editor);
+    renumberNotes(editor);
+    const labels = [...new Set([...editor.querySelectorAll<HTMLElement>("[data-note]")].map((chip) => chip.dataset.note!))];
+    const next = joinProseAndNotes(fromHtml(editor), notesToWrite(labels, notesRef.current));
     emittedRef.current = next;
+    drawnRef.current = null;
     onChange(next);
   }
+
+  function chipOf(label: string): HTMLElement | null {
+    return editorRef.current?.querySelector<HTMLElement>(`[data-note="${label}"]`) ?? null;
+  }
+
+  /** Opens the box for the note of a chip: its words, to read, change or remove. */
+  function openNote(chip: HTMLElement) {
+    const label = chip.dataset.note;
+    const definition = label ? notesRef.current.definitions.get(label) : undefined;
+    if (!label || !definition) return;
+    const box = chip.getBoundingClientRect();
+    setEditing({ label, number: Number(chip.textContent) || 0, text: definition.text, rect: { left: box.left, top: box.top, bottom: box.bottom } });
+  }
+
+  function closeNote(returnFocus = false) {
+    const label = editing?.label;
+    setEditing(null);
+    if (returnFocus && label) window.requestAnimationFrame(() => chipOf(label)?.focus());
+  }
+
+  function saveNote() {
+    if (!editing) return;
+    const clean = cleanFootnoteText(editing.text);
+    if (!clean) return;
+    notesRef.current.definitions.set(editing.label, noteWithText(editing.label, clean));
+    chipOf(editing.label)?.setAttribute("title", clean.length > 140 ? `${clean.slice(0, 140)}…` : clean);
+    sync();
+    toast(`Nota ${editing.number} diubah. Simpan teks & maklumat untuk menerapkannya.`, "success");
+    closeNote(true);
+  }
+
+  async function removeNote() {
+    if (!editing) return;
+    const { label, number } = editing;
+    if (!(await confirmAction(`Padam nota ${number}? Nombornya dalam teks dan isinya akan dibuang.`, { danger: true, confirmLabel: "Padam nota" }))) return;
+    editorRef.current?.querySelectorAll(`[data-note="${label}"]`).forEach((chip) => chip.remove());
+    sync();
+    toast(`Nota ${number} dipadam. Simpan teks & maklumat untuk menerapkannya.`, "success");
+    setEditing(null);
+  }
+
+  // The box sits beside its chip (below it, or above when there is no room) and goes when the page moves under it or a click lands elsewhere.
+  useLayoutEffect(() => {
+    const pop = popoverRef.current;
+    if (!editing || !pop) return;
+    const width = Math.min(340, window.innerWidth - 16);
+    const left = Math.max(8, Math.min(editing.rect.left, window.innerWidth - width - 8));
+    const below = editing.rect.bottom + 8;
+    const top = below + pop.offsetHeight > window.innerHeight - 8 ? Math.max(8, editing.rect.top - pop.offsetHeight - 8) : below;
+    pop.style.width = `${width}px`;
+    pop.style.left = `${left}px`;
+    pop.style.top = `${top}px`;
+  }, [editing]);
+
+  const isEditing = editing !== null;
+  useEffect(() => {
+    if (!isEditing) return;
+    const close = (event: Event) => {
+      if (event.target instanceof Node && popoverRef.current?.contains(event.target)) return;
+      setEditing(null);
+    };
+    const away = (event: MouseEvent) => {
+      if (event.target instanceof Node && !popoverRef.current?.contains(event.target) && !(event.target as HTMLElement).closest?.("[data-note]")) setEditing(null);
+    };
+    window.addEventListener("scroll", close, true);
+    window.addEventListener("resize", close);
+    document.addEventListener("mousedown", away);
+    return () => {
+      window.removeEventListener("scroll", close, true);
+      window.removeEventListener("resize", close);
+      document.removeEventListener("mousedown", away);
+    };
+  }, [isEditing]);
 
   function rememberSelection() {
     const selection = window.getSelection();
@@ -268,18 +375,18 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
     rememberSelection();
   }
 
-  /** A side note: the number goes where the cursor was, the note's words go on a line of their own at the end (the reader takes it out and sets it in the margin). */
+  /** A side note: its number goes where the cursor was, as a chip; its words are kept apart and written after the text (the reader sets them in the margin). */
   function insertFootnoteAtCursor(text: string): boolean {
     const editor = editorRef.current;
     const clean = cleanFootnoteText(text);
     if (!editor || !clean) return false;
-    const label = nextFootnoteLabel(value);
-    const reference = `[^${label}]`;
-    // The cursor is a place (block and characters in), found again in whatever the editor now holds. A cursor in a note's own line, in a
-    // heading or box, or none at all, would put the number somewhere wrong: the end of the story's text is used instead.
+    // A number not used by the text or by a note the editor still holds (one whose chip was deleted can come back with Undo).
+    const label = nextFootnoteLabel(`${value} ${[...notesRef.current.definitions.keys()].map((key) => `[^${key}]`).join(" ")}`);
+    // The cursor is a place (block and characters in), found again in whatever the editor now holds. A cursor in a heading or box, or none at
+    // all, would put the number somewhere wrong: the end of the story's text is used instead.
     const caret = caretRef.current;
     const block = caret ? editor.children[caret.block] ?? null : null;
-    const usable = !!block && block.tagName === "P" && !isFootnoteDefinition(block.textContent ?? "");
+    const usable = !!block && block.tagName === "P";
     editor.focus();
     const selection = window.getSelection();
     const range = document.createRange();
@@ -299,7 +406,7 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
       if (!placed) range.selectNodeContents(block!);
       range.collapse(placed);
     } else {
-      const prose = [...editor.children].filter((child) => child.tagName === "P" && (child.textContent ?? "").trim() && !isFootnoteDefinition(child.textContent ?? ""));
+      const prose = [...editor.children].filter((child) => child.tagName === "P" && (child.textContent ?? "").trim());
       const last = prose[prose.length - 1] ?? null;
       if (!last) {
         editor.insertAdjacentHTML("afterbegin", "<p><br></p>");
@@ -309,8 +416,8 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
     }
     selection?.removeAllRanges();
     selection?.addRange(range);
-    document.execCommand("insertText", false, reference);
-    editor.insertAdjacentHTML("beforeend", `<p>${escapeHtml(`${reference}: ${clean}`)}</p>`);
+    notesRef.current.definitions.set(label, noteWithText(label, clean));
+    document.execCommand("insertHTML", false, noteChipHtml(label, 0, clean));
     sync();
     rememberSelection();
     toast(`Nota ${label} disisipkan. Pembaca melihatnya di sisi teks.`, "success");
@@ -334,6 +441,13 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
     </div>
     <FootnoteInserter open={noteOpen} onOpenChange={setNoteOpen} onInsert={insertFootnoteAtCursor} />
     <div ref={editorRef} className="visual-manuscript-surface" contentEditable role="textbox" aria-label="Manuskrip visual" aria-multiline="true" suppressContentEditableWarning onInput={sync} onKeyDown={(event) => {
+      // Enter (or Space) on a note's number opens its note, as a click does.
+      const chip = (event.target as HTMLElement).closest?.<HTMLElement>("[data-note]");
+      if (chip && (event.key === "Enter" || event.key === " ")) {
+        event.preventDefault();
+        openNote(chip);
+        return;
+      }
       // Enter inside a message or e-mail box starts a new line in that box (the browser would split it into a second box).
       if (event.key !== "Enter" || event.shiftKey || event.nativeEvent.isComposing) return;
       const anchor = window.getSelection()?.anchorNode;
@@ -356,6 +470,12 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
       if (editorRef.current) quotesInAllBlocks(editorRef.current);
       sync();
     }} onClick={(event) => {
+      const chip = (event.target as HTMLElement).closest<HTMLElement>("[data-note]");
+      if (chip && editorRef.current?.contains(chip)) {
+        event.preventDefault();
+        openNote(chip);
+        return;
+      }
       const button = (event.target as HTMLElement).closest<HTMLButtonElement>("[data-remove-marker]");
       const markerElement = button?.closest<HTMLElement>("[data-marker]");
       const marker = markerElement?.dataset.marker;
@@ -374,6 +494,43 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
         sync();
       })();
     }} />
-    <p className="admin-form-hint">Letakkan kursor di tempat nombor patut berada, kemudian tekan ikon nota di bar alat (Nota sisi); nota ditulis di hujung manuskrip sebagai baris bernombor, jangan padamkannya. Pilih teks untuk Tebal atau Condong. Penanda gambar boleh dibuang di sini; simpan teks untuk menerapkan perubahan. Gambar yang sudah dimuat naik dipadam secara berasingan melalui kadnya.</p>
+    {editing ? (
+      <div ref={popoverRef} className="visual-manuscript-popover" role="dialog" aria-label={`Sunting nota ${editing.number}`} onKeyDown={(event) => {
+        if (event.key === "Escape") {
+          event.stopPropagation();
+          closeNote(true);
+        }
+      }}>
+        <label htmlFor="vm-note-text">Nota {editing.number}</label>
+        <textarea
+          id="vm-note-text"
+          className="admin-textarea"
+          rows={4}
+          maxLength={600}
+          autoFocus
+          value={editing.text}
+          onChange={(event) => setEditing({ ...editing, text: event.target.value })}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
+              event.preventDefault();
+              saveNote();
+            }
+          }}
+        />
+        <div className="visual-manuscript-popover-actions">
+          <button
+            type="button"
+            className="admin-btn admin-btn-primary admin-btn-sm"
+            disabled={!cleanFootnoteText(editing.text) || cleanFootnoteText(editing.text) === notesRef.current.definitions.get(editing.label)?.text}
+            onClick={saveNote}
+          >
+            Simpan nota
+          </button>
+          <button type="button" className="admin-btn admin-btn-danger admin-btn-sm" onClick={() => void removeNote()}>Padam nota</button>
+          <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={() => closeNote(true)}>Tutup</button>
+        </div>
+      </div>
+    ) : null}
+    <p className="admin-form-hint">Nota sisi ialah nombor kecil dalam teks: klik nombor itu untuk membaca, menukar atau memadam notanya. Untuk nota baharu, letakkan kursor di tempat nombor patut berada dan tekan ikon nota di bar alat. Pilih teks untuk Tebal atau Condong. Penanda gambar boleh dibuang di sini; simpan teks untuk menerapkan perubahan. Gambar yang sudah dimuat naik dipadam secara berasingan melalui kadnya.</p>
   </div>;
 }

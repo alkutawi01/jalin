@@ -2094,6 +2094,43 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 }
 .visual-manuscript-marker button:hover,
 .visual-manuscript-marker button:focus-visible { background: #f8e8e1; outline: 2px solid var(--clay); outline-offset: 1px; }
+/* A side note in the text: its number as a small chip (it cannot be typed into), clicked to read, change or remove the note. */
+.visual-manuscript-note {
+  display: inline-block;
+  min-width: 1.35em;
+  margin: 0 1px;
+  padding: 0 .35em;
+  border-radius: 999px;
+  background: #f8e8e1;
+  color: var(--clay-text);
+  font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif;
+  font-size: .68em;
+  font-weight: 700;
+  line-height: 1.5;
+  text-align: center;
+  vertical-align: super;
+  cursor: pointer;
+  user-select: none;
+}
+.visual-manuscript-note:hover,
+.visual-manuscript-note:focus-visible { background: var(--clay); color: #fff; outline: 2px solid var(--clay); outline-offset: 1px; }
+/* The box that opens from a chip: placed beside it by the editor (fixed, so the editor's scrolling area does not cut it off). */
+.visual-manuscript-popover {
+  position: fixed;
+  z-index: 60;
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 10px 30px rgba(24, 52, 60, .18);
+  font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif;
+  font-size: 14px;
+  line-height: 1.4;
+}
+.visual-manuscript-popover label { font-weight: 700; }
+.visual-manuscript-popover-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .visual-manuscript-communication {
   margin: 1.5em 0;
   padding: 16px 18px;
