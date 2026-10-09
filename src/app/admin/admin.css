@@ -760,10 +760,55 @@
 .admin-batch-form { max-width: 560px; }
 .admin-batch-sizes { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 0 16px; }
 .admin-code-big { font-family: ui-monospace, Menlo, Consolas, monospace; letter-spacing: .06em; }
-.admin-card-found { margin-top: 12px; padding: 12px 14px; border: 1px solid var(--line, #ddd7cc); border-radius: 8px; max-width: 640px; }
+.admin-card-found { margin-top: 12px; padding: 12px 14px; border: 1px solid var(--a-line); border-radius: var(--a-radius); max-width: 640px; }
 .admin-reader-detail { margin-top: 24px; }
 .admin-halt { max-width: 560px; }
 .admin-langganan h2 { margin: 36px 0 12px; }
 .admin-langganan h3 { margin: 24px 0 8px; }
 .admin-langganan .admin-alert { margin: 12px 0; }
 .admin-langganan .admin-btn + .admin-btn { margin-left: 4px; }
+
+/* The works list (Karya) is one line per work. Long values are cut to the box and the whole value is its tooltip; the ID and the link address
+   are buttons that copy themselves. Only a phone-sized box (560px and under) gets the cards above. Author, link address and version drop out of
+   the row when the box is under 1200px (they are still in the tooltip of the title); the actions never leave it. */
+.a-shell .a-copy { display: inline-block; max-width: 150px; padding: 2px 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle; border: 0; border-radius: var(--a-radius-sm); background: var(--a-sunk); color: var(--a-ink); font: inherit; font-family: var(--a-mono); font-size: 12px; cursor: copy; }
+.a-shell .a-copy:hover { background: var(--a-line); }
+.a-shell .a-copy:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--a-focus); }
+@container admin-table (min-width: 561px) {
+  .a-shell .admin-table.a-compact-table { display: table; width: 100%; }
+  .a-shell .admin-table.a-compact-table thead { position: static; display: table-header-group; width: auto; height: auto; margin: 0; overflow: visible; clip: auto; }
+  .a-shell .admin-table.a-compact-table tbody { display: table-row-group; width: auto; }
+  .a-shell .admin-table.a-compact-table tr { display: table-row; width: auto; padding: 0; border-bottom: 0; }
+  .a-shell .admin-table.a-compact-table th, .a-shell .admin-table.a-compact-table td, .a-shell .admin-table.a-compact-table td:nth-child(n+3) { display: table-cell; width: auto; padding: 8px 10px; white-space: nowrap; border-bottom: 1px solid var(--a-sunk); }
+  .a-shell .admin-table.a-compact-table td[data-label]::before { content: none; display: none; }
+  .a-shell .admin-table.a-compact-table tbody tr:hover td { background: var(--a-side); }
+  .a-shell .admin-table.a-compact-table td.a-cell-clip { max-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .a-shell .admin-table.a-compact-table td.admin-table-title { width: 100%; min-width: 120px; }
+  .a-shell .admin-table.a-compact-table th.a-col-fit, .a-shell .admin-table.a-compact-table td.a-col-fit, .a-shell .admin-table.a-compact-table th.admin-pick-column, .a-shell .admin-table.a-compact-table td.admin-pick-cell { width: 1%; }
+  .a-shell .admin-table.a-compact-table th, .a-shell .admin-table.a-compact-table td.admin-pick-cell { padding-inline: 8px; }
+  .a-shell .admin-table.a-compact-table .admin-table-actions { justify-content: flex-end; flex-wrap: nowrap; }
+  /* Only some headings are centred (the tick, the status and the actions); Tajuk and Jenis stay at the left. The values keep their own alignment. */
+  .a-shell .admin-table.a-compact-table th:nth-child(1), .a-shell .admin-table.a-compact-table th:nth-child(7), .a-shell .admin-table.a-compact-table th:last-child { text-align: center; }
+  .a-shell .admin-table.a-compact-table .admin-work-blocker { display: none; }
+}
+@container admin-table (min-width: 561px) and (max-width: 759px) {
+  .a-shell .admin-table.a-compact-table td.a-col-minor:nth-child(n+1),
+  .a-shell .admin-table.a-compact-table th.a-col-minor:nth-child(n+1) { display: none; }
+}
+@container admin-table (min-width: 561px) and (max-width: 1199px) {
+  .a-shell .admin-table.a-compact-table td.a-col-wide:nth-child(n+1),
+  .a-shell .admin-table.a-compact-table th.a-col-wide:nth-child(n+1) { display: none; }
+}
+/* On a phone the works card keeps what an editor needs: the title, the kind, the status and the actions. The rest is in the title's tooltip and the work's own page. */
+@container admin-table (max-width: 560px) {
+  .a-shell .admin-table.a-compact-table td.a-col-wide:nth-child(n+1), .a-shell .admin-table.a-compact-table td.a-col-minor:nth-child(n+1), .a-shell .admin-table.a-compact-table td.a-cell-clip:not(.admin-table-title) { display: none; }
+  /* Compact: tick and title on the first line, kind and status beside each other on the second, the two actions sharing the third. */
+  .a-shell .admin-table.a-compact-table.a-compact-table tr { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding: 10px 12px; }
+  .a-shell .admin-table.a-compact-table.a-compact-table td, .a-shell .admin-table.a-compact-table.a-compact-table td:nth-child(n+3) { width: auto; padding: 0; }
+  .a-shell .admin-table.a-compact-table.a-compact-table td[data-label]::before { content: none; display: none; }
+  .a-shell .admin-table.a-compact-table.a-compact-table td.admin-pick-cell { flex: none; }
+  .a-shell .admin-table.a-compact-table.a-compact-table td.admin-table-title { flex: 1 1 0; min-width: 0; overflow-wrap: anywhere; }
+  .a-shell .admin-table.a-compact-table.a-compact-table td:last-child { flex: 1 1 100%; }
+  .a-shell .admin-table.a-compact-table.a-compact-table td:last-child .admin-table-actions { justify-content: stretch; }
+  .a-shell .admin-table.a-compact-table.a-compact-table td:last-child .admin-btn { flex: 1 1 0; justify-content: center; }
+}

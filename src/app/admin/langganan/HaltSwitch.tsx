@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { confirmAction, toast } from "../../../lib/admin/dialogs";
+import { errorText } from "../../../lib/admin/error-text";
 import { api, Notice } from "../../../components/admin/langganan-ui";
 
 /** The stop switch for redeeming. While it is on nobody can redeem a card or shared code; it takes effect on the next attempt. */
@@ -19,7 +20,7 @@ export default function HaltSwitch({ initialHalted }: { initialHalted: boolean }
       setHalted(next);
       toast(next ? "Penebusan dihentikan." : "Penebusan disambung semula.", next ? "info" : "success");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Tidak berjaya.");
+      setError(errorText(e, "Tidak berjaya."));
     } finally {
       setBusy(false);
     }

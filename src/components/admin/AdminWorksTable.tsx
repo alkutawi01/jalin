@@ -19,6 +19,34 @@ const LIMIT = 3;
 const TYPE_LABELS: Record<string, string> = { cerpen: "Cerpen", novela: "Novela", bersiri: "Bersiri", fragmen: "Fragmen", sinopsis: "Sinopsis" };
 const STATUS_LABELS: Record<string, string> = { draft: "Draf", review: "Semakan", ready: "Sedia", published: "Diterbitkan", archived: "Arkib" };
 
+/** A long value cut to one line: the full text is the tooltip, and a click copies it. */
+function CopyChip({ value, label }: { value: string; label: string }) {
+  async function copy() {
+    let done = false;
+    try {
+      await navigator.clipboard.writeText(value);
+      done = true;
+    } catch {
+      // A page without clipboard permission: the select-and-copy way.
+      const box = document.createElement("textarea");
+      box.value = value;
+      box.setAttribute("readonly", "");
+      box.style.position = "fixed";
+      box.style.opacity = "0";
+      document.body.appendChild(box);
+      box.select();
+      try { done = document.execCommand("copy"); } catch { done = false; }
+      box.remove();
+    }
+    toast(done ? `${label} disalin: ${value}` : `${label} tidak dapat disalin. Pilih teksnya dan salin sendiri.`, done ? "success" : "error");
+  }
+  return (
+    <button type="button" className="a-copy" title={`${value} (klik untuk salin)`} aria-label={`Salin ${label}: ${value}`} onClick={() => void copy()}>
+      {value}
+    </button>
+  );
+}
+
 function formatDate(value: string | null) {
   if (!value) return "—";
   return new Date(value).toLocaleDateString("ms-MY", { day: "numeric", month: "short", year: "numeric" });
@@ -99,11 +127,11 @@ export default function AdminWorksTable({ works, initialPicks }: { works: AdminW
         Gambar utama laman utama: {saved.length}/{LIMIT} pilihan disimpan. Karusel bertukar secara automatik apabila sekurang-kurangnya dua karya disimpan.
       </p>
       <div className="admin-table-wrap">
-        <table className="admin-table admin-works-table">
-          <thead><tr><th className="admin-pick-column" title="Pilihan Editor">Pilihan</th><th>Tajuk</th><th>Alamat pautan</th><th>Jenis</th><th>Status</th><th>Versi</th><th>Dikemas kini</th><th>Aksi</th></tr></thead>
+        <table className="admin-table admin-works-table a-compact-table">
+          <thead><tr><th className="admin-pick-column" title="Pilihan Editor">Pilihan</th><th>Tajuk</th><th className="a-col-fit a-col-minor">ID</th><th className="a-col-wide">Pengarang</th><th className="a-col-wide">Alamat pautan</th><th>Jenis</th><th>Status</th><th className="a-col-wide">Versi</th><th className="a-col-fit a-col-minor">Dikemas kini</th><th>Tindakan</th></tr></thead>
           <tbody>
             {works.length === 0 ? (
-              <tr><td colSpan={8} className="admin-table-empty">Tiada karya yang sepadan. Kosongkan carian atau pilih status lain.</td></tr>
+              <tr><td colSpan={10} className="admin-table-empty">Tiada karya yang sepadan. Kosongkan carian atau pilih status lain.</td></tr>
             ) : works.map((work) => {
               const position = positions.get(work.id);
               const disabled = work.status !== "published";
@@ -115,10 +143,13 @@ export default function AdminWorksTable({ works, initialPicks }: { works: AdminW
                       <span aria-hidden="true">{position ?? ""}</span>
                     </label>
                   </td>
-                  <td className="admin-table-title"><a href={`/admin/works/${work.id}`} className="a-work-title-link">{work.title}</a><span className="admin-form-hint admin-work-byline">{work.id}{work.authors ? ` · ${work.authors}` : ""}</span></td>
-                  <td><code>{work.slug}</code></td><td>{TYPE_LABELS[work.type] ?? work.type}</td>
-                  <td><span className={`admin-status admin-status-${work.status}`}>{STATUS_LABELS[work.status] ?? work.status}</span>{work.status === "ready" && work.readiness?.ready === false ? <a href={`/admin/works/${work.id}#${work.readiness.firstTab ?? "content"}`} className="admin-form-hint admin-work-blocker" title={work.readiness.firstBlocker ?? undefined}>Disekat: {work.readiness.firstBlocker}</a> : null}</td>
-                  <td>{work.version}</td><td>{formatDate(work.updatedAt)}</td>
+                  <td className="admin-table-title a-cell-clip" title={[work.title, work.authors, work.slug, work.version].filter(Boolean).join(" · ")}><a href={`/admin/works/${work.id}`} className="a-work-title-link">{work.title}</a></td>
+                  <td className="a-col-fit a-col-minor"><CopyChip value={work.id} label="ID" /></td>
+                  <td className="a-col-wide a-cell-clip" title={work.authors || undefined}>{work.authors || "—"}</td>
+                  <td className="a-col-wide"><CopyChip value={work.slug} label="Alamat pautan" /></td>
+                  <td>{TYPE_LABELS[work.type] ?? work.type}</td>
+                  <td title={work.status === "ready" && work.readiness?.ready === false ? `Disekat: ${work.readiness.firstBlocker ?? ""}` : undefined}><span className={`admin-status admin-status-${work.status}`}>{STATUS_LABELS[work.status] ?? work.status}</span>{work.status === "ready" && work.readiness?.ready === false ? <a href={`/admin/works/${work.id}#${work.readiness.firstTab ?? "content"}`} className="admin-form-hint admin-work-blocker" title={work.readiness.firstBlocker ?? undefined}>Disekat: {work.readiness.firstBlocker}</a> : null}</td>
+                  <td className="a-col-wide">{work.version}</td><td className="a-col-fit a-col-minor">{formatDate(work.updatedAt)}</td>
                   <td><div className="admin-table-actions"><a href={`/admin/works/${work.id}`} className="admin-btn admin-btn-sm">Sunting</a><a href={`/pratonton/${work.id}`} className="admin-btn admin-btn-sm admin-btn-outline">Pratonton</a></div></td>
                 </tr>
               );

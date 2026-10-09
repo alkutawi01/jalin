@@ -20,7 +20,7 @@ const checked: string[] = [];
 const plain: string[] = [];
 for (const { name, file } of files) {
   const src = fs.readFileSync(file, "utf8");
-  const cells = [...src.matchAll(/<td className="admin-table-title">([\s\S]*?)<\/td>/g)];
+  const cells = [...src.matchAll(/<td className="admin-table-title[^"]*"[^>]*>([\s\S]*?)<\/td>/g)];
   if (cells.length === 0) continue;
   checked.push(name);
   for (const cell of cells) if (!/<a\s/.test(cell[1]!)) plain.push(name);
