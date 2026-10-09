@@ -1,4 +1,5 @@
 import { hasDb } from "../../../lib/db";
+import { visualRoleLabel } from "../../../lib/admin/visual-role-labels";
 
 export const dynamic = "force-dynamic";
 
@@ -93,7 +94,7 @@ export default async function AdminVisualRequestsPage() {
                   <td>{r.submission_id || "—"}</td>
                   <td>
                     <span className={`admin-kind admin-kind-${r.visual_role}`}>
-                      {r.visual_role}
+                      {visualRoleLabel(r.visual_role)}
                     </span>
                   </td>
                   <td>{r.provider}</td>
