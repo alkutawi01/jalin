@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { confirmAction, toast } from "../../../../lib/admin/dialogs";
+import { errorText } from "../../../../lib/admin/error-text";
 import { api, fmtDate, Notice } from "../../../../components/admin/langganan-ui";
 
 type Hit = { id: string; email: string; displayName: string | null; createdAt: string };
@@ -31,7 +32,7 @@ export default function ReaderLookup() {
     try {
       const data = await api<{ readers: Hit[] }>(`/api/admin/langganan/pembaca?q=${encodeURIComponent(q.trim())}`, "GET");
       setHits(data.readers);
-    } catch (err) { setError(err instanceof Error ? err.message : "Carian tidak berjaya."); }
+    } catch (err) { setError(errorText(err, "Carian tidak berjaya.")); }
   }
 
   async function open(id: string) {
@@ -40,7 +41,7 @@ export default function ReaderLookup() {
       const data = await api<{ reader: Detail }>(`/api/admin/langganan/pembaca/${id}`, "GET");
       setDetail(data.reader);
       setCancelling(null);
-    } catch (err) { setError(err instanceof Error ? err.message : "Tidak berjaya."); }
+    } catch (err) { setError(errorText(err, "Tidak berjaya.")); }
   }
 
   async function give(e: React.FormEvent) {
@@ -54,7 +55,7 @@ export default function ReaderLookup() {
       toast("Akses diberi.", "success");
       setGrant({ ...grant, reason: "" });
       await open(detail.id);
-    } catch (err) { setError(err instanceof Error ? err.message : "Tidak berjaya."); }
+    } catch (err) { setError(errorText(err, "Tidak berjaya.")); }
   }
 
   async function cancel() {
@@ -65,7 +66,7 @@ export default function ReaderLookup() {
       await api(`/api/admin/langganan/entitlements/${cancelling.id}/batal`, "POST", { reason: cancelling.reason });
       toast("Tempoh dibatalkan.", "success");
       await open(detail.id);
-    } catch (err) { setError(err instanceof Error ? err.message : "Tidak berjaya."); }
+    } catch (err) { setError(errorText(err, "Tidak berjaya.")); }
   }
 
   return (
