@@ -24,7 +24,15 @@ export const ACTIVITY_ACTIONS = {
   "section.update": "Menyunting bahagian",
   "section.delete": "Membuang bahagian",
   "visual.upload": "Memuat naik gambar",
-  "visual.replace": "Menukar gambar"
+  "visual.replace": "Menukar gambar",
+  "subscription.batch.create": "Membuat kelompok kod kad",
+  "subscription.batch.update": "Mengurus kelompok kod kad",
+  "subscription.code.revoke": "Membatalkan kod kad",
+  "subscription.shared.create": "Membuat kod kongsi",
+  "subscription.shared.update": "Mengurus kod kongsi",
+  "subscription.access.grant": "Memberi akses kepada pembaca",
+  "subscription.access.revoke": "Membatalkan akses pembaca",
+  "subscription.switch": "Suis henti penebusan"
 } as const;
 export type ActivityAction = keyof typeof ACTIVITY_ACTIONS;
 

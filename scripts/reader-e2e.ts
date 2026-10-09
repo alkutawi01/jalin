@@ -347,6 +347,113 @@ async function main() {
     for (let i = 0; i < 7; i++) { const r = await R.req("/api/akaun/tebus", { method: "POST", body: { code: "AAAA-AAAA-AAAA-AAAA-A", batch: "E2E-001" } }); if (r.status === 429 && limited < 0) limited = i; }
     assert(limited === 5, "after five wrong tries the answer is 429", limited);
 
+    // ---------------------------------------------------------------- the admin: Langganan
+    console.log("\nThe admin: Langganan");
+    const admin = new Device("Admin");
+    for (const p of ["/admin/langganan", "/admin/langganan/kad", "/admin/langganan/kod-kongsi", "/admin/langganan/pembaca"]) {
+      const page = await admin.req(p);
+      assert(page.status === 200 && page.text.includes("Langganan"), `${p} opens`, page.status);
+    }
+    assert((await admin.req("/admin/langganan")).text.includes("Suis henti penebusan"), "the overview has the stop switch");
+    const preview = await admin.req("/api/admin/langganan/label-ujian?format=json");
+    assert(preview.status === 200 && preview.json.layout.codeFontPt >= 8 && preview.json.layout.problems.length === 0, "the label preview reports the size the code gets", preview.json?.layout);
+    const smallPreview = await admin.req("/api/admin/langganan/label-ujian?format=json&scratchWidthMm=26");
+    assert(smallPreview.json.layout.problems.some((p: any) => p.level === "warning"), "a narrow strip is warned about");
+    const testPdf = await fetch(`${BASE}/api/admin/langganan/label-ujian`);
+    const testBytes = Buffer.from(await testPdf.arrayBuffer()).toString("latin1");
+    assert(testPdf.status === 200 && testPdf.headers.get("content-type") === "application/pdf" && testBytes.startsWith("%PDF-1.4") && testBytes.includes("UJIAN"), "the test label comes as a PDF marked UJIAN");
+    assert((await admin.req("/api/admin/langganan/label-ujian?widthMm=999")).status === 400, "a label size that cannot work is refused");
+
+    const post = (body: unknown, path = "/api/admin/langganan/batch") => fetch(BASE + path, { method: "POST", headers: { "content-type": "application/json", origin: BASE }, body: JSON.stringify(body) });
+    assert((await post({ months: 3, quantity: 2 })).status === 400 && (await post({ months: 6, quantity: 0 })).status === 400 && (await post({ months: 6, quantity: 6000 })).status === 400, "a wrong length or quantity is refused before anything is made");
+    assert((await post({ months: 6, quantity: 2, layout: { scratchWidthMm: 500 } })).status === 400, "an impossible layout is refused before anything is made");
+    const none = await sql<{ n: string }>`SELECT count(*) AS n FROM code_batches`.execute(db);
+    const small = await post({ months: 6, quantity: 2, batchNumber: "ADM-SMALL", layout: { scratchWidthMm: 28 } });
+    assert(small.status === 409 && (await sql<{ n: string }>`SELECT count(*) AS n FROM code_batches`.execute(db)).rows[0].n === none.rows[0].n, "a code that would print too small waits for confirmation and makes no batch meanwhile");
+    assert((await fetch(BASE + "/api/admin/langganan/batch", { method: "POST", headers: { "content-type": "application/json", origin: "https://evil.example" }, body: JSON.stringify({ months: 6, quantity: 2 }) })).status === 403, "making a batch from another site is refused");
+
+    const made = await post({ months: 6, quantity: 3, batchNumber: "adm-001", orderRef: "Ujian e2e", layout: {} });
+    const pdfBytes = Buffer.from(await made.arrayBuffer()).toString("latin1");
+    const batchId = made.headers.get("x-batch-id")!;
+    assert(made.status === 200 && made.headers.get("content-type") === "application/pdf" && /no-store/.test(made.headers.get("cache-control") ?? "") && made.headers.get("x-batch-number") === "ADM-001" && made.headers.get("x-cards") === "3", "a batch is made and the PDF comes back, never cached");
+    const printed = [...pdfBytes.matchAll(/\(([0-9A-Z]{4}-[0-9A-Z]{4}-[0-9A-Z]{4}-[0-9A-Z]{4}-[0-9A-Z])\) Tj/g)].map((m) => m[1]);
+    const serials = [...pdfBytes.matchAll(/\(Batch ADM-001 (JLN-\d{2}-\d{6})\)/g)].map((m) => m[1]);
+    assert((pdfBytes.match(/\/Type \/Page /g) ?? []).length === 3 && printed.length === 3 && serials.length === 3 && new Set(printed).size === 3, "the PDF has three pages with three different codes and serials");
+    const asStored = await sql<{ n: string }>`SELECT count(*) AS n FROM redeem_codes WHERE batch_id = ${batchId}::uuid`.execute(db);
+    const leaked = await sql<{ n: string }>`SELECT count(*) AS n FROM redeem_codes WHERE code_mac = ANY(${printed.map((c) => c.replace(/-/g, ""))}) OR serial = ANY(${printed})`.execute(db);
+    assert(Number(asStored.rows[0].n) === 3 && Number(leaked.rows[0].n) === 0, "three codes are stored, and none of the printed codes is stored as it was printed");
+
+    const X = new Device("Penebus admin");
+    await signIn(X, "e2e-admin-tebus@e2e.invalid");
+    const tryRedeem = (code: string) => X.req("/api/akaun/tebus", { method: "POST", body: { code, batch: "adm-001" } });
+    await clearThrottle();
+    assert((await tryRedeem(printed[0])).status === 400, "a printed code does not work before the print is confirmed and the codes are switched on");
+    assert((await post({ action: "issue" }, `/api/admin/langganan/batch/${batchId}`)).status === 409, "codes cannot be switched on before the print is confirmed");
+    assert((await post({ action: "confirm" }, `/api/admin/langganan/batch/${batchId}`)).status === 200 && (await post({ action: "confirm" }, `/api/admin/langganan/batch/${batchId}`)).status === 409, "the print is confirmed once");
+    const issuedOne = await post({ action: "issue", serials: [serials[0]] }, `/api/admin/langganan/batch/${batchId}`);
+    assert(issuedOne.status === 200 && (await issuedOne.json()).issued === 1, "one card is switched on by its serial number");
+    await clearThrottle();
+    const real = await tryRedeem(printed[0]);
+    assert(real.status === 200 && real.json?.ok === true, "the code printed on the label is the code that redeems", real.text);
+    await clearThrottle();
+    assert((await tryRedeem(printed[1])).status === 400, "a card that is not switched on does not redeem");
+    const issuedRest = await post({ action: "issue" }, `/api/admin/langganan/batch/${batchId}`);
+    assert(issuedRest.status === 200 && (await issuedRest.json()).issued === 2, "the rest are switched on together");
+    const info = await admin.req(`/api/admin/langganan/kod/${serials[0]}`);
+    assert(info.status === 200 && info.json.code.redeemedBy === "e2e-admin-tebus@e2e.invalid" && info.json.code.state === "issued", "the card found by serial shows who redeemed it");
+    assert((await admin.req("/api/admin/langganan/kod/JLN-00-000000")).status === 404, "an unknown serial is not found");
+    assert((await post({ action: "revoke", reason: "" }, `/api/admin/langganan/kod/${serials[1]}`)).status === 400, "cancelling a card needs a reason");
+    assert((await post({ action: "revoke", reason: "Kad hilang" }, `/api/admin/langganan/kod/${serials[1]}`)).status === 200, "a lost card is cancelled");
+    await clearThrottle();
+    assert((await tryRedeem(printed[1])).status === 400, "the cancelled card no longer redeems");
+    assert((await post({ action: "void", reason: "" }, `/api/admin/langganan/batch/${batchId}`)).status === 400 && (await post({ action: "void", reason: "Cetakan rosak" }, `/api/admin/langganan/batch/${batchId}`)).status === 200, "a batch is cancelled with a reason");
+    await clearThrottle();
+    assert((await tryRedeem(printed[2])).status === 400, "after the batch is cancelled its remaining card does not redeem");
+    assert((await admin.req(`/api/admin/langganan/batch/${batchId}`, { method: "POST", body: { action: "dance" } })).status === 400 && (await post({ action: "confirm" }, "/api/admin/langganan/batch/not-a-uuid")).status === 400, "unknown actions and bad ids are refused cleanly");
+
+    // Shared codes.
+    assert((await post({ unit: "months", amount: 3, maxRedemptions: 5 }, "/api/admin/langganan/kod-kongsi")).status === 400 && (await post({ unit: "days", amount: 7, maxRedemptions: 0 }, "/api/admin/langganan/kod-kongsi")).status === 400 && (await post({ unit: "days", amount: 7, maxRedemptions: 5, expiresAt: "2020-01-01" }, "/api/admin/langganan/kod-kongsi")).status === 400, "a shared code with an unoffered length, no places or a day in the past is refused");
+    const sharedCreated = await post({ unit: "days", amount: 14, maxRedemptions: 1, channel: "Telegram", expiresAt: "2099-12-31" }, "/api/admin/langganan/kod-kongsi");
+    const sharedJson = await sharedCreated.json();
+    assert(sharedCreated.status === 201 && /^JLN-[0-9A-Z]{7}$/.test(sharedJson.code), "a shared code is made");
+    const list = await admin.req("/api/admin/langganan/kod-kongsi");
+    const row = list.json.codes.find((c: any) => c.id === sharedJson.id);
+    assert(row && row.maxRedemptions === 1 && row.redeemedCount === 0 && new Date(row.expiresAt).getTime() === Date.UTC(2099, 11, 31, 16, 0, 0), "it is listed, with its last day ending at midnight Malaysian time");
+    assert((await admin.req(`/api/admin/langganan/kod-kongsi/${sharedJson.id}`, { method: "PATCH", body: { status: "paused" } })).status === 200, "it can be paused");
+    await clearThrottle();
+    assert((await X.req("/api/akaun/tebus", { method: "POST", body: { code: sharedJson.code } })).status === 400, "a paused code does not redeem");
+    await admin.req(`/api/admin/langganan/kod-kongsi/${sharedJson.id}`, { method: "PATCH", body: { status: "active" } });
+    assert((await X.req("/api/akaun/tebus", { method: "POST", body: { code: sharedJson.code } })).status === 200, "and works again once resumed");
+
+    // The stop switch from the admin.
+    assert((await admin.req("/api/admin/langganan/suis", { method: "POST", body: { halted: true } })).json?.halted === true && (await admin.req("/admin/langganan")).text.includes("dihentikan"), "the stop switch is switched on from the admin and shown");
+    assert((await X.req("/api/akaun/tebus", { method: "POST", body: { code: sharedJson.code } })).status === 503, "and the reader endpoint answers 503");
+    await admin.req("/api/admin/langganan/suis", { method: "POST", body: { halted: false } });
+    assert((await admin.req("/api/admin/langganan/suis")).json?.halted === false, "and it is switched off again");
+
+    // Finding a reader and changing their access.
+    assert((await admin.req("/api/admin/langganan/pembaca?q=ab")).json.readers.length === 0, "a search under three letters finds nothing");
+    const found = await admin.req("/api/admin/langganan/pembaca?q=ADMIN-TEBUS");
+    assert(found.json.readers.length === 1 && found.json.readers[0].email === "e2e-admin-tebus@e2e.invalid", "a reader is found by part of the e-mail");
+    assert((await admin.req("/api/admin/langganan/pembaca?q=%25%25%25")).json.readers.length === 0, "wildcard characters in a search are not wildcards");
+    const readerId = found.json.readers[0].id;
+    const detail = await admin.req(`/api/admin/langganan/pembaca/${readerId}`);
+    assert(detail.json.reader.access.state === "trial" && detail.json.reader.ledger.length === 3 && detail.json.reader.devices === 1, "the reader's page shows the trial, the card and the shared code as separate periods", detail.json.reader.ledger.length);
+    assert((await admin.req(`/api/admin/langganan/pembaca/${readerId}/beri`, { method: "POST", body: { unit: "months", amount: 1, reason: "" } })).status === 400, "giving access needs a reason");
+    const gave = await admin.req(`/api/admin/langganan/pembaca/${readerId}/beri`, { method: "POST", body: { unit: "months", amount: 1, reason: "Ganti kad rosak" } });
+    assert(gave.status === 200 && (await admin.req(`/api/admin/langganan/pembaca/${readerId}`)).json.reader.ledger.some((l: any) => l.kind === "ADMIN" && l.reason === "Ganti kad rosak"), "access is given with its reason");
+    const cardPeriod = detail.json.reader.ledger.find((l: any) => l.kind === "CARD");
+    assert((await admin.req(`/api/admin/langganan/entitlements/${cardPeriod.id}/batal`, { method: "POST", body: { reason: "" } })).status === 400, "cancelling a period needs a reason");
+    assert((await admin.req(`/api/admin/langganan/entitlements/${cardPeriod.id}/batal`, { method: "POST", body: { reason: "Ujian pembatalan" } })).status === 200 && (await admin.req(`/api/admin/langganan/entitlements/${cardPeriod.id}/batal`, { method: "POST", body: { reason: "lagi" } })).status === 409, "a period is cancelled once");
+    assert((await admin.req("/api/admin/langganan/pembaca/not-a-uuid")).status === 400 && (await admin.req("/api/admin/langganan/pembaca/00000000-0000-0000-0000-000000000000")).status === 404, "a bad or unknown reader id is refused cleanly");
+    for (const [m, p] of [["POST", `/api/admin/langganan/pembaca/${readerId}/beri`], ["POST", `/api/admin/langganan/entitlements/${cardPeriod.id}/batal`], ["PATCH", `/api/admin/langganan/kod-kongsi/${sharedJson.id}`], ["POST", "/api/admin/langganan/suis"]] as const) {
+      assert((await admin.req(p, { method: m, body: { halted: true, status: "revoked", reason: "x", unit: "days", amount: 7 }, origin: "https://evil.example" })).status === 403, `${m} ${p.replace(/[0-9a-f-]{36}/g, ":id")} from another site is refused`);
+    }
+    const trail = await sql<{ action: string }>`SELECT DISTINCT action FROM admin_activity WHERE action LIKE 'subscription.%'`.execute(db);
+    assert(["subscription.batch.create", "subscription.batch.update", "subscription.code.revoke", "subscription.shared.create", "subscription.shared.update", "subscription.access.grant", "subscription.access.revoke", "subscription.switch"].every((a) => trail.rows.some((r) => r.action === a)), "every kind of change was recorded in Aktiviti", trail.rows.map((r) => r.action));
+    const noCodes = await sql<{ n: string }>`SELECT count(*) AS n FROM admin_activity WHERE action LIKE 'subscription.%' AND summary ~* ${printed.map((c) => c.replace(/-/g, "[- ]?")).join("|")}`.execute(db);
+    assert(Number(noCodes.rows[0].n) === 0, "no code appears in the activity record");
+
     // ---------------------------------------------------------------- the trial is once
     console.log("\nThe trial is given once");
     await sql`UPDATE reader_accounts SET status = 'deleted' WHERE email_normalized = ${emailA}`.execute(db);

@@ -1,10 +1,17 @@
-export const NAV_LINKS: { label: string; href: string; match?: string }[] = [
-  { label: "Utama", href: "/", match: "home" },
+/** The five kinds of content; the footer's "Terokai" column lists these. */
+export const CONTENT_LINKS: { label: string; href: string; match?: string }[] = [
   { label: "Cerpen", href: "/kategori/cerpen", match: "cerpen" },
   { label: "Novela", href: "/kategori/novela", match: "novela" },
   { label: "Bersiri", href: "/kategori/bersiri", match: "bersiri" },
   { label: "Fragmen", href: "/kategori/fragmen", match: "fragmen" },
   { label: "Sinopsis", href: "/kategori/sinopsis", match: "sinopsis" }
+];
+
+export const NAV_LINKS: { label: string; href: string; match?: string }[] = [
+  { label: "Utama", href: "/", match: "home" },
+  ...CONTENT_LINKS,
+  { label: "Editorial", href: "/editorial", match: "editorial" },
+  { label: "Tentang Kami", href: "/tentang", match: "tentang" }
 ];
 
 export function SiteNavLinks({

@@ -753,6 +753,21 @@
   .a-shell .admin-table:not(.a-todo-table) td:last-child { grid-column: 1 / -1; }
 }
 
+/* Langganan */
+.admin-sub-nav { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
+.admin-inline-form { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.admin-inline-form input { min-width: 180px; }
+.admin-batch-form { max-width: 560px; }
+.admin-batch-sizes { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 0 16px; }
+.admin-code-big { font-family: ui-monospace, Menlo, Consolas, monospace; letter-spacing: .06em; }
+.admin-card-found { margin-top: 12px; padding: 12px 14px; border: 1px solid var(--line, #ddd7cc); border-radius: 8px; max-width: 640px; }
+.admin-reader-detail { margin-top: 24px; }
+.admin-halt { max-width: 560px; }
+.admin-langganan h2 { margin: 36px 0 12px; }
+.admin-langganan h3 { margin: 24px 0 8px; }
+.admin-langganan .admin-alert { margin: 12px 0; }
+.admin-langganan .admin-btn + .admin-btn { margin-left: 4px; }
+
 /* The works list (Karya) is one line per work. Long values are cut to the box and the whole value is its tooltip; the ID and the link address
    are buttons that copy themselves. Only a phone-sized box (560px and under) gets the cards above. Author, link address and version drop out of
    the row when the box is under 1200px (they are still in the tooltip of the title); the actions never leave it. */

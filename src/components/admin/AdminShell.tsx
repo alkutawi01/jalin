@@ -51,6 +51,7 @@ const NAV: { href: string; label: string; icon: keyof typeof ICONS; match: (p: s
   { href: "/admin/series", label: "Siri", icon: "series", match: (p) => p.startsWith("/admin/series") },
   { href: "/admin/contributors", label: "Penyumbang", icon: "people", match: (p) => p.startsWith("/admin/contributors"), needs: "contributor.manage" },
   { href: "/admin/pengguna", label: "Pengguna", icon: "people", match: (p) => p.startsWith("/admin/pengguna"), needs: "user.manage" },
+  { href: "/admin/langganan", label: "Langganan", icon: "people", match: (p) => p.startsWith("/admin/langganan"), needs: "subscription.manage" },
   { href: "/admin/aktiviti", label: "Aktiviti", icon: "clock", match: (p) => p.startsWith("/admin/aktiviti"), needs: "activity.read" },
   { href: "/admin/settings", label: "Tetapan", icon: "settings", match: (p) => p.startsWith("/admin/settings"), needs: "site.manage" },
   // The chief editor has no access to the rest of Tetapan, only to this one panel (the owner has it as a tab of Tetapan).

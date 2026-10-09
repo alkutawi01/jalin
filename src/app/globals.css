@@ -2977,7 +2977,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 main:focus { outline: none; }
 
 /* Tap targets: links in the header and the byline get a 40px-tall hit area without changing how they look. */
-.header-nav a { display: inline-flex; align-items: center; min-height: 40px; }
+.header-nav a { display: inline-flex; align-items: center; min-height: 40px; white-space: nowrap; }
 .byline-credit a { display: inline-block; padding: 10px 0; margin: -10px 0; }
 .continue-secondary a { display: inline-block; padding: 10px 0; }
 
@@ -3101,6 +3101,7 @@ main:focus { outline: none; }
 .info-page { max-width: 720px; padding-top: 64px; padding-bottom: 80px; }
 .info-page h1 { margin: 8px 0 14px; font-size: clamp(2.1rem, 5.2vw, 3.1rem); line-height: 1.12; font-weight: 500; font-style: normal; }
 .info-page .dek { margin: 0 0 36px; }
+.info-emblem { margin: 0 0 18px; line-height: 0; }
 .info-body { font-family: Georgia, "Times New Roman", serif; font-size: 1.12rem; line-height: 1.8; color: var(--ink); }
 .info-body h2 { margin: 36px 0 10px; font-size: 1.35rem; font-weight: 500; font-style: normal; }
 .info-body h2::before { content: ""; display: block; width: 32px; height: 3px; margin-bottom: 12px; border-radius: 3px; background: var(--clay); }
@@ -3110,6 +3111,10 @@ main:focus { outline: none; }
 /* A link inside a paragraph keeps a line (colour alone is not enough), but a thin, soft one that does not cut through the letters. */
 .info-body a { color: var(--clay-text); text-decoration-line: underline; text-decoration-thickness: 1px; text-decoration-color: rgba(160, 96, 76, .38); text-underline-offset: 4px; text-decoration-skip-ink: none; }
 .info-body a:hover, .info-body a:focus-visible { text-decoration-color: currentColor; }
+.people-list { list-style: none; padding-left: 0 !important; margin: 0 0 14px; display: grid; gap: 14px; }
+.people-list li { margin: 0; display: grid; gap: 2px; }
+.people-name { font-weight: 600; }
+.people-about { font-size: 1rem; line-height: 1.6; color: var(--ink-soft); }
 .info-updated { margin: 40px 0 0; padding-top: 16px; border-top: 1px solid var(--line); font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 13px; color: var(--ink-soft); }
 @media (max-width: 680px) { .info-page { padding-top: 36px; padding-bottom: 48px; } .info-body { font-size: 1.05rem; } }
 .site-footer .footer-col { display: block; }
@@ -3617,3 +3622,9 @@ html:has(.a-nav, .admin-login-page) { overflow: visible; }
 .auth-notice--ok { color: #2f6b3a; font-weight: 600; }
 .auth-redeem-link { display: block; margin: 0 0 8px; text-align: center; text-decoration: none; box-sizing: border-box; }
 .auth-code--long { letter-spacing: .08em; font-size: 17px; }
+
+/* The header now has eight links (five kinds of content, Editorial, Tentang Kami); between the phone menu and a full laptop width they are set a little tighter so none wraps or runs under the wordmark. */
+@media (min-width: 821px) and (max-width: 1100px) {
+  .header-inner { grid-template-columns: auto 1fr; column-gap: 24px; }
+  .header-nav { gap: 14px; font-size: 15px; }
+}

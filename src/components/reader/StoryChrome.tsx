@@ -7,7 +7,7 @@ import Image from "next/image";
 import { cropStyle } from "../../lib/reader/crop";
 import type { ImageCrop } from "../../lib/content/types";
 import type { BylineCredit, CharacterMeta, EditorialCredit, PlaceMeta, WorkMetaRow } from "./types";
-import { NAV_LINKS, SiteNavLinks } from "./nav-links";
+import { CONTENT_LINKS, NAV_LINKS, SiteNavLinks } from "./nav-links";
 import HeaderSearch from "./HeaderSearch";
 import MobileNavMenu from "./MobileNavMenu";
 import { readerAccountsEnabled } from "../../lib/reader-auth/enabled";
@@ -257,9 +257,10 @@ export function StoryEnd({ title, label = "Tamat" }: { title: string; label?: st
   );
 }
 
-const FOOTER_EXPLORE = NAV_LINKS.filter((link) => link.match && link.match !== "home");
+const FOOTER_EXPLORE = CONTENT_LINKS;
 const FOOTER_ABOUT = [
-  { label: "Tentang Jalin", href: "/tentang" },
+  { label: "Editorial", href: "/editorial" },
+  { label: "Tentang Kami", href: "/tentang" },
   { label: "Dasar privasi", href: "/privasi" },
   { label: "Terma penggunaan", href: "/terma" }
 ];
