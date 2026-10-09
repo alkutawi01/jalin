@@ -5,7 +5,9 @@ import { pastedHtmlToMarkdown } from "../../lib/admin/paste-format";
 import { useEffect, useRef } from "react";
 import { nextImageMarker } from "../../lib/reader/image-markers";
 import { splitCommunicationBlocks } from "../../lib/reader/communication-blocks";
-import { confirmAction } from "../../lib/admin/dialogs";
+import { confirmAction, toast } from "../../lib/admin/dialogs";
+import { cleanFootnoteText, isFootnoteDefinition, nextFootnoteLabel } from "../../lib/admin/footnote-insert";
+import FootnoteInserter from "./FootnoteInserter";
 
 const MARKER = /^\[\[gambar:[1-9]\d*\]\]$/;
 
@@ -112,6 +114,7 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
   const editorRef = useRef<HTMLDivElement>(null);
   const emittedRef = useRef<string | null>(null);
   const selectionRef = useRef<Range | null>(null);
+  const caretRef = useRef<{ block: number; offset: number } | null>(null);
 
   useEffect(() => {
     const editor = editorRef.current;
@@ -134,7 +137,19 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
 
   function rememberSelection() {
     const selection = window.getSelection();
-    if (selection?.rangeCount && editorRef.current?.contains(selection.anchorNode)) selectionRef.current = selection.getRangeAt(0).cloneRange();
+    const editor = editorRef.current;
+    if (selection?.rangeCount && editor?.contains(selection.anchorNode)) {
+      selectionRef.current = selection.getRangeAt(0).cloneRange();
+      // Also as a place (which block, how many characters in): the saved range is lost when the editor redraws its text before the first edit.
+      const range = selection.getRangeAt(0);
+      const block = [...editor.children].findIndex((child) => child.contains(range.startContainer));
+      if (block >= 0) {
+        const before = document.createRange();
+        before.selectNodeContents(editor.children[block]!);
+        before.setEnd(range.startContainer, range.startOffset);
+        caretRef.current = { block, offset: before.toString().length };
+      }
+    }
   }
 
   function format(command: "bold" | "italic") {
@@ -251,6 +266,55 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
     rememberSelection();
   }
 
+  /** A side note: the number goes where the cursor was, the note's words go on a line of their own at the end (the reader takes it out and sets it in the margin). */
+  function insertFootnoteAtCursor(text: string): boolean {
+    const editor = editorRef.current;
+    const clean = cleanFootnoteText(text);
+    if (!editor || !clean) return false;
+    const label = nextFootnoteLabel(value);
+    const reference = `[^${label}]`;
+    // The cursor is a place (block and characters in), found again in whatever the editor now holds. A cursor in a note's own line, in a
+    // heading or box, or none at all, would put the number somewhere wrong: the end of the story's text is used instead.
+    const caret = caretRef.current;
+    const block = caret ? editor.children[caret.block] ?? null : null;
+    const usable = !!block && block.tagName === "P" && !isFootnoteDefinition(block.textContent ?? "");
+    editor.focus();
+    const selection = window.getSelection();
+    const range = document.createRange();
+    if (usable && caret) {
+      const walker = document.createTreeWalker(block!, NodeFilter.SHOW_TEXT);
+      let remaining = caret.offset;
+      let placed = false;
+      for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+        const length = node.textContent?.length ?? 0;
+        if (remaining <= length) {
+          range.setStart(node, remaining);
+          placed = true;
+          break;
+        }
+        remaining -= length;
+      }
+      if (!placed) range.selectNodeContents(block!);
+      range.collapse(placed);
+    } else {
+      const prose = [...editor.children].filter((child) => child.tagName === "P" && (child.textContent ?? "").trim() && !isFootnoteDefinition(child.textContent ?? ""));
+      const last = prose[prose.length - 1] ?? null;
+      if (!last) {
+        editor.insertAdjacentHTML("afterbegin", "<p><br></p>");
+        range.selectNodeContents(editor.firstElementChild!);
+      } else range.selectNodeContents(last);
+      range.collapse(false);
+    }
+    selection?.removeAllRanges();
+    selection?.addRange(range);
+    document.execCommand("insertText", false, reference);
+    editor.insertAdjacentHTML("beforeend", `<p>${escapeHtml(`${reference}: ${clean}`)}</p>`);
+    sync();
+    rememberSelection();
+    toast(`Nota ${label} disisipkan. Pembaca melihatnya di sisi teks.`, "success");
+    return true;
+  }
+
   return <div className="visual-manuscript">
     <div className="visual-manuscript-toolbar" role="toolbar" aria-label="Pemformatan manuskrip">
       <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => format("bold")} aria-label="Tebalkan teks terpilih" data-label="Tebal"><ToolbarIcon name="bold" /></button>
@@ -264,6 +328,7 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
       <button type="button" onClick={() => insertBlock("mesej")} aria-label="Sisip kotak mesej" data-label="Kotak mesej"><ToolbarIcon name="message" /></button>
       <button type="button" onClick={() => insertBlock("emel")} aria-label="Sisip kotak e-mel" data-label="Kotak e-mel"><ToolbarIcon name="email" /></button>
     </div>
+    <FootnoteInserter onInsert={insertFootnoteAtCursor} />
     <div ref={editorRef} className="visual-manuscript-surface" contentEditable role="textbox" aria-label="Manuskrip visual" aria-multiline="true" suppressContentEditableWarning onInput={sync} onKeyDown={(event) => {
       // Enter inside a message or e-mail box starts a new line in that box (the browser would split it into a second box).
       if (event.key !== "Enter" || event.shiftKey || event.nativeEvent.isComposing) return;
@@ -305,6 +370,6 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
         sync();
       })();
     }} />
-    <p className="admin-form-hint">Pilih teks untuk Tebal atau Condong. Penanda gambar boleh dibuang di sini; simpan teks untuk menerapkan perubahan. Gambar yang sudah dimuat naik dipadam secara berasingan melalui kadnya.</p>
+    <p className="admin-form-hint">Letakkan kursor di tempat nombor patut berada, kemudian tekan + Nota sisi; nota ditulis di hujung manuskrip sebagai baris bernombor, jangan padamkannya. Pilih teks untuk Tebal atau Condong. Penanda gambar boleh dibuang di sini; simpan teks untuk menerapkan perubahan. Gambar yang sudah dimuat naik dipadam secara berasingan melalui kadnya.</p>
   </div>;
 }

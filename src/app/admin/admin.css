@@ -658,6 +658,13 @@
 .a-shell .a-faint-text { color: var(--a-faint); }
 /* Side by side while each part has 220px; one under another on a phone (three fixed columns cut the third off at 375px). */
 .a-shell .a-step-panels { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 16px; }
+/* "+ Nota sisi" beside the manuscript: a button, which opens a small box for the note's words. */
+.a-shell .a-footnote-inserter { margin: 8px 0; }
+.a-shell .a-footnote-panel { display: grid; gap: 8px; padding: 12px; border: 1px solid var(--a-line); border-radius: var(--a-radius); background: var(--a-surface); }
+.a-shell .a-footnote-panel label { font-weight: 600; font-size: 13px; }
+/* Inside the visual editor the row sits between the toolbar and the text, like a second toolbar row. */
+.a-shell .visual-manuscript .a-footnote-inserter { margin: 0; padding: 8px 10px; border-bottom: 1px solid var(--a-line); }
+.a-shell .visual-manuscript .a-footnote-panel { border: 0; background: transparent; }
 .a-shell .a-small { font-size: 13px; }
 .a-shell .a-aside { margin-left: 4px; font-size: 12px; color: var(--a-faint); }
 .a-shell .a-info-box { margin-bottom: 1rem; padding: 0.75rem; background: var(--a-info-bg); border: 1px solid var(--a-info-line); border-radius: var(--a-radius-sm); }
