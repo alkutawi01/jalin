@@ -521,10 +521,12 @@
   .a-shell .admin-btn,
   .a-shell .admin-btn-sm,
   .a-shell .a-nav-link,
+  .a-shell .a-side-toggle,
   .a-shell .admin-tab,
   .a-shell .admin-filter-btn {
     min-height: 44px;
   }
+  .a-shell .a-side-toggle { min-width: 44px; }
   .a-shell .a-filterbar input,
   .a-shell .a-filterbar select {
     min-height: 44px;
