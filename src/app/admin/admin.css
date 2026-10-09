@@ -760,7 +760,7 @@
 .admin-batch-form { max-width: 560px; }
 .admin-batch-sizes { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 0 16px; }
 .admin-code-big { font-family: ui-monospace, Menlo, Consolas, monospace; letter-spacing: .06em; }
-.admin-card-found { margin-top: 12px; padding: 12px 14px; border: 1px solid var(--line, #ddd7cc); border-radius: 8px; max-width: 640px; }
+.admin-card-found { margin-top: 12px; padding: 12px 14px; border: 1px solid var(--a-line); border-radius: var(--a-radius); max-width: 640px; }
 .admin-reader-detail { margin-top: 24px; }
 .admin-halt { max-width: 560px; }
 .admin-langganan h2 { margin: 36px 0 12px; }
