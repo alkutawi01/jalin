@@ -66,6 +66,7 @@ export default function AudienceBandsSettings() {
       </p>
       {error ? <div className="admin-alert admin-alert-error" role="alert">{error}</div> : null}
       {note ? <div className="admin-alert admin-alert-success" role="status">{note}</div> : null}
+      <div className="admin-table-wrap">
       <table className="admin-table a-bands-table">
         <thead>
           <tr><th>Nama</th><th>Dari (tahun)</th><th>Hingga (tahun)</th><th /></tr>
@@ -83,6 +84,7 @@ export default function AudienceBandsSettings() {
           ))}
         </tbody>
       </table>
+      </div>
       <div className="admin-form-actions">
         <button type="button" className="admin-btn admin-btn-outline" disabled={rows.length >= 8 || saving} onClick={() => setRows([...rows, { code: "", label: "", min: "", max: "" }])}>+ Peringkat</button>
         <button type="button" className="admin-btn admin-btn-outline" disabled={saving} onClick={() => setRows(defaults.map(toRow))}>Pulihkan senarai asal</button>
