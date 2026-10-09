@@ -9,13 +9,9 @@ import LoadingBlock from "../../../../components/admin/LoadingBlock";
 import FilePicker from "../../../../components/admin/FilePicker";
 import { MAX_UPLOAD_LABEL, uploadTooLargeMessage } from "../../../../lib/admin/upload-limit";
 import { errorText } from "../../../../lib/admin/error-text";
+import { VISUAL_ROLE_LABELS } from "../../../../lib/admin/visual-role-labels";
 
-const VISUAL_ROLES = [
-  { value: "hero", label: "Utama" },
-  { value: "inline", label: "Dalam teks" },
-  { value: "section", label: "Bahagian" },
-  { value: "decorative", label: "Hiasan" },
-];
+const VISUAL_ROLES = Object.entries(VISUAL_ROLE_LABELS).map(([value, label]) => ({ value, label }));
 
 const ASPECT_RATIOS = [
   { value: "3:2", label: "3:2" },
