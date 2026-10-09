@@ -483,7 +483,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
                   <th>Tajuk</th>
                   <th>Status</th>
                   <th>Susunan</th>
-                  <th>Aksi</th>
+                  <th>Tindakan</th>
                 </tr>
               </thead>
               <tbody>

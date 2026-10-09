@@ -2572,7 +2572,7 @@ export default function EditWorkPage() {
                     <th>Tajuk</th>
                     <th>Isi</th>
                     <th>Kedudukan dalam teks</th>
-                    <th>Aksi</th>
+                    <th>Tindakan</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -2816,7 +2816,7 @@ export default function EditWorkPage() {
                     {!isDerivativeType(form.type) ? <th>Nama di bawah tajuk</th> : null}
                     <th>Awam</th>
                     <th>Susunan</th>
-                    <th>Aksi</th>
+                    <th>Tindakan</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -3200,7 +3200,7 @@ export default function EditWorkPage() {
                     <th>Istilah</th>
                     <th>Maksud</th>
                     <th>Sumber</th>
-                    <th>Aksi</th>
+                    <th>Tindakan</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -3289,7 +3289,7 @@ export default function EditWorkPage() {
                     <th>Nama</th>
                     <th>Peranan</th>
                     {form.type === "novela" && <th>Kemunculan Pertama</th>}
-                    <th>Aksi</th>
+                    <th>Tindakan</th>
                   </tr>
                 </thead>
                 <tbody>

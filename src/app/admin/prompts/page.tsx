@@ -66,7 +66,7 @@ export default async function AdminPromptsPage() {
               <th>Versi</th>
               <th>Status</th>
               <th>Dikemas kini</th>
-              <th>Aksi</th>
+              <th>Tindakan</th>
             </tr>
           </thead>
           <tbody>

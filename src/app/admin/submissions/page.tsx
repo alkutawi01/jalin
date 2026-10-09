@@ -70,7 +70,7 @@ export default async function AdminSubmissionsPage() {
               <th>Status</th>
               <th>Penyerah</th>
               <th>Dicipta</th>
-              <th>Aksi</th>
+              <th>Tindakan</th>
             </tr>
           </thead>
           <tbody>
