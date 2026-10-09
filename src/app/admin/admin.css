@@ -772,6 +772,7 @@
   .a-shell .admin-table.a-compact-table th.a-col-fit, .a-shell .admin-table.a-compact-table td.a-col-fit, .a-shell .admin-table.a-compact-table th.admin-pick-column, .a-shell .admin-table.a-compact-table td.admin-pick-cell { width: 1%; }
   .a-shell .admin-table.a-compact-table th, .a-shell .admin-table.a-compact-table td.admin-pick-cell { padding-inline: 8px; }
   .a-shell .admin-table.a-compact-table .admin-table-actions { justify-content: flex-end; flex-wrap: nowrap; }
+  .a-shell .admin-table.a-compact-table th:last-child { text-align: right; } /* the heading sits over the buttons, which sit at the right edge */
   .a-shell .admin-table.a-compact-table .admin-work-blocker { display: none; }
 }
 @container admin-table (min-width: 561px) and (max-width: 759px) {
