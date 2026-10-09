@@ -63,6 +63,10 @@ assert(constantTimeEqualHex("abc", "abc") && !constantTimeEqualHex("abc", "abd")
 {
   const m = loginCodeMessage("123456", 5);
   assert(m.subject.includes("123456") && m.text.includes("5 minit") && m.html.includes("123456"), "the message carries the code and the lifetime");
+  assert(m.text.includes("Jangan kongsikan") && m.html.includes("Jangan kongsikan"), "the message warns not to share the code");
+  assert(m.html.startsWith("<!doctype html>") && m.html.includes("jalin-wordmark-email.png") && !/<script|<link|@import|javascript:/i.test(m.html), "the HTML has the logo as a PNG and no script, stylesheet link or import");
+  assert(m.html.includes("Kod anda: 123456") && (m.html.match(/123456/g) ?? []).length === 3, "the code appears in the title, the hidden preview line and the code box", (m.html.match(/123456/g) ?? []).length);
+  assert(throws(() => loginCodeMessage("12345", 5)) && throws(() => loginCodeMessage("<b>1234", 5)) && throws(() => loginCodeMessage("1234567", 5)), "anything but six digits is refused, so no markup can reach the e-mail");
 }
 
 // Mailer choice.

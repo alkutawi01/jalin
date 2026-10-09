@@ -72,11 +72,30 @@ export type Mailer = {
 };
 
 export function loginCodeMessage(code: string, ttlMinutes: number): { subject: string; text: string; html: string } {
+  // Six digits only, so nothing below needs escaping; refuse anything else rather than put it into markup.
+  if (!/^\d{6}$/.test(code)) throw new Error("The sign-in code must be six digits.");
   const subject = `Kod log masuk Jalin: ${code}`;
-  const text = `Kod log masuk anda ialah ${code}.\n\nKod ini sah selama ${ttlMinutes} minit dan hanya boleh digunakan sekali. Jika bukan anda yang meminta, abaikan emel ini.\n\nJalin`;
-  const html = `<p>Kod log masuk anda ialah:</p><p style="font-size:28px;letter-spacing:4px;font-family:monospace"><strong>${code}</strong></p><p>Kod ini sah selama ${ttlMinutes} minit dan hanya boleh digunakan sekali. Jika bukan anda yang meminta, abaikan emel ini.</p><p>Jalin</p>`;
+  const text = `Kod log masuk anda ialah ${code}.\n\nKod ini sah selama ${ttlMinutes} minit dan hanya boleh digunakan sekali. Jangan kongsikan kod ini dengan sesiapa. Jika bukan anda yang meminta, abaikan emel ini.\n\nJalin, oleh Adjung Press`;
+  const serif = "Georgia,'Times New Roman',serif";
+  const sans = "Arial,Helvetica,sans-serif";
+  const html = `<!doctype html><html lang="ms"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><title>${subject}</title></head>
+<body style="margin:0;padding:0;background:#fbf8f2">
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;color:#fbf8f2">Kod anda: ${code}. Sah ${ttlMinutes} minit.</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#fbf8f2"><tr><td align="center" style="padding:32px 16px">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:520px;background:#fffefa;border:1px solid #ddd7cc;border-radius:12px">
+<tr><td align="center" style="padding:32px 24px 8px"><img src="${EMAIL_LOGO_URL}" width="96" alt="Jalin" style="display:block;border:0;height:auto;width:96px"></td></tr>
+<tr><td align="center" style="padding:20px 32px 4px;font-family:${serif};font-size:22px;line-height:1.3;color:#18343c">Kod log masuk anda</td></tr>
+<tr><td align="center" style="padding:0 32px 20px;font-family:${sans};font-size:14px;line-height:1.6;color:#52656a">Masukkan kod ini pada halaman Jalin untuk log masuk atau mendaftar.</td></tr>
+<tr><td align="center" style="padding:0 32px"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="background:#f7ece4;border-radius:10px"><tr><td align="center" style="padding:16px 28px;font-family:'Courier New',Courier,monospace;font-size:34px;font-weight:bold;letter-spacing:10px;color:#18343c">${code}</td></tr></table></td></tr>
+<tr><td align="center" style="padding:20px 32px 8px;font-family:${sans};font-size:14px;line-height:1.6;color:#18343c">Kod ini sah selama <strong>${ttlMinutes} minit</strong> dan hanya boleh digunakan sekali.</td></tr>
+<tr><td align="center" style="padding:0 32px 28px;font-family:${sans};font-size:13px;line-height:1.6;color:#52656a">Jangan kongsikan kod ini dengan sesiapa. Jika bukan anda yang meminta, abaikan emel ini; akaun anda tidak diubah.</td></tr>
+<tr><td align="center" style="padding:16px 24px;border-top:1px solid #ddd7cc;font-family:${sans};font-size:12px;color:#52656a">Jalin, oleh Adjung Press<br>Selami dunia melalui cerita</td></tr>
+</table></td></tr></table></body></html>`;
   return { subject, text, html };
 }
+
+/** The logo is hosted on the live site: an e-mail client cannot reach localhost, and most do not draw SVG, so this is a PNG. */
+export const EMAIL_LOGO_URL = "https://jalin.adjung.com/brand/jalin-wordmark-email.png";
 
 /** Prints the code in the server log. For local work only; production refuses it (see selectMailer). */
 export function consoleMailer(log: (line: string) => void = console.log): Mailer {
