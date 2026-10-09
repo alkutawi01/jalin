@@ -576,4 +576,18 @@ Dibina dan diuji pada cabang pembangunan. **Hanya pemilik** boleh membuka atau m
 - **Halaman:** Ringkasan (angka dan suis henti), Kad dan kelompok (borang, saiz label dengan maklum balas langsung, jadual kelompok dengan Sahkan cetakan, Aktifkan semua, Batalkan kelompok dengan sebab; cari satu kad mengikut nombor siri dan batalkan kod), Kod kongsi (buat, salin, jeda, sambung, batal), Pembaca (cari emel sekurang-kurangnya tiga huruf, lihat setiap tempoh akses, beri akses dengan sebab, batalkan satu tempoh dengan sebab). Menu "Langganan" dalam bar sisi untuk pemilik.
 - **Diuji hujung ke hujung (172 semakan lulus):** kod yang tercetak dalam PDF ialah kod yang boleh ditebus (dibaca semula daripada PDF yang dijana oleh API, ditebus melalui laman pembaca); kod tidak boleh ditebus sebelum cetakan disahkan dan kod diaktifkan; aktifkan mengikut nombor siri; batalkan satu kad; batalkan kelompok; kod kongsi dengan hari terakhir yang berakhir tengah malam waktu Malaysia; suis henti dari admin menyebabkan laman pembaca menjawab 503; carian pembaca (aksara wildcard tidak berfungsi sebagai wildcard); beri dan batal akses dengan sebab; semua tindakan dari laman lain ditolak (403).
 
-**Belum:** ujian cetak sebenar pada Xprinter dan label sebenar (menentukan saiz muktamad dan sama ada direct thermal bertahan di bawah pelekat gores); eksport berkala senarai kod yang sudah ditebus ke luar DB dan ujian pulihan (gate G4); migrasi 027 hingga 030 dan kunci produksi; kemas kini halaman Privasi dan Terma.
+**Belum:** ujian cetak sebenar pada Xprinter dan label sebenar (menentukan saiz muktamad dan sama ada direct thermal bertahan di bawah pelekat gores); migrasi 027 hingga 030 dan kunci produksi; kemas kini halaman Privasi dan Terma.
+
+## 27. G4: pemulihan pangkalan data tanpa penebusan berganda (SIAP 9/10/2026)
+
+**Risiko.** Jika pangkalan data dipulihkan ke masa lampau, penebusan selepas titik itu hilang, dan kad yang sudah digunakan kelihatan belum digunakan.
+
+**Pertahanan.**
+1. Setiap malam (cron `0 20 * * *` UTC, laluan `/api/cron/penyelenggaraan`, dilindungi `CRON_SECRET`) satu fail NDJSON bertandatangan dibina: kelompok, kod (hanya HMAC), penebusan (dengan HMAC emel, tanpa emel atau nombor akaun), kod kongsi. Tandatangan = HMAC(CODE_MAC_KEY, digest); fail diubah, dipotong atau dipalsukan ditolak.
+2. Fail disimpan di Vercel Blob (alamat rawak, 30 terakhir). Tarikh eksport terakhir yang berjaya dipaparkan di Langganan > Ringkasan; pemilik juga boleh muat turun fail terus dan simpan di komputer sendiri.
+3. Selepas pemulihan: `npm run db:codes-reconcile -- <fail> --check` (tidak menulis apa-apa), kemudian `--apply`. Ia menghidupkan suis henti penebusan dan membiarkannya hidup, menambah semula kelompok/kod yang hilang, membatalkan kod yang fail kata sudah ditebus atau dibatalkan, menaikkan bilangan kod kongsi (tidak pernah menurunkan), memastikan nombor siri tidak diguna semula. `--find-email <emel>` menyenaraikan apa yang emel itu pernah tebus supaya akses boleh diberi semula dengan geran ADMIN.
+4. Pemulihan tidak mengembalikan akses pembaca yang hilang secara automatik: ia sengaja selamat (kad ditutup dahulu), akses diberi semula oleh manusia.
+
+**Bukti.** `npm run db:restore-drill` (30 semakan) memainkan seluruh cerita pada cabang pembangunan: kad ditebus, fail dieksport, pangkalan data dipulihkan ke titik lama, bahaya ditunjukkan (kad boleh ditebus semula tanpa fail), fail dikenakan, dan semua kad lama tidak boleh ditebus lagi.
+
+**Had.** Penebusan antara eksport malam terakhir dengan saat pemulihan tidak ada dalam fail: itu tetingkap risiko sehingga 24 jam. Pemilik boleh muat turun eksport tambahan sebelum operasi berisiko. Kehilangan CODE_MAC_KEY membuat semua kod bercetak tidak sah dan fail eksport tidak boleh disahkan.

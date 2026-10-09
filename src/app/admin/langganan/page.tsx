@@ -2,6 +2,7 @@ import { getDb, hasDb } from "../../../lib/db";
 import { overview, type Overview } from "../../../lib/reader-auth/admin";
 import { readerAccountsEnabled } from "../../../lib/reader-auth/enabled";
 import { LanggananNav } from "../../../components/admin/langganan-ui";
+import { readLastExport, type LastExport } from "../../../lib/reader-auth/maintenance";
 import HaltSwitch from "./HaltSwitch";
 
 export const dynamic = "force-dynamic";
@@ -10,10 +11,12 @@ export const dynamic = "force-dynamic";
 export default async function LanggananPage() {
   let data: Overview | null = null;
   let problem: string | null = null;
+  let last: LastExport | null = null;
   if (!hasDb()) problem = "Pangkalan data tidak tersedia.";
   else {
     try {
       data = await overview(getDb());
+      last = await readLastExport(getDb());
     } catch {
       problem = "Jadual langganan belum wujud pada pangkalan data ini. Migrasi 027 hingga 030 perlu dijalankan dahulu.";
     }
@@ -47,6 +50,14 @@ export default async function LanggananPage() {
           </div>
           <h2>Suis henti penebusan</h2>
           <HaltSwitch initialHalted={data.halted} />
+          <h2>Salinan kod di luar pangkalan data</h2>
+          <p>Setiap malam, satu fail bertandatangan berisi semua kod dan penebusan disimpan di luar pangkalan data. Jika pangkalan data dipulihkan ke masa lampau, fail inilah yang menghalang kad yang sudah digunakan daripada digunakan semula.</p>
+          {last ? (
+            <p>Eksport terakhir yang berjaya: {new Date(last.at).toLocaleString("ms-MY", { timeZone: "Asia/Kuala_Lumpur", day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" })} ({last.lines} baris).</p>
+          ) : (
+            <div className="admin-alert admin-alert-warning" role="status">Belum ada eksport yang berjaya disimpan. Pastikan CRON_SECRET dan storan Blob ditetapkan.</div>
+          )}
+          <p><a className="admin-btn admin-btn-sm admin-btn-outline" href="/api/admin/langganan/eksport">Muat turun fail eksport sekarang</a></p>
         </>
       )}
     </div>

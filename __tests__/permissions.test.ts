@@ -82,7 +82,7 @@ assert(isAllowed("editor", "POST", "/api/admin/auth/logout"), "everyone can log 
 const langganan: [string, string][] = [
   ["GET", "/api/admin/langganan/pembaca"], ["GET", "/api/admin/langganan/pembaca/abc"], ["POST", "/api/admin/langganan/pembaca/abc/beri"], ["POST", "/api/admin/langganan/entitlements/abc/batal"],
   ["POST", "/api/admin/langganan/batch"], ["POST", "/api/admin/langganan/batch/abc"], ["GET", "/api/admin/langganan/label-ujian"], ["POST", "/api/admin/langganan/kod/JLN-26-000001"],
-  ["POST", "/api/admin/langganan/kod-kongsi"], ["PATCH", "/api/admin/langganan/kod-kongsi/abc"], ["POST", "/api/admin/langganan/suis"],
+  ["POST", "/api/admin/langganan/kod-kongsi"], ["PATCH", "/api/admin/langganan/kod-kongsi/abc"], ["POST", "/api/admin/langganan/suis"], ["GET", "/api/admin/langganan/eksport"],
   ["GET", "/admin/langganan"], ["GET", "/admin/langganan/kad"], ["GET", "/admin/langganan/kod-kongsi"], ["GET", "/admin/langganan/pembaca"]
 ];
 assert(langganan.every(([m, u]) => isAllowed("owner", m, u) && !isAllowed("chief_editor", m, u) && !isAllowed("editor", m, u)), "the Langganan pages and their API are for the owner only, reads included");
