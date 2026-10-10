@@ -93,7 +93,7 @@ const API_RULES: Rule[] = [
   { methods: ["PUT", "POST", "PATCH", "DELETE"], pattern: /^\/editor-picks$/, permission: "editorial.curate" },
   { methods: WRITE, pattern: /^\/(contributors|ai-personas)(\/|$)/, permission: "contributor.manage" },
   { methods: ["POST"], pattern: /^\/authoring\/prompt$/, permission: "work.write" },
-  { methods: WRITE, pattern: /^\/(site-copy|site-theme|audience-bands|authoring\/settings|prompts)(\/|$)/, permission: "site.manage" },
+  { methods: WRITE, pattern: /^\/(site-copy|site-theme|audience-bands|authoring\/settings|prompts|editorial-page|about-page)(\/|$)/, permission: "site.manage" },
   { methods: WRITE, pattern: /^\/reader-typography(\/|$)/, permission: "typography.manage" },
 
   // Everything else that only reads.

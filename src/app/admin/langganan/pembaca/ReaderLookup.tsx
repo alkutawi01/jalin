@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { confirmAction, toast } from "../../../../lib/admin/dialogs";
 import { errorText } from "../../../../lib/admin/error-text";
 import { api, fmtDate, Notice } from "../../../../components/admin/langganan-ui";
@@ -24,6 +24,13 @@ export default function ReaderLookup() {
   const [error, setError] = useState("");
   const [grant, setGrant] = useState({ value: "months:1", reason: "" });
   const [cancelling, setCancelling] = useState<{ id: string; reason: string } | null>(null);
+
+  // The members list links here with ?id=: open that reader at once.
+  useEffect(() => {
+    const id = new URLSearchParams(window.location.search).get("id");
+    if (id && /^[0-9a-f-]{36}$/.test(id)) void open(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function search(e: React.FormEvent) {
     e.preventDefault();
