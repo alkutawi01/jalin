@@ -20,7 +20,7 @@ function formatSeen(iso: string): string {
 }
 
 /** Sign in or register with one form: an e-mail, then the six-digit code, then (only if two devices are already signed in) which one to remove. */
-export default function LoginForm({ next = "/akaun" }: { next?: string }) {
+export default function LoginForm({ next = "/akaun", compact = false }: { next?: string; compact?: boolean }) {
   const [step, setStep] = useState<Step>("email");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
@@ -93,11 +93,11 @@ export default function LoginForm({ next = "/akaun" }: { next?: string }) {
   }
 
   return (
-    <div className="auth-card">
+    <div className={compact ? "auth-card auth-card--compact" : "auth-card"}>
       {step === "email" ? (
         <form onSubmit={sendCode} noValidate>
-          <h1 className="auth-title">Log masuk atau daftar</h1>
-          <p className="auth-intro">Masukkan emel anda. Kami hantar kod enam digit. Tiada kata laluan.</p>
+          {compact ? null : <h1 className="auth-title">Log masuk atau daftar</h1>}
+          {compact ? null : <p className="auth-intro">Masukkan emel anda. Kami hantar kod enam digit. Tiada kata laluan.</p>}
           <label className="auth-label" htmlFor="auth-email">Emel</label>
           <input id="auth-email" className="auth-input" type="email" inputMode="email" autoComplete="email" placeholder="nama@contoh.my" value={email} onChange={(e) => setEmail(e.target.value)} aria-invalid={!!error} aria-describedby={error ? "auth-error" : undefined} />
           {error ? <p id="auth-error" className="auth-error" role="alert">{error}</p> : null}
