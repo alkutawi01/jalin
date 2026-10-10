@@ -7,6 +7,7 @@ import { chapterHeroOf } from "../../../../lib/reader/chapter-visuals";
 import { initContentRepository } from "../../../../lib/content";
 import { getWorkBySlug } from "../../../../lib/content/workLoader";
 import WorkView from "../../../../components/reader/WorkView";
+import ReadingTracker from "../../../../components/reader/ReadingTracker";
 import LockedWork from "../../../../components/reader/LockedWork";
 import { gateForWork } from "../../../../lib/reader/access-gate";
 
@@ -118,5 +119,10 @@ export default async function WorkPage({
       );
     }
   }
-  return <WorkView work={work} sectionSlug={sectionSlug} />;
+  return (
+    <>
+      <ReadingTracker workId={work.id} sectionSlug={sectionSlug} />
+      <WorkView work={work} sectionSlug={sectionSlug} />
+    </>
+  );
 }

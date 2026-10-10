@@ -290,6 +290,7 @@ export function SiteFooter() {
               {FOOTER_ABOUT.map((link) => (
                 <li key={link.href}><a href={link.href}>{link.label}</a></li>
               ))}
+              {readerAccountsEnabled() ? <li><a href="/mula">Apa itu Jalin?</a></li> : null}
             </ul>
           </nav>
         </div>

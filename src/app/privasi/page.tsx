@@ -50,12 +50,12 @@ function PrivacyWithAccounts() {
     <InfoPage
       kicker="Dasar"
       title="Dasar privasi"
-      intro="Anda boleh membaca Jalin tanpa akaun. Jika anda memilih untuk membuka akaun, inilah maklumat yang kami simpan dan mengapa."
-      updated="9 Oktober 2026"
+      intro="Halaman awam dan karya contoh Jalin boleh dibaca tanpa akaun. Membaca karya penuh memerlukan akaun. Inilah maklumat yang kami simpan jika anda membukanya, dan mengapa."
+      updated="10 Oktober 2026"
     >
       <h2>Tanpa akaun</h2>
       <ul>
-        <li>Anda boleh menyemak halaman awam Jalin tanpa memberi nama, e-mel atau nombor telefon.</li>
+        <li>Anda boleh melihat halaman awam Jalin (senarai karya, tajuk dan ringkasan) dan membaca karya contoh tanpa memberi nama, e-mel atau nombor telefon.</li>
         <li>Jalin tidak menggunakan kuki penjejakan, analitik atau iklan pihak ketiga untuk mengikuti apa yang anda baca.</li>
       </ul>
 
@@ -75,7 +75,7 @@ function PrivacyWithAccounts() {
         <li>alamat e-mel anda, untuk menghantar kod log masuk dan mengenali akaun anda;</li>
         <li>nama paparan, jika anda memilih untuk memberinya (tidak wajib);</li>
         <li>peranti yang sedang log masuk (nama peranti yang anda atau pelayar anda beri, dan bila ia terakhir digunakan); satu akaun boleh mempunyai sehingga dua peranti;</li>
-        <li>tetapan bacaan anda (saiz huruf, tema, jenis huruf), karya yang anda simpan, dan bab yang terakhir anda baca;</li>
+        <li>tetapan bacaan anda (saiz huruf, tema, jenis huruf, jarak baris, lebar teks dan redup), serta senarai karya dan bab terakhir yang direkodkan pada halaman Bacaan saya, supaya anda boleh menyambung bacaan (anda boleh mengosongkannya sendiri);</li>
         <li>rekod akses anda: bila percubaan percuma bermula, kod atau kad yang anda tebus, dan tempoh langganan anda.</li>
       </ul>
       <p>
@@ -83,7 +83,9 @@ function PrivacyWithAccounts() {
         percuma), kami menyimpan nilai cincang berkunci bagi e-mel dan alamat IP, bukan e-mel atau alamat IP itu sendiri. Nilai ini
         masih kami layan sebagai data peribadi. Kiraan percubaan dipadam secara berkala, biasanya dalam masa beberapa hari, tetapi
         nilai cincang e-mel yang pernah menerima percubaan percuma dikekalkan, juga selepas akaun dipadam, supaya percubaan itu tidak
-        dapat dituntut berulang kali. Percubaan percuma diberi sekali bagi setiap alamat e-mel.
+        dapat dituntut berulang kali. Nilai ini bukan alamat e-mel dalam bentuk biasa, tetapi masih berfungsi sebagai pengecam bagi
+        tujuan itu; ia tidak digunakan untuk pemasaran atau pemprofilan pembaca. Percubaan percuma diberi sekali bagi setiap alamat e-mel,
+        dan memadam akaun lalu mendaftar semula tidak menetapkan semula kelayakan itu.
       </p>
       <p>
         Data akaun disimpan selagi akaun anda wujud. Rekod sistem yang bersifat sementara (kod log masuk dan kiraan percubaan) dipadam
@@ -116,13 +118,16 @@ function PrivacyWithAccounts() {
 
       <h2>Hak anda: semak, betulkan dan padam</h2>
       <p>
-        Anda boleh meminta untuk melihat salinan data akaun anda, meminta pembetulan, atau meminta akaun dipadam, dengan menghubungi
-        Adjung Press daripada alamat e-mel akaun itu supaya kami dapat mengesahkan ia akaun anda. Buat masa ini permintaan ini
-        dikendalikan oleh seorang manusia, bukan butang dalam akaun.
+        Anda boleh memadam akaun anda sendiri pada bila-bila masa di halaman Akaun (butang Padam akaun). Pemadaman akaun adalah muktamad
+        dan akaun yang dipadam tidak boleh dipulihkan; baki percubaan atau langganan hilang bersamanya (lihat Terma penggunaan). Untuk
+        meminta salinan data akaun anda atau pembetulan, hubungi Adjung Press daripada alamat e-mel akaun itu supaya kami dapat
+        mengesahkan ia akaun anda. Jika anda tidak lagi mempunyai akses kepada e-mel itu, hubungi kami juga; kami akan meminta maklumat
+        lain untuk mengesahkan identiti anda. Permintaan ini dikendalikan oleh seorang manusia.
       </p>
       <p>
-        Apabila akaun dipadam, Jalin akan memadam atau menyahpaut maklumat akaun, peranti, tetapan bacaan, karya tersimpan dan
-        kemajuan bacaan. Rekod status penebusan kad boleh dikekalkan tanpa kaitan kepada identiti anda bagi mengelakkan penebusan
+        Apabila akaun dipadam, akses ke akaun itu ditamatkan serta-merta, semua peranti dilog keluar, dan alamat e-mel, nama paparan,
+        tetapan bacaan serta senarai Bacaan saya dipadam daripada rekod aktif. Salinan sandaran pangkalan data dilupuskan mengikut
+        kitaran sandaran dan tidak dipadam serta-merta. Rekod status penebusan kad boleh dikekalkan tanpa kaitan kepada identiti anda bagi mengelakkan penebusan
         berulang. Rekod lain yang perlu disimpan untuk mematuhi undang-undang, menyelesaikan pertikaian atau mempertahankan tuntutan
         dikekalkan hanya selama diperlukan.
       </p>

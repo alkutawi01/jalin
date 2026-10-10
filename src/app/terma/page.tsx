@@ -59,7 +59,7 @@ function TermsWithAccounts() {
       kicker="Dasar"
       title="Terma penggunaan"
       intro="Karya di Jalin ditulis dan dilukis dengan teliti. Terma ini menerangkan cara Jalin digunakan, termasuk akaun, percubaan percuma dan langganan."
-      updated="9 Oktober 2026"
+      updated="10 Oktober 2026"
     >
       <h2>Akaun</h2>
       <p>
@@ -70,7 +70,7 @@ function TermsWithAccounts() {
 
       <h2>Percubaan percuma dan langganan</h2>
       <ul>
-        <li>Setiap pembaca mendapat percubaan percuma 14 hari, sekali sahaja bagi setiap alamat e-mel, bermula apabila akaun dibuka.</li>
+        <li>Setiap alamat e-mel yang layak boleh mengaktifkan satu percubaan percuma selama 14 hari. Percubaan tidak bermula secara automatik apabila akaun didaftarkan, tetapi hanya apabila anda memilih untuk memulakannya selepas log masuk. Percubaan yang pernah digunakan tidak boleh diaktifkan semula dengan alamat e-mel yang sama, termasuk selepas akaun dipadam dan didaftarkan semula.</li>
         <li>Selepas itu, akses kepada karya memerlukan langganan: RM15 untuk 1 bulan, RM30 untuk 6 bulan atau RM50 untuk 12 bulan, diaktifkan dengan menebus kad atau kod langganan di halaman Tebus kod.</li>
         <li>Langganan tidak diperbaharui secara automatik dan Jalin tidak menyimpan butiran kad bank anda. Apabila tempoh tamat, anda boleh menebus kad atau kod yang baharu.</li>
         <li>Kad atau kod yang ditebus semasa anda masih mempunyai akses akan bermula selepas akses sedia ada tamat, supaya tiada tempoh yang hilang.</li>
@@ -90,6 +90,11 @@ function TermsWithAccounts() {
       </ul>
 
       <h2>Membaca</h2>
+      <p>
+        Senarai karya, tajuk dan ringkasan boleh dilihat oleh sesiapa. Beberapa karya dipilih sebagai contoh dan boleh dibaca tanpa
+        akaun. Membaca karya penuh memerlukan akaun dengan percubaan percuma atau langganan yang aktif; akaun yang akses bacaannya
+        tidak aktif masih boleh log masuk untuk menguruskan akaun dan menebus kod.
+      </p>
       <p>Akses anda adalah untuk bacaan peribadi anda sendiri. Berkongsi kod log masuk atau akaun dengan orang lain tidak dibenarkan.</p>
 
       <h2>Hak cipta</h2>
@@ -115,7 +120,10 @@ function TermsWithAccounts() {
       <p>
         Kami boleh menggantung atau menamatkan akaun yang menyalahgunakan Jalin, contohnya dengan cuba meneka kod, menggunakan
         kad yang dibatalkan, atau mengelak had percubaan percuma. Anda boleh berhenti menggunakan akaun pada bila-bila masa dan
-        meminta ia dipadam (lihat Dasar privasi).
+        memadam akaun anda sendiri pada bila-bila masa di halaman Akaun (lihat Dasar privasi). Pemadaman menamatkan akses bacaan serta-merta,
+        termasuk baki tempoh percubaan percuma atau langganan yang masih aktif; akaun dan baki akses itu tidak boleh dipulihkan.
+        Pemadaman secara sukarela tidak memberi hak automatik kepada bayaran balik bagi tempoh yang belum digunakan, tanpa menjejaskan
+        apa-apa hak pengguna yang diperuntukkan oleh undang-undang.
       </p>
 
       <h2>Tanpa jaminan</h2>

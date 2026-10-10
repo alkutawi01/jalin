@@ -3741,6 +3741,37 @@ html:has(.a-nav, .admin-login-page) { overflow: visible; }
   .header-mobile-account { padding: 6px 12px 2px; }
   .header-mobile-nav .header-mobile-account a { font-size: 16px; color: var(--ink); text-decoration: none; font-weight: 600; }
   .header-mobile-nav .header-account-state { display: block; margin-top: 2px; }
+  .header-mobile-account { padding: 6px 4px 2px; }
 }
 .auth-danger { border: 1px solid #c9a78b; background: #fbf3ea; border-radius: 10px; padding: 14px 16px; margin: 8px 0; }
 .auth-danger p { margin: 0 0 8px; }
+
+/* Menu akaun di kepala halaman */
+.header-account-wrap { position: relative; margin-left: 18px; }
+.header-account-wrap .header-account { margin-left: 0; }
+.header-account-button { background: none; border: 0; padding: 4px 6px; cursor: pointer; color: var(--ink); font: inherit; display: inline-flex; flex-direction: row; align-items: center; gap: 6px; max-width: 240px; }
+.header-account-button .header-account-name, .header-account-button .header-account-state { display: block; }
+.header-account-id { display: flex; flex-direction: column; align-items: flex-end; line-height: 1.2; min-width: 0; }
+.header-account-id .header-account-name { font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 14px; font-weight: 600; }
+.header-account-button > .header-account-name { font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 14px; font-weight: 600; }
+.header-account-button:hover .header-account-name, .header-account-button:focus-visible .header-account-name { text-decoration: underline; text-underline-offset: 4px; }
+.header-account-caret { font-size: 11px; color: var(--ink-soft); }
+.header-account-menu { position: absolute; right: 0; top: calc(100% + 8px); min-width: 190px; padding: 8px; background: var(--white, #fff); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 18px 44px rgba(24, 52, 60, .16); display: flex; flex-direction: column; z-index: 60; }
+.header-account-menu a, .header-account-menu button { text-align: left; padding: 10px 12px; border: 0; border-radius: 8px; background: none; font: inherit; font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 14px; color: var(--ink); cursor: pointer; text-decoration: none; min-height: 40px; }
+.header-account-menu a:hover, .header-account-menu button:hover, .header-account-menu a:focus-visible, .header-account-menu button:focus-visible { background: rgba(167, 100, 80, .1); }
+.header-account-list { display: flex; flex-direction: column; }
+.header-account-who { display: flex; flex-direction: column; padding: 4px 12px 8px; }
+.header-account-list .header-account-link { text-align: left; padding: 11px 12px; border: 0; border-radius: 9px; background: none; font: inherit; font-size: 16px; color: var(--ink-soft); text-decoration: none; cursor: pointer; }
+.header-account-list .header-account-link:hover, .header-account-list .header-account-link:focus-visible { background: rgba(167, 100, 80, .1); color: var(--ink); }
+@media (max-width: 860px) { .header-account-wrap { display: none; } }
+
+/* Halaman akaun: sejarah akses dan bacaan saya */
+.auth-history, .auth-reading { list-style: none; margin: 8px 0 0; padding: 0; }
+.auth-history li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; padding: 9px 0; border-top: 1px solid var(--line); font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 14px; }
+.auth-history li.is-revoked { opacity: .55; text-decoration: line-through; }
+.auth-history-when { color: var(--ink-soft); }
+.auth-reading li { border-top: 1px solid var(--line); }
+.auth-reading a { display: block; padding: 11px 0; text-decoration: none; color: var(--ink); }
+.auth-reading a:hover .auth-reading-title, .auth-reading a:focus-visible .auth-reading-title { text-decoration: underline; text-underline-offset: 3px; }
+.auth-reading-title { display: block; font-family: Georgia, serif; font-size: 17px; }
+.auth-reading-meta { display: block; margin-top: 2px; font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 13px; color: var(--ink-soft); }

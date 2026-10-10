@@ -7,6 +7,7 @@ import { initContentRepository } from "../../../../../lib/content";
 import { getWorkBySlug } from "../../../../../lib/content/workLoader";
 import EpisodeView from "../../../../../components/reader/EpisodeView";
 import LockedWork from "../../../../../components/reader/LockedWork";
+import ReadingTracker from "../../../../../components/reader/ReadingTracker";
 import { gateForWork } from "../../../../../lib/reader/access-gate";
 import type { SeriesEpisodeRef } from "../../../../../lib/content/types";
 
@@ -80,5 +81,10 @@ export default async function EpisodePage({
 
   const episodes: SeriesEpisodeRef[] = isDb ? repo.getPublishedSeriesEpisodes(work.series.id) : [];
 
-  return <EpisodeView work={work} episodes={episodes} />;
+  return (
+    <>
+      <ReadingTracker workId={work.id} />
+      <EpisodeView work={work} episodes={episodes} />
+    </>
+  );
 }
