@@ -1,14 +1,14 @@
 import { notReady } from "@/lib/panel/ready";
 import { NextResponse } from "next/server";
 import { getDb } from "../../../../../../../lib/db";
-import { bad, guarded } from "../../../../../../../lib/admin/langganan-api";
+import { bad, panelGuarded } from "../../../../../../../lib/admin/langganan-api";
 import { buildPrompt } from "../../../../../../../lib/panel/prompt";
 
 export const dynamic = "force-dynamic";
 
 /** The instruction for one snapshot as plain text (the same text the page offers to copy). */
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
-  return guarded(async () => {
+  return panelGuarded(async () => {
     const blocked = await notReady();
     if (blocked) return blocked;
     const { id } = await params;

@@ -5,6 +5,7 @@
  */
 import { NextResponse } from "next/server";
 import { getCurrentAdmin } from "./auth";
+import { can, roleFromClaim, type Permission } from "./permissions";
 import { isSameOrigin } from "../reader-auth/http";
 import { DEFAULT_LABEL, type LabelSettings } from "../subscription/label";
 
@@ -21,9 +22,21 @@ export async function actor(): Promise<{ id: string; name: string }> {
   return { id: admin?.id ?? "tidak-diketahui", name: admin?.name ?? "Tidak diketahui" };
 }
 
-/** Run a handler; a missing table (the migrations have not run on this database) becomes a plain sentence, anything else a general error. */
+/** Subscription handlers require a live owner account; middleware claims alone are never enough. */
 export async function guarded(run: () => Promise<NextResponse>): Promise<NextResponse> {
+  return guardedFor(run, "subscription.manage");
+}
+
+/** Panel handlers also recheck the live staff account while preserving the chief editor's approved permissions. */
+export async function panelGuarded(run: () => Promise<NextResponse>, permission: "panel.manage" | "panel.settings" = "panel.manage"): Promise<NextResponse> {
+  return guardedFor(run, permission);
+}
+
+async function guardedFor(run: () => Promise<NextResponse>, permission: Permission): Promise<NextResponse> {
   try {
+    const admin = await getCurrentAdmin();
+    const role = admin && roleFromClaim(admin.role);
+    if (!role || !can(role, permission)) return bad("Anda tidak mempunyai kebenaran untuk tindakan ini.", 403);
     return await run();
   } catch (error) {
     const code = (error as { code?: string }).code;

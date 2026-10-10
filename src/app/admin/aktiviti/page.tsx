@@ -2,6 +2,7 @@ import { getDb, hasDb } from "../../../lib/db";
 import { getCurrentAdmin } from "../../../lib/admin/auth";
 import { ACTIVITY_PAGE_SIZE, listActivity, listActors, type ActivityRow } from "../../../lib/admin/activity";
 import type { Role } from "../../../lib/admin/permissions";
+import { notFound } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
@@ -15,6 +16,7 @@ const one = (value: string | string[] | undefined) => (Array.isArray(value) ? va
 export default async function ActivityPage({ searchParams }: { searchParams: Promise<{ orang?: string | string[]; karya?: string | string[] }> }) {
   const query = await searchParams;
   const admin = await getCurrentAdmin();
+  if (!admin || (admin.role !== "admin" && admin.role !== "chief_editor")) notFound();
   const isOwner = admin?.role === "admin";
   const actorId = one(query.orang);
   const workId = one(query.karya);

@@ -42,16 +42,18 @@ export async function generateMetadata({
   const sections = work.sections && work.sections.length > 0 ? work.sections : [];
   const sectionIndex = sectionSlug ? sections.findIndex((section) => section.slug === sectionSlug) : -1;
   const chapter = sectionIndex >= 0 ? sections[sectionIndex] : undefined;
+  // A locked novela chapter must not reveal its title or chapter-specific preview image in metadata.
+  const visibleChapter = chapter && (await gateForWork(work.slug)).state === "open" ? chapter : undefined;
   // The link preview shows the same picture as the page: the chapter's own hero first, then the work's.
-  const hero = chapterHeroOf(work.visuals, chapter?.slug) ?? workHero;
+  const hero = chapterHeroOf(work.visuals, visibleChapter?.slug) ?? workHero;
   const canonicalPath = chapter
     ? `/kategori/${type}/${slug}/${chapter.slug}`
     : `/kategori/${type}/${slug}`;
   // A chapter has its own title and description, so a search result or a shared link says which chapter it is.
-  const chapterLabel = chapter ? chapterPageLabel(sectionIndex + 1, chapter.title) : "";
-  const pageTitle = chapter ? `${chapterLabel} · ${work.title}` : work.title;
+  const chapterLabel = visibleChapter ? chapterPageLabel(sectionIndex + 1, visibleChapter.title) : "";
+  const pageTitle = visibleChapter ? `${chapterLabel} · ${work.title}` : work.title;
   const pageDescription = clipDescription(
-    chapter ? `Bab ${sectionIndex + 1} daripada ${sections.length} · ${work.title}. ${description}` : description
+    visibleChapter ? `Bab ${sectionIndex + 1} daripada ${sections.length} · ${work.title}. ${description}` : description
   );
 
   return {

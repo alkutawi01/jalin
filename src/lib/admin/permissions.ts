@@ -62,6 +62,13 @@ const READ = ["GET", "HEAD"] as const;
 const WRITE = ["POST", "PUT", "PATCH", "DELETE"] as const;
 const ID = "[^/]+";
 
+/** Existing content/report read families. A new top-level API path does not inherit content.read. */
+const CONTENT_READ_PREFIXES = [
+  "works", "visual-requests", "visuals", "credits", "credit-roles", "glossary", "series", "submissions", "contributions",
+  "editorial-issues", "editorial-history", "editorial-dashboard", "editorial-report", "editor-picks", "contributors", "ai-personas",
+  "audience-bands", "prompts", "publish", "reader-typography", "site-copy", "site-theme", "generate/history"
+] as const;
+
 /** First match wins, so the specific rules come before the general ones. Addresses are matched without the "/api/admin" start. */
 const API_RULES: Rule[] = [
   { methods: "*", pattern: /^\/auth\//, permission: "session.use" },
@@ -102,8 +109,7 @@ const API_RULES: Rule[] = [
   { methods: WRITE, pattern: /^\/(site-copy|site-theme|audience-bands|authoring\/settings|prompts|editorial-page|about-page)(\/|$)/, permission: "site.manage" },
   { methods: WRITE, pattern: /^\/reader-typography(\/|$)/, permission: "typography.manage" },
 
-  // Everything else that only reads.
-  { methods: READ, pattern: /^\//, permission: "content.read" }
+  ...CONTENT_READ_PREFIXES.map((prefix): Rule => ({ methods: READ, pattern: new RegExp(`^/${prefix}(?:/|$)`), permission: "content.read" }))
 ];
 
 const PAGE_RULES: Rule[] = [

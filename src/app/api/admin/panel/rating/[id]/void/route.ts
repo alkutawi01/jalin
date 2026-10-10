@@ -1,14 +1,14 @@
 import { notReady } from "@/lib/panel/ready";
 import { getDb } from "../../../../../../../lib/db";
 import { logActivity } from "../../../../../../../lib/admin/activity";
-import { actor, bad, guarded, json, readBody, sameOriginOrRefuse, str } from "../../../../../../../lib/admin/langganan-api";
+import { actor, bad, panelGuarded, json, readBody, sameOriginOrRefuse, str } from "../../../../../../../lib/admin/langganan-api";
 import { voidRating } from "../../../../../../../lib/panel/service";
 
 export const dynamic = "force-dynamic";
 
 /** Take a rating out of the mean. It is never deleted or edited: the reason and the person are kept on it. */
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  return guarded(async () => {
+  return panelGuarded(async () => {
     const blocked = await notReady();
     if (blocked) return blocked;
     const refused = sameOriginOrRefuse(request);

@@ -95,6 +95,7 @@ assert(isAllowed("chief_editor", "PUT", "/api/admin/panel/settings") && isAllowe
 
 // 5) fail closed
 assert(permissionFor("POST", "/api/admin/something-new") === null && !isAllowed("editor", "POST", "/api/admin/something-new") && !isAllowed("chief_editor", "DELETE", "/api/admin/something-new") && isAllowed("owner", "POST", "/api/admin/something-new"), "an address with no rule is for the owner only");
+assert(permissionFor("GET", "/api/admin/something-new") === null && !isAllowed("editor", "GET", "/api/admin/something-new") && isAllowed("owner", "GET", "/api/admin/something-new"), "unknown GET APIs are owner-only rather than generic content reads");
 assert(permissionFor("GET", "/api/admin/works/") === permissionFor("GET", "/api/admin/works"), "a trailing slash does not change the answer");
 
 // 6) wired in

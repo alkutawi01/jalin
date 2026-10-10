@@ -318,18 +318,26 @@ export type SessionInfo = {
   device: { id: string; label: string };
 };
 
+export function deviceSessionExpired(createdAt: Date, lastSeenAt: Date, now: Date): boolean {
+  return now.getTime() - lastSeenAt.getTime() > 90 * DAY_MS || now.getTime() - createdAt.getTime() > 365 * DAY_MS;
+}
+
 /** Who the cookie belongs to, or null. Touches last-seen at most every ten minutes so reading does not write on every page. */
 export async function getSession(db: Db, token: string, now: Date = new Date()): Promise<SessionInfo | null> {
   if (!token || token.length < 20 || token.length > 200) return null;
   const row = await db
     .selectFrom("reader_devices as d")
     .innerJoin("reader_accounts as a", "a.id", "d.account_id")
-    .select(["d.id as device_id", "d.label", "d.last_seen_at", "a.id as account_id", "a.email", "a.display_name", "a.trial_starts_at", "a.trial_ends_at"])
+    .select(["d.id as device_id", "d.label", "d.created_at", "d.last_seen_at", "a.id as account_id", "a.email", "a.display_name", "a.trial_starts_at", "a.trial_ends_at"])
     .where("d.token_hash", "=", hashSessionToken(token))
     .where("d.revoked_at", "is", null)
     .where("a.status", "<>", "deleted")
     .executeTakeFirst();
   if (!row) return null;
+  if (deviceSessionExpired(row.created_at, row.last_seen_at, now)) {
+    await db.updateTable("reader_devices").set({ revoked_at: now, revoked_reason: "security" }).where("id", "=", row.device_id).where("revoked_at", "is", null).execute();
+    return null;
+  }
   if (now.getTime() - row.last_seen_at.getTime() > LIMITS.lastSeenRefreshMinutes * 60 * 1000) {
     await db.updateTable("reader_devices").set({ last_seen_at: now }).where("id", "=", row.device_id).execute();
   }
