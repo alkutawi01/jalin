@@ -3,6 +3,7 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { renderItalics, stripItalicMarks } from "../../lib/reader/inline-italics";
+import { languageCode } from "../../lib/reader/language-code";
 
 type Position = { left: number; top: number };
 
@@ -122,7 +123,12 @@ export default function GlossaryTerm({ term, termDisplay, meaning, pronunciation
         {children}
       </button>
       {/* Always present for screen readers; the floating tooltip is the visual version. */}
-      <span id={descriptionId} className="sr-only">{[pronunciation ? `Sebutan: ${pronunciation}.` : "", original ? `${originalLanguage ? `${originalLanguage}: ` : "Ejaan asal: "}${original}.` : "", meaning].filter(Boolean).map(stripItalicMarks).join(" ")}</span>
+      <span id={descriptionId} className="sr-only">
+        {pronunciation ? `Sebutan: ${stripItalicMarks(pronunciation)}. ` : ""}
+        {/* The original spelling is read in its own language: without lang a screen reader spells Arabic with the Malay voice. */}
+        {original ? <>{originalLanguage ? `${originalLanguage}: ` : "Ejaan asal: "}<span lang={languageCode(originalLanguage)} dir="auto">{stripItalicMarks(original)}</span>{". "}</> : null}
+        {stripItalicMarks(meaning)}
+      </span>
       {open ? createPortal(
         <span
           ref={tooltipRef}
@@ -137,7 +143,7 @@ export default function GlossaryTerm({ term, termDisplay, meaning, pronunciation
           {pronunciation || original ? (
             <span className="glossary-origin">
               {pronunciation ? <span className="glossary-pronunciation">Sebutan: {renderItalics(pronunciation)}</span> : null}
-              {original ? <span className="glossary-original" lang={originalLanguage?.toLowerCase().startsWith("arab") ? "ar" : undefined} dir="auto">{originalLanguage ? `${originalLanguage}: ` : ""}{original}</span> : null}
+              {original ? <span className="glossary-original">{originalLanguage ? `${originalLanguage}: ` : ""}<bdi lang={languageCode(originalLanguage)} dir="auto">{original}</bdi></span> : null}
             </span>
           ) : null}
           <span>{renderItalics(meaning)}</span>

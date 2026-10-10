@@ -6,6 +6,7 @@
  *  4. the database columns, the API, the frozen version and the editor form know the new fields
  */
 import fs from "node:fs";
+import { languageCode } from "../src/lib/reader/language-code";
 import path from "node:path";
 import { parseGlossaryPaste, buildGlossaryPrompt } from "../src/lib/admin/authoring/glossary-paste";
 import { parseLabelledAnswer } from "../src/lib/admin/authoring/labelled-output";
@@ -68,7 +69,9 @@ const built = buildVerifiedGlossary({
 assert(built["mudif"]?.pronunciation === "mu-dif" && built["mudif"]?.original === "مضيف" && built["mudif"]?.originalLanguage === "Arab" && built["mudif"]?.termDisplay === "*mudif*", "pronunciation and spelling reach the reader entry; the italic display term is kept", built["mudif"]);
 assert(built["ceruk"]?.originalLanguage === undefined && built["buritan"]?.pronunciation === undefined, "a language alone, or nothing, adds nothing");
 const tooltip = read("src/components/reader/GlossaryTerm.tsx");
-assert(tooltip.includes("stripItalicMarks") && tooltip.includes(".map(stripItalicMarks)"), "screen readers never hear the asterisks");
+assert(tooltip.includes("stripItalicMarks(pronunciation)") && tooltip.includes("stripItalicMarks(original)") && tooltip.includes("stripItalicMarks(meaning)"), "screen readers never hear the asterisks");
+assert(tooltip.includes('<span lang={languageCode(originalLanguage)} dir="auto">{stripItalicMarks(original)}</span>') && tooltip.includes('<bdi lang={languageCode(originalLanguage)} dir="auto">{original}</bdi>'), "the spoken description and the tooltip read the original spelling in its own language (lang from the language name)");
+assert(languageCode("Arab") === "ar" && languageCode("Arab klasik") === "ar" && languageCode("Inggeris") === "en" && languageCode("Jepun") === "ja" && languageCode("Bahasa Inggeris") === "en" && languageCode("Arab (Iraq)") === "ar" && languageCode("Bahasa tak dikenali") === undefined && languageCode(undefined) === undefined, "the language name gives a language code, an unknown name gives none");
 assert(tooltip.includes("Sebutan:") && tooltip.includes("glossary-original") && tooltip.includes('dir="auto"'), "the tooltip shows pronunciation and original spelling (right-to-left safe)");
 assert(read("src/components/reader/StoryMarkdown.tsx").includes("pronunciation={glossary[key].pronunciation}"), "the story passes them to the tooltip");
 

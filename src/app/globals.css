@@ -3804,7 +3804,7 @@ html:has(.a-nav, .admin-login-page) { overflow: visible; }
 .ai-rating-dialog { max-width: min(640px, calc(100vw - 32px)); max-height: calc(100vh - 48px); width: 100%; padding: 0; border: 1px solid var(--line); border-radius: 10px; background: var(--white); color: var(--ink); }
 .ai-rating-dialog::backdrop { background: rgba(24,52,60,.45); }
 .ai-rating-sheet { padding: 22px 24px 26px; font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 14px; line-height: 1.55; }
-.ai-rating-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.ai-rating-head { display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1; margin: -22px -24px 10px; padding: 22px 24px 10px; background: var(--white); border-bottom: 1px solid var(--line); }
 .ai-rating-head h2 { margin: 0; font-family: Georgia, serif; font-size: 22px; }
 .ai-rating-head button { font: inherit; font-size: 13px; background: none; border: 0; color: var(--ink); text-decoration: underline; cursor: pointer; padding: 13px 12px; margin: -13px -12px; }
 .ai-rating-reviewer { border-top: 1px solid var(--line); padding-top: 14px; margin-top: 14px; }
@@ -3921,4 +3921,49 @@ html:has(.a-nav, .admin-login-page) { overflow: visible; }
   .rail-card.sticky { max-height: calc(100dvh - 128px); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
   .rail-card.sticky > :last-child { margin-bottom: 0; }
   .has-margin-notes .rail-card.sticky { max-height: none; overflow: visible; }
+}
+
+/* Printing or saving a story as PDF: the story, its title and its notes, not the website around it. The side columns, the header, the
+   footer, the "Baca lagi" cards, the buttons and the loading screen stay out (the left column stays: it carries the credits and the note on
+   who wrote the story, which must travel with the text); the text is black on white and runs the full page width.
+   (The side cards scroll inside themselves on a short screen; on paper they must not clip, so their limit is lifted here.) */
+@media print {
+  .site-header, .site-footer, .skip-link, .mobile-info-row, .right-rail, .related-works, .continue-nav,
+  .ai-rating, .collection-refresh, .hero-carousel-controls, .preview-banner { display: none !important; }
+  /* The paper is narrower than 1050px, where the screen rules hide the left column. */
+  .reading-grid > .left-rail { display: block !important; }
+  html, body { background: #fff !important; color: #000 !important; }
+  .reading-grid { display: block !important; }
+  .site-shell { width: auto !important; max-width: none !important; margin: 0 !important; }
+  /* "main" in front: a reader's own settings (ReadingTracker) are added to the head after this file and use the same weight. */
+  main .story-body { max-width: none !important; font-size: 12pt !important; line-height: 1.55 !important; color: #000 !important; filter: none !important; }
+  main .story-body :is(p, li, h2, h3) { color: #000 !important; }
+  .rail-card.sticky { position: static !important; max-height: none !important; overflow: visible !important; }
+  .story-body p, .story-body li { orphans: 3; widows: 3; }
+  .story-body h2, .story-body h3 { break-after: avoid; }
+  .editorial-image, .inline-figure { break-inside: avoid; }
+}
+
+/* The phone menu's entries were 41px tall (11px padding around a 16px line). 44px, with the label centred; the panel grows by 24px. */
+.header-mobile-nav .header-mobile-nav-links a { display: flex; align-items: center; min-height: 44px; box-sizing: border-box; }
+
+/* Signed-in reader's menu in the header: the button and its entries were 34 to 42px tall. On touch screens, including a laptop with a touch screen (any-pointer; a tablet in landscape is wider
+   than the width at which the phone menu takes over) every one of them is 44px, the label centred. */
+@media (any-pointer: coarse) {
+  .header-account-button, .header-account-menu a, .header-account-menu button, .header-account-list .header-account-link { min-height: 44px; }
+  .header-account-menu a, .header-account-menu button, .header-account-list .header-account-link { display: flex; align-items: center; box-sizing: border-box; }
+}
+
+/* iOS Safari enlarges text on its own when a phone is turned sideways (the page grows by about 20%); the page asks it not to. The site has
+   one light look only: saying so keeps a browser's "force dark" from inverting the page and its pictures, and keeps scroll bars and form
+   controls light on a dark system. */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; color-scheme: light; }
+
+/* Reduced motion: the cards and buttons that lift a few pixels on hover. Most of them switch their transition off in blocks above; the
+   "Baca lagi" card, the hero button and the "next" button were missed, and none of them cancelled the lift itself. For a reader who asked
+   their device for less movement the lift is cancelled (the colour and shadow change stays as the hover feedback). */
+@media (prefers-reduced-motion: reduce) {
+  .hero-featured-cta, .related-work-card, .continue-next, .latest-card, .category-explorer-card, .editorial-pick { transition: none; }
+  .hero-featured-cta:hover, .related-work-card:hover, .continue-next:hover, .continue-next:focus-visible,
+  .latest-card:hover, .category-explorer-card:hover, .editorial-pick:hover { transform: none; }
 }

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Figtree } from "next/font/google";
 import "./globals.css";
 import { SITE_URL, DEFAULT_SHARE_IMAGE } from "../lib/seo";
@@ -12,6 +12,12 @@ const inter = Inter({ subsets: ["latin", "latin-ext"], display: "swap", variable
 /** The typeface of the main menu (Izzat chose Figtree, 5 Oct 2026). Only the menu uses it; labels and buttons stay Inter. */
 const figtree = Figtree({ subsets: ["latin", "latin-ext"], display: "swap", variable: "--font-figtree" });
 
+/** The browser's own bar (address bar on a phone, status bar on iOS) takes the page's paper colour instead of white. */
+export const viewport: Viewport = {
+  themeColor: "#fbf8f2",
+  colorScheme: "light"
+};
+
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
@@ -21,7 +27,8 @@ export const metadata: Metadata = {
   description: "Selami dunia melalui cerita di Jalin, platform cerpen, novela dan cerita bersiri berilustrasi dalam Bahasa Melayu. Terbitan Adjung Press.",
   icons: {
     icon: "/brand/jalin-favicon.svg",
-    shortcut: "/brand/jalin-favicon.svg"
+    shortcut: "/brand/jalin-favicon.svg",
+    apple: "/brand/apple-touch-icon.png"
   },
   openGraph: {
     type: "website",
