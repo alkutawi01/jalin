@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { gateSite } from "../../../../lib/reader/access-gate";
 import { smartQuotes } from "../../../../lib/admin/smart-quotes";
+import { spacedDashes } from "../../../../lib/reader/spaced-dash";
 import { notFound, redirect } from "next/navigation";
 import Image from "next/image";
 import { BylineRow, SiteFooter, SiteHeader } from "../../../../components/reader/StoryChrome";
@@ -38,7 +39,7 @@ export async function generateMetadata({ params }: { params: Promise<{ seriesSlu
   if (repo.source !== "database") return {};
   const series = repo.getSeriesBySlug(seriesSlug);
   if (!series || repo.getPublishedSeriesEpisodes(series.id).length === 0) return {};
-  const description = clipDescription(series.dek ? smartQuotes(series.dek) : `Siri ${series.title} di Jalin.`);
+  const description = clipDescription(series.dek ? spacedDashes(smartQuotes(series.dek)) : `Siri ${series.title} di Jalin.`);
   const path = `/kategori/bersiri/${series.slug}`;
   const image = [series.hero?.src ? shareImage(series.hero.src, series.hero.alt) : DEFAULT_SHARE_IMAGE];
   return {
@@ -104,7 +105,7 @@ export default async function SeriesLandingPage({
                 <a href="/kategori/bersiri">Bersiri</a> <span aria-hidden="true">/</span> <span>{series.title}</span>
               </p>
               <h1>{series.title}</h1>
-              {series.dek ? <p className="series-premise">{smartQuotes(series.dek)}</p> : null}
+              {series.dek ? <p className="series-premise">{spacedDashes(smartQuotes(series.dek))}</p> : null}
               <BylineRow byline={authors} />
               <p className="series-meta">{meta.join(" · ")}</p>
               </div>
@@ -141,7 +142,7 @@ export default async function SeriesLandingPage({
                             <span className="sr-only">Episod {episode.position}: </span>
                             {episode.title}
                           </h3>
-                          {episode.dek ? <p className="episode-card-dek">{smartQuotes(episode.dek)}</p> : null}
+                          {episode.dek ? <p className="episode-card-dek">{spacedDashes(smartQuotes(episode.dek))}</p> : null}
                           <p className="episode-card-meta">
                             {[episode.readingMinutes ? `± ${episode.readingMinutes} minit` : "", episode.publishedAt ? formatDate(episode.publishedAt) : ""]
                               .filter(Boolean)
@@ -164,7 +165,7 @@ export default async function SeriesLandingPage({
               seriesJsonLd({
                 slug: series.slug,
                 title: series.title,
-                dek: series.dek ? smartQuotes(series.dek) : series.dek,
+                dek: series.dek ? spacedDashes(smartQuotes(series.dek)) : series.dek,
                 genre: displayableGenre(series.genre),
                 heroSrc: series.hero?.src,
                 authors: authors.map((author) => author.name),
