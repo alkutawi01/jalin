@@ -1,3 +1,4 @@
+import { notReady } from "@/lib/panel/ready";
 import { getDb } from "../../../../../../../lib/db";
 import { logActivity } from "../../../../../../../lib/admin/activity";
 import { actor, bad, guarded, json, readBody, sameOriginOrRefuse, str } from "../../../../../../../lib/admin/langganan-api";
@@ -8,6 +9,8 @@ export const dynamic = "force-dynamic";
 /** Paste in what a reviewer answered. An answer that cannot be read is kept as refused, with the reasons, and does not count. */
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   return guarded(async () => {
+    const blocked = await notReady();
+    if (blocked) return blocked;
     const refused = sameOriginOrRefuse(request);
     if (refused) return refused;
     const { id } = await params;

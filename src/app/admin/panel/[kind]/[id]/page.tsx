@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { getDb, hasDb } from "../../../../../lib/db";
+import { NOT_READY_MESSAGE, panelReady } from "../../../../../lib/panel/ready";
 import { panelView } from "../../../../../lib/panel/view";
 import PanelCompare from "../../../../../components/admin/PanelCompare";
 import PanelRatingCard from "../../../../../components/admin/PanelRatingCard";
@@ -14,6 +15,9 @@ export default async function PanelPieceDetail({ params }: { params: Promise<{ k
   const kind = rawKind === "work" || rawKind === "submission" ? rawKind : null;
   if (!kind || !hasDb()) notFound();
   const id = decodeURIComponent(rawId);
+  if (!(await panelReady(getDb()))) {
+    return <div className="admin-panel-ai"><header className="admin-page-header"><h1>Penilaian AI</h1><p className="admin-page-sub">{NOT_READY_MESSAGE}</p></header></div>;
+  }
   const view = await panelView(getDb(), kind, id);
   const editHref = kind === "work" ? `/admin/works/${encodeURIComponent(id)}#panel` : `/admin/submissions/${encodeURIComponent(id)}`;
   const active = view.active;

@@ -32,7 +32,7 @@ import { firstGlossaryBySegment } from "../../lib/reader/glossary-first";
 import MobileStoryInfo from "./MobileStoryInfo";
 import ReadMore from "./ReadMore";
 import { buildStoryPool, pickCollection } from "../../lib/reader/story-collection";
-import { getDb } from "../../lib/db";
+import { getDb, hasDb } from "../../lib/db";
 import { publicRatingSummary } from "../../lib/panel/public";
 import { isDerivativeType } from "../../lib/credit-roles";
 import {
@@ -150,8 +150,8 @@ export default async function WorkView({
     firstAppearanceSection
   }));
   const editorial = projectEditorialCredits(work.credits);
-  const aiSummary = work.type === "cerpen" || work.type === "novela" || work.type === "bersiri" ? await publicRatingSummary(getDb(), work.id) : null;
-  const aiRating = aiSummary ? { workId: work.id, summary: aiSummary } : undefined;
+  const aiSummary = (work.type === "cerpen" || work.type === "novela" || work.type === "bersiri") && hasDb() ? await publicRatingSummary(getDb(), work.id) : null;
+  const aiRating = aiSummary ? { workId: work.slug, summary: aiSummary } : undefined;
   const originalTitle = originalTitleOf(work);
 
   const rights = `© ADJUNG ${(work.publishedAt ?? "2026").slice(0, 4)}`;

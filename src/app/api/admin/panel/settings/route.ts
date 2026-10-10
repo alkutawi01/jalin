@@ -1,3 +1,4 @@
+import { notReady } from "@/lib/panel/ready";
 import { getDb } from "../../../../../lib/db";
 import { logActivity } from "../../../../../lib/admin/activity";
 import { actor, bad, guarded, json, readBody, sameOriginOrRefuse, str } from "../../../../../lib/admin/langganan-api";
@@ -9,12 +10,14 @@ const shape = (s: Awaited<ReturnType<typeof loadSettings>>) => ({ threshold: s.t
 
 /** Anyone who may rate can read the settings. */
 export async function GET() {
-  return guarded(async () => json(shape(await loadSettings(getDb()))));
+  return guarded(async () => (await notReady()) ?? json(shape(await loadSettings(getDb()))));
 }
 
 /** The threshold and the official reviewer. Only the chief editor and the owner (permissions.ts). */
 export async function PUT(request: Request) {
   return guarded(async () => {
+    const blocked = await notReady();
+    if (blocked) return blocked;
     const refused = sameOriginOrRefuse(request);
     if (refused) return refused;
     const body = await readBody(request);
