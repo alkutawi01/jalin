@@ -261,6 +261,10 @@ export default function AccountPanel(props: {
         <button type="button" className="auth-button auth-button--ghost" disabled={busy} onClick={() => signOut("/api/akaun/keluar-semua")}>Keluar dari semua peranti</button>
       </div>
 
+      <h2 className="auth-subtitle" id="data">Data anda</h2>
+      <p className="auth-fine">Muat turun salinan data akaun anda (profil, sejarah akses, bacaan, simpanan dan peranti) dalam satu fail JSON.</p>
+      <p><a className="auth-link" href="/api/akaun/data" download>Muat turun data saya</a></p>
+
       <h2 className="auth-subtitle">Padam akaun</h2>
       {confirmingDelete ? (
         <div className="auth-danger" role="alertdialog" aria-labelledby="padam-title">

@@ -103,6 +103,7 @@ export default function LoginForm({ next = "/akaun", compact = false }: { next?:
           {error ? <p id="auth-error" className="auth-error" role="alert">{error}</p> : null}
           <button className="auth-button" type="submit" disabled={busy}>{busy ? "Menghantar…" : "Hantar kod"}</button>
           <p className="auth-fine">Percubaan percuma 14 hari bermula apabila anda memilih untuk memulakannya.</p>
+          <p className="auth-fine">Dengan menghantar kod, anda mengesahkan telah membaca <a href="/privasi">Dasar privasi</a> dan <a href="/terma">Terma penggunaan</a>.</p>
         </form>
       ) : null}
 
