@@ -3718,8 +3718,12 @@ html:has(.a-nav, .admin-login-page) { overflow: visible; }
 .start-step-number { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; margin-bottom: 10px; border-radius: 50%; background: #f0ddd1; color: var(--ink); font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 14px; font-weight: 700; }
 .start-steps h3 { margin: 0 0 6px; font-size: 1.1rem; font-weight: 600; }
 .start-steps p { margin: 0; color: var(--ink-soft); line-height: 1.6; }
-.start-samples { display: flex; flex-wrap: wrap; justify-content: center; gap: 24px; }
-.start-samples > article { flex: 1 1 260px; max-width: 320px; min-width: 0; }
+.start-samples { display: grid; grid-template-columns: 1fr; gap: 24px; }
+.start-samples > article { min-width: 0; }
+@media (min-width: 640px) { .start-samples { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (min-width: 1020px) { .start-samples { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.start-samples--few { display: flex; flex-wrap: wrap; justify-content: center; }
+.start-samples--few > article { flex: 0 1 320px; }
 .start-closing { text-align: center; }
 .start-fine { margin: 14px 0 0; font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 14px; color: var(--ink-soft); }
 @media (max-width: 760px) { .start-page { padding-top: 36px; padding-bottom: 48px; } .start-steps { grid-template-columns: 1fr; } .start-section { margin-top: 44px; } }

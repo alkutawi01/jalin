@@ -48,7 +48,7 @@ export default function SampleManager() {
   return (
     <div>
       {error ? <Notice kind="error">{error}</Notice> : null}
-      <p className="admin-form-hint">{count} cerita contoh. Cadangan: 5. Cerita contoh boleh dibaca oleh sesiapa tanpa log masuk dan dipaparkan pada halaman <a href="/mula">/mula</a>.</p>
+      <p className="admin-form-hint">{count} cerita contoh. Cadangan: 6 (atau 3, 8, 12). Halaman <a href="/mula">/mula</a> menyusun contoh dalam baris 3 atau 4, jadi bilangan lain dibundarkan ke bawah supaya tiada kad tunggal. Cerita contoh boleh dibaca oleh sesiapa tanpa log masuk.</p>
       <div className="admin-form-group">
         <label htmlFor="sample-filter">Cari cerita</label>
         <input id="sample-filter" type="search" value={filter} onChange={(e) => setFilter(e.target.value)} placeholder="Tajuk atau jenis" />

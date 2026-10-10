@@ -67,7 +67,7 @@ export default function LockDialog({ gate, next, email }: { gate: Gate; next: st
 
             {gate === "sign_in" ? (
               <>
-                <p className="lock-lead">Cerita ini untuk pembaca yang log masuk. Daftar dengan e-mel sahaja, kemudian mulakan percubaan percuma 14 hari.</p>
+                <p className="lock-lead">Log masuk atau daftar menggunakan e-mel tanpa kata laluan. Selepas itu, anda boleh mengaktifkan percubaan percuma selama 14 hari jika layak.</p>
                 <LoginForm next={next} />
               </>
             ) : null}
@@ -75,7 +75,7 @@ export default function LockDialog({ gate, next, email }: { gate: Gate; next: st
             {gate === "start_trial" ? (
               <div className="auth-card">
                 <h1 className="auth-title">Mulakan percubaan percuma</h1>
-                <p className="auth-intro">{email ? <>Anda log masuk sebagai <strong>{email}</strong>. </> : null}Baca semua cerita di Jalin selama 14 hari, tanpa kad dan tanpa bayaran.</p>
+                <p className="auth-intro">{email ? <>Anda log masuk sebagai <strong>{email}</strong>. </> : null}Aktifkan percubaan percuma untuk membaca semua cerita di Jalin selama 14 hari tanpa bayaran.</p>
                 {error ? <p className="auth-error" role="alert">{error}</p> : null}
                 <button type="button" className="auth-button" disabled={busy} onClick={startTrial}>{busy ? "Memulakan…" : "Mulakan percubaan 14 hari"}</button>
                 {showRedeem ? (
@@ -89,7 +89,7 @@ export default function LockDialog({ gate, next, email }: { gate: Gate; next: st
             {gate === "subscribe" ? (
               <div className="auth-card">
                 <h1 className="auth-title">Akses anda belum aktif</h1>
-                <p className="auth-intro">{email ? <>Anda log masuk sebagai <strong>{email}</strong>. </> : null}Percubaan percuma anda sudah digunakan atau tamat. Tebus kod langganan daripada kad untuk terus membaca.</p>
+                <p className="auth-intro">{email ? <>Anda log masuk sebagai <strong>{email}</strong>. </> : null}Percubaan percuma sudah digunakan atau tamat. Tebus kod langganan untuk meneruskan bacaan.</p>
                 <div className="lock-redeem"><RedeemForm embedded /></div>
               </div>
             ) : null}

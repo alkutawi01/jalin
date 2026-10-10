@@ -309,7 +309,7 @@ async function main() {
     assert((await G.req("/api/akaun/saya")).json.access.state === "trial" && trialView.text.includes("Percubaan percuma tamat"), "the reader is then shown as in trial with the date");
     const given = await addGrant(db, { accountId: gAcc.rows[0].id, kind: "ADMIN", grant: { unit: "months", amount: 6 }, reason: "e2e", createdBy: "e2e" });
     const afterGrant = await G.req("/api/akaun/saya");
-    assert(given.added && afterGrant.json.access.state === "trial" && afterGrant.json.access.endsAt !== afterGrant.json.access.currentPeriodEndsAt && (await G.req("/akaun")).text.includes("bersambung sehingga"), "a grant added during the trial shows as continuing after it");
+    assert(given.added && afterGrant.json.access.state === "trial" && afterGrant.json.access.endsAt !== afterGrant.json.access.currentPeriodEndsAt && (await G.req("/akaun")).text.includes("Akses langganan anda aktif sehingga"), "a grant added during the trial shows as continuing after it");
     await sql`UPDATE reader_accounts SET trial_ends_at = trial_ends_at`.execute(db);
 
     // ---------------------------------------------------------------- redeeming codes
@@ -340,7 +340,7 @@ async function main() {
     assert(okRedeem.status === 200 && okRedeem.json?.ok === true && /Kod berjaya ditebus\. Akses anda aktif sehingga .+\(MYT\)\./.test(okRedeem.json.message), "the right code and batch redeem with a message that gives the date", okRedeem.text);
     const afterRedeem = await R.req("/api/akaun/saya");
     assert(afterRedeem.json.access.state === "trial" && afterRedeem.json.access.endsAt !== afterRedeem.json.access.currentPeriodEndsAt, "the card period continues after the trial, as agreed");
-    assert((await R.req("/akaun")).text.includes("bersambung sehingga"), "and the account page says so");
+    assert((await R.req("/akaun")).text.includes("Akses langganan anda aktif sehingga"), "and the account page says so");
     const again = await R.req("/api/akaun/tebus", { method: "POST", body: { code: batchMade.codes[0].code, batch: "E2E-001" } });
     assert(again.status === 200 && again.json?.ok === true, "pressing it a second time is answered ok");
     const thief = new Device("Pencuri");

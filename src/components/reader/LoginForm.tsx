@@ -84,7 +84,7 @@ export default function LoginForm({ next = "/akaun", compact = false }: { next?:
         window.location.href = next;
         return;
       }
-      setError(status === 429 ? "Terlalu banyak cubaan. Cuba lagi kemudian." : String(data.error ?? "Kod tidak betul atau sudah tamat."));
+      setError(status === 429 ? "Terlalu banyak cubaan. Cuba lagi kemudian." : String(data.error ?? "Kod tidak sah atau telah tamat tempoh. Semak kod atau minta kod baharu."));
     } catch {
       setError("Tiada sambungan. Semak internet anda dan cuba lagi.");
     } finally {
@@ -109,7 +109,7 @@ export default function LoginForm({ next = "/akaun", compact = false }: { next?:
       {step === "code" ? (
         <form onSubmit={(e) => verify(e)} noValidate>
           <h1 className="auth-title">Masukkan kod</h1>
-          <p className="auth-intro">Kod dihantar ke <strong>{email.trim()}</strong>. Sah 5 minit. Semak juga folder spam.</p>
+          <p className="auth-intro">Kod telah dihantar ke <strong>{email.trim()}</strong>. Kod ini sah selama 5 minit. Jika tiada dalam peti masuk, semak folder spam.</p>
           <label className="auth-label" htmlFor="auth-code">Kod enam digit</label>
           <input id="auth-code" ref={codeRef} className="auth-input auth-code" type="text" inputMode="numeric" autoComplete="one-time-code" maxLength={7} placeholder="000000" value={code} onChange={(e) => setCode(e.target.value.replace(/[^\d\s-]/g, ""))} aria-invalid={!!error} aria-describedby={error ? "auth-error" : undefined} />
           {error ? <p id="auth-error" className="auth-error" role="alert">{error}</p> : null}
@@ -117,7 +117,7 @@ export default function LoginForm({ next = "/akaun", compact = false }: { next?:
           <button className="auth-button" type="submit" disabled={busy}>{busy ? "Mengesahkan…" : "Sahkan"}</button>
           <div className="auth-links">
             <button type="button" className="auth-link" disabled={wait > 0 || busy} onClick={() => sendCode().then(() => setNotice("Kod baharu dihantar."))}>
-              {wait > 0 ? `Hantar semula kod (${wait}s)` : "Hantar semula kod"}
+              {wait > 0 ? `Hantar semula kod (${wait} saat)` : "Hantar semula kod"}
             </button>
             <button type="button" className="auth-link" onClick={() => { setStep("email"); setError(""); setNotice(""); }}>Tukar e-mel</button>
           </div>
@@ -126,8 +126,8 @@ export default function LoginForm({ next = "/akaun", compact = false }: { next?:
 
       {step === "device" ? (
         <div>
-          <h1 className="auth-title">Pilih peranti untuk dikeluarkan</h1>
-          <p className="auth-intro">Akaun ini sudah digunakan pada 2 peranti. Untuk log masuk di sini, keluarkan satu daripadanya.</p>
+          <h1 className="auth-title">Pilih peranti untuk dilog keluar</h1>
+          <p className="auth-intro">Akaun ini sudah digunakan pada dua peranti. Untuk log masuk pada peranti ini, anda perlu mengeluarkan salah satu peranti yang sedia ada.</p>
           <ul className="auth-devices">
             {devices.map((device) => (
               <li key={device.id} className="auth-device">

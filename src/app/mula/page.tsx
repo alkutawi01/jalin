@@ -12,6 +12,7 @@ import { getDb } from "../../lib/db";
 import { displayableGenre } from "../../lib/reader/genre-display";
 import { projectPublicWorkSummary, type PublicWorkSummary } from "../../lib/reader/public-projection";
 import { computeSiteStats, statItems } from "../../lib/reader/site-stats";
+import { visibleSampleCount } from "../../lib/reader/sample-count";
 import { readerAccountsEnabled } from "../../lib/reader-auth/enabled";
 import { currentReaderSession } from "../../lib/reader-auth/server";
 import { sampleSlugs } from "../../lib/reader-auth/switches";
@@ -82,7 +83,7 @@ async function loadPage() {
     if (!work) continue;
     samples.push({ summary: projectPublicWorkSummary(work), href: hrefOf(work) });
   }
-  return { stats, wall, samples };
+  return { stats, wall, samples: samples.slice(0, visibleSampleCount(samples.length)) };
 }
 
 export default async function StartPage() {
@@ -125,7 +126,7 @@ export default async function StartPage() {
             <section className="start-section" aria-labelledby="contoh">
               <h2 id="contoh">Baca dahulu, tanpa log masuk</h2>
               <p className="start-lead">Cerita pilihan yang boleh dibaca penuh tanpa akaun.</p>
-              <div className="start-samples">
+              <div className={samples.length < 3 ? "start-samples start-samples--few" : "start-samples"}>
                 {samples.map(({ summary, href }) => {
                   const genre = displayableGenre(summary.genre);
                   const year = (summary.publishedAt ?? "2026").slice(0, 4);

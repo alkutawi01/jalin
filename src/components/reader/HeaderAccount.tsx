@@ -25,7 +25,7 @@ export function loadWho(): Promise<Who> {
   return pending;
 }
 
-const STATE_LABEL: Record<string, string> = { trial: "Percubaan", subscribed: "Aktif", expired: "Tamat", none: "Belum aktif" };
+const STATE_LABEL: Record<string, string> = { trial: "Percubaan aktif", subscribed: "Langganan aktif", expired: "Akses tamat", none: "Belum aktif" };
 
 function daysLeft(endsAt: string | null): number | null {
   if (!endsAt) return null;

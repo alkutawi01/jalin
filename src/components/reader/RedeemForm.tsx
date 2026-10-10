@@ -30,7 +30,7 @@ export default function RedeemForm({ embedded = false }: { embedded?: boolean })
         if (embedded) window.setTimeout(() => window.location.reload(), 900);
         return;
       }
-      setError(String(data.error ?? "Kod tidak dapat ditebus."));
+      setError(String(data.error ?? "Kod tidak dapat ditebus. Semak kod dan nombor batch, jika berkenaan, kemudian cuba lagi."));
     } catch {
       setError("Tiada sambungan. Semak internet anda dan cuba lagi.");
     } finally {
@@ -42,8 +42,8 @@ export default function RedeemForm({ embedded = false }: { embedded?: boolean })
     <div className="auth-card">
       <form onSubmit={submit} noValidate>
         <h1 className="auth-title">Tebus kod langganan</h1>
-        <p className="auth-intro">Kikis pelekat pada kad untuk melihat kod. Nombor batch tercetak di sebelah kod.</p>
-        <label className="auth-label" htmlFor="redeem-code">Kod</label>
+        <p className="auth-intro">Jika menggunakan kad langganan, kikis bahagian yang menutupi kod. Masukkan juga nombor batch yang tercetak pada kad.</p>
+        <label className="auth-label" htmlFor="redeem-code">Kod langganan</label>
         <input id="redeem-code" className="auth-input auth-code auth-code--long" type="text" autoComplete="off" autoCapitalize="characters" spellCheck={false} placeholder="XXXX-XXXX-XXXX-XXXX-X" value={code} onChange={(e) => setCode(e.target.value)} aria-invalid={!!error} aria-describedby={error ? "redeem-error" : undefined} />
         {!looksShared ? (
           <>
@@ -51,7 +51,7 @@ export default function RedeemForm({ embedded = false }: { embedded?: boolean })
             <input id="redeem-batch" className="auth-input" type="text" autoComplete="off" autoCapitalize="characters" spellCheck={false} placeholder="Contoh: B2610-001" value={batch} onChange={(e) => setBatch(e.target.value)} />
           </>
         ) : (
-          <p className="auth-fine">Kod kongsi tidak memerlukan nombor batch.</p>
+          <p className="auth-fine">Jika menggunakan kod kongsi, biarkan ruangan nombor batch kosong.</p>
         )}
         {error ? <p id="redeem-error" className="auth-error" role="alert">{error}</p> : null}
         {done ? <p className="auth-notice auth-notice--ok" role="status">{done}</p> : null}

@@ -85,7 +85,7 @@ export function loginCodeMessage(code: string, ttlMinutes: number): { subject: s
   // Six digits only, so nothing below needs escaping; refuse anything else rather than put it into markup.
   if (!/^\d{6}$/.test(code)) throw new Error("The sign-in code must be six digits.");
   const subject = `Kod log masuk Jalin: ${code}`;
-  const text = `Kod log masuk anda ialah ${code}.\n\nKod ini sah selama ${ttlMinutes} minit dan hanya boleh digunakan sekali. Jangan kongsikan kod ini dengan sesiapa. Jika bukan anda yang meminta, abaikan emel ini.\n\nJalin, oleh Adjung Press`;
+  const text = `Kod log masuk anda ialah ${code}.\n\nKod ini sah selama ${ttlMinutes} minit dan hanya boleh digunakan sekali. Jangan kongsikan kod ini dengan sesiapa. Jika anda tidak meminta kod ini, abaikan e-mel ini. Tiada tindakan lanjut diperlukan.\n\nJalin, oleh Adjung Press`;
   const serif = "Georgia,'Times New Roman',serif";
   const sans = "Arial,Helvetica,sans-serif";
   const html = `<!doctype html><html lang="ms"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><title>${subject}</title></head>
@@ -98,7 +98,7 @@ export function loginCodeMessage(code: string, ttlMinutes: number): { subject: s
 <tr><td align="center" style="padding:0 32px 20px;font-family:${sans};font-size:14px;line-height:1.6;color:#52656a">Masukkan kod ini pada halaman Jalin untuk log masuk atau mendaftar.</td></tr>
 <tr><td align="center" style="padding:0 32px"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="background:#f7ece4;border-radius:10px"><tr><td align="center" style="padding:16px 28px;font-family:'Courier New',Courier,monospace;font-size:34px;font-weight:bold;letter-spacing:10px;color:#18343c">${code}</td></tr></table></td></tr>
 <tr><td align="center" style="padding:20px 32px 8px;font-family:${sans};font-size:14px;line-height:1.6;color:#18343c">Kod ini sah selama <strong>${ttlMinutes} minit</strong> dan hanya boleh digunakan sekali.</td></tr>
-<tr><td align="center" style="padding:0 32px 28px;font-family:${sans};font-size:13px;line-height:1.6;color:#52656a">Jangan kongsikan kod ini dengan sesiapa. Jika bukan anda yang meminta, abaikan emel ini; akaun anda tidak diubah.</td></tr>
+<tr><td align="center" style="padding:0 32px 28px;font-family:${sans};font-size:13px;line-height:1.6;color:#52656a">Jangan kongsikan kod ini dengan sesiapa. Jika anda tidak meminta kod ini, abaikan e-mel ini. Tiada tindakan lanjut diperlukan.</td></tr>
 <tr><td align="center" style="padding:16px 24px;border-top:1px solid #ddd7cc;font-family:${sans};font-size:12px;color:#52656a">Jalin, oleh Adjung Press<br>Selami dunia melalui cerita</td></tr>
 </table></td></tr></table></body></html>`;
   return { subject, text, html };

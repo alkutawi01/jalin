@@ -148,12 +148,12 @@ export default function AccountPanel(props: {
 
       {props.access.state === "trial" ? (
         <p className="auth-trial">
-          Percubaan percuma tamat {formatDate(props.access.currentPeriodEndsAt)}
-          {props.access.endsAt && props.access.endsAt !== props.access.currentPeriodEndsAt ? `. Langganan anda bersambung sehingga ${formatDate(props.access.endsAt)}.` : ""}
+          Percubaan percuma tamat pada {formatDate(props.access.currentPeriodEndsAt)}
+          {props.access.endsAt && props.access.endsAt !== props.access.currentPeriodEndsAt ? `. Akses langganan anda aktif sehingga ${formatDate(props.access.endsAt)}.` : ""}
         </p>
       ) : null}
       {props.access.state === "subscribed" ? <p className="auth-trial">Langganan aktif sehingga {formatDate(props.access.endsAt)}</p> : null}
-      {props.access.state === "expired" ? <p className="auth-trial auth-trial--ended">Akses anda tamat pada {formatDate(props.access.endsAt)}</p> : null}
+      {props.access.state === "expired" ? <p className="auth-trial auth-trial--ended">Akses membaca anda telah tamat pada {formatDate(props.access.endsAt)}.</p> : null}
       {props.access.state === "none" ? <p className="auth-trial auth-trial--ended">Anda belum mempunyai akses membaca.</p> : null}
       {props.trialAvailable ? (
         <button type="button" className="auth-button auth-trial-start" disabled={busy} onClick={startTrial}>Mulakan percubaan percuma 14 hari</button>
@@ -172,7 +172,7 @@ export default function AccountPanel(props: {
 
       <h2 className="auth-subtitle" id="bacaan">Bacaan saya</h2>
       {reading.length === 0 ? (
-        <p className="auth-fine">Karya yang anda buka akan muncul di sini, supaya anda boleh menyambung dari tempat berhenti.</p>
+        <p className="auth-fine">Karya dan bab yang anda buka akan muncul di sini supaya mudah untuk menyambung bacaan.</p>
       ) : (
         <>
           <ul className="auth-reading">
@@ -224,14 +224,14 @@ export default function AccountPanel(props: {
         </span>
       </div>
       <div className="auth-preview" style={previewStyle} aria-label="Contoh teks dengan tetapan ini">
-        <p>Hujan turun perlahan sepanjang petang itu. Aina menutup buku, dan mendengar bunyi titik di atas bumbung.</p>
+        <p>Hujan turun perlahan sepanjang petang itu. Aina menutup buku lalu mendengar titisan hujan di atas bumbung.</p>
       </div>
-      <p className="auth-fine">Tetapan disimpan pada akaun anda dan dipakai pada teks karya setiap kali anda membaca, pada peranti mana pun.</p>
+      <p className="auth-fine">Tetapan bacaan disimpan dalam akaun dan digunakan apabila anda membaca karya pada mana-mana peranti.</p>
 
       <h2 className="auth-subtitle">Peranti ({devices.length} daripada 2)</h2>
       {devices.map((device) => (
         <div className="auth-row" key={device.id}>
-          <span>{device.label}{device.id === props.thisDeviceId ? " (ini)" : ""}</span>
+          <span>{device.label}{device.id === props.thisDeviceId ? " · Peranti ini" : ""}</span>
           {device.id === props.thisDeviceId ? <span /> : <button type="button" className="auth-link" disabled={busy} onClick={() => removeDevice(device.id)}>Keluarkan</button>}
         </div>
       ))}
@@ -240,7 +240,7 @@ export default function AccountPanel(props: {
       {message ? <p className="auth-notice" role="status">{message}</p> : null}
 
       <div className="auth-actions">
-        <button type="button" className="auth-button auth-button--ghost" disabled={busy} onClick={() => signOut("/api/akaun/keluar")}>Log keluar</button>
+        <button type="button" className="auth-button auth-button--ghost" disabled={busy} onClick={() => signOut("/api/akaun/keluar")}>Log keluar daripada peranti ini</button>
         <button type="button" className="auth-button auth-button--ghost" disabled={busy} onClick={() => signOut("/api/akaun/keluar-semua")}>Keluar dari semua peranti</button>
       </div>
 
@@ -248,7 +248,10 @@ export default function AccountPanel(props: {
       {confirmingDelete ? (
         <div className="auth-danger" role="alertdialog" aria-labelledby="padam-title">
           <p id="padam-title"><strong>Padam akaun ini?</strong></p>
-          <p className="auth-fine">E-mel, nama, tetapan dan senarai bacaan anda dipadam, dan semua peranti dilog keluar. Tindakan ini tidak boleh dibatalkan.{props.access.state === "trial" || props.access.state === "subscribed" ? ` Anda juga akan kehilangan baki akses bacaan yang masih aktif (sehingga ${formatDate(props.access.endsAt)}), tanpa bayaran balik automatik, tertakluk kepada hak anda di bawah undang-undang.` : ""} Percubaan percuma tidak diberi lagi kepada e-mel yang sama.</p>
+          <p className="auth-fine">E-mel, nama, tetapan bacaan dan senarai Bacaan saya akan dipadamkan. Anda juga akan dilog keluar daripada semua peranti.</p>
+          <p className="auth-fine">Tindakan ini tidak boleh dibatalkan dan akaun tidak boleh dipulihkan.</p>
+          {props.access.state === "trial" || props.access.state === "subscribed" ? <p className="auth-fine">Anda masih mempunyai akses bacaan aktif sehingga {formatDate(props.access.endsAt)}. Baki akses itu akan hilang. Tiada bayaran balik automatik, tertakluk kepada hak anda di bawah undang-undang.</p> : null}
+          <p className="auth-fine">Percubaan percuma tidak boleh diaktifkan semula menggunakan e-mel yang sama.</p>
           <div className="auth-actions">
             <button type="button" className="auth-button" disabled={busy} onClick={deleteAccount}>Ya, padam akaun saya</button>
             <button type="button" className="auth-button auth-button--ghost" disabled={busy} onClick={() => setConfirmingDelete(false)}>Batal</button>

@@ -39,13 +39,13 @@ export default function LockedWork({
           hero={hero?.src ? { src: hero.src, alt: hero.alt ?? "", rights, crop: hero.crop } : undefined}
         />
         <section className="site-shell lock-panel" aria-labelledby="lock-title">
-          <h2 id="lock-title">{gate === "sign_in" ? "Cerita ini untuk pembaca yang log masuk" : gate === "start_trial" ? "Mulakan percubaan percuma untuk membaca" : "Akses anda belum aktif"}</h2>
+          <h2 id="lock-title">{gate === "sign_in" ? "Log masuk untuk membaca cerita ini" : gate === "start_trial" ? "Mulakan percubaan percuma untuk membaca" : "Akses anda belum aktif"}</h2>
           <p>
             {gate === "sign_in"
-              ? "Log masuk dengan e-mel sahaja, tiada kata laluan. Pembaca baharu boleh memulakan percubaan percuma 14 hari."
+              ? "Log masuk menggunakan e-mel tanpa kata laluan. Pembaca yang layak boleh mengaktifkan percubaan percuma selama 14 hari."
               : gate === "start_trial"
                 ? "Percubaan percuma 14 hari membolehkan anda membaca semua cerita di Jalin."
-                : "Tebus kod langganan daripada kad untuk terus membaca."}
+                : "Tebus kod langganan untuk meneruskan bacaan."}
           </p>
           <LockDialog gate={gate} next={next} email={email} />
           <p className="lock-fine">
