@@ -14,7 +14,7 @@ import { projectPublicWorkSummary, type PublicWorkSummary } from "../../lib/read
 import { computeSiteStats, statItems } from "../../lib/reader/site-stats";
 import { visibleSampleCount } from "../../lib/reader/sample-count";
 import { getWall } from "../../lib/reader/start-wall";
-import { readerAccountsEnabled } from "../../lib/reader-auth/enabled";
+import { accountsPageMetadata, readerAccountsEnabled } from "../../lib/reader-auth/enabled";
 import { currentReaderSession } from "../../lib/reader-auth/server";
 import { sampleSlugs } from "../../lib/reader-auth/switches";
 import { homeGrounds } from "../../lib/site-theme";
@@ -24,7 +24,11 @@ export const dynamic = "force-dynamic";
 
 const DESCRIPTION = "Cerpen, novela dan cerita bersiri berilustrasi dalam Bahasa Melayu. Log masuk dengan e-mel dan mulakan percubaan percuma 14 hari.";
 
-export const metadata: Metadata = {
+export function generateMetadata(): Metadata {
+  return accountsPageMetadata(META);
+}
+
+const META: Metadata = {
   title: "Mula membaca",
   description: DESCRIPTION,
   alternates: { canonical: "/mula" },

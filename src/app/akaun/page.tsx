@@ -4,6 +4,7 @@ import { SiteFooter, SiteHeader } from "../../components/reader/StoryChrome";
 import AccountPanel from "../../components/reader/AccountPanel";
 import { getDb } from "../../lib/db";
 import { macKey, readerAccountsEnabled } from "../../lib/reader-auth/http";
+import { accountsPageMetadata } from "../../lib/reader-auth/enabled";
 import { currentReaderSession } from "../../lib/reader-auth/server";
 import { canStartTrial, getPrefs, listDevices } from "../../lib/reader-auth/service";
 import { getAccess, listLedger } from "../../lib/reader-auth/entitlements";
@@ -12,10 +13,9 @@ import { initContentRepository } from "../../lib/content";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Akaun saya",
-  robots: { index: false, follow: false },
-};
+export function generateMetadata(): Metadata {
+  return accountsPageMetadata({ title: "Akaun saya", robots: { index: false, follow: false } });
+}
 
 export default async function AccountPage() {
   if (!readerAccountsEnabled()) notFound();

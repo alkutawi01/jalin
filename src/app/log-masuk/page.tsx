@@ -3,15 +3,15 @@ import { notFound, redirect } from "next/navigation";
 import { SiteFooter, SiteHeader } from "../../components/reader/StoryChrome";
 import LoginForm from "../../components/reader/LoginForm";
 import { readerAccountsEnabled } from "../../lib/reader-auth/http";
+import { accountsPageMetadata } from "../../lib/reader-auth/enabled";
 import { currentReaderSession } from "../../lib/reader-auth/server";
 import { safeNextPath } from "../../lib/reader-auth/next-path";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Log masuk atau daftar",
-  robots: { index: false, follow: false },
-};
+export function generateMetadata(): Metadata {
+  return accountsPageMetadata({ title: "Log masuk atau daftar", robots: { index: false, follow: false } });
+}
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string | string[]; padam?: string }> }) {
   if (!readerAccountsEnabled()) notFound();

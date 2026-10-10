@@ -3,14 +3,14 @@ import { notFound, redirect } from "next/navigation";
 import { SiteFooter, SiteHeader } from "../../components/reader/StoryChrome";
 import RedeemForm from "../../components/reader/RedeemForm";
 import { readerAccountsEnabled } from "../../lib/reader-auth/http";
+import { accountsPageMetadata } from "../../lib/reader-auth/enabled";
 import { currentReaderSession } from "../../lib/reader-auth/server";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Tebus kod langganan",
-  robots: { index: false, follow: false },
-};
+export function generateMetadata(): Metadata {
+  return accountsPageMetadata({ title: "Tebus kod langganan", robots: { index: false, follow: false } });
+}
 
 export default async function RedeemPage() {
   if (!readerAccountsEnabled()) notFound();
