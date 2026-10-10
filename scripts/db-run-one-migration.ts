@@ -3,13 +3,14 @@
  *
  * `npm run db:schema:migrate` applies every migration file in the folder, so a migration someone else has written but not shipped yet
  * would go to the database too. This runs only the one named, for the case where just that one is wanted on a database (the production
- * rollout of an additive migration). The migration must be idempotent (all of them are): the next `db:schema:migrate` finds it unrecorded
+ * rollout of an additive migration). It prints the host it is about to change, so the editor can see which database that is. The migration must be idempotent (all of them are): the next `db:schema:migrate` finds it unrecorded
  * in the ledger, runs it again as a no-op and records it. Like every database command here it uses the direct (unpooled) address and
  * refuses a database that is not the development branch unless ALLOW_NON_DEV_DATABASE=yes is set for this one command.
  */
 import "dotenv/config";
 import { config } from "dotenv";
-config({ path: ".env.local", override: true });
+// No override: a DATABASE_URL_UNPOOLED set in the shell for this one command wins over .env.local (which holds the development branch).
+config({ path: ".env.local", override: false });
 import path from "node:path";
 import { Kysely, PostgresDialect } from "kysely";
 import { Pool } from "pg";
@@ -22,7 +23,15 @@ if (!/^\d{3}_[a-z0-9_]+$/.test(name)) {
 }
 
 async function main() {
-  const pool = new Pool({ connectionString: requireMigrationDatabaseUrl(), ssl: databaseSslEnabled() ? { rejectUnauthorized: false } : false, max: 1 });
+  const url = requireMigrationDatabaseUrl();
+  let host = "?";
+  try {
+    host = new URL(url).hostname;
+  } catch {
+    throw new Error("DATABASE_URL_UNPOOLED is not a valid address (did you paste a placeholder?).");
+  }
+  console.log(`Database host: ${host}`);
+  const pool = new Pool({ connectionString: url, ssl: databaseSslEnabled() ? { rejectUnauthorized: false } : false, max: 1 });
   const db = new Kysely<unknown>({ dialect: new PostgresDialect({ pool }) });
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
