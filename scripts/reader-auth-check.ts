@@ -14,6 +14,7 @@ import {
   requestLoginCode,
   signOut,
   signOutEverywhere,
+  startTrial,
   verifyLoginCode,
   type Db,
 } from "../src/lib/reader-auth/service";
@@ -75,11 +76,20 @@ async function main() {
       const afterFive = await verifyLoginCode(trx, { key, now: at(2.4) }, { email: "aina@contoh.my", code: sent[1].code, ipMac: IP });
       assert(afterFive.status === "invalid", "after five wrong tries even the right code no longer works");
 
-      // A good sign-in creates the account and the trial.
+      // A good sign-in creates the account, with no access yet; the trial is a step the reader chooses.
       const a = await signIn(trx, "aina@contoh.my", 10, { label: "Telefon Aina" });
       assert(a.ver.status === "ok" && a.ver.isNewAccount, "the right code signs in and creates the account", a.ver);
       if (a.ver.status !== "ok") throw new Error("cannot continue");
-      assert(a.ver.trialEndsAt !== null && a.ver.trialEndsAt.getTime() === at(10.1).getTime() + 14 * 24 * 3600 * 1000, "the new account gets a trial of 14 days from now");
+      assert(a.ver.trialEndsAt === null, "a new account has no trial until its reader starts it");
+      const noAccess = await trx.selectFrom("entitlements").select("id").where("account_id", "=", a.ver.accountId).execute();
+      assert(noAccess.length === 0, "and nothing is in the access ledger yet");
+      const t1 = await startTrial(trx, { key, now: at(10.5) }, a.ver.accountId);
+      assert(t1.status === "ok" && t1.endsAt.getTime() === at(10.5).getTime() + 14 * 24 * 3600 * 1000, "starting the trial gives 14 days from that moment");
+      const t2 = await startTrial(trx, { key, now: at(11) }, a.ver.accountId);
+      assert(t2.status === "already" && t2.endsAt?.getTime() === (t1.status === "ok" ? t1.endsAt.getTime() : 0), "pressing it again changes nothing");
+      const ledgerRows = await trx.selectFrom("entitlements").select(["kind"]).where("account_id", "=", a.ver.accountId).execute();
+      assert(ledgerRows.length === 1 && ledgerRows[0].kind === "TRIAL", "exactly one trial period is in the ledger");
+      assert((await startTrial(trx, { key, now: at(11) }, "00000000-0000-0000-0000-000000000000")).status === "no_account", "an account that does not exist cannot start a trial");
       const session = await getSession(trx, a.ver.token, at(11));
       assert(session?.account.email === "aina@contoh.my" && session.device.label === "Telefon Aina", "the cookie token finds the account and device");
       assert((await getSession(trx, a.ver.token + "x", at(11))) === null && (await getSession(trx, "", at(11))) === null, "a wrong or empty token finds nothing");
@@ -115,7 +125,9 @@ async function main() {
       // The trial is given once, even after deleting the account.
       await trx.updateTable("reader_accounts").set({ status: "deleted" }).where("id", "=", a.ver.accountId).execute();
       const back = await signIn(trx, "aina@contoh.my", 60);
-      assert(back.ver.status === "ok" && back.ver.isNewAccount && back.ver.trialEndsAt === null, "registering again after deleting gets no second trial");
+      assert(back.ver.status === "ok" && back.ver.isNewAccount && back.ver.trialEndsAt === null, "registering again after deleting starts clean");
+      if (back.ver.status !== "ok") throw new Error("cannot continue");
+      assert((await startTrial(trx, { key, now: at(61) }, back.ver.accountId)).status === "used", "and gets no second trial: the address has used it");
 
       // One address: five codes an hour.
       let hourly = -1;

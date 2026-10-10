@@ -31,6 +31,8 @@ export default function AccountPanel(props: {
   thisDeviceId: string;
   devices: Device[];
   prefs: Prefs;
+  /** The trial has not been started on this account and this address has not used it. */
+  trialAvailable?: boolean;
 }) {
   const [name, setName] = useState(props.displayName ?? "");
   const [savedName, setSavedName] = useState(props.displayName ?? "");
@@ -76,6 +78,13 @@ export default function AccountPanel(props: {
     setMessage("Peranti dikeluarkan.");
   }
 
+  async function startTrial() {
+    setBusy(true); setError(""); setMessage("");
+    const { ok, data } = await call("/api/akaun/percubaan", "POST", {});
+    if (!ok) { setBusy(false); setError(String(data.error ?? "Percubaan tidak dapat dimulakan.")); return; }
+    window.location.reload();
+  }
+
   async function signOut(path: string) {
     setBusy(true);
     await call(path, "POST", {});
@@ -105,6 +114,10 @@ export default function AccountPanel(props: {
       ) : null}
       {props.access.state === "subscribed" ? <p className="auth-trial">Langganan aktif sehingga {formatDate(props.access.endsAt)}</p> : null}
       {props.access.state === "expired" ? <p className="auth-trial auth-trial--ended">Akses anda tamat pada {formatDate(props.access.endsAt)}</p> : null}
+      {props.access.state === "none" ? <p className="auth-trial auth-trial--ended">Anda belum mempunyai akses membaca.</p> : null}
+      {props.trialAvailable ? (
+        <button type="button" className="auth-button auth-trial-start" disabled={busy} onClick={startTrial}>Mulakan percubaan percuma 14 hari</button>
+      ) : null}
       <a className="auth-button auth-button--ghost auth-redeem-link" href="/tebus">Tebus kod langganan</a>
 
       <div className="auth-row">

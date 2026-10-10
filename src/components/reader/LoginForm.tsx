@@ -20,7 +20,7 @@ function formatSeen(iso: string): string {
 }
 
 /** Sign in or register with one form: an e-mail, then the six-digit code, then (only if two devices are already signed in) which one to remove. */
-export default function LoginForm() {
+export default function LoginForm({ next = "/akaun" }: { next?: string }) {
   const [step, setStep] = useState<Step>("email");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
@@ -81,7 +81,7 @@ export default function LoginForm() {
         return;
       }
       if (ok && data.ok) {
-        window.location.href = "/akaun";
+        window.location.href = next;
         return;
       }
       setError(status === 429 ? "Terlalu banyak cubaan. Cuba lagi kemudian." : String(data.error ?? "Kod tidak betul atau sudah tamat."));
@@ -102,7 +102,7 @@ export default function LoginForm() {
           <input id="auth-email" className="auth-input" type="email" inputMode="email" autoComplete="email" placeholder="nama@contoh.my" value={email} onChange={(e) => setEmail(e.target.value)} aria-invalid={!!error} aria-describedby={error ? "auth-error" : undefined} />
           {error ? <p id="auth-error" className="auth-error" role="alert">{error}</p> : null}
           <button className="auth-button" type="submit" disabled={busy}>{busy ? "Menghantar…" : "Hantar kod"}</button>
-          <p className="auth-fine">Akaun baharu mendapat percubaan 14 hari.</p>
+          <p className="auth-fine">Selepas log masuk, anda boleh memulakan percubaan percuma 14 hari.</p>
         </form>
       ) : null}
 

@@ -4,8 +4,9 @@
  * against a real database inside a transaction that is rolled back.
  *
  * Rules in short: a code is six digits, valid 5 minutes, used once, at most 5 wrong tries. The answer to "send me a code" is the
- * same whether or not the address has an account. A new address becomes an account on its first correct code and gets a 14-day
- * trial once, ever. An account keeps at most two signed-in devices; a third sign-in must name one to replace.
+ * same whether or not the address has an account. A new address becomes an account on its first correct code, with NO access yet.
+ * The 14-day trial is a separate step the reader chooses (startTrial), given once per address, ever. An account keeps at most two
+ * signed-in devices; a third sign-in must name one to replace.
  */
 import type { Kysely, Transaction } from "kysely";
 import { sql } from "kysely";
@@ -200,29 +201,13 @@ export async function verifyLoginCode(
 
     let isNewAccount = false;
     if (!account) {
-      const trialMac = trialClaimMac(deps.key, email);
-      const claim = await trx
-        .insertInto("reader_trial_claims")
-        .values({ email_mac: trialMac, key_id: deps.key.keyId, claimed_at: now })
-        .onConflict((oc) => oc.column("email_mac").doNothing())
-        .returning("email_mac")
-        .executeTakeFirst();
-      const trialStarts = claim ? now : null;
-      const trialEnds = claim ? new Date(now.getTime() + TRIAL_DAYS * DAY_MS) : null;
+      // A new account has no access at all until its reader starts the trial (startTrial) or redeems a code.
       account = await trx
         .insertInto("reader_accounts")
-        .values({
-          email: input.email.trim(),
-          email_normalized: email,
-          email_verified_at: now,
-          trial_starts_at: trialStarts,
-          trial_ends_at: trialEnds,
-          created_at: now,
-        })
+        .values({ email: input.email.trim(), email_normalized: email, email_verified_at: now, created_at: now })
         .returningAll()
         .executeTakeFirstOrThrow();
       isNewAccount = true;
-      if (trialStarts && trialEnds) await addTrial(trx, account.id, trialStarts, trialEnds);
     }
 
     const active = await trx
@@ -268,6 +253,45 @@ export async function verifyLoginCode(
 
     return { status: "ok", token, accountId: account.id, deviceId: device.id, isNewAccount, trialEndsAt: account.trial_ends_at };
   });
+}
+
+export type StartTrialResult =
+  | { status: "ok"; startsAt: Date; endsAt: Date }
+  | { status: "already"; startsAt: Date | null; endsAt: Date | null }
+  | { status: "used" }
+  | { status: "no_account" };
+
+/**
+ * Start the 14-day trial of this account, when its reader chooses to. Given once per address, for good: the claim is kept as a keyed
+ * hash that survives deleting the account, so signing up again with the same address does not give a second trial. The account row
+ * is locked, so two presses at once give one trial.
+ */
+export async function startTrial(db: Db, deps: { key: MacKey; now?: Date }, accountId: string): Promise<StartTrialResult> {
+  const now = deps.now ?? new Date();
+  return inTransaction(db, async (trx): Promise<StartTrialResult> => {
+    const account = await trx.selectFrom("reader_accounts").selectAll().where("id", "=", accountId).where("status", "<>", "deleted").forUpdate().executeTakeFirst();
+    if (!account) return { status: "no_account" };
+    if (account.trial_starts_at) return { status: "already", startsAt: account.trial_starts_at, endsAt: account.trial_ends_at };
+    const claim = await trx
+      .insertInto("reader_trial_claims")
+      .values({ email_mac: trialClaimMac(deps.key, account.email_normalized), key_id: deps.key.keyId, claimed_at: now })
+      .onConflict((oc) => oc.column("email_mac").doNothing())
+      .returning("email_mac")
+      .executeTakeFirst();
+    if (!claim) return { status: "used" };
+    const endsAt = new Date(now.getTime() + TRIAL_DAYS * DAY_MS);
+    await trx.updateTable("reader_accounts").set({ trial_starts_at: now, trial_ends_at: endsAt }).where("id", "=", accountId).execute();
+    await addTrial(trx, accountId, now, endsAt);
+    return { status: "ok", startsAt: now, endsAt };
+  });
+}
+
+/** Whether the trial can still be started from this account (never started on it, and not already taken by this address). */
+export async function canStartTrial(db: Db, deps: { key: MacKey }, accountId: string): Promise<boolean> {
+  const account = await db.selectFrom("reader_accounts").select(["trial_starts_at", "email_normalized"]).where("id", "=", accountId).where("status", "<>", "deleted").executeTakeFirst();
+  if (!account || account.trial_starts_at) return false;
+  const claim = await db.selectFrom("reader_trial_claims").select("email_mac").where("email_mac", "=", trialClaimMac(deps.key, account.email_normalized)).executeTakeFirst();
+  return !claim;
 }
 
 export type SessionInfo = {

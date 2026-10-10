@@ -3,9 +3,9 @@ import { notFound, redirect } from "next/navigation";
 import { SiteFooter, SiteHeader } from "../../components/reader/StoryChrome";
 import AccountPanel from "../../components/reader/AccountPanel";
 import { getDb } from "../../lib/db";
-import { readerAccountsEnabled } from "../../lib/reader-auth/http";
+import { macKey, readerAccountsEnabled } from "../../lib/reader-auth/http";
 import { currentReaderSession } from "../../lib/reader-auth/server";
-import { getPrefs, listDevices } from "../../lib/reader-auth/service";
+import { canStartTrial, getPrefs, listDevices } from "../../lib/reader-auth/service";
 import { getAccess } from "../../lib/reader-auth/entitlements";
 
 export const dynamic = "force-dynamic";
@@ -20,7 +20,12 @@ export default async function AccountPage() {
   const session = await currentReaderSession();
   if (!session) redirect("/log-masuk");
   const db = getDb();
-  const [devices, prefs, access] = await Promise.all([listDevices(db, session.account.id), getPrefs(db, session.account.id), getAccess(db, session.account.id)]);
+  const [devices, prefs, access, trialAvailable] = await Promise.all([
+    listDevices(db, session.account.id),
+    getPrefs(db, session.account.id),
+    getAccess(db, session.account.id),
+    canStartTrial(db, { key: macKey() }, session.account.id),
+  ]);
   return (
     <>
       <SiteHeader />
@@ -33,6 +38,7 @@ export default async function AccountPage() {
             thisDeviceId={session.device.id}
             devices={devices.map((d) => ({ id: d.id, label: d.label, lastSeenAt: d.lastSeenAt.toISOString() }))}
             prefs={prefs}
+            trialAvailable={trialAvailable}
           />
         </div>
       </main>

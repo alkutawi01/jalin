@@ -148,9 +148,20 @@ async function main() {
     const wrong = await A.req("/api/akaun/sahkan", { method: "POST", body: { email: emailA, code: code1 === "000000" ? "000001" : "000000" } });
     assert(wrong.status === 400 && !A.jar["jalin-reader"], "a wrong code is refused and sets no cookie");
     const good = await A.req("/api/akaun/sahkan", { method: "POST", body: { email: emailA, code: code1, label: "Telefon Aina" } });
-    assert(good.status === 200 && good.json?.isNewAccount === true && !!good.json?.trialEndsAt, "the right code registers the account with a trial");
-    const trialDays = (new Date(good.json.trialEndsAt).getTime() - Date.now()) / 86400000;
+    assert(good.status === 200 && good.json?.isNewAccount === true && !good.json?.trialEndsAt, "the right code registers the account with no trial yet");
+    assert((await A.req("/api/akaun/saya")).json?.access?.state === "none", "a new account has no access");
+    const beforeTrial = await new Device("anon").req("/api/akaun/percubaan", { method: "POST", body: {} });
+    assert(beforeTrial.status === 401, "a visitor cannot start a trial");
+    const crossSite = await A.req("/api/akaun/percubaan", { method: "POST", body: {}, origin: "https://contoh.invalid" });
+    assert(crossSite.status === 403, "a trial cannot be started from another site");
+    const started = await A.req("/api/akaun/percubaan", { method: "POST", body: {} });
+    assert(started.status === 200 && started.json?.ok === true && !!started.json?.endsAt, "the reader starts the trial");
+    good.json.trialEndsAt = started.json.endsAt;
+    const trialDays = (new Date(started.json.endsAt).getTime() - Date.now()) / 86400000;
     assert(trialDays > 13.9 && trialDays < 14.1, "the trial is 14 days", trialDays);
+    const startedAgain = await A.req("/api/akaun/percubaan", { method: "POST", body: {} });
+    assert(startedAgain.status === 200 && startedAgain.json?.repeat === true && startedAgain.json?.endsAt === started.json.endsAt, "starting it again changes nothing");
+    assert((await A.req("/api/akaun/saya")).json?.access?.state === "trial", "and the account is now in trial");
     const cookie = good.setCookies.find((c) => c.startsWith("jalin-reader="))!;
     assert(!!cookie && /HttpOnly/i.test(cookie) && /SameSite=lax/i.test(cookie) && /Path=\//i.test(cookie) && !/Domain=/i.test(cookie), "the cookie is HttpOnly, SameSite=Lax, Path=/, with no Domain", cookie);
     const acct = await sql<{ id: string }>`SELECT id FROM reader_accounts WHERE email_normalized = ${emailA} AND status <> 'deleted'`.execute(db);
@@ -291,8 +302,11 @@ async function main() {
     const G = new Device("Pembaca langganan");
     const gsign = await signIn(G, "e2e-langgan@e2e.invalid");
     const gAcc = await sql<{ id: string }>`SELECT id FROM reader_accounts WHERE email_normalized = 'e2e-langgan@e2e.invalid'`.execute(db);
+    const noneView = await G.req("/akaun");
+    assert(gsign.verified?.status === 200 && (await G.req("/api/akaun/saya")).json.access.state === "none" && noneView.text.includes("Mulakan percubaan percuma"), "a new reader is shown without access and offered the trial");
+    assert((await G.req("/api/akaun/percubaan", { method: "POST", body: {} })).status === 200, "the trial is started from the account");
     const trialView = await G.req("/akaun");
-    assert(gsign.verified?.status === 200 && (await G.req("/api/akaun/saya")).json.access.state === "trial" && trialView.text.includes("Percubaan percuma tamat"), "a new reader is shown as in trial with the date");
+    assert((await G.req("/api/akaun/saya")).json.access.state === "trial" && trialView.text.includes("Percubaan percuma tamat"), "the reader is then shown as in trial with the date");
     const given = await addGrant(db, { accountId: gAcc.rows[0].id, kind: "ADMIN", grant: { unit: "months", amount: 6 }, reason: "e2e", createdBy: "e2e" });
     const afterGrant = await G.req("/api/akaun/saya");
     assert(given.added && afterGrant.json.access.state === "trial" && afterGrant.json.access.endsAt !== afterGrant.json.access.currentPeriodEndsAt && (await G.req("/akaun")).text.includes("bersambung sehingga"), "a grant added during the trial shows as continuing after it");
@@ -303,6 +317,7 @@ async function main() {
     const key = loadCodeKey();
     const R = new Device("Penebus");
     await signIn(R, "e2e-tebus@e2e.invalid");
+    assert((await R.req("/api/akaun/percubaan", { method: "POST", body: {} })).status === 200, "the redeeming reader starts the trial first, so the card is added after it");
     const batchMade = await createBatch(db, { codeKey: key }, { batchNumber: "E2E-001", months: 6, quantity: 3, createdBy: "e2e" });
     await confirmBatchPrinted(db, batchMade.batchId);
     await issueCodes(db, { batchId: batchMade.batchId });
@@ -385,6 +400,7 @@ async function main() {
 
     const X = new Device("Penebus admin");
     await signIn(X, "e2e-admin-tebus@e2e.invalid");
+    await X.req("/api/akaun/percubaan", { method: "POST", body: {} });
     const tryRedeem = (code: string) => X.req("/api/akaun/tebus", { method: "POST", body: { code, batch: "adm-001" } });
     await clearThrottle();
     assert((await tryRedeem(printed[0])).status === 400, "a printed code does not work before the print is confirmed and the codes are switched on");
@@ -459,7 +475,9 @@ async function main() {
     await sql`UPDATE reader_accounts SET status = 'deleted' WHERE email_normalized = ${emailA}`.execute(db);
     const F = new Device("Selepas padam");
     const f = await signIn(F, emailA);
-    assert(f.verified?.status === 200 && f.verified.json?.isNewAccount === true && f.verified.json?.trialEndsAt === null, "registering again after deleting the account gets no second trial");
+    assert(f.verified?.status === 200 && f.verified.json?.isNewAccount === true && f.verified.json?.trialEndsAt === null, "registering again after deleting the account starts clean");
+    const second = await F.req("/api/akaun/percubaan", { method: "POST", body: {} });
+    assert(second.status === 409, "and cannot start a second trial: the address has used it", second.status);
     assert((await F.req("/akaun")).text.includes("Tiada nama"), "and the new account starts clean (no old name)");
 
     // ---------------------------------------------------------------- the database refuses a wrong host
