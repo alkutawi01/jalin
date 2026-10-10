@@ -41,6 +41,21 @@ export function loadCodeKey(env: Record<string, string | undefined> = process.en
   return { keyId, key: Buffer.from(hex, "hex") };
 }
 
+/** Retired card MAC keys remain usable for already printed cards; new cards always use loadCodeKey(). */
+export function loadPreviousCodeKeys(env: Record<string, string | undefined> = process.env): MacKey[] {
+  const current = loadCodeKey(env);
+  const raw = env.CODE_MAC_KEY_PREVIOUS?.trim();
+  if (!raw) return [];
+  const seen = new Set([current.keyId]);
+  return raw.split(",").map((entry) => {
+    const match = /^([^:,\s]+):([0-9a-fA-F]{64})$/.exec(entry.trim());
+    if (!match || seen.has(match[1])) throw new Error("CODE_MAC_KEY_PREVIOUS tidak sah atau ID kunci berganda.");
+    if (env.READER_MAC_KEY?.trim().toLowerCase() === match[2].toLowerCase()) throw new Error("Kunci kad lama mesti berbeza daripada kunci pembaca.");
+    seen.add(match[1]);
+    return { keyId: match[1], key: Buffer.from(match[2], "hex") };
+  });
+}
+
 function mac(key: MacKey, label: string, value: string): string {
   return createHmac("sha256", key.key).update(`jalin-reader-v1:${label}:${value}`).digest("hex");
 }

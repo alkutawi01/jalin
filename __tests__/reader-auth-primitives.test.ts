@@ -1,6 +1,7 @@
 /** Reader sign-in: the pure pieces (addresses, keyed hashes, codes, tokens, mailer choice) and the request helpers. */
 import {
   loadCodeKey,
+  loadPreviousCodeKeys,
   constantTimeEqualHex,
   emailLookupMac,
   generateOtp,
@@ -43,6 +44,9 @@ const codeEnv = { CODE_MAC_KEY_ID: "c1", CODE_MAC_KEY: "cd".repeat(32), READER_M
 assert(loadCodeKey(codeEnv).keyId === "c1" && loadCodeKey(codeEnv).key.length === 32, "a 64-hex code key loads");
 assert(throws(() => loadCodeKey({ CODE_MAC_KEY_ID: "c1", CODE_MAC_KEY: "cd".repeat(16) })) && throws(() => loadCodeKey({ CODE_MAC_KEY: "cd".repeat(32) })) && throws(() => loadCodeKey({})), "a short code key, a missing id or no key is refused");
 assert(throws(() => loadCodeKey({ CODE_MAC_KEY_ID: "c1", CODE_MAC_KEY: hex, READER_MAC_KEY: hex.toUpperCase() })), "the code key must differ from the sign-in key");
+const retired = loadPreviousCodeKeys({ ...codeEnv, CODE_MAC_KEY_PREVIOUS: `lama:${"ef".repeat(32)},lebih_lama:${"12".repeat(32)}` });
+assert(retired.length === 2 && retired[0].keyId === "lama" && retired[1].keyId === "lebih_lama", "retired card keys load in declared order");
+assert(throws(() => loadPreviousCodeKeys({ ...codeEnv, CODE_MAC_KEY_PREVIOUS: `c1:${"ef".repeat(32)}` })) && throws(() => loadPreviousCodeKeys({ ...codeEnv, CODE_MAC_KEY_PREVIOUS: "lama:not-hex" })), "a duplicate ID or malformed retired card key is refused");
 const other = loadMacKey({ READER_MAC_KEY_ID: "k2", READER_MAC_KEY: "cd".repeat(32) });
 assert(emailLookupMac(key, "a@b.my") === emailLookupMac(key, "a@b.my") && emailLookupMac(key, "a@b.my") !== emailLookupMac(other, "a@b.my"), "a keyed hash is stable and depends on the key");
 assert(new Set([emailLookupMac(key, "a@b.my"), trialClaimMac(key, "a@b.my"), ipMac(key, "a@b.my")]).size === 3, "the same text hashes differently for different purposes");

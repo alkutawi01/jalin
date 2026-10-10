@@ -6,7 +6,7 @@ import { NextResponse } from "next/server";
 import { getDb } from "../db";
 import { readerAccountsEnabled } from "./enabled";
 import { getSession, type SessionInfo } from "./service";
-import { ipMac, loadCodeKey, loadMacKey, selectMailer, type MacKey, type Mailer } from "./primitives";
+import { ipMac, loadCodeKey, loadMacKey, loadPreviousCodeKeys, selectMailer, type MacKey, type Mailer } from "./primitives";
 
 export { readerAccountsEnabled };
 
@@ -62,6 +62,10 @@ export function macKey(): MacKey {
 let cachedCodeKey: MacKey | null = null;
 export function codeKey(): MacKey {
   return (cachedCodeKey ??= loadCodeKey());
+}
+let cachedPreviousCodeKeys: MacKey[] | null = null;
+export function previousCodeKeys(): MacKey[] {
+  return (cachedPreviousCodeKeys ??= loadPreviousCodeKeys());
 }
 let cachedMailer: Mailer | null = null;
 export function mailer(): Mailer {

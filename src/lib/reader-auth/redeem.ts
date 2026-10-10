@@ -231,7 +231,7 @@ export type RedeemResult =
   | { status: "throttled" }
   | { status: "halted" };
 
-type Deps = { codeKey: MacKey; now?: Date; limits?: Partial<RedeemLimitSettings> };
+type Deps = { codeKey: MacKey; previousCodeKeys?: MacKey[]; now?: Date; limits?: Partial<RedeemLimitSettings> };
 type Input = { accountId: string; ipMac: string; code: string; batch?: string };
 
 async function fail(trx: Db, accountId: string, ipMac: string, now: Date): Promise<RedeemResult> {
@@ -266,15 +266,19 @@ async function redeemCard(trx: Db, deps: Deps, input: Input, now: Date): Promise
   const batch = normaliseBatch(input.batch ?? "");
   if (!parsed.ok || !batch) return fail(trx, input.accountId, input.ipMac, now);
 
-  const mac = computeCodeMac(deps.codeKey.key, batch, parsed.canonical);
-  const code = await trx
-    .selectFrom("redeem_codes as c")
-    .innerJoin("code_batches as b", "b.id", "c.batch_id")
-    .select(["c.id", "c.state", "c.serial", "b.months", "b.status as batch_status"])
-    .where("c.key_id", "=", deps.codeKey.keyId)
-    .where("c.code_mac", "=", mac)
-    .forUpdate("c")
-    .executeTakeFirst();
+  let code: { id: string; state: "generated" | "issued" | "revoked"; serial: string; months: number; batch_status: "PENDING_PRINT" | "PRINT_CONFIRMED" | "VOIDED" } | undefined;
+  for (const key of [deps.codeKey, ...(deps.previousCodeKeys ?? [])]) {
+    const mac = computeCodeMac(key.key, batch, parsed.canonical);
+    code = await trx
+      .selectFrom("redeem_codes as c")
+      .innerJoin("code_batches as b", "b.id", "c.batch_id")
+      .select(["c.id", "c.state", "c.serial", "b.months", "b.status as batch_status"])
+      .where("c.key_id", "=", key.keyId)
+      .where("c.code_mac", "=", mac)
+      .forUpdate("c")
+      .executeTakeFirst();
+    if (code) break;
+  }
   if (!code || code.state !== "issued" || code.batch_status !== "PRINT_CONFIRMED") {
     // A code that was issued and used is told apart only for the reader who used it (below); everyone else sees the same refusal.
     if (code) {
