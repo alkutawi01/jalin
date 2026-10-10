@@ -3889,3 +3889,7 @@ html:has(.a-nav, .admin-login-page) { overflow: visible; }
   .site-shell { width: calc(100% - 56px); max-width: none; }
   .reading-grid { grid-template-columns: minmax(0, 700px) 160px; column-gap: 28px; }
 }
+
+/* Log masuk: the "E-mel" label sits at the left edge of the box (the dialog centres its text, which pulled the label to the middle), and the address typed in the box is centred. */
+.auth-label { text-align: left; }
+.auth-input[type="email"], .auth-input[type="email"]::placeholder { text-align: center; }
