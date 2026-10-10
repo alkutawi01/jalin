@@ -19,7 +19,9 @@ export function WorkCover({ type, title, hero, sizes = "(max-width: 640px) 50vw,
     >
       {hero?.src ? (
         <>
-          <Image src={hero.src} alt={hero.alt} fill sizes={sizes} quality={quality} style={cropStyle(hero.crop)} />
+          {/* A cover only ever sits inside a link that already names the work (title, author, summary). A scene description as alt text
+              would be read first in that link name, 80 to 230 characters, so the cover is decorative here; the full alt stays on the work page. */}
+          <Image src={hero.src} alt="" fill sizes={sizes} quality={quality} style={cropStyle(hero.crop)} />
           {rightsYear ? (
             <div className="image-rights" aria-hidden="true">{`© ADJUNG ${rightsYear}`}</div>
           ) : null}

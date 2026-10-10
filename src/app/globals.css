@@ -1219,7 +1219,13 @@ dd { margin: 0; color: var(--ink); text-align: left; }
     border-bottom: 1px solid rgba(24,52,60,.08);
   }
 
+  /* Exactly four tabs (Karya, Watak, Penyuntingan, Bab) in three columns left "Bab" alone on a second row; two by two is even. With five
+     (a setting tab too) three plus two is already even, so the rule stops at four. The buttons are 44px tall for a finger (they were 35px). */
+  .sheet-tabs:has(> button:nth-child(4)):not(:has(> button:nth-child(5))) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
   .sheet-tabs button {
+    box-sizing: border-box;
+    min-height: 44px;
     border: 0;
     border-radius: 999px;
     padding: 10px 8px;
@@ -1277,6 +1283,11 @@ dd { margin: 0; color: var(--ink); text-align: left; }
     padding-top: 18px;
     border-top: 1px solid rgba(24,52,60,.08);
   }
+
+  /* The chapter list of the sheet: each link was 19px tall with a 20px gap, a row of small targets under a thumb. The rows are 44px
+     with no gap, so the list is as dense as before in pitch (44 against 39), and the sheet still fits its 640px limit for ten chapters. */
+  #sheet-panel-bab { gap: 0; }
+  #sheet-panel-bab a { display: flex; align-items: center; min-height: 44px; }
 
   .image-rights {
     right: 6px;
@@ -2982,7 +2993,7 @@ main:focus { outline: none; }
 /* Tap targets: links in the header and the byline get a 40px-tall hit area without changing how they look. */
 .header-nav a { display: inline-flex; align-items: center; min-height: 40px; white-space: nowrap; }
 .byline-credit a { display: inline-block; padding: 14px 0; margin: -14px 0; }
-.continue-secondary a { display: inline-block; padding: 10px 0; }
+.continue-secondary a { display: inline-block; padding: 14px 0; } /* 45px tall (was 37px); the rows of this nav are 8px apart */
 
 /* A chapter's head is short: breadcrumb, which chapter, its title, and a way to move around. */
 .chapter-column { min-width: 0; }
@@ -3439,7 +3450,7 @@ body { overflow-wrap: break-word; }
 .search-actions { display: flex; align-items: center; gap: 18px; margin-top: 16px; }
 .search-apply { background: transparent; color: var(--ink); border: 1px solid rgba(24,52,60,.3); }
 .search-apply:hover { background: rgba(24,52,60,.06); }
-.search-clear { font-size: 14px; color: var(--clay-text); text-underline-offset: 3px; }
+.search-clear { display: inline-flex; align-items: center; min-height: 44px; padding-inline: 8px; margin-inline: -8px; font-size: 14px; color: var(--clay-text); text-underline-offset: 3px; } /* 17px tall link beside a 46px button; the side padding is cancelled by the margin, so the text stays where it was */
 .search-count { margin: 0 0 18px; font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 14px; color: var(--ink-soft); }
 .search-results { list-style: none; margin: 0; padding: 0; }
 .search-result { padding: 22px 0; border-top: 1px solid var(--line); }
@@ -3966,4 +3977,30 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; color-scheme: lig
   .hero-featured-cta, .related-work-card, .continue-next, .latest-card, .category-explorer-card, .editorial-pick { transition: none; }
   .hero-featured-cta:hover, .related-work-card:hover, .continue-next:hover, .continue-next:focus-visible,
   .latest-card:hover, .category-explorer-card:hover, .editorial-pick:hover { transform: none; }
+}
+
+/* The search icon is a 40px circle, and the open animation of the field is measured from that 40px (see header-search-open), so the circle
+   keeps its size. An invisible ring 2px wide around it makes the touch area 44px. */
+.header-search { position: relative; }
+.header-search::after { content: ""; position: absolute; inset: -2px; }
+
+/* The desktop navigation (wide screens) has links 40px tall, and the entries of the "Kandungan" panel 38px. A tablet in landscape or a touch
+   laptop reaches this layout with a finger, so for a coarse pointer they are 44px. The header is 89px tall, so it does not grow. */
+@media (any-pointer: coarse) {
+  .header-nav a, .nav-menu-button, .header-nav .nav-menu-panel a { min-height: 44px; }
+}
+
+/* The header is sticky (77px on a phone, 89px on a laptop). When a keyboard user tabs backwards, the browser scrolls the focused element
+   to the very top edge of the window, which is under the header, so the focus ring cannot be seen. A scroll margin on the focused element
+   keeps it clear of the header. Controls inside the header itself, the "Tentang karya" sheet and the Penilaian dialog are left out: they
+   scroll inside their own box (or are the header), where a 96px margin would only leave a blank band. */
+:where(a, button, summary, input, select, textarea, [tabindex]):focus-visible:not(:where(.site-header *, .mobile-info-sheet *, .ai-rating-dialog *)) { scroll-margin-top: 96px; }
+
+/* Touch screens only (a phone, or a tablet in landscape: the chapter breadcrumb is hidden below about 900px, the series one is always shown). Breadcrumb links are 12px text, so 15px tall: the way
+   back to the category is a very small target. 15px of padding on each side makes them 45px; the equal negative margin keeps the line
+   box, so nothing around them moves. (If a very long title wraps the breadcrumb to a second row the two touch areas overlap by a few
+   pixels, which is harmless.) The previous / next chapter links and the chapter picker in the chapter head were 40px and are 44px. */
+@media (any-pointer: coarse) {
+  .crumbs a, .series-crumb a { display: inline-block; padding-block: 15px; margin-block: -15px; }
+  .chapter-head-nav > a, .chapter-picker summary { min-height: 44px; }
 }

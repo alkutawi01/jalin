@@ -27,5 +27,9 @@ assert(/html {[^}]*-webkit-text-size-adjust: 100%[^}]*color-scheme: light/.test(
 // Reduced motion: a net under the per-component rules.
 assert(css.replace(/\r\n/g, "\n").includes(".related-work-card:hover, .continue-next:hover, .continue-next:focus-visible,\n  .latest-card:hover, .category-explorer-card:hover, .editorial-pick:hover { transform: none; }"), "a device that asks for less motion does not get cards that lift on hover");
 
+// A card cover sits inside a link that already names the work, so its image is decorative (empty alt), not a 100-character scene description.
+const cover = fs.readFileSync(path.join(__dirname, "../src/components/reader/WorkCover.tsx"), "utf8");
+assert(cover.includes('<Image src={hero.src} alt=""'), "the card cover image has an empty alt, so the link name is the title, author and summary");
+
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);
