@@ -25,9 +25,9 @@ export default function PanelCompare({ compare, threshold }: { compare: CompareV
       <div className="admin-panel-kpis">
         {models.map((m, i) => (
           <div key={m.name} className="admin-panel-kpi">
-            <div className="admin-panel-label"><span className={`admin-panel-swatch ${seriesOf(i)}`} aria-hidden="true" /> {m.name}{m.official ? " (penilai rasmi)" : " (tambahan)"}</div>
+            <div className="admin-panel-label"><span className={`admin-panel-swatch ${seriesOf(i)}`} aria-hidden="true" /> {m.name}</div>
             <div className="admin-panel-big">{m.mean}</div>
-            <div className="admin-panel-label">{m.official ? "dikira" : "tidak dikira"}{m.runs > 1 ? `, purata ${m.runs} sesi` : ""}</div>
+            <div className="admin-panel-label">{m.official ? "Penilai rasmi, dikira" : "Tambahan, tidak dikira"}{m.runs > 1 ? `, purata ${m.runs} sesi` : ""}</div>
           </div>
         ))}
       </div>

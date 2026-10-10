@@ -820,7 +820,9 @@
 /* Panel Bacaan AI */
 .a-shell .admin-panel-compare h3 { margin: 24px 0 8px; }
 .a-shell .admin-panel-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin: 12px 0; }
-.a-shell .admin-panel-kpi { background: var(--a-surface); border: 1px solid var(--a-line); border-radius: var(--a-radius-lg); padding: 12px 16px; }
+.a-shell .admin-panel-kpi { background: var(--a-surface); border: 1px solid var(--a-line); border-radius: var(--a-radius-lg); padding: 12px 16px; display: grid; grid-row: span 3; grid-template-rows: subgrid; row-gap: 2px; align-content: start; }
+/* The name, the number and the status sit on the same three lines in every card, however long a name is. */
+.a-shell .admin-panel-kpi .admin-panel-label:first-child { align-self: start; }
 .a-shell .admin-panel-kpi p { margin: 4px 0 0; }
 .a-shell .admin-panel-label { font-size: 13px; font-weight: 600; color: var(--a-ink); }
 .a-shell .admin-panel-big { font-size: 26px; font-weight: 700; line-height: 1.15; color: var(--a-ink); font-variant-numeric: tabular-nums; }
