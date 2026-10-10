@@ -83,7 +83,7 @@ export default async function EpisodePage({
 
   return (
     <>
-      <ReadingTracker workId={work.id} />
+      <ReadingTracker slug={work.slug} />
       <EpisodeView work={work} episodes={episodes} />
     </>
   );

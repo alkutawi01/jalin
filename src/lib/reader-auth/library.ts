@@ -8,15 +8,16 @@ export type ReadingRow = { workId: string; sectionSlug: string | null; updatedAt
 
 const SECTION = /^[a-z0-9][a-z0-9-]{0,119}$/;
 
-/** Remember where the reader is in a work. Returns false when the work does not exist or the chapter name is not a slug. */
-export async function recordProgress(db: Db, accountId: string, workId: string, sectionSlug: string | null, now: Date = new Date()): Promise<boolean> {
-  if (!/^[0-9a-zA-Z_-]{1,80}$/.test(workId)) return false;
+/** Remember where the reader is in a work (by its slug). Returns false when the work does not exist or the chapter name is not a slug. */
+export async function recordProgress(db: Db, accountId: string, workSlug: string, sectionSlug: string | null, now: Date = new Date()): Promise<boolean> {
+  // The page names the work by its public address; the internal id never leaves the server.
+  if (!/^[a-z0-9][a-z0-9-]{0,159}$/.test(workSlug)) return false;
   if (sectionSlug !== null && !SECTION.test(sectionSlug)) return false;
-  const work = await db.selectFrom("works").select("id").where("id", "=", workId).where("status", "=", "published").executeTakeFirst();
+  const work = await db.selectFrom("works").select("id").where("slug", "=", workSlug).where("status", "=", "published").executeTakeFirst();
   if (!work) return false;
   await db
     .insertInto("reading_progress")
-    .values({ account_id: accountId, work_id: workId, section_slug: sectionSlug, updated_at: now })
+    .values({ account_id: accountId, work_id: work.id, section_slug: sectionSlug, updated_at: now })
     .onConflict((oc) => oc.columns(["account_id", "work_id"]).doUpdateSet({ section_slug: sectionSlug, updated_at: now }))
     .execute();
   return true;

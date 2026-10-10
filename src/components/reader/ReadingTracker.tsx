@@ -26,7 +26,7 @@ function prefsCss(p: Prefs): string {
  * Draws nothing. For a signed-in reader it (1) remembers the place for "Bacaan saya" and (2) puts the reader's own reading settings
  * (size, spacing, width, theme, typeface, dimming) on the text. A visitor sends nothing and sees the site's defaults.
  */
-export default function ReadingTracker({ workId, sectionSlug }: { workId: string; sectionSlug?: string }) {
+export default function ReadingTracker({ slug, sectionSlug }: { slug: string; sectionSlug?: string }) {
   useEffect(() => {
     let alive = true;
     let style: HTMLStyleElement | null = null;
@@ -35,7 +35,7 @@ export default function ReadingTracker({ workId, sectionSlug }: { workId: string
       fetch("/api/akaun/bacaan", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ workId, sectionSlug: sectionSlug ?? null }),
+        body: JSON.stringify({ slug, sectionSlug: sectionSlug ?? null }),
         keepalive: true,
       }).catch(() => undefined);
       try {
@@ -50,6 +50,6 @@ export default function ReadingTracker({ workId, sectionSlug }: { workId: string
       } catch { /* the site's defaults stay */ }
     });
     return () => { alive = false; style?.remove(); };
-  }, [workId, sectionSlug]);
+  }, [slug, sectionSlug]);
   return null;
 }

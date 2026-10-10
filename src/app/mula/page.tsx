@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { SiteFooter, SiteHeader } from "../../components/reader/StoryChrome";
 import { WorkCover } from "../../components/reader/WorkCover";
 import { renderAttribution } from "../../components/reader/Attribution";
-import CountUp from "../../components/reader/CountUp";
+import HomeStats from "../../components/reader/HomeStats";
 import LoginForm from "../../components/reader/LoginForm";
 import StartIcon from "../../components/reader/StartIcons";
 import { DEFAULT_SHARE_IMAGE } from "../../lib/seo";
@@ -15,6 +15,7 @@ import { computeSiteStats, statItems } from "../../lib/reader/site-stats";
 import { readerAccountsEnabled } from "../../lib/reader-auth/enabled";
 import { currentReaderSession } from "../../lib/reader-auth/server";
 import { sampleSlugs } from "../../lib/reader-auth/switches";
+import { homeGrounds } from "../../lib/site-theme";
 
 export const dynamic = "force-dynamic";
 
@@ -43,9 +44,9 @@ const REASONS = [
 ];
 
 const STEPS = [
-  { icon: "mail", title: "Log masuk dengan emel", text: "Masukkan emel anda dan kami hantar kod enam digit." },
-  { icon: "spark", title: "Mulakan percubaan percuma", text: "Baca semua cerita selama 14 hari. Tiada kad dan tiada bayaran." },
-  { icon: "card", title: "Teruskan dengan kad langganan", text: "Selepas percubaan, tebus kod daripada kad untuk terus membaca." },
+  { title: "Log masuk dengan emel", text: "Masukkan emel anda dan kami hantar kod enam digit." },
+  { title: "Mulakan percubaan percuma", text: "Baca semua cerita selama 14 hari. Tiada kad dan tiada bayaran." },
+  { title: "Teruskan dengan kad langganan", text: "Selepas percubaan, tebus kod daripada kad untuk terus membaca." },
 ];
 
 const PLANS = [
@@ -88,6 +89,7 @@ export default async function StartPage() {
   if (!readerAccountsEnabled()) notFound();
   const session = await currentReaderSession();
   const { stats, wall, samples } = await loadPage();
+  const grounds = await homeGrounds();
 
   return (
     <>
@@ -115,22 +117,9 @@ export default async function StartPage() {
           </div>
         </section>
 
+        <div className="homepage start-stats-wrap"><HomeStats stats={stats} ground={grounds.stats} /></div>
+
         <div className="site-shell start-page">
-          {stats.length > 0 ? (
-            <section className="start-stats" aria-label="Isi Jalin">
-              <ul>
-                {stats.map((item, index) => (
-                  <li key={item.key}>
-                    <a href={item.href}>
-                      <StartIcon name={item.key} size={26} />
-                      <span className="start-stat-value"><CountUp value={item.count} delayMs={index * 120} /></span>
-                      <span className="start-stat-label">{item.label}</span>
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          ) : null}
 
           {samples.length > 0 ? (
             <section className="start-section" aria-labelledby="contoh">
@@ -184,7 +173,6 @@ export default async function StartPage() {
               {STEPS.map((step, index) => (
                 <li key={step.title}>
                   <span className="start-step-number" aria-hidden="true">{index + 1}</span>
-                  <span className="start-icon-badge start-icon-badge--small"><StartIcon name={step.icon} size={20} /></span>
                   <h3>{step.title}</h3>
                   <p>{step.text}</p>
                 </li>

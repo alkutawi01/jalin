@@ -121,7 +121,7 @@ export default async function WorkPage({
   }
   return (
     <>
-      <ReadingTracker workId={work.id} sectionSlug={sectionSlug} />
+      <ReadingTracker slug={work.slug} sectionSlug={sectionSlug} />
       <WorkView work={work} sectionSlug={sectionSlug} />
     </>
   );

@@ -20,6 +20,7 @@ import {
   verifyLoginCode,
   type Db,
 } from "../src/lib/reader-auth/service";
+import { listReading, recordProgress, clearReading } from "../src/lib/reader-auth/library";
 import { emailLookupMac, ipMac, type MacKey, type Mailer } from "../src/lib/reader-auth/primitives";
 
 let passed = 0;
@@ -116,6 +117,19 @@ async function main() {
       assert(chosen.status === "ok", "choosing a device lets the third one in with the same code");
       assert((await getSession(trx, a.ver.token, at(41))) === null, "the replaced device is signed out at once");
       assert((await listDevices(trx, a.ver.accountId)).length === 2, "she still has exactly two devices");
+
+      // Bacaan saya: remembered by the work's public address, one row per work, and only for a published work.
+      const pub = await trx.selectFrom("works").select(["id", "slug"]).where("status", "=", "published").executeTakeFirst();
+      if (pub) {
+        assert(await recordProgress(trx, a.ver.accountId, pub.slug, null, at(41.1)), "opening a published work is remembered");
+        assert(await recordProgress(trx, a.ver.accountId, pub.slug, "bab-2", at(41.2)), "opening it again only moves the place");
+        const list = await listReading(trx, a.ver.accountId);
+        assert(list.length === 1 && list[0].workId === pub.id && list[0].sectionSlug === "bab-2", "there is one row for the work, at the last chapter");
+        assert(!(await recordProgress(trx, a.ver.accountId, "tiada-karya-ini", null, at(41.3))), "a work that does not exist is refused");
+        assert(!(await recordProgress(trx, a.ver.accountId, pub.slug, "BAB 2!", at(41.4))), "a chapter name that is not a slug is refused");
+        await clearReading(trx, a.ver.accountId);
+        assert((await listReading(trx, a.ver.accountId)).length === 0, "the reader clears the list");
+      }
 
       // Signing out.
       if (chosen.status !== "ok") throw new Error("cannot continue");

@@ -3823,14 +3823,9 @@ html:has(.a-nav, .admin-login-page) { overflow: visible; }
 .start-signup .auth-card--compact { max-width: none; padding: 0; border: 0; background: transparent; text-align: left; }
 .start-signup .auth-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 .start-page { padding-top: 40px; }
-.start-stats ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 12px 18px; }
-.start-stats a { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 112px; padding: 14px 18px; border: 1px solid var(--line); border-radius: 14px; background: var(--white); color: var(--ink); text-decoration: none; }
-.start-stats a:hover, .start-stats a:focus-visible { border-color: var(--ink); }
-.start-stat-value { font-family: Georgia, serif; font-size: 28px; line-height: 1.1; font-variant-numeric: tabular-nums; }
-.start-stat-label { font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 13px; color: var(--ink-soft); }
 .start-icon { display: block; flex: none; }
 .start-icon-badge { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; margin-bottom: 10px; border-radius: 12px; background: #f0ddd1; color: var(--ink); }
-.start-icon-badge--small { width: 36px; height: 36px; margin-left: 8px; vertical-align: top; }
+
 .start-reasons { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
 .start-reasons li { padding: 22px; border: 1px solid var(--line); border-radius: 14px; background: var(--white); }
 .start-reasons h3 { margin: 0 0 6px; font-size: 1.05rem; font-weight: 600; }
@@ -3856,3 +3851,8 @@ html:has(.a-nav, .admin-login-page) { overflow: visible; }
   .start-reasons { grid-template-columns: 1fr; }
 }
 .start-section .start-fine, .start-hero-inner .start-fine { text-align: center; }
+.start-reasons li, .start-steps li { text-align: center; }
+.start-reasons .start-icon-badge { display: flex; margin-left: auto; margin-right: auto; }
+.start-steps .start-step-number { margin-left: auto; margin-right: auto; display: flex; }
+.start-signup .auth-input { text-align: center; }
+.start-signup .auth-input::placeholder { text-align: center; }

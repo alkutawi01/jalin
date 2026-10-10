@@ -124,6 +124,11 @@ async function walk(node: unknown, hits: string[]): Promise<void> {
 
   const props = node.props as Record<string, unknown>;
   const type = node.type;
+  // A fragment only groups: what it holds is judged on its own (a server component inside it is run, never serialized).
+  if (type === React.Fragment) {
+    await walk(props.children, hits);
+    return;
+  }
   // Only what is serialized into the page is scanned: host elements and client components. A server component (a function
   // that is run here) receives its props on the server and they never cross into the payload; what it renders is walked next.
   // (WorkView and EpisodeView take the whole Work as a prop for exactly that reason, and the editor's preview shares them.)
