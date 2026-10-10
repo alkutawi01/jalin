@@ -13,8 +13,8 @@ function assert(cond: boolean, msg: string) {
 const read = (p: string) => fs.readFileSync(path.join(__dirname, "..", p), "utf8").replace(/\r\n/g, "\n");
 
 const tracker = read("src/components/reader/ReadingTracker.tsx");
-assert(tracker.includes("workSlug") && !/workId/.test(tracker), "the reading tracker names the work by slug, never by internal id");
-assert(!/<ReadingTracker workId=/.test(read("src/app/kategori/[type]/[slug]/page.tsx") + read("src/app/kategori/bersiri/[seriesSlug]/[episodeSlug]/page.tsx")), "no page hands the internal id to the tracker");
+assert(tracker.includes("slug") && !/workId/.test(tracker), "the reading tracker names the work by slug, never by internal id");
+assert(!/<ReadingTracker workId=|<ReadingTracker workSlug={work.id/.test(read("src/app/kategori/[type]/[slug]/page.tsx") + read("src/app/kategori/bersiri/[seriesSlug]/[episodeSlug]/page.tsx")), "no page hands the internal id to the tracker");
 const view = read("src/components/reader/WorkView.tsx");
 assert(view.includes("workId: work.slug"), "the rating block is given the slug");
 assert(view.includes("hasDb()"), "the rating block does not need the database when the site runs on files");
