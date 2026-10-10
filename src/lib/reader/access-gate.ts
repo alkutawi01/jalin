@@ -3,6 +3,7 @@
  * who is looking (the cookie), whether the work is a sample, and whether the paywall is on. The text is never handed to a
  * component that has not passed this: a locked page is given only a title, a dek, a picture and names.
  */
+import { redirect } from "next/navigation";
 import { getDb } from "../db";
 import { readerAccountsEnabled } from "../reader-auth/enabled";
 import { getAccess } from "../reader-auth/entitlements";
@@ -47,4 +48,33 @@ export async function viewerReach(): Promise<ViewerReach> {
   if (!session) return { all: false, samples };
   const access = await getAccess(db, session.account.id);
   return { all: access.state === "trial" || access.state === "subscribed", samples };
+}
+
+/**
+ * The whole library is for readers with active access once the paywall is on: anyone else who asks for the home page, a category,
+ * a series, search or an author goes to the landing page (/mula), or, when signed in without access, to their account (to start the
+ * trial or redeem a code). Sample works, the landing page, sign-in, redeem, account and the legal pages do not call this.
+ */
+export async function gateSite(): Promise<void> {
+  if (!readerAccountsEnabled()) return;
+  const db = getDb();
+  if (!(await paywallOn(db))) return;
+  const session = await currentReaderSession();
+  if (session) {
+    const access = await getAccess(db, session.account.id);
+    if (access.state === "trial" || access.state === "subscribed") return;
+    redirect("/akaun");
+  }
+  redirect("/mula");
+}
+
+/** The same rule for a JSON route: true when the caller may have the data. */
+export async function siteOpenForViewer(): Promise<boolean> {
+  if (!readerAccountsEnabled()) return true;
+  const db = getDb();
+  if (!(await paywallOn(db))) return true;
+  const session = await currentReaderSession();
+  if (!session) return false;
+  const access = await getAccess(db, session.account.id);
+  return access.state === "trial" || access.state === "subscribed";
 }

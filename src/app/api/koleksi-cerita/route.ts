@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { siteOpenForViewer } from "../../../lib/reader/access-gate";
 import { buildStoryPool, pickCollection } from "../../../lib/reader/story-collection";
 
 export const dynamic = "force-dynamic";
@@ -9,6 +10,7 @@ export const dynamic = "force-dynamic";
  * in `kecuali` so it is never offered to someone who is reading it.
  */
 export async function GET(request: Request) {
+  if (!(await siteOpenForViewer())) return NextResponse.json({ error: "Log masuk dengan akses aktif untuk melihat koleksi." }, { status: 403 });
   const params = new URL(request.url).searchParams;
   const seen = (params.get("lihat") ?? "")
     .split(",")

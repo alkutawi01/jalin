@@ -3818,7 +3818,8 @@ html:has(.a-nav, .admin-login-page) { overflow: visible; }
 /* /mula: landing page yang lebih lengkap (dinding gambar, borang emel, statistik, sebab, kad, soalan lazim) */
 .start-hero-band { position: relative; overflow: hidden; background: #f7ece4; border-bottom: 1px solid var(--line); }
 .start-wall { position: absolute; inset: -40px -60px; display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; transform: rotate(-4deg) scale(1.1); opacity: .5; filter: saturate(.85); pointer-events: none; }
-.start-wall img { width: 100%; height: 120px; object-fit: cover; border-radius: 10px; display: block; }
+.start-wall-tile { position: relative; display: block; height: 120px; overflow: hidden; border-radius: 10px; }
+.start-wall-tile img { object-fit: cover; }
 .start-hero-band::after { content: ""; position: absolute; inset: 0; background: radial-gradient(ellipse at center, rgba(251, 248, 242, .94) 0%, rgba(251, 248, 242, .82) 55%, rgba(251, 248, 242, .55) 100%); pointer-events: none; }
 .start-hero-inner { position: relative; z-index: 1; max-width: 720px; margin: 0 auto; padding-top: 72px; padding-bottom: 64px; text-align: center; }
 .start-hero-inner h1 { margin: 8px 0 14px; font-size: clamp(2.2rem, 5.6vw, 3.4rem); line-height: 1.12; font-weight: 500; font-style: normal; }
@@ -3861,3 +3862,17 @@ html:has(.a-nav, .admin-login-page) { overflow: visible; }
 .start-steps .start-step-number { margin-left: auto; margin-right: auto; display: flex; }
 .start-signup .auth-input { text-align: center; }
 .start-signup .auth-input::placeholder { text-align: center; }
+  .start-wall-tile:nth-child(n+7) { display: none; }
+
+/* Simpan karya: penanda di sudut halaman karya */
+.save-work { position: fixed; right: 16px; bottom: 16px; z-index: 40; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px 0 14px; border: 1px solid var(--line); border-radius: 999px; background: var(--white, #fff); color: var(--ink); font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; box-shadow: 0 8px 24px rgba(24, 52, 60, .14); }
+.save-work:hover, .save-work:focus-visible { border-color: var(--ink); }
+.save-work.is-saved { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.save-work:disabled { opacity: .7; cursor: default; }
+@media (max-width: 480px) { .save-work span { display: none; } .save-work { padding: 0 13px; } }
+
+/* Peringatan akses hampir tamat */
+.expiry-notice { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px 14px; padding: 8px 40px 8px 16px; position: relative; background: #f7ece4; border-bottom: 1px solid var(--line); font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 14px; color: var(--ink); text-align: center; }
+.expiry-notice a { font-weight: 600; color: var(--clay-text); text-decoration: underline; text-underline-offset: 3px; }
+.expiry-notice button { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 32px; height: 32px; border: 0; background: none; font-size: 20px; line-height: 1; color: var(--ink-soft); cursor: pointer; }
+.home-stat-plain { display: flex; align-items: baseline; gap: 10px; }

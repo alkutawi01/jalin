@@ -1,4 +1,5 @@
 import { SiteFooter, SiteHeader } from "../../../components/reader/StoryChrome";
+import { gateSite } from "../../../lib/reader/access-gate";
 import { OG_SITE, DEFAULT_SHARE_IMAGE } from "../../../lib/seo";
 import JalinEmblem from "../../../components/reader/JalinEmblem";
 import { WorkCover } from "../../../components/reader/WorkCover";
@@ -169,6 +170,7 @@ async function getWorks(type: string): Promise<Work[]> {
 }
 
 export default async function CategoryPage({ params }: { params: Promise<{ type: string }> }) {
+  await gateSite();
   const { type } = await params;
   const meta = categoryMeta(type);
   if (!meta) notFound();

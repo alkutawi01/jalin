@@ -16,7 +16,7 @@ import fs from "node:fs";
 import { sql } from "kysely";
 import { closeDb, getDb } from "../src/lib/db";
 import { createSharedCode } from "../src/lib/reader-auth/redeem";
-import { isPaywallSwitchOn, setPaywall, setSample } from "../src/lib/reader-auth/switches";
+import { isPaywallSwitchOn, sampleSlugs, setPaywall, setSample } from "../src/lib/reader-auth/switches";
 import { safeNextPath } from "../src/lib/reader-auth/next-path";
 
 const BASE = process.env.READER_E2E_BASE ?? "http://localhost:3100";
@@ -82,6 +82,9 @@ function canaryOf(body: string): string | null {
 async function main() {
   const originalPaywall = await isPaywallSwitchOn(db);
   const touchedSamples: string[] = [];
+  // Samples chosen by hand in the development database would make every work "open": set them aside for the run and put them back.
+  const priorSamples = [...(await sampleSlugs(db))];
+  for (const slug of priorSamples) await setSample(db, slug, false, "paywall-check");
   try {
     // ------------------------------------------------------------ pure parts
     console.log("\nWhere to go after signing in");
@@ -119,12 +122,20 @@ async function main() {
     assert(!rsc.text.includes(locked.canary!.slice(0, 28)), "the RSC payload does not contain the text");
     const samplePage = await visitor.req(samplePath);
     assert(samplePage.status === 200 && samplePage.text.includes(sample.canary!.slice(0, 28)), "a sample is open to a visitor");
-    const search = await visitor.req(`/cari?q=${encodeURIComponent(locked.canary!.slice(0, 28))}`);
-    assert(search.status === 200 && !search.text.includes(`href="${lockedPath}"`), "search by a sentence of a locked text finds nothing", search.status);
-    const searchTitle = await visitor.req(`/cari?q=${encodeURIComponent(locked.title.slice(0, 12))}`);
-    assert(searchTitle.status === 200 && searchTitle.text.includes(locked.slug), "search by title still finds it");
+    // The library is for readers with access: everything else goes to the landing page.
+    for (const path of ["/", "/kategori/cerpen", "/kategori/novela", "/cari", `/cari?q=${encodeURIComponent(locked.title.slice(0, 12))}`, "/penulis/nara-zahin"]) {
+      const bounced = await visitor.req(path);
+      assert([301, 302, 303, 307, 308].includes(bounced.status) && (bounced.headers.get("location") ?? "").endsWith("/mula"), `a visitor asking for ${path.slice(0, 40)} is sent to the landing page`, bounced.status);
+    }
+    const koleksi = await visitor.req("/api/koleksi-cerita");
+    assert(koleksi.status === 403, "the story collection answers a visitor with a refusal");
     const suggest = await visitor.req(`/api/cari/cadangan?q=${encodeURIComponent(locked.title.slice(0, 10))}`);
-    assert(suggest.status === 200 && (suggest.headers.get("cache-control") ?? "").includes("no-store"), "suggestions are not kept in a shared cache");
+    assert(suggest.status === 200 && (suggest.headers.get("cache-control") ?? "").includes("no-store") && !JSON.stringify(suggest.json ?? suggest.text).includes(locked.slug), "suggestions are private and do not offer a locked work");
+    for (const path of ["/tentang", "/editorial", "/privasi", "/terma", "/log-masuk"]) {
+      assert((await visitor.req(path)).status === 200, `${path} stays open to a visitor`);
+    }
+    const sitemap = await visitor.req("/sitemap.xml");
+    assert(sitemap.status === 200 && sitemap.text.includes("/mula") && !sitemap.text.includes(`/${locked.slug}<`), "the sitemap lists the landing page and samples, not locked works");
     const landing = await visitor.req("/mula");
     assert(landing.status === 200 && landing.text.includes("Mula membaca") && landing.text.includes(sample.title.slice(0, 15)), "the landing page shows the samples");
     assert(!landing.text.includes(locked.title), "and not the locked works");
@@ -138,11 +149,14 @@ async function main() {
     await signIn(A, emailA);
     const noTrial = await A.req(lockedPath);
     assert(noTrial.status === 200 && !noTrial.text.includes(locked.canary!.slice(0, 28)) && noTrial.text.includes("Mulakan percubaan percuma"), "signed in, still locked, and offered the trial");
+    const homeNoAccess = await A.req("/");
+    assert([302, 303, 307, 308].includes(homeNoAccess.status) && (homeNoAccess.headers.get("location") ?? "").endsWith("/akaun"), "signed in without access, the library sends the reader to the account page", homeNoAccess.status);
     assert((await A.req("/api/akaun/saya")).json?.access?.state === "none", "no access until the trial is started");
     const started = await A.req("/api/akaun/percubaan", { method: "POST", body: {} });
     assert(started.status === 200 && started.json?.ok === true, "the reader starts the trial");
     const inTrial = await A.req(lockedPath);
     assert(inTrial.status === 200 && inTrial.text.includes(locked.canary!.slice(0, 28)), "with the trial the text is shown");
+    assert((await A.req("/")).status === 200 && (await A.req("/kategori/cerpen")).status === 200, "with access the library is open");
     const searchIn = await A.req(`/cari?q=${encodeURIComponent(locked.canary!.slice(0, 28))}`);
     assert(searchIn.status === 200 && searchIn.text.includes(`href="${lockedPath}"`), "and search looks inside the text again");
 
@@ -180,6 +194,7 @@ async function main() {
   } finally {
     await setPaywall(db, originalPaywall, "paywall-check");
     for (const slug of touchedSamples) await setSample(db, slug, false, "paywall-check");
+    for (const slug of priorSamples) await setSample(db, slug, true, "paywall-check");
     await sql`DELETE FROM shared_codes WHERE channel = 'paywall-check'`.execute(db).catch(() => undefined);
     await sql`DELETE FROM reader_accounts WHERE email_normalized LIKE '%@pw.invalid'`.execute(db).catch(() => undefined);
     await sql`DELETE FROM reader_trial_claims`.execute(db).catch(() => undefined);

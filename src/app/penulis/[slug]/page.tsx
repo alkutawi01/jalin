@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import { gateSite } from "../../../lib/reader/access-gate";
 import { OG_SITE, DEFAULT_SHARE_IMAGE } from "../../../lib/seo";
 import path from "node:path";
 import matter from "gray-matter";
@@ -68,11 +69,14 @@ export async function generateMetadata({
   };
 }
 
+export const dynamic = "force-dynamic";
+
 export default async function PenulisPage({
   params
 }: {
   params: Promise<{ slug: string }>;
 }) {
+  await gateSite();
   const { slug } = await params;
   const parsed = await readContributor(slug);
   if (!parsed) notFound();

@@ -5,6 +5,8 @@ import { initContentRepository } from "../lib/content";
 import { getAllWorks } from "../lib/content/workLoader";
 import type { WorkType } from "../lib/content/types";
 import { getDb, hasDb } from "../lib/db";
+import { readerAccountsEnabled } from "../lib/reader-auth/enabled";
+import { paywallOn, sampleSlugs } from "../lib/reader-auth/switches";
 
 // Cache the public sitemap for five minutes to avoid waking Neon on each crawler request.
 // New publications appear on the next revalidation, without requiring a deployment.
@@ -89,6 +91,28 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.6
     });
     entries.push(...episodeEntries);
+  }
+
+  // With the paywall on, the library is for readers with access: search engines are shown only the landing page, the information
+  // pages and the sample works.
+  if (readerAccountsEnabled() && hasDb()) {
+    try {
+      const db = getDb();
+      if (await paywallOn(db)) {
+        const samples = await sampleSlugs(db);
+        const open = new Set(["/", "/mula", "/tentang", "/editorial", "/privasi", "/terma"]);
+        const sampleTail = (url: string) => samples.has(url.split("/").pop() ?? "");
+        return [
+          { url: `${SITE_URL}/mula`, changeFrequency: "weekly" as const, priority: 1 },
+          ...entries.filter((entry) => {
+            const path = entry.url.replace(SITE_URL, "") || "/";
+            return path !== "/" && (open.has(path) || (path.startsWith("/kategori/") && path.split("/").length >= 4 && sampleTail(entry.url)));
+          }),
+        ];
+      }
+    } catch {
+      /* the full list stays */
+    }
   }
 
   return entries;

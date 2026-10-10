@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { SiteFooter, SiteHeader } from "../../components/reader/StoryChrome";
 import { WorkCover } from "../../components/reader/WorkCover";
@@ -17,6 +18,7 @@ import { readerAccountsEnabled } from "../../lib/reader-auth/enabled";
 import { currentReaderSession } from "../../lib/reader-auth/server";
 import { sampleSlugs } from "../../lib/reader-auth/switches";
 import { homeGrounds } from "../../lib/site-theme";
+import { siteOpenForViewer } from "../../lib/reader/access-gate";
 
 export const dynamic = "force-dynamic";
 
@@ -75,7 +77,7 @@ async function loadPage() {
     .filter((w) => w.type !== "sinopsis" && w.type !== "fragmen")
     .map((w) => projectPublicWorkSummary(w).hero)
     .filter((h): h is NonNullable<typeof h> => !!h && !!h.src)
-    .slice(0, 12);
+    .slice(0, 9);
   const slugs = [...(await sampleSlugs(getDb()))];
   const samples: Sample[] = [];
   for (const slug of slugs.slice(0, 12)) {
@@ -91,6 +93,7 @@ export default async function StartPage() {
   const session = await currentReaderSession();
   const { stats, wall, samples } = await loadPage();
   const grounds = await homeGrounds();
+  const libraryOpen = await siteOpenForViewer();
 
   return (
     <>
@@ -99,7 +102,11 @@ export default async function StartPage() {
         <section className="start-hero-band" aria-labelledby="mula-tajuk">
           {wall.length > 0 ? (
             <div className="start-wall" aria-hidden="true">
-              {wall.map((h, i) => <img key={h.src + i} src={h.src} alt="" loading={i < 4 ? "eager" : "lazy"} />)}
+              {wall.map((h, i) => (
+                <span className="start-wall-tile" key={h.src + i}>
+                  <Image src={h.src} alt="" fill sizes="(max-width: 760px) 34vw, 17vw" quality={75} loading="lazy" />
+                </span>
+              ))}
             </div>
           ) : null}
           <div className="site-shell start-hero-inner">
@@ -118,7 +125,7 @@ export default async function StartPage() {
           </div>
         </section>
 
-        <div className="homepage start-stats-wrap"><HomeStats stats={stats} ground={grounds.stats} /></div>
+        <div className="homepage start-stats-wrap"><HomeStats stats={stats} ground={grounds.stats} plain={!libraryOpen} /></div>
 
         <div className="site-shell start-page">
 

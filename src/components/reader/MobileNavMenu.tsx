@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { NAV_LINKS, SiteNavLinks } from "./nav-links";
+import { NAV_LINKS, SiteNavLinks, VISITOR_LINKS } from "./nav-links";
 import HeaderAccount from "./HeaderAccount";
 
-export default function MobileNavMenu({ active, accounts = false }: { active?: string; accounts?: boolean }) {
+export default function MobileNavMenu({ active, accounts = false, visitor = false }: { active?: string; accounts?: boolean; visitor?: boolean }) {
   const detailsRef = useRef<HTMLDetailsElement | null>(null);
 
   useEffect(() => {
@@ -22,7 +22,7 @@ export default function MobileNavMenu({ active, accounts = false }: { active?: s
     <details className="header-mobile-nav" ref={detailsRef}>
       <summary>Menu</summary>
       <div className="header-mobile-panel">
-        <SiteNavLinks active={active} className="header-mobile-nav-links" links={NAV_LINKS} label="Menu mudah alih" variant="list" />
+        <SiteNavLinks active={active} className="header-mobile-nav-links" links={visitor ? VISITOR_LINKS : NAV_LINKS} label="Menu mudah alih" variant="list" />
         {accounts ? <div className="header-mobile-account"><HeaderAccount variant="menu" /></div> : null}
       </div>
     </details>

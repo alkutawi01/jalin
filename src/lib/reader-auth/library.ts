@@ -38,3 +38,35 @@ export async function listReading(db: Db, accountId: string, limit = 30): Promis
 export async function clearReading(db: Db, accountId: string): Promise<void> {
   await db.deleteFrom("reading_progress").where("account_id", "=", accountId).execute();
 }
+
+export type SavedRow = { workId: string; savedAt: Date };
+
+/** Keep a work for later (or take it off the list), by its public address. False when no such published work exists. */
+export async function setSaved(db: Db, accountId: string, workSlug: string, saved: boolean, now: Date = new Date()): Promise<boolean> {
+  if (!/^[a-z0-9][a-z0-9-]{0,159}$/.test(workSlug)) return false;
+  const work = await db.selectFrom("works").select("id").where("slug", "=", workSlug).where("status", "=", "published").executeTakeFirst();
+  if (!work) return false;
+  if (saved) {
+    await db.insertInto("saved_works").values({ account_id: accountId, work_id: work.id, saved_at: now }).onConflict((oc) => oc.columns(["account_id", "work_id"]).doNothing()).execute();
+  } else {
+    await db.deleteFrom("saved_works").where("account_id", "=", accountId).where("work_id", "=", work.id).execute();
+  }
+  return true;
+}
+
+export async function isSaved(db: Db, accountId: string, workSlug: string): Promise<boolean> {
+  if (!/^[a-z0-9][a-z0-9-]{0,159}$/.test(workSlug)) return false;
+  const row = await db
+    .selectFrom("saved_works as s")
+    .innerJoin("works as w", "w.id", "s.work_id")
+    .select("s.work_id")
+    .where("s.account_id", "=", accountId)
+    .where("w.slug", "=", workSlug)
+    .executeTakeFirst();
+  return !!row;
+}
+
+export async function listSaved(db: Db, accountId: string, limit = 100): Promise<SavedRow[]> {
+  const rows = await db.selectFrom("saved_works").select(["work_id", "saved_at"]).where("account_id", "=", accountId).orderBy("saved_at", "desc").limit(Math.min(200, Math.max(1, limit))).execute();
+  return rows.map((r) => ({ workId: r.work_id, savedAt: r.saved_at }));
+}

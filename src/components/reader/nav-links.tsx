@@ -19,6 +19,12 @@ export const NAV_LINKS: NavItem[] = [
   { label: "Tentang Kami", href: "/tentang", match: "tentang" }
 ];
 
+/** What a visitor without access is shown in the header: the library is for readers with access, so only the information pages. */
+export const VISITOR_LINKS: NavItem[] = [
+  { label: "Editorial", href: "/editorial", match: "editorial" },
+  { label: "Tentang Kami", href: "/tentang", match: "tentang" }
+];
+
 /**
  * "bar" is the header on a laptop: Kandungan is a button that opens a menu. "list" is the phone menu: the same five links sit
  * under a plain "Kandungan" label, so nothing is hidden behind a second tap.

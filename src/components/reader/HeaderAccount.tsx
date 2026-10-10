@@ -36,6 +36,7 @@ function daysLeft(endsAt: string | null): number | null {
 const LINKS = [
   { href: "/akaun", label: "Akaun saya" },
   { href: "/akaun#bacaan", label: "Bacaan saya" },
+  { href: "/akaun#disimpan", label: "Disimpan" },
   { href: "/akaun#langganan", label: "Langganan" },
   { href: "/tebus", label: "Tebus kod" },
 ];

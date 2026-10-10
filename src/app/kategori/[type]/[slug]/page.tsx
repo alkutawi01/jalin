@@ -8,6 +8,7 @@ import { initContentRepository } from "../../../../lib/content";
 import { getWorkBySlug } from "../../../../lib/content/workLoader";
 import WorkView from "../../../../components/reader/WorkView";
 import ReadingTracker from "../../../../components/reader/ReadingTracker";
+import SaveWorkButton from "../../../../components/reader/SaveWorkButton";
 import LockedWork from "../../../../components/reader/LockedWork";
 import { gateForWork } from "../../../../lib/reader/access-gate";
 
@@ -103,9 +104,8 @@ export default async function WorkPage({
   }
 
   // The text of a work (every chapter of a novela) is kept for readers with access. A novela's own page (its blurb and chapter list,
-  // no chapter open) is not text, so it stays open: it is where a reader finds the chapters.
-  const novelaLanding = (work.sections?.length ?? 0) > 0 && !sectionSlug;
-  if (!novelaLanding) {
+  // no chapter open) is library content too, so it is behind the same gate; sample works are open.
+  {
     const gate = await gateForWork(work.slug);
     if (gate.state !== "open") {
       const next = sectionSlug ? `/kategori/${type}/${slug}/${sectionSlug}` : `/kategori/${type}/${slug}`;
@@ -122,6 +122,7 @@ export default async function WorkPage({
   return (
     <>
       <ReadingTracker slug={work.slug} sectionSlug={sectionSlug} />
+      <SaveWorkButton slug={work.slug} />
       <WorkView work={work} sectionSlug={sectionSlug} />
     </>
   );

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { gateSite } from "../lib/reader/access-gate";
 import { jsonLdString, siteJsonLd } from "../lib/seo-jsonld";
 import { SITE_DESCRIPTION } from "../lib/seo";
 import Image from "next/image";
@@ -220,6 +221,7 @@ async function getWorks() {
 }
 
 export default async function Home() {
+  await gateSite();
   const allWorks = await getWorks();
   const byNewest = (a: { publishedAt?: string }, b: { publishedAt?: string }) =>
     (b.publishedAt ?? "").localeCompare(a.publishedAt ?? "");

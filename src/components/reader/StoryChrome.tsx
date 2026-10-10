@@ -7,19 +7,23 @@ import Image from "next/image";
 import { cropStyle } from "../../lib/reader/crop";
 import type { ImageCrop } from "../../lib/content/types";
 import type { BylineCredit, CharacterMeta, EditorialCredit, PlaceMeta, WorkMetaRow } from "./types";
-import { CONTENT_LINKS, NAV_LINKS, SiteNavLinks } from "./nav-links";
+import { CONTENT_LINKS, NAV_LINKS, SiteNavLinks, VISITOR_LINKS } from "./nav-links";
+import { siteOpenForViewer } from "../../lib/reader/access-gate";
 import HeaderSearch from "./HeaderSearch";
 import MobileNavMenu from "./MobileNavMenu";
 import HeaderAccount from "./HeaderAccount";
+import ExpiryNotice from "./ExpiryNotice";
 import { readerAccountsEnabled } from "../../lib/reader-auth/enabled";
 import AiRating from "./AiRating";
 import type { PublicRatingSummary } from "../../lib/panel/public";
 
-function SiteNav({ active, className }: { active?: string; className: string }) {
-  return <SiteNavLinks active={active} className={className} links={NAV_LINKS} />;
+function SiteNav({ active, className, visitor = false }: { active?: string; className: string; visitor?: boolean }) {
+  return <SiteNavLinks active={active} className={className} links={visitor ? VISITOR_LINKS : NAV_LINKS} />;
 }
 
-export function SiteHeader({ active }: { active?: string }) {
+export async function SiteHeader({ active }: { active?: string }) {
+  // Without access (paywall on) the header offers the information pages and the way in; the library is for readers with access.
+  const visitor = !(await siteOpenForViewer());
   return (
     <>
     <a className="skip-link" href="#kandungan">Langkau ke kandungan</a>
@@ -31,13 +35,14 @@ export function SiteHeader({ active }: { active?: string }) {
           </a>
         </div>
         <div className="header-main">
-          <SiteNav active={active} className="header-nav" />
-          <HeaderSearch active={active === "cari"} />
+          <SiteNav active={active} className="header-nav" visitor={visitor} />
+          {visitor ? null : <HeaderSearch active={active === "cari"} />}
           {readerAccountsEnabled() ? <HeaderAccount /> : null}
         </div>
-        <MobileNavMenu active={active} accounts={readerAccountsEnabled()} />
+        <MobileNavMenu active={active} accounts={readerAccountsEnabled()} visitor={visitor} />
       </div>
     </header>
+    {readerAccountsEnabled() ? <ExpiryNotice /> : null}
     </>
   );
 }
@@ -275,8 +280,9 @@ const FOOTER_ABOUT = [
   { label: "Terma penggunaan", href: "/terma" }
 ];
 
-export function SiteFooter() {
+export async function SiteFooter() {
   const year = new Date().getFullYear();
+  const visitor = !(await siteOpenForViewer());
   return (
     <footer className="site-footer">
       <div className="site-shell footer-grid">
@@ -285,14 +291,16 @@ export function SiteFooter() {
           <p className="footer-tagline">Selami dunia melalui cerita</p>
         </div>
         <div className="footer-nav-grid">
-          <nav className="footer-col" aria-label="Terokai karya">
-            <h2>Terokai</h2>
-            <ul>
-              {FOOTER_EXPLORE.map((link) => (
-                <li key={link.href}><a href={link.href}>{link.label}</a></li>
-              ))}
-            </ul>
-          </nav>
+          {visitor ? null : (
+            <nav className="footer-col" aria-label="Terokai karya">
+              <h2>Terokai</h2>
+              <ul>
+                {FOOTER_EXPLORE.map((link) => (
+                  <li key={link.href}><a href={link.href}>{link.label}</a></li>
+                ))}
+              </ul>
+            </nav>
+          )}
           <nav className="footer-col" aria-label="Tentang tapak">
             <h2>Jalin</h2>
             <ul>

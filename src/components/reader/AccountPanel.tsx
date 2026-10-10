@@ -35,6 +35,7 @@ export default function AccountPanel(props: {
   trialAvailable?: boolean;
   history: { id: string; label: string; startsAt: string; endsAt: string; revoked: boolean }[];
   reading: { workId: string; title: string; href: string; kind: string; chapter: string | null; updatedAt: string }[];
+  saved: { workId: string; title: string; href: string; kind: string; savedAt: string }[];
 }) {
   const [name, setName] = useState(props.displayName ?? "");
   const [savedName, setSavedName] = useState(props.displayName ?? "");
@@ -187,6 +188,22 @@ export default function AccountPanel(props: {
           </ul>
           <p><button type="button" className="auth-link" disabled={busy} onClick={clearReading}>Kosongkan senarai</button></p>
         </>
+      )}
+
+      <h2 className="auth-subtitle" id="disimpan">Disimpan</h2>
+      {props.saved.length === 0 ? (
+        <p className="auth-fine">Karya yang anda simpan dengan butang Simpan akan muncul di sini.</p>
+      ) : (
+        <ul className="auth-reading">
+          {props.saved.map((r) => (
+            <li key={r.workId}>
+              <a href={r.href}>
+                <span className="auth-reading-title">{r.title}</span>
+                <span className="auth-reading-meta">{r.kind} · disimpan {formatDate(r.savedAt)}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
       )}
 
       <h2 className="auth-subtitle" id="tetapan">Tetapan bacaan</h2>

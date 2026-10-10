@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { gateSite } from "../../../../lib/reader/access-gate";
 import { smartQuotes } from "../../../../lib/admin/smart-quotes";
 import { notFound, redirect } from "next/navigation";
 import Image from "next/image";
@@ -69,6 +70,8 @@ export default async function SeriesLandingPage({
       }
       notFound();
     }
+    // The series page lists its episodes: for readers with access only (an episode itself is gated by its own page).
+    await gateSite();
 
     const episodes = repo.getPublishedSeriesEpisodes(series.id);
     if (episodes.length === 0) notFound();

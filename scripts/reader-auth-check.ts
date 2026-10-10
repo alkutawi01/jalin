@@ -20,7 +20,7 @@ import {
   verifyLoginCode,
   type Db,
 } from "../src/lib/reader-auth/service";
-import { listReading, recordProgress, clearReading } from "../src/lib/reader-auth/library";
+import { clearReading, isSaved, listReading, listSaved, recordProgress, setSaved } from "../src/lib/reader-auth/library";
 import { emailLookupMac, ipMac, type MacKey, type Mailer } from "../src/lib/reader-auth/primitives";
 
 let passed = 0;
@@ -129,6 +129,11 @@ async function main() {
         assert(!(await recordProgress(trx, a.ver.accountId, pub.slug, "BAB 2!", at(41.4))), "a chapter name that is not a slug is refused");
         await clearReading(trx, a.ver.accountId);
         assert((await listReading(trx, a.ver.accountId)).length === 0, "the reader clears the list");
+        assert(await setSaved(trx, a.ver.accountId, pub.slug, true, at(41.5)) && (await isSaved(trx, a.ver.accountId, pub.slug)), "a work can be kept for later");
+        assert(await setSaved(trx, a.ver.accountId, pub.slug, true, at(41.6)) && (await listSaved(trx, a.ver.accountId)).length === 1, "keeping it twice leaves one row");
+        assert(!(await setSaved(trx, a.ver.accountId, "tiada-karya-ini", true)), "a work that does not exist cannot be kept");
+        await setSaved(trx, a.ver.accountId, pub.slug, false);
+        assert(!(await isSaved(trx, a.ver.accountId, pub.slug)) && (await listSaved(trx, a.ver.accountId)).length === 0, "and taken off the list again");
       }
 
       // Signing out.
