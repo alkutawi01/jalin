@@ -2554,6 +2554,9 @@ dd { margin: 0; color: var(--ink); text-align: left; }
   margin-top: 16px;
 }
 .category-empty-links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
   padding: 8px 16px;
   border: 1px solid var(--line);
   font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif;
@@ -2978,7 +2981,7 @@ main:focus { outline: none; }
 
 /* Tap targets: links in the header and the byline get a 40px-tall hit area without changing how they look. */
 .header-nav a { display: inline-flex; align-items: center; min-height: 40px; white-space: nowrap; }
-.byline-credit a { display: inline-block; padding: 10px 0; margin: -10px 0; }
+.byline-credit a { display: inline-block; padding: 14px 0; margin: -14px 0; }
 .continue-secondary a { display: inline-block; padding: 10px 0; }
 
 /* A chapter's head is short: breadcrumb, which chapter, its title, and a way to move around. */
@@ -3049,7 +3052,7 @@ main:focus { outline: none; }
 .not-found h1 { margin: 10px 0 14px; font-size: clamp(2rem, 5vw, 3rem); font-weight: 500; font-style: normal; }
 .not-found .dek { margin: 0 auto 28px; }
 .not-found-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 10px; margin-top: 28px; font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 14px; }
-.not-found-links a { display: inline-flex; align-items: center; min-height: 40px; padding: 0 14px; border: 1px solid var(--line); border-radius: 999px; color: var(--ink); background: var(--white); transition: border-color .18s ease; }
+.not-found-links a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border: 1px solid var(--line); border-radius: 999px; color: var(--ink); background: var(--white); transition: border-color .18s ease; }
 .not-found-links a:hover, .not-found-links a:focus-visible { border-color: var(--clay); }
 
 /* ── Theme presence: the logo's deep teal, terracotta and peach, kept in step with the quiet cream pages ── */
@@ -3791,11 +3794,11 @@ html:has(.a-nav, .admin-login-page) { overflow: visible; }
 /* Penilaian AI on the reader page: numbers under Penyuntingan, reasons in a dialog once the reader has reached "Tamat". */
 .ai-rating-scores { list-style: none; margin: 0 0 10px; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 18px; }
 .ai-rating-scores li { display: flex; flex-direction: column; }
-.ai-rating-scores b { font-family: Georgia, serif; font-size: 22px; font-weight: 600; color: var(--ink); line-height: 1.1; }
+.ai-rating-scores b { font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 22px; font-weight: 600; color: var(--ink); line-height: 1.1; font-variant-numeric: lining-nums tabular-nums; }
 .ai-rating-scores li.official b { color: var(--clay-text); }
 .ai-rating-scores span { font-size: 11px; color: #5f7074; }
 .ai-rating-note { margin: 0 0 12px; font-size: 12px; line-height: 1.5; color: #5f7074; }
-.ai-rating-open { font: inherit; font-size: 12px; color: var(--ink); background: none; border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; cursor: pointer; }
+.ai-rating-open { font: inherit; font-size: 12px; color: var(--ink); background: none; border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; min-height: 44px; cursor: pointer; }
 .ai-rating-open:disabled { color: #748184; cursor: default; }
 .ai-rating-open:not(:disabled):hover { border-color: var(--ink); }
 .ai-rating-dialog { max-width: min(640px, calc(100vw - 32px)); max-height: calc(100vh - 48px); width: 100%; padding: 0; border: 1px solid var(--line); border-radius: 10px; background: var(--white); color: var(--ink); }
@@ -3803,10 +3806,10 @@ html:has(.a-nav, .admin-login-page) { overflow: visible; }
 .ai-rating-sheet { padding: 22px 24px 26px; font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 14px; line-height: 1.55; }
 .ai-rating-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
 .ai-rating-head h2 { margin: 0; font-family: Georgia, serif; font-size: 22px; }
-.ai-rating-head button { font: inherit; font-size: 13px; background: none; border: 0; color: var(--ink); text-decoration: underline; cursor: pointer; }
+.ai-rating-head button { font: inherit; font-size: 13px; background: none; border: 0; color: var(--ink); text-decoration: underline; cursor: pointer; padding: 13px 12px; margin: -13px -12px; }
 .ai-rating-reviewer { border-top: 1px solid var(--line); padding-top: 14px; margin-top: 14px; }
 .ai-rating-reviewer h3 { display: flex; justify-content: space-between; margin: 0 0 6px; font-size: 15px; }
-.ai-rating-reviewer h3 b { font-family: Georgia, serif; font-size: 20px; }
+.ai-rating-reviewer h3 b { font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 20px; font-weight: 600; font-variant-numeric: lining-nums tabular-nums; }
 .ai-rating-reviewer ul { list-style: none; margin: 10px 0 0; padding: 0; }
 .ai-rating-reviewer li { padding: 8px 0; border-bottom: 1px solid rgba(24,52,60,.08); }
 .ai-rating-reviewer li div { display: flex; justify-content: space-between; gap: 12px; font-weight: 600; }
@@ -3896,3 +3899,26 @@ html:has(.a-nav, .admin-login-page) { overflow: visible; }
 
 /* 404: the sentence under the heading was set in the full dek size (18 to 24px) and outweighed the heading; 16px reads as a note. */
 .not-found .dek { font-size: 16px; line-height: 1.55; }
+
+/* Footer links were 36px tall; a thumb needs about 44px. Only on touch screens and phone or tablet widths, so the desktop footer keeps its compact rhythm. */
+@media (pointer: coarse), (max-width: 900px) {
+  .footer-col a { min-height: 44px; }
+  .footer-col ul { gap: 0; }
+}
+
+/* The latest-episode title link on the home page was one line tall (about 25px). The padding gives a thumb 45px or more; the equal negative margin keeps every gap on the page as it was. */
+.series-feature-latest-title { padding-block: 10px; margin-block: -10px; }
+
+/* The phone "Menu" button was 39px tall (10px padding around a 14px line). 44px is a comfortable thumb target; the header is taller than that, so nothing moves. */
+.header-mobile-nav summary { display: inline-flex; align-items: center; box-sizing: border-box; min-height: 44px; }
+
+/* The figures under the carousel ("70 cerpen") were links about 30px tall. Padding gives a 44px touch area and the equal negative margin keeps the line as it was; on a phone the two rows of figures are now 44px apart (row gap 14px, the section is 4px taller) so the touch areas meet without overlapping. */
+.home-stats-list { gap: 14px 0; }
+.home-stat a { padding-block: 7px; margin-block: -7px; }
+
+/* A side column is sticky below the header. On a short screen (a laptop with the browser bars up, 640 to 700px) a tall column, now that it can hold the Penilaian block, ended below the fold and could not be scrolled to while reading. It scrolls inside itself instead. A story with footnotes in the margin keeps its static column (no sticky, no limit). */
+@media (min-width: 761px) {
+  .rail-card.sticky { max-height: calc(100dvh - 128px); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
+  .rail-card.sticky > :last-child { margin-bottom: 0; }
+  .has-margin-notes .rail-card.sticky { max-height: none; overflow: visible; }
+}
