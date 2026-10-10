@@ -3783,3 +3783,28 @@ html:has(.a-nav, .admin-login-page) { overflow: visible; }
 /* "Tamat" followed by "Baca lagi": one gap between them, not the end-of-page bottom space plus the section's top space. */
 .story-end:has(+ .related-works) { padding-bottom: 8px; }
 .story-end + .related-works { padding-top: 24px; }
+/* Penilaian AI on the reader page: numbers under Penyuntingan, reasons in a dialog once the reader has reached "Tamat". */
+.ai-rating-scores { list-style: none; margin: 0 0 10px; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 18px; }
+.ai-rating-scores li { display: flex; flex-direction: column; }
+.ai-rating-scores b { font-family: Georgia, serif; font-size: 22px; font-weight: 600; color: var(--ink); line-height: 1.1; }
+.ai-rating-scores li.official b { color: var(--clay-text); }
+.ai-rating-scores span { font-size: 11px; color: #5f7074; }
+.ai-rating-note { margin: 0 0 12px; font-size: 12px; line-height: 1.5; color: #5f7074; }
+.ai-rating-open { font: inherit; font-size: 12px; color: var(--ink); background: none; border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; cursor: pointer; }
+.ai-rating-open:disabled { color: #748184; cursor: default; }
+.ai-rating-open:not(:disabled):hover { border-color: var(--ink); }
+.ai-rating-dialog { max-width: min(640px, calc(100vw - 32px)); max-height: calc(100vh - 48px); width: 100%; padding: 0; border: 1px solid var(--line); border-radius: 10px; background: var(--white); color: var(--ink); }
+.ai-rating-dialog::backdrop { background: rgba(24,52,60,.45); }
+.ai-rating-sheet { padding: 22px 24px 26px; font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 14px; line-height: 1.55; }
+.ai-rating-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.ai-rating-head h2 { margin: 0; font-family: Georgia, serif; font-size: 22px; }
+.ai-rating-head button { font: inherit; font-size: 13px; background: none; border: 0; color: var(--ink); text-decoration: underline; cursor: pointer; }
+.ai-rating-reviewer { border-top: 1px solid var(--line); padding-top: 14px; margin-top: 14px; }
+.ai-rating-reviewer h3 { display: flex; justify-content: space-between; margin: 0 0 6px; font-size: 15px; }
+.ai-rating-reviewer h3 b { font-family: Georgia, serif; font-size: 20px; }
+.ai-rating-reviewer ul { list-style: none; margin: 10px 0 0; padding: 0; }
+.ai-rating-reviewer li { padding: 8px 0; border-bottom: 1px solid rgba(24,52,60,.08); }
+.ai-rating-reviewer li div { display: flex; justify-content: space-between; gap: 12px; font-weight: 600; }
+.ai-rating-reviewer li p, .ai-rating-reviewer > p { margin: 4px 0 0; color: #52656a; }
+.sheet-ai { margin-top: 18px; padding-top: 18px; border-top: 1px solid rgba(24,52,60,.08); }
+.sheet-ai > b { display: block; margin-bottom: 10px; }

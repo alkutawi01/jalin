@@ -816,3 +816,51 @@
 /* A picture an editor uploads (the Editorial page's top picture, a person's picture): shown at a fixed width above its upload controls. */
 .a-shell .a-profile-figure { margin: 0 0 12px; max-width: 520px; }
 .a-shell .a-profile-figure img { display: block; width: 100%; border-radius: var(--a-radius-lg); }
+
+/* Panel Bacaan AI */
+.a-shell .admin-panel-compare h3 { margin: 24px 0 8px; }
+.a-shell .admin-panel-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin: 12px 0; }
+.a-shell .admin-panel-kpi { background: var(--a-surface); border: 1px solid var(--a-line); border-radius: var(--a-radius-lg); padding: 12px 16px; }
+.a-shell .admin-panel-kpi p { margin: 4px 0 0; }
+.a-shell .admin-panel-label { font-size: 13px; font-weight: 600; color: var(--a-ink); }
+.a-shell .admin-panel-big { font-size: 26px; font-weight: 700; line-height: 1.15; color: var(--a-ink); font-variant-numeric: tabular-nums; }
+.a-shell .admin-panel-summary { background: var(--a-sunk); border-radius: var(--a-radius-lg); padding: 12px 16px; margin: 12px 0; }
+.a-shell .admin-panel-summary p { margin: 6px 0 0; color: var(--a-ink); }
+.a-shell .admin-panel-legend { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 8px; font-size: 13px; color: var(--a-ink); }
+.a-shell .admin-panel-swatch { display: inline-block; width: 10px; height: 10px; margin-right: 4px; vertical-align: -1px; }
+.a-shell .admin-panel-dash { display: inline-block; width: 16px; border-top: 2px dashed var(--a-ink-soft); margin-right: 4px; vertical-align: 3px; }
+.a-shell .panel-s1 { fill: var(--a-info); background: var(--a-info); }
+.a-shell .panel-s2 { fill: var(--a-accent); background: var(--a-accent); }
+.a-shell .panel-s3 { fill: var(--a-ok); background: var(--a-ok); }
+.a-shell .panel-s4 { fill: var(--a-warn); background: var(--a-warn); }
+.a-shell .admin-panel-chart { width: 100%; height: auto; display: block; }
+.a-shell .admin-panel-grid { stroke: var(--a-line); stroke-width: 1; }
+.a-shell .admin-panel-axis { fill: var(--a-ink); font-size: 12px; }
+.a-shell .admin-panel-threshold { stroke: var(--a-ink-soft); stroke-width: 1.5; stroke-dasharray: 6 4; }
+.a-shell .admin-panel-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(108px, 1fr)); gap: 12px; margin: 12px 0 20px; }
+.a-shell .admin-panel-tile { background: var(--a-surface); border: 1px solid var(--a-line); border-radius: var(--a-radius-lg); padding: 12px 16px; }
+.a-shell .admin-panel-tile .admin-panel-label { margin-top: 2px; }
+.a-shell .admin-panel-matrix td.wrap, .a-shell .admin-panel-matrix th.wrap { white-space: normal; min-width: 180px; }
+.a-shell .admin-panel-matrix-wrap { overflow-x: auto; background: var(--a-surface); border: 1px solid var(--a-line); border-radius: var(--a-radius-lg); }
+.a-shell .admin-panel-matrix { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.a-shell .admin-panel-matrix th, .a-shell .admin-panel-matrix td { padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--a-line); white-space: nowrap; color: var(--a-ink); }
+.a-shell .admin-panel-matrix thead th { font-size: 13px; font-weight: 600; background: var(--a-sunk); }
+.a-shell .admin-panel-matrix tbody tr:last-child td, .a-shell .admin-panel-matrix tbody tr:last-child th { border-bottom: 0; }
+.a-shell .admin-panel-wide { background: var(--a-warn-bg); color: var(--a-warn); font-weight: 600; }
+.a-shell .admin-panel-map { width: 100%; height: auto; display: block; margin: 4px 0 12px; }
+.a-shell .admin-panel-track { fill: var(--a-sunk); stroke: var(--a-line); }
+.a-shell .admin-panel-onseries { fill: var(--a-white); font-size: 11px; font-weight: 600; }
+.a-shell .admin-panel-bars { list-style: none; padding: 0; margin: 0 0 16px; display: grid; gap: 8px; }
+.a-shell .admin-panel-bars li { display: grid; grid-template-columns: 120px 1fr 40px; align-items: center; gap: 12px; }
+.a-shell .admin-panel-bar { width: 100%; height: 14px; }
+.a-shell .admin-panel-prompt { white-space: pre-wrap; max-height: 384px; overflow: auto; padding: 12px; border: 1px solid var(--a-line); border-radius: var(--a-radius-sm); background: var(--a-sunk); font-family: var(--a-mono); font-size: 12px; }
+.a-shell .admin-panel-rating { border: 1px solid var(--a-line); border-radius: var(--a-radius); padding: 8px 12px; margin-bottom: 8px; background: var(--a-surface); }
+.a-shell .admin-panel-rating.is-voided { opacity: 0.6; }
+.a-shell .admin-panel-rating-body { padding-top: 8px; display: grid; gap: 8px; }
+.a-shell .admin-panel-lines { list-style: none; padding: 0; margin: 0 0 12px; border: 1px solid var(--a-line); border-radius: var(--a-radius-lg); background: var(--a-surface); }
+.a-shell .admin-panel-lines li { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 10px 14px; border-bottom: 1px solid var(--a-line); color: var(--a-ink); }
+.a-shell .admin-panel-lines li:last-child { border-bottom: 0; }
+.a-shell .admin-panel-lines li.is-voided { opacity: 0.6; }
+.a-shell .admin-panel-line-score { font-weight: 700; font-variant-numeric: tabular-nums; }
+.a-shell .admin-panel-tab { margin-top: 16px; }
+.a-shell .admin-input-wide { width: 100%; }

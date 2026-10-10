@@ -12,6 +12,8 @@ import HeaderSearch from "./HeaderSearch";
 import MobileNavMenu from "./MobileNavMenu";
 import HeaderAccount from "./HeaderAccount";
 import { readerAccountsEnabled } from "../../lib/reader-auth/enabled";
+import AiRating from "./AiRating";
+import type { PublicRatingSummary } from "../../lib/panel/public";
 
 function SiteNav({ active, className }: { active?: string; className: string }) {
   return <SiteNavLinks active={active} className={className} links={NAV_LINKS} />;
@@ -158,7 +160,7 @@ export function EditorialImage({
 }
 
 /** The left rail: about the work, then who made it (editorial). It starts level with the first paragraph, not with the page header. */
-export function LeftRail({ rows, note, editorial = [], children }: { rows: WorkMetaRow[]; note?: string; editorial?: EditorialCredit[]; children?: ReactNode }) {
+export function LeftRail({ rows, note, editorial = [], aiRating, children }: { rows: WorkMetaRow[]; note?: string; editorial?: EditorialCredit[]; aiRating?: { workId: string; summary: PublicRatingSummary }; children?: ReactNode }) {
   return (
     <aside className="left-rail" aria-label="Tentang karya">
       <div className="rail-card sticky">
@@ -184,6 +186,13 @@ export function LeftRail({ rows, note, editorial = [], children }: { rows: WorkM
             ))}
           </>
         )}
+        {aiRating ? (
+          <>
+            <div className="rail-rule" />
+            <div className="rail-label">Penilaian AI</div>
+            <AiRating workId={aiRating.workId} summary={aiRating.summary} />
+          </>
+        ) : null}
       </div>
       {children ? <div className="rail-card sticky">{children}</div> : null}
     </aside>

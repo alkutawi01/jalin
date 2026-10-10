@@ -7,6 +7,7 @@ import { clearDraft, draftDiffers, pickDraftFields, readDraft, saveDraft, type S
 import { pasteAsMarkdown } from "@/components/admin/pasteMarkdown";
 import ImageFocusPicker from "@/components/admin/ImageFocusPicker";
 import { useAdminCan } from "@/components/admin/AdminRole";
+import PanelTab from "@/components/admin/PanelTab";
 import ChapterImages from "@/components/admin/ChapterImages";
 import { useState, useEffect, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
@@ -202,8 +203,8 @@ interface CharacterEntry {
   firstAppearanceSection: string | null;
 }
 
-type Tab = "content" | "metadata" | "sections" | "credits" | "glossary" | "characters" | "source";
-const TABS: readonly Tab[] = ["content", "metadata", "sections", "credits", "glossary", "characters", "source"];
+type Tab = "content" | "metadata" | "sections" | "credits" | "glossary" | "characters" | "source" | "panel";
+const TABS: readonly Tab[] = ["content", "metadata", "sections", "credits", "glossary", "characters", "source", "panel"];
 
 interface SectionData {
   id: number;
@@ -218,7 +219,7 @@ interface SectionData {
 const isSourced = (type: string, origin: string) => isSourcedWork(type, { origin });
 
 const TAB_NAMES: Record<Tab, string> = {
-  content: "Kandungan", metadata: "Maklumat", sections: "Bab", credits: "Kredit", glossary: "Glosari", characters: "Watak & latar", source: "Sumber & Hak"
+  content: "Kandungan", metadata: "Maklumat", sections: "Bab", credits: "Kredit", glossary: "Glosari", characters: "Watak & latar", source: "Sumber & Hak", panel: "Penilaian AI"
 };
 
 const HISTORY_ACTIONS: Record<string, string> = {
@@ -765,6 +766,7 @@ export default function EditWorkPage() {
   const [everPublic, setEverPublic] = useState(false);
   const canPublish = useAdminCan("work.publish");
   const canDelete = useAdminCan("work.delete");
+  const canPanel = useAdminCan("panel.manage");
   /** What this page last loaded or saved of the fields that two tabs can fight over; sent with every save (see stale-write.ts). */
   const baseRef = useRef<Record<string, string> | null>(null);
   const baseOf = (f: { title: string; slug: string; body: string; dek: string; genre: string; audience: string; readingMinutes: string; editorNote: string; readerNote: string; origin: string }) => ({
@@ -2197,9 +2199,18 @@ export default function EditWorkPage() {
             Sumber &amp; Hak
           </button>
         )}
+        {canPanel && ["cerpen", "novela", "bersiri"].includes(form.type) && (
+          <button
+            className={`admin-tab ${activeTab === "panel" ? "admin-tab-active" : ""}`}
+            aria-pressed={activeTab === "panel"}
+            onClick={() => selectTab("panel")}
+          >
+            Penilaian AI
+          </button>
+        )}
       </div>
 
-      {activeTab !== "glossary" && <details className="admin-advanced-field">
+      {activeTab !== "glossary" && activeTab !== "panel" && <details className="admin-advanced-field">
         <summary>Bantuan bot sembang untuk tab {TAB_NAMES[activeTab as Tab] ?? activeTab}</summary>
         {activeTab === "characters" ? (
           <>
@@ -3637,6 +3648,11 @@ export default function EditWorkPage() {
               )}
             </>
           )}
+        </div>
+      )}
+      {activeTab === "panel" && canPanel && ["cerpen", "novela", "bersiri"].includes(form.type) && (
+        <div className="admin-panel-tab">
+          <PanelTab kind="work" subjectId={workId} />
         </div>
       )}
       {/* Archiving a work that is public takes it off the site, so it needs the same permission as publishing (the server checks too). */}

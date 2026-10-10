@@ -1,0 +1,27 @@
+import { getDb } from "../../../../../lib/db";
+import { logActivity } from "../../../../../lib/admin/activity";
+import { actor, bad, guarded, json, readBody, sameOriginOrRefuse, str } from "../../../../../lib/admin/langganan-api";
+import { loadSettings, saveSettings } from "../../../../../lib/panel/service";
+
+export const dynamic = "force-dynamic";
+
+const shape = (s: Awaited<ReturnType<typeof loadSettings>>) => ({ threshold: s.thresholdText, referenceName: s.referenceName, referenceKeywords: s.referenceKeywords.join(", ") });
+
+/** Anyone who may rate can read the settings. */
+export async function GET() {
+  return guarded(async () => json(shape(await loadSettings(getDb()))));
+}
+
+/** The threshold and the official reviewer. Only the chief editor and the owner (permissions.ts). */
+export async function PUT(request: Request) {
+  return guarded(async () => {
+    const refused = sameOriginOrRefuse(request);
+    if (refused) return refused;
+    const body = await readBody(request);
+    const who = await actor();
+    const result = await saveSettings(getDb(), { threshold: str(body.threshold, 12), referenceName: str(body.referenceName, 60), referenceKeywords: str(body.referenceKeywords, 200) }, who.name);
+    if (!result.ok) return bad(result.errors.join(" "), 422);
+    await logActivity({ action: "panel.settings", subjectType: "panel_settings", subjectId: "panel", summary: `Ambang ${result.settings.thresholdText}; penilai rasmi ${result.settings.referenceName}` });
+    return json(shape(result.settings));
+  });
+}

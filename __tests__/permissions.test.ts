@@ -87,6 +87,11 @@ const langganan: [string, string][] = [
 ];
 assert(langganan.every(([m, u]) => isAllowed("owner", m, u) && !isAllowed("chief_editor", m, u) && !isAllowed("editor", m, u)), "the Langganan pages and their API are for the owner only, reads included");
 assert(!can("chief_editor", "subscription.manage") && !can("editor", "subscription.manage") && can("owner", "subscription.manage"), "only the owner holds the subscription permission");
+const panel: [string, string][] = [
+  ["POST", "/api/admin/panel/snapshot"], ["POST", "/api/admin/panel/snapshot/abc/rating"], ["POST", "/api/admin/panel/rating/abc/void"], ["GET", "/admin/panel"], ["GET", "/admin/panel/work/abc"]
+];
+assert(panel.every(([m, u]) => isAllowed("owner", m, u) && isAllowed("chief_editor", m, u) && !isAllowed("editor", m, u)), "the Panel pages and API are for the owner and chief editor, never the editor, reads included");
+assert(isAllowed("chief_editor", "PUT", "/api/admin/panel/settings") && isAllowed("owner", "PUT", "/api/admin/panel/settings") && !isAllowed("editor", "PUT", "/api/admin/panel/settings") && isAllowed("chief_editor", "GET", "/api/admin/panel/settings") && isAllowed("chief_editor", "GET", "/api/admin/panel/view") && isAllowed("chief_editor", "GET", "/api/admin/panel/summary"), "the Panel settings can be changed by the chief editor and the owner only");
 
 // 5) fail closed
 assert(permissionFor("POST", "/api/admin/something-new") === null && !isAllowed("editor", "POST", "/api/admin/something-new") && !isAllowed("chief_editor", "DELETE", "/api/admin/something-new") && isAllowed("owner", "POST", "/api/admin/something-new"), "an address with no rule is for the owner only");

@@ -21,6 +21,7 @@
     "db:reader-ledger-check": "npx tsx scripts/reader-ledger-check.ts",
     "db:redeem-check": "npx tsx scripts/redeem-check.ts",
     "db:restore-drill": "npx tsx scripts/restore-drill.ts",
+    "db:panel-check": "npx tsx scripts/panel-check.ts",
     "db:codes-reconcile": "npx tsx scripts/codes-reconcile.ts",
     "test:reader-e2e": "npx tsx scripts/reader-e2e.ts",
     "content:compare": "npx tsx scripts/content-source-compare.ts",

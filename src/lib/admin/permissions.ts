@@ -32,12 +32,14 @@ export const PERMISSIONS = [
   "typography.manage", // the size of the story text and its sub-headings (Tetapan > Saiz teks karya)
   "activity.read", // who changed what (the Aktiviti page)
   "user.manage", // staff accounts: invite, change role, switch off, reset password
-  "subscription.manage" // reader accounts, access, card codes, shared codes and the stop switch (the owner only)
+  "subscription.manage", // reader accounts, access, card codes, shared codes and the stop switch (the owner only)
+  "panel.manage", // Panel Bacaan AI: the Penilaian AI tab of a work: prepare, paste in, void ratings (owner and chief editor)
+  "panel.settings" // Panel Bacaan AI: change the threshold and the official reviewer (the chief editor, and the owner who holds everything)
 ] as const;
 export type Permission = (typeof PERMISSIONS)[number];
 
 const EDITOR: Permission[] = ["session.use", "content.read", "work.write", "credit.write", "glossary.write", "visual.write"];
-const CHIEF_EDITOR: Permission[] = [...EDITOR, "visual.review", "ai.generate", "series.manage", "source.manage", "submission.manage", "editorial.curate", "typography.manage", "activity.read"];
+const CHIEF_EDITOR: Permission[] = [...EDITOR, "visual.review", "ai.generate", "series.manage", "source.manage", "submission.manage", "editorial.curate", "typography.manage", "activity.read", "panel.manage", "panel.settings"];
 
 export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
   owner: PERMISSIONS,
@@ -67,6 +69,10 @@ const API_RULES: Rule[] = [
   { methods: "*", pattern: /^\/users(\/|$)/, permission: "user.manage" },
   // Readers, access and codes: never open to the generic read rule below, or every editor could list readers' e-mail addresses.
   { methods: "*", pattern: /^\/langganan(\/|$)/, permission: "subscription.manage" },
+  // Panel Bacaan AI: ratings of unpublished work and of submissions, so never open to the generic read rule.
+  // Only the chief editor (and the owner) change the settings; everyone who rates may read them.
+  { methods: WRITE, pattern: /^\/panel\/settings(\/|$)/, permission: "panel.settings" },
+  { methods: "*", pattern: /^\/panel(\/|$)/, permission: "panel.manage" },
 
   { methods: "*", pattern: new RegExp(`^/works/${ID}/publish$`), permission: "work.publish" },
   { methods: "*", pattern: /^\/publish$/, permission: "work.publish" },
@@ -103,6 +109,7 @@ const API_RULES: Rule[] = [
 const PAGE_RULES: Rule[] = [
   { methods: READ, pattern: /^\/admin\/pengguna(\/|$)/, permission: "user.manage" },
   { methods: READ, pattern: /^\/admin\/langganan(\/|$)/, permission: "subscription.manage" },
+  { methods: READ, pattern: /^\/admin\/panel(\/|$)/, permission: "panel.manage" },
   { methods: READ, pattern: /^\/admin\/aktiviti$/, permission: "activity.read" },
   { methods: READ, pattern: /^\/admin\/ubah-kata-laluan$/, permission: "session.use" },
   { methods: READ, pattern: /^\/admin\/settings\/saiz-teks$/, permission: "typography.manage" },

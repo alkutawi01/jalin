@@ -32,7 +32,12 @@ export const ACTIVITY_ACTIONS = {
   "subscription.shared.update": "Mengurus kod kongsi",
   "subscription.access.grant": "Memberi akses kepada pembaca",
   "subscription.access.revoke": "Membatalkan akses pembaca",
-  "subscription.switch": "Suis henti penebusan"
+  "subscription.switch": "Suis henti penebusan",
+  "panel.snapshot": "Menyediakan penilaian panel",
+  "panel.rate": "Menambah penilaian panel",
+  "panel.rate.invalid": "Jawapan panel ditolak",
+  "panel.void": "Membatalkan penilaian panel",
+  "panel.settings": "Mengubah tetapan Panel Bacaan AI"
 } as const;
 export type ActivityAction = keyof typeof ACTIVITY_ACTIONS;
 
