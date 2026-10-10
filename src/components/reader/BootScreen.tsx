@@ -15,7 +15,7 @@ export default function BootScreen() {
   return (
     <>
       <div className="boot-screen" id="boot-screen" aria-hidden="true" suppressHydrationWarning>
-        <JalinEmblem animated tone="on-teal" variant="gelombang" size={104} />
+        <JalinEmblem animated tone="on-teal" variant="gelombang" size={84} />
       </div>
       <script dangerouslySetInnerHTML={{ __html: SCRIPT }} />
       {/* Without JavaScript: no loading screens, and the page itself is shown. A streamed page arrives inside hidden boxes
