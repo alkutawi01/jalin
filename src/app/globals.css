@@ -3775,3 +3775,11 @@ html:has(.a-nav, .admin-login-page) { overflow: visible; }
 .auth-reading a:hover .auth-reading-title, .auth-reading a:focus-visible .auth-reading-title { text-decoration: underline; text-underline-offset: 3px; }
 .auth-reading-title { display: block; font-family: Georgia, serif; font-size: 17px; }
 .auth-reading-meta { display: block; margin-top: 2px; font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 13px; color: var(--ink-soft); }
+.related-work-kind { display: block; margin-bottom: 6px; font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: var(--clay-text); }
+.related-works .section-head { align-items: center; }
+.related-works-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.related-works-grid-single { grid-template-columns: minmax(0, 580px); }
+@media (max-width: 620px) { .related-works-grid { grid-template-columns: minmax(0, 1fr); } }
+/* "Tamat" followed by "Baca lagi": one gap between them, not the end-of-page bottom space plus the section's top space. */
+.story-end:has(+ .related-works) { padding-bottom: 8px; }
+.story-end + .related-works { padding-top: 24px; }
