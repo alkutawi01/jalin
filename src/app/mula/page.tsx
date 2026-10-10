@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import { notFound } from "next/navigation";
 import { SiteFooter, SiteHeader } from "../../components/reader/StoryChrome";
 import { WorkCover } from "../../components/reader/WorkCover";
@@ -14,6 +13,7 @@ import { displayableGenre } from "../../lib/reader/genre-display";
 import { projectPublicWorkSummary, type PublicWorkSummary } from "../../lib/reader/public-projection";
 import { computeSiteStats, statItems } from "../../lib/reader/site-stats";
 import { visibleSampleCount } from "../../lib/reader/sample-count";
+import { getWall } from "../../lib/reader/start-wall";
 import { readerAccountsEnabled } from "../../lib/reader-auth/enabled";
 import { currentReaderSession } from "../../lib/reader-auth/server";
 import { sampleSlugs } from "../../lib/reader-auth/switches";
@@ -72,12 +72,8 @@ async function loadPage() {
   const repo = await initContentRepository();
   const works = repo.getWorks();
   const stats = statItems(computeSiteStats(works, repo.getPublishedSeries().length));
-  // A wall of pictures behind the first screen: the published works' own pictures, a dozen at most.
-  const wall = works
-    .filter((w) => w.type !== "sinopsis" && w.type !== "fragmen")
-    .map((w) => projectPublicWorkSummary(w).hero)
-    .filter((h): h is NonNullable<typeof h> => !!h && !!h.src)
-    .slice(0, 9);
+  // The picture behind the first screen is one ready-made file, made once a month (see lib/reader/start-wall.ts).
+  const wall = await getWall(getDb());
   const slugs = [...(await sampleSlugs(getDb()))];
   const samples: Sample[] = [];
   for (const slug of slugs.slice(0, 12)) {
@@ -100,13 +96,10 @@ export default async function StartPage() {
       <SiteHeader />
       <main id="kandungan" tabIndex={-1}>
         <section className="start-hero-band" aria-labelledby="mula-tajuk">
-          {wall.length > 0 ? (
+          {wall ? (
             <div className="start-wall" aria-hidden="true">
-              {wall.map((h, i) => (
-                <span className="start-wall-tile" key={h.src + i}>
-                  <Image src={h.src} alt="" fill sizes="(max-width: 760px) 34vw, 17vw" quality={75} loading="lazy" />
-                </span>
-              ))}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={wall.url} alt="" width={1850} height={410} decoding="async" fetchPriority="low" />
             </div>
           ) : null}
           <div className="site-shell start-hero-inner">

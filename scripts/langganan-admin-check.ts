@@ -79,6 +79,13 @@ async function main() {
     const paywall = await call("/api/admin/langganan/dinding-bayar");
     assert(paywall.status === 200 && typeof paywall.json.on === "boolean", "the paywall switch can be read");
 
+    const wallMade = await call("/api/admin/langganan/dinding-gambar", { method: "POST", body: {} });
+    assert(wallMade.status === 200 && wallMade.json.ok === true && wallMade.json.bytes > 10000 && wallMade.json.bytes < 400000, "the picture behind /mula is made as one small file", wallMade.text.slice(0, 200));
+    const wallRead = await call("/api/admin/langganan/dinding-gambar");
+    assert(wallRead.status === 200 && /^\d{4}-\d{2}$/.test(wallRead.json.wall?.month ?? ""), "and its month is recorded");
+    const cronRefused = await call("/api/cron/dinding-gambar");
+    assert(cronRefused.status === 401, "the scheduled job refuses a caller without the secret");
+
     console.log("\nThe pages");
     for (const [path, needle] of [[`/admin/langganan/kad/${batchId}`, "HTTP-001"], ["/admin/langganan/pembaca", "Semua ahli"], ["/admin/langganan/contoh", "Cerita contoh"], ["/admin/langganan", "Dinding bayar"], ["/admin/langganan/kad", "Kad dan kelompok"]] as const) {
       const page = await call(path);
