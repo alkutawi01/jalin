@@ -64,13 +64,12 @@ export default function AiRating({ workId, summary }: { workId: string; summary:
         ))}
       </ul>
       <p className="ai-rating-note">{disclosure}</p>
-      <button type="button" className="ai-rating-open" disabled={!reached} onClick={open}>
-        {reached ? "Lihat butiran penilaian" : "Butiran dibuka selepas tamat"}
-      </button>
+      {/* Nothing is shown before the reader reaches "Tamat": no disabled button, no explanation. */}
+      {reached ? <button type="button" className="ai-rating-open" onClick={open}>Lihat butiran penilaian</button> : null}
       <dialog ref={dialogRef} className="ai-rating-dialog" onClick={(e) => { if (e.target === dialogRef.current) dialogRef.current?.close(); }}>
         <div className="ai-rating-sheet">
           <div className="ai-rating-head">
-            <h2>Penilaian AI</h2>
+            <h2>Penilaian</h2>
             <button type="button" onClick={() => dialogRef.current?.close()} aria-label="Tutup">Tutup</button>
           </div>
           <p className="ai-rating-note">{disclosure}. Skor daripada 1 hingga 10 mengikut rubrik enam komponen Jalin. Ia ialah bacaan model AI, bukan pendapat editor, dan bukan ukuran mutlak.</p>

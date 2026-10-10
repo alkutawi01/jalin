@@ -188,7 +188,7 @@ export default function MobileStoryInfo({ data }: { data: StoryInfoData }) {
             <div id="sheet-panel-editorial" role="tabpanel" aria-labelledby="sheet-tab-editorial" className="sheet-stack">
               {data.editorial.map((credit) => <div key={credit.role + "-" + credit.names.join("|")}><span>{credit.role}</span>{credit.names.map((name) => <b key={name}>{name}</b>)}</div>)}
               {data.note ? <p className="sheet-note">{renderItalics(data.note)}</p> : null}
-              {data.aiRating ? <div className="sheet-ai"><b>Penilaian AI</b><AiRating workId={data.aiRating.workId} summary={data.aiRating.summary} /></div> : null}
+              {data.aiRating ? <div className="sheet-ai"><b>Penilaian</b><AiRating workId={data.aiRating.workId} summary={data.aiRating.summary} /></div> : null}
             </div>
           )}
           {tab === "bab" && data.bab && (

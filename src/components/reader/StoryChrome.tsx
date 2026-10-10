@@ -195,7 +195,7 @@ export function LeftRail({ rows, note, editorial = [], aiRating, children }: { r
         {aiRating ? (
           <>
             <div className="rail-rule" />
-            <div className="rail-label">Penilaian AI</div>
+            <div className="rail-label">Penilaian</div>
             <AiRating workId={aiRating.workId} summary={aiRating.summary} />
           </>
         ) : null}
