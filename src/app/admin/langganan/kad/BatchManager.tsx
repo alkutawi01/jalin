@@ -198,7 +198,7 @@ export default function BatchManager({ initialBatches, suggested }: { initialBat
             <tbody>
               {batches.map((b) => (
                 <tr key={b.id}>
-                  <td><strong>{b.batchNumber}</strong><div className="admin-form-hint">{fmtDate(b.createdAt)}{b.orderRef ? ` · ${b.orderRef}` : ""}</div></td>
+                  <td><a href={`/admin/langganan/kad/${b.id}`}><strong>{b.batchNumber}</strong></a><div className="admin-form-hint">{fmtDate(b.createdAt)}{b.orderRef ? ` · ${b.orderRef}` : ""}</div></td>
                   <td>{b.months} bulan</td>
                   <td>{b.quantity}</td>
                   <td>{STATUS[b.status]}{b.voidReason ? <div className="admin-form-hint">{b.voidReason}</div> : null}</td>

@@ -49,6 +49,8 @@ export type StoryInfoData = {
   times?: PlaceMeta[];
   editorial: EditorialCredit[];
   note?: string;
+  /** Penilaian AI (ringkasan sahaja; butiran dimuat selepas tamat). */
+  aiRating?: { workId: string; summary: import("../../lib/panel/public").PublicRatingSummary };
   /** Daftar bab untuk drawer mobile (novela sahaja). */
   bab?: { label: string; href: string }[];
 };

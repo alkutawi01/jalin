@@ -14,8 +14,10 @@
 
 import { cookies } from "next/headers";
 import crypto from "crypto";
-import { hasDb } from "../db";
+import { getDb, hasDb } from "../db";
 import { authenticateStaff, getStaff, isStaffRole, type StaffRole } from "./user-service";
+import { adminSessionSigningKey } from "./session-key";
+import { ownerLoginAttempt } from "./owner-login-limits";
 
 export interface AdminUser {
   id: string;
@@ -120,9 +122,9 @@ export type SignInOutcome = { token: string } | { error: "invalid" | "locked" | 
  * Sign in as the owner (e-mail on the allowed list + ADMIN_SECRET) or as a staff account (username or e-mail + own password).
  * The owner is tried first, so nothing changes for the owner; a staff account never gets the owner role.
  */
-export async function signIn(identifier: string, password: string): Promise<SignInOutcome> {
-  const owner = await loginAdmin(identifier, password);
-  if (owner) return { token: owner };
+export async function signIn(identifier: string, password: string, ip = "unknown"): Promise<SignInOutcome> {
+  const owner = await loginAdmin(identifier, password, ip);
+  if (owner) return owner;
   if (!hasDb() || !getAdminSecret()) return { error: "invalid" };
   try {
     const result = await authenticateStaff(identifier, password);
@@ -148,12 +150,12 @@ export function staffSessionToken(user: { id: string; displayName: string; email
   return signSession({ id: `u-${user.id}`, name: user.displayName, email: user.email ?? user.username, role: user.role, mcp: false, expires: Date.now() + STAFF_SESSION_EXPIRY });
 }
 
-export async function loginAdmin(email: string, password: string): Promise<string | null> {
+export async function loginAdmin(email: string, password: string, ip = "unknown"): Promise<SignInOutcome | null> {
   // Check if admin secret is configured
   const adminSecret = getAdminSecret();
   if (!adminSecret) {
     console.error("[AdminAuth] Login rejected: ADMIN_SECRET not configured.");
-    return null;
+    return { error: "invalid" };
   }
 
   // Check if email is in allowlist
@@ -163,29 +165,18 @@ export async function loginAdmin(email: string, password: string): Promise<strin
     console.warn("[AdminAuth] Login rejected: ADMIN_ALLOWED_EMAILS is empty.");
     return null;
   }
-  if (!allowedEmails.includes(email)) {
-    console.warn(`[AdminAuth] Email "${email}" not in allowlist.`);
-    return null;
-  }
+  if (!allowedEmails.includes(email)) return null;
 
   // Validate password against admin secret (timing-safe)
   const passwordBuffer = Buffer.from(password);
   const secretBuffer = Buffer.from(adminSecret);
 
-  if (passwordBuffer.length !== secretBuffer.length) {
-    console.warn("[AdminAuth] Invalid password attempt.");
-    return null;
-  }
-
-  let result = 0;
-  for (let i = 0; i < passwordBuffer.length; i++) {
-    result |= passwordBuffer[i]! ^ secretBuffer[i]!;
-  }
-
-  if (result !== 0) {
-    console.warn("[AdminAuth] Invalid password attempt.");
-    return null;
-  }
+  const valid = passwordBuffer.length === secretBuffer.length && crypto.timingSafeEqual(passwordBuffer, secretBuffer);
+  if (!hasDb()) return { error: "invalid" }; // Rate limiting must not silently disappear when the database is unavailable.
+  let attempt: "ok" | "invalid" | "locked";
+  try { attempt = await ownerLoginAttempt(getDb(), ip, adminSessionSigningKey() ?? adminSecret, valid); }
+  catch { return { error: "invalid" }; }
+  if (attempt !== "ok") return { error: attempt };
 
   // Create session token
   const sessionData = {
@@ -199,7 +190,7 @@ export async function loginAdmin(email: string, password: string): Promise<strin
   // Sign session data
   const sessionToken = signSession(sessionData);
 
-  return sessionToken;
+  return { token: sessionToken };
 }
 
 /**
@@ -228,7 +219,7 @@ export async function setSessionCookie(token: string, staff = false): Promise<vo
  * Sign session data with HMAC.
  */
 function signSession(data: Record<string, unknown>): string {
-  const secret = getAdminSecret();
+  const secret = adminSessionSigningKey();
   if (!secret) {
     throw new Error("Cannot sign session: ADMIN_SECRET not configured.");
   }
@@ -253,7 +244,7 @@ function validateSession(token: string): AdminUser | null {
       return null;
     }
 
-    const secret = getAdminSecret();
+    const secret = adminSessionSigningKey();
     if (!secret) {
       return null;
     }

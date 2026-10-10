@@ -20,7 +20,7 @@ function formatSeen(iso: string): string {
 }
 
 /** Sign in or register with one form: an e-mail, then the six-digit code, then (only if two devices are already signed in) which one to remove. */
-export default function LoginForm() {
+export default function LoginForm({ next = "/akaun", compact = false }: { next?: string; compact?: boolean }) {
   const [step, setStep] = useState<Step>("email");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
@@ -52,7 +52,7 @@ export default function LoginForm() {
     event?.preventDefault();
     if (busy) return;
     setError(""); setNotice("");
-    if (!email.trim()) { setError("Masukkan emel anda."); return; }
+    if (!email.trim()) { setError("Masukkan e-mel anda."); return; }
     setBusy(true);
     try {
       const { ok, data } = await post("/api/akaun/kod", { email });
@@ -81,10 +81,10 @@ export default function LoginForm() {
         return;
       }
       if (ok && data.ok) {
-        window.location.href = "/akaun";
+        window.location.href = next;
         return;
       }
-      setError(status === 429 ? "Terlalu banyak cubaan. Cuba lagi kemudian." : String(data.error ?? "Kod tidak betul atau sudah tamat."));
+      setError(status === 429 ? "Terlalu banyak cubaan. Cuba lagi kemudian." : String(data.error ?? "Kod tidak sah atau telah tamat tempoh. Semak kod atau minta kod baharu."));
     } catch {
       setError("Tiada sambungan. Semak internet anda dan cuba lagi.");
     } finally {
@@ -93,23 +93,24 @@ export default function LoginForm() {
   }
 
   return (
-    <div className="auth-card">
+    <div className={compact ? "auth-card auth-card--compact" : "auth-card"}>
       {step === "email" ? (
         <form onSubmit={sendCode} noValidate>
-          <h1 className="auth-title">Log masuk atau daftar</h1>
-          <p className="auth-intro">Masukkan emel anda. Kami hantar kod enam digit. Tiada kata laluan.</p>
-          <label className="auth-label" htmlFor="auth-email">Emel</label>
+          {compact ? null : <h1 className="auth-title">Log masuk atau daftar</h1>}
+          {compact ? null : <p className="auth-intro">Masukkan e-mel anda. Kami hantar kod enam digit. Tiada kata laluan.</p>}
+          <label className="auth-label" htmlFor="auth-email">E-mel</label>
           <input id="auth-email" className="auth-input" type="email" inputMode="email" autoComplete="email" placeholder="nama@contoh.my" value={email} onChange={(e) => setEmail(e.target.value)} aria-invalid={!!error} aria-describedby={error ? "auth-error" : undefined} />
           {error ? <p id="auth-error" className="auth-error" role="alert">{error}</p> : null}
           <button className="auth-button" type="submit" disabled={busy}>{busy ? "Menghantar…" : "Hantar kod"}</button>
-          <p className="auth-fine">Akaun baharu mendapat percubaan 14 hari.</p>
+          <p className="auth-fine">Percubaan percuma 14 hari bermula apabila anda memilih untuk memulakannya.</p>
+          <p className="auth-fine">Dengan menghantar kod, anda mengesahkan telah membaca <a href="/privasi">Dasar privasi</a> dan <a href="/terma">Terma penggunaan</a>.</p>
         </form>
       ) : null}
 
       {step === "code" ? (
         <form onSubmit={(e) => verify(e)} noValidate>
           <h1 className="auth-title">Masukkan kod</h1>
-          <p className="auth-intro">Kod dihantar ke <strong>{email.trim()}</strong>. Sah 5 minit. Semak juga folder spam.</p>
+          <p className="auth-intro">Kod telah dihantar ke <strong>{email.trim()}</strong>. Kod ini sah selama 5 minit. Jika tiada dalam peti masuk, semak folder spam.</p>
           <label className="auth-label" htmlFor="auth-code">Kod enam digit</label>
           <input id="auth-code" ref={codeRef} className="auth-input auth-code" type="text" inputMode="numeric" autoComplete="one-time-code" maxLength={7} placeholder="000000" value={code} onChange={(e) => setCode(e.target.value.replace(/[^\d\s-]/g, ""))} aria-invalid={!!error} aria-describedby={error ? "auth-error" : undefined} />
           {error ? <p id="auth-error" className="auth-error" role="alert">{error}</p> : null}
@@ -117,17 +118,17 @@ export default function LoginForm() {
           <button className="auth-button" type="submit" disabled={busy}>{busy ? "Mengesahkan…" : "Sahkan"}</button>
           <div className="auth-links">
             <button type="button" className="auth-link" disabled={wait > 0 || busy} onClick={() => sendCode().then(() => setNotice("Kod baharu dihantar."))}>
-              {wait > 0 ? `Hantar semula kod (${wait}s)` : "Hantar semula kod"}
+              {wait > 0 ? `Hantar semula kod (${wait} saat)` : "Hantar semula kod"}
             </button>
-            <button type="button" className="auth-link" onClick={() => { setStep("email"); setError(""); setNotice(""); }}>Tukar emel</button>
+            <button type="button" className="auth-link" onClick={() => { setStep("email"); setError(""); setNotice(""); }}>Tukar e-mel</button>
           </div>
         </form>
       ) : null}
 
       {step === "device" ? (
         <div>
-          <h1 className="auth-title">Pilih peranti untuk dikeluarkan</h1>
-          <p className="auth-intro">Akaun ini sudah digunakan pada 2 peranti. Untuk log masuk di sini, keluarkan satu daripadanya.</p>
+          <h1 className="auth-title">Pilih peranti untuk dilog keluar</h1>
+          <p className="auth-intro">Akaun ini sudah digunakan pada dua peranti. Untuk log masuk pada peranti ini, anda perlu mengeluarkan salah satu peranti yang sedia ada.</p>
           <ul className="auth-devices">
             {devices.map((device) => (
               <li key={device.id} className="auth-device">

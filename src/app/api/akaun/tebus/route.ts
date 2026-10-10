@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getDb } from "../../../../lib/db";
-import { asString, codeKey, currentSession, isSameOrigin, noStore, notFoundWhenOff, readJson, visitorMac } from "../../../../lib/reader-auth/http";
+import { asString, codeKey, currentSession, isSameOrigin, noStore, notFoundWhenOff, previousCodeKeys, readJson, visitorMac } from "../../../../lib/reader-auth/http";
 import { redeemCode } from "../../../../lib/reader-auth/redeem";
 import { formatEndMYT } from "../../../../lib/subscription/periods";
 
@@ -23,7 +23,7 @@ export async function POST(request: Request) {
   const body = await readJson(request);
   const result = await redeemCode(
     getDb(),
-    { codeKey: codeKey() },
+    { codeKey: codeKey(), previousCodeKeys: previousCodeKeys() },
     { accountId: current.session.account.id, ipMac: visitorMac(request), code: asString(body.code, 60), batch: asString(body.batch, 40) }
   );
 

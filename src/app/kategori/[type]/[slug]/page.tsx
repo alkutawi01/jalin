@@ -7,6 +7,10 @@ import { chapterHeroOf } from "../../../../lib/reader/chapter-visuals";
 import { initContentRepository } from "../../../../lib/content";
 import { getWorkBySlug } from "../../../../lib/content/workLoader";
 import WorkView from "../../../../components/reader/WorkView";
+import ReadingTracker from "../../../../components/reader/ReadingTracker";
+import SaveWorkButton from "../../../../components/reader/SaveWorkButton";
+import LockedWork from "../../../../components/reader/LockedWork";
+import { gateForWork } from "../../../../lib/reader/access-gate";
 
 // Editorial changes must be visible on work pages just as on the dynamic homepage.
 export const dynamic = "force-dynamic";
@@ -38,16 +42,18 @@ export async function generateMetadata({
   const sections = work.sections && work.sections.length > 0 ? work.sections : [];
   const sectionIndex = sectionSlug ? sections.findIndex((section) => section.slug === sectionSlug) : -1;
   const chapter = sectionIndex >= 0 ? sections[sectionIndex] : undefined;
+  // A locked novela chapter must not reveal its title or chapter-specific preview image in metadata.
+  const visibleChapter = chapter && (await gateForWork(work.slug)).state === "open" ? chapter : undefined;
   // The link preview shows the same picture as the page: the chapter's own hero first, then the work's.
-  const hero = chapterHeroOf(work.visuals, chapter?.slug) ?? workHero;
+  const hero = chapterHeroOf(work.visuals, visibleChapter?.slug) ?? workHero;
   const canonicalPath = chapter
     ? `/kategori/${type}/${slug}/${chapter.slug}`
     : `/kategori/${type}/${slug}`;
   // A chapter has its own title and description, so a search result or a shared link says which chapter it is.
-  const chapterLabel = chapter ? chapterPageLabel(sectionIndex + 1, chapter.title) : "";
-  const pageTitle = chapter ? `${chapterLabel} · ${work.title}` : work.title;
+  const chapterLabel = visibleChapter ? chapterPageLabel(sectionIndex + 1, visibleChapter.title) : "";
+  const pageTitle = visibleChapter ? `${chapterLabel} · ${work.title}` : work.title;
   const pageDescription = clipDescription(
-    chapter ? `Bab ${sectionIndex + 1} daripada ${sections.length} · ${work.title}. ${description}` : description
+    visibleChapter ? `Bab ${sectionIndex + 1} daripada ${sections.length} · ${work.title}. ${description}` : description
   );
 
   return {
@@ -99,5 +105,27 @@ export default async function WorkPage({
     notFound();
   }
 
-  return <WorkView work={work} sectionSlug={sectionSlug} />;
+  // The text of a work (every chapter of a novela) is kept for readers with access. A novela's own page (its blurb and chapter list,
+  // no chapter open) is library content too, so it is behind the same gate; sample works are open.
+  {
+    const gate = await gateForWork(work.slug);
+    if (gate.state !== "open") {
+      const next = sectionSlug ? `/kategori/${type}/${slug}/${sectionSlug}` : `/kategori/${type}/${slug}`;
+      return (
+        <LockedWork
+          work={{ type: work.type, title: work.title, dek: work.dek, genre: work.genre, credits: work.credits, visuals: work.visuals, publishedAt: work.publishedAt, sourceWork: work.sourceWork }}
+          gate={gate.state}
+          next={next}
+          email={gate.email}
+        />
+      );
+    }
+  }
+  return (
+    <>
+      <ReadingTracker slug={work.slug} sectionSlug={sectionSlug} />
+      <SaveWorkButton slug={work.slug} />
+      <WorkView work={work} sectionSlug={sectionSlug} />
+    </>
+  );
 }

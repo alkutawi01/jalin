@@ -36,7 +36,7 @@ export interface PromotionOptions {
   submissionId: number;
   /** Override slug (auto-generated from title if not provided) */
   slug?: string;
-  /** Override Work status (default: "ready") */
+  /** Override Work status (default: "review": a promoted piece waits for every gate and a human before it is ready) */
   status?: WorkStatus;
   /** Credit configuration — which credits to include and how */
   credits: PromotionCreditConfig[];
@@ -171,7 +171,7 @@ export async function promoteSubmissionToWork(
     if (options.status !== undefined && !["draft", "review", "ready"].includes(options.status)) {
       throw new Error("Status tidak sah: karya yang dinaikkan tidak boleh terus diterbitkan atau diarkibkan.");
     }
-    const workStatus: WorkStatus = options.status || "ready";
+    const workStatus: WorkStatus = options.status || "review";
 
     await trx
       .insertInto("works")

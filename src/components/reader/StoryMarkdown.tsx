@@ -8,6 +8,7 @@ import { splitCommunicationBlocks } from "../../lib/reader/communication-blocks"
 import { normalizeSceneBreaks } from "../../lib/reader/scene-breaks";
 import { splitFootnoteTokens } from "../../lib/reader/footnotes";
 import { smartQuotes } from "../../lib/admin/smart-quotes";
+import { spacedDashes } from "../../lib/reader/spaced-dash";
 
 function plainText(node: ReactNode): string {
   if (typeof node === "string" || typeof node === "number") return String(node);
@@ -22,7 +23,7 @@ function normalizeMarkdown(markdown: string): string {
   // here would turn an entire scene into a single paragraph.
   // Quotation marks follow the house style (curly, PPRM) however the text was entered or imported: a work typed or imported with straight
   // marks is shown curved here, without touching the stored text (smartQuotes converts only where the direction is clear).
-  return normalizeSceneBreaks(smartQuotes(markdown.replace(/\r\n/g, "\n")));
+  return spacedDashes(normalizeSceneBreaks(smartQuotes(markdown.replace(/\r\n/g, "\n"))));
 }
 
 function decorateGlossary(text: string, glossary: GlossaryMap, used: Set<string>): ReactNode[] {

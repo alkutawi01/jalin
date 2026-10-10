@@ -30,9 +30,11 @@ import { placeVisuals } from "../../lib/reader/place-visuals";
 import { chapterHeroOf, visualsForPage } from "../../lib/reader/chapter-visuals";
 import { firstGlossaryBySegment } from "../../lib/reader/glossary-first";
 import MobileStoryInfo from "./MobileStoryInfo";
+import ReadMore from "./ReadMore";
+import { buildStoryPool, pickCollection } from "../../lib/reader/story-collection";
+import { getDb, hasDb } from "../../lib/db";
+import { publicRatingSummary } from "../../lib/panel/public";
 import { isDerivativeType } from "../../lib/credit-roles";
-import { initContentRepository } from "../../lib/content";
-import { getWorkBySlug, getWorksByType } from "../../lib/content/workLoader";
 import {
   disclosureNoteFor,
   bylineFor,
@@ -57,14 +59,6 @@ const TYPE_LABELS: Record<string, string> = {
   fragmen: "Fragmen",
   sinopsis: "Sinopsis"
 };
-
-async function getWorksByTypeUnified(type: WorkType) {
-  const repo = await initContentRepository();
-  if (repo.source === "database") {
-    return repo.getWorksByType(type);
-  }
-  return getWorksByType(type);
-}
 
 /** The "Tentang karya" table: which edition the work came from. Rows with nothing to show are left out. */
 function sourceRows(source: { title?: string; author?: string; language?: string; firstPublished?: number; publisher?: string; editionYear?: number; printing?: string; editor?: string; translator?: string; isbn?: string; locator?: string } | undefined): WorkMetaRow[] {
@@ -128,60 +122,6 @@ function SectionIndexDetails({ items }: { items: { label: string; href: string }
   );
 }
 
-function RelatedWorks({
-  works,
-  typeLabel
-}: {
-  works: {
-    slug: string;
-    type: string;
-    title: string;
-    dek?: string;
-    readingMinutes?: number;
-    hero?: { src: string; alt: string };
-    year: string;
-  }[];
-  typeLabel: string;
-}) {
-  if (works.length === 0) return null;
-  // The grid shows one full-width card, two half-width cards, or three thirds.
-  // Accurate sizes keep the artwork sharp on high-density displays without
-  // downloading the full hero for every below-the-fold card.
-  const coverSizes = works.length === 1
-    ? "(max-width: 620px) calc(100vw - 40px), 580px"
-    : works.length === 2
-      ? "(max-width: 500px) calc(100vw - 40px), (max-width: 820px) 45vw, (max-width: 1244px) 47vw, 580px"
-      : "(max-width: 500px) calc(100vw - 40px), (max-width: 740px) 45vw, (max-width: 1244px) 31vw, 380px";
-  return (
-    <section className="related-works">
-      <div className="site-shell">
-        <header className="section-head">
-          <h2>Selepas ini</h2>
-          <p className="section-sub">Karya {typeLabel.toLowerCase()} lain daripada Jalin</p>
-        </header>
-        <div className={`related-works-grid${works.length === 1 ? " related-works-grid-single" : ""}`}>
-          {works.map((related) => (
-            <a
-              key={related.slug}
-              className="related-work-card"
-              href={`/kategori/${related.type}/${related.slug}`}
-            >
-              <div className="related-work-cover">
-                <WorkCover type={related.type} title={related.title} hero={related.hero} sizes={coverSizes} quality={85} rightsYear={related.year} />
-              </div>
-              <div className="related-work-body">
-                <h3 style={{ fontStyle: "normal" }}>{related.title}</h3>
-                {related.dek ? <p>{related.dek}</p> : null}
-                {related.readingMinutes ? <span>± {related.readingMinutes} minit</span> : null}
-              </div>
-            </a>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
 /**
  * The whole story page for one work. The public page and the editor's preview both render it, so the preview is the page a
  * reader would get. `preview` is set only by the preview: chapter links then stay in the preview (?bab=slug) and nothing
@@ -210,6 +150,8 @@ export default async function WorkView({
     firstAppearanceSection
   }));
   const editorial = projectEditorialCredits(work.credits);
+  const aiSummary = (work.type === "cerpen" || work.type === "novela" || work.type === "bersiri") && hasDb() ? await publicRatingSummary(getDb(), work.id) : null;
+  const aiRating = aiSummary ? { workId: work.slug, summary: aiSummary } : undefined;
   const originalTitle = originalTitleOf(work);
 
   const rights = `© ADJUNG ${(work.publishedAt ?? "2026").slice(0, 4)}`;
@@ -253,27 +195,8 @@ export default async function WorkView({
   const places = publicPlaces(work.metadata);
   const times = publicTimes(work.metadata);
 
-  const sameTypeWorks = await getWorksByTypeUnified(type as WorkType);
-  const relatedWorks = sameTypeWorks
-    .filter((w) => w.slug !== work.slug)
-    .sort((a, b) => {
-      const aDate = a.updatedAt ?? a.publishedAt ?? "";
-      const bDate = b.updatedAt ?? b.publishedAt ?? "";
-      return bDate.localeCompare(aDate);
-    })
-    .slice(0, 3)
-    .map((w) => {
-      const hero = w.visuals.find((visual) => visual.role === "hero");
-      return {
-        slug: w.slug,
-        type: w.type,
-        title: w.title,
-        dek: w.dek,
-        readingMinutes: w.readingMinutes,
-        hero: hero ? { src: hero.src, alt: hero.alt } : undefined,
-        year: (w.updatedAt ?? w.publishedAt ?? "2026").slice(0, 4)
-      };
-    });
+  // "Baca lagi": two random pieces (any kind, series episodes included), never the one being read.
+  const readMore = pickCollection((await buildStoryPool()).filter((card) => !card.href.endsWith(`/${work.slug}`)), new Set(), 2);
 
   // DB novelas have real sections (separate pages); a Markdown novela keeps its
   // chapters as "## Bab N" headings in one body, so link to those in-page anchors.
@@ -303,6 +226,7 @@ export default async function WorkView({
     times,
     editorial,
     note: disclosureNote,
+    ...(aiRating ? { aiRating } : {}),
     ...(chapterItems.length > 0 ? { bab: chapterItems } : {})
   };
 
@@ -383,6 +307,7 @@ export default async function WorkView({
             rows={workMeta}
             note={disclosureNote}
             editorial={editorial}
+            aiRating={aiRating}
           >
             {/* A chapter page has its own "Senarai Bab" in its head, so this one is only for a novela whose chapters are headings in one text. */}
             {landing || sectionIndex >= 0 ? null : <SectionIndexDetails items={chapterItems} />}
@@ -411,7 +336,7 @@ export default async function WorkView({
         {sections.length === 0 || (!landing && !nextSection) ? <StoryEnd title={work.title} /> : null}
 
         {/* Other works are offered where the reader has finished or is choosing, not between two chapters of a novela (whose next step is the next chapter). */}
-        {activeSection && nextSection ? null : <RelatedWorks works={relatedWorks} typeLabel={typeLabel} />}
+        {activeSection && nextSection ? null : <ReadMore initial={readMore} exceptSlug={work.slug} />}
 
         {preview ? null : <script
           type="application/ld+json"

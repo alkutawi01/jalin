@@ -122,6 +122,77 @@ export async function revokeCode(db: Db, serial: string, reason: string, now: Da
   return !!row;
 }
 
+/**
+ * Cancel many cards at once, but only those that have NOT been redeemed (a redeemed card's access is cancelled on the reader's page, not
+ * here). Returns the serials that were cancelled and the ones skipped, so the admin sees exactly what happened.
+ */
+export async function revokeUnredeemedCodes(db: Db, serials: string[], reason: string, now: Date = new Date()): Promise<{ revoked: string[]; skipped: { serial: string; why: "redeemed" | "already_revoked" | "not_found" }[] }> {
+  const why = reason.trim();
+  if (!why) throw new Error("A reason is required.");
+  const wanted = [...new Set(serials.map((s) => s.trim().toUpperCase()).filter(Boolean))].slice(0, 5000);
+  if (wanted.length === 0) return { revoked: [], skipped: [] };
+  return inTransaction(db, async (trx) => {
+    const rows = await trx
+      .selectFrom("redeem_codes as c")
+      .leftJoin("redemptions as r", "r.code_id", "c.id")
+      .select(["c.id", "c.serial", "c.state", "r.id as redemption"])
+      .where("c.serial", "in", wanted)
+      .forUpdate("c")
+      .execute();
+    const bySerial = new Map(rows.map((r) => [r.serial, r]));
+    const revoked: string[] = [];
+    const skipped: { serial: string; why: "redeemed" | "already_revoked" | "not_found" }[] = [];
+    for (const serial of wanted) {
+      const row = bySerial.get(serial);
+      if (!row) { skipped.push({ serial, why: "not_found" }); continue; }
+      if (row.redemption) { skipped.push({ serial, why: "redeemed" }); continue; }
+      if (row.state === "revoked") { skipped.push({ serial, why: "already_revoked" }); continue; }
+      await trx.updateTable("redeem_codes").set({ state: "revoked", revoked_at: now, revoke_reason: why }).where("id", "=", row.id).execute();
+      revoked.push(serial);
+    }
+    return { revoked, skipped };
+  });
+}
+
+export type ReplacedCode = { oldSerial: string; serial: string; code: string; canonical: string; batchNumber: string; months: 1 | 6 | 12 };
+
+/**
+ * Replace a card that has not been redeemed (lost in the post, damaged before use): the old code is cancelled and a new one is made in
+ * the same batch, so the batch number printed on the card stays right. The new code starts in the state the old one had (issued if it was
+ * issued), so the new label can be stuck on and the card sent. The plain code is returned once, to be printed; it is not stored.
+ */
+export async function replaceCode(db: Db, deps: { codeKey: MacKey; now?: Date }, input: { serial: string; reason: string }): Promise<ReplacedCode> {
+  const now = deps.now ?? new Date();
+  const reason = input.reason.trim();
+  if (!reason) throw new Error("A reason is required.");
+  const oldSerial = input.serial.trim().toUpperCase();
+  return inTransaction(db, async (trx) => {
+    const old = await trx
+      .selectFrom("redeem_codes as c")
+      .innerJoin("code_batches as b", "b.id", "c.batch_id")
+      .leftJoin("redemptions as r", "r.code_id", "c.id")
+      .select(["c.id", "c.state", "c.batch_id", "b.batch_number", "b.months", "b.status as batch_status", "b.quantity", "r.id as redemption"])
+      .where("c.serial", "=", oldSerial)
+      .forUpdate("c")
+      .executeTakeFirst();
+    if (!old) throw new Error("Unknown serial number.");
+    if (old.redemption) throw new Error("A card that has been redeemed cannot be replaced.");
+    if (old.state === "revoked") throw new Error("A cancelled card cannot be replaced.");
+    if (old.batch_status !== "PRINT_CONFIRMED") throw new Error("Only a card of a batch whose print is confirmed can be replaced.");
+    if (old.quantity >= 5000) throw new Error("A batch is 1 to 5000 cards.");
+    const seq = await sql<{ n: string }>`SELECT nextval('redeem_serial_seq') AS n`.execute(trx);
+    const serial = `JLN-${String(now.getUTCFullYear()).slice(2)}-${String(seq.rows[0].n).padStart(6, "0")}`;
+    const canonical = generateCanonicalCode();
+    await trx
+      .insertInto("redeem_codes")
+      .values({ batch_id: old.batch_id, serial, code_mac: computeCodeMac(deps.codeKey.key, old.batch_number, canonical), key_id: deps.codeKey.keyId, state: old.state, issued_at: old.state === "issued" ? now : null, created_at: now })
+      .execute();
+    await trx.updateTable("redeem_codes").set({ state: "revoked", revoked_at: now, revoke_reason: `Diganti dengan ${serial}: ${reason}` }).where("id", "=", old.id).execute();
+    await trx.updateTable("code_batches").set({ quantity: old.quantity + 1 }).where("id", "=", old.batch_id).execute();
+    return { oldSerial, serial, code: formatCode(canonical), canonical, batchNumber: old.batch_number, months: old.months as 1 | 6 | 12 };
+  });
+}
+
 // ------------------------------------------------------------------ shared codes
 
 export async function createSharedCode(
@@ -160,7 +231,7 @@ export type RedeemResult =
   | { status: "throttled" }
   | { status: "halted" };
 
-type Deps = { codeKey: MacKey; now?: Date; limits?: Partial<RedeemLimitSettings> };
+type Deps = { codeKey: MacKey; previousCodeKeys?: MacKey[]; now?: Date; limits?: Partial<RedeemLimitSettings> };
 type Input = { accountId: string; ipMac: string; code: string; batch?: string };
 
 async function fail(trx: Db, accountId: string, ipMac: string, now: Date): Promise<RedeemResult> {
@@ -195,15 +266,19 @@ async function redeemCard(trx: Db, deps: Deps, input: Input, now: Date): Promise
   const batch = normaliseBatch(input.batch ?? "");
   if (!parsed.ok || !batch) return fail(trx, input.accountId, input.ipMac, now);
 
-  const mac = computeCodeMac(deps.codeKey.key, batch, parsed.canonical);
-  const code = await trx
-    .selectFrom("redeem_codes as c")
-    .innerJoin("code_batches as b", "b.id", "c.batch_id")
-    .select(["c.id", "c.state", "c.serial", "b.months", "b.status as batch_status"])
-    .where("c.key_id", "=", deps.codeKey.keyId)
-    .where("c.code_mac", "=", mac)
-    .forUpdate("c")
-    .executeTakeFirst();
+  let code: { id: string; state: "generated" | "issued" | "revoked"; serial: string; months: number; batch_status: "PENDING_PRINT" | "PRINT_CONFIRMED" | "VOIDED" } | undefined;
+  for (const key of [deps.codeKey, ...(deps.previousCodeKeys ?? [])]) {
+    const mac = computeCodeMac(key.key, batch, parsed.canonical);
+    code = await trx
+      .selectFrom("redeem_codes as c")
+      .innerJoin("code_batches as b", "b.id", "c.batch_id")
+      .select(["c.id", "c.state", "c.serial", "b.months", "b.status as batch_status"])
+      .where("c.key_id", "=", key.keyId)
+      .where("c.code_mac", "=", mac)
+      .forUpdate("c")
+      .executeTakeFirst();
+    if (code) break;
+  }
   if (!code || code.state !== "issued" || code.batch_status !== "PRINT_CONFIRMED") {
     // A code that was issued and used is told apart only for the reader who used it (below); everyone else sees the same refusal.
     if (code) {

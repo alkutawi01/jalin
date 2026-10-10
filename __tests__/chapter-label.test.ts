@@ -22,7 +22,9 @@ const nav = read("src/components/reader/ReadingNav.tsx");
 assert(nav.includes('{next.title ? `Seterusnya · ${next.label}` : "Seterusnya"}') && nav.includes("{next.title ?? next.label}") && nav.includes("← {prev.title ? `${prev.label}: ${prev.title}` : prev.label}"), "a link without a title shows its label alone: 'Seterusnya' over 'Bab 8', and '← Bab 6'");
 const work = read("src/components/reader/WorkView.tsx");
 assert(work.includes("title: chapterTitleBesideNumber(nextSection.title, sectionIndex + 2) }") && work.includes("title: chapterTitleBesideNumber(prevSection.title, sectionIndex) }"), "the chapter links of a novela leave out a title that only repeats the number");
-assert(read("src/app/kategori/[type]/[slug]/page.tsx").includes("chapterPageLabel(sectionIndex + 1, chapter.title)"), "the browser tab's title of a chapter says the number once");
+const readerPage = read("src/app/kategori/[type]/[slug]/page.tsx");
+assert(readerPage.includes("chapterPageLabel(sectionIndex + 1, visibleChapter.title)"), "the browser tab's title of an open chapter says the number once");
+assert(readerPage.includes('const chapterLabel = visibleChapter ?') && readerPage.includes('const pageTitle = visibleChapter ?'), "a locked chapter's title is not exposed in the browser tab");
 
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);

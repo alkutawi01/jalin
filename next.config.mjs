@@ -13,6 +13,8 @@ export const securityHeaders = [
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   poweredByHeader: false,
+  // A second dev server (a test run, another session) can use its own build folder: NEXT_DIST_DIR=.next-test npx next dev -p 3100
+  distDir: process.env.NEXT_DIST_DIR || ".next",
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },

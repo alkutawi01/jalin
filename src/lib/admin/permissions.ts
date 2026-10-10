@@ -32,12 +32,14 @@ export const PERMISSIONS = [
   "typography.manage", // the size of the story text and its sub-headings (Tetapan > Saiz teks karya)
   "activity.read", // who changed what (the Aktiviti page)
   "user.manage", // staff accounts: invite, change role, switch off, reset password
-  "subscription.manage" // reader accounts, access, card codes, shared codes and the stop switch (the owner only)
+  "subscription.manage", // reader accounts, access, card codes, shared codes and the stop switch (the owner only)
+  "panel.manage", // Panel Bacaan AI: the Penilaian AI tab of a work: prepare, paste in, void ratings (owner and chief editor)
+  "panel.settings" // Panel Bacaan AI: change the threshold and the official reviewer (the chief editor, and the owner who holds everything)
 ] as const;
 export type Permission = (typeof PERMISSIONS)[number];
 
 const EDITOR: Permission[] = ["session.use", "content.read", "work.write", "credit.write", "glossary.write", "visual.write"];
-const CHIEF_EDITOR: Permission[] = [...EDITOR, "visual.review", "ai.generate", "series.manage", "source.manage", "submission.manage", "editorial.curate", "typography.manage", "activity.read"];
+const CHIEF_EDITOR: Permission[] = [...EDITOR, "visual.review", "ai.generate", "series.manage", "source.manage", "submission.manage", "editorial.curate", "typography.manage", "activity.read", "panel.manage", "panel.settings"];
 
 export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
   owner: PERMISSIONS,
@@ -60,6 +62,13 @@ const READ = ["GET", "HEAD"] as const;
 const WRITE = ["POST", "PUT", "PATCH", "DELETE"] as const;
 const ID = "[^/]+";
 
+/** Existing content/report read families. A new top-level API path does not inherit content.read. */
+const CONTENT_READ_PREFIXES = [
+  "works", "visual-requests", "visuals", "credits", "credit-roles", "glossary", "series", "submissions", "contributions",
+  "editorial-issues", "editorial-history", "editorial-dashboard", "editorial-report", "editor-picks", "contributors", "ai-personas",
+  "audience-bands", "prompts", "publish", "reader-typography", "site-copy", "site-theme", "generate/history"
+] as const;
+
 /** First match wins, so the specific rules come before the general ones. Addresses are matched without the "/api/admin" start. */
 const API_RULES: Rule[] = [
   { methods: "*", pattern: /^\/auth\//, permission: "session.use" },
@@ -67,6 +76,10 @@ const API_RULES: Rule[] = [
   { methods: "*", pattern: /^\/users(\/|$)/, permission: "user.manage" },
   // Readers, access and codes: never open to the generic read rule below, or every editor could list readers' e-mail addresses.
   { methods: "*", pattern: /^\/langganan(\/|$)/, permission: "subscription.manage" },
+  // Panel Bacaan AI: ratings of unpublished work and of submissions, so never open to the generic read rule.
+  // Only the chief editor (and the owner) change the settings; everyone who rates may read them.
+  { methods: WRITE, pattern: /^\/panel\/settings(\/|$)/, permission: "panel.settings" },
+  { methods: "*", pattern: /^\/panel(\/|$)/, permission: "panel.manage" },
 
   { methods: "*", pattern: new RegExp(`^/works/${ID}/publish$`), permission: "work.publish" },
   { methods: "*", pattern: /^\/publish$/, permission: "work.publish" },
@@ -93,16 +106,16 @@ const API_RULES: Rule[] = [
   { methods: ["PUT", "POST", "PATCH", "DELETE"], pattern: /^\/editor-picks$/, permission: "editorial.curate" },
   { methods: WRITE, pattern: /^\/(contributors|ai-personas)(\/|$)/, permission: "contributor.manage" },
   { methods: ["POST"], pattern: /^\/authoring\/prompt$/, permission: "work.write" },
-  { methods: WRITE, pattern: /^\/(site-copy|site-theme|audience-bands|authoring\/settings|prompts)(\/|$)/, permission: "site.manage" },
+  { methods: WRITE, pattern: /^\/(site-copy|site-theme|audience-bands|authoring\/settings|prompts|editorial-page|about-page)(\/|$)/, permission: "site.manage" },
   { methods: WRITE, pattern: /^\/reader-typography(\/|$)/, permission: "typography.manage" },
 
-  // Everything else that only reads.
-  { methods: READ, pattern: /^\//, permission: "content.read" }
+  ...CONTENT_READ_PREFIXES.map((prefix): Rule => ({ methods: READ, pattern: new RegExp(`^/${prefix}(?:/|$)`), permission: "content.read" }))
 ];
 
 const PAGE_RULES: Rule[] = [
   { methods: READ, pattern: /^\/admin\/pengguna(\/|$)/, permission: "user.manage" },
   { methods: READ, pattern: /^\/admin\/langganan(\/|$)/, permission: "subscription.manage" },
+  { methods: READ, pattern: /^\/admin\/panel(\/|$)/, permission: "panel.manage" },
   { methods: READ, pattern: /^\/admin\/aktiviti$/, permission: "activity.read" },
   { methods: READ, pattern: /^\/admin\/ubah-kata-laluan$/, permission: "session.use" },
   { methods: READ, pattern: /^\/admin\/settings\/saiz-teks$/, permission: "typography.manage" },

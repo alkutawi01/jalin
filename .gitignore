@@ -1,5 +1,6 @@
 node_modules/
 .next/
+.next-*/
 out/
 dist/
 .env
@@ -13,3 +14,6 @@ storage/
 backups/
 .vercel
 .env*
+
+# Gambar latar /mula dijana semasa pembangunan tempatan
+public/generated/

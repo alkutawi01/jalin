@@ -3,10 +3,11 @@
  * address, and one place that builds the keyed-hash key and the mailer. Nothing here reads the database.
  */
 import { NextResponse } from "next/server";
+import { isIP } from "node:net";
 import { getDb } from "../db";
 import { readerAccountsEnabled } from "./enabled";
 import { getSession, type SessionInfo } from "./service";
-import { ipMac, loadCodeKey, loadMacKey, selectMailer, type MacKey, type Mailer } from "./primitives";
+import { ipMac, loadCodeKey, loadMacKey, loadPreviousCodeKeys, selectMailer, type MacKey, type Mailer } from "./primitives";
 
 export { readerAccountsEnabled };
 
@@ -47,11 +48,28 @@ export function isSameOrigin(request: Request): boolean {
   }
 }
 
+export function rateLimitIp(address: string): string {
+  let ip = address.trim();
+  if (ip.startsWith("[") && ip.endsWith("]")) ip = ip.slice(1, -1);
+  if (isIP(ip) !== 6) return ip;
+  // A /64 is the practical identity of an IPv6 visitor; rotating interface IDs must not reset the limit.
+  const dotted = /(?:^|:)(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/u.exec(ip);
+  if (dotted) {
+    const bytes = dotted.slice(1).map(Number);
+    ip = ip.slice(0, dotted.index + (ip[dotted.index] === ":" ? 1 : 0)) + `${((bytes[0] << 8) | bytes[1]).toString(16)}:${((bytes[2] << 8) | bytes[3]).toString(16)}`;
+  }
+  const halves = ip.split("::");
+  const left = halves[0] ? halves[0].split(":") : [];
+  const right = halves[1] ? halves[1].split(":") : [];
+  const words = halves.length === 2 ? [...left, ...Array(8 - left.length - right.length).fill("0"), ...right] : left;
+  return words.slice(0, 4).map((part) => Number.parseInt(part, 16).toString(16).padStart(4, "0")).join(":") + "::/64";
+}
+
 export function clientIp(request: Request): string {
   const real = request.headers.get("x-real-ip");
-  if (real) return real.trim();
+  if (real) return rateLimitIp(real);
   const forwarded = request.headers.get("x-forwarded-for");
-  if (forwarded) return forwarded.split(",")[0].trim();
+  if (forwarded) return rateLimitIp(forwarded.split(",")[0]);
   return "unknown";
 }
 
@@ -62,6 +80,10 @@ export function macKey(): MacKey {
 let cachedCodeKey: MacKey | null = null;
 export function codeKey(): MacKey {
   return (cachedCodeKey ??= loadCodeKey());
+}
+let cachedPreviousCodeKeys: MacKey[] | null = null;
+export function previousCodeKeys(): MacKey[] {
+  return (cachedPreviousCodeKeys ??= loadPreviousCodeKeys());
 }
 let cachedMailer: Mailer | null = null;
 export function mailer(): Mailer {

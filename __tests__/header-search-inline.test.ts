@@ -12,7 +12,7 @@ const chrome = read("src/components/reader/StoryChrome.tsx");
 const css = read("src/app/globals.css");
 const box = read("src/components/reader/HeaderSearch.tsx");
 
-assert(/<div className="header-main">\s*<SiteNav active=\{active\} className="header-nav" \/>\s*<HeaderSearch/.test(chrome), "the search is in the same row as the tabs, after them");
+assert(/<div className="header-main">\s*<SiteNav active=\{active\} className="header-nav"(?: visitor=\{visitor\})? \/>\s*(?:\{visitor \? null : )?<HeaderSearch/.test(chrome), "the search is in the same row as the tabs, after them");
 assert(css.includes(".header-search-panel { position: relative; width: 240px; }") && css.includes(".header-search-field { display: flex;"), "the open box is a small field in the row, not an absolute panel");
 assert(/\.header-search-list \{ position: absolute; top: calc\(100% \+ 6px\); right: 0;/.test(css), "only the suggestions hang below the field");
 assert(box.includes('placeholder="Cari tajuk atau penulis"') && css.includes(".header-search-input::placeholder { font-size: inherit;"), "the placeholder is short and smaller");

@@ -147,8 +147,8 @@ assertIncludes(promotionCode, "role_label", "Promotion copies role_label to cred
 // ============================================================
 console.log("\n=== No Auto-Publish ===");
 
-// After promotion, Work status should be "ready" not "published"
-assertIncludes(promotionCode, '"ready"', "Promotion defaults to ready status");
+// After promotion, Work status should be "review" (the owner decided: not "ready", never "published")
+assertIncludes(promotionCode, 'options.status || "review"', "Promotion defaults to review status");
 assertNotIncludes(promotionCode, '"published"', "Promotion does NOT set published status");
 
 // The Work should NOT have published_at set

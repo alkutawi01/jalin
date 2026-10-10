@@ -4,8 +4,9 @@
  * against a real database inside a transaction that is rolled back.
  *
  * Rules in short: a code is six digits, valid 5 minutes, used once, at most 5 wrong tries. The answer to "send me a code" is the
- * same whether or not the address has an account. A new address becomes an account on its first correct code and gets a 14-day
- * trial once, ever. An account keeps at most two signed-in devices; a third sign-in must name one to replace.
+ * same whether or not the address has an account. A new address becomes an account on its first correct code, with NO access yet.
+ * The 14-day trial is a separate step the reader chooses (startTrial), given once per address, ever. An account keeps at most two
+ * signed-in devices; a third sign-in must name one to replace.
  */
 import type { Kysely, Transaction } from "kysely";
 import { sql } from "kysely";
@@ -37,7 +38,10 @@ export const LIMITS = {
   requestsPerIpPerHour: 20,
   /** All e-mails sent in 24 hours. The free Resend plan stops at 100 a day; raise this together with the plan. */
   requestsPerDayAll: 90,
+  /** Keep one third of the daily mail budget available for accounts that already exist. */
+  requestsPerDayNew: 60,
   failedChecksPerEmailPerHour: 10,
+  failedChecksPerEmailPerDay: 30,
   failedChecksPerIpPerHour: 30,
   maxActiveDevices: 2,
   lastSeenRefreshMinutes: 10,
@@ -47,6 +51,15 @@ export type LimitSettings = { [K in keyof typeof LIMITS]: number };
 
 const HOUR_MS = 60 * 60 * 1000;
 const DAY_MS = 24 * HOUR_MS;
+
+export function readerMailDailyCap(env: Record<string, string | undefined> = process.env): number {
+  const raw = env.READER_MAIL_DAILY_CAP?.trim();
+  if (!raw) return LIMITS.requestsPerDayAll;
+  const value = Number(raw);
+  return Number.isSafeInteger(value) && value >= 3 && value <= 100000 ? value : LIMITS.requestsPerDayAll;
+}
+
+export const newReaderMailDailyCap = (total: number): number => Math.floor((total * 2) / 3);
 
 async function inTransaction<T>(db: Db, run: (trx: Db) => Promise<T>): Promise<T> {
   // A Transaction cannot open another one: tests pass a Transaction in and everything joins it.
@@ -84,7 +97,8 @@ export async function requestLoginCode(
   input: { email: string; ipMac: string }
 ): Promise<RequestCodeResult> {
   const now = deps.now ?? new Date();
-  const limits: LimitSettings = { ...LIMITS, ...deps.limits };
+  const dailyCap = deps.limits?.requestsPerDayAll ?? readerMailDailyCap();
+  const limits: LimitSettings = { ...LIMITS, requestsPerDayAll: dailyCap, requestsPerDayNew: newReaderMailDailyCap(dailyCap), ...deps.limits };
   const email = normaliseEmail(input.email);
   if (!email) return { ok: false, reason: "invalid_email" };
   const emailMac = emailLookupMac(deps.key, email);
@@ -95,14 +109,19 @@ export async function requestLoginCode(
   const allowed = await inTransaction(db, async (trx) => {
     // Serialise requests for the same address so two at once cannot both pass the cooldown.
     await sql`SELECT pg_advisory_xact_lock(hashtextextended(${emailMac}, 0))`.execute(trx);
+    // One global lock makes the daily budget exact even when different addresses request at once.
+    await sql`SELECT pg_advisory_xact_lock(hashtextextended('jalin:mail:daily', 0))`.execute(trx);
     if ((await countEvents(trx, "request", "email", emailMac, new Date(now.getTime() - limits.requestCooldownSeconds * 1000))) > 0) return false;
     if ((await countEvents(trx, "request", "email", emailMac, new Date(now.getTime() - HOUR_MS))) >= limits.requestsPerEmailPerHour) return false;
     if ((await countEvents(trx, "request", "ip", input.ipMac, new Date(now.getTime() - HOUR_MS))) >= limits.requestsPerIpPerHour) return false;
     if ((await countEvents(trx, "request", "global", "all", new Date(now.getTime() - DAY_MS))) >= limits.requestsPerDayAll) return false;
+    const existing = await trx.selectFrom("reader_accounts").select("id").where("email_normalized", "=", email).where("status", "<>", "deleted").executeTakeFirst();
+    if (!existing && (await countEvents(trx, "request", "global", "new", new Date(now.getTime() - DAY_MS))) >= limits.requestsPerDayNew) return false;
 
     await recordEvent(trx, "request", "email", emailMac, now);
     await recordEvent(trx, "request", "ip", input.ipMac, now);
     await recordEvent(trx, "request", "global", "all", now);
+    await recordEvent(trx, "request", "global", existing ? "existing" : "new", now);
 
     // A new request retires the one still open for this address.
     await trx
@@ -160,6 +179,7 @@ export async function verifyLoginCode(
   return inTransaction(db, async (trx): Promise<VerifyResult> => {
     await sql`SELECT pg_advisory_xact_lock(hashtextextended(${emailMac}, 0))`.execute(trx);
     if ((await countEvents(trx, "verify_fail", "email", emailMac, hourAgo)) >= limits.failedChecksPerEmailPerHour) return { status: "throttled" };
+    if ((await countEvents(trx, "verify_fail", "email", emailMac, new Date(now.getTime() - DAY_MS))) >= limits.failedChecksPerEmailPerDay) return { status: "throttled" };
     if ((await countEvents(trx, "verify_fail", "ip", input.ipMac, hourAgo)) >= limits.failedChecksPerIpPerHour) return { status: "throttled" };
 
     const challenge = await trx
@@ -172,7 +192,7 @@ export async function verifyLoginCode(
       .forUpdate()
       .executeTakeFirst();
     if (!challenge) {
-      await recordEvent(trx, "verify_fail", "email", emailMac, now);
+      // Counted against the caller's IP only: with no code open, a stranger's guesses must not lock the address out for its owner.
       await recordEvent(trx, "verify_fail", "ip", input.ipMac, now);
       return { status: "invalid" };
     }
@@ -200,29 +220,13 @@ export async function verifyLoginCode(
 
     let isNewAccount = false;
     if (!account) {
-      const trialMac = trialClaimMac(deps.key, email);
-      const claim = await trx
-        .insertInto("reader_trial_claims")
-        .values({ email_mac: trialMac, key_id: deps.key.keyId, claimed_at: now })
-        .onConflict((oc) => oc.column("email_mac").doNothing())
-        .returning("email_mac")
-        .executeTakeFirst();
-      const trialStarts = claim ? now : null;
-      const trialEnds = claim ? new Date(now.getTime() + TRIAL_DAYS * DAY_MS) : null;
+      // A new account has no access at all until its reader starts the trial (startTrial) or redeems a code.
       account = await trx
         .insertInto("reader_accounts")
-        .values({
-          email: input.email.trim(),
-          email_normalized: email,
-          email_verified_at: now,
-          trial_starts_at: trialStarts,
-          trial_ends_at: trialEnds,
-          created_at: now,
-        })
+        .values({ email: input.email.trim(), email_normalized: email, email_verified_at: now, created_at: now })
         .returningAll()
         .executeTakeFirstOrThrow();
       isNewAccount = true;
-      if (trialStarts && trialEnds) await addTrial(trx, account.id, trialStarts, trialEnds);
     }
 
     const active = await trx
@@ -270,10 +274,53 @@ export async function verifyLoginCode(
   });
 }
 
+export type StartTrialResult =
+  | { status: "ok"; startsAt: Date; endsAt: Date }
+  | { status: "already"; startsAt: Date | null; endsAt: Date | null }
+  | { status: "used" }
+  | { status: "no_account" };
+
+/**
+ * Start the 14-day trial of this account, when its reader chooses to. Given once per address, for good: the claim is kept as a keyed
+ * hash that survives deleting the account, so signing up again with the same address does not give a second trial. The account row
+ * is locked, so two presses at once give one trial.
+ */
+export async function startTrial(db: Db, deps: { key: MacKey; now?: Date }, accountId: string): Promise<StartTrialResult> {
+  const now = deps.now ?? new Date();
+  return inTransaction(db, async (trx): Promise<StartTrialResult> => {
+    const account = await trx.selectFrom("reader_accounts").selectAll().where("id", "=", accountId).where("status", "<>", "deleted").forUpdate().executeTakeFirst();
+    if (!account) return { status: "no_account" };
+    if (account.trial_starts_at) return { status: "already", startsAt: account.trial_starts_at, endsAt: account.trial_ends_at };
+    const claim = await trx
+      .insertInto("reader_trial_claims")
+      .values({ email_mac: trialClaimMac(deps.key, account.email_normalized), key_id: deps.key.keyId, claimed_at: now })
+      .onConflict((oc) => oc.column("email_mac").doNothing())
+      .returning("email_mac")
+      .executeTakeFirst();
+    if (!claim) return { status: "used" };
+    const endsAt = new Date(now.getTime() + TRIAL_DAYS * DAY_MS);
+    await trx.updateTable("reader_accounts").set({ trial_starts_at: now, trial_ends_at: endsAt }).where("id", "=", accountId).execute();
+    await addTrial(trx, accountId, now, endsAt);
+    return { status: "ok", startsAt: now, endsAt };
+  });
+}
+
+/** Whether the trial can still be started from this account (never started on it, and not already taken by this address). */
+export async function canStartTrial(db: Db, deps: { key: MacKey }, accountId: string): Promise<boolean> {
+  const account = await db.selectFrom("reader_accounts").select(["trial_starts_at", "email_normalized"]).where("id", "=", accountId).where("status", "<>", "deleted").executeTakeFirst();
+  if (!account || account.trial_starts_at) return false;
+  const claim = await db.selectFrom("reader_trial_claims").select("email_mac").where("email_mac", "=", trialClaimMac(deps.key, account.email_normalized)).executeTakeFirst();
+  return !claim;
+}
+
 export type SessionInfo = {
   account: { id: string; email: string; displayName: string | null; trialStartsAt: Date | null; trialEndsAt: Date | null };
   device: { id: string; label: string };
 };
+
+export function deviceSessionExpired(createdAt: Date, lastSeenAt: Date, now: Date): boolean {
+  return now.getTime() - lastSeenAt.getTime() > 90 * DAY_MS || now.getTime() - createdAt.getTime() > 365 * DAY_MS;
+}
 
 /** Who the cookie belongs to, or null. Touches last-seen at most every ten minutes so reading does not write on every page. */
 export async function getSession(db: Db, token: string, now: Date = new Date()): Promise<SessionInfo | null> {
@@ -281,12 +328,16 @@ export async function getSession(db: Db, token: string, now: Date = new Date()):
   const row = await db
     .selectFrom("reader_devices as d")
     .innerJoin("reader_accounts as a", "a.id", "d.account_id")
-    .select(["d.id as device_id", "d.label", "d.last_seen_at", "a.id as account_id", "a.email", "a.display_name", "a.trial_starts_at", "a.trial_ends_at"])
+    .select(["d.id as device_id", "d.label", "d.created_at", "d.last_seen_at", "a.id as account_id", "a.email", "a.display_name", "a.trial_starts_at", "a.trial_ends_at"])
     .where("d.token_hash", "=", hashSessionToken(token))
     .where("d.revoked_at", "is", null)
     .where("a.status", "<>", "deleted")
     .executeTakeFirst();
   if (!row) return null;
+  if (deviceSessionExpired(row.created_at, row.last_seen_at, now)) {
+    await db.updateTable("reader_devices").set({ revoked_at: now, revoked_reason: "security" }).where("id", "=", row.device_id).where("revoked_at", "is", null).execute();
+    return null;
+  }
   if (now.getTime() - row.last_seen_at.getTime() > LIMITS.lastSeenRefreshMinutes * 60 * 1000) {
     await db.updateTable("reader_devices").set({ last_seen_at: now }).where("id", "=", row.device_id).execute();
   }
@@ -312,6 +363,31 @@ export async function signOutEverywhere(db: Db, accountId: string, now: Date = n
     .where("account_id", "=", accountId)
     .where("revoked_at", "is", null)
     .execute();
+}
+
+/**
+ * The reader deletes their own account. The address and name are removed at once (the row stays only as an anonymous anchor for the
+ * append-only ledger of access and redemptions), every device is signed out, and settings, saved works and reading places are deleted.
+ * The one-trial-per-address claim is kept as a keyed hash, so deleting and registering again does not give a second trial.
+ * Remaining access is not refunded or moved: it goes with the account.
+ */
+export async function deleteAccount(db: Db, accountId: string, now: Date = new Date()): Promise<boolean> {
+  return inTransaction(db, async (trx) => {
+    const account = await trx.selectFrom("reader_accounts").select("id").where("id", "=", accountId).where("status", "<>", "deleted").forUpdate().executeTakeFirst();
+    if (!account) return false;
+    const placeholder = "padam-" + accountId + "@padam.invalid";
+    await trx
+      .updateTable("reader_accounts")
+      .set({ status: "deleted", email: placeholder, email_normalized: placeholder, display_name: null, deletion_requested_at: now })
+      .where("id", "=", accountId)
+      .execute();
+    // Every device is signed out and its row (name, times) is removed; nothing about the devices survives the account.
+    await trx.deleteFrom("reader_devices").where("account_id", "=", accountId).execute();
+    await trx.deleteFrom("reader_prefs").where("account_id", "=", accountId).execute();
+    await trx.deleteFrom("saved_works").where("account_id", "=", accountId).execute();
+    await trx.deleteFrom("reading_progress").where("account_id", "=", accountId).execute();
+    return true;
+  });
 }
 
 export async function listDevices(db: Db, accountId: string): Promise<DeviceSummary[]> {

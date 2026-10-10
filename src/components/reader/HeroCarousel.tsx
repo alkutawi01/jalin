@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { smartQuotes } from "../../lib/admin/smart-quotes";
+import { spacedDashes } from "../../lib/reader/spaced-dash";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { renderAttribution } from "./Attribution";
 import { cropStyle } from "../../lib/reader/crop";
@@ -101,7 +102,7 @@ export default function HeroCarousel({ slides, ground }: { slides: HeroSlide[]; 
                     <h2 className="hero-featured-title" style={{ fontStyle: "normal" }}>{work.title}</h2>
                   )}
                   {work.attribution ? <p className="work-attribution hero-featured-attribution">{renderAttribution(work.attribution)}</p> : null}
-                  {work.dek ? <p className="hero-featured-dek">{smartQuotes(work.dek)}</p> : null}
+                  {work.dek ? <p className="hero-featured-dek">{spacedDashes(smartQuotes(work.dek))}</p> : null}
                   <div className="home-work-meta home-work-meta--pills">
                     {work.reading ? <span>{work.reading}</span> : null}
                     <span>{work.date}</span>

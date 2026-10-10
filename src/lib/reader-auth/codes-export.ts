@@ -6,9 +6,8 @@
  * the file is applied (reconcile), always in the SAFE direction: a code the file says was used, cancelled or voided can never become
  * valid again; codes and batches that were printed after the restore point are put back; counters of shared codes never go down.
  *
- * What the file holds: batch numbers, serial numbers, the keyed hashes of the codes (useless without the secret key), states, and for each
- * redemption when it happened and a keyed hash of the reader's e-mail (so a reader who lost access can be found by their address, and
- * the address itself is never in the file). It holds no plain code, no name, no e-mail, no account number.
+ * The signed NDJSON contains shared codes in plaintext and therefore MUST be encrypted before storage or download.
+ * Card codes and reader e-mail addresses are represented by keyed hashes; the encrypted backup still needs restricted handling.
  *
  * Pure parsing and signing live here with the database steps, so both can be tested.
  */
@@ -16,6 +15,7 @@ import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 import { sql } from "kysely";
 import type { Kysely } from "kysely";
 import type { Database } from "../db/types";
+import { decryptBackup, isEncryptedBackup, loadBackupEncKey } from "./backup-crypto";
 import { emailLookupMac, type MacKey } from "./primitives";
 import { isRedeemHalted, setRedeemHalted } from "./redeem";
 import type { Db } from "./service";
@@ -94,8 +94,12 @@ export type ParsedExport = {
   sharedRedemptions: Line[];
 };
 
-/** Read a file back. Refuses anything that is not exactly what was written: a changed, cut or forged file is never applied. */
-export function parseCodesExport(text: string, codeKey: MacKey): ParsedExport {
+export type ParseExportOptions = { backupKey?: Buffer; allowLegacyPlaintext?: boolean };
+
+/** Decrypt current backups. Plain NDJSON requires an explicit manual-recovery opt-in. */
+export function parseCodesExport(file: string, codeKey: MacKey, options: ParseExportOptions = {}): ParsedExport {
+  const text = isEncryptedBackup(file) ? decryptBackup(file, options.backupKey ?? loadBackupEncKey()) : file;
+  if (!isEncryptedBackup(file) && !options.allowLegacyPlaintext) throw new Error("Eksport teks biasa lama hanya dibenarkan untuk pemulihan manual.");
   const rows = text.split("\n").filter((l) => l.length > 0);
   if (rows.length < 2) throw new Error("Fail eksport kosong atau terlalu pendek.");
   let parsed: Line[];
@@ -138,7 +142,10 @@ const serialNumber = (serial: string) => parseInt(serial.slice(-6), 10);
  * Bring the database in line with a file, in the safe direction only. With apply=false nothing is written and the report says what would
  * be done. With apply=true the stop switch is switched ON first and is NOT switched off here: that is a person's decision after reading the report.
  */
-export async function reconcileWithExport(db: Db, exported: ParsedExport, options: { apply: boolean; now?: Date; by?: string }): Promise<ReconcileReport> {
+export async function reconcileWithExport(db: Db, input: ParsedExport | string, options: { apply: boolean; now?: Date; by?: string; codeKey?: MacKey; backupKey?: Buffer; allowLegacyPlaintext?: boolean }): Promise<ReconcileReport> {
+  const exported = typeof input === "string"
+    ? parseCodesExport(input, options.codeKey ?? (() => { throw new Error("Kunci tandatangan diperlukan untuk membaca eksport."); })(), { backupKey: options.backupKey, allowLegacyPlaintext: options.allowLegacyPlaintext })
+    : input;
   const now = options.now ?? new Date();
   const report: ReconcileReport = {
     exportAt: exported.at.toISOString(), applied: options.apply, batchesAdded: 0, batchesVoided: 0, codesAdded: 0, codesCancelledForLostRedemption: 0, codesCancelledAsInExport: 0,

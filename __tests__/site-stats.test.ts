@@ -34,8 +34,9 @@ assert(statItems({ cerpen: 0, novela: 0, bersiri: 0, fragmen: 0, sinopsis: 0 }).
 assert(!JSON.stringify(items).includes("diterbit") && !JSON.stringify(items).includes("glosari") && !JSON.stringify(items).includes("ilustrasi"), "only category names are shown");
 
 const page = read("src/app/page.tsx");
-assert(page.includes("home-stats") && page.includes("data-ground={grounds.stats}") && page.includes("href={item.href}"), "the home page renders the line with its chosen background and links");
-assert(page.includes("<CountUp value={item.count}"), "the figures count up from zero");
+const band = read("src/components/reader/HomeStats.tsx");
+assert(page.includes("<HomeStats stats={stats} ground={grounds.stats}") && band.includes("home-stats") && band.includes("data-ground={ground}") && band.includes("href={item.href}"), "the home page renders the line with its chosen background and links");
+assert(band.includes("<CountUp value={item.count}"), "the figures count up from zero");
 assert(read("src/components/reader/CountUp.tsx").includes("prefers-reduced-motion"), "the count-up is skipped for anyone who prefers reduced motion");
 const css = read("src/app/globals.css");
 assert(css.includes(".home-stat-value") && css.includes(".home-stat a:focus-visible"), "the line has its styles, with a visible keyboard focus");

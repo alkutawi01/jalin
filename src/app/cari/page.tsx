@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+import { gateSite } from "../../lib/reader/access-gate";
 import { formatMalayDate } from "../../lib/reader/format-date";
 import { SiteFooter, SiteHeader } from "../../components/reader/StoryChrome";
 import { renderAttribution } from "../../components/reader/Attribution";
 import { initContentRepository } from "../../lib/content";
+import { viewerReach } from "../../lib/reader/access-gate";
 import { displayableGenre } from "../../lib/reader/genre-display";
 import {
   READING_BANDS,
@@ -10,6 +12,7 @@ import {
   TYPE_LABELS,
   buildSearchIndex,
   filterOptions,
+  restrictForViewer,
   runSearch,
   type Part,
   type SearchParams
@@ -40,6 +43,7 @@ function formatDate(date: string): string | null {
 }
 
 export default async function SearchPage({ searchParams }: { searchParams: Promise<Raw> }) {
+  await gateSite();
   const raw = await searchParams;
   const params: SearchParams = {
     q: one(raw.q).slice(0, QUERY_MAX),
@@ -50,7 +54,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
     susun: one(raw.susun)
   };
   const repo = await initContentRepository();
-  const docs = buildSearchIndex(repo);
+  const docs = restrictForViewer(buildSearchIndex(repo), await viewerReach());
   const options = filterOptions(docs);
   const { results, total } = runSearch(docs, params);
   const active = Boolean(params.q?.trim() || params.jenis || params.genre || params.penulis || params.bacaan);

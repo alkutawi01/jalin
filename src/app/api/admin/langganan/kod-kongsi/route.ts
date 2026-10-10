@@ -36,7 +36,7 @@ export async function POST(request: Request) {
     const who = await actor();
     const channel = str(body.channel, 60) || undefined;
     const made = await createSharedCode(getDb(), { grant, maxRedemptions: max, expiresAt, channel, note: str(body.note, 300) || undefined, createdBy: who.name });
-    await logActivity({ action: "subscription.shared.create", subjectType: "shared_code", subjectId: made.id, summary: `${made.code}: ${amount} ${unit === "days" ? "hari" : "bulan"}, had ${max}${channel ? `, ${channel}` : ""}` });
+    await logActivity({ action: "subscription.shared.create", subjectType: "shared_code", subjectId: made.id, summary: `Kod kongsi baharu: ${amount} ${unit === "days" ? "hari" : "bulan"}, had ${max}${channel ? `, ${channel}` : ""}` });
     return json({ ok: true, code: made.code, id: made.id }, 201);
   });
 }

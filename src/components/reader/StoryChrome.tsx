@@ -2,21 +2,29 @@ import { renderItalics } from "../../lib/reader/inline-italics";
 import LilitDivider from "./LilitDivider";
 import { capitaliseFirst } from "../../lib/capitalise-first";
 import { smartQuotes } from "../../lib/admin/smart-quotes";
+import { spacedDashes } from "../../lib/reader/spaced-dash";
 import type { ReactNode } from "react";
 import Image from "next/image";
 import { cropStyle } from "../../lib/reader/crop";
 import type { ImageCrop } from "../../lib/content/types";
 import type { BylineCredit, CharacterMeta, EditorialCredit, PlaceMeta, WorkMetaRow } from "./types";
-import { CONTENT_LINKS, NAV_LINKS, SiteNavLinks } from "./nav-links";
+import { CONTENT_LINKS, NAV_LINKS, SiteNavLinks, VISITOR_LINKS } from "./nav-links";
+import { siteOpenForViewer } from "../../lib/reader/access-gate";
 import HeaderSearch from "./HeaderSearch";
 import MobileNavMenu from "./MobileNavMenu";
+import HeaderAccount from "./HeaderAccount";
+import ExpiryNotice from "./ExpiryNotice";
 import { readerAccountsEnabled } from "../../lib/reader-auth/enabled";
+import AiRating from "./AiRating";
+import type { PublicRatingSummary } from "../../lib/panel/public";
 
-function SiteNav({ active, className }: { active?: string; className: string }) {
-  return <SiteNavLinks active={active} className={className} links={NAV_LINKS} />;
+function SiteNav({ active, className, visitor = false }: { active?: string; className: string; visitor?: boolean }) {
+  return <SiteNavLinks active={active} className={className} links={visitor ? VISITOR_LINKS : NAV_LINKS} />;
 }
 
-export function SiteHeader({ active }: { active?: string }) {
+export async function SiteHeader({ active }: { active?: string }) {
+  // Without access (paywall on) the header offers the information pages and the way in; the library is for readers with access.
+  const visitor = !(await siteOpenForViewer());
   return (
     <>
     <a className="skip-link" href="#kandungan">Langkau ke kandungan</a>
@@ -28,13 +36,14 @@ export function SiteHeader({ active }: { active?: string }) {
           </a>
         </div>
         <div className="header-main">
-          <SiteNav active={active} className="header-nav" />
-          <HeaderSearch active={active === "cari"} />
-          {readerAccountsEnabled() ? <a className="header-account" href="/akaun">Akaun</a> : null}
+          <SiteNav active={active} className="header-nav" visitor={visitor} />
+          {visitor ? null : <HeaderSearch active={active === "cari"} />}
+          {readerAccountsEnabled() ? <HeaderAccount /> : null}
         </div>
-        <MobileNavMenu active={active} />
+        <MobileNavMenu active={active} accounts={readerAccountsEnabled()} visitor={visitor} />
       </div>
     </header>
+    {readerAccountsEnabled() ? <ExpiryNotice /> : null}
     </>
   );
 }
@@ -103,7 +112,7 @@ export function StoryHead({
       ) : originalTitle ? (
         <p className="story-original-title"><cite>{originalTitle}</cite></p>
       ) : null}
-      <p className="dek">{smartQuotes(dek)}</p>
+      <p className="dek">{spacedDashes(smartQuotes(dek))}</p>
       {contextLine ? <p className="story-context-line">{contextLine}</p> : null}
       {originalAuthorBesideTitle ? null : <BylineRow byline={byline} />}
     </>
@@ -157,7 +166,7 @@ export function EditorialImage({
 }
 
 /** The left rail: about the work, then who made it (editorial). It starts level with the first paragraph, not with the page header. */
-export function LeftRail({ rows, note, editorial = [], children }: { rows: WorkMetaRow[]; note?: string; editorial?: EditorialCredit[]; children?: ReactNode }) {
+export function LeftRail({ rows, note, editorial = [], aiRating, children }: { rows: WorkMetaRow[]; note?: string; editorial?: EditorialCredit[]; aiRating?: { workId: string; summary: PublicRatingSummary }; children?: ReactNode }) {
   return (
     <aside className="left-rail" aria-label="Tentang karya">
       <div className="rail-card sticky">
@@ -183,6 +192,13 @@ export function LeftRail({ rows, note, editorial = [], children }: { rows: WorkM
             ))}
           </>
         )}
+        {aiRating ? (
+          <>
+            <div className="rail-rule" />
+            <div className="rail-label">Penilaian</div>
+            <AiRating workId={aiRating.workId} summary={aiRating.summary} />
+          </>
+        ) : null}
       </div>
       {children ? <div className="rail-card sticky">{children}</div> : null}
     </aside>
@@ -265,8 +281,9 @@ const FOOTER_ABOUT = [
   { label: "Terma penggunaan", href: "/terma" }
 ];
 
-export function SiteFooter() {
+export async function SiteFooter() {
   const year = new Date().getFullYear();
+  const visitor = !(await siteOpenForViewer());
   return (
     <footer className="site-footer">
       <div className="site-shell footer-grid">
@@ -275,26 +292,35 @@ export function SiteFooter() {
           <p className="footer-tagline">Selami dunia melalui cerita</p>
         </div>
         <div className="footer-nav-grid">
-          <nav className="footer-col" aria-label="Terokai karya">
-            <h2>Terokai</h2>
-            <ul>
-              {FOOTER_EXPLORE.map((link) => (
-                <li key={link.href}><a href={link.href}>{link.label}</a></li>
-              ))}
-            </ul>
-          </nav>
+          {visitor ? null : (
+            <nav className="footer-col" aria-label="Terokai karya">
+              <h2>Terokai</h2>
+              <ul>
+                {FOOTER_EXPLORE.map((link) => (
+                  <li key={link.href}><a href={link.href}>{link.label}</a></li>
+                ))}
+              </ul>
+            </nav>
+          )}
           <nav className="footer-col" aria-label="Tentang tapak">
             <h2>Jalin</h2>
             <ul>
               {FOOTER_ABOUT.map((link) => (
                 <li key={link.href}><a href={link.href}>{link.label}</a></li>
               ))}
+              {readerAccountsEnabled() ? <li><a href="/mula">Apa itu Jalin?</a></li> : null}
             </ul>
           </nav>
         </div>
       </div>
       <div className="site-shell footer-base">
         <p>© {year} Adjung Press. Hak cipta terpelihara.</p>
+        <a className="footer-admin" href="/admin/login" aria-label="Log masuk pengurus" title="Log masuk pengurus">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <rect x="5" y="11" width="14" height="9" rx="2" />
+            <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+          </svg>
+        </a>
       </div>
     </footer>
   );

@@ -1,10 +1,13 @@
 import { hasDb } from "../../../lib/db";
 import { listStaff, ROLE_NAMES, type StaffUser } from "../../../lib/admin/user-service";
 import UsersPanel from "./UsersPanel";
+import { getCurrentAdmin } from "../../../lib/admin/auth";
+import { notFound } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminUsersPage() {
+  if ((await getCurrentAdmin())?.role !== "admin") notFound();
   let users: StaffUser[] = [];
   let problem: string | null = null;
   if (!hasDb()) {

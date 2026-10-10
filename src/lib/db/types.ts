@@ -492,6 +492,60 @@ export interface Database {
   shared_codes: SharedCodes;
   shared_redemptions: SharedRedemptions;
   reader_switches: ReaderSwitches;
+  panel_snapshots: PanelSnapshots;
+  panel_ratings: PanelRatings;
+  panel_settings: PanelSettingsRow;
+}
+
+export interface PanelSettingsRow {
+  key: string;
+  value: string;
+  updated_at: Generated<Date>;
+  updated_by: string | null;
+}
+
+export interface PanelSnapshots {
+  id: Generated<string>;
+  subject_kind: "work" | "submission";
+  subject_id: string;
+  work_type: "cerpen" | "novela" | "bersiri";
+  title: string;
+  content_hash: string;
+  text_body: string;
+  manifest: ColumnType<Record<string, unknown>, string | Record<string, unknown>, string | Record<string, unknown>>;
+  char_count: number;
+  ref_code: string;
+  rubric_version: string;
+  prompt_version: string;
+  created_by: string | null;
+  created_at: Generated<Date>;
+}
+
+export interface PanelRatings {
+  id: Generated<string>;
+  snapshot_id: string;
+  reviewer_label: string;
+  provider: string | null;
+  contributed: Generated<"ya" | "tidak" | "tidak_diketahui">;
+  status: "valid" | "invalid";
+  errors: ColumnType<unknown[], string | unknown[], string | unknown[]>;
+  warnings: ColumnType<unknown[], string | unknown[], string | unknown[]>;
+  model_claimed: string | null;
+  scores: ColumnType<Record<string, unknown> | null, string | Record<string, unknown> | null, string | Record<string, unknown> | null>;
+  composite_num: ColumnType<string | null, string | number | bigint | null, string | number | bigint | null>;
+  composite_den: ColumnType<string | null, string | number | bigint | null, string | number | bigint | null>;
+  composite_text: string | null;
+  evidence_flagged: Generated<boolean>;
+  age_class: string | null;
+  summary: string | null;
+  strengths: string | null;
+  improvements: string | null;
+  raw_response: string;
+  created_by: string | null;
+  created_at: Generated<Date>;
+  voided_at: ColumnType<Date | null, string | Date | null, string | Date | null>;
+  voided_by: string | null;
+  void_reason: string | null;
 }
 
 export interface ReaderAccounts {

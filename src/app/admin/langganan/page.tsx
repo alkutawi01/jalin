@@ -4,6 +4,9 @@ import { readerAccountsEnabled } from "../../../lib/reader-auth/enabled";
 import { LanggananNav } from "../../../components/admin/langganan-ui";
 import { readLastExport, type LastExport } from "../../../lib/reader-auth/maintenance";
 import HaltSwitch from "./HaltSwitch";
+import PaywallSwitch from "./PaywallSwitch";
+import { isPaywallSwitchOn, countSamples } from "../../../lib/reader-auth/switches";
+import { countEvents, readerMailDailyCap } from "../../../lib/reader-auth/service";
 
 export const dynamic = "force-dynamic";
 
@@ -12,15 +15,30 @@ export default async function LanggananPage() {
   let data: Overview | null = null;
   let problem: string | null = null;
   let last: LastExport | null = null;
+  let paywall = false;
+  let samples = 0;
+  let mailUsed = 0;
+  const mailCap = readerMailDailyCap();
   if (!hasDb()) problem = "Pangkalan data tidak tersedia.";
   else {
     try {
       data = await overview(getDb());
       last = await readLastExport(getDb());
+      paywall = await isPaywallSwitchOn(getDb());
+      samples = await countSamples(getDb());
+      mailUsed = await countEvents(getDb(), "request", "global", "all", new Date(Date.now() - 24 * 60 * 60 * 1000));
     } catch {
       problem = "Jadual langganan belum wujud pada pangkalan data ini. Migrasi 027 hingga 030 perlu dijalankan dahulu.";
     }
   }
+  const lastSuccessAt = last?.stored === "blob" ? last.at : last?.lastSuccessfulAt;
+  const exportWarning = last?.error
+    ? `Eksport terakhir gagal: ${last.error}`
+    : !lastSuccessAt
+      ? "Belum ada eksport terenkripsi yang berjaya disimpan. Semak BACKUP_ENC_KEY dan storan Blob."
+      : Date.now() - new Date(lastSuccessAt).getTime() > 36 * 60 * 60 * 1000
+        ? "Eksport berjaya terakhir melebihi 36 jam. Semak cron dan storan Blob."
+        : null;
 
   return (
     <div className="admin-langganan">
@@ -48,15 +66,17 @@ export default async function LanggananPage() {
               </tbody>
             </table>
           </div>
+          <h2>Dinding bayar</h2>
+          <PaywallSwitch initialOn={paywall} accountsEnabled={readerAccountsEnabled()} samples={samples} />
           <h2>Suis henti penebusan</h2>
           <HaltSwitch initialHalted={data.halted} />
+          <h2>Kuota e-mel kod</h2>
+          <p>{mailUsed} daripada {mailCap} e-mel kod digunakan dalam 24 jam terakhir.</p>
+          {mailUsed >= Math.ceil(mailCap * 0.7) ? <div className="admin-alert admin-alert-warning" role="status">Penggunaan e-mel kod mencapai sekurang-kurangnya 70% kuota harian. Semak aktiviti dan kapasiti penghantaran.</div> : null}
           <h2>Salinan kod di luar pangkalan data</h2>
-          <p>Setiap malam, satu fail bertandatangan berisi semua kod dan penebusan disimpan di luar pangkalan data. Jika pangkalan data dipulihkan ke masa lampau, fail inilah yang menghalang kad yang sudah digunakan daripada digunakan semula.</p>
-          {last ? (
-            <p>Eksport terakhir yang berjaya: {new Date(last.at).toLocaleString("ms-MY", { timeZone: "Asia/Kuala_Lumpur", day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" })} ({last.lines} baris).</p>
-          ) : (
-            <div className="admin-alert admin-alert-warning" role="status">Belum ada eksport yang berjaya disimpan. Pastikan CRON_SECRET dan storan Blob ditetapkan.</div>
-          )}
+          <p>Setiap malam, satu fail disulitkan dan bertandatangan berisi semua kod dan penebusan disimpan di luar pangkalan data. Jika pangkalan data dipulihkan ke masa lampau, fail inilah yang menghalang kad yang sudah digunakan daripada digunakan semula.</p>
+          {exportWarning ? <div className="admin-alert admin-alert-error" role="alert">{exportWarning}</div> : null}
+          {lastSuccessAt ? <p>Eksport terakhir yang berjaya: {new Date(lastSuccessAt).toLocaleString("ms-MY", { timeZone: "Asia/Kuala_Lumpur", day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" })}{last?.stored === "blob" ? ` (${last.lines} baris)` : ""}.</p> : null}
           <p><a className="admin-btn admin-btn-sm admin-btn-outline" href="/api/admin/langganan/eksport">Muat turun fail eksport sekarang</a></p>
         </>
       )}

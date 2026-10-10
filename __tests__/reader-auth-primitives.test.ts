@@ -1,6 +1,7 @@
 /** Reader sign-in: the pure pieces (addresses, keyed hashes, codes, tokens, mailer choice) and the request helpers. */
 import {
   loadCodeKey,
+  loadPreviousCodeKeys,
   constantTimeEqualHex,
   emailLookupMac,
   generateOtp,
@@ -16,7 +17,8 @@ import {
   selectMailer,
   trialClaimMac,
 } from "../src/lib/reader-auth/primitives";
-import { clientIp, isSameOrigin, readerAccountsEnabled, readerCookieName, readerTokenFrom } from "../src/lib/reader-auth/http";
+import { clientIp, isSameOrigin, rateLimitIp, readerAccountsEnabled, readerCookieName, readerTokenFrom } from "../src/lib/reader-auth/http";
+import { newReaderMailDailyCap, readerMailDailyCap } from "../src/lib/reader-auth/service";
 
 let passed = 0;
 let failed = 0;
@@ -43,6 +45,9 @@ const codeEnv = { CODE_MAC_KEY_ID: "c1", CODE_MAC_KEY: "cd".repeat(32), READER_M
 assert(loadCodeKey(codeEnv).keyId === "c1" && loadCodeKey(codeEnv).key.length === 32, "a 64-hex code key loads");
 assert(throws(() => loadCodeKey({ CODE_MAC_KEY_ID: "c1", CODE_MAC_KEY: "cd".repeat(16) })) && throws(() => loadCodeKey({ CODE_MAC_KEY: "cd".repeat(32) })) && throws(() => loadCodeKey({})), "a short code key, a missing id or no key is refused");
 assert(throws(() => loadCodeKey({ CODE_MAC_KEY_ID: "c1", CODE_MAC_KEY: hex, READER_MAC_KEY: hex.toUpperCase() })), "the code key must differ from the sign-in key");
+const retired = loadPreviousCodeKeys({ ...codeEnv, CODE_MAC_KEY_PREVIOUS: `lama:${"ef".repeat(32)},lebih_lama:${"12".repeat(32)}` });
+assert(retired.length === 2 && retired[0].keyId === "lama" && retired[1].keyId === "lebih_lama", "retired card keys load in declared order");
+assert(throws(() => loadPreviousCodeKeys({ ...codeEnv, CODE_MAC_KEY_PREVIOUS: `c1:${"ef".repeat(32)}` })) && throws(() => loadPreviousCodeKeys({ ...codeEnv, CODE_MAC_KEY_PREVIOUS: "lama:not-hex" })), "a duplicate ID or malformed retired card key is refused");
 const other = loadMacKey({ READER_MAC_KEY_ID: "k2", READER_MAC_KEY: "cd".repeat(32) });
 assert(emailLookupMac(key, "a@b.my") === emailLookupMac(key, "a@b.my") && emailLookupMac(key, "a@b.my") !== emailLookupMac(other, "a@b.my"), "a keyed hash is stable and depends on the key");
 assert(new Set([emailLookupMac(key, "a@b.my"), trialClaimMac(key, "a@b.my"), ipMac(key, "a@b.my")]).size === 3, "the same text hashes differently for different purposes");
@@ -106,6 +111,8 @@ async function resendCall() {
   assert(!isSameOrigin(req({ host: "jalin.adjung.com" })), "a request without an Origin is refused");
   assert(!isSameOrigin(req({ origin: "null", host: "jalin.adjung.com" })) && !isSameOrigin(req({ origin: "https://jalin.adjung.com.evil.example", host: "jalin.adjung.com" })), "a null origin and a look-alike are refused");
   assert(clientIp(req({ "x-real-ip": "203.0.113.4", "x-forwarded-for": "9.9.9.9" })) === "203.0.113.4" && clientIp(req({ "x-forwarded-for": "1.2.3.4, 5.6.7.8" })) === "1.2.3.4" && clientIp(req({})) === "unknown", "the visitor's address is read from the proxy headers");
+  assert(rateLimitIp("2001:db8:abcd:1234::1") === rateLimitIp("2001:0db8:abcd:1234:ffff::2") && rateLimitIp("2001:db8:abcd:1235::1") !== rateLimitIp("2001:db8:abcd:1234::1") && rateLimitIp("203.0.113.4") === "203.0.113.4", "IPv6 requests share their /64 limit while IPv4 stays exact");
+  assert(readerMailDailyCap({}) === 90 && readerMailDailyCap({ READER_MAIL_DAILY_CAP: "120" }) === 120 && readerMailDailyCap({ READER_MAIL_DAILY_CAP: "oops" }) === 90 && newReaderMailDailyCap(90) === 60, "daily mail cap is configurable with a reserved third for existing accounts");
   const name = readerCookieName();
   assert(readerTokenFrom(req({ cookie: `a=1; ${name}=tok_en; b=2` })) === "tok_en" && readerTokenFrom(req({ cookie: "a=1" })) === null && readerTokenFrom(req({})) === null, "the reader cookie is found among others");
   assert(readerCookieName({ NODE_ENV: "production" }) === "__Host-jalin-reader" && readerCookieName({ NODE_ENV: "development" }) === "jalin-reader", "the cookie is __Host- on the live site");

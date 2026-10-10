@@ -1,5 +1,5 @@
 /**
- * Typing two hyphens ("--") gives an em dash, as in "Dia diam — lama." A line made only of hyphens
+ * Typing two hyphens ("--") gives an em dash with a space on each side, as in "Dia diam — lama." A line made only of hyphens
  * ("---", the scene break in Markdown) is left alone, and so are three or more hyphens in a row.
  *
  * The same typing helpers also set straight quotation marks to the house style (see smart-quotes.ts).
@@ -8,10 +8,17 @@ import { smartQuotes } from "./smart-quotes";
 
 const EM_DASH = "\u2014";
 
+/**
+ * Two dashes in a row (two hyphens, two en dashes, or one of each) join into one em dash and take a space on each side: "kata--kata"
+ * becomes "kata — kata". A single hyphen or en dash (a compound word, a range) is left alone, and so is a run of three or more.
+ * A dash that opens a line (dialogue) is followed by a space only.
+ */
+const PAIR = /[ \t]*(?<![-\u2013])(?:-{2}|\u2013{2}|-\u2013|\u2013-)(?![-\u2013])[ \t]*/g;
+
 export function autoDash(text: string): string {
   return text
     .split("\n")
-    .map((line) => (/^\s*-+\s*$/.test(line) ? line : line.replace(/(?<!-)--(?!-)/g, EM_DASH)))
+    .map((line) => (/^\s*-+\s*$/.test(line) ? line : line.replace(PAIR, (_m, offset) => (offset === 0 ? EM_DASH + " " : " " + EM_DASH + " "))))
     .join("\n");
 }
 

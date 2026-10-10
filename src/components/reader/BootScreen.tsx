@@ -1,4 +1,5 @@
 import JalinEmblem from "./JalinEmblem";
+import BootOut from "./BootOut";
 
 /**
  * The loading screen of every public page: the theme's deep teal with the emblem, shown for at least one second from the moment the
@@ -15,9 +16,10 @@ export default function BootScreen() {
   return (
     <>
       <div className="boot-screen" id="boot-screen" aria-hidden="true" suppressHydrationWarning>
-        <JalinEmblem animated tone="on-teal" variant="gelombang" size={104} />
+        <JalinEmblem animated tone="on-teal" variant="gelombang" size={84} />
       </div>
       <script dangerouslySetInnerHTML={{ __html: SCRIPT }} />
+      <BootOut />
       {/* Without JavaScript: no loading screens, and the page itself is shown. A streamed page arrives inside hidden boxes
           (id "S:…") that a script moves into place; with no script they stayed hidden and only the emblem was ever seen. */}
       <noscript><style>{NOSCRIPT_CSS}</style></noscript>

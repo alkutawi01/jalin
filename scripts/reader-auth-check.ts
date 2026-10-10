@@ -9,14 +9,18 @@ config({ path: ".env.local", override: true });
 import { sql } from "kysely";
 import { closeDb, getDb } from "../src/lib/db";
 import {
+  deleteAccount,
   getSession,
   listDevices,
   requestLoginCode,
+  setDisplayName,
   signOut,
   signOutEverywhere,
+  startTrial,
   verifyLoginCode,
   type Db,
 } from "../src/lib/reader-auth/service";
+import { clearReading, isSaved, listReading, listSaved, recordProgress, setSaved } from "../src/lib/reader-auth/library";
 import { emailLookupMac, ipMac, type MacKey, type Mailer } from "../src/lib/reader-auth/primitives";
 
 let passed = 0;
@@ -75,11 +79,20 @@ async function main() {
       const afterFive = await verifyLoginCode(trx, { key, now: at(2.4) }, { email: "aina@contoh.my", code: sent[1].code, ipMac: IP });
       assert(afterFive.status === "invalid", "after five wrong tries even the right code no longer works");
 
-      // A good sign-in creates the account and the trial.
+      // A good sign-in creates the account, with no access yet; the trial is a step the reader chooses.
       const a = await signIn(trx, "aina@contoh.my", 10, { label: "Telefon Aina" });
       assert(a.ver.status === "ok" && a.ver.isNewAccount, "the right code signs in and creates the account", a.ver);
       if (a.ver.status !== "ok") throw new Error("cannot continue");
-      assert(a.ver.trialEndsAt !== null && a.ver.trialEndsAt.getTime() === at(10.1).getTime() + 14 * 24 * 3600 * 1000, "the new account gets a trial of 14 days from now");
+      assert(a.ver.trialEndsAt === null, "a new account has no trial until its reader starts it");
+      const noAccess = await trx.selectFrom("entitlements").select("id").where("account_id", "=", a.ver.accountId).execute();
+      assert(noAccess.length === 0, "and nothing is in the access ledger yet");
+      const t1 = await startTrial(trx, { key, now: at(10.5) }, a.ver.accountId);
+      assert(t1.status === "ok" && t1.endsAt.getTime() === at(10.5).getTime() + 14 * 24 * 3600 * 1000, "starting the trial gives 14 days from that moment");
+      const t2 = await startTrial(trx, { key, now: at(11) }, a.ver.accountId);
+      assert(t2.status === "already" && t2.endsAt?.getTime() === (t1.status === "ok" ? t1.endsAt.getTime() : 0), "pressing it again changes nothing");
+      const ledgerRows = await trx.selectFrom("entitlements").select(["kind"]).where("account_id", "=", a.ver.accountId).execute();
+      assert(ledgerRows.length === 1 && ledgerRows[0].kind === "TRIAL", "exactly one trial period is in the ledger");
+      assert((await startTrial(trx, { key, now: at(11) }, "00000000-0000-0000-0000-000000000000")).status === "no_account", "an account that does not exist cannot start a trial");
       const session = await getSession(trx, a.ver.token, at(11));
       assert(session?.account.email === "aina@contoh.my" && session.device.label === "Telefon Aina", "the cookie token finds the account and device");
       assert((await getSession(trx, a.ver.token + "x", at(11))) === null && (await getSession(trx, "", at(11))) === null, "a wrong or empty token finds nothing");
@@ -105,6 +118,24 @@ async function main() {
       assert((await getSession(trx, a.ver.token, at(41))) === null, "the replaced device is signed out at once");
       assert((await listDevices(trx, a.ver.accountId)).length === 2, "she still has exactly two devices");
 
+      // Bacaan saya: remembered by the work's public address, one row per work, and only for a published work.
+      const pub = await trx.selectFrom("works").select(["id", "slug"]).where("status", "=", "published").executeTakeFirst();
+      if (pub) {
+        assert(await recordProgress(trx, a.ver.accountId, pub.slug, null, at(41.1)), "opening a published work is remembered");
+        assert(await recordProgress(trx, a.ver.accountId, pub.slug, "bab-2", at(41.2)), "opening it again only moves the place");
+        const list = await listReading(trx, a.ver.accountId);
+        assert(list.length === 1 && list[0].workId === pub.id && list[0].sectionSlug === "bab-2", "there is one row for the work, at the last chapter");
+        assert(!(await recordProgress(trx, a.ver.accountId, "tiada-karya-ini", null, at(41.3))), "a work that does not exist is refused");
+        assert(!(await recordProgress(trx, a.ver.accountId, pub.slug, "BAB 2!", at(41.4))), "a chapter name that is not a slug is refused");
+        await clearReading(trx, a.ver.accountId);
+        assert((await listReading(trx, a.ver.accountId)).length === 0, "the reader clears the list");
+        assert(await setSaved(trx, a.ver.accountId, pub.slug, true, at(41.5)) && (await isSaved(trx, a.ver.accountId, pub.slug)), "a work can be kept for later");
+        assert(await setSaved(trx, a.ver.accountId, pub.slug, true, at(41.6)) && (await listSaved(trx, a.ver.accountId)).length === 1, "keeping it twice leaves one row");
+        assert(!(await setSaved(trx, a.ver.accountId, "tiada-karya-ini", true)), "a work that does not exist cannot be kept");
+        await setSaved(trx, a.ver.accountId, pub.slug, false);
+        assert(!(await isSaved(trx, a.ver.accountId, pub.slug)) && (await listSaved(trx, a.ver.accountId)).length === 0, "and taken off the list again");
+      }
+
       // Signing out.
       if (chosen.status !== "ok") throw new Error("cannot continue");
       await signOut(trx, chosen.token, at(42));
@@ -113,9 +144,19 @@ async function main() {
       assert((await listDevices(trx, a.ver.accountId)).length === 0, "signing out everywhere ends every device");
 
       // The trial is given once, even after deleting the account.
-      await trx.updateTable("reader_accounts").set({ status: "deleted" }).where("id", "=", a.ver.accountId).execute();
+      const before = await signIn(trx, "aina@contoh.my", 50);
+      assert(before.ver.status === "ok", "she signs in on a device before deleting");
+      if (before.ver.status !== "ok") throw new Error("cannot continue");
+      await setDisplayName(trx, a.ver.accountId, "Aina");
+      assert(await deleteAccount(trx, a.ver.accountId, at(51)), "she deletes her own account");
+      assert((await getSession(trx, before.ver.token, at(52))) === null, "and her device is signed out at once");
+      const gone = await trx.selectFrom("reader_accounts").select(["email", "email_normalized", "display_name", "status"]).where("id", "=", a.ver.accountId).executeTakeFirstOrThrow();
+      assert(gone.status === "deleted" && !gone.email.includes("aina") && !gone.email_normalized.includes("aina") && gone.display_name === null, "her address and name are gone from the row");
+      assert(!(await deleteAccount(trx, a.ver.accountId, at(53))), "a second delete finds nothing");
       const back = await signIn(trx, "aina@contoh.my", 60);
-      assert(back.ver.status === "ok" && back.ver.isNewAccount && back.ver.trialEndsAt === null, "registering again after deleting gets no second trial");
+      assert(back.ver.status === "ok" && back.ver.isNewAccount && back.ver.trialEndsAt === null, "registering again after deleting starts clean");
+      if (back.ver.status !== "ok") throw new Error("cannot continue");
+      assert((await startTrial(trx, { key, now: at(61) }, back.ver.accountId)).status === "used", "and gets no second trial: the address has used it");
 
       // One address: five codes an hour.
       let hourly = -1;
@@ -144,9 +185,17 @@ async function main() {
         if (!r.ok && capped < 0) capped = i;
       }
       assert(capped >= 0 && capped <= 2, "the daily cap on all e-mails stops further codes", capped);
-      for (let i = 0; i < 10; i++) await verifyLoginCode(trx, { key, now: at(500) }, { email: "dicuba@contoh.my", code: "123456", ipMac: ipMac(key, `203.0.113.${100 + i}`) });
-      const blocked = await verifyLoginCode(trx, { key, now: at(501) }, { email: "dicuba@contoh.my", code: "123456", ipMac: ipMac(key, "203.0.113.250") });
-      assert(blocked.status === "throttled", "ten wrong codes for one address in an hour stop further tries, from any visitor");
+      // With no code open, a stranger's guesses at an address cannot lock that address out (only the guesser's IP is counted).
+      for (let i = 0; i < 12; i++) await verifyLoginCode(trx, { key, now: at(500) }, { email: "dicuba@contoh.my", code: "123456", ipMac: ipMac(key, `203.0.113.${100 + i}`) });
+      const notBlocked = await verifyLoginCode(trx, { key, now: at(501) }, { email: "dicuba@contoh.my", code: "123456", ipMac: ipMac(key, "203.0.113.250") });
+      assert(notBlocked.status === "invalid", "guessing at an address with no code open does not lock the address out");
+      // With codes open, ten wrong tries for one address in an hour stop further tries, from any visitor.
+      await requestLoginCode(trx, { key, mailer, now: at(510) }, { email: "dicuba@contoh.my", ipMac: ipMac(key, "198.18.0.1") });
+      for (let i = 0; i < 5; i++) await verifyLoginCode(trx, { key, now: at(510.1) }, { email: "dicuba@contoh.my", code: "123456", ipMac: ipMac(key, `198.18.1.${i}`) });
+      await requestLoginCode(trx, { key, mailer, now: at(512) }, { email: "dicuba@contoh.my", ipMac: ipMac(key, "198.18.0.2") });
+      for (let i = 0; i < 5; i++) await verifyLoginCode(trx, { key, now: at(512.1) }, { email: "dicuba@contoh.my", code: "123456", ipMac: ipMac(key, `198.18.2.${i}`) });
+      const blocked = await verifyLoginCode(trx, { key, now: at(513) }, { email: "dicuba@contoh.my", code: "123456", ipMac: ipMac(key, "198.18.3.1") });
+      assert(blocked.status === "throttled", "ten wrong codes against open codes for one address in an hour stop further tries, from any visitor");
 
       // The mail provider fails.
       failMail = true;

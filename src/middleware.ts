@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAllowed, roleFromClaim, type Role } from "./lib/admin/permissions";
+import { adminSessionSigningKey } from "./lib/admin/session-key";
 
 /**
  * Validate session token using Web Crypto API (Edge-compatible).
@@ -11,7 +12,7 @@ async function validateSessionToken(token: string): Promise<{ role: Role; mustCh
       return null;
     }
 
-    const secret = process.env.ADMIN_SECRET;
+    const secret = adminSessionSigningKey();
     if (!secret) {
       console.error("[Middleware] ADMIN_SECRET not configured.");
       return null;
@@ -72,6 +73,12 @@ export async function middleware(request: NextRequest) {
   // Only protect admin routes
   if (!pathname.startsWith("/admin") && !pathname.startsWith("/api/admin")) {
     return NextResponse.next();
+  }
+
+  // The permission table matches the path as written: refuse any admin path that is spelled in an unusual way (doubled slashes,
+  // encoded characters, dot segments) instead of letting a router resolve it to a handler the table did not see.
+  if (/\/\/|%|\\|\/\.{1,2}(\/|$)/.test(pathname)) {
+    return new NextResponse("Bad request", { status: 400, headers: { "Cache-Control": "no-store" } });
   }
 
   // Allow login page and login API

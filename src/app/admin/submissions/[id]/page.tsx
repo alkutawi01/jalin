@@ -5,6 +5,8 @@ import { useParams } from "next/navigation";
 import { confirmAction } from "../../../../lib/admin/dialogs";
 import LoadingBlock from "../../../../components/admin/LoadingBlock";
 import { errorText } from "../../../../lib/admin/error-text";
+import PanelTab from "../../../../components/admin/PanelTab";
+import { useAdminCan } from "../../../../components/admin/AdminRole";
 
 const WORK_TYPES = [
   { value: "cerpen", label: "Cerpen" },
@@ -89,6 +91,7 @@ interface GenerationRequestData {
 export default function EditSubmissionPage() {
   const params = useParams();
   const submissionId = params.id as string;
+  const canPanel = useAdminCan("panel.manage");
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -1010,6 +1013,12 @@ export default function EditSubmissionPage() {
           </div>
         )}
       </section>
+      {canPanel && ["cerpen", "novela", "bersiri"].includes(form.proposedType) ? (
+        <section className="admin-section">
+          <h2>Penilaian AI</h2>
+          <PanelTab kind="submission" subjectId={submissionId} />
+        </section>
+      ) : null}
     </div>
   );
 }

@@ -37,6 +37,12 @@ import FootnoteMargin from "../src/components/reader/FootnoteMargin";
 import HeaderSearch from "../src/components/reader/HeaderSearch";
 import CountUp from "../src/components/reader/CountUp";
 import StoryCollection from "../src/components/reader/StoryCollection";
+import ReadMore from "../src/components/reader/ReadMore";
+import AiRating from "../src/components/reader/AiRating";
+import NavMenu from "../src/components/reader/NavMenu";
+import ReadingTracker from "../src/components/reader/ReadingTracker";
+import SaveWorkButton from "../src/components/reader/SaveWorkButton";
+import ExpiryNotice from "../src/components/reader/ExpiryNotice";
 import { initContentRepository } from "../src/lib/content";
 
 let passed = 0;
@@ -81,7 +87,7 @@ const FORBIDDEN_STRINGS = [
 ];
 
 /** Client components receive their data as props; do not execute them. */
-const CLIENT_COMPONENTS = new Set<unknown>([MobileStoryInfo, MobileNavMenu, GlossaryTerm, ReadingProgress, FootnoteMargin, HeaderSearch, CountUp, StoryCollection]);
+const CLIENT_COMPONENTS = new Set<unknown>([MobileStoryInfo, MobileNavMenu, GlossaryTerm, ReadingProgress, FootnoteMargin, HeaderSearch, CountUp, StoryCollection, NavMenu, ReadingTracker, SaveWorkButton, ExpiryNotice, ReadMore, AiRating]);
 
 function scanValue(value: unknown, path: string, hits: string[]) {
   if (typeof value === "string") {
@@ -120,10 +126,17 @@ async function walk(node: unknown, hits: string[]): Promise<void> {
 
   const props = node.props as Record<string, unknown>;
   const type = node.type;
+  // A fragment only groups: what it holds is judged on its own (a server component inside it is run, never serialized).
+  if (type === React.Fragment) {
+    await walk(props.children, hits);
+    return;
+  }
   // Only what is serialized into the page is scanned: host elements and client components. A server component (a function
   // that is run here) receives its props on the server and they never cross into the payload; what it renders is walked next.
   // (WorkView and EpisodeView take the whole Work as a prop for exactly that reason, and the editor's preview shares them.)
-  if (typeof type !== "function" || CLIENT_COMPONENTS.has(type)) scanValue(props, "props", hits);
+  // A fragment only groups its children (a page that renders the reading tracker beside the work); it has no props of its own to send.
+  const isFragment = type === React.Fragment;
+  if ((typeof type !== "function" && !isFragment) || CLIENT_COMPONENTS.has(type)) scanValue(props, "props", hits);
 
   if (typeof type === "function" && !CLIENT_COMPONENTS.has(type)) {
     const output = await (type as (p: Record<string, unknown>) => ReactNode | Promise<ReactNode>)(props);

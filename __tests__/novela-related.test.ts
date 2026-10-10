@@ -12,8 +12,8 @@ function assert(cond: boolean, msg: string) {
   if (cond) { passed++; console.log(`  ✓ ${msg}`); } else { failed++; console.error(`  ✗ ${msg}`); }
 }
 const view = fs.readFileSync(path.join(__dirname, "../src/components/reader/WorkView.tsx"), "utf8").replace(/\r\n/g, "\n");
-assert(view.includes("{activeSection && nextSection ? null : <RelatedWorks works={relatedWorks} typeLabel={typeLabel} />}"), "no other works under a chapter that has a next chapter");
-assert((view.match(/<RelatedWorks works=/g) ?? []).length === 1, "it is still rendered in one place (last chapter, novela page, works without chapters)");
+assert(view.includes("{activeSection && nextSection ? null : <ReadMore initial={readMore} exceptSlug={work.slug} />}"), "no other works under a chapter that has a next chapter");
+assert((view.match(/<ReadMore initial=/g) ?? []).length === 1, "it is still rendered in one place (last chapter, novela page, works without chapters)");
 // The three cases, as the page decides them
 const shows = (active: boolean, next: boolean) => !(active && next);
 assert(!shows(true, true) && shows(true, false) && shows(false, true) && shows(false, false), "middle chapter: no; last chapter: yes; novela page: yes; cerpen/fragmen/sinopsis: yes");

@@ -1,4 +1,15 @@
 {
-  "regions": ["sin1"],
-  "crons": [{ "path": "/api/cron/penyelenggaraan", "schedule": "0 20 * * *" }]
+  "regions": [
+    "sin1"
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/penyelenggaraan",
+      "schedule": "0 20 * * *"
+    },
+    {
+      "path": "/api/cron/dinding-gambar",
+      "schedule": "0 0 1 * *"
+    }
+  ]
 }

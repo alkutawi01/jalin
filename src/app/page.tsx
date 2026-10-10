@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { gateSite } from "../lib/reader/access-gate";
 import { jsonLdString, siteJsonLd } from "../lib/seo-jsonld";
 import { SITE_DESCRIPTION } from "../lib/seo";
 import Image from "next/image";
@@ -17,7 +18,7 @@ import { getEditorPickSummaries, resolveHeroPicks } from "../lib/reader/editor-p
 import { projectPublicWorkSummary, type PublicWorkSummary } from "../lib/reader/public-projection";
 import { buildStoryPool, pickCollection, workEyebrow } from "../lib/reader/story-collection";
 import { homeGrounds, type GroundKey } from "../lib/site-theme";
-import CountUp from "../components/reader/CountUp";
+import HomeStats from "../components/reader/HomeStats";
 import { computeSiteStats, statItems } from "../lib/reader/site-stats";
 
 export const dynamic = "force-dynamic";
@@ -220,6 +221,7 @@ async function getWorks() {
 }
 
 export default async function Home() {
+  await gateSite();
   const allWorks = await getWorks();
   const byNewest = (a: { publishedAt?: string }, b: { publishedAt?: string }) =>
     (b.publishedAt ?? "").localeCompare(a.publishedAt ?? "");
@@ -281,22 +283,7 @@ export default async function Home() {
           </section>
         ) : null}
 
-        {stats.length > 0 ? (
-          <section className="home-stats" data-ground={grounds.stats} aria-label="Isi Jalin mengikut kategori">
-            <div className="site-shell">
-              <ul className="home-stats-list">
-                {stats.map((item, index) => (
-                  <li key={item.key} className="home-stat">
-                    <a href={item.href}>
-                      <span className="home-stat-value"><CountUp value={item.count} delayMs={index * 120} /></span>
-                      <span className="home-stat-label">{item.label}</span>
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </section>
-        ) : null}
+        <HomeStats stats={stats} ground={grounds.stats} />
 
         {seriesHighlight ? <SeriesHighlight data={seriesHighlight} ground={grounds.series} /> : null}
 

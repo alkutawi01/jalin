@@ -31,6 +31,11 @@ export default function AccountPanel(props: {
   thisDeviceId: string;
   devices: Device[];
   prefs: Prefs;
+  /** The trial has not been started on this account and this address has not used it. */
+  trialAvailable?: boolean;
+  history: { id: string; label: string; startsAt: string; endsAt: string; revoked: boolean }[];
+  reading: { workId: string; title: string; href: string; kind: string; chapter: string | null; updatedAt: string }[];
+  saved: { workId: string; title: string; href: string; kind: string; savedAt: string }[];
 }) {
   const [name, setName] = useState(props.displayName ?? "");
   const [savedName, setSavedName] = useState(props.displayName ?? "");
@@ -40,6 +45,8 @@ export default function AccountPanel(props: {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [reading, setReading] = useState(props.reading);
 
   async function call(path: string, method: string, body?: unknown) {
     const response = await fetch(path, { method, headers: { "Content-Type": "application/json" }, body: body ? JSON.stringify(body) : undefined });
@@ -76,10 +83,33 @@ export default function AccountPanel(props: {
     setMessage("Peranti dikeluarkan.");
   }
 
+  async function startTrial() {
+    setBusy(true); setError(""); setMessage("");
+    const { ok, data } = await call("/api/akaun/percubaan", "POST", {});
+    if (!ok) { setBusy(false); setError(String(data.error ?? "Percubaan tidak dapat dimulakan.")); return; }
+    window.location.reload();
+  }
+
   async function signOut(path: string) {
     setBusy(true);
     await call(path, "POST", {});
     window.location.href = "/log-masuk";
+  }
+
+  async function clearReading() {
+    setBusy(true); setError(""); setMessage("");
+    const { ok, data } = await call("/api/akaun/bacaan", "DELETE");
+    setBusy(false);
+    if (!ok) { setError(String(data.error ?? "Senarai tidak dapat dikosongkan.")); return; }
+    setReading([]);
+    setMessage("Senarai bacaan dikosongkan.");
+  }
+
+  async function deleteAccount() {
+    setBusy(true); setError(""); setMessage("");
+    const { ok, data } = await call("/api/akaun/padam", "POST", { confirm: "PADAM" });
+    if (!ok) { setBusy(false); setError(String(data.error ?? "Akaun tidak dapat dipadam.")); return; }
+    window.location.href = "/log-masuk?padam=1";
   }
 
   const colours = THEME_COLOURS[prefs.theme];
@@ -96,17 +126,7 @@ export default function AccountPanel(props: {
   return (
     <div className="auth-account">
       <h1 className="auth-title">Akaun saya</h1>
-
-      {props.access.state === "trial" ? (
-        <p className="auth-trial">
-          Percubaan percuma tamat {formatDate(props.access.currentPeriodEndsAt)}
-          {props.access.endsAt && props.access.endsAt !== props.access.currentPeriodEndsAt ? `. Langganan anda bersambung sehingga ${formatDate(props.access.endsAt)}.` : ""}
-        </p>
-      ) : null}
-      {props.access.state === "subscribed" ? <p className="auth-trial">Langganan aktif sehingga {formatDate(props.access.endsAt)}</p> : null}
-      {props.access.state === "expired" ? <p className="auth-trial auth-trial--ended">Akses anda tamat pada {formatDate(props.access.endsAt)}</p> : null}
-      <a className="auth-button auth-button--ghost auth-redeem-link" href="/tebus">Tebus kod langganan</a>
-
+      <h2 className="auth-subtitle" id="profil">Profil</h2>
       <div className="auth-row">
         <span>{props.email}</span>
       </div>
@@ -125,7 +145,68 @@ export default function AccountPanel(props: {
         )}
       </div>
 
-      <h2 className="auth-subtitle">Tetapan bacaan</h2>
+      <h2 className="auth-subtitle" id="langganan">Langganan</h2>
+
+      {props.access.state === "trial" ? (
+        <p className="auth-trial">
+          Percubaan percuma tamat pada {formatDate(props.access.currentPeriodEndsAt)}
+          {props.access.endsAt && props.access.endsAt !== props.access.currentPeriodEndsAt ? `. Akses langganan anda aktif sehingga ${formatDate(props.access.endsAt)}.` : ""}
+        </p>
+      ) : null}
+      {props.access.state === "subscribed" ? <p className="auth-trial">Langganan aktif sehingga {formatDate(props.access.endsAt)}</p> : null}
+      {props.access.state === "expired" ? <p className="auth-trial auth-trial--ended">Akses membaca anda telah tamat pada {formatDate(props.access.endsAt)}.</p> : null}
+      {props.access.state === "none" ? <p className="auth-trial auth-trial--ended">Anda belum mempunyai akses membaca.</p> : null}
+      {props.trialAvailable ? (
+        <button type="button" className="auth-button auth-trial-start" disabled={busy} onClick={startTrial}>Mulakan percubaan percuma 14 hari</button>
+      ) : null}
+      <a className="auth-button auth-button--ghost auth-redeem-link" href="/tebus">Tebus kod langganan</a>
+      {props.history.length > 0 ? (
+        <ul className="auth-history" aria-label="Sejarah akses">
+          {props.history.map((h) => (
+            <li key={h.id} className={h.revoked ? "is-revoked" : undefined}>
+              <span className="auth-history-what">{h.label}{h.revoked ? " (dibatalkan)" : ""}</span>
+              <span className="auth-history-when">{formatDate(h.startsAt)} hingga {formatDate(h.endsAt)}</span>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+
+      <h2 className="auth-subtitle" id="bacaan">Bacaan saya</h2>
+      {reading.length === 0 ? (
+        <p className="auth-fine">Karya dan bab yang anda buka akan muncul di sini supaya mudah untuk menyambung bacaan.</p>
+      ) : (
+        <>
+          <ul className="auth-reading">
+            {reading.map((r) => (
+              <li key={r.workId}>
+                <a href={r.href}>
+                  <span className="auth-reading-title">{r.title}</span>
+                  <span className="auth-reading-meta">{r.kind}{r.chapter ? " · " + r.chapter : ""} · {formatDate(r.updatedAt)}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+          <p><button type="button" className="auth-link" disabled={busy} onClick={clearReading}>Kosongkan senarai</button></p>
+        </>
+      )}
+
+      <h2 className="auth-subtitle" id="disimpan">Disimpan</h2>
+      {props.saved.length === 0 ? (
+        <p className="auth-fine">Karya yang anda simpan dengan butang Simpan akan muncul di sini.</p>
+      ) : (
+        <ul className="auth-reading">
+          {props.saved.map((r) => (
+            <li key={r.workId}>
+              <a href={r.href}>
+                <span className="auth-reading-title">{r.title}</span>
+                <span className="auth-reading-meta">{r.kind} · disimpan {formatDate(r.savedAt)}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <h2 className="auth-subtitle" id="tetapan">Tetapan bacaan</h2>
       <div className="auth-row"><span>Saiz huruf</span>
         <span className="auth-inline">
           <button type="button" className="auth-step" aria-label="Kecilkan huruf" disabled={prefs.fontSizePx === SIZES[0]} onClick={() => savePrefs({ fontSizePx: SIZES[Math.max(0, SIZES.indexOf(prefs.fontSizePx) - 1)] })}>A−</button>
@@ -160,14 +241,14 @@ export default function AccountPanel(props: {
         </span>
       </div>
       <div className="auth-preview" style={previewStyle} aria-label="Contoh teks dengan tetapan ini">
-        <p>Hujan turun perlahan sepanjang petang itu. Aina menutup buku, dan mendengar bunyi titik di atas bumbung.</p>
+        <p>Hujan turun perlahan sepanjang petang itu. Aina menutup buku lalu mendengar titisan hujan di atas bumbung.</p>
       </div>
-      <p className="auth-fine">Tetapan disimpan pada akaun anda. Ia dipakai pada halaman bacaan tidak lama lagi.</p>
+      <p className="auth-fine">Tetapan bacaan disimpan dalam akaun dan digunakan apabila anda membaca karya pada mana-mana peranti.</p>
 
       <h2 className="auth-subtitle">Peranti ({devices.length} daripada 2)</h2>
       {devices.map((device) => (
         <div className="auth-row" key={device.id}>
-          <span>{device.label}{device.id === props.thisDeviceId ? " (ini)" : ""}</span>
+          <span>{device.label}{device.id === props.thisDeviceId ? " · Peranti ini" : ""}</span>
           {device.id === props.thisDeviceId ? <span /> : <button type="button" className="auth-link" disabled={busy} onClick={() => removeDevice(device.id)}>Keluarkan</button>}
         </div>
       ))}
@@ -176,9 +257,30 @@ export default function AccountPanel(props: {
       {message ? <p className="auth-notice" role="status">{message}</p> : null}
 
       <div className="auth-actions">
-        <button type="button" className="auth-button auth-button--ghost" disabled={busy} onClick={() => signOut("/api/akaun/keluar")}>Log keluar</button>
+        <button type="button" className="auth-button auth-button--ghost" disabled={busy} onClick={() => signOut("/api/akaun/keluar")}>Log keluar daripada peranti ini</button>
         <button type="button" className="auth-button auth-button--ghost" disabled={busy} onClick={() => signOut("/api/akaun/keluar-semua")}>Keluar dari semua peranti</button>
       </div>
+
+      <h2 className="auth-subtitle" id="data">Data anda</h2>
+      <p className="auth-fine">Muat turun salinan data akaun anda (profil, sejarah akses, bacaan, simpanan dan peranti) dalam satu fail JSON.</p>
+      <p><a className="auth-link" href="/api/akaun/data" download>Muat turun data saya</a></p>
+
+      <h2 className="auth-subtitle">Padam akaun</h2>
+      {confirmingDelete ? (
+        <div className="auth-danger" role="alertdialog" aria-labelledby="padam-title">
+          <p id="padam-title"><strong>Padam akaun ini?</strong></p>
+          <p className="auth-fine">E-mel, nama, tetapan bacaan dan senarai Bacaan saya akan dipadamkan. Anda juga akan dilog keluar daripada semua peranti.</p>
+          <p className="auth-fine">Tindakan ini tidak boleh dibatalkan dan akaun tidak boleh dipulihkan.</p>
+          {props.access.state === "trial" || props.access.state === "subscribed" ? <p className="auth-fine">Anda masih mempunyai akses bacaan aktif sehingga {formatDate(props.access.endsAt)}. Baki akses itu akan hilang. Tiada bayaran balik automatik, tertakluk kepada hak anda di bawah undang-undang.</p> : null}
+          <p className="auth-fine">Percubaan percuma tidak boleh diaktifkan semula menggunakan e-mel yang sama.</p>
+          <div className="auth-actions">
+            <button type="button" className="auth-button" disabled={busy} onClick={deleteAccount}>Ya, padam akaun saya</button>
+            <button type="button" className="auth-button auth-button--ghost" disabled={busy} onClick={() => setConfirmingDelete(false)}>Batal</button>
+          </div>
+        </div>
+      ) : (
+        <p><button type="button" className="auth-link" disabled={busy} onClick={() => setConfirmingDelete(true)}>Padam akaun saya</button></p>
+      )}
     </div>
   );
 }
