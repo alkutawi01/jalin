@@ -33,7 +33,7 @@ Fail: src/lib/reader-auth/service.ts (LIMITS: requestsPerDayAll 90, requestsPerI
 ## D. Kunci tandatangan sesi pemilik (MEDIUM, S-06)
 
 Fail: src/lib/admin/auth.ts (loginAdmin membandingkan kata laluan dengan ADMIN_SECRET; signSession dan validateSession juga memakai ADMIN_SECRET), src/middleware.ts. Pekerja berstaf boleh membaca kuki sendiri lalu cuba meneka ADMIN_SECRET secara luar talian.
-1. Tambah env ADMIN_SESSION_KEY (rawak, 32+ aksara) khusus untuk menandatangani sesi; jika tiada, kekal tingkah laku semasa (jangan memutuskan log masuk sedia ada) tetapi paparkan amaran dalam Ringkasan admin.
+1. Tambah env ADMIN_SESSION_KEY (rawak, 32+ aksara) khusus untuk menandatangani sesi; jika tiada, kekal tingkah laku semasa tetapi paparkan amaran dalam Ringkasan admin. KEPUTUSAN IZZAT (10 Okt): tukar SEKARANG. Selepas kod ini di-deploy dan lulus ujian, jana nilai rawak 48 bait (base64url), tetapkan ADMIN_SESSION_KEY pada Vercel (Production), redeploy, dan sahkan log masuk pemilik berfungsi. Semua sesi admin sedia ada akan tamat sekali; beritahu Izzat. Jangan cetak nilainya; ingatkan Izzat menyimpan salinan dalam pengurus kata laluan.
 2. Hadkan percubaan log masuk pemilik seperti akaun berstaf (kiraan mengikut IP dan global, kunci sementara).
 3. Ujian: token ditandatangani kunci lama ditolak selepas kunci ditukar; log masuk pemilik terkunci selepas percubaan gagal berulang.
 
@@ -48,7 +48,7 @@ Fail: src/lib/admin/auth.ts (loginAdmin membandingkan kata laluan dengan ADMIN_S
 
 1. Bersihkan baris aktiviti lama yang mengandungi kod kongsi bertulis biasa:
    UPDATE admin_activity SET summary = regexp_replace(summary, 'JLN-[0-9A-HJKMNP-TV-Z]{7}', '[kod]', 'g') WHERE action LIKE 'subscription.shared.%';
-   Jalankan pada produksi hanya selepas menunjukkan kepada Izzat bilangan baris yang terjejas (SELECT count(*) dahulu). Anggap kod kongsi yang sudah dicipta sebagai terdedah kepada peranan ketua penyunting; tanya Izzat sama ada mahu ia dibatalkan dan diganti.
+   Jalankan pada produksi hanya selepas menunjukkan kepada Izzat bilangan baris yang terjejas (SELECT count(*) dahulu). KEPUTUSAN IZZAT (10 Okt): kod kongsi sedia ada KEKAL sah (beliau mempercayai ketua penyunting); hanya kaburkan kod dalam log lama, jangan batalkan kod.
 2. SPF, DKIM dan DMARC pada mail.adjung.com: semak rekod DNS sedia ada dan laporkan (jangan ubah DNS tanpa kelulusan).
 3. Kunci API Resend yang pernah terdedah: Izzat mesti menjana kunci baharu dalam papan pemuka Resend. Selepas Izzat memberi kunci baharu kepada anda melalui saluran selamat, kemas kini RESEND_API_KEY di Vercel (Production), redeploy, hantar satu kod ujian ke alamat Izzat, kemudian Izzat membatalkan kunci lama. Jangan paparkan kunci.
 4. Selepas deploy commit yang mengubah TLS pangkalan data (rejectUnauthorized kini true): sahkan laman produksi masih berfungsi (contohnya GET /kategori/cerpen dan /sitemap.xml menjawab 200). Jika sambungan pangkalan data gagal, tetapkan sementara env DATABASE_SSL_INSECURE=true dan laporkan; jangan biarkan kekal.
