@@ -3873,3 +3873,19 @@ html:has(.a-nav, .admin-login-page) { overflow: visible; }
 .expiry-notice a { font-weight: 600; color: var(--clay-text); text-decoration: underline; text-underline-offset: 3px; }
 .expiry-notice button { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 32px; height: 32px; border: 0; background: none; font-size: 20px; line-height: 1; color: var(--ink-soft); cursor: pointer; }
 .home-stat-plain { display: flex; align-items: baseline; gap: 10px; }
+/* Wide tablet portrait (761 to 820px): the page used to drop every side column and give the text 673px, about 85 characters a line. One side column (Watak, Latar and the "Tentang karya" button) now fits beside a text column of about 500 to 560px, about 60 characters, which also reads better. Narrower screens keep the phone layout. (Izzat, 10 Okt 2026) */
+@media (min-width: 761px) and (max-width: 820px) {
+  .site-shell { width: calc(100% - 56px); max-width: 760px; }
+  .reading-grid { display: grid; grid-template-columns: minmax(0, 1fr) 160px; column-gap: 28px; justify-content: stretch; }
+  .right-rail { display: block; }
+  .rail-info { display: block; margin-bottom: 18px; padding-bottom: 18px; border-bottom: 1px solid var(--line); }
+  .rail-info .mobile-info-handle { width: 100%; justify-content: space-between; box-sizing: border-box; }
+  .mobile-info-row.has-rail { display: none; }
+  .mobile-info-sheet { max-width: 620px; margin-inline: auto; }
+}
+
+/* Tablet landscape and small laptop (821 to 1050px): the text column was squeezed to about 575px by a 190px side column and 40px margins. The same 160px column and 28px margins as the 761 to 820px step give the text about 80px more; above about 960px the text reaches its 700px cap, so the column stays the same width up to the laptop step. */
+@media (min-width: 821px) and (max-width: 1050px) {
+  .site-shell { width: calc(100% - 56px); max-width: none; }
+  .reading-grid { grid-template-columns: minmax(0, 700px) 160px; column-gap: 28px; }
+}
