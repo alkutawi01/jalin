@@ -704,7 +704,7 @@ export default function EditSubmissionPage() {
                   <th>Kredit Awam</th>
                   <th>Identiti Dalaman</th>
                   <th>Sumber</th>
-                  <th>Aksi</th>
+                  <th>Tindakan</th>
                 </tr>
               </thead>
               <tbody>

@@ -59,7 +59,7 @@ export default async function AdminSeriesPage() {
               <th>Alamat pautan</th>
               <th>Mod</th>
               <th>Status</th>
-              <th>Aksi</th>
+              <th>Tindakan</th>
             </tr>
           </thead>
           <tbody>

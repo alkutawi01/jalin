@@ -76,7 +76,7 @@ export default async function AdminVisualRequestsPage() {
               <th>Status</th>
               <th>Kelulusan</th>
               <th>Dicipta</th>
-              <th>Aksi</th>
+              <th>Tindakan</th>
             </tr>
           </thead>
           <tbody>

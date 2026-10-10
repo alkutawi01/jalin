@@ -116,7 +116,7 @@ export default function PlacesEditor({ workId, kind = "places" }: { workId: stri
               <tr>
                 <th>{cfg.nameLabel}</th>
                 <th>Keterangan ringkas</th>
-                <th>Aksi</th>
+                <th>Tindakan</th>
               </tr>
             </thead>
             <tbody>

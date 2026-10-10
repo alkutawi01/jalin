@@ -60,7 +60,7 @@ export default async function AdminContributorsPage() {
               <th>Alamat pautan</th>
               <th>Jenis</th>
               <th>Dicipta</th>
-              <th>Aksi</th>
+              <th>Tindakan</th>
             </tr>
           </thead>
           <tbody>
