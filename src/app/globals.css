@@ -3893,3 +3893,6 @@ html:has(.a-nav, .admin-login-page) { overflow: visible; }
 /* Log masuk: the "E-mel" label sits at the left edge of the box (the dialog centres its text, which pulled the label to the middle), and the address typed in the box is centred. */
 .auth-label { text-align: left; }
 .auth-input[type="email"], .auth-input[type="email"]::placeholder { text-align: center; }
+
+/* 404: the sentence under the heading was set in the full dek size (18 to 24px) and outweighed the heading; 16px reads as a note. */
+.not-found .dek { font-size: 16px; line-height: 1.55; }
