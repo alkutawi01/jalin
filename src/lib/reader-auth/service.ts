@@ -38,7 +38,10 @@ export const LIMITS = {
   requestsPerIpPerHour: 20,
   /** All e-mails sent in 24 hours. The free Resend plan stops at 100 a day; raise this together with the plan. */
   requestsPerDayAll: 90,
+  /** Keep one third of the daily mail budget available for accounts that already exist. */
+  requestsPerDayNew: 60,
   failedChecksPerEmailPerHour: 10,
+  failedChecksPerEmailPerDay: 30,
   failedChecksPerIpPerHour: 30,
   maxActiveDevices: 2,
   lastSeenRefreshMinutes: 10,
@@ -48,6 +51,15 @@ export type LimitSettings = { [K in keyof typeof LIMITS]: number };
 
 const HOUR_MS = 60 * 60 * 1000;
 const DAY_MS = 24 * HOUR_MS;
+
+export function readerMailDailyCap(env: Record<string, string | undefined> = process.env): number {
+  const raw = env.READER_MAIL_DAILY_CAP?.trim();
+  if (!raw) return LIMITS.requestsPerDayAll;
+  const value = Number(raw);
+  return Number.isSafeInteger(value) && value >= 3 && value <= 100000 ? value : LIMITS.requestsPerDayAll;
+}
+
+export const newReaderMailDailyCap = (total: number): number => Math.floor((total * 2) / 3);
 
 async function inTransaction<T>(db: Db, run: (trx: Db) => Promise<T>): Promise<T> {
   // A Transaction cannot open another one: tests pass a Transaction in and everything joins it.
@@ -85,7 +97,8 @@ export async function requestLoginCode(
   input: { email: string; ipMac: string }
 ): Promise<RequestCodeResult> {
   const now = deps.now ?? new Date();
-  const limits: LimitSettings = { ...LIMITS, ...deps.limits };
+  const dailyCap = deps.limits?.requestsPerDayAll ?? readerMailDailyCap();
+  const limits: LimitSettings = { ...LIMITS, requestsPerDayAll: dailyCap, requestsPerDayNew: newReaderMailDailyCap(dailyCap), ...deps.limits };
   const email = normaliseEmail(input.email);
   if (!email) return { ok: false, reason: "invalid_email" };
   const emailMac = emailLookupMac(deps.key, email);
@@ -96,14 +109,19 @@ export async function requestLoginCode(
   const allowed = await inTransaction(db, async (trx) => {
     // Serialise requests for the same address so two at once cannot both pass the cooldown.
     await sql`SELECT pg_advisory_xact_lock(hashtextextended(${emailMac}, 0))`.execute(trx);
+    // One global lock makes the daily budget exact even when different addresses request at once.
+    await sql`SELECT pg_advisory_xact_lock(hashtextextended('jalin:mail:daily', 0))`.execute(trx);
     if ((await countEvents(trx, "request", "email", emailMac, new Date(now.getTime() - limits.requestCooldownSeconds * 1000))) > 0) return false;
     if ((await countEvents(trx, "request", "email", emailMac, new Date(now.getTime() - HOUR_MS))) >= limits.requestsPerEmailPerHour) return false;
     if ((await countEvents(trx, "request", "ip", input.ipMac, new Date(now.getTime() - HOUR_MS))) >= limits.requestsPerIpPerHour) return false;
     if ((await countEvents(trx, "request", "global", "all", new Date(now.getTime() - DAY_MS))) >= limits.requestsPerDayAll) return false;
+    const existing = await trx.selectFrom("reader_accounts").select("id").where("email_normalized", "=", email).where("status", "<>", "deleted").executeTakeFirst();
+    if (!existing && (await countEvents(trx, "request", "global", "new", new Date(now.getTime() - DAY_MS))) >= limits.requestsPerDayNew) return false;
 
     await recordEvent(trx, "request", "email", emailMac, now);
     await recordEvent(trx, "request", "ip", input.ipMac, now);
     await recordEvent(trx, "request", "global", "all", now);
+    await recordEvent(trx, "request", "global", existing ? "existing" : "new", now);
 
     // A new request retires the one still open for this address.
     await trx
@@ -161,6 +179,7 @@ export async function verifyLoginCode(
   return inTransaction(db, async (trx): Promise<VerifyResult> => {
     await sql`SELECT pg_advisory_xact_lock(hashtextextended(${emailMac}, 0))`.execute(trx);
     if ((await countEvents(trx, "verify_fail", "email", emailMac, hourAgo)) >= limits.failedChecksPerEmailPerHour) return { status: "throttled" };
+    if ((await countEvents(trx, "verify_fail", "email", emailMac, new Date(now.getTime() - DAY_MS))) >= limits.failedChecksPerEmailPerDay) return { status: "throttled" };
     if ((await countEvents(trx, "verify_fail", "ip", input.ipMac, hourAgo)) >= limits.failedChecksPerIpPerHour) return { status: "throttled" };
 
     const challenge = await trx

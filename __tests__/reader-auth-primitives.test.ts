@@ -17,7 +17,8 @@ import {
   selectMailer,
   trialClaimMac,
 } from "../src/lib/reader-auth/primitives";
-import { clientIp, isSameOrigin, readerAccountsEnabled, readerCookieName, readerTokenFrom } from "../src/lib/reader-auth/http";
+import { clientIp, isSameOrigin, rateLimitIp, readerAccountsEnabled, readerCookieName, readerTokenFrom } from "../src/lib/reader-auth/http";
+import { newReaderMailDailyCap, readerMailDailyCap } from "../src/lib/reader-auth/service";
 
 let passed = 0;
 let failed = 0;
@@ -110,6 +111,8 @@ async function resendCall() {
   assert(!isSameOrigin(req({ host: "jalin.adjung.com" })), "a request without an Origin is refused");
   assert(!isSameOrigin(req({ origin: "null", host: "jalin.adjung.com" })) && !isSameOrigin(req({ origin: "https://jalin.adjung.com.evil.example", host: "jalin.adjung.com" })), "a null origin and a look-alike are refused");
   assert(clientIp(req({ "x-real-ip": "203.0.113.4", "x-forwarded-for": "9.9.9.9" })) === "203.0.113.4" && clientIp(req({ "x-forwarded-for": "1.2.3.4, 5.6.7.8" })) === "1.2.3.4" && clientIp(req({})) === "unknown", "the visitor's address is read from the proxy headers");
+  assert(rateLimitIp("2001:db8:abcd:1234::1") === rateLimitIp("2001:0db8:abcd:1234:ffff::2") && rateLimitIp("2001:db8:abcd:1235::1") !== rateLimitIp("2001:db8:abcd:1234::1") && rateLimitIp("203.0.113.4") === "203.0.113.4", "IPv6 requests share their /64 limit while IPv4 stays exact");
+  assert(readerMailDailyCap({}) === 90 && readerMailDailyCap({ READER_MAIL_DAILY_CAP: "120" }) === 120 && readerMailDailyCap({ READER_MAIL_DAILY_CAP: "oops" }) === 90 && newReaderMailDailyCap(90) === 60, "daily mail cap is configurable with a reserved third for existing accounts");
   const name = readerCookieName();
   assert(readerTokenFrom(req({ cookie: `a=1; ${name}=tok_en; b=2` })) === "tok_en" && readerTokenFrom(req({ cookie: "a=1" })) === null && readerTokenFrom(req({})) === null, "the reader cookie is found among others");
   assert(readerCookieName({ NODE_ENV: "production" }) === "__Host-jalin-reader" && readerCookieName({ NODE_ENV: "development" }) === "jalin-reader", "the cookie is __Host- on the live site");

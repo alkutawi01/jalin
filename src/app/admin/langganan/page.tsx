@@ -6,6 +6,7 @@ import { readLastExport, type LastExport } from "../../../lib/reader-auth/mainte
 import HaltSwitch from "./HaltSwitch";
 import PaywallSwitch from "./PaywallSwitch";
 import { isPaywallSwitchOn, countSamples } from "../../../lib/reader-auth/switches";
+import { countEvents, readerMailDailyCap } from "../../../lib/reader-auth/service";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +17,8 @@ export default async function LanggananPage() {
   let last: LastExport | null = null;
   let paywall = false;
   let samples = 0;
+  let mailUsed = 0;
+  const mailCap = readerMailDailyCap();
   if (!hasDb()) problem = "Pangkalan data tidak tersedia.";
   else {
     try {
@@ -23,6 +26,7 @@ export default async function LanggananPage() {
       last = await readLastExport(getDb());
       paywall = await isPaywallSwitchOn(getDb());
       samples = await countSamples(getDb());
+      mailUsed = await countEvents(getDb(), "request", "global", "all", new Date(Date.now() - 24 * 60 * 60 * 1000));
     } catch {
       problem = "Jadual langganan belum wujud pada pangkalan data ini. Migrasi 027 hingga 030 perlu dijalankan dahulu.";
     }
@@ -66,6 +70,9 @@ export default async function LanggananPage() {
           <PaywallSwitch initialOn={paywall} accountsEnabled={readerAccountsEnabled()} samples={samples} />
           <h2>Suis henti penebusan</h2>
           <HaltSwitch initialHalted={data.halted} />
+          <h2>Kuota e-mel kod</h2>
+          <p>{mailUsed} daripada {mailCap} e-mel kod digunakan dalam 24 jam terakhir.</p>
+          {mailUsed >= Math.ceil(mailCap * 0.7) ? <div className="admin-alert admin-alert-warning" role="status">Penggunaan e-mel kod mencapai sekurang-kurangnya 70% kuota harian. Semak aktiviti dan kapasiti penghantaran.</div> : null}
           <h2>Salinan kod di luar pangkalan data</h2>
           <p>Setiap malam, satu fail disulitkan dan bertandatangan berisi semua kod dan penebusan disimpan di luar pangkalan data. Jika pangkalan data dipulihkan ke masa lampau, fail inilah yang menghalang kad yang sudah digunakan daripada digunakan semula.</p>
           {exportWarning ? <div className="admin-alert admin-alert-error" role="alert">{exportWarning}</div> : null}
