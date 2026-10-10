@@ -1,4 +1,5 @@
 import { getDb, hasDb } from "../../../lib/db";
+import { getCurrentAdmin } from "../../../lib/admin/auth";
 import { ACTIVITY_PAGE_SIZE, listActivity, listActors, type ActivityRow } from "../../../lib/admin/activity";
 import type { Role } from "../../../lib/admin/permissions";
 
@@ -13,6 +14,8 @@ const one = (value: string | string[] | undefined) => (Array.isArray(value) ? va
 /** Aktiviti: who changed what, newest first. Only the owner and the chief editor open it (permissions.ts). */
 export default async function ActivityPage({ searchParams }: { searchParams: Promise<{ orang?: string | string[]; karya?: string | string[] }> }) {
   const query = await searchParams;
+  const admin = await getCurrentAdmin();
+  const isOwner = admin?.role === "admin";
   const actorId = one(query.orang);
   const workId = one(query.karya);
 
@@ -24,7 +27,7 @@ export default async function ActivityPage({ searchParams }: { searchParams: Pro
     problem = "Pangkalan data tidak tersedia.";
   } else {
     try {
-      [rows, actors] = await Promise.all([listActivity({ actorId, workId }), listActors()]);
+      [rows, actors] = await Promise.all([listActivity({ actorId, workId, includeSubscription: isOwner }), listActors()]);
       const ids = [...new Set(rows.map((row) => row.workId).filter((id): id is string => Boolean(id)))];
       if (ids.length > 0) {
         for (const work of await getDb().selectFrom("works").select(["id", "title"]).where("id", "in", ids).execute()) titles.set(work.id, work.title);

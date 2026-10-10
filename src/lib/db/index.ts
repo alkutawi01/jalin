@@ -15,7 +15,7 @@ function createDb(): Kysely<Database> | null {
 
   const pool = new Pool({
     connectionString: databaseUrl,
-    ssl: databaseSslEnabled() ? { rejectUnauthorized: false } : false,
+    ssl: databaseSslEnabled() ? { rejectUnauthorized: process.env.DATABASE_SSL_INSECURE === "true" ? false : true } : false,
     max: getDatabasePoolSize(),
   });
 

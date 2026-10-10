@@ -40,7 +40,7 @@ export async function GET(request: Request) {
     akses: {
       keadaan: access.state,
       tamat: access.endsAt,
-      sejarah: ledger.map((e) => ({ jenis: e.kind, mula: e.startsAt, tamat: e.endsAt, dibatalkan: e.revokedAt !== null, sebab: e.reason })),
+      sejarah: ledger.map((e) => ({ jenis: e.kind, mula: e.startsAt, tamat: e.endsAt, dibatalkan: e.revokedAt !== null })),
     },
     tetapanBacaan: prefs,
     bacaanSaya: reading.map((r) => ({ karya: titleById.get(r.workId) ?? null, bab: r.sectionSlug, dikemaskini: r.updatedAt })),

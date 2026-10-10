@@ -31,6 +31,7 @@ export const ACTIVITY_ACTIONS = {
   "subscription.shared.create": "Membuat kod kongsi",
   "subscription.shared.update": "Mengurus kod kongsi",
   "subscription.access.grant": "Memberi akses kepada pembaca",
+  "subscription.reader.view": "Melihat rekod pembaca",
   "subscription.access.revoke": "Membatalkan akses pembaca",
   "subscription.switch": "Suis henti penebusan",
   "panel.snapshot": "Menyediakan penilaian panel",
@@ -143,6 +144,8 @@ export interface ActivityFilter {
   actorId?: string;
   workId?: string;
   limit?: number;
+  /** Rows about readers, codes and access hold commercial secrets and reader identifiers: only the owner is shown them. */
+  includeSubscription?: boolean;
 }
 
 export const ACTIVITY_PAGE_SIZE = 100;
@@ -152,6 +155,7 @@ export async function listActivity(filter: ActivityFilter = {}): Promise<Activit
   let query = getDb().selectFrom("admin_activity").selectAll().orderBy("at", "desc").orderBy("id", "desc");
   if (filter.actorId) query = query.where("actor_id", "=", filter.actorId);
   if (filter.workId) query = query.where("work_id", "=", filter.workId);
+  if (!filter.includeSubscription) query = query.where("action", "not like", "subscription.%");
   const rows = await query.limit(Math.min(Math.max(filter.limit ?? ACTIVITY_PAGE_SIZE, 1), 500)).execute();
   return rows.map((row) => ({
     id: String(row.id),

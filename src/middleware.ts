@@ -74,6 +74,12 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // The permission table matches the path as written: refuse any admin path that is spelled in an unusual way (doubled slashes,
+  // encoded characters, dot segments) instead of letting a router resolve it to a handler the table did not see.
+  if (/\/\/|%|\\|\/\.{1,2}(\/|$)/.test(pathname)) {
+    return new NextResponse("Bad request", { status: 400, headers: { "Cache-Control": "no-store" } });
+  }
+
   // Allow login page and login API
   if (pathname === "/admin/login" || pathname === "/api/admin/auth/login") {
     return NextResponse.next();

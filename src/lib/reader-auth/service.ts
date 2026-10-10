@@ -173,7 +173,7 @@ export async function verifyLoginCode(
       .forUpdate()
       .executeTakeFirst();
     if (!challenge) {
-      await recordEvent(trx, "verify_fail", "email", emailMac, now);
+      // Counted against the caller's IP only: with no code open, a stranger's guesses must not lock the address out for its owner.
       await recordEvent(trx, "verify_fail", "ip", input.ipMac, now);
       return { status: "invalid" };
     }
@@ -354,7 +354,8 @@ export async function deleteAccount(db: Db, accountId: string, now: Date = new D
       .set({ status: "deleted", email: placeholder, email_normalized: placeholder, display_name: null, deletion_requested_at: now })
       .where("id", "=", accountId)
       .execute();
-    await trx.updateTable("reader_devices").set({ revoked_at: now, revoked_reason: "account_deleted" }).where("account_id", "=", accountId).where("revoked_at", "is", null).execute();
+    // Every device is signed out and its row (name, times) is removed; nothing about the devices survives the account.
+    await trx.deleteFrom("reader_devices").where("account_id", "=", accountId).execute();
     await trx.deleteFrom("reader_prefs").where("account_id", "=", accountId).execute();
     await trx.deleteFrom("saved_works").where("account_id", "=", accountId).execute();
     await trx.deleteFrom("reading_progress").where("account_id", "=", accountId).execute();

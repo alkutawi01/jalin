@@ -111,7 +111,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         ];
       }
     } catch {
-      /* the full list stays */
+      // Fail closed: when the switch cannot be read, list only what is open to everyone.
+      return [{ url: `${SITE_URL}/mula`, changeFrequency: "weekly" as const, priority: 1 }, ...entries.filter((entry) => ["/tentang", "/editorial", "/privasi", "/terma"].includes(entry.url.replace(SITE_URL, "")))];
     }
   }
 

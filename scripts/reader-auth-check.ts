@@ -185,9 +185,17 @@ async function main() {
         if (!r.ok && capped < 0) capped = i;
       }
       assert(capped >= 0 && capped <= 2, "the daily cap on all e-mails stops further codes", capped);
-      for (let i = 0; i < 10; i++) await verifyLoginCode(trx, { key, now: at(500) }, { email: "dicuba@contoh.my", code: "123456", ipMac: ipMac(key, `203.0.113.${100 + i}`) });
-      const blocked = await verifyLoginCode(trx, { key, now: at(501) }, { email: "dicuba@contoh.my", code: "123456", ipMac: ipMac(key, "203.0.113.250") });
-      assert(blocked.status === "throttled", "ten wrong codes for one address in an hour stop further tries, from any visitor");
+      // With no code open, a stranger's guesses at an address cannot lock that address out (only the guesser's IP is counted).
+      for (let i = 0; i < 12; i++) await verifyLoginCode(trx, { key, now: at(500) }, { email: "dicuba@contoh.my", code: "123456", ipMac: ipMac(key, `203.0.113.${100 + i}`) });
+      const notBlocked = await verifyLoginCode(trx, { key, now: at(501) }, { email: "dicuba@contoh.my", code: "123456", ipMac: ipMac(key, "203.0.113.250") });
+      assert(notBlocked.status === "invalid", "guessing at an address with no code open does not lock the address out");
+      // With codes open, ten wrong tries for one address in an hour stop further tries, from any visitor.
+      await requestLoginCode(trx, { key, mailer, now: at(510) }, { email: "dicuba@contoh.my", ipMac: ipMac(key, "198.18.0.1") });
+      for (let i = 0; i < 5; i++) await verifyLoginCode(trx, { key, now: at(510.1) }, { email: "dicuba@contoh.my", code: "123456", ipMac: ipMac(key, `198.18.1.${i}`) });
+      await requestLoginCode(trx, { key, mailer, now: at(512) }, { email: "dicuba@contoh.my", ipMac: ipMac(key, "198.18.0.2") });
+      for (let i = 0; i < 5; i++) await verifyLoginCode(trx, { key, now: at(512.1) }, { email: "dicuba@contoh.my", code: "123456", ipMac: ipMac(key, `198.18.2.${i}`) });
+      const blocked = await verifyLoginCode(trx, { key, now: at(513) }, { email: "dicuba@contoh.my", code: "123456", ipMac: ipMac(key, "198.18.3.1") });
+      assert(blocked.status === "throttled", "ten wrong codes against open codes for one address in an hour stop further tries, from any visitor");
 
       // The mail provider fails.
       failMail = true;
