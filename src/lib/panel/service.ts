@@ -125,10 +125,33 @@ export async function assemble(db: Db, kind: SubjectKind, id: string): Promise<A
   return finish("work", id, work.type, work.title, sections, coverage, manifest);
 }
 
+/** The hash a snapshot is known by: the same arithmetic for the live text and for a frozen published copy, so the two can be compared. */
+function canonicalHash(kind: SubjectKind, workType: string, title: string, sections: { position: number; title: string | null; text: string }[]): string {
+  return sha256(JSON.stringify({ kind, workType, title, sections: sections.map((s) => [s.position, s.title, s.text]) }));
+}
+
+/**
+ * The hash of the text readers have now: the frozen copy of the published version (not the draft that may have been edited since).
+ * null when the work is not published or has no frozen copy.
+ */
+export async function publishedTextHash(db: Db, workId: string): Promise<string | null> {
+  const work = await db.selectFrom("works").select(["type", "status", "published_revision_id"]).where("id", "=", workId).executeTakeFirst();
+  if (!work || work.status !== "published" || !work.published_revision_id || !isPanelWorkType(work.type)) return null;
+  const rev = await db.selectFrom("work_revisions").select(["snapshot"]).where("id", "=", String(work.published_revision_id)).executeTakeFirst();
+  if (!rev) return null;
+  const snap = (typeof rev.snapshot === "string" ? JSON.parse(rev.snapshot) : rev.snapshot) as { title?: string; body?: string; sections?: { body?: string | null; title?: string | null; position?: number }[]; readingSections?: { body?: string | null; title?: string | null; position?: number }[] };
+  const raw = (snap.readingSections?.length ? snap.readingSections : snap.sections) ?? [];
+  let sections: { position: number; title: string | null; text: string }[] = raw.length > 0
+    ? raw.map((s, i) => ({ position: typeof s.position === "number" ? s.position : i + 1, title: s.title ?? null, text: (s.body ?? "").trim() }))
+    : [{ position: 1, title: null, text: (snap.body ?? "").trim() }];
+  sections = sections.filter((s) => s.text.length > 0);
+  if (sections.length === 0) return null;
+  return canonicalHash("work", work.type, String(snap.title ?? ""), sections);
+}
+
 function finish(kind: SubjectKind, id: string, workType: PanelWorkType, title: string, sections: { position: number; title: string | null; text: string; sectionId?: number }[], coverage: string, extra: Record<string, unknown>): Assembled {
   const text = sections.length === 1 && !sections[0]!.title ? sections[0]!.text : sections.map((s) => `## Bahagian ${s.position}${s.title ? `: ${s.title}` : ""}\n\n${s.text}`).join("\n\n");
-  const canonical = JSON.stringify({ kind, workType, title, sections: sections.map((s) => [s.position, s.title, s.text]) });
-  const hash = sha256(canonical);
+  const hash = canonicalHash(kind, workType, title, sections);
   return {
     kind, id, workType, title, text, hash, coverage,
     manifest: { ...extra, sections: sections.map((s) => ({ position: s.position, title: s.title, sectionId: s.sectionId ?? null, sectionHash: sha256(s.text).slice(0, 16), words: wordCount(s.text) })), words: sections.reduce((n, s) => n + wordCount(s.text), 0), assembledAt: new Date().toISOString() },

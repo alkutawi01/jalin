@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getDb } from "../../../../lib/db";
+import { gateForWork } from "../../../../lib/reader/access-gate";
 import { publicRatingDetail } from "../../../../lib/panel/public";
 
 export const dynamic = "force-dynamic";
@@ -12,6 +13,12 @@ export const dynamic = "force-dynamic";
 export async function GET(_request: Request, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   if (!/^[0-9a-z-]{1,120}$/.test(slug)) return NextResponse.json({ detail: null }, { status: 404 });
+  // The reasons describe the story, so they follow the same paywall as its text.
+  try {
+    if ((await gateForWork(slug)).state !== "open") return NextResponse.json({ detail: null }, { status: 403 });
+  } catch {
+    return NextResponse.json({ detail: null }, { status: 404 });
+  }
   const db = getDb();
   let workId: string | null = null;
   try {

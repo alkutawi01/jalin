@@ -14,7 +14,7 @@ import type { Database } from "../db/types";
 import { panelResult, toDecimal } from "./aggregate";
 import { COMPONENTS, RUBRIC_VERSION, isReferenceModel } from "./rubric";
 import { displayVersion } from "../admin/version-label";
-import { assemble, loadSettings, ratingsOf, type RatingRow } from "./service";
+import { loadSettings, publishedTextHash, ratingsOf, type RatingRow } from "./service";
 
 type Db = Kysely<Database>;
 
@@ -30,11 +30,11 @@ export interface PublicRatingDetail {
 }
 
 async function activeRatings(db: Db, workId: string): Promise<{ ratings: RatingRow[]; manifest: Record<string, unknown> } | null> {
-  const a = await assemble(db, "work", workId);
-  if ("error" in a) return null;
+  const hash = await publishedTextHash(db, workId);
+  if (!hash) return null;
   const snap = await db.selectFrom("panel_snapshots").select(["id", "manifest"])
     .where("subject_kind", "=", "work").where("subject_id", "=", workId)
-    .where("content_hash", "=", a.hash).where("rubric_version", "=", RUBRIC_VERSION).executeTakeFirst();
+    .where("content_hash", "=", hash).where("rubric_version", "=", RUBRIC_VERSION).executeTakeFirst();
   if (!snap) return null;
   const ratings = (await ratingsOf(db, snap.id)).filter((r) => r.status === "valid" && !r.voidedAt && r.fraction && r.scores);
   if (ratings.length === 0) return null;
