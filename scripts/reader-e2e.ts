@@ -93,7 +93,7 @@ async function main() {
     console.log("\nThe rest of the site still answers");
     const v = new Device("visitor");
     const home = await v.req("/");
-    assert(home.status === 200 && home.text.includes('href="/akaun"'), "home page 200 and shows the Akaun link when the switch is on");
+    assert(home.status === 200 && home.text.includes("header-account"), "home page 200 and has the account link in the header when the switch is on");
     for (const p of ["/kategori/cerpen", "/kategori/novela", "/kategori/bersiri", "/tentang", "/privasi", "/terma", "/cari?q=jalin", "/api/cari/cadangan?q=a", "/sitemap.xml", "/robots.txt", "/admin/login"]) {
       const r = await v.req(p);
       assert(r.status === 200, `${p} answers 200`, r.status);

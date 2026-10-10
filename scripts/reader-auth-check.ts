@@ -9,9 +9,11 @@ config({ path: ".env.local", override: true });
 import { sql } from "kysely";
 import { closeDb, getDb } from "../src/lib/db";
 import {
+  deleteAccount,
   getSession,
   listDevices,
   requestLoginCode,
+  setDisplayName,
   signOut,
   signOutEverywhere,
   startTrial,
@@ -123,7 +125,15 @@ async function main() {
       assert((await listDevices(trx, a.ver.accountId)).length === 0, "signing out everywhere ends every device");
 
       // The trial is given once, even after deleting the account.
-      await trx.updateTable("reader_accounts").set({ status: "deleted" }).where("id", "=", a.ver.accountId).execute();
+      const before = await signIn(trx, "aina@contoh.my", 50);
+      assert(before.ver.status === "ok", "she signs in on a device before deleting");
+      if (before.ver.status !== "ok") throw new Error("cannot continue");
+      await setDisplayName(trx, a.ver.accountId, "Aina");
+      assert(await deleteAccount(trx, a.ver.accountId, at(51)), "she deletes her own account");
+      assert((await getSession(trx, before.ver.token, at(52))) === null, "and her device is signed out at once");
+      const gone = await trx.selectFrom("reader_accounts").select(["email", "email_normalized", "display_name", "status"]).where("id", "=", a.ver.accountId).executeTakeFirstOrThrow();
+      assert(gone.status === "deleted" && !gone.email.includes("aina") && !gone.email_normalized.includes("aina") && gone.display_name === null, "her address and name are gone from the row");
+      assert(!(await deleteAccount(trx, a.ver.accountId, at(53))), "a second delete finds nothing");
       const back = await signIn(trx, "aina@contoh.my", 60);
       assert(back.ver.status === "ok" && back.ver.isNewAccount && back.ver.trialEndsAt === null, "registering again after deleting starts clean");
       if (back.ver.status !== "ok") throw new Error("cannot continue");

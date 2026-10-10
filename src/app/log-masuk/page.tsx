@@ -13,15 +13,17 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string | string[] }> }) {
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string | string[]; padam?: string }> }) {
   if (!readerAccountsEnabled()) notFound();
-  const next = safeNextPath((await searchParams).next);
+  const params = await searchParams;
+  const next = safeNextPath(params.next);
   if (await currentReaderSession()) redirect(next);
   return (
     <>
       <SiteHeader />
       <main id="kandungan" tabIndex={-1}>
         <div className="site-shell auth-page">
+          {params.padam === "1" ? <p className="auth-notice" role="status">Akaun anda telah dipadam. E-mel dan tetapan anda tidak lagi disimpan.</p> : null}
           <LoginForm next={next} />
         </div>
       </main>

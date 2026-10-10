@@ -338,6 +338,30 @@ export async function signOutEverywhere(db: Db, accountId: string, now: Date = n
     .execute();
 }
 
+/**
+ * The reader deletes their own account. The address and name are removed at once (the row stays only as an anonymous anchor for the
+ * append-only ledger of access and redemptions), every device is signed out, and settings, saved works and reading places are deleted.
+ * The one-trial-per-address claim is kept as a keyed hash, so deleting and registering again does not give a second trial.
+ * Remaining access is not refunded or moved: it goes with the account.
+ */
+export async function deleteAccount(db: Db, accountId: string, now: Date = new Date()): Promise<boolean> {
+  return inTransaction(db, async (trx) => {
+    const account = await trx.selectFrom("reader_accounts").select("id").where("id", "=", accountId).where("status", "<>", "deleted").forUpdate().executeTakeFirst();
+    if (!account) return false;
+    const placeholder = "padam-" + accountId + "@padam.invalid";
+    await trx
+      .updateTable("reader_accounts")
+      .set({ status: "deleted", email: placeholder, email_normalized: placeholder, display_name: null, deletion_requested_at: now })
+      .where("id", "=", accountId)
+      .execute();
+    await trx.updateTable("reader_devices").set({ revoked_at: now, revoked_reason: "account_deleted" }).where("account_id", "=", accountId).where("revoked_at", "is", null).execute();
+    await trx.deleteFrom("reader_prefs").where("account_id", "=", accountId).execute();
+    await trx.deleteFrom("saved_works").where("account_id", "=", accountId).execute();
+    await trx.deleteFrom("reading_progress").where("account_id", "=", accountId).execute();
+    return true;
+  });
+}
+
 export async function listDevices(db: Db, accountId: string): Promise<DeviceSummary[]> {
   const rows = await db
     .selectFrom("reader_devices")

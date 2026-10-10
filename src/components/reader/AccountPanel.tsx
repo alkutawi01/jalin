@@ -42,6 +42,7 @@ export default function AccountPanel(props: {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
 
   async function call(path: string, method: string, body?: unknown) {
     const response = await fetch(path, { method, headers: { "Content-Type": "application/json" }, body: body ? JSON.stringify(body) : undefined });
@@ -89,6 +90,13 @@ export default function AccountPanel(props: {
     setBusy(true);
     await call(path, "POST", {});
     window.location.href = "/log-masuk";
+  }
+
+  async function deleteAccount() {
+    setBusy(true); setError(""); setMessage("");
+    const { ok, data } = await call("/api/akaun/padam", "POST", { confirm: "PADAM" });
+    if (!ok) { setBusy(false); setError(String(data.error ?? "Akaun tidak dapat dipadam.")); return; }
+    window.location.href = "/log-masuk?padam=1";
   }
 
   const colours = THEME_COLOURS[prefs.theme];
@@ -192,6 +200,20 @@ export default function AccountPanel(props: {
         <button type="button" className="auth-button auth-button--ghost" disabled={busy} onClick={() => signOut("/api/akaun/keluar")}>Log keluar</button>
         <button type="button" className="auth-button auth-button--ghost" disabled={busy} onClick={() => signOut("/api/akaun/keluar-semua")}>Keluar dari semua peranti</button>
       </div>
+
+      <h2 className="auth-subtitle">Padam akaun</h2>
+      {confirmingDelete ? (
+        <div className="auth-danger" role="alertdialog" aria-labelledby="padam-title">
+          <p id="padam-title"><strong>Padam akaun ini?</strong></p>
+          <p className="auth-fine">E-mel, nama, tetapan dan tanda baca anda dipadam, dan semua peranti dilog keluarkan. Baki langganan atau percubaan akan hilang dan tidak boleh dipulihkan. Percubaan percuma tidak diberi lagi kepada e-mel yang sama.</p>
+          <div className="auth-actions">
+            <button type="button" className="auth-button" disabled={busy} onClick={deleteAccount}>Ya, padam akaun saya</button>
+            <button type="button" className="auth-button auth-button--ghost" disabled={busy} onClick={() => setConfirmingDelete(false)}>Batal</button>
+          </div>
+        </div>
+      ) : (
+        <p><button type="button" className="auth-link" disabled={busy} onClick={() => setConfirmingDelete(true)}>Padam akaun saya</button></p>
+      )}
     </div>
   );
 }

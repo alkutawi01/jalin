@@ -281,7 +281,7 @@ export async function listMembers(db: Db, filter: MemberFilter = {}, now: Date =
       SELECT a.id, a.email, a.display_name, a.created_at, a.last_login_at,
              (SELECT count(*) FROM reader_devices d WHERE d.account_id = a.id AND d.revoked_at IS NULL) AS devices,
              max(e.ends_at) FILTER (WHERE e.revoked_at IS NULL) AS last_end,
-             bool_or(e.kind <> 'TRIAL' AND e.revoked_at IS NULL AND e.starts_at <= ${now} AND e.ends_at > ${now}) AS paid_now,
+             bool_or(e.kind <> 'TRIAL' AND e.revoked_at IS NULL AND e.ends_at > ${now}) AS paid_now,
              bool_or(e.kind = 'TRIAL' AND e.revoked_at IS NULL AND e.starts_at <= ${now} AND e.ends_at > ${now}) AS trial_now
       FROM reader_accounts a LEFT JOIN entitlements e ON e.account_id = a.id
       WHERE a.status <> 'deleted' ${search}
