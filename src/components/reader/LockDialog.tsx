@@ -67,7 +67,7 @@ export default function LockDialog({ gate, next, email }: { gate: Gate; next: st
 
             {gate === "sign_in" ? (
               <>
-                <p className="lock-lead">Cerita ini untuk pembaca yang log masuk. Daftar dengan emel sahaja, kemudian mulakan percubaan percuma 14 hari.</p>
+                <p className="lock-lead">Cerita ini untuk pembaca yang log masuk. Daftar dengan e-mel sahaja, kemudian mulakan percubaan percuma 14 hari.</p>
                 <LoginForm next={next} />
               </>
             ) : null}

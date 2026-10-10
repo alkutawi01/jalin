@@ -15,10 +15,10 @@ export async function POST(request: Request) {
   const result = await requestLoginCode(getDb(), { key: macKey(), mailer: mailer() }, { email: asString(body.email), ipMac: visitorMac(request) });
 
   if (!result.ok && result.reason === "invalid_email") {
-    return noStore(NextResponse.json({ error: "Alamat emel tidak sah." }, { status: 400 }));
+    return noStore(NextResponse.json({ error: "Alamat e-mel tidak sah." }, { status: 400 }));
   }
   if (!result.ok && result.reason === "mail_failed") {
     return noStore(NextResponse.json({ error: "Kod tidak dapat dihantar sekarang. Cuba lagi sebentar lagi." }, { status: 503 }));
   }
-  return noStore(NextResponse.json({ ok: true, message: "Jika alamat itu boleh menerima emel, kod telah dihantar. Kod sah selama 5 minit. Jika tiada, tunggu seminit sebelum meminta semula." }));
+  return noStore(NextResponse.json({ ok: true, message: "Jika alamat itu boleh menerima e-mel, kod telah dihantar. Kod sah selama 5 minit. Jika tiada, tunggu seminit sebelum meminta semula." }));
 }

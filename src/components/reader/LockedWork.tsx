@@ -42,7 +42,7 @@ export default function LockedWork({
           <h2 id="lock-title">{gate === "sign_in" ? "Cerita ini untuk pembaca yang log masuk" : gate === "start_trial" ? "Mulakan percubaan percuma untuk membaca" : "Akses anda belum aktif"}</h2>
           <p>
             {gate === "sign_in"
-              ? "Log masuk dengan emel sahaja, tiada kata laluan. Pembaca baharu boleh memulakan percubaan percuma 14 hari."
+              ? "Log masuk dengan e-mel sahaja, tiada kata laluan. Pembaca baharu boleh memulakan percubaan percuma 14 hari."
               : gate === "start_trial"
                 ? "Percubaan percuma 14 hari membolehkan anda membaca semua cerita di Jalin."
                 : "Tebus kod langganan daripada kad untuk terus membaca."}

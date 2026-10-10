@@ -15,6 +15,6 @@ export async function POST(request: Request) {
   const result = await startTrial(getDb(), { key: macKey() }, current.session.account.id);
   if (result.status === "ok") return noStore(NextResponse.json({ ok: true, startsAt: result.startsAt, endsAt: result.endsAt }));
   if (result.status === "already") return noStore(NextResponse.json({ ok: true, repeat: true, startsAt: result.startsAt, endsAt: result.endsAt }));
-  if (result.status === "used") return noStore(NextResponse.json({ error: "Percubaan percuma bagi emel ini sudah digunakan. Tebus kod langganan untuk terus membaca." }, { status: 409 }));
+  if (result.status === "used") return noStore(NextResponse.json({ error: "Percubaan percuma bagi e-mel ini sudah digunakan. Tebus kod langganan untuk terus membaca." }, { status: 409 }));
   return noStore(NextResponse.json({ error: "Akaun tidak dijumpai." }, { status: 404 }));
 }

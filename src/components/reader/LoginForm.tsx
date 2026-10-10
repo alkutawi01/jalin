@@ -52,7 +52,7 @@ export default function LoginForm({ next = "/akaun", compact = false }: { next?:
     event?.preventDefault();
     if (busy) return;
     setError(""); setNotice("");
-    if (!email.trim()) { setError("Masukkan emel anda."); return; }
+    if (!email.trim()) { setError("Masukkan e-mel anda."); return; }
     setBusy(true);
     try {
       const { ok, data } = await post("/api/akaun/kod", { email });
@@ -97,12 +97,12 @@ export default function LoginForm({ next = "/akaun", compact = false }: { next?:
       {step === "email" ? (
         <form onSubmit={sendCode} noValidate>
           {compact ? null : <h1 className="auth-title">Log masuk atau daftar</h1>}
-          {compact ? null : <p className="auth-intro">Masukkan emel anda. Kami hantar kod enam digit. Tiada kata laluan.</p>}
-          <label className="auth-label" htmlFor="auth-email">Emel</label>
+          {compact ? null : <p className="auth-intro">Masukkan e-mel anda. Kami hantar kod enam digit. Tiada kata laluan.</p>}
+          <label className="auth-label" htmlFor="auth-email">E-mel</label>
           <input id="auth-email" className="auth-input" type="email" inputMode="email" autoComplete="email" placeholder="nama@contoh.my" value={email} onChange={(e) => setEmail(e.target.value)} aria-invalid={!!error} aria-describedby={error ? "auth-error" : undefined} />
           {error ? <p id="auth-error" className="auth-error" role="alert">{error}</p> : null}
           <button className="auth-button" type="submit" disabled={busy}>{busy ? "Menghantar…" : "Hantar kod"}</button>
-          <p className="auth-fine">Selepas log masuk, anda boleh memulakan percubaan percuma 14 hari.</p>
+          <p className="auth-fine">Percubaan percuma 14 hari bermula apabila anda memilih untuk memulakannya.</p>
         </form>
       ) : null}
 
@@ -119,7 +119,7 @@ export default function LoginForm({ next = "/akaun", compact = false }: { next?:
             <button type="button" className="auth-link" disabled={wait > 0 || busy} onClick={() => sendCode().then(() => setNotice("Kod baharu dihantar."))}>
               {wait > 0 ? `Hantar semula kod (${wait}s)` : "Hantar semula kod"}
             </button>
-            <button type="button" className="auth-link" onClick={() => { setStep("email"); setError(""); setNotice(""); }}>Tukar emel</button>
+            <button type="button" className="auth-link" onClick={() => { setStep("email"); setError(""); setNotice(""); }}>Tukar e-mel</button>
           </div>
         </form>
       ) : null}

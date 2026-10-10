@@ -35,7 +35,7 @@ export default function ReaderLookup() {
   async function search(e: React.FormEvent) {
     e.preventDefault();
     setError(""); setDetail(null);
-    if (q.trim().length < 3) { setError("Taip sekurang-kurangnya tiga huruf emel."); return; }
+    if (q.trim().length < 3) { setError("Taip sekurang-kurangnya tiga huruf e-mel."); return; }
     try {
       const data = await api<{ readers: Hit[] }>(`/api/admin/langganan/pembaca?q=${encodeURIComponent(q.trim())}`, "GET");
       setHits(data.readers);
@@ -80,7 +80,7 @@ export default function ReaderLookup() {
     <div className="admin-readers">
       {error ? <Notice kind="error">{error}</Notice> : null}
       <form onSubmit={search} className="admin-inline-form">
-        <input aria-label="Emel pembaca" placeholder="Sebahagian emel pembaca" value={q} onChange={(e) => setQ(e.target.value)} />
+        <input aria-label="E-mel pembaca" placeholder="Sebahagian e-mel pembaca" value={q} onChange={(e) => setQ(e.target.value)} />
         <button type="submit" className="admin-btn admin-btn-sm admin-btn-primary">Cari</button>
       </form>
 

@@ -19,7 +19,7 @@ import { homeGrounds } from "../../lib/site-theme";
 
 export const dynamic = "force-dynamic";
 
-const DESCRIPTION = "Cerpen, novela dan cerita bersiri berilustrasi dalam Bahasa Melayu. Log masuk dengan emel dan mulakan percubaan percuma 14 hari.";
+const DESCRIPTION = "Cerpen, novela dan cerita bersiri berilustrasi dalam Bahasa Melayu. Log masuk dengan e-mel dan mulakan percubaan percuma 14 hari.";
 
 export const metadata: Metadata = {
   title: "Mula membaca",
@@ -35,18 +35,18 @@ const hrefOf = (work: { type: string; slug: string; series?: { slug: string } | 
   work.type === "bersiri" && work.series ? `/kategori/bersiri/${work.series.slug}/${work.slug}` : `/kategori/${work.type}/${work.slug}`;
 
 const REASONS = [
-  { icon: "image", title: "Cerita berilustrasi", text: "Setiap cerita datang dengan ilustrasi, bukan sekadar teks." },
-  { icon: "device", title: "Baca di mana-mana", text: "Telefon, tablet atau komputer. Satu akaun, sehingga dua peranti." },
-  { icon: "key", title: "Tiada kata laluan", text: "Log masuk dengan kod enam digit yang dihantar ke emel anda." },
-  { icon: "type", title: "Bacaan ikut selesa anda", text: "Pilih saiz huruf, tema, jarak baris dan lebar teks. Ia diingat pada akaun anda." },
-  { icon: "bookmark", title: "Sambung dari tempat berhenti", text: "Senarai Bacaan saya mengingati karya dan bab terakhir anda buka." },
-  { icon: "calendar", title: "Tiada pembaharuan automatik", text: "Anda tebus kad apabila mahu. Tiada caj yang datang sendiri." },
+  { icon: "image", title: "Cerita berilustrasi", text: "Setiap cerita disertai ilustrasi yang menghidupkan suasana." },
+  { icon: "device", title: "Baca di pelbagai peranti", text: "Telefon, tablet atau komputer. Satu akaun untuk sehingga dua peranti." },
+  { icon: "key", title: "Tanpa kata laluan", text: "Log masuk dengan kod enam digit yang dihantar ke e-mel anda." },
+  { icon: "type", title: "Laraskan bacaan anda", text: "Pilih saiz dan jenis huruf, tema, jarak baris, lebar teks serta tahap redup. Tetapan ini disimpan dalam akaun anda." },
+  { icon: "bookmark", title: "Sambung membaca dengan mudah", text: "Bacaan saya menyimpan senarai karya dan bab terakhir yang anda buka." },
+  { icon: "calendar", title: "Tiada pembaharuan automatik", text: "Langganan tamat apabila tempohnya berakhir. Tebus kod daripada kad baharu hanya apabila mahu meneruskan bacaan." },
 ];
 
 const STEPS = [
-  { title: "Log masuk dengan emel", text: "Masukkan emel anda dan kami hantar kod enam digit." },
-  { title: "Mulakan percubaan percuma", text: "Baca semua cerita selama 14 hari. Tiada kad dan tiada bayaran." },
-  { title: "Teruskan dengan kad langganan", text: "Selepas percubaan, tebus kod daripada kad untuk terus membaca." },
+  { title: "Log masuk dengan e-mel", text: "Masukkan e-mel anda dan kami hantar kod enam digit." },
+  { title: "Mulakan percubaan percuma", text: "Selepas log masuk, aktifkan percubaan apabila anda bersedia. Baca semua cerita selama 14 hari tanpa bayaran." },
+  { title: "Teruskan dengan kad langganan", text: "Selepas percubaan tamat, tebus kod daripada kad langganan untuk terus membaca." }
 ];
 
 const PLANS = [
@@ -56,13 +56,13 @@ const PLANS = [
 ];
 
 const FAQ = [
-  { q: "Apakah itu Jalin?", a: "Jalin ialah laman cerita berilustrasi dalam Bahasa Melayu: cerpen, novela dan cerita bersiri, diterbitkan oleh Adjung Press." },
-  { q: "Berapa harga untuk membaca?", a: "14 hari pertama percuma. Selepas itu anda menebus kad langganan: RM15 untuk 1 bulan, RM30 untuk 6 bulan atau RM50 untuk 12 bulan. Kad langganan belum dijual buat masa ini." },
-  { q: "Adakah saya perlu memberi butiran kad bank?", a: "Tidak. Jalin tidak menyimpan butiran kad bank dan langganan tidak diperbaharui secara automatik." },
+  { q: "Apakah itu Jalin?", a: "Jalin ialah laman cerpen, novela dan cerita bersiri berilustrasi dalam Bahasa Melayu, terbitan Adjung Press." },
+  { q: "Berapa harga untuk membaca?", a: "Percubaan percuma selama 14 hari bermula apabila anda mengaktifkannya selepas log masuk. Selepas itu, kad langganan berharga RM15 untuk 1 bulan, RM30 untuk 6 bulan atau RM50 untuk 12 bulan. Kad langganan belum dijual buat masa ini." },
+  { q: "Adakah Jalin menyimpan butiran kad bank?", a: "Tidak. Jalin tidak menyimpan butiran kad bank dan langganan tidak diperbaharui secara automatik." },
   { q: "Apa yang boleh saya baca tanpa log masuk?", a: "Senarai karya, tajuk dan ringkasan boleh dilihat oleh sesiapa, dan beberapa cerita contoh boleh dibaca penuh tanpa akaun." },
-  { q: "Di mana boleh saya membaca?", a: "Pada telefon, tablet dan komputer. Satu akaun boleh log masuk pada sehingga dua peranti serentak." },
-  { q: "Bagaimana jika percubaan atau langganan saya tamat?", a: "Anda masih boleh log masuk untuk menguruskan akaun dan menebus kod baharu. Karya penuh dibuka semula sebaik akses aktif." },
-  { q: "Bolehkah saya memadam akaun?", a: "Boleh, pada bila-bila masa di halaman Akaun. Pemadaman tidak boleh dipulihkan." },
+  { q: "Di mana boleh saya membaca?", a: "Anda boleh membaca melalui telefon, tablet atau komputer. Satu akaun boleh digunakan pada sehingga dua peranti." },
+  { q: "Bagaimana jika percubaan atau langganan saya tamat?", a: "Anda masih boleh log masuk untuk mengurus akaun dan menebus kod langganan baharu. Karya penuh boleh dibaca semula apabila langganan diaktifkan." },
+  { q: "Bolehkah saya memadam akaun?", a: "Boleh. Anda boleh memadam akaun pada bila-bila masa di halaman Akaun. Pemadaman tidak boleh dipulihkan." },
 ];
 
 async function loadPage() {
@@ -102,16 +102,16 @@ export default async function StartPage() {
             </div>
           ) : null}
           <div className="site-shell start-hero-inner">
-            <p className="story-kicker">Mula membaca</p>
+            <p className="story-kicker">Selamat datang</p>
             <h1 id="mula-tajuk">Selami dunia melalui cerita</h1>
-            <p className="dek">Cerpen, novela dan cerita bersiri berilustrasi dalam Bahasa Melayu. Baca semuanya selama 14 hari, tanpa bayaran.</p>
+            <p className="dek">Cerpen, novela dan cerita bersiri berilustrasi dalam Bahasa Melayu. Baca semuanya percuma selama 14 hari.</p>
             {session ? (
               <p className="start-actions"><a className="start-button" href="/akaun">Pergi ke akaun saya</a></p>
             ) : (
               <div className="start-signup">
-                <p className="start-signup-lead">Sedia membaca? Masukkan emel anda untuk memulakan.</p>
+                <p className="start-signup-lead">Masukkan e-mel anda untuk log masuk atau mendaftar.</p>
                 <LoginForm next="/akaun" compact />
-                <p className="start-fine"><a className="start-link" href="/tebus">Saya ada kod langganan</a></p>
+                <p className="start-fine"><a className="start-link" href="/tebus">Sudah ada kod langganan?</a></p>
               </div>
             )}
           </div>
@@ -124,7 +124,7 @@ export default async function StartPage() {
           {samples.length > 0 ? (
             <section className="start-section" aria-labelledby="contoh">
               <h2 id="contoh">Baca dahulu, tanpa log masuk</h2>
-              <p className="start-lead">Beberapa cerita terbuka untuk sesiapa sebagai contoh.</p>
+              <p className="start-lead">Cerita pilihan yang boleh dibaca penuh tanpa akaun.</p>
               <div className="start-samples">
                 {samples.map(({ summary, href }) => {
                   const genre = displayableGenre(summary.genre);
@@ -155,7 +155,7 @@ export default async function StartPage() {
           ) : null}
 
           <section className="start-section" aria-labelledby="sebab">
-            <h2 id="sebab">Sebab untuk membaca di Jalin</h2>
+            <h2 id="sebab">Mengapa membaca di Jalin</h2>
             <ul className="start-reasons">
               {REASONS.map((r) => (
                 <li key={r.title}>
@@ -168,7 +168,7 @@ export default async function StartPage() {
           </section>
 
           <section className="start-section" aria-labelledby="langkah">
-            <h2 id="langkah">Bagaimana ia berfungsi</h2>
+            <h2 id="langkah">Cara bermula</h2>
             <ol className="start-steps">
               {STEPS.map((step, index) => (
                 <li key={step.title}>
@@ -196,7 +196,7 @@ export default async function StartPage() {
                 <StartIcon name="lock" size={18} />Dapatkan kad langganan
               </button>
             </p>
-            <p className="start-fine">Kad langganan akan tersedia tidak lama lagi.</p>
+            <p className="start-fine">Kad langganan belum tersedia.</p>
           </section>
 
           <section className="start-section start-faq" aria-labelledby="soalan">
@@ -212,7 +212,7 @@ export default async function StartPage() {
           </section>
 
           <section className="start-section start-closing" aria-label="Mula">
-            <a className="start-button" href={session ? "/akaun" : "/log-masuk"}>{session ? "Pergi ke akaun saya" : "Log masuk dan mulakan percubaan"}</a>
+            <a className="start-button" href={session ? "/akaun" : "/log-masuk"}>{session ? "Pergi ke akaun saya" : "Log masuk untuk mula membaca"}</a>
             <p className="start-fine">Anda sentiasa boleh log masuk untuk menebus kod atau mengurus akaun, walaupun percubaan sudah tamat.</p>
           </section>
         </div>

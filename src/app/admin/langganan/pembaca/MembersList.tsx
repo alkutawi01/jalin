@@ -41,15 +41,15 @@ export default function MembersList() {
         ))}
       </div>
       <div className="admin-form-group">
-        <label htmlFor="members-q">Cari emel atau nama</label>
-        <input id="members-q" type="search" value={q} onChange={(e) => { setQ(e.target.value); setPage(1); }} placeholder="sebahagian emel atau nama" />
+        <label htmlFor="members-q">Cari e-mel atau nama</label>
+        <input id="members-q" type="search" value={q} onChange={(e) => { setQ(e.target.value); setPage(1); }} placeholder="sebahagian e-mel atau nama" />
       </div>
       <p><a className="admin-btn admin-btn-sm admin-btn-outline" href="/api/admin/langganan/ahli/csv">Muat turun CSV (data peribadi)</a></p>
       {!data ? <p className="admin-form-hint">Memuatkan…</p> : (
         <>
           <div className="admin-table-wrap">
             <table className="admin-table">
-              <thead><tr><th scope="col">Emel</th><th scope="col">Status</th><th scope="col">Akses hingga</th><th scope="col">Sumber</th><th scope="col">Daftar</th><th scope="col">Log masuk akhir</th><th scope="col">Peranti</th></tr></thead>
+              <thead><tr><th scope="col">E-mel</th><th scope="col">Status</th><th scope="col">Akses hingga</th><th scope="col">Sumber</th><th scope="col">Daftar</th><th scope="col">Log masuk akhir</th><th scope="col">Peranti</th></tr></thead>
               <tbody>
                 {data.rows.map((m) => (
                   <tr key={m.id}>
