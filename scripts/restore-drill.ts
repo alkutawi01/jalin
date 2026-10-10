@@ -13,6 +13,7 @@ config({ path: ".env.local", override: true });
 import { sql } from "kysely";
 import { closeDb, getDb } from "../src/lib/db";
 import { buildCodesExport, findRedemptionsByEmailMac, parseCodesExport, reconcileWithExport } from "../src/lib/reader-auth/codes-export";
+import { encryptBackup } from "../src/lib/reader-auth/backup-crypto";
 import { addTrial, getAccess } from "../src/lib/reader-auth/entitlements";
 import { emailLookupMac, loadCodeKey, loadMacKey } from "../src/lib/reader-auth/primitives";
 import { confirmBatchPrinted, createBatch, createSharedCode, isRedeemHalted, issueCodes, redeemCode, revokeCode, setRedeemHalted } from "../src/lib/reader-auth/redeem";
@@ -71,15 +72,18 @@ async function main() {
 
     // ------------------------------------------------------------ the signed file
     console.log("\nThe file kept outside the database");
-    const file = await buildCodesExport(db, { codeKey, readerKey });
-    const parsed = parseCodesExport(file, codeKey);
+    const backupKey = Buffer.alloc(32, 4);
+    const inner = await buildCodesExport(db, { codeKey, readerKey });
+    const file = encryptBackup(inner, backupKey);
+    const parsed = parseCodesExport(file, codeKey, { backupKey });
     assert(parsed.batches.length === 2 && parsed.codes.length === 7 && parsed.redemptions.length === 4 && parsed.shared.length === 2 && parsed.sharedRedemptions.length === 4, "the file holds both batches, seven codes, four card redemptions, two shared codes, four uses",{ b: parsed.batches.length, c: parsed.codes.length, r: parsed.redemptions.length, s: parsed.shared.length, sr: parsed.sharedRedemptions.length });
     const allPlain = [...b1.codes, ...b2.codes].flatMap((c) => [c.canonical, c.code]);
     assert(!allPlain.some((p) => file.includes(p)) && !/@/.test(file) && !file.includes(A), "the file has no plain code, no e-mail address and no account number");
-    assert(file.includes(readerKeyMacB), "but a reader can be found in it by the keyed hash of their e-mail");
-    const lines = file.split("\n");
-    const tampered = [...lines]; tampered[3] = tampered[3].replace('"state":"issued"', '"state":"generated"');
-    assert(throws(() => parseCodesExport(tampered.join("\n"), codeKey)) && throws(() => parseCodesExport(lines.slice(0, -2).join("\n") + "\n", codeKey)) && throws(() => parseCodesExport(file, loadCodeKeyOther())) && throws(() => parseCodesExport("", codeKey)) && throws(() => parseCodesExport("{}\n{}\n", codeKey)), "a changed, cut, wrongly signed, empty or nonsense file is refused");
+    assert(inner.includes(readerKeyMacB) && !file.includes(readerKeyMacB), "the e-mail hash is recoverable only after decryption");
+    const envelope = JSON.parse(file.slice("JALIN-BACKUP-ENC:".length)) as { data: string };
+    envelope.data = (envelope.data[0] === "A" ? "B" : "A") + envelope.data.slice(1);
+    const tampered = "JALIN-BACKUP-ENC:" + JSON.stringify(envelope);
+    assert(throws(() => parseCodesExport(tampered, codeKey, { backupKey })) && throws(() => parseCodesExport(file.slice(0, -3), codeKey, { backupKey })) && throws(() => parseCodesExport(file, loadCodeKeyOther(), { backupKey })) && throws(() => parseCodesExport("", codeKey)) && throws(() => parseCodesExport("{}\n{}\n", codeKey)), "a changed, cut, wrongly signed, empty or nonsense file is refused");
 
     // ------------------------------------------------------------ the restore
     console.log("\nThe database is restored to the restore point");

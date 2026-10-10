@@ -27,6 +27,14 @@ export default async function LanggananPage() {
       problem = "Jadual langganan belum wujud pada pangkalan data ini. Migrasi 027 hingga 030 perlu dijalankan dahulu.";
     }
   }
+  const lastSuccessAt = last?.stored === "blob" ? last.at : last?.lastSuccessfulAt;
+  const exportWarning = last?.error
+    ? `Eksport terakhir gagal: ${last.error}`
+    : !lastSuccessAt
+      ? "Belum ada eksport terenkripsi yang berjaya disimpan. Semak BACKUP_ENC_KEY dan storan Blob."
+      : Date.now() - new Date(lastSuccessAt).getTime() > 36 * 60 * 60 * 1000
+        ? "Eksport berjaya terakhir melebihi 36 jam. Semak cron dan storan Blob."
+        : null;
 
   return (
     <div className="admin-langganan">
@@ -59,12 +67,9 @@ export default async function LanggananPage() {
           <h2>Suis henti penebusan</h2>
           <HaltSwitch initialHalted={data.halted} />
           <h2>Salinan kod di luar pangkalan data</h2>
-          <p>Setiap malam, satu fail bertandatangan berisi semua kod dan penebusan disimpan di luar pangkalan data. Jika pangkalan data dipulihkan ke masa lampau, fail inilah yang menghalang kad yang sudah digunakan daripada digunakan semula.</p>
-          {last ? (
-            <p>Eksport terakhir yang berjaya: {new Date(last.at).toLocaleString("ms-MY", { timeZone: "Asia/Kuala_Lumpur", day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" })} ({last.lines} baris).</p>
-          ) : (
-            <div className="admin-alert admin-alert-warning" role="status">Belum ada eksport yang berjaya disimpan. Pastikan CRON_SECRET dan storan Blob ditetapkan.</div>
-          )}
+          <p>Setiap malam, satu fail disulitkan dan bertandatangan berisi semua kod dan penebusan disimpan di luar pangkalan data. Jika pangkalan data dipulihkan ke masa lampau, fail inilah yang menghalang kad yang sudah digunakan daripada digunakan semula.</p>
+          {exportWarning ? <div className="admin-alert admin-alert-error" role="alert">{exportWarning}</div> : null}
+          {lastSuccessAt ? <p>Eksport terakhir yang berjaya: {new Date(lastSuccessAt).toLocaleString("ms-MY", { timeZone: "Asia/Kuala_Lumpur", day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" })}{last?.stored === "blob" ? ` (${last.lines} baris)` : ""}.</p> : null}
           <p><a className="admin-btn admin-btn-sm admin-btn-outline" href="/api/admin/langganan/eksport">Muat turun fail eksport sekarang</a></p>
         </>
       )}
