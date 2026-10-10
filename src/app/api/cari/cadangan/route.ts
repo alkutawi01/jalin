@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { initContentRepository } from "../../../../lib/content";
-import { buildSearchIndex } from "../../../../lib/reader/search";
+import { buildSearchIndex, restrictForViewer } from "../../../../lib/reader/search";
+import { viewerReach } from "../../../../lib/reader/access-gate";
 import { suggest } from "../../../../lib/reader/search-suggest";
 
 export const dynamic = "force-dynamic";
@@ -9,6 +10,6 @@ export const dynamic = "force-dynamic";
 export async function GET(request: Request) {
   const q = new URL(request.url).searchParams.get("q") ?? "";
   const repo = await initContentRepository();
-  const suggestions = suggest(buildSearchIndex(repo), q);
-  return NextResponse.json({ suggestions }, { headers: { "Cache-Control": "public, max-age=30" } });
+  const suggestions = suggest(restrictForViewer(buildSearchIndex(repo), await viewerReach()), q);
+  return NextResponse.json({ suggestions }, { headers: { "Cache-Control": "private, no-store" } });
 }

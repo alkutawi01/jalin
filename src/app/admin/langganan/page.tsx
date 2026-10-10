@@ -4,6 +4,8 @@ import { readerAccountsEnabled } from "../../../lib/reader-auth/enabled";
 import { LanggananNav } from "../../../components/admin/langganan-ui";
 import { readLastExport, type LastExport } from "../../../lib/reader-auth/maintenance";
 import HaltSwitch from "./HaltSwitch";
+import PaywallSwitch from "./PaywallSwitch";
+import { isPaywallSwitchOn, countSamples } from "../../../lib/reader-auth/switches";
 
 export const dynamic = "force-dynamic";
 
@@ -12,11 +14,15 @@ export default async function LanggananPage() {
   let data: Overview | null = null;
   let problem: string | null = null;
   let last: LastExport | null = null;
+  let paywall = false;
+  let samples = 0;
   if (!hasDb()) problem = "Pangkalan data tidak tersedia.";
   else {
     try {
       data = await overview(getDb());
       last = await readLastExport(getDb());
+      paywall = await isPaywallSwitchOn(getDb());
+      samples = await countSamples(getDb());
     } catch {
       problem = "Jadual langganan belum wujud pada pangkalan data ini. Migrasi 027 hingga 030 perlu dijalankan dahulu.";
     }
@@ -48,6 +54,8 @@ export default async function LanggananPage() {
               </tbody>
             </table>
           </div>
+          <h2>Dinding bayar</h2>
+          <PaywallSwitch initialOn={paywall} accountsEnabled={readerAccountsEnabled()} samples={samples} />
           <h2>Suis henti penebusan</h2>
           <HaltSwitch initialHalted={data.halted} />
           <h2>Salinan kod di luar pangkalan data</h2>

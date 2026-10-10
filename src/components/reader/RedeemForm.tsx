@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 /** Redeem a card code (code and batch number, both printed on the card) or a shared code (the code alone). */
-export default function RedeemForm() {
+export default function RedeemForm({ embedded = false }: { embedded?: boolean }) {
   const [code, setCode] = useState("");
   const [batch, setBatch] = useState("");
   const [error, setError] = useState("");
@@ -23,8 +23,13 @@ export default function RedeemForm() {
       const response = await fetch("/api/akaun/tebus", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ code, batch: looksShared ? "" : batch }) });
       let data: Record<string, unknown> = {};
       try { data = await response.json(); } catch { /* not JSON */ }
-      if (response.status === 401) { window.location.href = "/log-masuk"; return; }
-      if (response.ok && data.ok) { setDone(String(data.message)); setCode(""); setBatch(""); return; }
+      if (response.status === 401) { window.location.href = embedded ? window.location.pathname : "/log-masuk"; return; }
+      if (response.ok && data.ok) {
+        setDone(String(data.message)); setCode(""); setBatch("");
+        // Inside the lock dialog the page behind it is the work the reader wanted: show it now that there is access.
+        if (embedded) window.setTimeout(() => window.location.reload(), 900);
+        return;
+      }
       setError(String(data.error ?? "Kod tidak dapat ditebus."));
     } catch {
       setError("Tiada sambungan. Semak internet anda dan cuba lagi.");
@@ -51,7 +56,7 @@ export default function RedeemForm() {
         {error ? <p id="redeem-error" className="auth-error" role="alert">{error}</p> : null}
         {done ? <p className="auth-notice auth-notice--ok" role="status">{done}</p> : null}
         <button className="auth-button" type="submit" disabled={busy}>{busy ? "Menebus…" : "Tebus kod"}</button>
-        <div className="auth-links"><a className="auth-link" href="/akaun">Kembali ke akaun</a></div>
+        {embedded ? null : <div className="auth-links"><a className="auth-link" href="/akaun">Kembali ke akaun</a></div>}
       </form>
     </div>
   );

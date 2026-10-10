@@ -6,6 +6,8 @@ import { episodeHeroOf } from "../../../../../lib/reader/chapter-visuals";
 import { initContentRepository } from "../../../../../lib/content";
 import { getWorkBySlug } from "../../../../../lib/content/workLoader";
 import EpisodeView from "../../../../../components/reader/EpisodeView";
+import LockedWork from "../../../../../components/reader/LockedWork";
+import { gateForWork } from "../../../../../lib/reader/access-gate";
 import type { SeriesEpisodeRef } from "../../../../../lib/content/types";
 
 export const dynamic = "force-dynamic";
@@ -62,6 +64,19 @@ export default async function EpisodePage({
 
   if (!work || work.type !== "bersiri") notFound();
   if (!work.series) notFound();
+
+  // An episode's text is kept for readers with access (the series page, with its list of episodes, stays open).
+  const gate = await gateForWork(work.slug);
+  if (gate.state !== "open") {
+    return (
+      <LockedWork
+        work={{ type: work.type, title: work.title, dek: work.dek, genre: work.genre, credits: work.credits, visuals: work.visuals, publishedAt: work.publishedAt, sourceWork: work.sourceWork }}
+        gate={gate.state}
+        next={`/kategori/bersiri/${work.series.slug}/${work.slug}`}
+        email={gate.email}
+      />
+    );
+  }
 
   const episodes: SeriesEpisodeRef[] = isDb ? repo.getPublishedSeriesEpisodes(work.series.id) : [];
 

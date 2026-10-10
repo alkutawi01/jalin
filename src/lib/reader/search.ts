@@ -354,3 +354,13 @@ export function filterOptions(docs: SearchDoc[]): { types: string[]; genres: str
   const authors = [...new Set(docs.flatMap((d) => d.authors))].sort((a, b) => a.localeCompare(b, "ms"));
   return { types, genres, authors };
 }
+
+/**
+ * What a viewer's search may look inside. A reader without access (or a visitor) is searched by title, dek, genre and authors only:
+ * the text of a work kept for subscribers is neither matched nor shown in a snippet, so search cannot be used to read it.
+ * `samples` are the slugs of works open to everyone; `all` is a viewer who may read everything (or the paywall is off).
+ */
+export function restrictForViewer(docs: SearchDoc[], reach: { all: boolean; samples: Set<string> }): SearchDoc[] {
+  if (reach.all) return docs;
+  return docs.map((doc) => (reach.samples.has(doc.slug) ? doc : { ...doc, sections: [], foldedEntities: "" }));
+}

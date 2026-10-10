@@ -7,6 +7,8 @@ import { chapterHeroOf } from "../../../../lib/reader/chapter-visuals";
 import { initContentRepository } from "../../../../lib/content";
 import { getWorkBySlug } from "../../../../lib/content/workLoader";
 import WorkView from "../../../../components/reader/WorkView";
+import LockedWork from "../../../../components/reader/LockedWork";
+import { gateForWork } from "../../../../lib/reader/access-gate";
 
 // Editorial changes must be visible on work pages just as on the dynamic homepage.
 export const dynamic = "force-dynamic";
@@ -99,5 +101,22 @@ export default async function WorkPage({
     notFound();
   }
 
+  // The text of a work (every chapter of a novela) is kept for readers with access. A novela's own page (its blurb and chapter list,
+  // no chapter open) is not text, so it stays open: it is where a reader finds the chapters.
+  const novelaLanding = (work.sections?.length ?? 0) > 0 && !sectionSlug;
+  if (!novelaLanding) {
+    const gate = await gateForWork(work.slug);
+    if (gate.state !== "open") {
+      const next = sectionSlug ? `/kategori/${type}/${slug}/${sectionSlug}` : `/kategori/${type}/${slug}`;
+      return (
+        <LockedWork
+          work={{ type: work.type, title: work.title, dek: work.dek, genre: work.genre, credits: work.credits, visuals: work.visuals, publishedAt: work.publishedAt, sourceWork: work.sourceWork }}
+          gate={gate.state}
+          next={next}
+          email={gate.email}
+        />
+      );
+    }
+  }
   return <WorkView work={work} sectionSlug={sectionSlug} />;
 }

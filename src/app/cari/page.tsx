@@ -3,6 +3,7 @@ import { formatMalayDate } from "../../lib/reader/format-date";
 import { SiteFooter, SiteHeader } from "../../components/reader/StoryChrome";
 import { renderAttribution } from "../../components/reader/Attribution";
 import { initContentRepository } from "../../lib/content";
+import { viewerReach } from "../../lib/reader/access-gate";
 import { displayableGenre } from "../../lib/reader/genre-display";
 import {
   READING_BANDS,
@@ -10,6 +11,7 @@ import {
   TYPE_LABELS,
   buildSearchIndex,
   filterOptions,
+  restrictForViewer,
   runSearch,
   type Part,
   type SearchParams
@@ -50,7 +52,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
     susun: one(raw.susun)
   };
   const repo = await initContentRepository();
-  const docs = buildSearchIndex(repo);
+  const docs = restrictForViewer(buildSearchIndex(repo), await viewerReach());
   const options = filterOptions(docs);
   const { results, total } = runSearch(docs, params);
   const active = Boolean(params.q?.trim() || params.jenis || params.genre || params.penulis || params.bacaan);
