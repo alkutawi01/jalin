@@ -9,12 +9,12 @@ import { middleware } from "../src/middleware";
 
 let passed = 0, failed = 0;
 function assert(c: boolean, m: string) { if (c) { passed++; console.log(`  ✓ ${m}`); } else { failed++; console.error(`  ✗ ${m}`); } }
-function token(claims: Record<string, unknown>) {
+function token(claims: Record<string, unknown>, signingKey = process.env.ADMIN_SECRET!) {
   const payload = Buffer.from(JSON.stringify({ expires: Date.now() + 3600_000, ...claims })).toString("base64url");
-  return `${payload}.${crypto.createHmac("sha256", process.env.ADMIN_SECRET!).update(payload).digest("base64url")}`;
+  return `${payload}.${crypto.createHmac("sha256", signingKey).update(payload).digest("base64url")}`;
 }
-async function call(method: string, path: string, claims?: Record<string, unknown>) {
-  const req = new NextRequest(`http://localhost${path}`, { method, headers: claims ? { cookie: `jalin-admin-session=${token(claims)}` } : {} });
+async function call(method: string, path: string, claims?: Record<string, unknown>, signingKey?: string) {
+  const req = new NextRequest(`http://localhost${path}`, { method, headers: claims ? { cookie: `jalin-admin-session=${token(claims, signingKey)}` } : {} });
   const res = await middleware(req);
   return { status: res.status, location: res.headers.get("location") ?? "", next: res.headers.get("x-middleware-next") === "1" };
 }
@@ -39,6 +39,10 @@ async function call(method: string, path: string, claims?: Record<string, unknow
   assert((await call("GET", "/api/admin/works", fresh)).status === 403, "and refuses every API call");
   assert((await call("GET", "/admin/ubah-kata-laluan", fresh)).next && (await call("POST", "/api/admin/auth/change-password", fresh)).next && (await call("POST", "/api/admin/auth/logout", fresh)).next, "but the password page, the change call and sign-out stay open");
   assert((await call("GET", "/api/admin/works")).status === 401, "no cookie is still 401");
+  process.env.ADMIN_SESSION_KEY = "a".repeat(48);
+  assert((await call("GET", "/api/admin/users", owner)).status === 401, "a token signed with ADMIN_SECRET is rejected after session-key rotation");
+  assert((await call("GET", "/api/admin/users", owner, process.env.ADMIN_SESSION_KEY)).next, "a token signed with the dedicated session key is accepted");
+  delete process.env.ADMIN_SESSION_KEY;
   console.log(`\n${passed} passed, ${failed} failed`);
   if (failed) process.exit(1);
 })();

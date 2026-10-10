@@ -24,7 +24,8 @@ export async function POST(request: NextRequest) {
     }
 
     // The owner (e-mail + ADMIN_SECRET) or a staff account (username or e-mail + own password).
-    const outcome = await signIn(email, body.password);
+    const ip = request.headers.get("x-real-ip") ?? request.headers.get("x-forwarded-for")?.split(",")[0] ?? "unknown";
+    const outcome = await signIn(email, body.password, ip);
 
     if ("error" in outcome) {
       const message = outcome.error === "locked"

@@ -11,6 +11,7 @@ import { listWorks } from "../../lib/admin/work-service";
 import { summarizeReadiness } from "../../lib/admin/publication-service";
 import { countWorks } from "../../lib/admin/dashboard-counts";
 import { buildContentChecks } from "../../lib/admin/dashboard-labels";
+import { hasDedicatedAdminSessionKey } from "../../lib/admin/session-key";
 
 export const dynamic = "force-dynamic";
 
@@ -168,6 +169,7 @@ export default async function AdminDashboard({ searchParams }: { searchParams?: 
 
       <section className="admin-section" id="status-sistem" aria-label="Status sistem">
         <h2>Status sistem</h2>
+        {!hasDedicatedAdminSessionKey() ? <div className="admin-alert admin-alert-warning" role="alert">ADMIN_SESSION_KEY belum ditetapkan. Sesi pentadbir masih menggunakan kunci log masuk lama untuk tandatangan.</div> : null}
         <ul className="a-system-status">
           <li>
             <span>Pangkalan data</span>

@@ -43,7 +43,7 @@ assert(isAllowed("editor", "GET", "/admin/ubah-kata-laluan") && isAllowed("edito
 
 // Wiring
 const auth = read("src/lib/admin/auth.ts");
-assert(auth.indexOf("const owner = await loginAdmin(identifier, password)") > 0 && auth.indexOf("authenticateStaff(identifier, password)") > auth.indexOf("const owner = await loginAdmin"), "sign-in tries the owner first, then the staff table");
+assert(auth.indexOf("const owner = await loginAdmin(identifier, password, ip)") > 0 && auth.indexOf("authenticateStaff(identifier, password)") > auth.indexOf("const owner = await loginAdmin"), "sign-in tries the owner first, then the staff table");
 assert(auth.includes("row.role !== user.role") && auth.includes("!row.active"), "a staff session is checked against the table: switched off or a changed role ends it");
 assert(!/role: "admin"[^]{0,40}staff/.test(auth) && /isStaffRole\(data\.role\)/.test(auth), "a staff token can only carry a staff role");
 const mw = read("src/middleware.ts");

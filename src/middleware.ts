@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAllowed, roleFromClaim, type Role } from "./lib/admin/permissions";
+import { adminSessionSigningKey } from "./lib/admin/session-key";
 
 /**
  * Validate session token using Web Crypto API (Edge-compatible).
@@ -11,7 +12,7 @@ async function validateSessionToken(token: string): Promise<{ role: Role; mustCh
       return null;
     }
 
-    const secret = process.env.ADMIN_SECRET;
+    const secret = adminSessionSigningKey();
     if (!secret) {
       console.error("[Middleware] ADMIN_SECRET not configured.");
       return null;
