@@ -4072,11 +4072,13 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; color-scheme: lig
   .right-rail .rail-card { padding-top: 24px; margin-top: 24px; border-top: 1px solid var(--line); }
   .left-rail dl > div { grid-template-columns: minmax(0, 1fr); row-gap: 0; padding: 7px 0; }
 }
-/* "Baca lagi" uses the homepage card at the homepage card width: two cards, centred, each one third of the row (as in the story lists). */
+/* "Baca lagi": the homepage card in the homepage grid. Three across on a desktop, so the first card lines up with the heading and the last with the
+   "Lain" button; two across on a tablet and in a phone column (the third card is only for the desktop row). */
 @media (min-width: 1051px) {
-  .related-works .latest-grid.related-works-grid { grid-template-columns: repeat(2, minmax(0, calc((100% - 56px) / 3))); justify-content: center; gap: 28px; }
+  .related-works .latest-grid.related-works-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; }
   .related-works .latest-grid.related-works-grid-single { grid-template-columns: minmax(0, calc((100% - 56px) / 3)); }
 }
+@media (max-width: 1050px) { .related-works .latest-grid.related-works-grid > :nth-child(n + 3) { display: none; } }
 @media (max-width: 1050px) and (min-width: 681px) {
   .related-works .latest-grid.related-works-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .related-works .latest-grid.related-works-grid-single { grid-template-columns: minmax(0, calc(50% - 14px)); justify-content: center; }
