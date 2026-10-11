@@ -195,8 +195,9 @@ export default async function WorkView({
   const places = publicPlaces(work.metadata);
   const times = publicTimes(work.metadata);
 
-  // "Baca lagi": two random pieces (any kind, series episodes included), never the one being read.
-  const readMore = pickCollection((await buildStoryPool()).filter((card) => !card.href.endsWith(`/${work.slug}`)), new Set(), 2);
+  // "Baca lagi": nine random pieces (any kind, series episodes included), never the one being read. Three show on a desktop row (two on a tablet or phone) and the "Lain" button turns
+  // through them in the browser, so a click costs the server nothing.
+  const readMore = pickCollection((await buildStoryPool()).filter((card) => !card.href.endsWith(`/${work.slug}`)), new Set(), 9);
 
   // DB novelas have real sections (separate pages); a Markdown novela keeps its
   // chapters as "## Bab N" headings in one body, so link to those in-page anchors.
