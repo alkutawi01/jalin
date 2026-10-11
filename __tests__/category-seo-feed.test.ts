@@ -50,7 +50,7 @@ assert(!listing.includes("<Breadcrumb") && listing.includes("categoryJsonLd("), 
 assert(listing.includes("categorySummary(") && listing.includes("shareImage(summary.heroSrc"), "the share picture is the newest work's, the Jalin card when there is none");
 assert(listing.includes("diterbitkan.`"), "the description says how many are published");
 const layout = read("src/app/layout.tsx");
-assert(layout.includes('"application/rss+xml": "/feed.xml"'), "every page advertises the feed");
+assert(/<link rel="alternate" type="application\/rss\+xml"[^>]*href="\/feed\.xml"/.test(layout) && !layout.includes("alternates:"), "every page advertises the feed: a plain link in the layout head (page metadata alternates would replace a metadata one)");
 const route = read("src/app/feed.xml/route.ts");
 assert(route.includes("export const revalidate") && route.includes("application/rss+xml") && route.includes("getPublishedSeriesEpisodes"), "the feed is cached, typed, and lists series episodes too");
 assert(!/\.body|sections|text\b/.test(route.split("items.push")[1] ?? ""), "the feed carries a title, link, date and dek, never the text of a work");

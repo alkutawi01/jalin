@@ -25,8 +25,6 @@ export const metadata: Metadata = {
     template: "%s · Jalin"
   },
   description: "Selami dunia melalui cerita di Jalin, platform cerpen, novela dan cerita bersiri berilustrasi dalam Bahasa Melayu. Terbitan Adjung Press.",
-  // Feed readers and browsers find the feed of the newest works from any page.
-  alternates: { types: { "application/rss+xml": "/feed.xml" } },
   icons: {
     icon: "/brand/jalin-favicon.svg",
     shortcut: "/brand/jalin-favicon.svg",
@@ -52,6 +50,11 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="ms" className={`${inter.variable} ${figtree.variable}`}>
+      <head>
+        {/* Feed readers and browsers find the feed of the newest works from any page. A page's own metadata alternates (its canonical)
+            replaces the layout's, so this is a plain link rather than metadata. */}
+        <link rel="alternate" type="application/rss+xml" title="Jalin: karya terbaharu" href="/feed.xml" />
+      </head>
       <body>
         <BootScreen />
         {children}
