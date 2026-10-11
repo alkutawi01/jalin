@@ -14,6 +14,7 @@ assert(displayableGenre("sejarah") === "Sejarah" && displayableGenre("drama kelu
 assert(displayableGenre("Sejarah") === "Sejarah" && displayableGenre("Drama Sosial") === "Drama Sosial" && displayableGenre("  Fiksyen Sains ") === "Fiksyen Sains", "a genre already written with capitals is left as it is (and trimmed)");
 assert(displayableGenre("") === undefined && displayableGenre("   ") === undefined && displayableGenre(null) === undefined && displayableGenre(undefined) === undefined, "an empty genre is not shown");
 assert(displayableGenre("needs_review") === undefined && displayableGenre("Needs Review") === undefined && displayableGenre("—") === undefined, "a placeholder is still never shown");
+assert(displayableGenre("Keluarga · Ingatan") === "Keluarga" && displayableGenre("drama · Keluarga") === "Drama" && displayableGenre("· Keluarga") === undefined, "a genre that lists two shows the first only");
 assert(displayableGenre("1980-an") === "1980-an" && displayableGenre("élan") === "Élan", "a genre that starts with a digit is left alone; an accented letter is capitalised");
 
 console.log(`\n${passed} passed, ${failed} failed`);

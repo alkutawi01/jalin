@@ -4160,3 +4160,6 @@ html:has(.site-header.is-tucked) .sticky { top: 24px; }
 .continue-next .continue-text { justify-items: center; }
 .continue-next .continue-arrow { position: absolute; right: 22px; top: 50%; margin-top: -.7em; line-height: 1.4; }
 .continue-next:hover .continue-arrow, .continue-next:focus-visible .continue-arrow { transform: translateX(4px); }
+
+/* A series card in the Bersiri list: the kicker is "Bersiri · genre" (as on every other card); size and status sit under the title. */
+.series-list-facts { margin: 0 0 10px; font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 13px; color: var(--ink-soft); }

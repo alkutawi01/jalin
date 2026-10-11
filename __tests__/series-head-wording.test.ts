@@ -20,7 +20,10 @@ const series = read("src/app/kategori/bersiri/[seriesSlug]/page.tsx");
 assert(series.includes("<BylineRow byline={authors} />") && series.includes("projectBylineCredits("), "the series page shows who wrote it");
 const metaStart = series.indexOf("const meta = [");
 const metaBlock = series.slice(metaStart, series.indexOf("].filter(Boolean)", metaStart));
-assert(metaBlock.includes("MODE_LABELS") && metaBlock.includes("seriesStatusLabel") && metaBlock.includes("displayableGenre") && !metaBlock.includes("episod diterbitkan") && !metaBlock.includes("Dikemas kini"), "the line under it is only form, status and genre (no episode count, no date)");
+assert(metaBlock.includes("MODE_LABELS") && metaBlock.includes("seriesStatusLabel") && metaBlock.includes("episod") && !metaBlock.includes("displayableGenre") && !metaBlock.includes("episod diterbitkan") && !metaBlock.includes("Dikemas kini"), "the line under it is form, status and the number of episodes (the genre is the kicker above the title; no date)");
+assert(series.includes('<a href="/kategori/bersiri">Bersiri</a>{genre ? <>') && !series.includes("<span>{series.title}</span>"), "the kicker above the title is 'Bersiri · genre', not 'Bersiri / title' (the title is the h1 right below)");
+const listPage = read("src/app/kategori/[type]/page.tsx");
+assert(listPage.includes('Bersiri{genre ? ` · ${genre}` : ""}') && listPage.includes("series-list-facts"), "a series card in the list says 'Bersiri · genre' above the title, and size and status under it");
 assert(read("src/lib/reader/series-status.ts").includes("ongoing: \"Masih diteruskan\""), "an ongoing series reads 'Masih diteruskan'");
 
 const episode = read("src/components/reader/EpisodeView.tsx");

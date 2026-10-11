@@ -59,11 +59,6 @@ const CATEGORY_META: Record<string, { title: string; intro: string; headerLabel:
   },
 };
 
-const MODE_LABELS: Record<string, string> = {
-  continuous: "Berturutan",
-  anthology: "Antologi",
-};
-
 function formatDate(date: string | undefined): string {
   return formatMalayDate(date) ?? "—";
 }
@@ -110,8 +105,9 @@ function SeriesCard({ series, episodeCount, priority }: { series: PublicSeriesSu
           {series.hero ? <Image src={series.hero.src} alt={series.hero.alt || `Ilustrasi siri ${series.title}`} fill sizes="(max-width: 680px) 100vw, 360px" priority={priority} style={cropStyle(series.hero.crop)} /> : <span>{series.title}</span>}
         </div>
         <div className="series-list-body">
-          <p className="series-list-meta">{genre || MODE_LABELS[series.mode] || series.mode} · {episodeCount} episod · {seriesStatusLabel(series.status)}</p>
+          <p className="series-list-meta">Bersiri{genre ? ` · ${genre}` : ""}</p>
           <h2>{series.title}</h2>
+          <p className="series-list-facts">{episodeCount} episod · {seriesStatusLabel(series.status)}</p>
           {series.dek ? <p className="series-list-dek">{series.dek}</p> : null}
           <span className="series-list-action">Lihat siri dan episod</span>
         </div>

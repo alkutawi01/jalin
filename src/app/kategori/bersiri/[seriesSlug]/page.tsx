@@ -84,10 +84,12 @@ export default async function SeriesLandingPage({
         if (!authors.some((author) => author.name === credit.name)) authors.push(credit);
       }
     }
+    // The genre is the kicker above the title, with the kind of work (as on a story page and the homepage); this line is form, status and size.
+    const genre = displayableGenre(series.genre);
     const meta = [
       MODE_LABELS[series.mode] ?? series.mode,
       seriesStatusLabel(series.status),
-      displayableGenre(series.genre)
+      `${byPosition.length} episod`
     ].filter(Boolean);
 
     return (
@@ -98,7 +100,7 @@ export default async function SeriesLandingPage({
             <header className={`series-masthead${series.hero ? " series-masthead--hero" : ""}`}>
               <div className="series-masthead-text">
               <p className="series-crumb">
-                <a href="/kategori/bersiri">Bersiri</a> <span aria-hidden="true">/</span> <span>{series.title}</span>
+                <a href="/kategori/bersiri">Bersiri</a>{genre ? <> <span aria-hidden="true">·</span> <span>{genre}</span></> : null}
               </p>
               <h1>{series.title}</h1>
               {series.dek ? <p className="series-premise">{spacedDashes(smartQuotes(series.dek))}</p> : null}
@@ -162,7 +164,7 @@ export default async function SeriesLandingPage({
                 slug: series.slug,
                 title: series.title,
                 dek: series.dek ? spacedDashes(smartQuotes(series.dek)) : series.dek,
-                genre: displayableGenre(series.genre),
+                genre,
                 heroSrc: series.hero?.src,
                 authors: authors.map((author) => author.name),
                 episodes: byPosition.map((episode) => ({ slug: episode.slug, title: episode.title, position: episode.position }))
