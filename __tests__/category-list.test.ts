@@ -117,6 +117,9 @@ assert(/<ul className="latest-grid category-grid" role="list"/.test(page) && /<u
 assert(/EmptyCategoryFallback currentType=\{type\} \/> : null\}\s*\{summaries\.length > 0/.test(page) || page.indexOf("<EmptyCategoryFallback currentType={type} />") < page.indexOf('<ul className="latest-grid category-grid"'), "the empty state sits outside the list, not inside the grid");
 assert(page.includes("priority={index < 3}") && page.includes("priority={index < 2}"), "the first pictures load at once (above the fold), the rest lazily");
 assert(/canonical = !filtered && page > 1/.test(page), "a later page of the plain list is canonical to itself");
+const sheet = fs.readFileSync(path.join(__dirname, "..", "src", "app", "globals.css"), "utf8").split("\r\n").join("\n");
+assert(!sheet.includes("ul.latest-grid { padding: 0; }"), "the list does not zero the vertical padding of the grid (72px below the last row, so it never touches the footer)");
+assert(sheet.includes("ul.latest-grid > li { display: flex; }") && sheet.includes("ul.latest-grid > li > .latest-card { flex: 1 1 auto;"), "a card fills its list item, so the cards of a row are one height");
 const cover = fs.readFileSync(path.join(__dirname, "..", "src", "components", "reader", "WorkCover.tsx"), "utf8");
 assert(cover.includes("priority?: boolean") && cover.includes("priority={priority}"), "the cover can be loaded first");
 
