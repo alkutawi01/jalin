@@ -4033,30 +4033,19 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; color-scheme: lig
   .header-search-input::placeholder { font-size: 13px; }
 }
 
-/* Category lists: sort and filter bar (a plain GET form), active-filter chips, result count. */
-.list-controls { margin: 8px 0 0; padding: 14px 0 4px; border-top: 1px solid var(--line); }
-.list-controls-form { display: flex; flex-wrap: wrap; gap: 12px 14px; align-items: end; }
-.list-controls-form label { display: grid; gap: 4px; font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 12px; font-weight: 600; letter-spacing: .04em; color: var(--ink-soft); }
-.list-controls-form select {
-  min-height: 44px; min-width: 0; max-width: 100%; padding: 0 36px 0 12px; border: 1px solid var(--line); border-radius: 10px;
-  background: var(--paper); color: var(--ink); font: inherit; font-size: 16px; font-weight: 400; letter-spacing: 0;
+/* Category lists: the sort and filter bar is the search page's form (.search-form and friends); only what search does not have is here. */
+.list-controls { margin: 0 0 8px; }
+.list-controls-form { margin: 8px 0 18px; }
+.list-controls-form .search-filters { grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
+.list-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; padding: 0; list-style: none; }
+.list-chips a {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 8px 14px; border: 1px solid var(--line);
+  font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 13px; color: var(--ink); text-decoration: none;
 }
-.list-controls-apply {
-  min-height: 44px; padding: 0 18px; border: 1px solid var(--ink); border-radius: 10px; background: var(--ink); color: var(--paper);
-  font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 14px; font-weight: 600; cursor: pointer;
-}
-.list-controls-reset { display: inline-flex; align-items: center; min-height: 44px; padding: 0 6px; font-size: 14px; color: var(--ink-soft); text-decoration: underline; text-underline-offset: 3px; }
-.list-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 0; padding: 0; list-style: none; }
-.list-chips a { display: inline-flex; align-items: center; min-height: 36px; padding: 0 12px; gap: 6px; border: 1px solid var(--line); border-radius: 999px; font-size: 14px; color: var(--ink); text-decoration: none; }
-.list-chips a:hover { border-color: var(--ink); }
-.list-count { margin: 12px 0 0; font-size: 14px; color: var(--ink-soft); }
-.list-no-match { grid-column: 1 / -1; margin: 8px 0 0; font-size: 17px; color: var(--ink-soft); }
-.list-no-match a { color: var(--ink); text-underline-offset: 3px; }
-@media (max-width: 680px) {
-  .list-controls-form label { flex: 1 1 100%; }
-  .list-controls-form select { width: 100%; }
-  .list-controls-apply { flex: 1 1 auto; }
-}
+.list-chips a:hover, .list-chips a:focus-visible { border-color: var(--clay); }
+.list-count { margin: 0 0 18px; }
+.list-no-match { margin: 8px 0 0; font-size: 17px; color: var(--ink-soft); }
+.list-no-match a { color: var(--clay-text); text-underline-offset: 3px; }
 
 /* A class beats the phone rule that hides every bare nav (max-width 820px): this breadcrumb is shown at every width. */
 .category-breadcrumb { display: block; margin: 0 0 14px; font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 13px; color: var(--ink-soft); }
@@ -4069,10 +4058,9 @@ ul.latest-grid { padding: 0; }
 ul.work-list { padding-left: 0; padding-right: 0; }
 ul.latest-grid > li, ul.work-list > li { min-width: 0; margin: 0; }
 .category-head + .list-no-match, .list-controls ~ .category-empty, .list-controls ~ .list-no-match { margin-top: 24px; }
-.list-pagination { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px 18px; padding: 8px 0 72px; font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 15px; }
-.list-pagination ol { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
-.list-pagination a, .list-pagination [aria-current], .list-pagination [aria-disabled] { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; padding: 0 10px; border-radius: 10px; color: var(--ink); text-decoration: none; }
-.list-pagination a { border: 1px solid var(--line); }
-.list-pagination a:hover { border-color: var(--ink); }
-.list-pagination [aria-current] { background: var(--ink); color: var(--paper); }
+.list-pagination { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px 14px; padding: 8px 0 72px; font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 13px; }
+.list-pagination ol { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.list-pagination a, .list-pagination [aria-current], .list-pagination [aria-disabled] { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; padding: 8px 16px; border: 1px solid var(--line); color: var(--ink); text-decoration: none; }
+.list-pagination a:hover, .list-pagination a:focus-visible { border-color: var(--clay); }
+.list-pagination [aria-current] { background: var(--ink); border-color: var(--ink); color: #fffdf8; }
 .list-pagination [aria-disabled] { color: var(--ink-soft); opacity: .55; }
