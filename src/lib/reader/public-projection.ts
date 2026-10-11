@@ -27,6 +27,8 @@ export interface PublicWorkSummary {
   genre?: string;
   dek?: string;
   readingMinutes?: number;
+  /** The stored audience value (band codes such as "remaja" or "belia,dewasa"): for filtering a list, shown to readers as labels. */
+  audience?: string;
   publishedAt?: string;
   updatedAt?: string;
   hero?: { src: string; alt: string; crop?: ImageCrop };
@@ -40,6 +42,7 @@ export interface PublicSeriesSummary {
   title: string;
   dek?: string;
   genre?: string;
+  audience?: string;
   hero?: { src: string; alt: string; crop?: ImageCrop };
   mode: SeriesMeta["mode"];
   status: SeriesMeta["status"];
@@ -60,6 +63,7 @@ export function projectPublicWorkSummary(work: Work): PublicWorkSummary {
     ...(work.genre ? { genre: work.genre } : {}),
     ...(work.dek ? { dek: spacedDashes(smartQuotes(work.dek)) } : {}),
     ...(work.readingMinutes ? { readingMinutes: work.readingMinutes } : {}),
+    ...(work.audience ? { audience: work.audience } : {}),
     ...(work.publishedAt ? { publishedAt: work.publishedAt } : {}),
     ...(work.updatedAt ? { updatedAt: work.updatedAt } : {}),
     ...(hero ? { hero: { src: hero.src, alt: hero.alt, ...(hero.crop ? { crop: hero.crop } : {}) } } : {}),
@@ -79,6 +83,7 @@ export function projectPublicSeries(series: SeriesMeta): PublicSeriesSummary {
     title: series.title,
     ...(series.dek ? { dek: spacedDashes(smartQuotes(series.dek)) } : {}),
     ...(series.genre ? { genre: series.genre } : {}),
+    ...(series.audience ? { audience: series.audience } : {}),
     ...(series.hero ? { hero: { src: series.hero.src, alt: series.hero.alt, ...(series.hero.crop ? { crop: series.hero.crop } : {}) } } : {}),
     mode: series.mode,
     status: series.status

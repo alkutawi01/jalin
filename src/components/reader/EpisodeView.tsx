@@ -31,6 +31,7 @@ import {
 import { buildVerifiedGlossary } from "../../lib/reader/verified-glossary";
 import { placeVisuals } from "../../lib/reader/place-visuals";
 import { firstGlossaryBySegment } from "../../lib/reader/glossary-first";
+import { seriesStatusLabel } from "../../lib/reader/series-status";
 import type {
   CharacterMeta,
   StoryInfoData,
@@ -82,7 +83,7 @@ export default function EpisodeView({
     { label: "Bacaan", value: work.readingMinutes ? `± ${work.readingMinutes} minit` : "—" },
     {
       label: "Status",
-      value: series.status === "completed" ? "Tamat" : "Masih diteruskan"
+      value: seriesStatusLabel(series.status)
     },
     { label: "Versi", value: displayVersion(work.versionLabel || work.version) }
   ];
