@@ -43,6 +43,8 @@ import NavMenu from "../src/components/reader/NavMenu";
 import ReadingTracker from "../src/components/reader/ReadingTracker";
 import SaveWorkButton from "../src/components/reader/SaveWorkButton";
 import ExpiryNotice from "../src/components/reader/ExpiryNotice";
+import BackToTop from "../src/components/reader/BackToTop";
+import HeaderAutoHide from "../src/components/reader/HeaderAutoHide";
 import { initContentRepository } from "../src/lib/content";
 
 let passed = 0;
@@ -87,7 +89,7 @@ const FORBIDDEN_STRINGS = [
 ];
 
 /** Client components receive their data as props; do not execute them. */
-const CLIENT_COMPONENTS = new Set<unknown>([MobileStoryInfo, MobileNavMenu, GlossaryTerm, ReadingProgress, FootnoteMargin, HeaderSearch, CountUp, StoryCollection, NavMenu, ReadingTracker, SaveWorkButton, ExpiryNotice, ReadMore, AiRating]);
+const CLIENT_COMPONENTS = new Set<unknown>([MobileStoryInfo, MobileNavMenu, GlossaryTerm, ReadingProgress, FootnoteMargin, HeaderSearch, CountUp, StoryCollection, NavMenu, ReadingTracker, SaveWorkButton, ExpiryNotice, BackToTop, HeaderAutoHide, ReadMore, AiRating]);
 
 function scanValue(value: unknown, path: string, hits: string[]) {
   if (typeof value === "string") {

@@ -12,6 +12,8 @@ import { CONTENT_LINKS, NAV_LINKS, SiteNavLinks, VISITOR_LINKS } from "./nav-lin
 import { siteOpenForViewer } from "../../lib/reader/access-gate";
 import HeaderSearch from "./HeaderSearch";
 import MobileNavMenu from "./MobileNavMenu";
+import BackToTop from "./BackToTop";
+import HeaderAutoHide from "./HeaderAutoHide";
 import HeaderAccount from "./HeaderAccount";
 import ExpiryNotice from "./ExpiryNotice";
 import { readerAccountsEnabled } from "../../lib/reader-auth/enabled";
@@ -29,6 +31,7 @@ export async function SiteHeader({ active }: { active?: string }) {
     <>
     <a className="skip-link" href="#kandungan">Langkau ke kandungan</a>
     <header className="site-header">
+      <HeaderAutoHide />
       <div className="site-shell header-inner">
         <div className="header-brand">
           <a className="header-wordmark" href="/" aria-label="Jalin utama">
@@ -322,6 +325,7 @@ export async function SiteFooter() {
           </svg>
         </a>
       </div>
+      <BackToTop />
     </footer>
   );
 }
