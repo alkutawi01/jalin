@@ -4155,3 +4155,8 @@ ul.latest-grid > li, ul.work-list > li { min-width: 0; margin: 0; }
 @media (prefers-reduced-motion: reduce) { .site-header { transition: background-color .28s ease, border-color .28s ease; } }
 html:has(.site-header.is-tucked) .sticky { top: 24px; }
 .sticky { transition: top .28s ease; }
+/* "Seterusnya" card: the label and the chapter title sit in the middle of the card; the arrow stays at the right edge. */
+.continue-next { position: relative; justify-content: center; padding-inline: 56px; text-align: center; }
+.continue-next .continue-text { justify-items: center; }
+.continue-next .continue-arrow { position: absolute; right: 22px; top: 50%; margin-top: -.7em; line-height: 1.4; }
+.continue-next:hover .continue-arrow, .continue-next:focus-visible .continue-arrow { transform: translateX(4px); }
