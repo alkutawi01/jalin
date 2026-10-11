@@ -4053,9 +4053,11 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; color-scheme: lig
 
 /* Category lists are real lists (a screen reader hears "list, 9 items"); the list style and indent are removed. */
 ul.latest-grid, ul.work-list { list-style: none; margin: 0; }
-ul.latest-grid { padding: 0; }
+ul.latest-grid { padding-left: 0; padding-right: 0; }
 ul.work-list { padding-left: 0; padding-right: 0; }
 ul.latest-grid > li, ul.work-list > li { min-width: 0; margin: 0; }
+ul.latest-grid > li { display: flex; }
+ul.latest-grid > li > .latest-card { flex: 1 1 auto; min-width: 0; }
 .category-head + .list-no-match, .list-controls ~ .category-empty, .list-controls ~ .list-no-match { margin-top: 24px; }
 .list-pagination { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px 14px; padding: 8px 0 72px; font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 13px; }
 .list-pagination ol { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
