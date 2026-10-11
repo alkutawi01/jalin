@@ -103,6 +103,8 @@ assert(page.includes("alternates: { canonical }") && page.includes("`/kategori/$
 const controls = fs.readFileSync(path.join(__dirname, "..", "src", "components", "reader", "CategoryControls.tsx"), "utf8");
 assert(/method="get"/.test(controls) && /role="status"/.test(controls), "the controls are a GET form with a status count");
 assert(/name="umur"/.test(controls) && /name="status"/.test(controls), "the controls offer audience and series status");
+const css = fs.readFileSync(path.join(__dirname, "..", "src", "app", "globals.css"), "utf8");
+assert(controls.includes("--medan") && css.includes("repeat(var(--medan, 2), minmax(0, 240px)) auto"), "the buttons are the last column of the same grid as the fields (one row while it fits)");
 const projection = fs.readFileSync(path.join(__dirname, "..", "src", "lib", "reader", "public-projection.ts"), "utf8");
 assert(/audience\?: string/.test(projection), "the public summary carries the audience for filtering");
 const labelSites = ["src/app/kategori/[type]/page.tsx", "src/app/kategori/bersiri/[seriesSlug]/page.tsx", "src/components/reader/EpisodeView.tsx"].map((p) => fs.readFileSync(path.join(__dirname, "..", p), "utf8"));

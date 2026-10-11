@@ -4035,12 +4035,17 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; color-scheme: lig
 
 /* Category lists: the sort and filter bar is the search page's form (.search-form and friends); only what search does not have is here. */
 .list-controls { margin: 0 0 8px; }
-/* One grid for the fields and the buttons: a field is at most 240px wide (it never stretches across the page when there is only one
-   or two), and the buttons follow the last field on the same row; the row wraps on a narrow screen. */
-.list-controls-form { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 240px)); gap: 14px 18px; align-items: end; margin: 8px 0 20px; }
+/* One grid for the fields and the buttons: each field is a column of at most 240px (it never stretches across the page when there is only
+   one or two) and the buttons are the last column, so they sit beside the last field on the same row. --medan is the number of fields.
+   When the row no longer fits (a tablet), the fields wrap two to a row and the buttons take their own row; on a phone it is one column. */
+.list-controls-form { display: grid; grid-template-columns: repeat(var(--medan, 2), minmax(0, 240px)) auto; justify-content: start; gap: 14px 18px; align-items: end; margin: 8px 0 20px; }
 .list-controls-form .search-filters { display: contents; }
-.list-controls-form .search-actions { margin: 0; min-height: 46px; }
-@media (max-width: 560px) {
+.list-controls-form .search-actions { margin: 0; min-height: 46px; white-space: nowrap; }
+@media (max-width: 640px) {
+  .list-controls-form { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .list-controls-form .search-actions { grid-column: 1 / -1; }
+}
+@media (max-width: 480px) {
   .list-controls-form { grid-template-columns: 1fr; }
 }
 .list-count { margin: 0 0 18px; }

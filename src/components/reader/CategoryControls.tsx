@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { isFilteredQuery, SORTS, type ListFacets, type ListQuery, type ListSort } from "../../lib/reader/category-list";
 
 /**
@@ -33,6 +34,9 @@ export default function CategoryControls({
   const showBandFilter = facets.bands.length > 1 || query.bacaan !== "";
   const showAudienceFilter = facets.audiences.length > 1 || query.umur !== "";
   const showStatusFilter = facets.statuses.length > 1 || query.status !== "";
+  // How many fields the form has (Susun is always there): the grid below gives each one a column and the buttons the next, so the buttons
+  // always follow the last field on the same row while it fits.
+  const fieldCount = 1 + [showGenreFilter, showBandFilter, showAudienceFilter, showStatusFilter].filter(Boolean).length;
   const count = shown === total ? `${total} ${nounPlural}` : `${shown} daripada ${total} ${nounPlural}`;
 
   // One item (or none): there is nothing to sort or filter, so the bar would only be noise.
@@ -41,7 +45,7 @@ export default function CategoryControls({
   const id = (name: string) => `senarai-${type}-${name}`;
   return (
     <section className="list-controls" aria-label={`Susun dan tapis senarai ${nounPlural}`}>
-      <form className="search-form list-controls-form" method="get" action={base}>
+      <form className="search-form list-controls-form" method="get" action={base} style={{ "--medan": fieldCount } as CSSProperties}>
         <div className="search-filters">
           <div>
             <label htmlFor={id("susun")}>Susun</label>
