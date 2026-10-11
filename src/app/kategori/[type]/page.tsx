@@ -24,7 +24,8 @@ import { categoryIntro, DEFAULT_CATEGORY_INTROS, isCategoryType } from "@/lib/si
 import CategoryControls from "../../../components/reader/CategoryControls";
 import { loadAudienceBands } from "../../../lib/audience-store";
 import { seriesStatusLabel } from "../../../lib/reader/series-status";
-import { applyListQuery, isFilteredQuery, listFacets, parseListQuery, type ListItem } from "../../../lib/reader/category-list";
+import CategoryPagination from "../../../components/reader/CategoryPagination";
+import { applyListQuery, isFilteredQuery, listFacets, pageQueryString, paginate, parseListQuery, parsePage, type ListItem } from "../../../lib/reader/category-list";
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 /** "9 cerpen": the plural noun of each category, for the count under the controls. */
@@ -67,7 +68,7 @@ function formatDate(date: string | undefined): string {
   return formatMalayDate(date) ?? "—";
 }
 
-function WorkCard({ work, type }: { work: PublicWorkSummary; type: string }) {
+function WorkCard({ work, type, priority }: { work: PublicWorkSummary; type: string; priority?: boolean }) {
   const genre = displayableGenre(work.genre);
   const reading = work.readingMinutes ? `± ${work.readingMinutes} minit` : null;
   const published = work.publishedAt;
@@ -77,7 +78,7 @@ function WorkCard({ work, type }: { work: PublicWorkSummary; type: string }) {
     <article className="latest-card">
       <a href={`/kategori/${type}/${work.slug}`}>
         <div className="latest-card-cover">
-          <WorkCover type={work.type} title={work.title} hero={work.hero} rightsYear={year} />
+          <WorkCover type={work.type} title={work.title} hero={work.hero} rightsYear={year} priority={priority} />
         </div>
         <div className="latest-card-body">
           <div className="latest-card-meta">
@@ -100,13 +101,13 @@ function WorkCard({ work, type }: { work: PublicWorkSummary; type: string }) {
 
 export const dynamic = "force-dynamic";
 
-function SeriesCard({ series, episodeCount }: { series: PublicSeriesSummary; episodeCount: number }) {
+function SeriesCard({ series, episodeCount, priority }: { series: PublicSeriesSummary; episodeCount: number; priority?: boolean }) {
   const genre = displayableGenre(series.genre);
   return (
     <article className="series-list-card">
       <a href={`/kategori/bersiri/${series.slug}`}>
         <div className="series-list-media">
-          {series.hero ? <Image src={series.hero.src} alt={series.hero.alt || `Ilustrasi siri ${series.title}`} fill sizes="(max-width: 680px) 100vw, 360px" style={cropStyle(series.hero.crop)} /> : <span>{series.title}</span>}
+          {series.hero ? <Image src={series.hero.src} alt={series.hero.alt || `Ilustrasi siri ${series.title}`} fill sizes="(max-width: 680px) 100vw, 360px" priority={priority} style={cropStyle(series.hero.crop)} /> : <span>{series.title}</span>}
         </div>
         <div className="series-list-body">
           <p className="series-list-meta">{genre || MODE_LABELS[series.mode] || series.mode} · {episodeCount} episod · {seriesStatusLabel(series.status)}</p>
@@ -125,17 +126,21 @@ export async function generateMetadata({ params, searchParams }: { params: Promi
   if (!meta) return {};
   const intro = isCategoryType(type) ? await categoryIntro(type) : meta.intro;
   // A sorted or filtered view is the same list in another order: it points at the plain list and is not indexed on its own.
-  const filtered = isFilteredQuery(parseListQuery(await searchParams, await loadAudienceBands()));
+  const rawQuery = await searchParams;
+  const filtered = isFilteredQuery(parseListQuery(rawQuery, await loadAudienceBands()));
+  // A later page of the plain list is a page of its own (it points at itself); a sorted or filtered view points at the plain list.
+  const page = parsePage(rawQuery);
+  const canonical = !filtered && page > 1 ? `/kategori/${type}${pageQueryString({}, page)}` : `/kategori/${type}`;
   const summary = await categorySummary(type);
   // The intro says what the category is; the count says there is something to read ("9 cerpen diterbitkan").
   const description = clipDescription(summary.count > 0 ? `${intro} ${summary.count} ${CATEGORY_NOUN[type] ?? "karya"} diterbitkan.` : intro);
   // The newest work's picture stands for the category when it is shared; the Jalin card when no work has a picture.
   const picture = summary.heroSrc ? shareImage(summary.heroSrc, summary.heroAlt) : DEFAULT_SHARE_IMAGE;
   return {
-    title: meta.title,
+    title: page > 1 && !filtered ? `${meta.title}, halaman ${page}` : meta.title,
     description,
     ...(filtered ? { robots: { index: false, follow: true } } : {}),
-    alternates: { canonical: `/kategori/${type}` },
+    alternates: { canonical },
     openGraph: {
       ...OG_SITE,
       type: "website",
@@ -163,17 +168,6 @@ async function categorySummary(type: string): Promise<{ count: number; heroSrc?:
   } catch {
     return { count: 0 };
   }
-}
-
-/** Jalin > Category, above the heading: where the page sits, for a reader and for the structured data below it. */
-function Breadcrumb({ label }: { label: string }) {
-  return (
-    <nav className="category-breadcrumb" aria-label="Jejak halaman">
-      <a href="/">Jalin</a>
-      <span aria-hidden="true"> › </span>
-      <span aria-current="page">{label}</span>
-    </nav>
-  );
 }
 
 function EmptyCategoryFallback({ currentType }: { currentType: string }) {
@@ -251,7 +245,8 @@ export default async function CategoryPage({ params, searchParams }: { params: P
       };
       return item;
     });
-    const shown = applyListQuery(entries, query, bands);
+    const filteredSeries = applyListQuery(entries, query, bands);
+    const paged = paginate(filteredSeries, parsePage(await searchParams));
     return (
       <>
         <SiteHeader active="bersiri" />
@@ -259,19 +254,23 @@ export default async function CategoryPage({ params, searchParams }: { params: P
           <div className="site-shell">
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdString(categoryJsonLd({ type, title: meta.title, description: intro, items: entries.map((entry) => ({ name: entry.series.title, path: `/kategori/bersiri/${entry.series.slug}` })) })) }} />
             <header className="category-head">
-              <Breadcrumb label={meta.headerLabel} />
               <p className="category-kicker">{meta.headerLabel}</p>
               <h1>{meta.title}</h1>
               <p className="category-intro">{intro}</p>
             </header>
-            <CategoryControls type={type} nounPlural={noun} query={query} facets={listFacets(entries, bands)} shown={shown.length} total={entries.length} />
-            <div className="work-list">
-              {entries.length === 0 ? <EmptyCategoryFallback currentType={type} /> : null}
-              {entries.length > 0 && shown.length === 0 ? <NoMatch type={type} /> : null}
-              {shown.map((entry) => (
-                <SeriesCard key={entry.series.id} series={projectPublicSeries(entry.series)} episodeCount={entry.episodeCount} />
-              ))}
-            </div>
+            <CategoryControls type={type} nounPlural={noun} query={query} facets={listFacets(entries, bands)} shown={filteredSeries.length} total={entries.length} />
+            {entries.length === 0 ? <EmptyCategoryFallback currentType={type} /> : null}
+            {entries.length > 0 && filteredSeries.length === 0 ? <NoMatch type={type} /> : null}
+            {paged.items.length > 0 ? (
+              <ul className="work-list" role="list" aria-label={`Senarai ${noun}`}>
+                {paged.items.map((entry, index) => (
+                  <li key={entry.series.id}>
+                    <SeriesCard series={projectPublicSeries(entry.series)} episodeCount={entry.episodeCount} priority={index < 2} />
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+            <CategoryPagination base={`/kategori/${type}`} query={query} page={paged.page} pages={paged.pages} />
           </div>
         </main>
         <SiteFooter />
@@ -281,6 +280,7 @@ export default async function CategoryPage({ params, searchParams }: { params: P
 
   const summaries = (await getWorks(type)).map((work) => projectPublicWorkSummary(work));
   const works = applyListQuery(summaries, query, bands);
+  const paged = paginate(works, parsePage(await searchParams));
 
   return (
     <>
@@ -290,7 +290,6 @@ export default async function CategoryPage({ params, searchParams }: { params: P
         <div className="site-shell">
           <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdString(categoryJsonLd({ type, title: meta.title, description: intro, items: summaries.map((work) => ({ name: work.title, path: `/kategori/${type}/${work.slug}` })) })) }} />
           <header className="category-head">
-            <Breadcrumb label={meta.headerLabel} />
             <p className="category-kicker">{meta.headerLabel}</p>
             <h1>{meta.title}</h1>
             <p className="category-intro">{intro}</p>
@@ -298,13 +297,18 @@ export default async function CategoryPage({ params, searchParams }: { params: P
 
           <CategoryControls type={type} nounPlural={noun} query={query} facets={listFacets(summaries, bands)} shown={works.length} total={summaries.length} />
 
-          <div className="latest-grid category-grid">
-            {summaries.length === 0 ? <EmptyCategoryFallback currentType={type} /> : null}
-            {summaries.length > 0 && works.length === 0 ? <NoMatch type={type} /> : null}
-            {works.map((work) => (
-              <WorkCard key={work.slug} work={work} type={type} />
-            ))}
-          </div>
+          {summaries.length === 0 ? <EmptyCategoryFallback currentType={type} /> : null}
+          {summaries.length > 0 && works.length === 0 ? <NoMatch type={type} /> : null}
+          {paged.items.length > 0 ? (
+            <ul className="latest-grid category-grid" role="list" aria-label={`Senarai ${noun}`}>
+              {paged.items.map((work, index) => (
+                <li key={work.slug}>
+                  <WorkCard work={work} type={type} priority={index < 3} />
+                </li>
+              ))}
+            </ul>
+          ) : null}
+          <CategoryPagination base={`/kategori/${type}`} query={query} page={paged.page} pages={paged.pages} />
         </div>
       </main>
 

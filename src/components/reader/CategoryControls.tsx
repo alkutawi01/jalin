@@ -1,13 +1,16 @@
-import { READING_BANDS } from "../../lib/reader/search";
-import { DEFAULT_SORT, isFilteredQuery, listQueryString, SORTS, STATUS_PARAMS, type ListFacets, type ListQuery, type ListSort } from "../../lib/reader/category-list";
-import { SERIES_STATUS_LABELS } from "../../lib/reader/series-status";
+import type { CSSProperties } from "react";
+import { isFilteredQuery, SORTS, type ListFacets, type ListQuery, type ListSort } from "../../lib/reader/category-list";
 
 /**
  * Sort and filter bar of a category list. A plain GET form: it works without JavaScript, the result is an address that can be shared,
- * and nothing is stored. The count below it is a status region so a screen reader hears how many works match.
+ * and nothing is stored. It is drawn with the same parts as the search page (.search-form, .search-filters, .search-actions,
+ * .search-apply, .search-clear, .search-count), so a list and the search look like one family.
+ *
+ * What is applied is shown once, in the field itself (no chips repeating it, no counts inside the choices); "Kosongkan" resets.
+ * The count under the form is a status region so a screen reader hears how many works match.
  *
  * A filter is offered only when it can change the list: with a single genre (or none) there is nothing to choose, unless that
- * filter is already applied (then it stays so it can be removed).
+ * filter is already applied (then it stays so it can be changed).
  */
 export default function CategoryControls({
   type,
@@ -31,88 +34,78 @@ export default function CategoryControls({
   const showBandFilter = facets.bands.length > 1 || query.bacaan !== "";
   const showAudienceFilter = facets.audiences.length > 1 || query.umur !== "";
   const showStatusFilter = facets.statuses.length > 1 || query.status !== "";
-  const chips: { label: string; href: string }[] = [];
-  if (query.genre) chips.push({ label: `Genre: ${query.genre}`, href: `${base}${listQueryString({ ...query, genre: "" })}` });
-  if (query.bacaan) chips.push({ label: `Bacaan: ${READING_BANDS[query.bacaan].label}`, href: `${base}${listQueryString({ ...query, bacaan: "" })}` });
-  if (query.umur) {
-    const label = facets.audiences.find((band) => band.code === query.umur)?.label ?? query.umur;
-    chips.push({ label: `Untuk: ${label}`, href: `${base}${listQueryString({ ...query, umur: "" })}` });
-  }
-  if (query.status) chips.push({ label: `Status: ${SERIES_STATUS_LABELS[STATUS_PARAMS[query.status]]}`, href: `${base}${listQueryString({ ...query, status: "" })}` });
+  // How many fields the form has (Susun is always there): the grid below gives each one a column and the buttons the next, so the buttons
+  // always follow the last field on the same row while it fits.
+  const fieldCount = 1 + [showGenreFilter, showBandFilter, showAudienceFilter, showStatusFilter].filter(Boolean).length;
   const count = shown === total ? `${total} ${nounPlural}` : `${shown} daripada ${total} ${nounPlural}`;
 
   // One item (or none): there is nothing to sort or filter, so the bar would only be noise.
-  if (total < 2 && !filtered) return <p className="list-count" role="status">{count}</p>;
+  if (total < 2 && !filtered) return <p className="search-count list-count" role="status">{count}</p>;
 
+  const id = (name: string) => `senarai-${type}-${name}`;
   return (
     <section className="list-controls" aria-label={`Susun dan tapis senarai ${nounPlural}`}>
-      <form method="get" action={base} className="list-controls-form">
-        <label>
-          <span>Susun</span>
-          <select name="susun" defaultValue={query.susun}>
-            {(Object.keys(SORTS) as ListSort[]).map((key) => (
-              <option key={key} value={key}>{SORTS[key]}</option>
-            ))}
-          </select>
-        </label>
-        {showGenreFilter ? (
-          <label>
-            <span>Genre</span>
-            <select name="genre" defaultValue={query.genre}>
-              <option value="">Semua genre</option>
-              {facets.genres.map((genre) => (
-                <option key={genre.value} value={genre.value}>{genre.value} ({genre.count})</option>
+      <form className="search-form list-controls-form" method="get" action={base} style={{ "--medan": fieldCount } as CSSProperties}>
+        <div className="search-filters">
+          <div>
+            <label htmlFor={id("susun")}>Susun</label>
+            <select id={id("susun")} name="susun" defaultValue={query.susun}>
+              {(Object.keys(SORTS) as ListSort[]).map((key) => (
+                <option key={key} value={key}>{SORTS[key]}</option>
               ))}
             </select>
-          </label>
-        ) : null}
-        {showBandFilter ? (
-          <label>
-            <span>Panjang bacaan</span>
-            <select name="bacaan" defaultValue={query.bacaan}>
-              <option value="">Mana-mana</option>
-              {facets.bands.map((band) => (
-                <option key={band.value} value={band.value}>{band.label} ({band.count})</option>
-              ))}
-            </select>
-          </label>
-        ) : null}
-        {showAudienceFilter ? (
-          <label>
-            <span>Sesuai untuk</span>
-            <select name="umur" defaultValue={query.umur}>
-              <option value="">Semua pembaca</option>
-              {facets.audiences.map((band) => (
-                <option key={band.code} value={band.code}>{band.label} ({band.count})</option>
-              ))}
-            </select>
-          </label>
-        ) : null}
-        {showStatusFilter ? (
-          <label>
-            <span>Status siri</span>
-            <select name="status" defaultValue={query.status}>
-              <option value="">Semua</option>
-              {facets.statuses.map((status) => (
-                <option key={status.value} value={status.value}>{status.label} ({status.count})</option>
-              ))}
-            </select>
-          </label>
-        ) : null}
-        <button type="submit" className="list-controls-apply">Tapis</button>
-        {filtered ? <a className="list-controls-reset" href={base}>Kosongkan</a> : null}
+          </div>
+          {showGenreFilter ? (
+            <div>
+              <label htmlFor={id("genre")}>Genre</label>
+              <select id={id("genre")} name="genre" defaultValue={query.genre}>
+                <option value="">Semua genre</option>
+                {facets.genres.map((genre) => (
+                  <option key={genre.value} value={genre.value}>{genre.value}</option>
+                ))}
+              </select>
+            </div>
+          ) : null}
+          {showBandFilter ? (
+            <div>
+              <label htmlFor={id("bacaan")}>Tempoh bacaan</label>
+              <select id={id("bacaan")} name="bacaan" defaultValue={query.bacaan}>
+                <option value="">Mana-mana tempoh</option>
+                {facets.bands.map((band) => (
+                  <option key={band.value} value={band.value}>{band.label}</option>
+                ))}
+              </select>
+            </div>
+          ) : null}
+          {showAudienceFilter ? (
+            <div>
+              <label htmlFor={id("umur")}>Sesuai untuk</label>
+              <select id={id("umur")} name="umur" defaultValue={query.umur}>
+                <option value="">Semua pembaca</option>
+                {facets.audiences.map((band) => (
+                  <option key={band.code} value={band.code}>{band.label}</option>
+                ))}
+              </select>
+            </div>
+          ) : null}
+          {showStatusFilter ? (
+            <div>
+              <label htmlFor={id("status")}>Status siri</label>
+              <select id={id("status")} name="status" defaultValue={query.status}>
+                <option value="">Semua status</option>
+                {facets.statuses.map((status) => (
+                  <option key={status.value} value={status.value}>{status.label}</option>
+                ))}
+              </select>
+            </div>
+          ) : null}
+        </div>
+        <div className="search-actions">
+          <button type="submit" className="search-apply">Tapis</button>
+          {filtered ? <a className="search-clear" href={base}>Kosongkan</a> : null}
+        </div>
       </form>
-      {chips.length > 0 ? (
-        <ul className="list-chips" aria-label="Penapis aktif">
-          {chips.map((chip) => (
-            <li key={chip.label}><a href={chip.href} aria-label={`Buang penapis ${chip.label}`}>{chip.label} <span aria-hidden="true">×</span></a></li>
-          ))}
-        </ul>
-      ) : null}
-      <p className="list-count" role="status">
-        {count}
-        {query.susun !== DEFAULT_SORT ? ` · disusun: ${SORTS[query.susun].toLowerCase()}` : ""}
-      </p>
+      <p className="search-count list-count" role="status">{count}</p>
     </section>
   );
 }
