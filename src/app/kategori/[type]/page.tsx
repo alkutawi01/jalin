@@ -170,17 +170,6 @@ async function categorySummary(type: string): Promise<{ count: number; heroSrc?:
   }
 }
 
-/** Jalin > Category, above the heading: where the page sits, for a reader and for the structured data below it. */
-function Breadcrumb({ label }: { label: string }) {
-  return (
-    <nav className="category-breadcrumb" aria-label="Jejak halaman">
-      <a href="/">Jalin</a>
-      <span aria-hidden="true"> › </span>
-      <span aria-current="page">{label}</span>
-    </nav>
-  );
-}
-
 function EmptyCategoryFallback({ currentType }: { currentType: string }) {
   const others = CATEGORY_META_LIST.filter(({ type }) => type !== currentType);
   return (
@@ -265,7 +254,6 @@ export default async function CategoryPage({ params, searchParams }: { params: P
           <div className="site-shell">
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdString(categoryJsonLd({ type, title: meta.title, description: intro, items: entries.map((entry) => ({ name: entry.series.title, path: `/kategori/bersiri/${entry.series.slug}` })) })) }} />
             <header className="category-head">
-              <Breadcrumb label={meta.headerLabel} />
               <p className="category-kicker">{meta.headerLabel}</p>
               <h1>{meta.title}</h1>
               <p className="category-intro">{intro}</p>
@@ -302,7 +290,6 @@ export default async function CategoryPage({ params, searchParams }: { params: P
         <div className="site-shell">
           <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdString(categoryJsonLd({ type, title: meta.title, description: intro, items: summaries.map((work) => ({ name: work.title, path: `/kategori/${type}/${work.slug}` })) })) }} />
           <header className="category-head">
-            <Breadcrumb label={meta.headerLabel} />
             <p className="category-kicker">{meta.headerLabel}</p>
             <h1>{meta.title}</h1>
             <p className="category-intro">{intro}</p>
