@@ -32,5 +32,8 @@ assert(settings.includes("<SiteCopySettings />"), "Tetapan has the section");
 const lib = read("src/lib/site-copy.ts");
 assert(lib.includes('SCOPE = "site_copy"') && lib.includes("prompt_templates"), "stored in the existing prompt_templates table (no migration)");
 
+const copySettings = read("src/components/admin/SiteCopySettings.tsx");
+assert(!copySettings.includes("<textarea") && copySettings.includes('type="text"'), "one sentence per page is a single-line field (a textarea was 120px tall by the global minimum height)");
+
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);
