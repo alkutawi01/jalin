@@ -4116,3 +4116,9 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; color-scheme: lig
 @supports not selector(::-webkit-scrollbar) {
   :root:not(:has(.a-nav, .admin-login-page)) { scrollbar-width: thin; scrollbar-color: rgba(167, 100, 80, .45) var(--paper); }
 }
+/* The header tucks away while the reader scrolls down and returns on the first scroll up (HeaderAutoHide). */
+.site-header { transition: background-color .28s ease, border-color .28s ease, transform .28s cubic-bezier(.2, .8, .2, 1); }
+.site-header.is-tucked { transform: translateY(-101%); }
+@media (prefers-reduced-motion: reduce) { .site-header { transition: background-color .28s ease, border-color .28s ease; } }
+html:has(.site-header.is-tucked) .sticky { top: 24px; }
+.sticky { transition: top .28s ease; }
