@@ -20,6 +20,12 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { renderAttribution } from "@/components/reader/Attribution";
 import { categoryIntro, DEFAULT_CATEGORY_INTROS, isCategoryType } from "@/lib/site-copy";
+import CategoryControls from "../../../components/reader/CategoryControls";
+import { applyListQuery, isFilteredQuery, listFacets, parseListQuery, type ListItem } from "../../../lib/reader/category-list";
+
+type SearchParams = Promise<Record<string, string | string[] | undefined>>;
+/** "9 cerpen": the plural noun of each category, for the count under the controls. */
+const CATEGORY_NOUN: Record<string, string> = { cerpen: "cerpen", novela: "novela", bersiri: "siri", fragmen: "fragmen", sinopsis: "sinopsis" };
 
 const CATEGORY_META: Record<string, { title: string; intro: string; headerLabel: string }> = {
   cerpen: {
@@ -115,14 +121,17 @@ function SeriesCard({ series, episodeCount }: { series: PublicSeriesSummary; epi
   );
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ type: string }> }): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: { params: Promise<{ type: string }>; searchParams: SearchParams }): Promise<Metadata> {
   const { type } = await params;
   const meta = categoryMeta(type);
   if (!meta) return {};
   const intro = isCategoryType(type) ? await categoryIntro(type) : meta.intro;
+  // A sorted or filtered view is the same list in another order: it points at the plain list and is not indexed on its own.
+  const filtered = isFilteredQuery(parseListQuery(await searchParams));
   return {
     title: meta.title,
     description: intro,
+    ...(filtered ? { robots: { index: false, follow: true } } : {}),
     alternates: { canonical: `/kategori/${type}` },
     openGraph: {
       ...OG_SITE,
@@ -169,19 +178,46 @@ async function getWorks(type: string): Promise<Work[]> {
   return getWorksByType(type as WorkType);
 }
 
-export default async function CategoryPage({ params }: { params: Promise<{ type: string }> }) {
+/** Nothing matched the chosen filters (the category itself is not empty): say so and offer the way back. */
+function NoMatch({ type }: { type: string }) {
+  return (
+    <p className="list-no-match">
+      Tiada karya sepadan dengan penapis ini. <a href={`/kategori/${type}`}>Kosongkan penapis</a>
+    </p>
+  );
+}
+
+export default async function CategoryPage({ params, searchParams }: { params: Promise<{ type: string }>; searchParams: SearchParams }) {
   await gateSite();
   const { type } = await params;
   const meta = categoryMeta(type);
   if (!meta) notFound();
   const intro = isCategoryType(type) ? await categoryIntro(type) : meta.intro;
+  const query = parseListQuery(await searchParams);
+  const noun = CATEGORY_NOUN[type] ?? "karya";
 
   const isDb =
     (await initContentRepository()).source === "database";
 
   if (type === "bersiri" && isDb) {
     const repo = await initContentRepository();
-    const seriesList = repo.getPublishedSeries();
+    // A series is sorted by its newest published episode and measured by the length of all its published episodes.
+    const entries = repo.getPublishedSeries().map((series) => {
+      const episodes = repo.getPublishedSeriesEpisodes(series.id);
+      const dates = episodes.map((episode) => episode.publishedAt ?? "").filter(Boolean).sort();
+      const latest = dates[dates.length - 1];
+      const minutes = episodes.reduce((sum, episode) => sum + (episode.readingMinutes ?? 0), 0);
+      const item: ListItem & { series: typeof series; episodeCount: number } = {
+        series,
+        episodeCount: episodes.length,
+        title: series.title,
+        ...(series.genre ? { genre: series.genre } : {}),
+        ...(minutes > 0 ? { readingMinutes: minutes } : {}),
+        ...(latest ? { publishedAt: latest, updatedAt: latest } : {})
+      };
+      return item;
+    });
+    const shown = applyListQuery(entries, query);
     return (
       <>
         <SiteHeader active="bersiri" />
@@ -192,14 +228,12 @@ export default async function CategoryPage({ params }: { params: Promise<{ type:
               <h1>{meta.title}</h1>
               <p className="category-intro">{intro}</p>
             </header>
+            <CategoryControls type={type} nounPlural={noun} query={query} facets={listFacets(entries)} shown={shown.length} total={entries.length} />
             <div className="work-list">
-              {seriesList.length === 0 ? <EmptyCategoryFallback currentType={type} /> : null}
-              {seriesList.map((series) => (
-                <SeriesCard
-                  key={series.id}
-                  series={projectPublicSeries(series)}
-                  episodeCount={repo.getPublishedSeriesEpisodes(series.id).length}
-                />
+              {entries.length === 0 ? <EmptyCategoryFallback currentType={type} /> : null}
+              {entries.length > 0 && shown.length === 0 ? <NoMatch type={type} /> : null}
+              {shown.map((entry) => (
+                <SeriesCard key={entry.series.id} series={projectPublicSeries(entry.series)} episodeCount={entry.episodeCount} />
               ))}
             </div>
           </div>
@@ -209,11 +243,8 @@ export default async function CategoryPage({ params }: { params: Promise<{ type:
     );
   }
 
-  const works = (await getWorks(type)).sort((a, b) => {
-    const aDate = a.publishedAt ?? "";
-    const bDate = b.publishedAt ?? "";
-    return bDate.localeCompare(aDate);
-  });
+  const summaries = (await getWorks(type)).map((work) => projectPublicWorkSummary(work));
+  const works = applyListQuery(summaries, query);
 
   return (
     <>
@@ -227,14 +258,13 @@ export default async function CategoryPage({ params }: { params: Promise<{ type:
             <p className="category-intro">{intro}</p>
           </header>
 
+          <CategoryControls type={type} nounPlural={noun} query={query} facets={listFacets(summaries)} shown={works.length} total={summaries.length} />
+
           <div className="latest-grid category-grid">
-            {works.length === 0 ? <EmptyCategoryFallback currentType={type} /> : null}
+            {summaries.length === 0 ? <EmptyCategoryFallback currentType={type} /> : null}
+            {summaries.length > 0 && works.length === 0 ? <NoMatch type={type} /> : null}
             {works.map((work) => (
-              <WorkCard
-                key={work.slug}
-                work={projectPublicWorkSummary(work)}
-                type={type}
-              />
+              <WorkCard key={work.slug} work={work} type={type} />
             ))}
           </div>
         </div>

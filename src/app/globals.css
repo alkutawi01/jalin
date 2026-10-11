@@ -4032,3 +4032,28 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; color-scheme: lig
 @media (max-width: 600px) {
   .header-search-input::placeholder { font-size: 13px; }
 }
+
+/* Category lists: sort and filter bar (a plain GET form), active-filter chips, result count. */
+.list-controls { margin: 8px 0 0; padding: 14px 0 4px; border-top: 1px solid var(--line); }
+.list-controls-form { display: flex; flex-wrap: wrap; gap: 12px 14px; align-items: end; }
+.list-controls-form label { display: grid; gap: 4px; font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 12px; font-weight: 600; letter-spacing: .04em; color: var(--ink-soft); }
+.list-controls-form select {
+  min-height: 44px; min-width: 0; max-width: 100%; padding: 0 36px 0 12px; border: 1px solid var(--line); border-radius: 10px;
+  background: var(--paper); color: var(--ink); font: inherit; font-size: 16px; font-weight: 400; letter-spacing: 0;
+}
+.list-controls-apply {
+  min-height: 44px; padding: 0 18px; border: 1px solid var(--ink); border-radius: 10px; background: var(--ink); color: var(--paper);
+  font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 14px; font-weight: 600; cursor: pointer;
+}
+.list-controls-reset { display: inline-flex; align-items: center; min-height: 44px; padding: 0 6px; font-size: 14px; color: var(--ink-soft); text-decoration: underline; text-underline-offset: 3px; }
+.list-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 0; padding: 0; list-style: none; }
+.list-chips a { display: inline-flex; align-items: center; min-height: 36px; padding: 0 12px; gap: 6px; border: 1px solid var(--line); border-radius: 999px; font-size: 14px; color: var(--ink); text-decoration: none; }
+.list-chips a:hover { border-color: var(--ink); }
+.list-count { margin: 12px 0 0; font-size: 14px; color: var(--ink-soft); }
+.list-no-match { grid-column: 1 / -1; margin: 8px 0 0; font-size: 17px; color: var(--ink-soft); }
+.list-no-match a { color: var(--ink); text-underline-offset: 3px; }
+@media (max-width: 680px) {
+  .list-controls-form label { flex: 1 1 100%; }
+  .list-controls-form select { width: 100%; }
+  .list-controls-apply { flex: 1 1 auto; }
+}
