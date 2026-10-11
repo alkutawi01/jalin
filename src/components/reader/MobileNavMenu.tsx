@@ -14,8 +14,17 @@ export default function MobileNavMenu({ active, accounts = false, visitor = fals
         detailsRef.current.querySelector("summary")?.focus();
       }
     }
+    // A tap on the page outside the open menu closes it (a phone has no Escape key). The tap itself still reaches what was tapped.
+    function onPointerDown(event: PointerEvent) {
+      const details = detailsRef.current;
+      if (details?.open && event.target instanceof Node && !details.contains(event.target)) details.open = false;
+    }
     document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener("pointerdown", onPointerDown);
+    };
   }, []);
 
   return (

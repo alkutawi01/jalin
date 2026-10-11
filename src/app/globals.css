@@ -94,7 +94,9 @@ img { display: block; max-width: 100%; }
 @media (max-width: 820px) {
   .site-header .header-inner { position: relative; }
   .site-header .header-search-wrap { position: static; }
-  .site-header .header-search-panel { top: 50%; right: 0; left: 132px; width: auto; transform: translateY(-50%); }
+  /* Centred with a margin and not translateY(-50%): a transform makes the panel the containing block of the suggestion list, and on a
+     phone the list (position: fixed, 16px from each side) was squeezed into the 156px of the panel instead of the screen width. The field is 38px. */
+  .site-header .header-search-panel { top: 50%; right: 0; left: 132px; width: auto; margin-top: -19px; }
 }
 .header-wordmark {
   display: inline-flex;
@@ -3436,7 +3438,7 @@ body { overflow-wrap: break-word; }
 .search-form label { display: block; margin-bottom: 6px; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-soft); }
 .search-field-row { display: flex; gap: 10px; }
 .search-form input[type="search"], .search-form select {
-  width: 100%; min-height: 46px; padding: 10px 14px; border: 1px solid rgba(24,52,60,.22); border-radius: 8px;
+  width: 100%; min-height: 46px; padding: 10px 14px; border: 1px solid rgba(24,52,60,.55); border-radius: 8px; /* .55 is 3.3:1 on the page; the old .22 was 1.5:1 (WCAG 1.4.11, field boundary) */
   background: #fffdf8; color: var(--ink); font: inherit; font-size: 16px;
 }
 .search-form input[type="search"]:focus-visible, .search-form select:focus-visible { outline: 2px solid var(--clay); outline-offset: 2px; }
@@ -3595,7 +3597,7 @@ html:has(.a-nav, .admin-login-page) { overflow: visible; }
 .auth-subtitle { margin: 28px 0 6px; font-size: 1.1rem; font-weight: 500; font-style: normal; text-align: center; }
 .auth-intro { margin: 0 0 22px; text-align: center; color: var(--ink-soft); font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 14px; line-height: 1.55; }
 .auth-label { display: block; margin: 0 0 6px; font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 13px; color: var(--ink-soft); }
-.auth-input { display: block; width: 100%; box-sizing: border-box; padding: 11px 12px; font: inherit; font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 16px; color: var(--ink); background: var(--paper); border: 1px solid var(--line); border-radius: 8px; }
+.auth-input { display: block; width: 100%; box-sizing: border-box; padding: 11px 12px; font: inherit; font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 16px; color: var(--ink); background: var(--paper); border: 1px solid rgba(24, 52, 60, .55); border-radius: 8px; } /* was var(--line), about 1.3:1 on the card; .55 is above 3:1 (WCAG 1.4.11) */
 .auth-input:focus-visible { outline: 2px solid var(--ink); outline-offset: 1px; }
 .auth-input--small { width: auto; flex: 1 1 140px; padding: 7px 10px; font-size: 14px; }
 .auth-code { letter-spacing: .4em; text-align: center; font-size: 22px; font-variant-numeric: tabular-nums; }
@@ -3605,6 +3607,8 @@ html:has(.a-nav, .admin-login-page) { overflow: visible; }
 .auth-button--ghost { color: var(--ink); background: transparent; }
 .auth-button--ghost:hover:not(:disabled), .auth-button--ghost:focus-visible { background: rgba(24, 52, 60, .06); }
 .auth-fine { margin: 14px 0 0; text-align: center; font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 12.5px; color: var(--ink-soft); }
+/* The links inside these lines (Dasar privasi, Terma penggunaan) had the colour of the text and no underline, so they could not be told from it. */
+.auth-fine a { color: var(--clay-text); text-decoration: underline; text-underline-offset: 3px; }
 .auth-error { margin: 10px 0 0; font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 13.5px; color: #a1362a; }
 .auth-notice { margin: 10px 0 0; font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 13.5px; color: var(--ink-soft); }
 .auth-links { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px 20px; margin-top: 16px; }
@@ -4003,4 +4007,28 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; color-scheme: lig
 @media (any-pointer: coarse) {
   .crumbs a, .series-crumb a { display: inline-block; padding-block: 15px; margin-block: -15px; }
   .chapter-head-nav > a, .chapter-picker summary { min-height: 44px; }
+}
+
+/* iOS Safari (iPhone and iPad) zooms the page when a text field with a font under 16px gets focus. The header search field was 16px only up
+   to 600px wide, so on a tablet (601px and more) it was 14px and the page jumped in when the field opened. The size is the same as on a
+   phone; the field is 38px tall and the header height does not change. */
+@media (any-pointer: coarse) {
+  .header-search-input { font-size: 16px; }
+}
+
+/* The small "Nama" field of the account panel is 14px with 7px of padding (about 35px tall), so iOS zooms the page when it gets focus and the
+   target is small. The normal .auth-input is 16px; on a touch screen the small one is 16px and 44px tall too (it is not live while accounts
+   are off, so this was read from the CSS and markup, not measured). */
+@media (any-pointer: coarse) {
+  .auth-input--small { font-size: 16px; min-height: 44px; }
+}
+
+/* The entries of the "Kandungan" panel showed keyboard focus only as a 10% tint of the clay colour (1.13:1 against the panel) with the outline
+   switched off, which is nearly invisible. A 2px ink outline, drawn inside the entry so the panel does not clip it. */
+.header-nav .nav-menu-panel a:focus-visible { outline: 2px solid var(--ink); outline-offset: -2px; }
+
+/* On a phone the open header field is 188px wide at 360px, so its input is 138px, and the 16px placeholder "Cari tajuk atau penulis" (168px)
+   was cut off. The typed text stays 16px (below that iOS zooms in); only the hint is 13px, so the whole hint fits down to 360px. */
+@media (max-width: 600px) {
+  .header-search-input::placeholder { font-size: 13px; }
 }

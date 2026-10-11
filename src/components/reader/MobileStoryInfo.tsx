@@ -37,7 +37,25 @@ export default function MobileStoryInfo({ data }: { data: StoryInfoData }) {
   }, [open]);
 
   useEffect(() => {
-    function onKeyDown(event: KeyboardEvent) { if (event.key === "Escape") setOpen(false); }
+    function onKeyDown(event: KeyboardEvent) {
+      // The Penilaian dialog inside the sheet is a native modal <dialog>: it keeps Tab and closes on Escape by itself, and that Escape must
+      // close only the dialog, not the sheet under it.
+      if (document.querySelector("dialog[open]")) return;
+      if (event.key === "Escape") { setOpen(false); return; }
+      if (event.key !== "Tab" || !open) return;
+      // The sheet is modal: Tab and Shift+Tab stay inside it instead of walking on into the page behind the backdrop.
+      const active = document.activeElement as HTMLElement | null;
+      const sheet = document.getElementById("mobile-story-info");
+      if (!sheet) return;
+      const items = Array.from(sheet.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'))
+        .filter((el) => el.tabIndex >= 0 && el.getClientRects().length > 0 && !el.closest("dialog:not([open])"));
+      if (items.length === 0) { event.preventDefault(); return; }
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (!active || !sheet.contains(active)) { event.preventDefault(); (event.shiftKey ? last : first).focus(); }
+      else if (event.shiftKey && active === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && active === last) { event.preventDefault(); first.focus(); }
+    }
     function onTouchStart(event: TouchEvent) {
       if (open || event.touches.length !== 1) return;
       const touch = event.touches[0];

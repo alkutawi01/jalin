@@ -31,5 +31,13 @@ assert(css.replace(/\r\n/g, "\n").includes(".related-work-card:hover, .continue-
 const cover = fs.readFileSync(path.join(__dirname, "../src/components/reader/WorkCover.tsx"), "utf8");
 assert(cover.includes('<Image src={hero.src} alt=""'), "the card cover image has an empty alt, so the link name is the title, author and summary");
 
+// The "Tentang karya" sheet is modal: Tab wraps inside it instead of walking into the page behind the backdrop.
+const sheet = fs.readFileSync(path.join(__dirname, "../src/components/reader/MobileStoryInfo.tsx"), "utf8");
+assert(sheet.includes('event.key !== "Tab"') && sheet.includes("last.focus()") && sheet.includes("first.focus()"), "the info sheet traps Tab and Shift+Tab inside itself");
+
+// The phone menu closes on a tap outside it (a phone has no Escape key).
+const mobileMenu = fs.readFileSync(path.join(__dirname, "../src/components/reader/MobileNavMenu.tsx"), "utf8");
+assert(mobileMenu.includes('addEventListener("pointerdown", onPointerDown)') && mobileMenu.includes("!details.contains(event.target)"), "the phone menu closes when the page outside it is tapped");
+
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);
