@@ -14,6 +14,7 @@ import { displayableGenre } from "../../../../lib/reader/genre-display";
 import { formatMalayDate } from "../../../../lib/reader/format-date";
 import { OG_SITE, absoluteUrl, clipDescription, shareImage, DEFAULT_SHARE_IMAGE } from "../../../../lib/seo";
 import { jsonLdString, seriesJsonLd } from "../../../../lib/seo-jsonld";
+import { seriesStatusLabel } from "../../../../lib/reader/series-status";
 
 export const dynamic = "force-dynamic";
 export const dynamicParams = true;
@@ -21,11 +22,6 @@ export const dynamicParams = true;
 const MODE_LABELS: Record<string, string> = {
   continuous: "Berturutan",
   anthology: "Antologi",
-};
-
-const STATUS_LABELS: Record<string, string> = {
-  ongoing: "Masih diteruskan",
-  completed: "Tamat",
 };
 
 function formatDate(date: string | undefined): string {
@@ -90,7 +86,7 @@ export default async function SeriesLandingPage({
     }
     const meta = [
       MODE_LABELS[series.mode] ?? series.mode,
-      STATUS_LABELS[series.status] ?? series.status,
+      seriesStatusLabel(series.status),
       displayableGenre(series.genre)
     ].filter(Boolean);
 

@@ -20,15 +20,15 @@ const series = read("src/app/kategori/bersiri/[seriesSlug]/page.tsx");
 assert(series.includes("<BylineRow byline={authors} />") && series.includes("projectBylineCredits("), "the series page shows who wrote it");
 const metaStart = series.indexOf("const meta = [");
 const metaBlock = series.slice(metaStart, series.indexOf("].filter(Boolean)", metaStart));
-assert(metaBlock.includes("MODE_LABELS") && metaBlock.includes("STATUS_LABELS") && metaBlock.includes("displayableGenre") && !metaBlock.includes("episod diterbitkan") && !metaBlock.includes("Dikemas kini"), "the line under it is only form, status and genre (no episode count, no date)");
-assert(series.includes("ongoing: \"Masih diteruskan\""), "an ongoing series reads 'Masih diteruskan'");
+assert(metaBlock.includes("MODE_LABELS") && metaBlock.includes("seriesStatusLabel") && metaBlock.includes("displayableGenre") && !metaBlock.includes("episod diterbitkan") && !metaBlock.includes("Dikemas kini"), "the line under it is only form, status and genre (no episode count, no date)");
+assert(read("src/lib/reader/series-status.ts").includes("ongoing: \"Masih diteruskan\""), "an ongoing series reads 'Masih diteruskan'");
 
 const episode = read("src/components/reader/EpisodeView.tsx");
 assert(episode.includes("{ label: \"Judul\", value: series.title }") && !episode.includes("{ label: \"Siri\",") && !episode.includes("Tajuk siri"), "the row that holds the series name is called 'Judul', like the title row of every other kind of work");
 assert(episode.includes("`Episod ${episodeNumber} · `") && episode.includes("String(episodeNumber)") && !episode.includes("daripada"), "the episode number has no 'daripada N'");
-assert(episode.includes("\"Tamat\" : \"Masih diteruskan\""), "the status row reads Tamat or Masih diteruskan");
+assert(episode.includes("seriesStatusLabel(series.status)") && read("src/lib/reader/series-status.ts").includes("completed: \"Tamat\""), "the status row reads Tamat or Masih diteruskan");
 
-assert(read("src/app/kategori/[type]/page.tsx").includes("ongoing: \"Masih diteruskan\""), "the Bersiri list says the same");
+assert(read("src/app/kategori/[type]/page.tsx").includes("seriesStatusLabel(series.status)"), "the Bersiri list says the same");
 for (const file of ["src/app/admin/series/page.tsx", "src/app/admin/series/new/page.tsx", "src/app/admin/series/[id]/page.tsx"]) {
   assert(!/Berterusan/.test(read(file)), `${file} uses the same word`);
 }

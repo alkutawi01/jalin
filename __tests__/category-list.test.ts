@@ -56,6 +56,31 @@ assert(facets.genres.map((g) => `${g.value}:${g.count}`).join() === "Drama:2,Fik
 assert(facets.bands.map((b) => `${b.value}:${b.count}`).join() === "pendek:2,sederhana:3", "reading bands are counted; an empty band and an item without a length are left out");
 assert(listFacets([{ title: "A", readingMinutes: 5 }]).genres.length === 0, "no genre, no genre filter entries");
 
+console.log("\n=== Audience and status ===");
+const people: ListItem[] = [
+  { title: "Untuk remaja", audience: "remaja" },
+  { title: "Belia dan dewasa", audience: "belia,dewasa" },
+  { title: "Julat lama", audience: "13-17" },
+  { title: "Tanpa audiens" },
+  { title: "Siri masih jalan", status: "ongoing" },
+  { title: "Siri tamat", status: "completed" },
+  { title: "Siri status lain", status: "paused" }
+];
+assert(parseListQuery({ umur: "remaja" }).umur === "remaja" && parseListQuery({ umur: "REMAJA" }).umur === "remaja", "a known audience band is accepted, in any case");
+assert(parseListQuery({ umur: "constructor" }).umur === "" && parseListQuery({ umur: "orang-tua" }).umur === "", "an unknown audience or a property name is no filter");
+assert(parseListQuery({ umur: "pelajar" }, [{ code: "pelajar", label: "Pelajar", min: 13, max: 24 }]).umur === "pelajar", "bands come from the editor list, not a fixed one");
+assert(parseListQuery({ status: "tamat" }).status === "tamat" && parseListQuery({ status: "completed" }).status === "" && parseListQuery({ status: "toString" }).status === "", "status is one of the two words, nothing else");
+assert(isFilteredQuery(parseListQuery({ umur: "remaja" })) && isFilteredQuery(parseListQuery({ status: "tamat" })), "audience and status count as filtered");
+assert(listQueryString({ umur: "remaja", status: "tamat" }) === "?umur=remaja&status=tamat", "they appear in the query string");
+assert(titles(applyListQuery(people, parseListQuery({ umur: "remaja" }))).sort().join() === "Julat lama,Untuk remaja", "audience: a band code and an old age range both count");
+assert(titles(applyListQuery(people, parseListQuery({ umur: "dewasa" }))).join() === "Belia dan dewasa", "audience: a work for several bands is found under each");
+assert(titles(applyListQuery(people, parseListQuery({ status: "tamat" }))).join() === "Siri tamat", "status: completed");
+assert(titles(applyListQuery(people, parseListQuery({ status: "berterusan" }))).sort().join() === "Siri masih jalan,Siri status lain", "status: anything not completed is still going on");
+const pf = listFacets(people);
+assert(pf.audiences.map((a) => a.code + ":" + a.count).join() === "remaja:2,belia:1,dewasa:1", "audience facets are counted per band");
+assert(pf.statuses.map((s) => s.value + ":" + s.count).join() === "berterusan:2,tamat:1", "status facets are counted; an item without status is in neither");
+assert(listFacets([{ title: "A" }]).audiences.length === 0 && listFacets([{ title: "A" }]).statuses.length === 0, "no audience and no status, no entries");
+
 console.log("\n=== The page uses it ===");
 const page = fs.readFileSync(path.join(__dirname, "..", "src", "app", "kategori", "[type]", "page.tsx"), "utf8");
 assert(/searchParams/.test(page) && /parseListQuery/.test(page) && /applyListQuery/.test(page), "the category page reads the address and applies the query");
@@ -63,6 +88,11 @@ assert(/robots:\s*\{\s*index:\s*false/.test(page), "a sorted or filtered view is
 assert(/canonical:\s*`\/kategori\/\$\{type\}`/.test(page), "the canonical stays the plain list");
 const controls = fs.readFileSync(path.join(__dirname, "..", "src", "components", "reader", "CategoryControls.tsx"), "utf8");
 assert(/method="get"/.test(controls) && /role="status"/.test(controls), "the controls are a GET form with a status count");
+assert(/name="umur"/.test(controls) && /name="status"/.test(controls), "the controls offer audience and series status");
+const projection = fs.readFileSync(path.join(__dirname, "..", "src", "lib", "reader", "public-projection.ts"), "utf8");
+assert(/audience\?: string/.test(projection), "the public summary carries the audience for filtering");
+const labelSites = ["src/app/kategori/[type]/page.tsx", "src/app/kategori/bersiri/[seriesSlug]/page.tsx", "src/components/reader/EpisodeView.tsx"].map((p) => fs.readFileSync(path.join(__dirname, "..", p), "utf8"));
+assert(labelSites.every((text) => text.includes("seriesStatusLabel") && !text.split("\n").some((line) => line.includes("Masih diteruskan") && !line.includes("*/") && !line.includes("/*"))), "the reader pages use one wording for a series status (comments aside)");
 
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);

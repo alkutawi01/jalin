@@ -21,6 +21,8 @@ import Image from "next/image";
 import { renderAttribution } from "@/components/reader/Attribution";
 import { categoryIntro, DEFAULT_CATEGORY_INTROS, isCategoryType } from "@/lib/site-copy";
 import CategoryControls from "../../../components/reader/CategoryControls";
+import { loadAudienceBands } from "../../../lib/audience-store";
+import { seriesStatusLabel } from "../../../lib/reader/series-status";
 import { applyListQuery, isFilteredQuery, listFacets, parseListQuery, type ListItem } from "../../../lib/reader/category-list";
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
@@ -58,11 +60,6 @@ const CATEGORY_META: Record<string, { title: string; intro: string; headerLabel:
 const MODE_LABELS: Record<string, string> = {
   continuous: "Berturutan",
   anthology: "Antologi",
-};
-
-const STATUS_LABELS: Record<string, string> = {
-  ongoing: "Masih diteruskan",
-  completed: "Tamat",
 };
 
 function formatDate(date: string | undefined): string {
@@ -111,7 +108,7 @@ function SeriesCard({ series, episodeCount }: { series: PublicSeriesSummary; epi
           {series.hero ? <Image src={series.hero.src} alt={series.hero.alt || `Ilustrasi siri ${series.title}`} fill sizes="(max-width: 680px) 100vw, 360px" style={cropStyle(series.hero.crop)} /> : <span>{series.title}</span>}
         </div>
         <div className="series-list-body">
-          <p className="series-list-meta">{genre || MODE_LABELS[series.mode] || series.mode} · {episodeCount} episod · {STATUS_LABELS[series.status] ?? series.status}</p>
+          <p className="series-list-meta">{genre || MODE_LABELS[series.mode] || series.mode} · {episodeCount} episod · {seriesStatusLabel(series.status)}</p>
           <h2>{series.title}</h2>
           {series.dek ? <p className="series-list-dek">{series.dek}</p> : null}
           <span className="series-list-action">Lihat siri dan episod</span>
@@ -127,7 +124,7 @@ export async function generateMetadata({ params, searchParams }: { params: Promi
   if (!meta) return {};
   const intro = isCategoryType(type) ? await categoryIntro(type) : meta.intro;
   // A sorted or filtered view is the same list in another order: it points at the plain list and is not indexed on its own.
-  const filtered = isFilteredQuery(parseListQuery(await searchParams));
+  const filtered = isFilteredQuery(parseListQuery(await searchParams, await loadAudienceBands()));
   return {
     title: meta.title,
     description: intro,
@@ -193,7 +190,8 @@ export default async function CategoryPage({ params, searchParams }: { params: P
   const meta = categoryMeta(type);
   if (!meta) notFound();
   const intro = isCategoryType(type) ? await categoryIntro(type) : meta.intro;
-  const query = parseListQuery(await searchParams);
+  const bands = await loadAudienceBands();
+  const query = parseListQuery(await searchParams, bands);
   const noun = CATEGORY_NOUN[type] ?? "karya";
 
   const isDb =
@@ -211,13 +209,15 @@ export default async function CategoryPage({ params, searchParams }: { params: P
         series,
         episodeCount: episodes.length,
         title: series.title,
+        status: series.status,
         ...(series.genre ? { genre: series.genre } : {}),
+        ...(series.audience ? { audience: series.audience } : {}),
         ...(minutes > 0 ? { readingMinutes: minutes } : {}),
         ...(latest ? { publishedAt: latest, updatedAt: latest } : {})
       };
       return item;
     });
-    const shown = applyListQuery(entries, query);
+    const shown = applyListQuery(entries, query, bands);
     return (
       <>
         <SiteHeader active="bersiri" />
@@ -228,7 +228,7 @@ export default async function CategoryPage({ params, searchParams }: { params: P
               <h1>{meta.title}</h1>
               <p className="category-intro">{intro}</p>
             </header>
-            <CategoryControls type={type} nounPlural={noun} query={query} facets={listFacets(entries)} shown={shown.length} total={entries.length} />
+            <CategoryControls type={type} nounPlural={noun} query={query} facets={listFacets(entries, bands)} shown={shown.length} total={entries.length} />
             <div className="work-list">
               {entries.length === 0 ? <EmptyCategoryFallback currentType={type} /> : null}
               {entries.length > 0 && shown.length === 0 ? <NoMatch type={type} /> : null}
@@ -244,7 +244,7 @@ export default async function CategoryPage({ params, searchParams }: { params: P
   }
 
   const summaries = (await getWorks(type)).map((work) => projectPublicWorkSummary(work));
-  const works = applyListQuery(summaries, query);
+  const works = applyListQuery(summaries, query, bands);
 
   return (
     <>
@@ -258,7 +258,7 @@ export default async function CategoryPage({ params, searchParams }: { params: P
             <p className="category-intro">{intro}</p>
           </header>
 
-          <CategoryControls type={type} nounPlural={noun} query={query} facets={listFacets(summaries)} shown={works.length} total={summaries.length} />
+          <CategoryControls type={type} nounPlural={noun} query={query} facets={listFacets(summaries, bands)} shown={works.length} total={summaries.length} />
 
           <div className="latest-grid category-grid">
             {summaries.length === 0 ? <EmptyCategoryFallback currentType={type} /> : null}
