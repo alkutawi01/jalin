@@ -49,6 +49,8 @@ assert(listing.includes("categoryJsonLd(") && listing.split("application/ld+json
 assert(listing.includes("<Breadcrumb") && listing.includes('aria-label="Jejak halaman"') && listing.includes('aria-current="page"'), "a visible breadcrumb, with the current page marked");
 assert(listing.includes("categorySummary(") && listing.includes("shareImage(summary.heroSrc"), "the share picture is the newest work's, the Jalin card when there is none");
 assert(listing.includes("diterbitkan.`"), "the description says how many are published");
+const css = read("src/app/globals.css");
+assert(/.category-breadcrumb { display: block;/.test(css), "the breadcrumb is shown at every width (a bare nav is hidden below 820px by a global rule)");
 const layout = read("src/app/layout.tsx");
 assert(layout.includes('"application/rss+xml": "/feed.xml"'), "every page advertises the feed");
 const route = read("src/app/feed.xml/route.ts");
