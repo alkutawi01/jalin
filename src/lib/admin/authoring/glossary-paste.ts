@@ -95,9 +95,9 @@ function clean(value: string): string {
 
 const TERM_KEY = /^(?:[*_\-•>\s]*)(istilah|term|perkataan|kata)\s*[:：]\s*(.*)$/i;
 const FOREIGN_KEY = /^(?:[*_\-•>\s]*)(asing|perkataan asing|condong|italik)\s*[:：]\s*(.*)$/i;
-const PRON_KEY = /^(?:[*_-•>s]*)(sebutan|cara sebut|cara sebutan)s*[:：]s*(.*)$/i;
-const ORIGINAL_KEY = /^(?:[*_-•>s]*)(ejaan asal|tulisan asal)s*[:：]s*(.*)$/i;
-const LANG_KEY = /^(?:[*_-•>s]*)(bahasa asal)s*[:：]s*(.*)$/i;
+const PRON_KEY = /^(?:[*_\-•>\s]*)(sebutan|cara sebut|cara sebutan)\s*[:：]\s*(.*)$/i;
+const ORIGINAL_KEY = /^(?:[*_\-•>\s]*)(ejaan asal|tulisan asal)\s*[:：]\s*(.*)$/i;
+const LANG_KEY = /^(?:[*_\-•>\s]*)(bahasa asal)\s*[:：]\s*(.*)$/i;
 const MEANING_KEY = /^(?:[*_\-•>\s]*)(maksud|makna|meaning|definisi|takrif|erti)\s*[:：]\s*(.*)$/i;
 
 /** Italicise exactly the foreign words the chatbot listed; anything already marked or not listed is left alone. */
