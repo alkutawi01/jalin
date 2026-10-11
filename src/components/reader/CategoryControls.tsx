@@ -111,7 +111,7 @@ export default function CategoryControls({
       ) : null}
       <p className="list-count" role="status">
         {count}
-        {query.susun !== DEFAULT_SORT ? ` · disusun: ${SORTS[query.susun].toLowerCase()}` : ""}
+        {query.susun !== DEFAULT_SORT ? ` · Disusun: ${SORTS[query.susun]}` : ""}
       </p>
     </section>
   );
