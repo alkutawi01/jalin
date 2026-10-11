@@ -27,10 +27,10 @@ export default function LockDialog({ gate, next, email }: { gate: Gate; next: st
       if (event.key === "Escape") setOpen(false);
     }
     document.addEventListener("keydown", onKey);
-    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
     return () => {
       document.removeEventListener("keydown", onKey);
-      document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
       previous?.focus?.();
     };
   }, [open]);

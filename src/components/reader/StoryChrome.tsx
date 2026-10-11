@@ -12,6 +12,7 @@ import { CONTENT_LINKS, NAV_LINKS, SiteNavLinks, VISITOR_LINKS } from "./nav-lin
 import { siteOpenForViewer } from "../../lib/reader/access-gate";
 import HeaderSearch from "./HeaderSearch";
 import MobileNavMenu from "./MobileNavMenu";
+import BackToTop from "./BackToTop";
 import HeaderAccount from "./HeaderAccount";
 import ExpiryNotice from "./ExpiryNotice";
 import { readerAccountsEnabled } from "../../lib/reader-auth/enabled";
@@ -322,6 +323,7 @@ export async function SiteFooter() {
           </svg>
         </a>
       </div>
+      <BackToTop />
     </footer>
   );
 }

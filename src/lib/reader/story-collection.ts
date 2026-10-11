@@ -46,8 +46,26 @@ export function episodeTitle(position: number, title: string): string {
   return `Episod ${position}: ${title}`;
 }
 
-/** Every published work a reader can open from the collection: single works and series episodes, minus the editor's hero picks. */
+const POOL_TTL_MS = 60_000;
+let poolCache: { at: number; cards: StoryCard[] } | null = null;
+let poolLoading: Promise<StoryCard[]> | null = null;
+
+/**
+ * The pool is the same for every reader and changes only when a work is published or edited, so it is kept in memory for a minute per
+ * server instance: a story page or a "Lain" click does not ask the database for the editor's picks again every time.
+ */
 export async function buildStoryPool(): Promise<StoryCard[]> {
+  if (poolCache && Date.now() - poolCache.at < POOL_TTL_MS) return poolCache.cards;
+  if (!poolLoading) {
+    poolLoading = buildStoryPoolFresh()
+      .then((cards) => { poolCache = { at: Date.now(), cards }; return cards; })
+      .finally(() => { poolLoading = null; });
+  }
+  return poolLoading;
+}
+
+/** Every published work a reader can open from the collection: single works and series episodes, minus the editor's hero picks. */
+async function buildStoryPoolFresh(): Promise<StoryCard[]> {
   const repo = await initContentRepository();
   const works = repo.source === "database" ? repo.getWorks() : getAllWorks();
   const pickedSlugs = new Set((await getEditorPickSummaries(works)).map((pick) => pick.slug));
