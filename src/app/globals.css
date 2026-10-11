@@ -4055,6 +4055,11 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; color-scheme: lig
   .list-controls-form select { width: 100%; }
   .list-controls-apply { flex: 1 1 auto; }
 }
+
+/* A class beats the phone rule that hides every bare nav (max-width 820px): this breadcrumb is shown at every width. */
+.category-breadcrumb { display: block; margin: 0 0 14px; font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 13px; color: var(--ink-soft); }
+.category-breadcrumb a { color: var(--ink-soft); text-underline-offset: 3px; }
+.category-breadcrumb [aria-current] { color: var(--ink); }
 /* Header tabs centred on the page, not in the space left beside the logo: logo | tabs | search and account, with equal outer columns. */
 @media (min-width: 821px) {
   .header-inner { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 24px; }

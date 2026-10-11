@@ -25,6 +25,8 @@ export const metadata: Metadata = {
     template: "%s · Jalin"
   },
   description: "Selami dunia melalui cerita di Jalin, platform cerpen, novela dan cerita bersiri berilustrasi dalam Bahasa Melayu. Terbitan Adjung Press.",
+  // Feed readers and browsers find the feed of the newest works from any page.
+  alternates: { types: { "application/rss+xml": "/feed.xml" } },
   icons: {
     icon: "/brand/jalin-favicon.svg",
     shortcut: "/brand/jalin-favicon.svg",

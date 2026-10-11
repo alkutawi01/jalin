@@ -267,3 +267,41 @@ export function siteJsonLd(description: string): Record<string, unknown> {
 export function jsonLdString(data: unknown): string {
   return JSON.stringify(data).replace(/</g, "\\u003c");
 }
+
+/**
+ * Structured data for a category list page: the page as a CollectionPage whose main entity is an ItemList of the works it links
+ * to (each item is a summary that points to its own page), and the breadcrumb Jalin > Category. Only titles and addresses.
+ */
+export function categoryJsonLd(input: { type: string; title: string; description: string; items: { name: string; path: string }[] }): Record<string, unknown> {
+  const path = `/kategori/${input.type}`;
+  const label = TYPE_LABEL[input.type] ?? input.type;
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "CollectionPage",
+        "@id": absoluteUrl(path) + "#halaman",
+        name: input.title,
+        description: input.description,
+        url: absoluteUrl(path),
+        inLanguage: "ms",
+        isPartOf: { "@type": "WebSite", name: "Jalin", url: SITE_URL },
+        publisher,
+        mainEntity: {
+          "@type": "ItemList",
+          numberOfItems: input.items.length,
+          itemListElement: input.items.map((item, index) => ({
+            "@type": "ListItem",
+            position: index + 1,
+            name: item.name,
+            url: absoluteUrl(item.path)
+          }))
+        }
+      },
+      breadcrumb([
+        { name: "Jalin", path: "/" },
+        { name: label, path }
+      ])
+    ]
+  };
+}
