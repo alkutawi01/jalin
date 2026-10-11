@@ -239,7 +239,7 @@ async function main() {
   for (const type of ["cerpen", "novela", "bersiri", "fragmen", "sinopsis"]) {
     await scanPage(
       `category /kategori/${type}`,
-      CategoryPage({ params: Promise.resolve({ type }) })
+      CategoryPage({ params: Promise.resolve({ type }), searchParams: Promise.resolve({}) })
     );
   }
 
