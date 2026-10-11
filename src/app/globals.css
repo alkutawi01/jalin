@@ -3931,11 +3931,9 @@ html:has(.a-nav, .admin-login-page) { overflow: visible; }
 .home-stats-list { gap: 14px 0; }
 .home-stat a { padding-block: 7px; margin-block: -7px; }
 
-/* A side column is sticky below the header. On a short screen (a laptop with the browser bars up, 640 to 700px) a tall column, now that it can hold the Penilaian block, ended below the fold and could not be scrolled to while reading. It scrolls inside itself instead. A story with footnotes in the margin keeps its static column (no sticky, no limit). */
-@media (min-width: 761px) {
-  .rail-card.sticky { max-height: calc(100dvh - 128px); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
-  .rail-card.sticky > :last-child { margin-bottom: 0; }
-  .has-margin-notes .rail-card.sticky { max-height: none; overflow: visible; }
+/* A side column sticks below the header only on a screen tall enough to show a whole column (820px and up). On a shorter screen it scrolls with the page, so a tall column is never cut off and never grows a scrollbar of its own. */
+@media (min-width: 761px) and (max-height: 819px) {
+  .rail-card.sticky { position: static; }
 }
 
 /* Printing or saving a story as PDF: the story, its title and its notes, not the website around it. The side columns, the header, the
@@ -4062,3 +4060,95 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; color-scheme: lig
 .category-breadcrumb { display: block; margin: 0 0 14px; font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 13px; color: var(--ink-soft); }
 .category-breadcrumb a { color: var(--ink-soft); text-underline-offset: 3px; }
 .category-breadcrumb [aria-current] { color: var(--ink); }
+/* Header tabs centred on the page, not in the space left beside the logo: logo | tabs | search and account, with equal outer columns. */
+@media (min-width: 821px) {
+  .header-inner { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 24px; }
+  .header-main { display: contents; }
+  .header-main > nav { grid-column: 2; justify-self: center; flex: none; }
+  .header-main > .header-search-wrap, .header-main > .header-account { grid-column: 3; grid-row: 1; justify-self: end; }
+  .header-main > .header-search-wrap + .header-account { margin-right: 52px; }
+}
+
+/* The tabs fade out when the search box opens; visibility waits for the fade so they do not vanish at once. */
+.header-nav, .header-mobile-nav { transition: opacity .2s ease, visibility 0s linear 0s; }
+.site-header:has(.header-search-field:not(.closing)) .header-nav, .site-header:has(.header-search-field:not(.closing)) .header-mobile-nav { transition: opacity .2s ease, visibility 0s linear .2s; }
+/* The suggestions slide in under the box instead of appearing at once. */
+.header-search-list { animation: header-search-list-in .2s cubic-bezier(.2, .8, .2, 1) backwards; transform-origin: top right; }
+@keyframes header-search-list-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+
+/* "Tentang karya" sheet on a phone: it rises from the bottom and the backdrop fades, and both reverse on close. */
+@media (max-width: 820px) {
+  .mobile-info-backdrop { animation: sheet-fade-in .24s ease backwards; }
+  .mobile-info-sheet { animation: sheet-rise .32s cubic-bezier(.2, .8, .2, 1) backwards; }
+  .mobile-info-layer.closing .mobile-info-backdrop { animation: sheet-fade-out .2s ease forwards; }
+  .mobile-info-sheet.closing { animation: sheet-sink .2s ease-in forwards; }
+}
+@keyframes sheet-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes sheet-fade-out { from { opacity: 1; } to { opacity: 0; } }
+@keyframes sheet-rise { from { transform: translateY(100%); } to { transform: translateY(0); } }
+@keyframes sheet-sink { from { transform: translateY(0); } to { transform: translateY(100%); } }
+@media (prefers-reduced-motion: reduce) {
+  .header-search-list, .mobile-info-backdrop, .mobile-info-sheet { animation: none !important; }
+}
+/* Tablet (761 to 1050px): there is one side column, so it carries all of "Tentang karya" (details, note, editorial, Penilaian), then Watak and Latar, in view. No button and no popup: the popup is only for a phone, where there is no column. */
+@media (min-width: 761px) and (max-width: 1050px) {
+  .reading-grid { grid-template-rows: auto 1fr; row-gap: 0; }
+  .reading-grid > .left-rail { display: block; grid-column: 2; grid-row: 1; }
+  .reading-grid > .right-rail { grid-column: 2; grid-row: 2; }
+  .reading-grid > :not(.left-rail):not(.right-rail) { grid-column: 1; grid-row: 1 / span 2; }
+  .left-rail + * + .right-rail { margin-top: 0; }
+  .rail-info, .mobile-info-row, .mobile-info-row.has-rail { display: none; }
+  .left-rail .rail-card { margin-bottom: 0; }
+  .right-rail .rail-card { padding-top: 24px; margin-top: 24px; border-top: 1px solid var(--line); }
+  .left-rail dl > div { grid-template-columns: minmax(0, 1fr); row-gap: 0; padding: 7px 0; }
+}
+/* "Baca lagi": the homepage card in the homepage grid. Three across on a desktop, so the first card lines up with the heading and the last with the
+   "Lain" button; two across on a tablet and in a phone column (the third card is only for the desktop row). */
+@media (min-width: 1051px) {
+  .related-works .latest-grid.related-works-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; }
+  .related-works .latest-grid.related-works-grid-single { grid-template-columns: minmax(0, calc((100% - 56px) / 3)); }
+}
+@media (max-width: 1050px) { .related-works .latest-grid.related-works-grid > :nth-child(n + 3) { display: none; } }
+@media (max-width: 1050px) and (min-width: 681px) {
+  .related-works .latest-grid.related-works-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .related-works .latest-grid.related-works-grid-single { grid-template-columns: minmax(0, calc(50% - 14px)); justify-content: center; }
+}
+@media (max-width: 680px) {
+  .related-works .latest-grid.related-works-grid, .related-works .latest-grid.related-works-grid-single { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* "Nota kaki": the story-body h2 sizes (1.2 to 1.32em of the text) were winning over the label size, so the heading came out as large as a sub-heading. A label at 15px. */
+.story-body .footnotes-title { font-size: 15px; line-height: 1.4; letter-spacing: .14em; margin: 0 0 12px; }
+/* Back to top: a round button at the lower right, shown once the reader is far down the page. */
+.back-to-top { position: fixed; right: 20px; bottom: 20px; z-index: 30; display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; padding: 0; border: 1px solid rgba(251, 248, 242, .25); border-radius: 50%; background: var(--ink); color: var(--paper); box-shadow: 0 8px 24px -8px rgba(24, 52, 60, .45); cursor: pointer; opacity: 0; visibility: hidden; transform: translateY(10px); transition: opacity .2s ease, transform .2s ease, visibility 0s linear .2s, background .18s ease; }
+.back-to-top.is-shown { opacity: 1; visibility: visible; transform: none; transition: opacity .2s ease, transform .2s ease, visibility 0s, background .18s ease; }
+.back-to-top:hover, .back-to-top:focus-visible { background: #0f2a31; }
+.back-to-top:focus-visible { outline: 2px solid var(--clay); outline-offset: 3px; }
+@media (max-width: 600px) { .back-to-top { right: 14px; bottom: 14px; } }
+@media (prefers-reduced-motion: reduce) { .back-to-top, .back-to-top.is-shown { transition: none; } }
+@media print { .back-to-top { display: none !important; } }
+
+/* The side column starts level with the first line of the text. A story that opens with a sub-heading (a dated entry) had the heading's top margin pushing the text below the "Tentang karya" label. */
+.story-body > :first-child, .story-body > :first-child > :first-child { margin-top: 0; }
+/* The page scrollbar in Jalin's own manner: a slim clay thumb on the paper colour, the same as the chapter list. Not in the admin, which has its own look. */
+@supports selector(::-webkit-scrollbar) {
+  :root:not(:has(.a-nav, .admin-login-page))::-webkit-scrollbar,
+  :where(:root:not(:has(.a-nav, .admin-login-page))) *::-webkit-scrollbar { width: 12px; height: 12px; }
+  :root:not(:has(.a-nav, .admin-login-page))::-webkit-scrollbar-track,
+  :where(:root:not(:has(.a-nav, .admin-login-page))) *::-webkit-scrollbar-track { background: var(--paper); }
+  :root:not(:has(.a-nav, .admin-login-page))::-webkit-scrollbar-thumb,
+  :where(:root:not(:has(.a-nav, .admin-login-page))) *::-webkit-scrollbar-thumb { background: rgba(167, 100, 80, .4); border-radius: 999px; border: 3px solid var(--paper); min-height: 48px; }
+  :root:not(:has(.a-nav, .admin-login-page))::-webkit-scrollbar-thumb:hover,
+  :where(:root:not(:has(.a-nav, .admin-login-page))) *::-webkit-scrollbar-thumb:hover { background: rgba(167, 100, 80, .65); }
+  :root:not(:has(.a-nav, .admin-login-page))::-webkit-scrollbar-corner,
+  :where(:root:not(:has(.a-nav, .admin-login-page))) *::-webkit-scrollbar-corner { background: var(--paper); }
+}
+@supports not selector(::-webkit-scrollbar) {
+  :root:not(:has(.a-nav, .admin-login-page)) { scrollbar-width: thin; scrollbar-color: rgba(167, 100, 80, .45) var(--paper); }
+}
+/* The header tucks away while the reader scrolls down and returns on the first scroll up (HeaderAutoHide). */
+.site-header { transition: background-color .28s ease, border-color .28s ease, transform .28s cubic-bezier(.2, .8, .2, 1); }
+.site-header.is-tucked { transform: translateY(-101%); }
+@media (prefers-reduced-motion: reduce) { .site-header { transition: background-color .28s ease, border-color .28s ease; } }
+html:has(.site-header.is-tucked) .sticky { top: 24px; }
+.sticky { transition: top .28s ease; }
