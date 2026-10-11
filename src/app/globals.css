@@ -4061,3 +4061,17 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; color-scheme: lig
 .category-breadcrumb { margin: 0 0 14px; font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 13px; color: var(--ink-soft); }
 .category-breadcrumb a { color: var(--ink-soft); text-underline-offset: 3px; }
 .category-breadcrumb [aria-current] { color: var(--ink); }
+
+/* Category lists are real lists (a screen reader hears "list, 9 items"); the list style and indent are removed. */
+ul.latest-grid, ul.work-list { list-style: none; margin: 0; }
+ul.latest-grid { padding: 0; }
+ul.work-list { padding-left: 0; padding-right: 0; }
+ul.latest-grid > li, ul.work-list > li { min-width: 0; margin: 0; }
+.category-head + .list-no-match, .list-controls ~ .category-empty, .list-controls ~ .list-no-match { margin-top: 24px; }
+.list-pagination { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px 18px; padding: 8px 0 72px; font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 15px; }
+.list-pagination ol { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.list-pagination a, .list-pagination [aria-current], .list-pagination [aria-disabled] { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; padding: 0 10px; border-radius: 10px; color: var(--ink); text-decoration: none; }
+.list-pagination a { border: 1px solid var(--line); }
+.list-pagination a:hover { border-color: var(--ink); }
+.list-pagination [aria-current] { background: var(--ink); color: var(--paper); }
+.list-pagination [aria-disabled] { color: var(--ink-soft); opacity: .55; }

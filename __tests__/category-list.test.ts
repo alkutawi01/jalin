@@ -1,7 +1,7 @@
 /** Category lists: sort and filter from the address (?susun, ?genre, ?bacaan), checked values, stable order, facets with counts. */
 import fs from "node:fs";
 import path from "node:path";
-import { applyListQuery, DEFAULT_SORT, isFilteredQuery, listFacets, listQueryString, parseListQuery, type ListItem } from "../src/lib/reader/category-list";
+import { applyListQuery, DEFAULT_SORT, isFilteredQuery, listFacets, listQueryString, pageQueryString, PAGE_SIZE, paginate, parseListQuery, parsePage, type ListItem } from "../src/lib/reader/category-list";
 
 let passed = 0, failed = 0;
 function assert(c: boolean, m: string) { if (c) { passed++; console.log(`  ✓ ${m}`); } else { failed++; console.error(`  ✗ ${m}`); } }
@@ -81,11 +81,25 @@ assert(pf.audiences.map((a) => a.code + ":" + a.count).join() === "remaja:2,beli
 assert(pf.statuses.map((s) => s.value + ":" + s.count).join() === "berterusan:2,tamat:1", "status facets are counted; an item without status is in neither");
 assert(listFacets([{ title: "A" }]).audiences.length === 0 && listFacets([{ title: "A" }]).statuses.length === 0, "no audience and no status, no entries");
 
+console.log("\n=== Pages ===");
+const many = Array.from({ length: 30 }, (_, i) => ({ title: "Karya " + String(i + 1).padStart(2, "0") }));
+assert(PAGE_SIZE === 12, "a page holds 12");
+assert(parsePage(undefined) === 1 && parsePage({}) === 1 && parsePage({ halaman: "2" }) === 2 && parsePage({ halaman: ["3", "4"] }) === 3, "the page comes from ?halaman=");
+assert(parsePage({ halaman: "0" }) === 1 && parsePage({ halaman: "-2" }) === 1 && parsePage({ halaman: "1.5" }) === 1 && parsePage({ halaman: "abc" }) === 1 && parsePage({ halaman: "99999999999" }) === 1, "anything that is not a whole number from 1 is the first page");
+const first = paginate(many, 1);
+assert(first.items.length === 12 && first.pages === 3 && first.page === 1 && first.total === 30, "30 items make 3 pages of 12");
+assert(paginate(many, 3).items.length === 6 && paginate(many, 3).items[0].title === "Karya 25", "the last page holds the rest");
+assert(paginate(many, 99).page === 3 && paginate(many, 99).items.length === 6, "a page past the end shows the last page");
+assert(paginate([], 5).pages === 1 && paginate([], 5).page === 1 && paginate([], 5).items.length === 0, "an empty list is one empty page");
+assert(paginate(many.slice(0, 12), 1).pages === 1, "exactly a page is one page");
+assert(pageQueryString({}, 1) === "" && pageQueryString({}, 2) === "?halaman=2", "the first page has no parameter");
+assert(pageQueryString({ genre: "Drama", susun: "tajuk" }, 3) === "?susun=tajuk&genre=Drama&halaman=3", "a page keeps the choices of the list");
+
 console.log("\n=== The page uses it ===");
 const page = fs.readFileSync(path.join(__dirname, "..", "src", "app", "kategori", "[type]", "page.tsx"), "utf8");
 assert(/searchParams/.test(page) && /parseListQuery/.test(page) && /applyListQuery/.test(page), "the category page reads the address and applies the query");
 assert(/robots:\s*\{\s*index:\s*false/.test(page), "a sorted or filtered view is not indexed");
-assert(/canonical:\s*`\/kategori\/\$\{type\}`/.test(page), "the canonical stays the plain list");
+assert(page.includes("alternates: { canonical }") && page.includes("`/kategori/${type}`") && /const canonical = !filtered/.test(page), "a sorted or filtered view keeps the plain list as its canonical");
 const controls = fs.readFileSync(path.join(__dirname, "..", "src", "components", "reader", "CategoryControls.tsx"), "utf8");
 assert(/method="get"/.test(controls) && /role="status"/.test(controls), "the controls are a GET form with a status count");
 assert(/name="umur"/.test(controls) && /name="status"/.test(controls), "the controls offer audience and series status");
@@ -93,6 +107,16 @@ const projection = fs.readFileSync(path.join(__dirname, "..", "src", "lib", "rea
 assert(/audience\?: string/.test(projection), "the public summary carries the audience for filtering");
 const labelSites = ["src/app/kategori/[type]/page.tsx", "src/app/kategori/bersiri/[seriesSlug]/page.tsx", "src/components/reader/EpisodeView.tsx"].map((p) => fs.readFileSync(path.join(__dirname, "..", p), "utf8"));
 assert(labelSites.every((text) => text.includes("seriesStatusLabel") && !text.split("\n").some((line) => line.includes("Masih diteruskan") && !line.includes("*/") && !line.includes("/*"))), "the reader pages use one wording for a series status (comments aside)");
+
+const nav = fs.readFileSync(path.join(__dirname, "..", "src", "components", "reader", "CategoryPagination.tsx"), "utf8");
+assert(nav.includes('aria-label="Halaman senarai"') && nav.includes('rel="prev"') && nav.includes('rel="next"') && nav.includes('aria-current="page"'), "pagination is a labelled nav of real links, with prev, next and the current page marked");
+assert(!/onClick|useState|"use client"/.test(nav), "pagination needs no JavaScript");
+assert(/<ul className="latest-grid category-grid" role="list"/.test(page) && /<ul className="work-list" role="list"/.test(page) && page.includes("<li key="), "the cards are list items of a list (works and series)");
+assert(/EmptyCategoryFallback currentType=\{type\} \/> : null\}\s*\{summaries\.length > 0/.test(page) || page.indexOf("<EmptyCategoryFallback currentType={type} />") < page.indexOf('<ul className="latest-grid category-grid"'), "the empty state sits outside the list, not inside the grid");
+assert(page.includes("priority={index < 3}") && page.includes("priority={index < 2}"), "the first pictures load at once (above the fold), the rest lazily");
+assert(/canonical = !filtered && page > 1/.test(page), "a later page of the plain list is canonical to itself");
+const cover = fs.readFileSync(path.join(__dirname, "..", "src", "components", "reader", "WorkCover.tsx"), "utf8");
+assert(cover.includes("priority?: boolean") && cover.includes("priority={priority}"), "the cover can be loaded first");
 
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);

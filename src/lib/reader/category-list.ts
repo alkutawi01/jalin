@@ -182,3 +182,35 @@ export function listFacets(items: ListItem[], bands: AudienceBand[] = DEFAULT_AU
     .filter((status) => status.count > 0);
   return { genres: [...genres.values()].sort((a, b) => a.value.localeCompare(b.value, "ms")), bands: readingBands, audiences, statuses };
 }
+
+/** How many items a page of a list holds. A whole page of cards is a comfortable scroll on a phone and a crawlable unit. */
+export const PAGE_SIZE = 12;
+
+/** ?halaman= : a whole number from 1; anything else (empty, text, 0, negative, a fraction) is the first page. */
+export function parsePage(raw: Record<string, string | string[] | undefined> | undefined): number {
+  const value = one(raw?.halaman).trim();
+  if (!/^[0-9]{1,6}$/.test(value)) return 1;
+  const page = Number(value);
+  return page >= 1 ? page : 1;
+}
+
+export interface Paged<T> {
+  items: T[];
+  /** The page shown, after clamping into 1..pages (a page past the end shows the last one). */
+  page: number;
+  pages: number;
+  total: number;
+}
+
+export function paginate<T>(items: T[], requested: number, size: number = PAGE_SIZE): Paged<T> {
+  const pages = Math.max(1, Math.ceil(items.length / size));
+  const page = Math.min(Math.max(1, Math.floor(requested) || 1), pages);
+  return { items: items.slice((page - 1) * size, page * size), page, pages, total: items.length };
+}
+
+/** The query string of a page: the choices of the list, then ?halaman= for every page but the first. */
+export function pageQueryString(query: Partial<ListQuery>, page: number): string {
+  const base = listQueryString(query);
+  if (page <= 1) return base;
+  return base ? `${base}&halaman=${page}` : `?halaman=${page}`;
+}
