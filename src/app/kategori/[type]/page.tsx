@@ -1,6 +1,7 @@
 import { SiteFooter, SiteHeader } from "../../../components/reader/StoryChrome";
 import { gateSite } from "../../../lib/reader/access-gate";
-import { OG_SITE, DEFAULT_SHARE_IMAGE } from "../../../lib/seo";
+import { OG_SITE, DEFAULT_SHARE_IMAGE, clipDescription, shareImage } from "../../../lib/seo";
+import { categoryJsonLd, jsonLdString } from "../../../lib/seo-jsonld";
 import JalinEmblem from "../../../components/reader/JalinEmblem";
 import { WorkCover } from "../../../components/reader/WorkCover";
 import { cropStyle } from "../../../lib/reader/crop";
@@ -125,21 +126,54 @@ export async function generateMetadata({ params, searchParams }: { params: Promi
   const intro = isCategoryType(type) ? await categoryIntro(type) : meta.intro;
   // A sorted or filtered view is the same list in another order: it points at the plain list and is not indexed on its own.
   const filtered = isFilteredQuery(parseListQuery(await searchParams, await loadAudienceBands()));
+  const summary = await categorySummary(type);
+  // The intro says what the category is; the count says there is something to read ("9 cerpen diterbitkan").
+  const description = clipDescription(summary.count > 0 ? `${intro} ${summary.count} ${CATEGORY_NOUN[type] ?? "karya"} diterbitkan.` : intro);
+  // The newest work's picture stands for the category when it is shared; the Jalin card when no work has a picture.
+  const picture = summary.heroSrc ? shareImage(summary.heroSrc, summary.heroAlt) : DEFAULT_SHARE_IMAGE;
   return {
     title: meta.title,
-    description: intro,
+    description,
     ...(filtered ? { robots: { index: false, follow: true } } : {}),
     alternates: { canonical: `/kategori/${type}` },
     openGraph: {
       ...OG_SITE,
       type: "website",
       title: meta.title,
-      description: intro,
+      description,
       url: `/kategori/${type}`,
-      images: [DEFAULT_SHARE_IMAGE]
+      images: [picture]
     },
-    twitter: { card: "summary_large_image", title: meta.title, description: intro, images: [DEFAULT_SHARE_IMAGE.url] }
+    twitter: { card: "summary_large_image", title: meta.title, description, images: [picture.url] }
   };
+}
+
+/** How many are published in a category and the picture of the newest one, for the page's description and share card. */
+async function categorySummary(type: string): Promise<{ count: number; heroSrc?: string; heroAlt?: string }> {
+  try {
+    const repo = await initContentRepository();
+    if (type === "bersiri" && repo.source === "database") {
+      const list = repo.getPublishedSeries();
+      const withHero = list.find((series) => series.hero?.src);
+      return { count: list.length, ...(withHero?.hero ? { heroSrc: withHero.hero.src, heroAlt: withHero.hero.alt } : {}) };
+    }
+    const works = (await getWorks(type)).sort((a, b) => (b.publishedAt ?? "").localeCompare(a.publishedAt ?? ""));
+    const hero = works.map((work) => work.visuals.find((visual) => visual.role === "hero")).find((visual) => visual?.src);
+    return { count: works.length, ...(hero ? { heroSrc: hero.src, heroAlt: hero.alt } : {}) };
+  } catch {
+    return { count: 0 };
+  }
+}
+
+/** Jalin > Category, above the heading: where the page sits, for a reader and for the structured data below it. */
+function Breadcrumb({ label }: { label: string }) {
+  return (
+    <nav className="category-breadcrumb" aria-label="Jejak halaman">
+      <a href="/">Jalin</a>
+      <span aria-hidden="true"> › </span>
+      <span aria-current="page">{label}</span>
+    </nav>
+  );
 }
 
 function EmptyCategoryFallback({ currentType }: { currentType: string }) {
@@ -223,7 +257,9 @@ export default async function CategoryPage({ params, searchParams }: { params: P
         <SiteHeader active="bersiri" />
         <main id="kandungan" tabIndex={-1}>
           <div className="site-shell">
+            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdString(categoryJsonLd({ type, title: meta.title, description: intro, items: entries.map((entry) => ({ name: entry.series.title, path: `/kategori/bersiri/${entry.series.slug}` })) })) }} />
             <header className="category-head">
+              <Breadcrumb label={meta.headerLabel} />
               <p className="category-kicker">{meta.headerLabel}</p>
               <h1>{meta.title}</h1>
               <p className="category-intro">{intro}</p>
@@ -252,7 +288,9 @@ export default async function CategoryPage({ params, searchParams }: { params: P
 
       <main id="kandungan" tabIndex={-1}>
         <div className="site-shell">
+          <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdString(categoryJsonLd({ type, title: meta.title, description: intro, items: summaries.map((work) => ({ name: work.title, path: `/kategori/${type}/${work.slug}` })) })) }} />
           <header className="category-head">
+            <Breadcrumb label={meta.headerLabel} />
             <p className="category-kicker">{meta.headerLabel}</p>
             <h1>{meta.title}</h1>
             <p className="category-intro">{intro}</p>
