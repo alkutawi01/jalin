@@ -75,8 +75,8 @@ export default function SiteCopySettings() {
       }}
     >
       <p className="admin-form-hint">
-        Ayat di bawah tajuk setiap halaman senarai awam (contoh: &quot;Senarai Bersiri&quot;). Tekan Simpan selepas menyunting.
-        Kosongkan kotak untuk kembali kepada ayat asal. Perubahan kelihatan pada laman awam dalam beberapa saat.
+        Satu ayat di bawah tajuk setiap halaman senarai (contoh: &quot;Senarai Bersiri&quot;), tanpa noktah di hujung seperti tajuk.
+        Tekan Simpan selepas menyunting. Kosongkan medan untuk kembali kepada ayat asal. Perubahan kelihatan pada laman awam dalam beberapa saat.
       </p>
       <div className="admin-table-wrap">
       <table className="admin-table a-form-list">
@@ -90,8 +90,8 @@ export default function SiteCopySettings() {
                   {isChanged ? <span className="admin-form-hint">Belum disimpan</span> : null}
                 </td>
                 <td>
-                  <textarea
-                    rows={2}
+                  <input
+                    type="text"
                     maxLength={MAX}
                     aria-label={`Ayat pengenalan halaman ${LABELS[intro.type] ?? intro.type}`}
                     placeholder={intro.default}
