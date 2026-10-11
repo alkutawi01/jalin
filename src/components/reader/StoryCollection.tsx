@@ -18,7 +18,8 @@ function CardMeta({ card }: { card: StoryCard }) {
   );
 }
 
-function StoryCardView({ card }: { card: StoryCard }) {
+/** The card of the homepage and of "Baca lagi" after a story: one card, one look. */
+export function StoryCardView({ card }: { card: StoryCard }) {
   return (
     <article className="latest-card">
       <a href={card.href}>

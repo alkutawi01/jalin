@@ -10,6 +10,8 @@ type Tab = "karya" | "watak" | "latar" | "editorial" | "bab";
 
 export default function MobileStoryInfo({ data }: { data: StoryInfoData }) {
   const [open, setOpen] = useState(false);
+  const [closing, setClosing] = useState(false); // the sheet slides down before it is removed
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [tab, setTab] = useState<Tab>("karya");
   const hasSetting = (data.places?.length ?? 0) > 0 || (data.times?.length ?? 0) > 0;
   const [dragY, setDragY] = useState(0);
@@ -18,15 +20,27 @@ export default function MobileStoryInfo({ data }: { data: StoryInfoData }) {
   const handleRef = useRef<HTMLButtonElement>(null);
   const wasOpen = useRef(false);
 
+  /** Slides the sheet down (matches .mobile-info-sheet.closing in globals.css), then removes it. */
+  function close() {
+    if (!open || closing) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) { setOpen(false); return; }
+    setClosing(true);
+    closeTimer.current = setTimeout(() => { setOpen(false); setClosing(false); }, 200);
+  }
+  useEffect(() => () => { if (closeTimer.current) clearTimeout(closeTimer.current); }, []);
+
   // The sheet behaves as a dialog: focus moves in, the page behind does not scroll, and focus returns to Info on close.
   useEffect(() => {
     if (open) {
-      const previousOverflow = document.body.style.overflow;
-      document.body.style.overflow = "hidden";
+      // The lock goes on <html>, not <body>: on a narrow screen body is clipped (overflow-x), and giving it overflow:hidden made it a
+      // scroll container, which un-stuck the sticky header so the tabs scrolled out of sight while the sheet was open.
+      const root = document.documentElement;
+      const previousOverflow = root.style.overflow;
+      root.style.overflow = "hidden";
       document.getElementById(`sheet-tab-${tab}`)?.focus();
       wasOpen.current = true;
       return () => {
-        document.body.style.overflow = previousOverflow;
+        root.style.overflow = previousOverflow;
       };
     }
     if (wasOpen.current) {
@@ -41,7 +55,7 @@ export default function MobileStoryInfo({ data }: { data: StoryInfoData }) {
       // The Penilaian dialog inside the sheet is a native modal <dialog>: it keeps Tab and closes on Escape by itself, and that Escape must
       // close only the dialog, not the sheet under it.
       if (document.querySelector("dialog[open]")) return;
-      if (event.key === "Escape") { setOpen(false); return; }
+      if (event.key === "Escape") { close(); return; }
       if (event.key !== "Tab" || !open) return;
       // The sheet is modal: Tab and Shift+Tab stay inside it instead of walking on into the page behind the backdrop.
       const active = document.activeElement as HTMLElement | null;
@@ -57,7 +71,8 @@ export default function MobileStoryInfo({ data }: { data: StoryInfoData }) {
       else if (!event.shiftKey && active === last) { event.preventDefault(); first.focus(); }
     }
     function onTouchStart(event: TouchEvent) {
-      if (open || event.touches.length !== 1) return;
+      // From 761px the side column carries the same details, so the swipe from the edge is for a phone only.
+      if (open || event.touches.length !== 1 || window.innerWidth > 760) return;
       const touch = event.touches[0];
       if (touch.clientX >= window.innerWidth - 24) edgeStart.current = { x: touch.clientX, y: touch.clientY };
     }
@@ -88,16 +103,16 @@ export default function MobileStoryInfo({ data }: { data: StoryInfoData }) {
     setDragY(Math.max(0, event.clientY - startY.current));
   }
   function onPointerUp() {
-    if (dragY > 110) setOpen(false);
+    if (dragY > 110) close();
     setDragY(0);
     startY.current = null;
   }
 
   return <>
     <button ref={handleRef} type="button" className="mobile-info-handle" onClick={() => setOpen(true)} aria-expanded={open} aria-controls="mobile-story-info">Tentang karya<svg className="mobile-info-chevron" viewBox="0 0 8 12" width="8" height="12" aria-hidden="true" focusable="false"><path d="M1.5 1.5 6 6l-4.5 4.5" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg></button>
-    {open && <div className="mobile-info-layer">
-      <button type="button" className="mobile-info-backdrop" aria-label="Tutup maklumat karya" onClick={() => setOpen(false)} />
-      <section id="mobile-story-info" role="dialog" aria-modal="true" className="mobile-info-sheet" style={{ transform: "translateY(" + dragY + "px)" }} aria-label="Maklumat karya">
+    {open && <div className={"mobile-info-layer" + (closing ? " closing" : "")}>
+      <button type="button" className="mobile-info-backdrop" aria-label="Tutup maklumat karya" onClick={close} />
+      <section id="mobile-story-info" role="dialog" aria-modal="true" className={"mobile-info-sheet" + (closing ? " closing" : "")} style={{ transform: "translateY(" + dragY + "px)" }} aria-label="Maklumat karya">
         <div className="sheet-drag-zone" onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={onPointerUp}>
           <span className="sheet-grabber" />
         </div>
@@ -216,7 +231,7 @@ export default function MobileStoryInfo({ data }: { data: StoryInfoData }) {
               aria-labelledby="sheet-tab-bab"
               className="sheet-stack"
               onClick={(event) => {
-                if ((event.target as HTMLElement).closest("a")) setOpen(false);
+                if ((event.target as HTMLElement).closest("a")) close();
               }}
             >
               {data.bab.map((item) => (
