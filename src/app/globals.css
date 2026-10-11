@@ -4133,21 +4133,21 @@ ul.latest-grid > li, ul.work-list > li { min-width: 0; margin: 0; }
 
 /* The side column starts level with the first line of the text. A story that opens with a sub-heading (a dated entry) had the heading's top margin pushing the text below the "Tentang karya" label. */
 .story-body > :first-child, .story-body > :first-child > :first-child { margin-top: 0; }
-/* The page scrollbar in Jalin's own manner: a slim clay thumb on the paper colour, the same as the chapter list. Not in the admin, which has its own look. */
+/* The page scrollbar in Jalin's own manner: a slim thumb in the theme's ink green (#18343c) on the paper colour. Not in the admin, which has its own look. */
 @supports selector(::-webkit-scrollbar) {
   :root:not(:has(.a-nav, .admin-login-page))::-webkit-scrollbar,
   :where(:root:not(:has(.a-nav, .admin-login-page))) *::-webkit-scrollbar { width: 12px; height: 12px; }
   :root:not(:has(.a-nav, .admin-login-page))::-webkit-scrollbar-track,
   :where(:root:not(:has(.a-nav, .admin-login-page))) *::-webkit-scrollbar-track { background: var(--paper); }
   :root:not(:has(.a-nav, .admin-login-page))::-webkit-scrollbar-thumb,
-  :where(:root:not(:has(.a-nav, .admin-login-page))) *::-webkit-scrollbar-thumb { background: rgba(167, 100, 80, .4); border-radius: 999px; border: 3px solid var(--paper); min-height: 48px; }
+  :where(:root:not(:has(.a-nav, .admin-login-page))) *::-webkit-scrollbar-thumb { background: rgba(24, 52, 60, .42); border-radius: 999px; border: 3px solid var(--paper); min-height: 48px; }
   :root:not(:has(.a-nav, .admin-login-page))::-webkit-scrollbar-thumb:hover,
-  :where(:root:not(:has(.a-nav, .admin-login-page))) *::-webkit-scrollbar-thumb:hover { background: rgba(167, 100, 80, .65); }
+  :where(:root:not(:has(.a-nav, .admin-login-page))) *::-webkit-scrollbar-thumb:hover { background: rgba(24, 52, 60, .75); }
   :root:not(:has(.a-nav, .admin-login-page))::-webkit-scrollbar-corner,
   :where(:root:not(:has(.a-nav, .admin-login-page))) *::-webkit-scrollbar-corner { background: var(--paper); }
 }
 @supports not selector(::-webkit-scrollbar) {
-  :root:not(:has(.a-nav, .admin-login-page)) { scrollbar-width: thin; scrollbar-color: rgba(167, 100, 80, .45) var(--paper); }
+  :root:not(:has(.a-nav, .admin-login-page)) { scrollbar-width: thin; scrollbar-color: rgba(24, 52, 60, .5) var(--paper); }
 }
 /* The header tucks away while the reader scrolls down and returns on the first scroll up (HeaderAutoHide). */
 .site-header { transition: background-color .28s ease, border-color .28s ease, transform .28s cubic-bezier(.2, .8, .2, 1); }
