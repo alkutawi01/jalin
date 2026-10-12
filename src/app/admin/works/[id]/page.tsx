@@ -2944,7 +2944,9 @@ export default function EditWorkPage() {
                   </select>
                 </div>
 
-                {!isImageMarker(editingVisual.anchor) && <div className="admin-form-group">
+                {/* Before / after a paragraph is only for an old picture tied to a quoted passage. A main picture, and every picture that has a
+                    marker in the manuscript, is placed by where the marker is, so there is nothing to choose. */}
+                {editingVisual.role !== "hero" && !!editingVisual.anchor && !isImageMarker(editingVisual.anchor) && <div className="admin-form-group">
                   <label>Kedudukan</label>
                   <select
                     value={editingVisual.place || "after"}
