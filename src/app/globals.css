@@ -4266,3 +4266,10 @@ body:has(.save-work) .back-to-top { bottom: 76px; }
 .series-feature-latest { display: block; }
 .series-feature-latest-label { display: block; margin-bottom: 6px; }
 .series-feature-latest-title { display: inline; text-wrap: wrap; }
+
+/* Episode cards on a series page: the cards of one row are the same height and the minutes and date line sits at the same level in every card,
+   whatever the length of the title and the summary above it. */
+.episode-card { display: flex; }
+.episode-card > a { display: flex; flex: 1; flex-direction: column; min-width: 0; }
+.episode-card-body { display: flex; flex: 1; flex-direction: column; gap: 6px; }
+.episode-card-meta { margin-top: auto; padding-top: 6px; }
