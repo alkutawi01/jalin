@@ -42,7 +42,7 @@ export default async function PanelPieceDetail({ params }: { params: Promise<{ k
 
       {active && active.timeline.length > 0 ? (
         <section>
-          <h3>Sejarah keputusan</h3>
+          <h2>Sejarah keputusan</h2>
           <p className="admin-form-hint">Setiap penambahan atau pembatalan, dengan min sejurus selepasnya. Rekod ini tidak boleh diubah.</p>
           <ol>{active.timeline.map((t, i) => <li key={i}>{dateText(t.at)}: {t.what}{t.by ? ` oleh ${t.by}` : ""}; min {t.meanText} daripada {t.count}, {t.meets ? "melepasi" : "tidak melepasi"} syarat skor.</li>)}</ol>
         </section>
@@ -50,14 +50,14 @@ export default async function PanelPieceDetail({ params }: { params: Promise<{ k
 
       {active && active.ratings.length > 0 ? (
         <section>
-          <h3>Semua jawapan penilai</h3>
+          <h2>Semua jawapan penilai</h2>
           {active.ratings.map((r) => <PanelRatingCard key={r.id} r={r} />)}
         </section>
       ) : null}
 
       {view.history.length > 0 ? (
         <section>
-          <h3>Versi teks yang lebih lama</h3>
+          <h2>Versi teks yang lebih lama</h2>
           <p className="admin-form-hint">Penilaian ini benar untuk teks lama sahaja.</p>
           {view.history.map((h) => (
             <details key={h.snapshotId}>
