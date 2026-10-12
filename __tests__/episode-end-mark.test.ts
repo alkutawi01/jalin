@@ -15,7 +15,9 @@ const read = (p: string) => fs.readFileSync(path.join(__dirname, "..", p), "utf8
 const chrome = read("src/components/reader/StoryChrome.tsx");
 assert(chrome.includes('export function StoryEnd({ title, label = "Tamat" }') && chrome.includes("<span>{label}</span>"), "the end mark says Tamat unless it is told otherwise");
 const episode = read("src/components/reader/EpisodeView.tsx");
-assert(episode.includes('{!nextEpisode ? <StoryEnd title={work.title} label={series.status === "completed" ? "Tamat" : "Bersambung"} /> : null}'), "an episode with a next episode has no end mark; the newest episode says Bersambung while the series goes on, and Tamat when it is finished");
+const endAt = episode.indexOf("{!nextEpisode ? (");
+const endBlock = endAt >= 0 ? episode.slice(endAt, episode.indexOf(") : null}", endAt) + 9) : "";
+assert(endBlock.includes('<StoryEnd title={work.title} label={series.status === "completed" ? "Tamat" : "Bersambung"} />') && endBlock.includes("<ShareRow title={work.title} />") && endBlock.endsWith(") : null}"), "an episode with a next episode has no end mark (nor the share row); the newest episode says Bersambung while the series goes on, and Tamat when it is finished");
 const work = read("src/components/reader/WorkView.tsx");
 assert(/<StoryEnd title=\{work\.title\} \/>/.test(work), "a cerpen and the last chapter of a novela still end with Tamat");
 

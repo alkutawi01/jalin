@@ -32,7 +32,7 @@ assert(seriesPage.includes("smartQuotes(series.dek)") && seriesPage.includes("sm
 
 const css = read("src/app/globals.css");
 const premise = css.split("\n").find((line) => line.startsWith(".series-premise {")) ?? "";
-assert(!premise.includes("font-style: italic"), "the series premise is regular type (Izzat made it so on 5 Okt; the homepage dek lives in HeroCarousel)");
+assert(premise.includes("font-style: italic"), "the series premise is italic, like the homepage dek and the work page dek (Izzat, 11 Okt: it was regular type from 5 Okt)");
 const listTitle = css.split("\n").find((line) => line.startsWith(".series-list-body h2 {")) ?? "";
 assert(listTitle.includes("font-weight: 700"), "a Bersiri list title is bold like a Cerpen list title");
 

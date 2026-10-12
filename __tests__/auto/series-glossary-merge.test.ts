@@ -1,14 +1,14 @@
 /** A series has one glossary; an episode adds or overrides terms; the reader sees the two merged. */
 import fs from "node:fs";
 import path from "node:path";
-import { glossaryKey, mergeSeriesGlossary } from "../src/lib/content/glossary-merge";
+import { glossaryKey, mergeSeriesGlossary } from "../../src/lib/content/glossary-merge";
 
 let passed = 0;
 let failed = 0;
 function assert(cond: boolean, msg: string) {
   if (cond) { passed++; console.log(`  ✓ ${msg}`); } else { failed++; console.error(`  ✗ ${msg}`); }
 }
-const read = (p: string) => fs.readFileSync(path.join(__dirname, "..", p), "utf8").replace(/\r\n/g, "\n");
+const read = (p: string) => fs.readFileSync(path.join(__dirname, "..", "..", p), "utf8").replace(/\r\n/g, "\n");
 const e = (term: string, meaning = "makna " + term) => ({ term, meaning, source: "Kamus Dewan Edisi Keempat" });
 
 const series = [e("murajaah"), e("qiraat"), e("tasmi'"), e("mushaf")];
