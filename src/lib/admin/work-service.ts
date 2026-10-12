@@ -12,6 +12,7 @@ import type { Database } from "../db/types";
 import type { WorkType, WorkStatus } from "../db/types";
 import { characterProblems } from "./metadata-rules";
 import { normaliseCountries } from "../reader/countries";
+import { readingMinutesOf } from "../reader/reading-time";
 
 function getAdminDb(): Kysely<Database> {
   if (!hasDb()) {
@@ -173,7 +174,8 @@ export async function createWork(input: WorkInput): Promise<WorkRecord> {
       genre: input.genre || null,
       audience: input.audience || null,
       dek: input.dek || null,
-      reading_minutes: input.readingMinutes || null,
+      // Left empty by the editor, the minutes come from the text (about 200 words a minute) instead of staying blank.
+      reading_minutes: input.readingMinutes || (input.body?.trim() ? readingMinutesOf(input.body) : null),
       version: input.version || "v1.0",
       version_label: null,
       revision_count: 0,
@@ -226,6 +228,11 @@ export async function updateWork(
   if (input.audience !== undefined) updateData.audience = input.audience || null;
   if (input.dek !== undefined) updateData.dek = input.dek || null;
   if (input.readingMinutes !== undefined) updateData.reading_minutes = input.readingMinutes || null;
+  // Text saved while the minutes field is still empty: fill it in from the text, so "Minit bacaan" is never left blank.
+  if (input.body !== undefined && input.body.trim() && (input.readingMinutes === undefined || !input.readingMinutes)) {
+    const current = await db.selectFrom("works").where("id", "=", id).select("reading_minutes").executeTakeFirst();
+    if (!current?.reading_minutes) updateData.reading_minutes = readingMinutesOf(input.body);
+  }
   if (input.version !== undefined) updateData.version = input.version;
   if (input.publishedAt !== undefined) updateData.published_at = input.publishedAt || null;
   if (input.editorPick !== undefined) updateData.editor_pick = Boolean(input.editorPick);

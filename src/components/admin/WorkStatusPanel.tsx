@@ -131,6 +131,13 @@ export default function WorkStatusPanel({
       label: "Terbitkan", run: onPublish, disabled: !allClear,
       hint: allClear ? undefined : "Terbitan disekat. Selesaikan bahagian yang ditandakan di bawah dahulu."
     };
+  } else if (status === "archived") {
+    // An archived work used to show no next step at all, so the editor had no way to know how to bring it back.
+    next = {
+      label: "Pulihkan sebagai draf",
+      run: () => onChangeStatus("draft"),
+      hint: "Karya kembali menjadi draf dan tidak dipaparkan kepada pembaca. Selepas itu tekan Terbitkan bila sedia."
+    };
   }
 
   const pendingChanges = status === "published" && readiness?.unpublished?.changed === true;

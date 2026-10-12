@@ -15,6 +15,7 @@
  * The pure functions below decide; the two database functions load and write.
  */
 
+import { placesMentionedIn } from "./places-mentioned";
 import type { Kysely, Transaction } from "kysely";
 import type { Database } from "../db/types";
 import { canonicalRole } from "../credit-roles";
@@ -345,7 +346,7 @@ export async function fillEpisodeFromSeries(trx: Transaction<Database>, seriesId
   const work = await trx
     .selectFrom("works")
     .where("id", "=", workId)
-    .select(["status", "genre", "audience", "metadata"])
+    .select(["status", "genre", "audience", "metadata", "body"])
     .forUpdate()
     .executeTakeFirst();
   if (!work) throw new Error("Karya tidak ditemui.");
@@ -379,9 +380,12 @@ export async function fillEpisodeFromSeries(trx: Transaction<Database>, seriesId
     }
   }
   if (!Array.isArray(metadata.places) || metadata.places.length === 0) {
-    if (inheritance.places.length) {
-      metadata.places = inheritance.places;
-      filled.places = inheritance.places.length;
+    // Once the episode has its text, only the places that text still mentions are carried over: the list is capped (12), and
+    // every episode used to inherit all of the one before until no new place could be added.
+    const places = placesMentionedIn(inheritance.places, work.body ?? "");
+    if (places.length) {
+      metadata.places = places;
+      filled.places = places.length;
     }
   }
   if (filled.characters || filled.places) patch.metadata = JSON.stringify(metadata);

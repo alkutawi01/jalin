@@ -84,13 +84,17 @@ ${input.body.trim() || "[Manuskrip belum diisi. Tampal manuskrip di sini sebelum
 }
 
 function clean(value: string): string {
-  return value
+  const stripped = value
     .replace(/^(?:\s|[>•\-–—·]|\*(?=\s))+/, "")
     .replace(/^\d+[.)]\s+/, "")
     .replace(/\*\*|__|`/g, "")
-    .replace(/^["“”']+|["“”']+$/g, "")
-    .replace(/\s+/g, " ")
     .trim();
+  // A single quote (or ’) at the end is a quotation mark only when the text opened with one; after a letter it is the
+  // Arabic ayn/hamza mark ("tasmi'", "ta'awwudh", "mushaf'" is never a quote), and stripping it changed the word.
+  const openedWithSingle = /^['‘’]/.test(stripped);
+  let out = stripped.replace(/^["“”'‘’]+/, "").replace(/["“”]+$/, "");
+  if (openedWithSingle) out = out.replace(/['‘’]+$/, "");
+  return out.replace(/\s+/g, " ").trim();
 }
 
 const TERM_KEY = /^(?:[*_\-•>\s]*)(istilah|term|perkataan|kata)\s*[:：]\s*(.*)$/i;

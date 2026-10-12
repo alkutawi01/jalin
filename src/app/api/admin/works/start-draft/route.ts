@@ -15,6 +15,33 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    // Opening "Tambah karya" and choosing a type used to leave a new empty "Draf tanpa tajuk" every time, and they piled up in
+    // the works list. A draft nobody has touched yet (no title, no text, not saved since it was made) of the same type and
+    // series is handed out again instead.
+    const db = getDb();
+    const untouched = db
+      .selectFrom("works")
+      .select(["works.id", "works.created_at", "works.updated_at"])
+      .where("works.title", "=", "Draf tanpa tajuk")
+      .where("works.body", "=", "")
+      .where("works.status", "=", "draft")
+      .where("works.type", "=", input.type);
+    if (input.type === "bersiri") {
+      if (input.seriesId) {
+        const reusable = await untouched
+          .innerJoin("series_entries", "series_entries.work_id", "works.id")
+          .where("series_entries.series_id", "=", String(input.seriesId))
+          .orderBy("works.created_at", "desc")
+          .execute();
+        const hit = reusable.find((row) => String(row.created_at) === String(row.updated_at));
+        if (hit) return NextResponse.json({ id: hit.id, seriesId: String(input.seriesId), inherited: null, reused: true }, { status: 200 });
+      }
+    } else {
+      const rows = await untouched.orderBy("works.created_at", "desc").limit(10).execute();
+      const hit = rows.find((row) => String(row.created_at) === String(row.updated_at));
+      if (hit) return NextResponse.json({ id: hit.id, seriesId: null, inherited: null, reused: true }, { status: 200 });
+    }
+
     const result = await getDb().transaction().execute(async (tx) => {
       const now = new Date().toISOString();
       const id = `work-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;

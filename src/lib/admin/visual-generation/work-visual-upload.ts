@@ -163,6 +163,25 @@ export async function uploadVisualForWork(
     }
   }
 
+  // The import (and the wizard) leave a "magnific" request with no picture for each place a picture was planned. Once the
+  // editor's own image sits in that place, that empty request is only clutter in the visual list, so it goes.
+  try {
+    if (input.role !== "hero" && (chapterHero || !input.anchor)) throw new Error("no exact place to match");
+    let stale = db
+      .deleteFrom("visual_requests")
+      .where("work_id", "=", input.workId)
+      .where("visual_role", "=", input.role as VisualRole)
+      .where("provider", "=", "magnific")
+      .where("status", "=", "draft")
+      .where("approval_state", "=", "pending")
+      .where("source_asset_path", "is", null)
+      .where("id", "!=", created.id);
+    if (input.role !== "hero" && !chapterHero && input.anchor) stale = stale.where("anchor", "=", input.anchor);
+    await stale.execute();
+  } catch {
+    // Tidying only: the picture itself is already attached.
+  }
+
   return { ok: true, visualRequestId: created.id, visualId: attach.visualId, assetPath: upload.assetPath };
 }
 

@@ -28,6 +28,7 @@ import { classifyFragmen, isIndonesianLanguage, isMalayLanguage } from "../../..
 import { buildGlossaryPrompt, parseGlossaryPaste } from "../../../../lib/admin/authoring/glossary-paste";
 import { buildWorkFillPrompt, guardWorkFill, looksLikePrompt, parseWorkFill, sawWholeManuscript } from "../../../../lib/admin/authoring/work-fill";
 import { dekWarning } from "../../../../lib/admin/authoring/dek-rule";
+import { foreignWordsOfGlossary, italiciseBody } from "../../../../lib/admin/authoring/italicise-body";
 import { renderItalics, toggleItalicSelection } from "../../../../lib/reader/inline-italics";
 import VisualManuscriptEditor, { canEditVisually } from "../../../../components/admin/VisualManuscriptEditor";
 import FootnoteInserter from "../../../../components/admin/FootnoteInserter";
@@ -716,6 +717,22 @@ export default function EditWorkPage() {
       return;
     }
     await importGlossaryText(text);
+  }
+
+  function italiciseLoanwords() {
+    const words = foreignWordsOfGlossary(glossaryTerms);
+    if (words.length === 0) {
+      toast("Glosari belum menandakan perkataan asing. Tandakan dengan *teks* di tab Glosari, atau isi Bahasa asal.", "info");
+      return;
+    }
+    const result = italiciseBody(form.body, words);
+    if (result.count === 0) {
+      toast("Tiada perkataan asing dalam teks yang perlu dicondongkan.", "info");
+      return;
+    }
+    setForm((prev) => ({ ...prev, body: result.text }));
+    setDirty(true);
+    toast(`${result.count} tempat dicondongkan. Simpan teks & maklumat untuk menyimpannya.`, "success");
   }
 
   function chooseImagePosition() {
@@ -2364,6 +2381,8 @@ export default function EditWorkPage() {
               <p>Isi tajuk utama dalam medan Tajuk—<code># Tajuk</code> di dalam manuskrip tidak dipaparkan kepada pembaca. &quot;Pratonton teks&quot; di bawah hanya menunjukkan teks yang sedang anda taip. Untuk halaman penuh seperti yang dilihat pembaca (kepala, gambar, lajur sisi, bab), simpan dahulu kemudian tekan Pratonton di bahagian atas.</p>
             </details>
             <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={() => setShowManuscriptPreview((value) => !value)}>{showManuscriptPreview ? "Tutup pratonton teks" : "Pratonton teks"}</button>
+            <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={italiciseLoanwords}>Condongkan perkataan asing dalam teks</button>
+            <span className="admin-form-hint">Mencondongkan dalam teks perkataan yang ditandakan asing dalam Glosari (atau yang bahasa asalnya bukan Melayu). Yang sudah condong atau tebal tidak diubah.</span>
             {showManuscriptPreview && (() => {
               const footnotes = extractFootnotes(stripImageMarkers(form.body));
               return <div className="admin-markdown-preview"><StoryMarkdown glossary={{}} footnoteNumbers={footnotes.numbers}>{markFootnoteReferences(footnotes.body, footnotes.numbers)}</StoryMarkdown><FootnoteList notes={footnotes.notes} /></div>;
@@ -2392,7 +2411,7 @@ export default function EditWorkPage() {
               aria-describedby={everPublic ? "slug-locked" : undefined}
               onChange={(e) => { setSlugAuto(false); setForm((prev) => ({ ...prev, slug: e.target.value })); }}
             />
-            {everPublic ? <span id="slug-locked" className="admin-form-hint">Karya ini pernah diterbitkan; alamatnya dikunci supaya pautan yang sudah dikongsi tidak terputus.</span> : null}
+            {everPublic ? <span id="slug-locked" className="admin-form-hint">Karya ini pernah diterbitkan; alamatnya dikunci supaya pautan yang sudah dikongsi tidak terputus.{slugify(form.title) && slugify(form.title) !== form.slug ? " Tajuk telah ditukar, tetapi alamat kekal seperti asal; ini disengajakan dan tidak menjejaskan tajuk yang dilihat pembaca." : ""}</span> : null}
             {form.status === "draft" && (
               <label className="admin-checkbox-label">
                 <input
@@ -3150,7 +3169,7 @@ export default function EditWorkPage() {
                   aria-describedby="glossary-italic-hint"
                 />
                 <span id="glossary-italic-hint" className="admin-form-hint">
-                  Untuk mencondongkan perkataan (cth. perkataan asing): pilih teks dan tekan Ctrl+I, atau tulis *teks*. Tiada yang dicondongkan secara automatik.
+                  Untuk mencondongkan perkataan (cth. perkataan asing): pilih teks dan tekan Ctrl+I, atau tulis *teks*. Perkataan yang dicondongkan di sini boleh dicondongkan juga dalam teks karya dengan butang &quot;Condongkan perkataan asing dalam teks&quot; di tab Maklumat.
                 </span>
               </div>
 
@@ -3190,7 +3209,7 @@ export default function EditWorkPage() {
                   aria-describedby="glossary-origin-hint"
                 />
                 <span id="glossary-origin-hint" className="admin-form-hint">
-                  Pilihan, untuk perkataan pinjaman. Cara sebut dan ejaan asal dipaparkan di bawah istilah dalam kotak glosari. Kosongkan jika tidak berkenaan.
+                  Pilihan, untuk perkataan pinjaman. Cara sebut dan ejaan asal dipaparkan di bawah istilah dalam kotak glosari. Kosongkan jika tidak berkenaan. Cara sebut yang datang daripada bot sembang kadang-kadang tidak tepat (contoh: tasmi' ditulis &quot;tas-mik&quot;); semak sebelum diterbitkan.
                 </span>
               </div>
 

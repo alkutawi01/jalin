@@ -221,6 +221,51 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
     }
   }
 
+  /**
+   * Archive, or bring back as drafts, this episode and every later one in one go (it used to take one request per episode, and a
+   * continuing series asked to confirm hiding the later ones each time). Latest first, so no episode is archived while a later
+   * one is still public.
+   */
+  async function handleBulkStatus(fromPosition: number, action: "archive" | "restore") {
+    if (!series || actionBusy) return;
+    const targets = series.entries
+      .filter((e) => e.position >= fromPosition)
+      .filter((e) => {
+        const status = entryWorks.get(e.work_id)?.status;
+        return action === "archive" ? status !== undefined && status !== "archived" : status === "archived";
+      })
+      .sort((a, b) => (action === "archive" ? b.position - a.position : a.position - b.position));
+    if (targets.length === 0) {
+      toast(action === "archive" ? "Tiada episod untuk diarkibkan dari sini." : "Tiada episod arkib dari sini.", "info");
+      return;
+    }
+    const question = action === "archive"
+      ? `Arkibkan ${targets.length} episod, dari Episod ${fromPosition} ke atas? Pembaca tidak lagi melihatnya. Boleh dipulihkan kemudian.`
+      : `Pulihkan ${targets.length} episod arkib dari Episod ${fromPosition} ke atas sebagai draf? Ia belum diterbitkan.`;
+    if (!(await confirmAction(question, { danger: action === "archive", confirmLabel: action === "archive" ? "Ya, arkibkan" : "Ya, pulihkan" }))) return;
+    setActionBusy(true);
+    setError(null);
+    let done = 0;
+    try {
+      for (const entry of targets) {
+        const res = await fetch(`/api/admin/works/${entry.work_id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(action === "archive" ? { status: "archived", confirmHidesLater: true } : { status: "draft" }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(`Episod ${entry.position}: ${data.error || "status tidak dapat ditukar."}`);
+        done += 1;
+      }
+      toast(action === "archive" ? `${done} episod diarkibkan.` : `${done} episod dipulihkan sebagai draf.`, "success");
+    } catch (err) {
+      setError(errorText(err));
+    } finally {
+      setActionBusy(false);
+      await loadSeries();
+    }
+  }
+
   async function handleMove(index: number, direction: -1 | 1) {
     if (!series || actionBusy) return;
     const ids = series.entries.map((e) => e.work_id);
@@ -358,7 +403,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
       <section className="admin-section" aria-labelledby="series-hero-title">
         <h2 id="series-hero-title" className="admin-form-section-title">Gambar siri</h2>
         <p className="admin-form-hint">
-          Ilustrasi untuk halaman judul siri, dibuat khas untuk siri ini. Jangan gunakan adegan daripada sesuatu episod kerana ia boleh membocorkan cerita. Tanpa gambar, halaman siri memaparkan tajuk bertipografi.
+          Ilustrasi untuk halaman judul siri, dibuat khas untuk siri ini. Jangan gunakan adegan daripada sesuatu episod kerana ia boleh membocorkan cerita. Gambar ini dipaparkan sebagai sampul di halaman utama, jadi bukan helaian rujukan watak, papan konsep atau gambar yang penuh tulisan. Tanpa gambar, halaman siri memaparkan tajuk bertipografi.
         </p>
         {series.hero_src ? (
           <figure style={{ margin: "0 0 12px", maxWidth: 360 }}>
@@ -520,6 +565,22 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
                               title="Isi genre, khalayak, kredit, watak dan latar yang masih kosong daripada siri dan episod sebelumnya. Apa yang sudah anda tulis tidak diganti."
                               onClick={() => handleInherit(entry.work_id)}>
                               Isi daripada siri
+                            </button>
+                          ) : null}
+                          {work && work.status !== "archived" ? (
+                            <button type="button" className="admin-btn admin-btn-sm admin-btn-outline"
+                              disabled={actionBusy}
+                              title="Arkibkan episod ini dan semua episod selepasnya sekali gus."
+                              onClick={() => handleBulkStatus(entry.position, "archive")}>
+                              Arkibkan dari sini
+                            </button>
+                          ) : null}
+                          {work?.status === "archived" ? (
+                            <button type="button" className="admin-btn admin-btn-sm admin-btn-outline"
+                              disabled={actionBusy}
+                              title="Pulihkan episod arkib ini dan semua episod arkib selepasnya sebagai draf (belum diterbitkan)."
+                              onClick={() => handleBulkStatus(entry.position, "restore")}>
+                              Pulihkan dari sini
                             </button>
                           ) : null}
                           <button type="button" className="admin-btn admin-btn-sm admin-btn-danger"

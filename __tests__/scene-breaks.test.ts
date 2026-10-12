@@ -7,8 +7,11 @@ function assert(cond: boolean, msg: string, detail?: unknown) {
   if (cond) { passed++; console.log(`  ✓ ${msg}`); } else { failed++; console.error(`  ✗ ${msg}`, detail ?? ""); }
 }
 
-for (const line of ["---", "***", "___", "* * *", "- - -", "~~~", "###", "# # #", "===", "• • •", "◆ ◆ ◆", "----------", "  * * *  ", "⁂⁂⁂"]) {
+for (const line of ["---", "***", "___", "* * *", "- - -", "~~~", "###", "# # #", "===", "• • •", "◆ ◆ ◆", "----------", "  * * *  ", "⁂⁂⁂", "✦", "  ✦  ", "✧", "◆", "◇", "⁂"]) {
   assert(isSceneBreakLine(line), `"${line.trim()}" is a scene break`);
+}
+for (const line of ["•", "·", "*", "-", "#", "~", "=", "_", "✦ dan", "a ✦"]) {
+  assert(!isSceneBreakLine(line), `a lone "${line}" is NOT a scene break`);
 }
 for (const line of ["...", "…", "....", "--", "—", "- - ", "**", "## Bab", "#hashtag", "*dia*", "---x", "a --- b", ":::mesej", "[[gambar:1]]", "", "   ", "* * *x"]) {
   assert(!isSceneBreakLine(line), `"${line}" is NOT a scene break`);

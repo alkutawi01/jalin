@@ -202,7 +202,13 @@ function characterBlocks(text: string): string[][] {
 function field(block: string[], names: RegExp): string {
   for (const line of block) {
     const m = new RegExp(`^[\\s*_\\-•>]*(?:\\d+[.)]\\s*)?[*_]*(?:${names.source})[*_]*\\s*[:：]\\s*[*_]*\\s*(.*)$`, "i").exec(line);
-    if (m) return (m[1] ?? "").replace(/\*\*|__/g, "").trim().replace(/^["“”']+|["“”']+$/g, "");
+    if (m) {
+      const raw = (m[1] ?? "").replace(/\*\*|__/g, "").trim();
+      // A closing single quote is removed only when one opened the value; after a letter it is the Arabic mark (tasmi').
+      const opened = /^['‘’]/.test(raw);
+      const out = raw.replace(/^["“”'‘’]+/, "").replace(/["“”]+$/, "");
+      return opened ? out.replace(/['‘’]+$/, "") : out;
+    }
   }
   return "";
 }

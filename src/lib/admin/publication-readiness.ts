@@ -7,6 +7,7 @@
  */
 
 import { placeholderFields } from "./authoring/placeholder";
+import { placesMentionedIn } from "./places-mentioned";
 import { isSourcedWork } from "../content/source-origin";
 import type { WorkStatus, WorkType } from "../db/types";
 import { isDerivativeType, roleNotAllowed } from "../credit-roles";
@@ -438,6 +439,20 @@ export function evaluatePublicationReadinessFromData(
     contentWarnings.push(
       issue("glossary_empty", "Glosari kosong. Disyorkan sekurang-kurangnya beberapa istilah.")
     );
+  }
+  // Latar tempat carried over from an earlier episode that this text never mentions (a leftover, or one that contradicts the
+  // story's canon) would be shown to readers as part of this episode.
+  const savedPlaces = Array.isArray(work.metadata?.places)
+    ? (work.metadata!.places as unknown[]).filter((p): p is { name: string } => !!p && typeof (p as { name?: unknown }).name === "string")
+    : [];
+  if (savedPlaces.length > 0 && !bodyEmpty) {
+    const mentioned = new Set(placesMentionedIn(savedPlaces, work.body ?? "").map((p) => p.name));
+    const unused = savedPlaces.filter((p) => !mentioned.has(p.name)).map((p) => p.name);
+    if (unused.length > 0) {
+      contentWarnings.push(
+        issue("places_not_in_text", `Latar tempat yang tidak disebut dalam teks episod ini: ${unused.join(", ")}. Padam jika sisa daripada episod lain.`)
+      );
+    }
   }
 
   // --- Credits ---

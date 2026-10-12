@@ -5,9 +5,13 @@
  * and "---" or "===" straight under a sentence turn that sentence into a heading. Every such line becomes a plain "---"
  * with a blank line on each side.
  *
+ * A single ornament alone on its line ("✦", "✧", "◆", "◇", "⁂") is also a scene break: editors paste it from Word as
+ * the chapter divider, and it used to stay in the text as a stray symbol. Plain marks ("-", "*", "•") are not accepted
+ * singly, because a lone one can be a list marker or a dialogue dash.
+ *
  * Deliberately NOT a scene break: a line of dots ("..." or "…"), which is silence in a dialogue, and dashes in a sentence.
  */
-const ORNAMENT = /^([-*_~=#•·◆◇✦✧⁂])(?:[ \t]*\1){2,}$/u;
+const ORNAMENT = /^(?:([-*_~=#•·◆◇✦✧⁂])(?:[ \t]*\1){2,}|[◆◇✦✧⁂])$/u;
 
 export function isSceneBreakLine(line: string): boolean {
   return ORNAMENT.test(line.trim());
