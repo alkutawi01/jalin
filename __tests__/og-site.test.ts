@@ -5,7 +5,7 @@
  */
 import fs from "node:fs";
 import path from "node:path";
-import { OG_SITE, shareImage, shareImageUrl } from "../src/lib/seo";
+import { OG_SITE, ogImageUrl, shareImage } from "../src/lib/seo";
 
 let passed = 0;
 let failed = 0;
@@ -40,7 +40,8 @@ const missing = walk(appDir).filter((file) => !file.includes(`${path.sep}admin${
 assert(missing.length === 0, `no public page sets a share card without the site's name${missing.length ? ": " + missing.map((f) => path.relative(appDir, f)).join(", ") : ""}`);
 
 const withAlt = shareImage("/visuals/a/hero.png", "  Kerusi rotan di beranda ");
-assert(withAlt.url === shareImageUrl("/visuals/a/hero.png") && withAlt.alt === "Kerusi rotan di beranda", "the share picture carries its description");
+assert(withAlt.url === ogImageUrl("/visuals/a/hero.png") && withAlt.alt === "Kerusi rotan di beranda", "the share picture carries its description");
+assert(withAlt.width === 1200 && withAlt.height === 630, "and its size: a link card is cropped to 1200 x 630 (/api/og)");
 assert(!("alt" in shareImage("/visuals/a/hero.png", "")) && !("alt" in shareImage("/visuals/a/hero.png", null)) && !("alt" in shareImage("/visuals/a/hero.png")), "a picture without a description has no empty alt");
 assert(read("src/app/kategori/[type]/[slug]/page.tsx").includes("publishedTime: work.publishedAt") && read("src/app/kategori/bersiri/[seriesSlug]/[episodeSlug]/page.tsx").includes("publishedTime: work.publishedAt"), "a work and an episode say when they were published");
 assert(read("src/app/penulis/[slug]/page.tsx").includes('type: "profile"'), "an author page is a profile");

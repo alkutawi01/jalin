@@ -42,9 +42,12 @@ assert(png.subarray(1, 4).toString("ascii") === "PNG" && png.readUInt32BE(16) ==
 const seo = read("src/lib/seo.ts");
 assert(seo.includes("/brand/og-default.png") && seo.includes("width: 1200, height: 630") && seo.includes('alt: "Jalin — Selami dunia melalui cerita"'), "it is declared with its size and a description");
 assert(layout.includes("images: [DEFAULT_SHARE_IMAGE]") && layout.includes("images: [DEFAULT_SHARE_IMAGE.url]"), "the homepage (and every page that sets no card of its own) shares it");
-for (const page of ["src/app/kategori/[type]/page.tsx", "src/app/penulis/[slug]/page.tsx", "src/app/tentang/page.tsx", "src/app/privasi/page.tsx", "src/app/terma/page.tsx"]) {
+for (const page of ["src/app/penulis/[slug]/page.tsx", "src/app/tentang/page.tsx", "src/app/privasi/page.tsx", "src/app/terma/page.tsx"]) {
   assert(read(page).includes("images: [DEFAULT_SHARE_IMAGE]") && read(page).includes("images: [DEFAULT_SHARE_IMAGE.url]"), `${page} shares it on Open Graph and on X`);
 }
+// A category list shares its newest work's picture (#315), and the default when it has none.
+const listing = read("src/app/kategori/[type]/page.tsx");
+assert(listing.includes(": DEFAULT_SHARE_IMAGE;") && listing.includes("images: [picture]") && listing.includes("images: [picture.url]"), "src/app/kategori/[type]/page.tsx shares the newest work's picture on Open Graph and on X, the default when it has none");
 for (const page of ["src/app/kategori/[type]/[slug]/page.tsx", "src/app/kategori/bersiri/[seriesSlug]/page.tsx", "src/app/kategori/bersiri/[seriesSlug]/[episodeSlug]/page.tsx"]) {
   assert(/\? shareImage\([^)]*\) : DEFAULT_SHARE_IMAGE\]/.test(read(page)) && !read(page).includes('"summary"'), `${page}: its own picture first, the default when it has none`);
 }
