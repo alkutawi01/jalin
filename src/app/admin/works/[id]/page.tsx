@@ -25,8 +25,8 @@ import FootnoteList from "../../../../components/reader/FootnoteList";
 import { extractFootnotes, markFootnoteReferences } from "../../../../lib/reader/footnotes";
 import { stripImageMarkers } from "../../../../lib/reader/image-markers";
 import { classifyFragmen, isIndonesianLanguage, isMalayLanguage } from "../../../../lib/content/fragmen-kind";
-import { buildGlossaryPrompt, parseGlossaryPaste } from "../../../../lib/admin/authoring/glossary-paste";
-import { buildWorkFillPrompt, looksLikePrompt, parseWorkFill } from "../../../../lib/admin/authoring/work-fill";
+import { parseGlossaryPaste } from "../../../../lib/admin/authoring/glossary-paste";
+import { buildWorkFillPrompt, guardWorkFill, looksLikePrompt, parseWorkFill, sawWholeManuscript } from "../../../../lib/admin/authoring/work-fill";
 import { dekWarning } from "../../../../lib/admin/authoring/dek-rule";
 import { renderItalics, toggleItalicSelection } from "../../../../lib/reader/inline-italics";
 import VisualManuscriptEditor, { canEditVisually } from "../../../../components/admin/VisualManuscriptEditor";
@@ -219,10 +219,6 @@ interface SectionData {
 
 const isSourced = (type: string, origin: string) => isSourcedWork(type, { origin });
 
-const TAB_NAMES: Record<Tab, string> = {
-  content: "Kandungan", metadata: "Maklumat", sections: "Bab", credits: "Kredit", glossary: "Glosari", characters: "Watak & latar", source: "Sumber & Hak", panel: "Penilaian AI"
-};
-
 const HISTORY_ACTIONS: Record<string, string> = {
   review: "Semakan hak",
   provenance_edit: "Butiran sumber diubah",
@@ -299,7 +295,6 @@ export default function EditWorkPage() {
   const [positionError, setPositionError] = useState("");
   const [showManuscriptPreview, setShowManuscriptPreview] = useState(false);
   const [manuscriptMode, setManuscriptMode] = useState<"markdown" | "visual">("visual");
-  const [assistantNote, setAssistantNote] = useState("");
   const [glossaryBusy, setGlossaryBusy] = useState(false);
   const [fillBusy, setFillBusy] = useState(false);
   const [fillNote, setFillNote] = useState<string[]>([]);
@@ -318,22 +313,6 @@ export default function EditWorkPage() {
   function selectTab(tab: Tab) {
     setActiveTab(tab);
     window.history.replaceState(window.history.state, "", `#${tab}`);
-  }
-  async function copyAssistantPrompt() {
-    const focus = activeTab === "content" ? "semak struktur dan kelancaran manuskrip tanpa menulis semula karya"
-      : activeTab === "metadata" ? "cadangkan dek, genre dan minit bacaan berdasarkan manuskrip"
-      : activeTab === "credits" ? "senaraikan peranan kredit yang benar-benar dibuktikan oleh maklumat diberi; jangan reka penyumbang"
-      : activeTab === "glossary" ? "cadangkan istilah yang benar-benar hadir dalam manuskrip serta maksud ringkas"
-      : activeTab === "characters" ? "senaraikan watak yang benar-benar hadir, peranan, dan kemunculan pertama tanpa spoiler"
-      : activeTab === "source" ? "susun maklumat sumber dan bukti hak yang editor berikan; jangan mendakwa status domain awam tanpa bukti"
-      : "semak struktur bab tanpa mengubah urutan cerita";
-    const prompt = `Anda pembantu editorial Jalin. Jenis karya: ${form.type}. Tugas: ${focus}. Jawab dalam bahasa Melayu dengan butiran yang mudah dipindahkan ke tab ${activeTab}. Jangan mereka fakta, kredit, sumber atau peristiwa. Tanda maklumat yang tidak dapat disahkan sebagai 'perlu semakan editor'. ${form.type === "bersiri" ? "Episod ini sebahagian siri; minta ringkasan episod terdahulu dan nota canon jika belum diberi. Jangan anggap episod berdiri sendiri." : ""}\n\nMANUSKRIP:\n${form.body.trim() || "[Editor akan tampal manuskrip]"}`;
-    try {
-      await navigator.clipboard.writeText(prompt);
-      setAssistantNote("Arahan untuk tab ini telah disalin. Semak cadangan bot sembang sebelum memasukkannya ke editor.");
-    } catch {
-      setAssistantNote("Salin gagal. Benarkan akses papan keratan dalam pelayar dan cuba lagi.");
-    }
   }
   /** Ctrl+I (or Cmd+I) italicises the selection with *asterisks*; nothing is italicised automatically. */
   function italicShortcut(event: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>, field: "term" | "meaning") {
@@ -376,6 +355,14 @@ export default function EditWorkPage() {
 
   /** One copy: everything a chatbot may suggest, with the manuscript. */
   async function copyFillPrompt() {
+    if (!form.body.trim()) {
+      setFillNote(["Karya ini belum mempunyai teks. Isi tab Kandungan dan tekan Simpan teks & maklumat dahulu, kemudian salin arahan."]);
+      return;
+    }
+    if (form.body !== savedBody) {
+      setFillNote(["Teks di editor belum disimpan. Tekan Simpan teks & maklumat dahulu supaya arahan, penilaian dan karya yang diterbitkan menggunakan teks yang sama."]);
+      return;
+    }
     const namesOf = async (path: "places" | "times") => {
       try {
         const res = await fetch(`/api/admin/works/${workId}/${path}`);
@@ -398,7 +385,7 @@ export default function EditWorkPage() {
     });
     try {
       await navigator.clipboard.writeText(prompt);
-      setFillNote(["Arahan disalin. Tampal ke bot sembang, kemudian salin seluruh jawapannya dan tekan Tampal & isi."]);
+      setFillNote(["Arahan disalin. Tampal ke bot sembang BAHARU (bukan sembang lama), tunggu ia selesai, salin seluruh jawapannya dan tekan Tampal & isi. Jawapan mesti menyertakan bahagian [SEMAKAN]; jika tidak, tiada apa-apa diisi."]);
       toast("Arahan disalin.", "success");
     } catch {
       setFillNote(["Salin gagal. Benarkan akses papan keratan dalam pelayar dan cuba lagi."]);
@@ -427,15 +414,27 @@ export default function EditWorkPage() {
       setFillNote(["Yang disalin ialah arahan, bukan jawapan bot sembang. Tampal arahan itu kepada bot sembang, salin jawapannya, kemudian tekan Tampal & isi."]);
       return;
     }
-    const result = parseWorkFill(text);
+    const parsed = parseWorkFill(text);
+    if (parsed.check.incomplete && parsed.sections.length === 0) {
+      setFillNote(["Bot sembang menjawab bahawa ia tidak menerima teks penuh. Tiada apa-apa diisi. Tampal arahan itu semula (atau lampirkan fail teksnya), tunggu ia selesai memuatkan, kemudian cuba lagi."]);
+      return;
+    }
+    if (parsed.sections.length > 0 && !sawWholeManuscript(parsed, form.body)) {
+      setFillNote([
+        "Tiada apa-apa diisi: bot sembang tidak dapat memetik hujung teks karya dengan betul, jadi ia mungkin tidak membaca keseluruhannya (inilah yang menyebabkan watak yang direka). Tampal arahan semula dalam sembang baharu dan pastikan jawapannya menyertakan bahagian [SEMAKAN] dengan enam perkataan terakhir manuskrip."
+      ]);
+      return;
+    }
+    const guarded = guardWorkFill(parsed, form.body);
+    const result = guarded.result;
     if (result.sections.length === 0) {
       // Say what was actually read, so the editor sees at once whether it is the wrong text or a damaged answer.
-      const seen = text.trim().replace(/s+/g, " ");
+      const seen = text.trim().replace(/\s+/g, " ");
       setFillNote([`Tiada bahagian [MAKLUMAT], [WATAK], [LATAR], [GLOSARI] atau [SUMBER] ditemui. Papan keratan mengandungi ${text.length} aksara dan bermula dengan: "${seen.length > 70 ? seen.slice(0, 70) + "…" : seen}". Salin jawapan bot sembang (butang Salin pada jawapannya) dan terus tekan Tampal & isi.`]);
       return;
     }
     setFillBusy(true);
-    const notes: string[] = [];
+    const notes: string[] = [...guarded.notes];
     /** Writes that reached the server so far: an error part-way must say truthfully whether anything was saved. */
     let wrote = 0;
     try {
@@ -593,20 +592,6 @@ export default function EditWorkPage() {
     }
   }
 
-  async function copyGlossaryPrompt() {
-    const prompt = buildGlossaryPrompt({
-      type: form.type,
-      body: form.body,
-      existingTerms: glossaryTerms.map((term) => term.term)
-    });
-    try {
-      await navigator.clipboard.writeText(prompt);
-      setGlossaryNote("Arahan glosari sudah disalin. Tampal ke bot sembang, kemudian salin jawapannya dan tekan Tampal & import.");
-      toast("Arahan glosari disalin.", "success");
-    } catch {
-      setGlossaryNote("Salin gagal. Benarkan akses papan keratan dalam pelayar dan cuba lagi.");
-    }
-  }
 
   /** Parse the chatbot's answer and add every new term in one go. */
   async function importGlossaryText(answer: string) {
@@ -661,20 +646,6 @@ export default function EditWorkPage() {
     }
   }
 
-  async function pasteGlossaryFromClipboard() {
-    let text = "";
-    try {
-      text = await navigator.clipboard.readText();
-    } catch {
-      setGlossaryNote("Pelayar menyekat bacaan papan keratan. Klik ikon tetapan di sebelah alamat laman, benarkan \"Papan keratan\" untuk laman ini, kemudian tekan Tampal & import semula.");
-      return;
-    }
-    if (!text.trim()) {
-      setGlossaryNote("Papan keratan kosong. Salin jawapan bot sembang dahulu.");
-      return;
-    }
-    await importGlossaryText(text);
-  }
 
   function chooseImagePosition() {
     const textarea = manuscriptRef.current;
@@ -2129,9 +2100,12 @@ export default function EditWorkPage() {
       <p className="admin-form-hint a-work-save-help">Gambar, kredit, glosari dan bab disimpan melalui tindakan masing-masing — tidak memerlukan butang ini.</p>
 
       <section className="a-assistant" id="chatbot-fill" aria-label="Isi maklumat dengan bot sembang">
-        <h2>Isi maklumat dengan bot sembang (sekali salin, sekali tampal)</h2>
+        <h2>Isi maklumat dengan bot sembang (sekali sahaja bagi satu episod)</h2>
         <p className="admin-form-hint">
-          Bot sembang hanya membantu; editor yang memutuskan. Satu jawapan mengisi dek, genre, watak, latar tempat, latar masa, glosari{form.type === "fragmen" || form.type === "sinopsis" ? " dan maklumat sumber" : ""} yang masih kosong. Teks karya, kredit, imej dan hak tidak diisi, dan apa yang sudah anda tulis tidak diganti.
+          Ini satu-satunya bantuan bot sembang untuk karya ini; tiada bantuan berasingan di tab lain. Satu salinan, satu tampalan, dan satu jawapan mengisi dek, genre, watak, latar tempat, latar masa dan glosari{form.type === "fragmen" || form.type === "sinopsis" ? " serta maklumat sumber" : ""} yang masih kosong. Ulang hanya jika anda mengubah teks dengan banyak. Teks karya, kredit, imej dan hak tidak diisi, dan apa yang sudah anda tulis tidak diganti.
+        </p>
+        <p className="admin-form-hint" role="status">
+          Sudah diisi: dek {form.dek.trim() ? "✓" : "kosong"}, genre {form.genre.trim() ? "✓" : "kosong"}, watak {characters.length || "kosong"}, glosari {glossaryTerms.length || "kosong"}.
         </p>
         <div className="admin-form-actions">
           <button type="button" className="admin-btn admin-btn-outline" onClick={() => void copyFillPrompt()} disabled={fillBusy}>1. Salin arahan</button>
@@ -2211,31 +2185,6 @@ export default function EditWorkPage() {
         )}
       </div>
 
-      {activeTab !== "glossary" && activeTab !== "panel" && <details className="admin-advanced-field">
-        <summary>Bantuan bot sembang untuk tab {TAB_NAMES[activeTab as Tab] ?? activeTab}</summary>
-        {activeTab === "characters" ? (
-          <>
-            <p className="admin-form-hint">
-              Satu arahan untuk <strong>watak, latar tempat dan latar masa</strong> (dan dek, genre dan glosari sekali): tekan <em>1. Salin arahan</em>, tampal ke bot sembang, salin seluruh jawapannya, kemudian tekan <em>2. Tampal &amp; isi</em> di sini. Yang baharu ditambah; apa yang sudah ada tidak diganti. Latar masa ialah tahun atau era (contoh: 1969), bukan pagi, siang atau malam.
-            </p>
-            <div className="admin-form-actions">
-              <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={() => void copyFillPrompt()} disabled={fillBusy}>1. Salin arahan</button>
-              <button type="button" className="admin-btn admin-btn-primary admin-btn-sm" onClick={() => void pasteFillFromClipboard()} disabled={fillBusy}>{fillBusy ? "Mengisi…" : "2. Tampal & isi"}</button>
-            </div>
-            {fillNote.length > 0 ? (
-              <ul className="admin-form-hint" role="status">
-                {fillNote.map((line, index) => (<li key={index}>{line}</li>))}
-              </ul>
-            ) : null}
-          </>
-        ) : (
-          <p className="admin-form-hint">Salin arahan bersama manuskrip semasa, kemudian tampal ke bot sembang pilihan anda. Jawapan untuk tab ini hanya nasihat: tiada tempat untuk menampalnya, jadi taip atau ubah sendiri di tab ini. (Dek, genre, watak, glosari dan sumber boleh diisi sekali gus melalui kotak &quot;Isi maklumat dengan bot sembang&quot; di bahagian atas.) Editor kekal bertanggungjawab menyemaknya.</p>
-        )}
-        {activeTab !== "characters" ? (
-          <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" onClick={() => void copyAssistantPrompt()}>Salin arahan tab ini</button>
-        ) : null}
-        {assistantNote && <p className="admin-form-hint" role="status">{assistantNote}</p>}
-      </details>}
 
       {activeTab === "content" && (
         <form onSubmit={handleSubmit} onChange={() => setDirty(true)} className="admin-form">
@@ -3039,23 +2988,7 @@ export default function EditWorkPage() {
 
       {activeTab === "glossary" && (
         <div className="admin-glossary">
-          <section className="a-assistant" aria-label="Glosari dengan bot sembang">
-            <h3>Glosari dengan bot sembang</h3>
-            <ol className="admin-form-hint">
-              <li>Tekan <strong>Salin arahan</strong>. Arahan, format jawapan dan manuskrip disalin sekali gus.</li>
-              <li>Tampal ke bot sembang pilihan anda dan tunggu jawapannya.</li>
-              <li>Salin jawapan bot sembang, kemudian tekan <strong>Tampal &amp; import</strong>. Semua istilah dibaca dan ditambah terus.</li>
-            </ol>
-            <div className="admin-form-actions">
-              <button type="button" className="admin-btn admin-btn-outline" onClick={() => void copyGlossaryPrompt()} disabled={glossaryBusy}>
-                1. Salin arahan
-              </button>
-              <button type="button" className="admin-btn admin-btn-primary" onClick={() => void pasteGlossaryFromClipboard()} disabled={glossaryBusy}>
-                {glossaryBusy ? "Mengimport…" : "2. Tampal & import"}
-              </button>
-            </div>
-            {glossaryNote && <p className="admin-form-hint" role="status">{glossaryNote}</p>}
-          </section>
+          <p className="admin-form-hint">Glosari diisi sekali bersama maklumat lain dalam kotak <a href="#chatbot-fill">Isi maklumat dengan bot sembang</a> di atas. Di sini anda menyemak, mengedit atau menambah istilah sendiri.</p>
 
           {glossaryError && (
             <div className="admin-alert admin-alert-error" role="alert">{glossaryError}</div>
@@ -3654,6 +3587,11 @@ export default function EditWorkPage() {
       )}
       {activeTab === "panel" && canPanel && ["cerpen", "novela", "bersiri"].includes(form.type) && (
         <div className="admin-panel-tab">
+          {form.body.trim() && form.body !== savedBody ? (
+            <div className="admin-alert admin-alert-error" role="alert">
+              Teks di editor belum disimpan. Penilaian AI membaca teks yang tersimpan, jadi tekan <strong>Simpan teks &amp; maklumat</strong> dahulu, kemudian kembali ke tab ini.
+            </div>
+          ) : null}
           <PanelTab kind="work" subjectId={workId} />
         </div>
       )}
