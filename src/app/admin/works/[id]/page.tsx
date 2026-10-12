@@ -3326,6 +3326,7 @@ export default function EditWorkPage() {
                           value={character.name}
                           onChange={(e) => updateCharacterRow(index, { name: e.target.value })}
                           placeholder="Nama watak"
+                          aria-label={`Nama watak ${index + 1}`}
                         />
                       </td>
                       <td>
@@ -3334,6 +3335,7 @@ export default function EditWorkPage() {
                           value={character.role}
                           onChange={(e) => updateCharacterRow(index, { role: e.target.value })}
                           placeholder="Contoh: Watak utama"
+                          aria-label={`Peranan watak ${index + 1}`}
                         />
                       </td>
                       {form.type === "novela" && (
@@ -3345,6 +3347,7 @@ export default function EditWorkPage() {
                               firstAppearanceSection: e.target.value || null,
                             })}
                             placeholder="cth. bab-1"
+                            aria-label={`Kemunculan pertama watak ${index + 1}`}
                           />
                         </td>
                       )}
@@ -3353,6 +3356,7 @@ export default function EditWorkPage() {
                           type="button"
                           className="admin-btn admin-btn-sm admin-btn-danger"
                           onClick={() => removeCharacterRow(index)}
+                          aria-label={`Padam watak ${(character.name ?? "").trim() || index + 1}`}
                         >
                           Padam
                         </button>
