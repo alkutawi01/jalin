@@ -2,6 +2,7 @@
  * The chatbot only suggests. A suggestion is used only if the chatbot proved it read the whole text (it quotes the last words), and only
  * what the text supports: no invented characters, no guessed era. Also: a heading with its content on the same line is read.
  */
+import { dekWarning } from "../src/lib/admin/authoring/dek-rule";
 import { buildWorkFillPrompt, guardWorkFill, manuscriptTail, parseWorkFill, sawWholeManuscript } from "../src/lib/admin/authoring/work-fill";
 
 let passed = 0;
@@ -10,7 +11,7 @@ function assert(cond: boolean, msg: string) {
   if (cond) { passed++; console.log(`  ✓ ${msg}`); } else { failed++; console.error(`  ✗ ${msg}`); }
 }
 
-const body = "Izhar membawa mushaf ke rumah Ustazah Hazarah. Jannah menunggu di beranda. Mereka belajar sehingga petang dan pulang dengan senyap sebelum maghrib.";
+const body = "Izhar membawa mushaf ke rumah Ustazah Hazarah. Jannah menunggu di beranda. " + "kata ".repeat(70) + "Mereka belajar sehingga petang dan pulang dengan senyap sebelum maghrib.";
 const base = { type: "bersiri", body, glossaryTerms: [], characterNames: [], chapterSlugs: [] };
 
 const prompt = buildWorkFillPrompt(base);
@@ -58,6 +59,33 @@ assert(sawWholeManuscript(oneLine, body), "the check is read from one line");
 
 const year = guardWorkFill(parseWorkFill("[LATAR]\nJenis: masa\nNama: 1969\nKeterangan: Selepas rusuhan"), "Pada tahun 1969 mereka tiba.");
 assert(year.result.times.length === 1, "a year that is written in the text is kept");
+
+// --- a chatbot that lost the format -------------------------------------------------------------------------------------
+const noHeadings = parseWorkFill(`Dek: Satu petang di beranda.
+Genre: Drama
+Nama: Izhar
+Peranan: Pelajar
+Jenis: tempat
+Nama: Beranda
+Keterangan: Tempat mereka duduk
+Istilah: mushaf
+Maksud: Naskhah al-Quran.`);
+assert(noHeadings.dek === "Satu petang di beranda." && noHeadings.genre === "Drama", "no headings at all: dek and genre are inferred from their labels");
+assert(noHeadings.characters.length === 1 && noHeadings.characters[0]!.name === "Izhar", "no headings: a character is inferred");
+assert(noHeadings.places.length === 1 && noHeadings.places[0]!.name === "Beranda", "no headings: a Nama after Jenis belongs to the place, not to a character");
+assert(noHeadings.glossaryText.includes("mushaf"), "no headings: the glossary is inferred");
+
+const longBody = "Izhar menyelesaikan latihan. Abah memandang meja. " + "kata ".repeat(70) + "Soalan yang ditinggalkannya pula tidak boleh diselesaikan dengan mengulang mana-mana halaman.";
+const near = parseWorkFill("[MAKLUMAT]\nDek: x\n[SEMAKAN]\nPerkataan terakhir: diselesaikan dengan mengulang mana-mana halaman");
+assert(sawWholeManuscript(near, longBody), "an ending quoted with fewer words and no full stop is accepted");
+const wrong = parseWorkFill("[MAKLUMAT]\nDek: x\n[SEMAKAN]\nPerkataan terakhir: Abah memandang");
+assert(!sawWholeManuscript(wrong, longBody), "words from earlier in the text are not the ending");
+const echoed = parseWorkFill("[WATAK]\nWatak yang SUDAH ada (jangan ulang): Jannah, Izhar.\nNama: Faris\nPeranan: Anak saudara\n\n[LATAR]\nTempat yang SUDAH ada (jangan ulang): Rumah.\nJenis: tempat\nNama: Bilik guru\nKeterangan: Ruang guru");
+assert(echoed.characters.length === 1 && echoed.places.length === 1, "repeated 'already have' lines are not read as entries");
+
+assert(prompt.includes("BURUK (merumuskan") && prompt.includes("BAIK (suasana"), "the prompt gives a bad and a good dek example");
+assert(dekWarning("Izhar menyusun semula jadual selepas mendapat teguran daripada ustaz. Dia kemudian memutuskan untuk berubah. Akhirnya dia berjaya.") !== null, "a summarising dek gets a warning");
+assert(dekWarning("Hujan belum reda, dan ada satu nama yang tidak pernah disebut sesiapa di rumah itu.") === null, "a hook dek gets none");
 
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);

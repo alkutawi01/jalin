@@ -6,7 +6,7 @@
  * and it never overwrites something the editor has already written.
  */
 import { GLOSSARY_FORMAT, GLOSSARY_RULES } from "./glossary-paste";
-import { DEK_RULE } from "./dek-rule";
+import { DEK_EXAMPLES, DEK_RULE } from "./dek-rule";
 import { isPlaceholder } from "./placeholder";
 import { isSourcedWork } from "../../content/source-origin";
 
@@ -49,6 +49,7 @@ PRINSIP
 
 [MAKLUMAT]
 Dek: (${DEK_RULE})
+${DEK_EXAMPLES}
 Genre: (satu genre dalam satu atau dua patah perkataan)
 
 [WATAK]
@@ -301,6 +302,26 @@ export function looksLikePrompt(text: string): boolean {
   return /Anda pembantu editorial Jalin/i.test(text) && /\nPRINSIP\b/.test(text);
 }
 
+/**
+ * An answer with no headings at all (a chatbot that lost the format): the sections are inferred from the labels themselves.
+ * "Dek:" or "Genre:" starts MAKLUMAT, "Jenis:" starts LATAR, "Istilah:" starts GLOSARI, "Tajuk asal:" starts SUMBER, and "Nama:" starts
+ * WATAK unless a LATAR entry is open (where "Nama:" belongs to the place or time).
+ */
+function inferSections(lines: string[], sections: Record<string, string[]>): void {
+  let current: string | null = null;
+  const label = (line: string) => /^[\s*_\-•>]*(?:\d+[.)]\s*)?[*_]*([A-Za-zÀ-ÿ' ]{2,30}?)[*_]*\s*[:：]/.exec(line)?.[1]?.trim().toLowerCase() ?? "";
+  for (const line of lines) {
+    const l = label(line);
+    if (l === "dek" || l === "genre") current = "MAKLUMAT";
+    else if (l === "jenis") current = "LATAR";
+    else if (l === "istilah") current = "GLOSARI";
+    else if (/^(tajuk asal|pengarang asal)$/.test(l)) current = "SUMBER";
+    else if (l === "nama" && current !== "LATAR") current = "WATAK";
+    else if (l === "perkataan terakhir") current = "SEMAKAN";
+    if (current) (sections[current] = sections[current] ?? []).push(line);
+  }
+}
+
 export function parseWorkFill(answer: string): WorkFillResult {
   const lines = answer
     .replace(/\r\n/g, "\n")
@@ -322,6 +343,8 @@ export function parseWorkFill(answer: string): WorkFillResult {
     }
     if (current) sections[current]!.push(line);
   }
+
+  if (Object.keys(sections).filter((name) => name !== "SEMAKAN").length === 0) inferSections(lines, sections);
 
   const info = sections.MAKLUMAT ?? [];
   const characters: WorkFillResult["characters"] = [];
@@ -356,8 +379,8 @@ export function parseWorkFill(answer: string): WorkFillResult {
 
   const real = (v: string) => (isPlaceholder(v) ? "" : v);
   return {
-    dek: real(clean(field(info, /dek/))),
-    genre: real(clean(field(info, /genre/))),
+    dek: real(clean(field(info, /dek|pancingan|hook/))),
+    genre: real(clean(field(info, /genre|kategori/))),
     characters: uniqueByName(characters.filter((c) => !isPlaceholder(c.name) && !isPlaceholder(c.role))),
     places: uniqueByName(setting.places.filter((p) => !isPlaceholder(p.name))),
     times: uniqueByName(setting.times.filter((t) => !isPlaceholder(t.name))),
@@ -373,14 +396,21 @@ export function parseWorkFill(answer: string): WorkFillResult {
 
 const plain = (v: string) => v.normalize("NFKC").toLocaleLowerCase("ms").replace(/[^\p{L}\p{N}]+/gu, " ").trim();
 
-/** Does the chatbot's quoted ending match the real ending of the manuscript? */
+/**
+ * Does the chatbot's quoted ending come from the real ending of the manuscript? Lenient: punctuation, case and a few words more or fewer
+ * do not matter; at least two of the quoted words must sit together in the last sixty words of the text.
+ */
 export function sawWholeManuscript(result: WorkFillResult, body: string): boolean {
   if (result.check.incomplete) return false;
-  const quoted = plain(result.check.tail);
-  if (!quoted) return false;
-  const real = plain(manuscriptTail(body, 6));
-  const last = real.split(" ").slice(-3).join(" ");
-  return quoted.endsWith(last) || real.endsWith(quoted.split(" ").slice(-3).join(" "));
+  const quoted = plain(result.check.tail).split(" ").filter(Boolean);
+  if (quoted.length < 2) return false;
+  const last = ` ${plain(body.trim().split(/\s+/).slice(-60).join(" "))} `;
+  for (let size = Math.min(quoted.length, 4); size >= 2; size -= 1) {
+    for (let start = 0; start + size <= quoted.length; start += 1) {
+      if (last.includes(` ${quoted.slice(start, start + size).join(" ")} `)) return true;
+    }
+  }
+  return false;
 }
 
 export interface GuardedFill {

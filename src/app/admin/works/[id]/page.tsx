@@ -433,15 +433,14 @@ export default function EditWorkPage() {
       return;
     }
     const hasText = form.body.trim().length > 0;
-    if (hasText && parsed.sections.length > 0 && !sawWholeManuscript(parsed, form.body)) {
-      setFillNote([
-        "Tiada apa-apa diisi: bot sembang tidak dapat memetik hujung teks karya dengan betul, jadi ia mungkin tidak membaca keseluruhannya (inilah yang menyebabkan watak yang direka). Tampal arahan semula dalam sembang baharu dan pastikan jawapannya menyertakan bahagian [SEMAKAN] dengan enam perkataan terakhir manuskrip."
-      ]);
-      return;
-    }
+    const proofNote =
+      hasText && parsed.sections.length > 0 && !sawWholeManuscript(parsed, form.body)
+        ? ["Amaran: bot sembang tidak memetik hujung teks karya dengan betul, jadi ia mungkin tidak membaca keseluruhannya. Jawapan tetap diisi; semak watak, latar dan glosari dengan teliti."]
+        : [];
     const guarded = hasText
       ? guardWorkFill(parsed, form.body)
       : { result: parsed, notes: ["Kandungan masih kosong, jadi jawapan tidak dapat disemak dengan teks karya. Semak sendiri watak, latar dan glosari."] };
+    guarded.notes.unshift(...proofNote);
     const result = guarded.result;
     if (result.sections.length === 0) {
       // Say what was actually read, so the editor sees at once whether it is the wrong text or a damaged answer.
