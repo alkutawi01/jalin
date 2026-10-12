@@ -22,7 +22,7 @@ assert(page.includes("arahan utama, sekali bagi satu episod"), "the main box say
 assert(page.includes("Semakan fokus untuk tab") && page.includes("berbeza daripada kotak utama"), "each tab has a focused help that says how it differs from the main box");
 assert(page.includes("Salin arahan fokus untuk tab ini"), "the focused help has its own button wording");
 assert(page.includes("Glosari dengan bot sembang"), "the glossary tab keeps its own focused glossary instruction");
-assert((page.match(/1\. Salin arahan<\/button>/g) ?? []).length === 2, "the plain '1. Salin arahan' pair is only in the main box and the glossary tab");
+assert((page.match(/1\. Salin arahan/g) ?? []).length === 2, "the plain '1. Salin arahan' pair is only in the main box and the glossary tab");
 assert(!page.includes("Karya ini belum mempunyai teks. Isi tab Kandungan"), "copying the instruction is not blocked when Kandungan is empty");
 assert(page.includes("const hasText = form.body.trim().length > 0;") && page.includes("hasText && parsed.sections.length > 0 && !sawWholeManuscript"), "the whole-text proof and the name check run only when Kandungan holds the text");
 assert(page.includes("Teks di editor belum disimpan"), "unsaved text in the Penilaian AI tab is named");
