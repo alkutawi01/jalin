@@ -7,6 +7,7 @@ import { episodesHiddenByArchiving } from "../../../../../lib/admin/series-hidde
 import { getCurrentAdmin } from "../../../../../lib/admin/auth";
 import { getDb, hasDb } from "../../../../../lib/db";
 import { imageMarkers, isImageMarker } from "../../../../../lib/reader/image-markers";
+import { normaliseCountries } from "../../../../../lib/reader/countries";
 import { logActivity, workSaveSummary } from "../../../../../lib/admin/activity";
 import { can, roleFromClaim } from "../../../../../lib/admin/permissions";
 
@@ -154,6 +155,18 @@ export async function PATCH(
       }
     }
 
+    // Negara latar: a list of known country codes, at most two.
+    let countries: string[] | undefined;
+    if (body.countries !== undefined) {
+      if (!Array.isArray(body.countries)) {
+        return NextResponse.json({ error: "Negara latar tidak sah." }, { status: 400 });
+      }
+      countries = normaliseCountries(body.countries);
+      if (countries.length !== new Set(body.countries.filter((c: unknown) => typeof c === "string" && c.trim()).map((c: string) => c.trim().toUpperCase())).size) {
+        return NextResponse.json({ error: "Negara latar tidak sah, atau lebih daripada dua negara dipilih." }, { status: 400 });
+      }
+    }
+
     let readingMinutes: number | null | undefined;
     try {
       readingMinutes = parseReadingMinutes(body.readingMinutes);
@@ -177,6 +190,7 @@ export async function PATCH(
       editorNote,
       readerNote,
       origin: body.origin === undefined ? undefined : body.origin === "sumber" ? "sumber" : "asli",
+      countries,
     });
 
     await logActivity({ action: "work.update", subjectType: "work", subjectId: id, workId: id, summary: workSaveSummary(existing.title, body), collapse: true });

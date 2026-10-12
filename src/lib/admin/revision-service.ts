@@ -1,6 +1,7 @@
 import type { Kysely, Transaction } from "kysely";
 import type { Database, WorkRevisions } from "../db/types";
 import { getDb, hasDb } from "../db";
+import { normaliseCountries } from "../reader/countries";
 import {
   evaluatePublicationReadinessFromData,
   type PublicationReadiness,
@@ -144,6 +145,9 @@ export function charactersFingerprint(metadata: unknown): string {
   const language = typeof bag.fragmenTextLanguage === "string" ? bag.fragmenTextLanguage.trim() : "";
   if (language) result += "|lang:" + language;
   if (bag.origin === "sumber") result += "|origin:sumber";
+  // The countries (Negara latar) show on cards and on the work page: added only when set, as above.
+  const countries = normaliseCountries((meta as { countries?: unknown } | null | undefined)?.countries);
+  if (countries.length > 0) result += "|countries:" + countries.join(",");
   return result;
 }
 

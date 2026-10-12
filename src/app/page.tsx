@@ -244,7 +244,7 @@ export default async function Home() {
     slug: work.slug,
     type: work.type,
     title: work.title,
-    kicker: `Pilihan Editor · ${workEyebrow(work)}`,
+    kicker: workEyebrow(work),
     attribution: work.attribution,
     dek: work.dek,
     reading: readingLabel(work.readingMinutes) ?? undefined,

@@ -5,6 +5,7 @@ import { visibleCharacters } from "../../lib/reader/visible-characters";
 import { publicPlaces, publicTimes } from "../../lib/reader/places";
 import { notFound } from "next/navigation";
 import { displayableGenre } from "../../lib/reader/genre-display";
+import { countryLabel } from "../../lib/reader/countries";
 import { chapterTitleBesideNumber } from "../../lib/reader/chapter-label";
 import { classifyFragmen, isIndonesianLanguage } from "../../lib/content/fragmen-kind";
 import { jsonLdString, workJsonLd } from "../../lib/seo-jsonld";
@@ -91,6 +92,7 @@ function buildMetaRows(work: Work | undefined): WorkMetaRow[] {
   return [
     { label: "Jenis", value: formLabel },
     ...(genre ? [{ label: "Genre", value: genre }] : []),
+    ...(countryLabel(work.metadata?.countries) ? [{ label: "Negara", value: countryLabel(work.metadata?.countries)! }] : []),
     { label: "Bacaan", value: work.readingMinutes ? `± ${work.readingMinutes} minit` : "—" },
     ...sourceRows(work.sourceWork),
     ...((work.versionLabel || work.version) ? [{ label: "Versi", value: displayVersion(work.versionLabel || work.version) }] : [])
@@ -271,6 +273,7 @@ export default async function WorkView({
               [
                 typeLabel,
                 displayableGenre(work.genre),
+                countryLabel(work.metadata?.countries),
                 landing ? `${sections.length} bab` : ""
               ]
                 .filter(Boolean)

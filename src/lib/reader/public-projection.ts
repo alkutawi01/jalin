@@ -8,6 +8,7 @@ import type {
 import { projectCardAttribution, type CardAttribution } from "./card-attribution";
 import { smartQuotes } from "../admin/smart-quotes";
 import { spacedDashes } from "./spaced-dash";
+import { countryLabel } from "./countries";
 
 /**
  * Public page projection boundary.
@@ -25,6 +26,8 @@ export interface PublicWorkSummary {
   slug: string;
   title: string;
   genre?: string;
+  /** Negara latar as shown on a card ("Jepun", "Malaysia-Indonesia"); absent for no country or for Malaysia alone. */
+  country?: string;
   dek?: string;
   readingMinutes?: number;
   /** The stored audience value (band codes such as "remaja" or "belia,dewasa"): for filtering a list, shown to readers as labels. */
@@ -61,6 +64,7 @@ export function projectPublicWorkSummary(work: Work): PublicWorkSummary {
     slug: work.slug,
     title: work.title,
     ...(work.genre ? { genre: work.genre } : {}),
+    ...(countryLabel(work.metadata?.countries) ? { country: countryLabel(work.metadata?.countries) } : {}),
     ...(work.dek ? { dek: spacedDashes(smartQuotes(work.dek)) } : {}),
     ...(work.readingMinutes ? { readingMinutes: work.readingMinutes } : {}),
     ...(work.audience ? { audience: work.audience } : {}),
