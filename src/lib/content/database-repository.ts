@@ -5,6 +5,7 @@ import type { ContentRepository } from "./repository";
 import { getDb, hasDb } from "../db";
 import { isSourcedWork } from "./source-origin";
 import { cropFromRow } from "../reader/crop";
+import { mergeSeriesGlossary } from "./glossary-merge";
 
 /** Reader-safe public source provenance — never includes rights_notes/evidence/history/reviewed_by/reviewed_at/source_url. */
 function mapPublicSourceWork(row: any): SourceWorkRef | undefined {
@@ -164,6 +165,13 @@ export class DatabaseContentRepository implements ContentRepository {
     let dbSections = await db.selectFrom("reading_sections").orderBy("position", "asc").selectAll().execute();
     const dbSeries = await db.selectFrom("series").selectAll().execute();
     const dbEntries = await db.selectFrom("series_entries").orderBy("position", "asc").selectAll().execute();
+    // The glossary of a whole series (migration 033). A database that has not run it yet simply has none.
+    let dbSeriesGlossary: { series_id: unknown; term: unknown; meaning: unknown; source: unknown; pronunciation?: unknown; original_text?: unknown; original_language?: unknown }[] = [];
+    try {
+      dbSeriesGlossary = await db.selectFrom("series_glossary_terms").orderBy("sort_order", "asc").orderBy("id", "asc").selectAll().execute();
+    } catch {
+      /* the table is not there yet */
+    }
     // Public readers need only the frozen snapshots that are currently published.
     // Do not transfer every historical/draft revision on each repository refresh.
     const publishedRevisionIds = dbWorks
@@ -263,6 +271,20 @@ export class DatabaseContentRepository implements ContentRepository {
       });
     }
 
+    const seriesGlossary = new Map<string, GlossaryEntry[]>();
+    for (const g of dbSeriesGlossary) {
+      const sid = String(g.series_id);
+      if (!seriesGlossary.has(sid)) seriesGlossary.set(sid, []);
+      seriesGlossary.get(sid)!.push({
+        term: String(g.term || ""),
+        meaning: String(g.meaning || ""),
+        source: String(g.source || ""),
+        ...(g.pronunciation ? { pronunciation: String(g.pronunciation) } : {}),
+        ...(g.original_text ? { original: String(g.original_text) } : {}),
+        ...(g.original_language ? { originalLanguage: String(g.original_language) } : {}),
+      });
+    }
+
     const glossaryByWork = new Map<string, GlossaryEntry[]>();
     for (const g of dbGlossary) {
       const wid = String(g.work_id);
@@ -336,6 +358,7 @@ export class DatabaseContentRepository implements ContentRepository {
         // Use the published revision snapshot for public view
         const revisionWork = this.buildSnapshotWork(snapshot, wid);
         if (revisionWork) {
+          revisionWork.glossary = mergeSeriesGlossary(seriesGlossary.get(this.seriesIdByWorkId.get(wid) ?? ""), revisionWork.glossary);
           revisionWork.credits = revisionWork.credits.map((credit) => ({
             ...credit,
             ...publicContributorBySlug.get(credit.slug),
@@ -355,6 +378,7 @@ export class DatabaseContentRepository implements ContentRepository {
           this.sectionsByWorkId.get(wid),
           seriesMeta
         );
+        work.glossary = mergeSeriesGlossary(seriesGlossary.get(this.seriesIdByWorkId.get(wid) ?? ""), work.glossary);
         this.worksCache.set(work.slug, work);
         this.worksByIdCache.set(wid, work);
         this.workIdBySlug.set(work.slug, wid);

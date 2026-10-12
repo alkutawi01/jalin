@@ -119,6 +119,20 @@ export interface GlossaryTerms {
   created_at: ColumnType<Date, string | Date, string | Date>;
 }
 
+/** A term of a whole series, defined once (migration 033). An episode may still add or override one in glossary_terms. */
+export interface SeriesGlossaryTerms {
+  id: Generated<number>;
+  series_id: string;
+  term: string;
+  meaning: string;
+  source: string;
+  pronunciation?: string | null;
+  original_text?: string | null;
+  original_language?: string | null;
+  sort_order: number;
+  created_at: ColumnType<Date, string | Date, string | Date>;
+}
+
 export type SubmissionStatus =
   | "draft"
   | "submitted"
@@ -461,6 +475,7 @@ export interface Database {
   credits: Credits;
   visuals: Visuals;
   glossary_terms: GlossaryTerms;
+  series_glossary_terms: SeriesGlossaryTerms;
   work_submissions: WorkSubmissions;
   submission_contributions: SubmissionContributions;
   prompt_templates: PromptTemplates;
