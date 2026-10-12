@@ -4172,20 +4172,20 @@ html:has(.site-header.is-tucked) .sticky { top: 24px; }
 .share-work ~ .save-work { bottom: 70px; }
 @media (max-width: 480px) { .share-work span { display: none; } .share-work { padding: 0 13px; } .share-work.is-done span { display: inline; } }
 @media print { .share-work, .save-work { display: none; } }
-/* A link's hover line, drawn rather than switched on: a slim, gently curved clay stroke that sweeps in from the left and, when the
-   pointer leaves, runs out to the right. It is a background (so it follows the text across wrapped lines and needs no extra markup);
-   the plain underline of these links is turned off, and keyboard focus gets the same stroke. Reduced motion: it simply appears. */
-:root { --link-stroke: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 8' preserveAspectRatio='none'%3E%3Cpath d='M0 6.2Q50 1.4 100 6.2' fill='none' stroke='%23a76450' stroke-width='1.8' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E"); }
+/* A link's hover line, drawn rather than switched on: a slim straight clay line that sweeps in from the left and, when the pointer
+   leaves, is drawn back the same way (it retreats to the left, the reverse of how it came). It is a background, so it follows the
+   text across wrapped lines and needs no extra markup; the plain underline of these links is turned off, and keyboard focus gets the
+   same line. Reduced motion: it simply appears. */
 .series-feature-latest-title,
 .search-result-title a,
 .story-context-line a,
 .series-crumb a,
 .crumbs a,
 .link-swipe {
-  background-image: var(--link-stroke);
+  background-image: linear-gradient(var(--clay), var(--clay));
   background-repeat: no-repeat;
-  background-position: 100% 100%;
-  background-size: 0% 8px;
+  background-position: 0% 100%;
+  background-size: 0% 1.8px;
   padding-bottom: 4px;
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
@@ -4198,10 +4198,9 @@ html:has(.site-header.is-tucked) .sticky { top: 24px; }
 .crumbs a:hover, .crumbs a:focus-visible,
 .link-swipe:hover, .link-swipe:focus-visible {
   text-decoration: none;
-  background-position: 0% 100%;
-  background-size: 100% 8px;
+  background-size: 100% 1.8px;
 }
-/* The latest-episode title is a grid item: it would stretch the full column and draw the stroke far past the words. */
+/* The latest-episode title is a grid item: it would stretch the full column and draw the line far past the words. */
 .series-feature-latest-title { justify-self: start; }
 @media (prefers-reduced-motion: reduce) {
   .series-feature-latest-title, .search-result-title a, .story-context-line a, .series-crumb a, .crumbs a, .link-swipe { transition: none; }
