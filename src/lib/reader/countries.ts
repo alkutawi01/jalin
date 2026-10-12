@@ -4,12 +4,12 @@
  * Decided with Izzat (12 Oct 2026):
  * - the country only, never a village, street or district;
  * - Malaysia is not shown when it is the only country (Jalin is Malaysian, so it would be noise);
- * - two countries are shown with a hyphen ("Malaysia-Indonesia") only when the story truly belongs to both;
- *   otherwise the editor picks one;
+ * - the editor types the name, so it can be a country or an older region ("Empayar Inka", "Al-Andalus", "Joseon"); a story that
+ *   truly belongs to two writes "Malaysia-Indonesia", otherwise one name;
  * - no flags (modern flags are wrong for Inka, Marinid or Joseon settings);
- * - historical settings show today's country; the period is explained on the work page.
+ * - a historical setting may use its own name; the period is explained on the work page.
  *
- * The codes are stable and the names are Jalin's own Malay display names, so a spelling is fixed in one place.
+ * The dictionary below suggests Malay display names (and resolves the codes stored on the first works); it does not limit the editor.
  * "GB-ENG" (England) and "KR" (Korea) are deliberate display choices: readers know England and Korea, not "United Kingdom"
  * or "Korea Selatan" for a story set in Manchester or in the Joseon period.
  */
@@ -94,20 +94,38 @@ export const COUNTRY_OPTIONS: Array<{ code: string; name: string }> = Object.ent
   .map(([code, name]) => ({ code, name }))
   .sort((a, b) => a.name.localeCompare(b.name, "ms"));
 
-/** At most two: one country, or two when the story truly belongs to both. */
+/** A label is short: it sits on a card next to the reading time. */
+export const MAX_COUNTRY_LENGTH = 40;
+
+/** Stored lists never hold more than two entries (an older work may hold two codes; the editor now types one label). */
 export const MAX_COUNTRIES = 2;
 
-/** The valid, unique codes of a stored value, in the order given, capped at MAX_COUNTRIES. Anything unknown is dropped. */
+/**
+ * The editor types the country or region as it should read on the card ("Jepun", "Empayar Inka", "Al-Andalus", "Malaysia-Indonesia"),
+ * so it is not limited to today's countries. The dictionary above only suggests names; a stored entry that is one of its codes
+ * (older works) is shown as that code's name. Entries are trimmed, unique, at most MAX_COUNTRY_LENGTH long, at most MAX_COUNTRIES.
+ */
 export function normaliseCountries(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
   const seen = new Set<string>();
+  const out: string[] = [];
   for (const raw of value) {
     if (typeof raw !== "string") continue;
-    const code = raw.trim().toUpperCase();
-    if (Object.prototype.hasOwnProperty.call(COUNTRIES, code) && !seen.has(code)) seen.add(code);
-    if (seen.size === MAX_COUNTRIES) break;
+    const text = raw.replace(/\s+/g, " ").trim();
+    if (!text || text.length > MAX_COUNTRY_LENGTH || /[<>]/.test(text)) continue;
+    const key = text.toLocaleLowerCase("ms");
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(text);
+    if (out.length === MAX_COUNTRIES) break;
   }
-  return [...seen];
+  return out;
+}
+
+/** How one stored entry reads: a dictionary code becomes its name, anything else is the editor's own text. */
+export function countryName(entry: string): string {
+  const code = entry.trim().toUpperCase();
+  return Object.prototype.hasOwnProperty.call(COUNTRIES, code) ? COUNTRIES[code]! : entry.trim();
 }
 
 /** "Jepun · ± 11 minit": the country (when there is one to show) next to the reading time. Empty when there is neither. */
@@ -116,12 +134,12 @@ export function readingLine(country: string | undefined, readingMinutes: number 
 }
 
 /**
- * What a card shows for a work's countries, or undefined when nothing should be shown:
- * no country, or Malaysia alone.
+ * What a card shows for a work's country, or undefined when nothing should be shown: nothing entered, or Malaysia alone.
+ * Two stored entries (older works) are joined with a hyphen.
  */
 export function countryLabel(value: unknown): string | undefined {
-  const codes = normaliseCountries(value);
-  if (codes.length === 0) return undefined;
-  if (codes.length === 1 && codes[0] === "MY") return undefined;
-  return codes.map((code) => COUNTRIES[code]).join("-");
+  const names = normaliseCountries(value).map(countryName);
+  if (names.length === 0) return undefined;
+  if (names.length === 1 && names[0]!.toLocaleLowerCase("ms") === "malaysia") return undefined;
+  return names.join("-");
 }
