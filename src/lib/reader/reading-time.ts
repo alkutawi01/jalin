@@ -20,6 +20,6 @@ export function readingMinutesFor(stored: unknown, ...texts: Array<string | null
 export function chapterReadingRows<T extends { label: string; value: string }>(rows: T[], chapterMinutes: number | undefined): Array<T | { label: string; value: string }> {
   if (!chapterMinutes) return rows;
   return rows.flatMap((row) => (row.label === "Bacaan"
-    ? [{ label: "Bacaan bab", value: `± ${chapterMinutes} minit` }, { label: "Bacaan novela", value: row.value }]
+    ? [{ label: "Bab ini", value: `± ${chapterMinutes} minit` }, { label: "Novela", value: row.value }]
     : [row]));
 }
