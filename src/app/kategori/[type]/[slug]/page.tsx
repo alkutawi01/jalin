@@ -2,13 +2,14 @@ import type { Metadata } from "next";
 import { laterOf } from "../../../../lib/seo-jsonld";
 import { chapterPageLabel } from "../../../../lib/reader/chapter-label";
 import { notFound } from "next/navigation";
-import { OG_SITE, absoluteUrl, clipDescription, shareImage, shareImageUrl, DEFAULT_SHARE_IMAGE } from "../../../../lib/seo";
+import { OG_SITE, absoluteUrl, clipDescription, shareImage, ogImageUrl, DEFAULT_SHARE_IMAGE } from "../../../../lib/seo";
 import { chapterHeroOf } from "../../../../lib/reader/chapter-visuals";
 import { initContentRepository } from "../../../../lib/content";
 import { getWorkBySlug } from "../../../../lib/content/workLoader";
 import WorkView from "../../../../components/reader/WorkView";
 import ReadingTracker from "../../../../components/reader/ReadingTracker";
 import SaveWorkButton from "../../../../components/reader/SaveWorkButton";
+import ShareWorkButton from "../../../../components/reader/ShareWorkButton";
 import LockedWork from "../../../../components/reader/LockedWork";
 import { gateForWork } from "../../../../lib/reader/access-gate";
 
@@ -74,7 +75,7 @@ export async function generateMetadata({
       card: "summary_large_image",
       title: pageTitle,
       description: pageDescription,
-      images: [hero?.src ? shareImageUrl(hero.src) : DEFAULT_SHARE_IMAGE.url]
+      images: [hero?.src ? ogImageUrl(hero.src) : DEFAULT_SHARE_IMAGE.url]
     }
   };
 }
@@ -124,6 +125,7 @@ export default async function WorkPage({
   return (
     <>
       <ReadingTracker slug={work.slug} sectionSlug={sectionSlug} />
+      <ShareWorkButton title={work.title} />
       <SaveWorkButton slug={work.slug} />
       <WorkView work={work} sectionSlug={sectionSlug} />
     </>
