@@ -46,7 +46,7 @@ export default function SeriesCarousel({ children, label }: { children: ReactNod
     <div className="series-carousel" role="group" aria-roledescription="carousel" aria-label={label}>
       <div className="series-carousel-track" ref={track} onScroll={update} onKeyDown={onKeyDown} tabIndex={0}>
         {slides.map((slide, i) => (
-          <div className="series-carousel-slide" key={i} role="group" aria-roledescription="slide" aria-label={`${i + 1} daripada ${count}`} aria-hidden={i !== index ? true : undefined}>
+          <div className="series-carousel-slide" key={i} role="group" aria-roledescription="slide" aria-label={`${i + 1} daripada ${count}`} aria-hidden={i !== index ? true : undefined} inert={i !== index}>
             {slide}
           </div>
         ))}
