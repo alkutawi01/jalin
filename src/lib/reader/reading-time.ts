@@ -15,3 +15,11 @@ export function readingMinutesFor(stored: unknown, ...texts: Array<string | null
   const text = texts.filter((t): t is string => typeof t === "string" && t.trim().length > 0).join("\n\n");
   return text ? readingMinutesOf(text) : undefined;
 }
+
+/** On a chapter's own page "Bacaan" is that chapter's minutes; the novela's total keeps its own row, so a five-minute chapter does not say 135 minutes. */
+export function chapterReadingRows<T extends { label: string; value: string }>(rows: T[], chapterMinutes: number | undefined): Array<T | { label: string; value: string }> {
+  if (!chapterMinutes) return rows;
+  return rows.flatMap((row) => (row.label === "Bacaan"
+    ? [{ label: "Bacaan bab", value: `± ${chapterMinutes} minit` }, { label: "Bacaan novela", value: row.value }]
+    : [row]));
+}
