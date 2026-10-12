@@ -297,6 +297,16 @@ export default function EditWorkPage() {
   const [selectedImageAnchor, setSelectedImageAnchor] = useState("");
   const [savedBody, setSavedBody] = useState("");
   const [positionError, setPositionError] = useState("");
+  // The series this work is an episode of, and its number: shown under the title so the editor knows which episode is open.
+  const [seriesInfo, setSeriesInfo] = useState<{ title: string; position: number } | null>(null);
+  useEffect(() => {
+    let alive = true;
+    fetch(`/api/admin/works/${params.id as string}/series`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => { if (alive) setSeriesInfo(data?.series ? { title: String(data.series.title), position: Number(data.series.position) } : null); })
+      .catch(() => { if (alive) setSeriesInfo(null); });
+    return () => { alive = false; };
+  }, [params.id]);
   const [showManuscriptPreview, setShowManuscriptPreview] = useState(false);
   const [manuscriptMode, setManuscriptMode] = useState<"markdown" | "visual">("visual");
   const [assistantNote, setAssistantNote] = useState("");
@@ -2041,6 +2051,7 @@ export default function EditWorkPage() {
         onRepublish={republishNow}
         dirty={dirty}
         onGoTab={(tab) => selectTab(tab === "visuals" ? "content" : tab as Tab)}
+        series={seriesInfo}
       />
 
       {restoreOffer && (

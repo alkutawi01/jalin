@@ -866,3 +866,6 @@
 .a-shell .admin-panel-line-score { font-weight: 700; font-variant-numeric: tabular-nums; }
 .a-shell .admin-panel-tab { margin-top: 16px; }
 .a-shell .admin-input-wide { width: 100%; }
+
+.a-status-series { margin: 4px 0 0; font-size: 14px; color: var(--a-muted); }
+.a-status-series strong { color: var(--a-ink); font-weight: 600; }
