@@ -28,10 +28,20 @@ export const OG_SITE = { siteName: "Jalin — oleh Adjung", locale: "ms_MY" } as
  */
 export const DEFAULT_SHARE_IMAGE = { url: `${SITE_URL}/brand/og-default.png`, width: 1200, height: 630, alt: "Jalin — Selami dunia melalui cerita" } as const;
 
+/**
+ * The picture of a link card, cropped to 1200 x 630 (1.91:1, the shape Facebook, WhatsApp and X draw) by /api/og. The hero is 3:2,
+ * which those apps cut at the top and bottom wherever they like; this crops it from the centre on purpose. Structured data keeps
+ * shareImageUrl, the uncropped picture.
+ */
+export function ogImageUrl(src: string): string {
+  return `${SITE_URL}/api/og?src=${encodeURIComponent(src)}`;
+}
+
 /** The share picture with its description, for a reader who cannot see it. */
-export function shareImage(src: string, alt?: string | null): { url: string; alt?: string } {
+export function shareImage(src: string, alt?: string | null): { url: string; width: number; height: number; alt?: string } {
   const text = (alt ?? "").trim();
-  return text ? { url: shareImageUrl(src), alt: text } : { url: shareImageUrl(src) };
+  const base = { url: ogImageUrl(src), width: 1200, height: 630 };
+  return text ? { ...base, alt: text } : base;
 }
 
 /** What Jalin is, in one line for a search result: the homepage's description (layout) and its structured data. */
@@ -46,6 +56,12 @@ export const META_DESCRIPTION_MAX = 160;
 export function clipDescription(text: string, max: number = META_DESCRIPTION_MAX): string {
   const clean = text.replace(/\s+/g, " ").trim();
   if (clean.length <= max) return clean;
+  // Prefer to stop where a sentence stops, so a shared link never ends in the middle of a thought. A lone short first sentence
+  // (under 40% of the room) is not worth the loss, so it falls through to the word-boundary cut below.
+  const room = clean.slice(0, max);
+  const stops = Array.from(room.matchAll(/[.!?]["”’)]?(?=\s|$)/g));
+  const last = stops.length ? stops[stops.length - 1] : null;
+  if (last && last.index !== undefined && last.index + last[0].length >= max * 0.4) return room.slice(0, last.index + last[0].length);
   const cut = clean.slice(0, max - 1);
   const lastSpace = cut.lastIndexOf(" ");
   const base = lastSpace > max * 0.6 ? cut.slice(0, lastSpace) : cut;
