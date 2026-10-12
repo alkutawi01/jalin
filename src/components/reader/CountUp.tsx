@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { countUpValue } from "../../lib/reader/count-up-value";
 
 const format = new Intl.NumberFormat("ms-MY");
 const DURATION_MS = 1400;
@@ -26,9 +27,9 @@ export default function CountUp({ value, delayMs = 0 }: { value: number; delayMs
         timer = window.setTimeout(() => {
           const start = performance.now();
           const tick = (now: number) => {
-            const t = Math.min(1, (now - start) / DURATION_MS);
-            setShown(Math.round(value * (1 - Math.pow(1 - t, 3))));
-            if (t < 1) frame = requestAnimationFrame(tick);
+            const elapsed = now - start;
+            setShown(countUpValue(value, elapsed, DURATION_MS));
+            if (elapsed < DURATION_MS) frame = requestAnimationFrame(tick);
           };
           frame = requestAnimationFrame(tick);
         }, delayMs);
