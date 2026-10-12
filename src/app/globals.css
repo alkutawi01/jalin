@@ -4273,3 +4273,11 @@ body:has(.save-work) .back-to-top { bottom: 76px; }
 .episode-card > a { display: flex; flex: 1; flex-direction: column; min-width: 0; }
 .episode-card-body { display: flex; flex: 1; flex-direction: column; gap: 6px; }
 .episode-card-meta { margin-top: auto; padding-top: 6px; }
+/* Homepage "Bersiri" carousel on a phone (700px and below). The picture of a series was made full-bleed (width 100cqw, margin-left of
+   minus the page margin) before the slides sat in a scrolling track; the track clips on both sides, so the picture was cut at the left
+   edge and at the right edge: the title box touched the clip, "(c) ADJUNG 2026" was cut off, and the next slide's picture showed as a
+   sliver beside it. Inside the track the picture is simply the card's width, with its rounded corners, and the title keeps its padding. */
+@media (max-width: 700px) {
+  .series-carousel-track .series-feature-media { width: 100%; max-width: 100%; margin-left: 0; border-radius: 12px; }
+  .series-carousel-track .series-feature-overlay { padding-left: 16px; }
+}
