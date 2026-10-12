@@ -30,7 +30,7 @@ function Summary({ data }: { data: SummaryView }) {
         <div className="admin-panel-tile"><div className="admin-panel-big">{data.works.notMeets}</div><div className="admin-panel-label">tidak melepasi</div></div>
       </div>
 
-      <h3>Taburan min karya yang dinilai</h3>
+      <h2>Taburan min karya yang dinilai</h2>
       {data.works.rated === 0 ? <p className="admin-form-hint">Belum ada karya dinilai.</p> : (
         <ul className="admin-panel-bars">
           {data.distribution.map((d) => (
@@ -39,7 +39,7 @@ function Summary({ data }: { data: SummaryView }) {
         </ul>
       )}
 
-      <h3>Purata setiap komponen (penilaian rasmi)</h3>
+      <h2>Purata setiap komponen (penilaian rasmi)</h2>
       <div className="admin-panel-matrix-wrap">
         <table className="admin-panel-matrix">
           <thead><tr><th>Komponen</th><th>Wajaran</th><th>Purata skor</th><th>Graf (1 hingga 10)</th><th>Bilangan</th></tr></thead>
@@ -56,7 +56,7 @@ function Summary({ data }: { data: SummaryView }) {
       </div>
       <p className="admin-form-hint">Komponen yang purata skornya paling rendah ialah tempat paling lemah merentas karya yang dinilai.</p>
 
-      <h3>Kualiti jawapan</h3>
+      <h2>Kualiti jawapan</h2>
       <div className="admin-panel-tiles">
         <div className="admin-panel-tile"><div className="admin-panel-big">{data.quality.countedRatings}</div><div className="admin-panel-label">penilaian rasmi dikira</div></div>
         <div className="admin-panel-tile"><div className="admin-panel-big">{data.quality.supplementaryRatings}</div><div className="admin-panel-label">tambahan (model lain, tidak dikira)</div></div>
@@ -98,14 +98,14 @@ function Method({ data }: { data: SummaryView }) {
   return (
     <>
       <p>Panel Bacaan AI ialah syarat skor dalaman. Ia tidak menerbitkan, tidak menerima kiriman dan tidak menggantikan semakan hak, privasi, kredit atau keputusan editor. Pembaca tidak melihat apa-apa daripadanya.</p>
-      <h3>Aliran, daripada halaman karya</h3>
+      <h2>Aliran, daripada halaman karya</h2>
       <ol>
         <li>Buka karya (cerpen, novela atau bersiri) dan pilih tab <strong>Penilaian AI</strong>. Untuk kiriman luar, bahagian yang sama ada pada halaman kiriman.</li>
         <li><strong>Sediakan penilaian</strong>: sistem menyimpan salinan tepat teks yang akan dinilai, dan kod rujukan. Jika teks diubah kemudian, ia menjadi versi baharu dan perlu dinilai semula.</li>
         <li><strong>Salin arahan penuh</strong> dan tampal dalam sesi baharu yang bersih pada {data.settings.referenceName}. Arahan mengandungi rubrik, sauh skor, format jawapan dan teks karya.</li>
         <li>Salin jawapannya, kemudian tekan <strong>Tampal jawapan</strong>. Skor, petikan, sebab dan verdik terisi sendiri.</li>
       </ol>
-      <h3>Peraturan</h3>
+      <h2>Peraturan</h2>
       <ul>
         <li>Skor bagi setiap enam komponen ialah 1.0 hingga 10.0 (langkah 0.5). Skor komposit dikira oleh sistem sebagai purata berwajaran; penilai tidak menulis jumlah.</li>
         <li>Hanya penilaian <strong>{data.settings.referenceName}</strong> dikira dalam min. Model lain disimpan sebagai tambahan.</li>
@@ -115,7 +115,7 @@ function Method({ data }: { data: SummaryView }) {
         <li>Petikan bukti disemak terhadap teks. Petikan yang tidak ditemui ditanda pada penilaian tetapi tidak menolaknya.</li>
         <li>Penilaian tidak diubah atau dipadam. Ia boleh dibatalkan dengan sebab; pembatalan tidak mengubah rekod asal.</li>
       </ul>
-      <h3>Had yang perlu diingat</h3>
+      <h2>Had yang perlu diingat</h2>
       <ul>
         <li>Skor model yang sama berubah sedikit antara sesi (kira-kira 0.1 hingga 0.3). Untuk karya hampir ambang, nilai sekali lagi dan baca min.</li>
         <li>Sebahagian model memotong kotak input pada kira-kira 32,000 aksara. Untuk karya yang lebih panjang, guna model yang menerima teks panjang atau muat naik fail, dan tampal jawapannya; ia disimpan sebagai tambahan jika bukan penilai rasmi.</li>
@@ -136,10 +136,10 @@ function Rubric() {
           </tbody>
         </table>
       </div>
-      <h3>Sauh skor</h3>
+      <h2>Sauh skor</h2>
       <ul>{GENERAL_ANCHORS.map(([s, text]) => <li key={s}><strong>{s}</strong>: {text}</li>)}</ul>
       <p>{BETWEEN_ANCHORS}</p>
-      <h3>Sauh khusus setiap komponen</h3>
+      <h2>Sauh khusus setiap komponen</h2>
       <div className="admin-panel-matrix-wrap">
         <table className="admin-panel-matrix">
           <thead><tr><th>Komponen</th><th>3</th><th>5</th><th>7</th><th>8.5</th><th>10</th></tr></thead>

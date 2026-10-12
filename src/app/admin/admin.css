@@ -871,3 +871,6 @@
 
 .a-status-series { margin: 4px 0 0; font-size: 14px; color: var(--a-muted); }
 .a-status-series strong { color: var(--a-ink); font-weight: 600; }
+
+/* Section titles on the Penilaian AI panel are h2 (h1 > h2, no skipped level) but keep the 16px sans look they had as h3. */
+.a-shell .admin-panel-ai h2 { font-family: var(--a-font); letter-spacing: normal; font-size: 16px; font-weight: 700; margin: 24px 0 8px; }
