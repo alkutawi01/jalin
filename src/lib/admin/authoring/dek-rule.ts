@@ -14,7 +14,8 @@ export const DEK_RULE =
 export const DEK_EXAMPLES = [
   "KESILAPAN YANG PALING LAZIM: dek yang merumuskan cerita. Ia tidak boleh menyebut apa yang watak buat, putuskan, temui atau pelajari.",
   "BURUK (merumuskan, membocorkan perkembangan): \"Aina menemui surat lama, mengetahui bahawa ibunya menyimpan rahsia, lalu memutuskan untuk pergi.\"",
-  "BAIK (suasana atau persoalan di permulaan, belum menjawab apa-apa): \"Hujan belum reda, dan ada satu nama yang tidak pernah disebut sesiapa di rumah itu.\"",
+  "BAIK (tiga bentuk berlainan; suasana atau persoalan di permulaan, belum menjawab apa-apa): \"Ada satu nama yang tidak pernah disebut sesiapa di rumah itu.\" / \"Kunci itu sudah lama dalam poket Aina, tetapi pintunya belum pernah ditemui.\" / \"Malam itu, pasar lebih sunyi daripada kebiasaannya.\"",
+  "Contoh di atas tentang cerita rekaan lain. JANGAN salin atau tiru ayat, perkataan atau cuaca dalam contoh; tulis dek daripada butiran yang benar-benar ada pada permulaan manuskrip ini, dan jangan menyebut apa-apa yang tidak tertulis dalam teks.",
   "Semak sebelum menjawab: adakah dek menyebut sesuatu yang berlaku selepas halaman pertama, atau sebab dan akibat? Jika ya, tulis semula. Dek yang baik tidak boleh dibaca sebagai ringkasan episod."
 ].join("\n");
 

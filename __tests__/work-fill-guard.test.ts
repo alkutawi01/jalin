@@ -83,7 +83,7 @@ assert(!sawWholeManuscript(wrong, longBody), "words from earlier in the text are
 const echoed = parseWorkFill("[WATAK]\nWatak yang SUDAH ada (jangan ulang): Jannah, Izhar.\nNama: Faris\nPeranan: Anak saudara\n\n[LATAR]\nTempat yang SUDAH ada (jangan ulang): Rumah.\nJenis: tempat\nNama: Bilik guru\nKeterangan: Ruang guru");
 assert(echoed.characters.length === 1 && echoed.places.length === 1, "repeated 'already have' lines are not read as entries");
 
-assert(prompt.includes("BURUK (merumuskan") && prompt.includes("BAIK (suasana"), "the prompt gives a bad and a good dek example");
+assert(prompt.includes("BURUK (merumuskan") && prompt.includes("BAIK (tiga bentuk"), "the prompt gives a bad and a good dek example");
 assert(dekWarning("Izhar menyusun semula jadual selepas mendapat teguran daripada ustaz. Dia kemudian memutuskan untuk berubah. Akhirnya dia berjaya.") !== null, "a summarising dek gets a warning");
 assert(dekWarning("Hujan belum reda, dan ada satu nama yang tidak pernah disebut sesiapa di rumah itu.") === null, "a hook dek gets none");
 
