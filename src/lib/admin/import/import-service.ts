@@ -15,6 +15,7 @@ import { generateWorkId } from "../work-id";
 import { upsertSourceProvenance } from "../source-rights";
 import type { ImportPlan } from "./plan";
 import { estimateReadingMinutes } from "./text-utils";
+import { matchContributorSlug } from "./credit-identity";
 import { materializeImportImageMarkers } from "./image-markers";
 import { insertInheritedCredits, loadSeriesInheritance, mergeByName, mergeImportCredits } from "../series-inheritance";
 
@@ -106,13 +107,16 @@ export async function importPlanAsDraft(
       const merged = mergeImportCredits(plan.credits, inheritance.credits, new Map(names.map((n) => [n.slug, n.display_name])));
       await insertInheritedCredits(trx, id, merged, { now });
     } else {
+      // A name that is a contributor Jalin already has (an AI persona or a person) becomes that contributor's credit, not a guest.
+      const known = plan.credits.length > 0 ? await trx.selectFrom("contributors").select(["slug", "display_name"]).execute() : [];
       for (const credit of plan.credits) {
+        const contributorSlug = matchContributorSlug(credit.guestName, known);
         await trx
           .insertInto("credits")
           .values({
             work_id: id,
-            contributor_slug: null,
-            guest_name: credit.guestName,
+            contributor_slug: contributorSlug,
+            guest_name: contributorSlug ? null : credit.guestName,
             role_label: credit.roleLabel,
             byline: credit.byline,
             is_public: credit.isPublic,
