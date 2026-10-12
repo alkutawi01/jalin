@@ -4219,3 +4219,17 @@ html:has(.site-header.is-tucked) .sticky { top: 24px; }
 @media (prefers-reduced-motion: reduce) {
   .series-feature-latest-title, .search-result-title a, .story-context-line a, .series-crumb a, .crumbs a, .link-swipe { transition: none; }
 }
+/* Homepage hero on a laptop. The hero was one fixed height (about 650px of picture and text, 755px with the header) whatever the screen, so on a
+   768p laptop (about 650px of window under the browser's own bars) the button and the lower part of the picture were below the fold and the
+   statistics bar was out of sight. On a window up to 860px tall the hero now takes what the window has: a smaller title and padding, the
+   description held to five lines (a long one used to set the height of every slide), and the picture no taller than the window less the
+   header. A taller window keeps the original sizes, and shows the statistics bar when it fits. To undo: revert the commit that added this block. */
+@media (min-width: 1051px) and (max-height: 860px) {
+  .hero-featured { padding-top: 14px; }
+  .hero-featured-inner { min-height: 0; }
+  .hero-featured-text { padding: 18px 0 22px; }
+  .hero-featured-title { font-size: clamp(38px, 3.5vw, 50px); margin-bottom: 14px; }
+  .hero-featured-dek { font-size: 17px; line-height: 1.55; margin-bottom: 16px; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 5; line-clamp: 5; overflow: hidden; }
+  .hero-carousel-slide .hero-featured-visual { min-height: 360px; max-height: calc(100svh - 89px - 56px); }
+  .hero-carousel-slide .home-work-meta { margin-bottom: 18px; }
+}
