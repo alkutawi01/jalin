@@ -1,6 +1,7 @@
 import { displayVersion } from "@/lib/admin/version-label";
 import { ContinueNav } from "./ReadingNav";
 import { ChapterHead, NovelaIntro, readingMinutesOf, type ChapterRow } from "./NovelaChapters";
+import { chapterReadingRows } from "../../lib/reader/reading-time";
 import { visibleCharacters } from "../../lib/reader/visible-characters";
 import { publicPlaces, publicTimes } from "../../lib/reader/places";
 import { notFound } from "next/navigation";
@@ -146,7 +147,7 @@ export default async function WorkView({
   const glossary = buildVerifiedGlossary(work);
   const byline = bylineFor(work);
   const typeLabel = TYPE_LABELS[type] ?? type;
-  const workMeta = buildMetaRows(work);
+  const baseMeta = buildMetaRows(work);
   const allCharacters: CharacterMeta[] = (work.metadata?.characters ?? []).map(({ name, role, firstAppearanceSection }) => ({
     name,
     role,
@@ -178,6 +179,7 @@ export default async function WorkView({
     if (!activeSection) notFound();
     bodyToRender = activeSection.body;
   }
+  const workMeta = chapterReadingRows(baseMeta, activeSection ? readingMinutesOf(activeSection.body) : undefined) as WorkMetaRow[];
 
   // A chapter's own images (hero and inline) belong to that chapter; the work's other images stay with the work.
   const visualsForBody = visualsForPage(work.visuals, activeSection?.slug, bodyToRender);
