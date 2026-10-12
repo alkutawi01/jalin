@@ -7,7 +7,7 @@ let failed = 0;
 function assert(cond: boolean, msg: string) {
   if (cond) { passed++; console.log(`  ✓ ${msg}`); } else { failed++; console.error(`  ✗ ${msg}`); }
 }
-const css = fs.readFileSync(path.join(__dirname, "..", "src", "app", "globals.css"), "utf8").replace(/\r\n/g, "\n");
+const css = fs.readFileSync(path.join(__dirname, "..", "..", "src", "app", "globals.css"), "utf8").replace(/\r\n/g, "\n");
 const start = css.indexOf("@media (min-width: 681px) and (max-width: 1050px) {\n  .hero-carousel-slide .hero-featured-text { display: grid;");
 const block = start >= 0 ? css.slice(start, css.indexOf("\n}\n", start) + 3) : "";
 
