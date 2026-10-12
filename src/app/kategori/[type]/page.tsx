@@ -17,7 +17,7 @@ import {
   type PublicSeriesSummary,
   type PublicWorkSummary
 } from "../../../lib/reader/public-projection";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import Image from "next/image";
 import { renderAttribution } from "@/components/reader/Attribution";
@@ -243,7 +243,10 @@ export default async function CategoryPage({ params, searchParams }: { params: P
       return item;
     });
     const filteredSeries = applyListQuery(entries, query, bands);
-    const paged = paginate(filteredSeries, parsePage(await searchParams));
+    const requestedPage = parsePage(await searchParams);
+    const paged = paginate(filteredSeries, requestedPage);
+    // A page past the end is not a page of its own: it used to show the last page again under its own address, title and canonical.
+    if (requestedPage > paged.page) redirect(`/kategori/${type}${pageQueryString(query, paged.page)}`);
     return (
       <>
         <SiteHeader active="bersiri" />
@@ -277,7 +280,10 @@ export default async function CategoryPage({ params, searchParams }: { params: P
 
   const summaries = (await getWorks(type)).map((work) => projectPublicWorkSummary(work));
   const works = applyListQuery(summaries, query, bands);
-  const paged = paginate(works, parsePage(await searchParams));
+  const requestedPage = parsePage(await searchParams);
+  const paged = paginate(works, requestedPage);
+  // A page past the end is not a page of its own: it used to show the last page again under its own address, title and canonical.
+  if (requestedPage > paged.page) redirect(`/kategori/${type}${pageQueryString(query, paged.page)}`);
 
   return (
     <>
