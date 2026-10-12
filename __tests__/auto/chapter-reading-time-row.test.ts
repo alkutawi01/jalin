@@ -12,10 +12,11 @@ const rows = [{ label: "Jenis", value: "Novela" }, { label: "Bacaan", value: "±
 
 const chapter = chapterReadingRows(rows, 5);
 assert(chapter.length === 4, "one row becomes two");
-assert(chapter.some((r) => r.label === "Bacaan bab" && r.value === "± 5 minit"), "the chapter's own minutes");
-assert(chapter.some((r) => r.label === "Bacaan novela" && r.value === "± 135 minit"), "the novela's total, labelled as such");
+assert(chapter.some((r) => r.label === "Bab ini" && r.value === "± 5 minit"), "the chapter's own minutes");
+assert(chapter.some((r) => r.label === "Novela" && r.value === "± 135 minit"), "the novela's total, labelled as such");
+assert(chapter.every((r) => r.label.length <= 8), "labels fit the 78px label column of the phone info panel on one line");
 assert(!chapter.some((r) => r.label === "Bacaan"), "no bare Bacaan row that could be read as the chapter's");
-assert(chapter.map((r) => r.label).join() === "Jenis,Bacaan bab,Bacaan novela,Versi", "the order is kept");
+assert(chapter.map((r) => r.label).join() === "Jenis,Bab ini,Novela,Versi", "the order is kept");
 assert(chapterReadingRows(rows, undefined) === rows, "on the novela's own page the rows are untouched");
 const src = fs.readFileSync(path.join(__dirname, "..", "..", "src", "components", "reader", "WorkView.tsx"), "utf8");
 assert(src.includes("chapterReadingRows(baseMeta, activeSection ?"), "WorkView applies it to the active chapter");
