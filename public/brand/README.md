@@ -51,3 +51,6 @@ Rujuk `docs/VISUAL_BIBLE.md`.
 - `jalin-logo-reversed.svg`: for the deep teal background (#0b2935): white wordmark, leaves in the background colour with a white outline, terracotta and beige unchanged; transparent background
 
 Do not hand-edit these; if the primary artwork changes, regenerate them.
+
+## Wordmark colour (2026-10-11, approved by the human editor)
+`jalin-wordmark.svg` letter shapes were near-black navy (rgb(0,31,46) and rgb(0,9,14)) and read as black next to the ink-green page. Both fills are now the brand ink green rgb(19,47,56) (#132f38), the same colour as the mono variants. Geometry is untouched.
