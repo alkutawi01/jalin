@@ -49,6 +49,13 @@ export const SITE_DESCRIPTION = "Selami dunia melalui cerita di Jalin, platform 
 
 export const META_DESCRIPTION_MAX = 160;
 
+/** Titles and short forms whose dot does not end a sentence (lower case, without the dot). */
+const ABBREVIATIONS = new Set([
+  "dr", "hj", "hjh", "tn", "pn", "prof", "dtk", "no", "bil", "jln", "spt", "dll", "dsb", "cth", "sdr", "sdri", "mr", "mrs", "vs",
+  "bhd", "sdn", "kpt", "mej", "ust", "ir", "yb", "yab"
+]);
+// Words that are also ordinary sentence endings ("kata Puan.", "bulan Mac.") are left out on purpose.
+
 /**
  * A description for search results and shared links. Search engines cut it at about 160 characters, so a long dek (the live
  * pages had up to 323) is shortened at a word boundary with an ellipsis instead of being cut mid-word by someone else.
@@ -58,8 +65,16 @@ export function clipDescription(text: string, max: number = META_DESCRIPTION_MAX
   if (clean.length <= max) return clean;
   // Prefer to stop where a sentence stops, so a shared link never ends in the middle of a thought. A lone short first sentence
   // (under 40% of the room) is not worth the loss, so it falls through to the word-boundary cut below.
+  // The dot of an abbreviation ("Hj. Ali", "Dr. Sofea", "A. Samad Said", "No. 5") is not the end of a sentence: stopping there would
+  // leave a shared link ending on "…bersama Hj.". The match runs on the whole text, so a stop only counts when a space really follows it.
   const room = clean.slice(0, max);
-  const stops = Array.from(room.matchAll(/[.!?]["”’)]?(?=\s|$)/g));
+  const stops = Array.from(clean.matchAll(/[.!?]["”’)]?(?=\s|$)/g)).filter((m) => {
+    const index = m.index ?? 0;
+    if (index + m[0].length > max) return false;
+    if (m[0][0] !== ".") return true;
+    const word = clean.slice(0, index).split(" ").pop()?.replace(/^["“‘(]+/, "") ?? "";
+    return !(word.length === 1 && /[A-Za-z]/.test(word)) && !ABBREVIATIONS.has(word.toLowerCase());
+  });
   const last = stops.length ? stops[stops.length - 1] : null;
   if (last && last.index !== undefined && last.index + last[0].length >= max * 0.4) return room.slice(0, last.index + last[0].length);
   const cut = clean.slice(0, max - 1);

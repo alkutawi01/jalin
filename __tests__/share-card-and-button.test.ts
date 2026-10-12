@@ -17,6 +17,21 @@ assert(clipped === "Di sebuah kampung berhampiran Tebedu, sebatang papan hanyut 
 assert(clipDescription("Pendek. " + "kata ".repeat(60)).endsWith("…"), "a lone short first sentence does not win over the word-boundary cut");
 assert(clipDescription("Satu ayat yang amat panjang tanpa sebarang noktah di dalamnya sehingga ia terpaksa dipotong pada sempadan perkataan kerana tiada tempat berhenti yang lebih baik di sini sama sekali dan seterusnya selamanya").endsWith("…"), "with no sentence end in reach it still cuts at a word with an ellipsis");
 
+// A dot after a title or initial is not the end of a sentence.
+const abbr = [
+  "Selepas dua puluh tahun merantau di bandar yang tidak pernah tidur, dia pulang ke kampung bersama Hj. Ali yang sudah uzur dan tidak lagi mengenali sesiapa pun di situ kecuali satu nama.",
+  "Sepanjang malam yang panjang itu, seorang jururawat muda menunggu keputusan doktor di wad kecemasan bersama Dr. Sofea yang tidak berkata apa-apa tentang keadaan pesakit yang dibawa masuk tadi.",
+  "Dalam perjalanan pulang yang jauh dan berdebu itu, mereka singgah di rumah A. Samad Said untuk bertanya khabar tentang sebuah buku lama yang sudah lama tidak pernah dipulangkan kepada pemiliknya."
+];
+for (const text of abbr) {
+  const out = clipDescription(text);
+  assert(out.endsWith("…") && !/(Hj|Dr|A).$/.test(out) && out.length <= 160, `does not stop on an abbreviation: "${out.slice(-24)}"`);
+}
+const real = "Pak Hj. Ali pulang ke kampung selepas dua puluh tahun, dan mendapati rumah pusakanya sudah bertukar tangan. Dia belum tahu siapa yang membelinya dan jiran pun enggan bercakap.";
+assert(clipDescription(real) === "Pak Hj. Ali pulang ke kampung selepas dua puluh tahun, dan mendapati rumah pusakanya sudah bertukar tangan.", "a real sentence end after an abbreviation is still found");
+const mac = "Mereka bertemu semula di rumah lama itu pada bulan Mac, selepas bertahun-tahun terpisah oleh jarak dan salah faham.";
+assert(clipDescription(mac + " " + "kata ".repeat(40)) === mac, "a word like Mac that can end a sentence still does");
+
 const img = shareImage("https://abc.public.blob.vercel-storage.com/a.png", "Alt");
 assert(img.url.includes("/api/og?src=") && img.width === 1200 && img.height === 630 && img.alt === "Alt", "the card picture is the 1200 x 630 crop, with its description");
 assert(shareImageUrl("https://abc.public.blob.vercel-storage.com/a.png").includes("/_next/image?"), "structured data keeps the uncropped picture");
