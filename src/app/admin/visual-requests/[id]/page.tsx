@@ -785,6 +785,8 @@ export default function EditVisualRequestPage() {
             </select>
           </div>
 
+          {/* A main picture (hero) sits at the head of the work: before or after a paragraph means nothing for it. */}
+          {form.visualRole !== "hero" ? (
           <div className="admin-form-group">
             <label htmlFor="place">Tempat</label>
             <select
@@ -797,6 +799,7 @@ export default function EditVisualRequestPage() {
               ))}
             </select>
           </div>
+          ) : null}
         </div>
 
         <div className="admin-form-group">
@@ -916,6 +919,7 @@ export default function EditVisualRequestPage() {
           />
         </div>
 
+        {form.visualRole !== "hero" ? (
         <div className="admin-form-group">
           <label htmlFor="anchor">Petikan penanda</label>
           <input
@@ -926,6 +930,7 @@ export default function EditVisualRequestPage() {
             placeholder="Petikan daripada manuskrip untuk menandakan kedudukan"
           />
         </div>
+        ) : null}
 
         <div className="admin-form-actions">
           <a href="/admin/visual-requests" className="admin-btn admin-btn-outline">Kembali</a>
