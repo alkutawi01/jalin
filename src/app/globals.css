@@ -4200,6 +4200,20 @@ html:has(.site-header.is-tucked) .sticky { top: 24px; }
   text-decoration: none;
   background-size: 100% 1.8px;
 }
+/* Titles (the latest episode on the homepage, a search result) take the same movement with a brush stroke: thick at the left,
+   tapering to the right. Small links (the breadcrumb, the context line) keep the plain line. Same rule for both: drawn left to right on
+   hover, rubbed out from the right back to the left on leave. */
+:root { --link-brush: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 9' preserveAspectRatio='none'%3E%3Cpath d='M0 5.6C20 1.8 60 2.2 100 4.1C60 3.6 22 4.8 0 8.4Z' fill='%23a76450'/%3E%3C/svg%3E"); }
+.series-feature-latest-title,
+.search-result-title a {
+  background-image: var(--link-brush);
+  background-size: 0% 9px;
+  padding-bottom: 5px;
+}
+.series-feature-latest-title:hover, .series-feature-latest-title:focus-visible,
+.search-result-title a:hover, .search-result-title a:focus-visible {
+  background-size: 100% 9px;
+}
 /* The latest-episode title is a grid item: it would stretch the full column and draw the line far past the words. */
 .series-feature-latest-title { justify-self: start; }
 @media (prefers-reduced-motion: reduce) {

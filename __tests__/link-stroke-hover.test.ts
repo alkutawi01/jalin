@@ -22,5 +22,11 @@ assert(/text-decoration: none;\n\s*background-size: 100% 1\.8px;/.test(block), "
 assert(block.includes(".series-feature-latest-title { justify-self: start; }"), "the grid-item title is only as wide as its words");
 assert(/prefers-reduced-motion: reduce\) \{[^}]*transition: none;/.test(block), "reduced motion: it appears without sweeping");
 
+const brush = block.slice(block.indexOf("--link-brush:"));
+assert(brush.includes("fill='%23a76450'") && brush.includes("M0 5.6C20 1.8 60 2.2 100 4.1C60 3.6 22 4.8 0 8.4Z"), "the title brush is a tapered filled stroke, thick at the left");
+assert(/\.series-feature-latest-title,\n\.search-result-title a \{\n\s*background-image: var\(--link-brush\);\n\s*background-size: 0% 9px;/.test(brush), "titles use the brush, small links keep the line");
+assert(!/\.crumbs a[^{]*\{[^}]*--link-brush/.test(brush) && !brush.includes(".story-context-line a {"), "the breadcrumb and context line do not take the brush");
+assert(!block.includes("background-position: 100%"), "nothing anchors the line at the right, so it is rubbed out from the right back to the left");
+
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);
