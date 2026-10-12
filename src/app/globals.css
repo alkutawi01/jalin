@@ -3806,8 +3806,9 @@ html:has(.a-nav, .admin-login-page) { overflow: visible; }
 .related-works-grid-single { grid-template-columns: minmax(0, 580px); }
 @media (max-width: 620px) { .related-works-grid { grid-template-columns: minmax(0, 1fr); } }
 /* "Tamat" followed by "Baca lagi": one gap between them, not the end-of-page bottom space plus the section's top space. */
-.story-end:has(+ .related-works) { padding-bottom: 8px; }
-.story-end + .related-works { padding-top: 24px; }
+.story-end:has(+ .related-works), .story-end:has(+ .share-row) { padding-bottom: 8px; }
+.story-end + .related-works, .share-row + .related-works { padding-top: 24px; }
+.story-end + .share-row { margin-top: 8px; }
 /* Penilaian AI on the reader page: numbers under Penyuntingan, reasons in a dialog once the reader has reached "Tamat". */
 .ai-rating-scores { list-style: none; margin: 0 0 10px; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 18px; }
 .ai-rating-scores li { display: flex; flex-direction: column; }
@@ -4240,3 +4241,18 @@ body:has(.save-work) .back-to-top { bottom: 76px; }
   .hero-carousel-slide .hero-featured-visual { min-height: 360px; max-height: calc(100svh - 89px - 56px); }
   .hero-carousel-slide .home-work-meta { margin-bottom: 18px; }
 }
+
+/* Homepage "Bersiri": up to three series as slides. They move only when the reader slides them (the hero above already moves by itself). */
+.series-carousel { display: grid; gap: 14px; }
+.series-carousel-track { display: flex; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scrollbar-width: none; -webkit-overflow-scrolling: touch; border-radius: 18px; }
+.series-carousel-track::-webkit-scrollbar { display: none; }
+.series-carousel-track:focus-visible { outline: 2px solid var(--clay); outline-offset: 4px; }
+.series-carousel-slide { flex: 0 0 100%; min-width: 0; scroll-snap-align: start; scroll-snap-stop: always; }
+.series-carousel-controls { display: flex; align-items: center; justify-content: center; gap: 14px; }
+.series-carousel-arrow { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; padding: 0; border: 1px solid var(--line); border-radius: 50%; background: transparent; color: var(--ink); cursor: pointer; transition: border-color .18s ease, opacity .18s ease; }
+.series-carousel-arrow:hover:not(:disabled), .series-carousel-arrow:focus-visible { border-color: var(--ink); }
+.series-carousel-arrow:disabled { opacity: .35; cursor: default; }
+.series-carousel-dots { display: flex; gap: 8px; }
+.series-carousel-dot { width: 8px; height: 8px; padding: 0; border: 0; border-radius: 50%; background: rgba(24, 52, 60, .25); cursor: pointer; transition: background-color .18s ease, transform .18s ease; }
+.series-carousel-dot.is-active { background: var(--ink); transform: scale(1.25); }
+@media (prefers-reduced-motion: reduce) { .series-carousel-track { scroll-behavior: auto; } .series-carousel-dot, .series-carousel-arrow { transition: none; } }

@@ -174,7 +174,8 @@ export default function EpisodeView({
           {footnotes.notes.length > 0 ? <FootnoteMargin notes={footnotes.notes.map((note) => ({ number: note.number, text: note.text }))} /> : null}
         </div>
 
-        <ShareRow title={work.title} />
+        {/* "Kongsi" comes after "Tamat" / "Bersambung" at the newest episode; with a next episode it sits above the way to it. */}
+        {nextEpisode ? <ShareRow title={work.title} /> : null}
 
         <ContinueNav
           name="Selepas episod ini"
@@ -188,7 +189,12 @@ export default function EpisodeView({
 
         {/* "Tamat" marks the end of the work, so an episode that has a next episode does not show it. The newest episode of a
             series that is still going on is not the end either: it said "Tamat" under a status of "Masih diteruskan". */}
-        {!nextEpisode ? <StoryEnd title={work.title} label={series.status === "completed" ? "Tamat" : "Bersambung"} /> : null}
+        {!nextEpisode ? (
+          <>
+            <StoryEnd title={work.title} label={series.status === "completed" ? "Tamat" : "Bersambung"} />
+            <ShareRow title={work.title} />
+          </>
+        ) : null}
       </main>
 
       {preview ? null : <script

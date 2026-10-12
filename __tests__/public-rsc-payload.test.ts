@@ -45,6 +45,7 @@ import SaveWorkButton from "../src/components/reader/SaveWorkButton";
 import ExpiryNotice from "../src/components/reader/ExpiryNotice";
 import BackToTop from "../src/components/reader/BackToTop";
 import ShareRow from "../src/components/reader/ShareRow";
+import SeriesCarousel from "../src/components/reader/SeriesCarousel";
 import HeaderAutoHide from "../src/components/reader/HeaderAutoHide";
 import { initContentRepository } from "../src/lib/content";
 
@@ -90,7 +91,7 @@ const FORBIDDEN_STRINGS = [
 ];
 
 /** Client components receive their data as props; do not execute them. */
-const CLIENT_COMPONENTS = new Set<unknown>([MobileStoryInfo, MobileNavMenu, GlossaryTerm, ReadingProgress, FootnoteMargin, HeaderSearch, CountUp, StoryCollection, NavMenu, ReadingTracker, SaveWorkButton, ExpiryNotice, BackToTop, ShareRow, HeaderAutoHide, ReadMore, AiRating]);
+const CLIENT_COMPONENTS = new Set<unknown>([MobileStoryInfo, MobileNavMenu, GlossaryTerm, ReadingProgress, FootnoteMargin, HeaderSearch, CountUp, StoryCollection, NavMenu, ReadingTracker, SaveWorkButton, ExpiryNotice, BackToTop, ShareRow, SeriesCarousel, HeaderAutoHide, ReadMore, AiRating]);
 
 function scanValue(value: unknown, path: string, hits: string[]) {
   if (typeof value === "string") {

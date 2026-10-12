@@ -323,7 +323,8 @@ export default async function WorkView({
           {!landing && footnotes.notes.length > 0 ? <FootnoteMargin notes={footnotes.notes.map((note) => ({ number: note.number, text: note.text }))} /> : null}
         </div>
 
-        <ShareRow title={work.title} />
+        {/* "Kongsi" comes after "Tamat" where the work ends; between two chapters it sits above the way to the next one. */}
+        {sections.length === 0 || (!landing && !nextSection) ? null : <ShareRow title={work.title} />}
 
         {sections.length > 0 && !landing ? (
           <ContinueNav
@@ -339,7 +340,12 @@ export default async function WorkView({
         ) : null}
 
         {/* "Tamat" marks the end of the work, so a chapter that has a next chapter does not show it. */}
-        {sections.length === 0 || (!landing && !nextSection) ? <StoryEnd title={work.title} /> : null}
+        {sections.length === 0 || (!landing && !nextSection) ? (
+          <>
+            <StoryEnd title={work.title} />
+            <ShareRow title={work.title} />
+          </>
+        ) : null}
 
         {/* Other works are offered where the reader has finished or is choosing, not between two chapters of a novela (whose next step is the next chapter). */}
         {activeSection && nextSection ? null : <ReadMore initial={readMore} exceptSlug={work.slug} />}

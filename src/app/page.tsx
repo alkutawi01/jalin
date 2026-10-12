@@ -12,6 +12,7 @@ import type { ImageCrop } from "../lib/content/types";
 import { cropStyle } from "../lib/reader/crop";
 import { seriesAuthorNames } from "../lib/reader/series-authors";
 import { displayableGenre } from "../lib/reader/genre-display";
+import SeriesCarousel from "../components/reader/SeriesCarousel";
 import { formatMalayDate } from "../lib/reader/format-date";
 import { getAllWorks } from "../lib/content/workLoader";
 import { getEditorPickSummaries, resolveHeroPicks } from "../lib/reader/editor-picks";
@@ -126,11 +127,17 @@ interface SeriesHighlightData {
   year: string;
 }
 
-/** The series with the most recent published episode. Null when no series has a published episode. */
-async function getSeriesHighlight(): Promise<SeriesHighlightData | null> {
+/** The most series shown at once, each by its newest episode. */
+const SERIES_HIGHLIGHT_MAX = 3;
+
+/**
+ * One entry per series that has a published episode, each with its newest episode, the series with the most recent publication first,
+ * at most three. Three is a ceiling, not a target: with two series there are two entries (never two episodes of one series).
+ */
+async function getSeriesHighlights(): Promise<SeriesHighlightData[]> {
   // Local design preview only: the Markdown checkout has no Series records.
   if (process.env.NODE_ENV === "development" && process.env.JALIN_PREVIEW_SERIES === "1") {
-    return {
+    return [{
       slug: "satu-daerah-yang-paling-sunyi",
       title: "Satu Daerah yang Paling Sunyi",
       genre: "Rumah Tangga",
@@ -139,10 +146,10 @@ async function getSeriesHighlight(): Promise<SeriesHighlightData | null> {
       latest: { slug: "garing-bukan-hangit", position: 1, title: "Garing, Bukan Hangit" },
       authors: [],
       year: "2026",
-    };
+    }];
   }
   const repo = await initContentRepository();
-  let best: (SeriesHighlightData & { at: string }) | null = null;
+  const found: (SeriesHighlightData & { at: string })[] = [];
   for (const series of repo.getPublishedSeries()) {
     const episodes = repo.getPublishedSeriesEpisodes(series.id);
     if (episodes.length === 0) continue;
@@ -154,8 +161,7 @@ async function getSeriesHighlight(): Promise<SeriesHighlightData | null> {
     const latestSummary = latestWork ? projectPublicWorkSummary(latestWork) : undefined;
     const latestHero = latestSummary?.hero;
     const at = newestAt;
-    if (best && best.at >= at) continue;
-    best = {
+    found.push({
       slug: series.slug,
       title: series.title,
       genre: series.genre,
@@ -167,21 +173,17 @@ async function getSeriesHighlight(): Promise<SeriesHighlightData | null> {
       authors: seriesAuthorNames(ordered.map((e) => repo.getWork(e.slug)?.credits)),
       year: (at || "2026").slice(0, 4),
       at
-    };
+    });
   }
-  return best;
+  found.sort((a, b) => b.at.localeCompare(a.at));
+  return found.slice(0, SERIES_HIGHLIGHT_MAX).map(({ at: _at, ...entry }) => entry);
 }
 
-function SeriesHighlight({ data, ground }: { data: SeriesHighlightData; ground: GroundKey }) {
+function SeriesFeatureCard({ data }: { data: SeriesHighlightData }) {
   const preview = process.env.NODE_ENV === "development" && process.env.JALIN_PREVIEW_SERIES === "1";
   const base = `${preview ? "https://jalin.adjung.com" : ""}/kategori/bersiri/${data.slug}`;
   const genre = displayableGenre(data.genre);
   return (
-    <section className="editorial-selection series-highlight" data-ground={ground} aria-labelledby="series-highlight-title">
-      <div className="site-shell">
-        <header className="section-head">
-          <h2 id="series-highlight-title">Bersiri</h2>
-        </header>
         <article className="series-feature">
           <a className="series-feature-media" href={base}>
             {data.hero ? (
@@ -207,6 +209,20 @@ function SeriesHighlight({ data, ground }: { data: SeriesHighlightData; ground: 
             </div>
           </div>
         </article>
+  );
+}
+
+/** "Bersiri" on the homepage: the newest episode of up to three series, as slides the reader moves themselves. */
+function SeriesHighlight({ items, ground }: { items: SeriesHighlightData[]; ground: GroundKey }) {
+  return (
+    <section className="editorial-selection series-highlight" data-ground={ground} aria-labelledby="series-highlight-title">
+      <div className="site-shell">
+        <header className="section-head">
+          <h2 id="series-highlight-title">Bersiri</h2>
+        </header>
+        <SeriesCarousel label="Siri dengan episod terkini">
+          {items.map((data) => <SeriesFeatureCard key={data.slug} data={data} />)}
+        </SeriesCarousel>
       </div>
     </section>
   );
@@ -234,7 +250,9 @@ export default async function Home() {
     for (const episode of pickRepo.getPublishedSeriesEpisodes(series.id)) seriesByEpisode.set(episode.slug, series);
   }
   const editorialPicks = resolveHeroPicks(pickSummaries, (episodeSlug) => seriesByEpisode.get(episodeSlug));
-  const seriesHighlight = await getSeriesHighlight();
+  const seriesHighlights = await getSeriesHighlights();
+  // The newest series stands for Bersiri where a single picture is needed (the category card).
+  const seriesHighlight = seriesHighlights[0];
   const grounds = await homeGrounds();
   const stats = statItems(computeSiteStats(allWorks, pickRepo.getPublishedSeries().length));
 
@@ -285,7 +303,7 @@ export default async function Home() {
 
         <HomeStats stats={stats} ground={grounds.stats} />
 
-        {seriesHighlight ? <SeriesHighlight data={seriesHighlight} ground={grounds.series} /> : null}
+        {seriesHighlights.length > 0 ? <SeriesHighlight items={seriesHighlights} ground={grounds.series} /> : null}
 
         {collection.length > 0 ? <StoryCollection initial={collection} ground={grounds.latest} /> : null}
 

@@ -32,7 +32,9 @@ assert(row.includes("window.location.pathname") && !row.includes("location.searc
 const work = read("src/app/kategori/[type]/[slug]/page.tsx");
 const episode = read("src/app/kategori/bersiri/[seriesSlug]/[episodeSlug]/page.tsx");
 assert(!work.includes("ShareWorkButton") && !episode.includes("ShareWorkButton"), "no share button floats over the page any more");
-assert(read("src/components/reader/WorkView.tsx").includes("<ShareRow title={work.title} />") && read("src/components/reader/EpisodeView.tsx").includes("<ShareRow title={work.title} />"), "works and episodes end with the share row");
+const workView = read("src/components/reader/WorkView.tsx").replace(/\s+/g, " ");
+const episodeView = read("src/components/reader/EpisodeView.tsx").replace(/\s+/g, " ");
+assert(/<StoryEnd [^>]*\/> <ShareRow title=\{work.title\} \/>/.test(workView) && /<StoryEnd [^>]*\/> <ShareRow title=\{work.title\} \/>/.test(episodeView), "Kongsi comes straight after Tamat, on a work and on an episode");
 assert(read("src/app/globals.css").includes("body:has(.save-work) .back-to-top"), "the back-to-top button clears Simpan");
 
 console.log(`\n${passed} passed, ${failed} failed`);
