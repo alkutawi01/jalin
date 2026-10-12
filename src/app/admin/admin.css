@@ -807,7 +807,9 @@
   .a-shell .admin-table.a-compact-table.a-compact-table td, .a-shell .admin-table.a-compact-table.a-compact-table td:nth-child(n+3) { width: auto; padding: 0; }
   .a-shell .admin-table.a-compact-table.a-compact-table td[data-label]::before { content: none; display: none; }
   .a-shell .admin-table.a-compact-table.a-compact-table td.admin-pick-cell { flex: none; }
-  .a-shell .admin-table.a-compact-table.a-compact-table td.admin-table-title { flex: 1 1 0; min-width: 0; overflow-wrap: anywhere; }
+  /* The title takes the rest of the first line after the tick. With a basis of 0 the kind and the status fitted on that line too and squeezed the title to a
+     column of one word or less ("Surat / yang / Tidak / Diberika / n"); a basis of the line less the tick sends them to the second line, as drawn above. */
+  .a-shell .admin-table.a-compact-table.a-compact-table td.admin-table-title { flex: 1 1 calc(100% - 52px); min-width: 0; overflow-wrap: anywhere; }
   .a-shell .admin-table.a-compact-table.a-compact-table td:last-child { flex: 1 1 100%; }
   .a-shell .admin-table.a-compact-table.a-compact-table td:last-child .admin-table-actions { justify-content: stretch; }
   .a-shell .admin-table.a-compact-table.a-compact-table td:last-child .admin-btn { flex: 1 1 0; justify-content: center; }
