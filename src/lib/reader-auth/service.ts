@@ -161,12 +161,19 @@ export type VerifyResult =
   | { status: "ok"; token: string; accountId: string; deviceId: string; isNewAccount: boolean; trialEndsAt: Date | null }
   | { status: "choose_device"; devices: DeviceSummary[] }
   | { status: "invalid" }
+  | { status: "consent_required" }
   | { status: "throttled" };
 
 export async function verifyLoginCode(
   db: Db,
   deps: { key: MacKey; now?: Date; limits?: Partial<LimitSettings> },
-  input: { email: string; code: string; ipMac: string; deviceLabel?: string; replaceDeviceId?: string }
+  input: {
+    email: string; code: string; ipMac: string; deviceLabel?: string; replaceDeviceId?: string;
+    /** The reader confirmed being 18 or older and accepted the terms and the privacy notice (version given). */
+    consent?: { termsVersion: string };
+    /** A new account is not made without that confirmation (the web route always asks for it). */
+    requireConsent?: boolean;
+  }
 ): Promise<VerifyResult> {
   const now = deps.now ?? new Date();
   const limits: LimitSettings = { ...LIMITS, ...deps.limits };
@@ -220,10 +227,18 @@ export async function verifyLoginCode(
 
     let isNewAccount = false;
     if (!account) {
+      // No account is made for someone who has not confirmed being an adult and accepted the terms. The code is not used up.
+      if (input.requireConsent && !input.consent) return { status: "consent_required" };
       // A new account has no access at all until its reader starts the trial (startTrial) or redeems a code.
       account = await trx
         .insertInto("reader_accounts")
-        .values({ email: input.email.trim(), email_normalized: email, email_verified_at: now, created_at: now })
+        .values({
+          email: input.email.trim(),
+          email_normalized: email,
+          email_verified_at: now,
+          created_at: now,
+          ...(input.consent ? { terms_version: input.consent.termsVersion, terms_accepted_at: now, adult_confirmed_at: now } : {}),
+        })
         .returningAll()
         .executeTakeFirstOrThrow();
       isNewAccount = true;
@@ -268,7 +283,11 @@ export async function verifyLoginCode(
       .values({ account_id: account.id, token_hash: hashSessionToken(token), label, created_at: now, last_seen_at: now })
       .returning("id")
       .executeTakeFirstOrThrow();
-    await trx.updateTable("reader_accounts").set({ last_login_at: now }).where("id", "=", account.id).execute();
+    // A returning reader who accepts a newer version of the terms is recorded against that version.
+    const accept = input.consent && account.terms_version !== input.consent.termsVersion
+      ? { terms_version: input.consent.termsVersion, terms_accepted_at: now, adult_confirmed_at: account.adult_confirmed_at ?? now }
+      : {};
+    await trx.updateTable("reader_accounts").set({ last_login_at: now, ...accept }).where("id", "=", account.id).execute();
 
     return { status: "ok", token, accountId: account.id, deviceId: device.id, isNewAccount, trialEndsAt: account.trial_ends_at };
   });

@@ -29,6 +29,8 @@ export default function LoginForm({ next = "/akaun", compact = false }: { next?:
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
   const [wait, setWait] = useState(0);
+  // Unticked by default. Needed before a code is sent, and sent again with the code so the account records it.
+  const [agreed, setAgreed] = useState(false);
   const codeRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -53,6 +55,7 @@ export default function LoginForm({ next = "/akaun", compact = false }: { next?:
     if (busy) return;
     setError(""); setNotice("");
     if (!email.trim()) { setError("Masukkan e-mel anda."); return; }
+    if (!agreed) { setError("Tandakan pengesahan umur dan persetujuan untuk meneruskan."); return; }
     setBusy(true);
     try {
       const { ok, data } = await post("/api/akaun/kod", { email });
@@ -74,7 +77,7 @@ export default function LoginForm({ next = "/akaun", compact = false }: { next?:
     if (!/^\d{6}$/.test(code.replace(/[\s-]/g, ""))) { setError("Masukkan kod enam digit."); return; }
     setBusy(true);
     try {
-      const { ok, status, data } = await post("/api/akaun/sahkan", { email, code, label: deviceLabel(), replaceDeviceId });
+      const { ok, status, data } = await post("/api/akaun/sahkan", { email, code, label: deviceLabel(), replaceDeviceId, consent: agreed });
       if (ok && data.needsDeviceChoice) {
         setDevices((data.devices as Device[]) ?? []);
         setStep("device");
@@ -100,10 +103,16 @@ export default function LoginForm({ next = "/akaun", compact = false }: { next?:
           {compact ? null : <p className="auth-intro">Masukkan e-mel anda. Kami hantar kod enam digit. Tiada kata laluan.</p>}
           <label className="auth-label" htmlFor="auth-email">E-mel</label>
           <input id="auth-email" className="auth-input" type="email" inputMode="email" autoComplete="email" placeholder="nama@contoh.my" value={email} onChange={(e) => setEmail(e.target.value)} aria-invalid={!!error} aria-describedby={error ? "auth-error" : undefined} />
+          <label className="auth-consent" htmlFor="auth-consent">
+            <input id="auth-consent" type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} />
+            <span>
+              Saya mengesahkan bahawa saya berumur 18 tahun atau lebih, dan bersetuju dengan <a href="/terma" target="_blank" rel="noopener">Terma penggunaan</a> serta
+              telah membaca <a href="/privasi" target="_blank" rel="noopener">Dasar privasi</a> Jalin.
+            </span>
+          </label>
           {error ? <p id="auth-error" className="auth-error" role="alert">{error}</p> : null}
           <button className="auth-button" type="submit" disabled={busy}>{busy ? "Menghantar…" : "Hantar kod"}</button>
           <p className="auth-fine">Percubaan percuma 14 hari bermula apabila anda memilih untuk memulakannya.</p>
-          <p className="auth-fine">Dengan menghantar kod, anda mengesahkan telah membaca <a href="/privasi">Dasar privasi</a> dan <a href="/terma">Terma penggunaan</a>.</p>
         </form>
       ) : null}
 

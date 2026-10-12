@@ -1,26 +1,37 @@
 import { InfoPage } from "./InfoPage";
+import { CONTROLLER, controllerComplete } from "../../lib/legal-identity";
 
-const CONTACT = "editorial@adjung.com";
+const CONTACT = CONTROLLER.email;
 
 /**
  * The privacy notice for the account era, in Bahasa Malaysia and English on one page (PDPA 2010 section 7 asks for both).
  * The same facts in both languages: change them together. Contact is the editorial address published on Tentang Kami.
  */
 export default function PrivacyNotice() {
+  const identified = controllerComplete();
   return (
     <InfoPage
       kicker="Dasar · Policy"
       title="Dasar privasi"
       intro="Halaman awam dan karya contoh Jalin boleh dibaca tanpa akaun. Membaca karya penuh memerlukan akaun. Inilah maklumat yang kami simpan jika anda membukanya, dan mengapa. English version below."
-      updated="10 Oktober 2026"
+      updated="12 Oktober 2026"
     >
       <p><a href="#english">Read this notice in English</a></p>
 
       <h2>Siapa kami</h2>
       <p>
-        Jalin dikendalikan oleh Adjung Press, yang menentukan bagaimana data peribadi anda diproses (pengawal data). Untuk sebarang perkara tentang
+        Jalin dikendalikan oleh {CONTROLLER.tradeName}, yang menentukan bagaimana data peribadi anda diproses (pengawal data). Untuk sebarang perkara tentang
         data anda, e-mel <a href={`mailto:${CONTACT}`}>{CONTACT}</a>.
       </p>
+      {identified ? (
+        <ul>
+          <li><strong>Pengawal data:</strong> {CONTROLLER.tradeName}, perniagaan milikan tunggal yang didaftarkan di Malaysia</li>
+          <li><strong>Nombor pendaftaran SSM:</strong> {CONTROLLER.ssmNumber}</li>
+          <li><strong>Alamat surat-menyurat:</strong> {CONTROLLER.address}</li>
+          {CONTROLLER.phone ? <li><strong>Telefon:</strong> {CONTROLLER.phone}</li> : null}
+          <li><strong>E-mel untuk data peribadi:</strong> <a href={`mailto:${CONTACT}`}>{CONTACT}</a></li>
+        </ul>
+      ) : null}
 
       <h2>Tanpa akaun</h2>
       <ul>
@@ -34,7 +45,8 @@ export default function PrivacyNotice() {
         <li><strong>Nama paparan</strong> (pilihan): untuk dipaparkan pada akaun anda. Anda boleh tidak memberinya.</li>
         <li><strong>Peranti yang log masuk</strong> (nama peranti yang anda atau pelayar anda beri, dan bila ia terakhir digunakan; sehingga dua peranti bagi satu akaun): untuk menjaga keselamatan akaun dan menguatkuasakan had peranti.</li>
         <li><strong>Tetapan bacaan</strong> (saiz huruf, tema, jenis huruf, jarak baris, lebar teks, redup): supaya bacaan anda sama pada setiap peranti.</li>
-        <li><strong>Bacaan saya dan Disimpan</strong> (karya dan bab terakhir yang anda buka, serta karya yang anda simpan): supaya anda boleh menyambung bacaan. Anda boleh mengosongkan senarai itu sendiri.</li>
+        <li><strong>Bacaan saya dan Disimpan</strong> (karya dan bab terakhir yang direkodkan pada halaman Bacaan saya, serta karya yang anda simpan): supaya anda boleh menyambung bacaan. Anda boleh mengosongkan senarai Bacaan saya sendiri, dan membuang karya yang disimpan dengan menekan butang Simpan pada karya itu.</li>
+        <li><strong>Pengesahan umur dan persetujuan</strong> (versi Terma penggunaan dan Dasar privasi yang anda terima, dan masa anda menandakan pengesahan): untuk merekodkan bahawa pemegang akaun ialah orang dewasa dan bahawa persetujuan itu telah diberi.</li>
         <li><strong>Rekod akses</strong> (bila percubaan percuma bermula, kod atau kad yang anda tebus, tempoh langganan): untuk memberi anda akses membaca dan mengelakkan satu kod ditebus dua kali.</li>
         <li><strong>Data keselamatan</strong>: nilai cincang kriptografi berkunci yang dihasilkan daripada e-mel dan alamat IP (bukan e-mel atau alamat IP yang boleh dibaca), untuk menghalang penyalahgunaan seperti meneka kod, menguatkuasakan kelayakan percubaan dan melindungi keselamatan log masuk. Nilai ini masih boleh dianggap data peribadi.</li>
       </ul>
@@ -86,7 +98,7 @@ export default function PrivacyNotice() {
       <ul>
         <li><strong>Akses dan kemudahalihan:</strong> anda boleh memuat turun salinan data akaun yang tersedia dalam format JSON pada halaman Akaun (Muat turun data saya). Anda juga boleh memohon akses, pembetulan atau pemindahan data peribadi dengan menghubungi <a href={`mailto:${CONTACT}`}>{CONTACT}</a>. Permintaan untuk memindahkan data kepada pengawal data lain tertakluk pada keperluan undang-undang dan kebolehlaksanaan teknikal.</li>
         <li><strong>Pembetulan:</strong> ubah nama paparan pada halaman Akaun. Untuk pembetulan lain, e-mel <a href={`mailto:${CONTACT}`}>{CONTACT}</a>.</li>
-        <li><strong>Pemadaman:</strong> padam akaun anda sendiri pada bila-bila masa di halaman Akaun. Pemadaman adalah muktamad; baki percubaan atau langganan hilang bersamanya (lihat Terma penggunaan).</li>
+        <li><strong>Pemadaman:</strong> padam akaun anda sendiri pada bila-bila masa di halaman Akaun. Pemadaman adalah muktamad dan akaun tidak boleh dipulihkan. Jika anda masih mempunyai baki percubaan atau langganan, halaman itu akan memaklumkan tarikh tamatnya dan memberi pilihan untuk mengekalkan akaun sehingga tamat atau memadam sekarang; baki itu hilang jika anda memadam sekarang (lihat Terma penggunaan).</li>
         <li><strong>Mengehadkan pemprosesan:</strong> anda boleh memilih untuk tidak memberi nama paparan, mengosongkan senarai Bacaan saya dan mengurus tetapan bacaan. Anda juga boleh menghubungi kami untuk meminta supaya pemprosesan dihadkan, termasuk menarik balik persetujuan apabila pemprosesan bergantung pada persetujuan itu. Permintaan disemak mengikut undang-undang yang terpakai; sesetengah pemprosesan diperlukan untuk mengendalikan akaun, menjaga keselamatannya dan mengurus akses membaca.</li>
         <li><strong>Permintaan melalui e-mel:</strong> hubungi <a href={`mailto:${CONTACT}`}>{CONTACT}</a> daripada alamat e-mel akaun itu supaya kami dapat mengesahkan ia akaun anda. Jika anda tidak lagi mempunyai akses kepada e-mel itu, hubungi kami juga; kami akan meminta maklumat lain untuk mengesahkan identiti anda. Permintaan ini dikendalikan oleh seorang manusia.</li>
         <li><strong>Aduan:</strong> jika anda tidak berpuas hati, hubungi kami dahulu. Anda juga berhak mengadu kepada Pesuruhjaya Perlindungan Data Peribadi Malaysia.</li>
@@ -100,7 +112,19 @@ export default function PrivacyNotice() {
       </p>
 
       <h2>Kanak-kanak</h2>
-      <p>Jalin tidak ditujukan kepada kanak-kanak untuk membuka akaun sendiri. Jika anda ibu bapa atau penjaga dan mendapati anak anda membuka akaun, hubungi kami.</p>
+      <p>
+        Akaun Jalin hanya boleh didaftarkan dan dikendalikan oleh individu yang berumur 18 tahun atau lebih. Kanak-kanak boleh membaca karya Jalin menggunakan peranti dan akaun ibu bapa atau
+        penjaga, di bawah pengawasan mereka.
+      </p>
+      <p>Jalin tidak meminta kanak-kanak membuka akaun sendiri atau memberikan nama, alamat e-mel atau maklumat pengenalan mereka secara langsung.</p>
+      <p>
+        Apabila kanak-kanak membaca melalui akaun ibu bapa atau penjaga, maklumat seperti karya yang disimpan, karya dan bab terakhir yang direkodkan dalam Bacaan saya, serta tetapan
+        bacaan akan direkodkan pada akaun tersebut. Maklumat itu tidak diasingkan mengikut individu yang menggunakan akaun.
+      </p>
+      <p>
+        Ibu bapa atau penjaga bertanggungjawab mengurus penggunaan akaun, boleh mengosongkan Bacaan saya dan membuang karya yang disimpan. Jika anda percaya seorang kanak-kanak telah membuka
+        akaun sendiri atau memberikan data peribadinya kepada Jalin tanpa kebenaran yang sewajarnya, hubungi kami untuk semakan.
+      </p>
 
       <h2>Perubahan</h2>
       <p>Jika dasar ini berubah, kami akan mengemas kini halaman ini dan tarikh di atasnya.</p>
@@ -117,9 +141,18 @@ export default function PrivacyNotice() {
 
         <h2>Who we are</h2>
         <p>
-          Jalin is run by Adjung Press, which decides how your personal data is processed (the data controller). For anything about your data, e-mail{" "}
+          Jalin is run by {CONTROLLER.tradeName}, which decides how your personal data is processed (the data controller). For anything about your data, e-mail{" "}
           <a href={`mailto:${CONTACT}`}>{CONTACT}</a>.
         </p>
+        {identified ? (
+          <ul>
+            <li><strong>Data controller:</strong> {CONTROLLER.tradeName}, a sole proprietorship registered in Malaysia</li>
+            <li><strong>SSM registration number:</strong> {CONTROLLER.ssmNumber}</li>
+            <li><strong>Postal address:</strong> {CONTROLLER.address}</li>
+            {CONTROLLER.phone ? <li><strong>Telephone:</strong> {CONTROLLER.phone}</li> : null}
+            <li><strong>E-mail for personal data matters:</strong> <a href={`mailto:${CONTACT}`}>{CONTACT}</a></li>
+          </ul>
+        ) : null}
 
         <h2>Without an account</h2>
         <ul>
@@ -133,7 +166,8 @@ export default function PrivacyNotice() {
           <li><strong>Display name</strong> (optional): to show on your account. You may leave it out.</li>
           <li><strong>Signed-in devices</strong> (the device name you or your browser gives, and when it was last used; up to two devices per account): to keep the account safe and enforce the device limit.</li>
           <li><strong>Reading settings</strong> (text size, theme, typeface, line spacing, text width, dimming): so your reading looks the same on every device.</li>
-          <li><strong>My reading and Saved</strong> (the works and chapter you last opened, and the works you saved): so you can pick up where you stopped. You can clear the list yourself.</li>
+          <li><strong>My reading and Saved</strong> (the works and chapter last recorded on the My reading page, and the works you saved): so you can pick up where you stopped. You can clear My reading yourself, and remove a saved work with the Save button on that work.</li>
+          <li><strong>Age confirmation and acceptance</strong> (the version of the Terms of use and Privacy policy you accepted, and when you ticked the confirmation): to record that the account holder is an adult and that the acceptance was given.</li>
           <li><strong>Access records</strong> (when a trial started, the codes or cards you redeemed, your subscription period): to give you reading access and to stop a code being redeemed twice.</li>
           <li><strong>Security data</strong>: keyed cryptographic hashes derived from your e-mail and IP address (not the readable e-mail or IP address), to prevent abuse such as guessing codes, to enforce trial eligibility and to protect sign-in security. These values may still count as personal data.</li>
         </ul>
@@ -183,7 +217,7 @@ export default function PrivacyNotice() {
         <ul>
           <li><strong>Access and portability:</strong> you can download a copy of your available account data in JSON format from the Account page (Download my data). You may also request access to, correction of, or transfer of your personal data by contacting <a href={`mailto:${CONTACT}`}>{CONTACT}</a>. Requests to transfer data to another data controller are subject to applicable legal requirements and technical feasibility.</li>
           <li><strong>Correction:</strong> change your display name on the Account page. For any other correction, e-mail <a href={`mailto:${CONTACT}`}>{CONTACT}</a>.</li>
-          <li><strong>Deletion:</strong> delete your account yourself at any time on the Account page. Deletion is final and any remaining trial or subscription is lost with it (see the Terms of use).</li>
+          <li><strong>Deletion:</strong> delete your account yourself at any time on the Account page. Deletion is final and an account cannot be restored. If you still have trial or subscription time, the page tells you when it ends and lets you keep the account until then or delete it now; that time is lost if you delete now (see the Terms of use).</li>
           <li><strong>Limiting processing:</strong> you may choose not to give a display name, clear your My reading list and manage your reading settings. You may also contact us to ask that processing be limited, including withdrawing consent where processing relies on consent. We review requests under applicable law; some processing is necessary to operate your account, keep it secure and manage reading access.</li>
           <li><strong>Requests by e-mail:</strong> write to <a href={`mailto:${CONTACT}`}>{CONTACT}</a> from the e-mail address of the account so we can confirm it is yours. If you no longer have access to that e-mail, contact us anyway; we will ask for other information to confirm your identity. These requests are handled by a person.</li>
           <li><strong>Complaints:</strong> if you are not satisfied, contact us first. You also have the right to complain to the Personal Data Protection Commissioner of Malaysia.</li>
@@ -196,7 +230,19 @@ export default function PrivacyNotice() {
         </p>
 
         <h2>Children</h2>
-        <p>Jalin is not aimed at children opening accounts of their own. If you are a parent or guardian and find that your child has opened an account, please contact us.</p>
+        <p>
+          Jalin accounts may only be registered and managed by individuals aged 18 or above. Children may read works on Jalin using a parent&apos;s or guardian&apos;s device and
+          account, under their supervision.
+        </p>
+        <p>Jalin does not ask children to register their own accounts or to give their names, e-mail addresses or other identifying information directly.</p>
+        <p>
+          When a child reads through a parent&apos;s or guardian&apos;s account, information such as saved works, the last work and chapter recorded in My reading, and reading settings
+          is recorded under that account. This information is not separated by the person using the account.
+        </p>
+        <p>
+          Parents or guardians are responsible for managing use of the account, and may clear My reading and remove saved works. If you believe a child has opened an account or given
+          personal data to Jalin without appropriate authorisation, please contact us for review.
+        </p>
 
         <h2>Changes</h2>
         <p>If this policy changes, we will update this page and the date at the top.</p>

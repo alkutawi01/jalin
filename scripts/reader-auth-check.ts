@@ -205,6 +205,21 @@ async function main() {
       const open = await trx.selectFrom("reader_auth_challenges").select("id").where("email_lookup_mac", "=", emailLookupMac(key, "rosak@contoh.my")).where("consumed_at", "is", null).execute();
       assert(open.length === 0, "a code that was never delivered is retired");
 
+      // Being an adult and accepting the terms: a new account is not made without it, and what was accepted is recorded.
+      await requestLoginCode(trx, { key, mailer, now: at(700) }, { email: "dewasa@contoh.my", ipMac: ipMac(key, "203.0.113.70") });
+      const noBox = await verifyLoginCode(trx, { key, now: at(700.1) }, { email: "dewasa@contoh.my", code: last().code, ipMac: ipMac(key, "203.0.113.70"), requireConsent: true });
+      assert(noBox.status === "consent_required", "a new account is not made without the age and terms box");
+      const none = await trx.selectFrom("reader_accounts").select("id").where("email_normalized", "=", "dewasa@contoh.my").execute();
+      assert(none.length === 0, "no account row exists after that refusal");
+      const sameCode = await verifyLoginCode(trx, { key, now: at(700.2) }, { email: "dewasa@contoh.my", code: last().code, ipMac: ipMac(key, "203.0.113.70"), requireConsent: true, consent: { termsVersion: "2026-10-12" } });
+      assert(sameCode.status === "ok" && sameCode.isNewAccount, "the same code still works once the box is ticked (it was not used up)");
+      const row = await trx.selectFrom("reader_accounts").select(["terms_version", "terms_accepted_at", "adult_confirmed_at"]).where("email_normalized", "=", "dewasa@contoh.my").executeTakeFirstOrThrow();
+      assert(row.terms_version === "2026-10-12" && row.terms_accepted_at !== null && row.adult_confirmed_at !== null, "the version, the time and the age confirmation are recorded on the account");
+      await requestLoginCode(trx, { key, mailer, now: at(710) }, { email: "dewasa@contoh.my", ipMac: ipMac(key, "203.0.113.71") });
+      const later = await verifyLoginCode(trx, { key, now: at(710.1) }, { email: "dewasa@contoh.my", code: last().code, ipMac: ipMac(key, "203.0.113.71"), requireConsent: true, consent: { termsVersion: "2027-01-01" } });
+      const row2 = await trx.selectFrom("reader_accounts").select("terms_version").where("email_normalized", "=", "dewasa@contoh.my").executeTakeFirstOrThrow();
+      assert(later.status === "ok" && row2.terms_version === "2027-01-01", "a returning reader who accepts a newer version is recorded against it");
+
       throw new Rollback();
     });
   } catch (error) {

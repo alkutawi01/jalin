@@ -7,6 +7,7 @@ import HaltSwitch from "./HaltSwitch";
 import PaywallSwitch from "./PaywallSwitch";
 import { isPaywallSwitchOn, countSamples } from "../../../lib/reader-auth/switches";
 import { countEvents, readerMailDailyCap } from "../../../lib/reader-auth/service";
+import { controllerMissing } from "../../../lib/legal-identity";
 
 export const dynamic = "force-dynamic";
 
@@ -49,6 +50,12 @@ export default async function LanggananPage() {
       <LanggananNav current="/admin/langganan" />
       {!readerAccountsEnabled() ? (
         <div className="admin-alert admin-alert-info" role="status">Akaun pembaca belum dihidupkan pada laman ini (READER_ACCOUNTS_ENABLED). Pembaca belum boleh mendaftar atau menebus kod.</div>
+      ) : null}
+      {controllerMissing().length > 0 ? (
+        <div className="admin-alert admin-alert-warning" role="status">
+          Maklumat pengawal data dalam Dasar privasi belum lengkap: {controllerMissing().join(", ")}. Isi dalam src/lib/legal-identity.ts selepas Adjung Press didaftarkan di SSM,
+          sebelum akaun dihidupkan. Lihat docs/KESEDIAAN_PELANCARAN.md.
+        </div>
       ) : null}
       {problem || !data ? (
         <div className="admin-alert admin-alert-error" role="alert">{problem}</div>
