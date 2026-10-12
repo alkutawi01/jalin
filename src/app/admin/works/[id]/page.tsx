@@ -35,6 +35,7 @@ import { insertFootnote } from "../../../../lib/admin/footnote-insert";
 import SideNoteList from "../../../../components/admin/SideNoteList";
 import { footnoteReferenceRange } from "../../../../lib/admin/footnote-edit";
 import PlacesEditor from "../../../../components/admin/PlacesEditor";
+import CountryEditor from "../../../../components/admin/CountryEditor";
 import { uploadTooLargeMessage } from "../../../../lib/admin/upload-limit";
 import { errorText } from "../../../../lib/admin/error-text";
 
@@ -3361,6 +3362,7 @@ export default function EditWorkPage() {
             </button>
           </div>
 
+          <CountryEditor key={"c" + settingKey} workId={workId} />
           <PlacesEditor key={"p" + settingKey} workId={workId} />
           <PlacesEditor key={"t" + settingKey} workId={workId} kind="times" />
         </div>

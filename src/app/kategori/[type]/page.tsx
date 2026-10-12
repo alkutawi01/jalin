@@ -77,7 +77,7 @@ function WorkCard({ work, type, priority }: { work: PublicWorkSummary; type: str
         </div>
         <div className="latest-card-body">
           <div className="latest-card-meta">
-            <span className="latest-card-type">{genre ? `${label} · ${genre}` : label}</span>
+            <span className="latest-card-type">{[label, genre, work.country].filter(Boolean).join(" · ")}</span>
             {reading ? <span className="latest-card-reading">{reading}</span> : null}
           </div>
           <h2 className="latest-card-title" style={{ fontStyle: "normal" }}>{work.title}</h2>

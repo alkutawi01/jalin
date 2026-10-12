@@ -11,6 +11,7 @@ import { getDb, hasDb } from "../db";
 import type { Database } from "../db/types";
 import type { WorkType, WorkStatus } from "../db/types";
 import { characterProblems } from "./metadata-rules";
+import { normaliseCountries } from "../reader/countries";
 
 function getAdminDb(): Kysely<Database> {
   if (!hasDb()) {
@@ -42,6 +43,8 @@ export interface WorkInput {
   readerNote?: string;
   /** Cerpen/Novela: "sumber" when taken from another source, "asli" (or empty) for Jalin's own. Stored in works.metadata. */
   origin?: string;
+  /** Negara latar (codes from lib/reader/countries.ts, at most two); an empty list removes it. Stored in works.metadata. */
+  countries?: string[];
 }
 
 export interface WorkRecord {
@@ -239,7 +242,7 @@ export async function updateWork(
     updateData.reader = note ? { note } : null;
   }
 
-  if (input.editorNote !== undefined || input.origin !== undefined) {
+  if (input.editorNote !== undefined || input.origin !== undefined || input.countries !== undefined) {
     // Read-modify-write under a row lock, so a character save at the same moment cannot be overwritten.
     await db.transaction().execute(async (trx) => {
       const current = await trx.selectFrom("works").where("id", "=", id).select("metadata").forUpdate().executeTakeFirst();
@@ -252,6 +255,11 @@ export async function updateWork(
       if (input.origin !== undefined) {
         if (input.origin === "sumber") metadata.origin = "sumber";
         else delete metadata.origin;
+      }
+      if (input.countries !== undefined) {
+        const countries = normaliseCountries(input.countries);
+        if (countries.length > 0) metadata.countries = countries;
+        else delete metadata.countries;
       }
       await trx.updateTable("works").where("id", "=", id).set({ ...updateData, metadata }).execute();
     });

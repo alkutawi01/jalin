@@ -17,10 +17,10 @@ export const TYPE_LABELS: Record<string, string> = {
   sinopsis: "Sinopsis"
 };
 
-export function workEyebrow(work: Pick<PublicWorkSummary, "type" | "genre">): string {
+/** The small line above a card's title: format, genre and (when it is not just Malaysia) the country: at most three parts. */
+export function workEyebrow(work: Pick<PublicWorkSummary, "type" | "genre"> & { country?: string }): string {
   const type = TYPE_LABELS[work.type] ?? work.type;
-  const genre = displayableGenre(work.genre);
-  return genre ? `${type} · ${genre}` : type;
+  return [type, displayableGenre(work.genre), work.country].filter(Boolean).join(" · ");
 }
 
 /** What one card needs, as plain data (it is sent to the browser when the reader asks for other stories). */

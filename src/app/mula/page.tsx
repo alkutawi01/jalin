@@ -143,7 +143,7 @@ export default async function StartPage() {
                         </div>
                         <div className="latest-card-body">
                           <div className="latest-card-meta">
-                            <span className="latest-card-type">{genre ? `${label} · ${genre}` : label}</span>
+                            <span className="latest-card-type">{[label, genre, summary.country].filter(Boolean).join(" · ")}</span>
                             {summary.readingMinutes ? <span className="latest-card-reading">{`± ${summary.readingMinutes} minit`}</span> : null}
                           </div>
                           <h3 className="latest-card-title" style={{ fontStyle: "normal" }}>{summary.title}</h3>
