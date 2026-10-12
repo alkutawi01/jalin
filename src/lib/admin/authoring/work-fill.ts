@@ -6,7 +6,7 @@
  * and it never overwrites something the editor has already written.
  */
 import { GLOSSARY_FORMAT, GLOSSARY_RULES } from "./glossary-paste";
-import { DEK_RULE } from "./dek-rule";
+import { DEK_EXAMPLES, DEK_RULE } from "./dek-rule";
 import { isPlaceholder } from "./placeholder";
 import { isSourcedWork } from "../../content/source-origin";
 
@@ -42,10 +42,15 @@ export function buildWorkFillPrompt(input: WorkFillPromptInput): string {
 PRINSIP
 - Jangan reka fakta, nama atau peristiwa. Jika tidak pasti, kosongkan baris itu atau tulis "perlu semakan editor".
 - Jangan sentuh teks karya, kredit, imej atau hak. Hanya isi bahagian di bawah.
-- Jawab dengan bahagian berformat di bawah sahaja: tiada pengenalan, tiada penutup, tiada nombor, tiada tanda markdown.
+- Jawab dengan bahagian berformat di bawah sahaja: tiada pengenalan, tiada penutup, tiada nombor, tiada tanda markdown. Jawapan bermula terus dengan [MAKLUMAT].
+- Setiap watak, tempat dan istilah MESTI wujud dalam manuskrip di bawah. Jangan menambah nama yang tidak tertulis dalam teks, walaupun ia kelihatan sesuai.
+- Jika sesuatu maklumat tidak dapat ditentukan daripada teks, atau hanya editor yang tahu, tulis tepat ISI SENDIRI sebagai nilainya (boleh diikuti sebab ringkas selepas tanda -, contoh: Nama: ISI SENDIRI - teks tidak menyatakan tahun). Jangan meneka dan jangan mengisi nilai sementara. Sistem akan menandakan medan itu untuk editor.
+- Gunakan HANYA manuskrip di bawah. Jangan menggunakan ingatan tentang karya lain atau perbualan lain.
+- Jika anda tidak dapat melihat manuskrip penuh sehingga baris TAMAT MANUSKRIP, jangan meneka: jawab hanya dengan satu baris: TEKS TIDAK LENGKAP.
 
 [MAKLUMAT]
 Dek: (${DEK_RULE})
+${DEK_EXAMPLES}
 Genre: (satu genre dalam satu atau dua patah perkataan)
 
 [WATAK]
@@ -60,7 +65,7 @@ Peranan: ...${novela ? "\nMuncul: ..." : ""}
 ${existingPlaces}${existingTimes}Latar tempat dan latar masa cerita ini. Jenis: tempat atau masa.
 - Tempat: nama tempat seperti dalam teks (kampung, bandar, bangunan, jalan); hanya tempat yang benar-benar disebut atau jelas daripada teks. Keterangan: 2 hingga 8 patah perkataan tentang tempat itu dalam cerita.
 - Masa: TAHUN, TEMPOH atau ERA cerita ini berlaku (contoh: Mei 1969, Era Darurat 1948–1960, Awal 1990-an). Ini BUKAN waktu pagi, siang, petang atau malam. Keterangan: 2 hingga 8 patah perkataan tentang zaman itu. Jika teks menyatakan lebih daripada satu zaman (contoh: kisah lampau dan kini), tulis satu baris masa bagi setiap zaman, tetapi HANYA zaman yang tahun, dekad atau era-nya boleh ditentukan daripada teks; jangan tulis ungkapan kabur seperti "tahun-tahun kemudian" atau "masa lalu".
-- Jangan meneka. Jika teks tidak menyatakan atau tidak memberi petunjuk yang jelas tentang tahun atau era, tulis hanya satu baris: Tiada latar masa dinyatakan. Begitu juga jika tiada tempat yang jelas: Tiada latar tempat dinyatakan.
+- Jangan meneka. Jika teks tidak menyatakan atau tidak memberi petunjuk yang jelas tentang tahun atau era, tulis: Jenis: masa, Nama: ISI SENDIRI - teks tidak menyatakan tahun atau era (atau satu baris: Tiada latar masa dinyatakan). Begitu juga jika tiada tempat yang jelas: Tiada latar tempat dinyatakan.
 Jenis: tempat
 Nama: (nama tempat)
 Keterangan: (2 hingga 8 patah perkataan)
@@ -90,11 +95,40 @@ ISBN: (hanya jika anda pasti)
 Lokasi petikan: (muka surat atau bab petikan ini dalam naskhah itu)
 Asas teks: (edisi atau terjemahan yang menjadi asas)
 ` : ""}
-MANUSKRIP
-${input.body.trim() || "[Manuskrip belum diisi. Tampal manuskrip di sini sebelum menghantar kepada chatbot.]"}`;
+[SEMAKAN]
+Perkataan terakhir: (salin tepat enam perkataan terakhir sebelum TAMAT MANUSKRIP, huruf demi huruf)
+
+${manuscriptBlock(input.body)}`;
+}
+
+/** The last words of the manuscript: a chatbot must be able to quote them, which proves it received the whole text. */
+export function manuscriptTail(body: string, words = 6): string {
+  return body.trim().split(/\s+/).filter(Boolean).slice(-words).join(" ");
+}
+
+function manuscriptBlock(body: string): string {
+  const text = body.trim();
+  if (!text) {
+    return [
+      "MANUSKRIP (belum ada dalam Kandungan: tampal manuskrip lengkap di antara dua baris di bawah)",
+      "=== MULA MANUSKRIP ===",
+      "[Tampal manuskrip di sini]",
+      "=== TAMAT MANUSKRIP ==="
+    ].join("\n");
+  }
+  const count = text.split(/\s+/).filter(Boolean).length;
+  return ["MANUSKRIP (" + count + " perkataan; mesti dibaca sehingga akhir)", "=== MULA MANUSKRIP ===", text, "=== TAMAT MANUSKRIP ==="].join("\n");
+}
+
+/** A field the chatbot said only the editor can fill (ISI SENDIRI), or that the text does not support. */
+export interface NeedsEditor {
+  field: string;
+  reason: string;
 }
 
 export interface WorkFillResult {
+  /** What the editor must fill themselves; the chatbot said so. */
+  needsEditor: NeedsEditor[];
   dek: string;
   genre: string;
   characters: { name: string; role: string; first: string }[];
@@ -119,13 +153,28 @@ export interface WorkFillResult {
   } | null;
   /** Section names that were present in the answer. */
   sections: string[];
+  /** The chatbot's own check: the last words of the manuscript as it quoted them, and whether it said the text was cut off. */
+  check: { tail: string; incomplete: boolean };
 }
 
 /**
  * A section heading as chatbots really write it: [MAKLUMAT], **[MAKLUMAT]**, ### [MAKLUMAT], [MAKLUMAT]:, MAKLUMAT,
  * **MAKLUMAT**, ## Maklumat. Only a line that is nothing but the heading counts, so ordinary text is never mistaken for one.
  */
-const SECTION = /^\s*(?:[#>*_\-•]+\s*)*(?:\d+[.)]\s*)?\[?\s*(MAKLUMAT|WATAK|LATAR|GLOSARI|SUMBER)\s*\]?\s*[:：]?\s*[*_]*\s*[:：]?\s*$/i;
+const SECTION = /^\s*(?:[#>*_\-•]+\s*)*(?:\d+[.)]\s*)?\[?\s*(MAKLUMAT|WATAK|LATAR|GLOSARI|SUMBER|SEMAKAN)\s*\]?\s*[:：]?\s*[*_]*\s*[:：]?\s*$/i;
+
+/** A bracketed heading that has its content on the same line, or several headings run together on one line. */
+const INLINE_HEADING = /\[\s*(MAKLUMAT|WATAK|LATAR|GLOSARI|SUMBER|SEMAKAN)\s*\]/gi;
+
+const LABELS =
+  "Dek|Genre|Nama|Peranan|Muncul|Jenis|Keterangan|Istilah|Maksud|Asing|Sebutan|Bahasa asal|Ejaan asal|Tajuk asal|Pengarang asal|Tahun terbit pertama|Penerbit|Tahun cetakan|Cetakan ke|Penyunting|Penterjemah|ISBN|Lokasi petikan|Asas teks|Perkataan terakhir";
+
+/** A line that holds two or more labelled fields ("Dek: ... Genre: ...") is split so that every field is on its own line. */
+function explodeLabels(line: string): string[] {
+  const hits = line.match(new RegExp(`(?:^|\\s)(?:${LABELS})\\s*:`, "gi"));
+  if (!hits || hits.length < 2) return [line];
+  return line.split(new RegExp(`\\s+(?=(?:${LABELS})\\s*:)`, "i"));
+}
 
 const NAME_LINE = /^[\s*_\-•>]*(?:\d+[.)]\s*)?[*_]*(?:nama|watak)[*_]*\s*[:：]/i;
 
@@ -159,7 +208,7 @@ function field(block: string[], names: RegExp): string {
 }
 
 // "tidak dinyatakan" is the word the Tambah Karya prompts teach the chatbot for an unknown value; it must not be filled into a field.
-const EMPTY = /^(tiada|tidak ada|tidak dinyatakan|tidak diketahui|-|—|n\/a|perlu semakan editor|\.\.\.)\.?$/i;
+const EMPTY = /^(tiada|tidak ada|tidak dinyatakan|tidak diketahui|-|—|n\/a|perlu semakan editor|isi sendiri(?:\s*[-–—:].*)?|\.\.\.)\.?$/i;
 const clean = (v: string) => (EMPTY.test(v.trim()) ? "" : v.trim());
 const yearIn = (v: string): number | null => {
   const m = /(?<![0-9])(1[5-9][0-9]{2}|20[0-9]{2})(?![0-9])/.exec(v);
@@ -262,8 +311,36 @@ export function looksLikePrompt(text: string): boolean {
   return /Anda pembantu editorial Jalin/i.test(text) && /\nPRINSIP\b/.test(text);
 }
 
+/**
+ * An answer with no headings at all (a chatbot that lost the format): the sections are inferred from the labels themselves.
+ * "Dek:" or "Genre:" starts MAKLUMAT, "Jenis:" starts LATAR, "Istilah:" starts GLOSARI, "Tajuk asal:" starts SUMBER, and "Nama:" starts
+ * WATAK unless a LATAR entry is open (where "Nama:" belongs to the place or time).
+ */
+function inferSections(lines: string[], sections: Record<string, string[]>): void {
+  let current: string | null = null;
+  const label = (line: string) => /^[\s*_\-•>]*(?:\d+[.)]\s*)?[*_]*([A-Za-zÀ-ÿ' ]{2,30}?)[*_]*\s*[:：]/.exec(line)?.[1]?.trim().toLowerCase() ?? "";
+  for (const line of lines) {
+    const l = label(line);
+    if (l === "dek" || l === "genre") current = "MAKLUMAT";
+    else if (l === "jenis") current = "LATAR";
+    else if (l === "istilah") current = "GLOSARI";
+    else if (/^(tajuk asal|pengarang asal)$/.test(l)) current = "SUMBER";
+    else if (l === "nama" && current !== "LATAR") current = "WATAK";
+    else if (l === "perkataan terakhir") current = "SEMAKAN";
+    if (current) (sections[current] = sections[current] ?? []).push(line);
+  }
+}
+
 export function parseWorkFill(answer: string): WorkFillResult {
-  const lines = answer.replace(/\r\n/g, "\n").replace(INVISIBLE, "").replace(/ /g, " ").replace(/^```[a-z]*\s*$/gim, "").split("\n");
+  const lines = answer
+    .replace(/\r\n/g, "\n")
+    .replace(INVISIBLE, "")
+    .replace(/ /g, " ")
+    .replace(/^```[a-z]*\s*$/gim, "")
+    // "[MAKLUMAT] Dek: ..." or "...[WATAK] Nama: ..." on one line: each heading starts its own line.
+    .replace(INLINE_HEADING, (heading) => `\n${heading}\n`)
+    .split("\n")
+    .flatMap(explodeLabels);
   const sections: Record<string, string[]> = {};
   let current: string | null = null;
   for (const line of lines) {
@@ -275,6 +352,8 @@ export function parseWorkFill(answer: string): WorkFillResult {
     }
     if (current) sections[current]!.push(line);
   }
+
+  if (Object.keys(sections).filter((name) => name !== "SEMAKAN").length === 0) inferSections(lines, sections);
 
   const info = sections.MAKLUMAT ?? [];
   const characters: WorkFillResult["characters"] = [];
@@ -307,15 +386,93 @@ export function parseWorkFill(answer: string): WorkFillResult {
       }
     : null;
 
+  const needsEditor: NeedsEditor[] = [];
+  const flag = (name: string, v: string) => {
+    const m = /^\s*isi sendiri\b\s*[-–—:]?\s*(.*)$/i.exec(v);
+    if (m) needsEditor.push({ field: name, reason: (m[1] ?? "").trim() });
+  };
+  flag("Dek", field(info, /dek|pancingan|hook/));
+  flag("Genre", field(info, /genre|kategori/));
+  for (const rows of characterBlocks(watak)) {
+    const who = field(rows, /nama|watak/);
+    flag(`Watak ${who}`.trim(), field(rows, /peranan|peranan watak/));
+    flag("Watak", who);
+  }
+  const latarText = (sections.LATAR ?? []).join("\n");
+  for (const rows of settingBlocks(latarText)) {
+    const kindText = field(rows, /jenis/).toLowerCase();
+    flag(/masa|era|tahun|zaman/.test(kindText) ? "Latar masa" : "Latar tempat", field(rows, /nama/));
+  }
+  if (/tiada latar masa dinyatakan/i.test(latarText) && !needsEditor.some((n) => n.field === "Latar masa")) {
+    needsEditor.push({ field: "Latar masa", reason: "teks tidak menyatakan tahun atau era" });
+  }
+
   const real = (v: string) => (isPlaceholder(v) ? "" : v);
   return {
-    dek: real(clean(field(info, /dek/))),
-    genre: real(clean(field(info, /genre/))),
+    needsEditor,
+    dek: real(clean(field(info, /dek|pancingan|hook/))),
+    genre: real(clean(field(info, /genre|kategori/))),
     characters: uniqueByName(characters.filter((c) => !isPlaceholder(c.name) && !isPlaceholder(c.role))),
     places: uniqueByName(setting.places.filter((p) => !isPlaceholder(p.name))),
     times: uniqueByName(setting.times.filter((t) => !isPlaceholder(t.name))),
     glossaryText: ["[GLOSARI]", ...(sections.GLOSARI ?? [])].join("\n"),
     source: source && Object.values(source).some((v) => v !== "" && v !== null) ? source : null,
-    sections: Object.keys(sections)
+    sections: Object.keys(sections).filter((name) => name !== "SEMAKAN"),
+    check: {
+      tail: clean(field(sections.SEMAKAN ?? [], /perkataan terakhir|ayat akhir|hujung teks/)),
+      incomplete: /TEKS TIDAK LENGKAP/i.test(answer)
+    }
   };
+}
+
+const plain = (v: string) => v.normalize("NFKC").toLocaleLowerCase("ms").replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+
+/**
+ * Does the chatbot's quoted ending come from the real ending of the manuscript? Lenient: punctuation, case and a few words more or fewer
+ * do not matter; at least two of the quoted words must sit together in the last sixty words of the text.
+ */
+export function sawWholeManuscript(result: WorkFillResult, body: string): boolean {
+  if (result.check.incomplete) return false;
+  const quoted = plain(result.check.tail).split(" ").filter(Boolean);
+  if (quoted.length < 2) return false;
+  const last = ` ${plain(body.trim().split(/\s+/).slice(-60).join(" "))} `;
+  for (let size = Math.min(quoted.length, 4); size >= 2; size -= 1) {
+    for (let start = 0; start + size <= quoted.length; start += 1) {
+      if (last.includes(` ${quoted.slice(start, start + size).join(" ")} `)) return true;
+    }
+  }
+  return false;
+}
+
+export interface GuardedFill {
+  result: WorkFillResult;
+  notes: string[];
+}
+
+/**
+ * The chatbot only suggests; what it names must be in the text. Characters whose name is not written in the manuscript,
+ * and a "Latar masa" that the manuscript does not support (neither the year nor the era's words), are dropped and said so.
+ */
+export function guardWorkFill(result: WorkFillResult, body: string): GuardedFill {
+  const text = plain(body);
+  const notes: string[] = [];
+  const inText = (name: string) => {
+    const n = plain(name);
+    if (!n) return false;
+    if (` ${text} `.includes(` ${n} `)) return true;
+    const tokens = n.split(" ").filter((t) => t.length > 2);
+    return tokens.length > 0 && tokens.every((t) => ` ${text} `.includes(` ${t} `));
+  };
+  const characters = result.characters.filter((c) => {
+    if (inText(c.name)) return true;
+    notes.push(`Watak "${c.name}" diabaikan: nama itu tidak tertulis dalam teks.`);
+    return false;
+  });
+  const times = result.times.filter((t) => {
+    const years = t.name.match(/(?<![0-9])(1[5-9][0-9]{2}|20[0-9]{2})(?![0-9])/g) ?? [];
+    const ok = years.length > 0 ? years.every((y) => text.includes(y)) : inText(t.name);
+    if (!ok) notes.push(`Latar masa "${t.name}" diabaikan: teks tidak menyatakannya. Isi sendiri jika anda tahu.`);
+    return ok;
+  });
+  return { result: { ...result, characters, times }, notes };
 }

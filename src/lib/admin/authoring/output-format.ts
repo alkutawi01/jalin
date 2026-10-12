@@ -7,7 +7,7 @@
  * (no JSON, no Markdown) is used because chatbots keep to it far more reliably.
  */
 
-import { DEK_RULE } from "./dek-rule";
+import { DEK_EXAMPLES, DEK_RULE } from "./dek-rule";
 import { SELF_CHECK, exampleBlock } from "./format-guidance";
 import type { OutputSection, Recipe } from "./recipes";
 
@@ -145,5 +145,6 @@ export function sectionsFor(recipe: Recipe, options: FormatOptions = {}): Output
 export function buildFormatBlock(recipe: Recipe, options: FormatOptions = {}): string {
   const sections = sectionsFor(recipe, options);
   const parts = sections.map((section) => RENDERERS[section](recipe));
-  return [INTRO, "", parts.join("\n\n"), "", SELF_CHECK, "", exampleBlock(recipe, sections)].join("\n");
+  const dekRule = sections.includes("KARYA") ? ["", "ATURAN DEK", DEK_EXAMPLES] : [];
+  return [INTRO, "", parts.join("\n\n"), ...dekRule, "", SELF_CHECK, "", exampleBlock(recipe, sections)].join("\n");
 }
