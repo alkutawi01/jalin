@@ -26,13 +26,14 @@ const route = read("src/app/api/og/route.tsx");
 assert(route.includes("ImageResponse") && route.includes("objectFit: \"cover\"") && route.includes("1200") && route.includes("630"), "the route crops to cover 1200 x 630");
 assert(route.includes("vercel-storage") && route.includes("BLOB_HOST.test(") && route.includes("DEFAULT_SHARE_IMAGE.url"), "only this site's pictures are accepted, anything else gets the default card");
 
-const button = read("src/components/reader/ShareWorkButton.tsx");
-assert(button.includes("navigator.share") && button.includes("navigator.clipboard.writeText") && button.includes("AbortError"), "the share sheet where there is one, copying otherwise, and closing the sheet is not an error");
-assert(button.includes("window.location.pathname") && !button.includes("location.search"), "it shares the page address without a query string");
+const row = read("src/components/reader/ShareRow.tsx");
+assert(row.includes("wa.me") && row.includes("facebook.com/sharer") && row.includes("twitter.com/intent") && row.includes("navigator.clipboard.writeText"), "the row has WhatsApp, Facebook, X and copy link");
+assert(row.includes("window.location.pathname") && !row.includes("location.search"), "it shares the page address without a query string");
 const work = read("src/app/kategori/[type]/[slug]/page.tsx");
 const episode = read("src/app/kategori/bersiri/[seriesSlug]/[episodeSlug]/page.tsx");
-assert(/<ShareWorkButton[^>]*\/>\s*<SaveWorkButton/.test(work) && /<ShareWorkButton[^>]*\/>\s*<SaveWorkButton/.test(episode), "works and episodes show Kongsi before Simpan");
-assert(read("src/app/globals.css").includes(".share-work ~ .save-work { bottom: 70px; }"), "Simpan sits above Kongsi when both show");
+assert(!work.includes("ShareWorkButton") && !episode.includes("ShareWorkButton"), "no share button floats over the page any more");
+assert(read("src/components/reader/WorkView.tsx").includes("<ShareRow title={work.title} />") && read("src/components/reader/EpisodeView.tsx").includes("<ShareRow title={work.title} />"), "works and episodes end with the share row");
+assert(read("src/app/globals.css").includes("body:has(.save-work) .back-to-top"), "the back-to-top button clears Simpan");
 
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);

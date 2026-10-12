@@ -9,7 +9,6 @@ import { getWorkBySlug } from "../../../../lib/content/workLoader";
 import WorkView from "../../../../components/reader/WorkView";
 import ReadingTracker from "../../../../components/reader/ReadingTracker";
 import SaveWorkButton from "../../../../components/reader/SaveWorkButton";
-import ShareWorkButton from "../../../../components/reader/ShareWorkButton";
 import LockedWork from "../../../../components/reader/LockedWork";
 import { gateForWork } from "../../../../lib/reader/access-gate";
 
@@ -125,7 +124,6 @@ export default async function WorkPage({
   return (
     <>
       <ReadingTracker slug={work.slug} sectionSlug={sectionSlug} />
-      <ShareWorkButton title={work.title} />
       <SaveWorkButton slug={work.slug} />
       <WorkView work={work} sectionSlug={sectionSlug} />
     </>

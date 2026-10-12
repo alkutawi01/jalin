@@ -4167,13 +4167,18 @@ html:has(.site-header.is-tucked) .sticky { top: 24px; }
 
 /* A series card in the Bersiri list: the kicker is "Bersiri · genre" (as on every other card); size and status sit under the title. */
 .series-list-facts { margin: 0 0 10px; font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 13px; color: var(--ink-soft); }
-/* "Kongsi" at the corner of a work, in the same pill as "Simpan". Simpan (signed-in readers only) sits above it when both show. */
-.share-work { position: fixed; right: 16px; bottom: 16px; z-index: 40; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px 0 14px; border: 1px solid var(--line); border-radius: 999px; background: var(--white, #fff); color: var(--ink); font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; box-shadow: 0 8px 24px rgba(24, 52, 60, .14); }
-.share-work:hover, .share-work:focus-visible { border-color: var(--ink); }
-.share-work.is-done { background: var(--ink); color: var(--paper); border-color: var(--ink); }
-.share-work ~ .save-work { bottom: 70px; }
-@media (max-width: 480px) { .share-work span { display: none; } .share-work { padding: 0 13px; } .share-work.is-done span { display: inline; } }
-@media print { .share-work, .save-work { display: none; } }
+/* "Kongsi" at the end of a work: a quiet row of round icons under the text. */
+.share-row { max-width: 700px; display: flex; flex-direction: column; align-items: center; gap: 12px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--line); }
+.share-row-label { font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 11px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: #5f7074; }
+.share-row-icons { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+.share-row-icon { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; padding: 0; border: 1px solid var(--line); border-radius: 50%; background: transparent; color: var(--ink-soft); cursor: pointer; transition: border-color .18s ease, color .18s ease, background-color .18s ease; }
+.share-row-icon:hover, .share-row-icon:focus-visible { border-color: var(--ink); color: var(--ink); }
+.share-row-icon.is-done { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+.share-row-status { min-height: 1.2em; font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 12.5px; color: var(--ink-soft); }
+@media print { .share-row, .save-work { display: none; } }
+/* Simpan floats at the bottom right for a signed-in reader; the back-to-top button rises above it instead of sitting on it. */
+body:has(.save-work) .back-to-top { bottom: 76px; }
+@media (max-width: 600px) { body:has(.save-work) .back-to-top { bottom: 70px; } }
 /* A link's hover line, drawn rather than switched on: a slim straight clay line that sweeps in from the left and, when the pointer
    leaves, is drawn back the same way (it retreats to the left, the reverse of how it came). It is a background, so it follows the
    text across wrapped lines and needs no extra markup; the plain underline of these links is turned off, and keyboard focus gets the

@@ -14,6 +14,7 @@ import {
   StoryHead
 } from "./StoryChrome";
 import StoryMarkdown from "./StoryMarkdown";
+import ShareRow from "./ShareRow";
 import FootnoteList from "./FootnoteList";
 import FootnoteMargin from "./FootnoteMargin";
 import ReadingProgress from "./ReadingProgress";
@@ -172,6 +173,8 @@ export default function EpisodeView({
           <RightRail characters={characters} places={places} times={times} info={<MobileStoryInfo data={mobileInfo} />} />
           {footnotes.notes.length > 0 ? <FootnoteMargin notes={footnotes.notes.map((note) => ({ number: note.number, text: note.text }))} /> : null}
         </div>
+
+        <ShareRow title={work.title} />
 
         <ContinueNav
           name="Selepas episod ini"

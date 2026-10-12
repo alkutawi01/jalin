@@ -9,7 +9,6 @@ import EpisodeView from "../../../../../components/reader/EpisodeView";
 import LockedWork from "../../../../../components/reader/LockedWork";
 import ReadingTracker from "../../../../../components/reader/ReadingTracker";
 import SaveWorkButton from "../../../../../components/reader/SaveWorkButton";
-import ShareWorkButton from "../../../../../components/reader/ShareWorkButton";
 import { gateForWork } from "../../../../../lib/reader/access-gate";
 import type { SeriesEpisodeRef } from "../../../../../lib/content/types";
 
@@ -86,7 +85,6 @@ export default async function EpisodePage({
   return (
     <>
       <ReadingTracker slug={work.slug} />
-      <ShareWorkButton title={work.title} />
       <SaveWorkButton slug={work.slug} />
       <EpisodeView work={work} episodes={episodes} />
     </>

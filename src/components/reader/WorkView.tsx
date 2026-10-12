@@ -32,6 +32,7 @@ import { chapterHeroOf, visualsForPage } from "../../lib/reader/chapter-visuals"
 import { firstGlossaryBySegment } from "../../lib/reader/glossary-first";
 import MobileStoryInfo from "./MobileStoryInfo";
 import ReadMore from "./ReadMore";
+import ShareRow from "./ShareRow";
 import { buildStoryPool, pickCollection } from "../../lib/reader/story-collection";
 import { getDb, hasDb } from "../../lib/db";
 import { publicRatingSummary } from "../../lib/panel/public";
@@ -321,6 +322,8 @@ export default async function WorkView({
           <RightRail characters={characters} places={places} times={times} info={<MobileStoryInfo data={mobileInfo} />} />
           {!landing && footnotes.notes.length > 0 ? <FootnoteMargin notes={footnotes.notes.map((note) => ({ number: note.number, text: note.text }))} /> : null}
         </div>
+
+        <ShareRow title={work.title} />
 
         {sections.length > 0 && !landing ? (
           <ContinueNav
