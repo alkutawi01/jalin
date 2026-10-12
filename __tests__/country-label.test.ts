@@ -1,31 +1,35 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import { COUNTRIES, countryLabel, normaliseCountries, readingLine, MAX_COUNTRIES } from "../src/lib/reader/countries";
+import { COUNTRIES, countryLabel, countryName, normaliseCountries, readingLine, MAX_COUNTRIES, MAX_COUNTRY_LENGTH } from "../src/lib/reader/countries";
 import { workEyebrow } from "../src/lib/reader/story-collection";
 
-// Negara latar (12 Okt 2026, Izzat): the country only, Malaysia alone is hidden, two countries only when the story truly belongs to both.
-assert.equal(countryLabel(undefined), undefined, "no countries: nothing shown");
-assert.equal(countryLabel([]), undefined, "empty list: nothing shown");
-assert.equal(countryLabel(["MY"]), undefined, "Malaysia alone is not shown (Jalin is Malaysian)");
-assert.equal(countryLabel(["JP"]), "Jepun");
-assert.equal(countryLabel(["NO"]), "Norway");
-assert.equal(countryLabel(["MA"]), "Maghribi");
-assert.equal(countryLabel(["GB-ENG"]), "England", "readers know England, not 'United Kingdom', for a Manchester story");
-assert.equal(countryLabel(["KR"]), "Korea");
-assert.equal(countryLabel(["MY", "ID"]), "Malaysia-Indonesia", "two countries are joined by a hyphen, first one first");
-assert.equal(countryLabel(["ID", "MY"]), "Indonesia-Malaysia");
-assert.equal(countryLabel(["jp"]), "Jepun", "codes are case-insensitive");
+// Negara latar (12 Okt 2026, Izzat): the editor types the country or region, Malaysia alone is hidden, a story of two writes 'A-B'.
+assert.equal(countryLabel(undefined), undefined, 'no country: nothing shown');
+assert.equal(countryLabel([]), undefined, 'empty list: nothing shown');
+assert.equal(countryLabel(['MY']), undefined, 'a stored Malaysia code is not shown (Jalin is Malaysian)');
+assert.equal(countryLabel(['Malaysia']), undefined, 'Malaysia typed by hand is not shown either');
+assert.equal(countryLabel([' malaysia ']), undefined, 'case and spaces do not matter');
+assert.equal(countryLabel(['JP']), 'Jepun', 'the codes stored on the first works still read as names');
+assert.equal(countryLabel(['GB-ENG']), 'England');
+assert.equal(countryLabel(['KR']), 'Korea');
+assert.equal(countryLabel(['Empayar Inka']), 'Empayar Inka', 'an older region typed by the editor is shown as typed');
+assert.equal(countryLabel(['Al-Andalus']), 'Al-Andalus');
+assert.equal(countryLabel(['Malaysia-Indonesia']), 'Malaysia-Indonesia', 'a story of two countries is written with a hyphen');
+assert.equal(countryLabel(['MY', 'ID']), 'Malaysia-Indonesia', 'two stored entries are joined with a hyphen');
 
-// Anything unknown or repeated is dropped and the list is capped at two.
-assert.deepEqual(normaliseCountries(["JP", "JP", "XX", 5, "NO", "PE"]), ["JP", "NO"]);
+// Entries are trimmed, unique, short and at most two; anything else is dropped.
+assert.deepEqual(normaliseCountries(['  Jepun  ', 'jepun', 5, 'Norway', 'Peru']), ['Jepun', 'Norway']);
+assert.deepEqual(normaliseCountries(['x'.repeat(MAX_COUNTRY_LENGTH + 1)]), [], 'too long for a card');
+assert.deepEqual(normaliseCountries(['<b>Jepun</b>']), [], 'no markup');
 assert.equal(MAX_COUNTRIES, 2);
-assert.deepEqual(normaliseCountries("JP"), [], "not a list: nothing");
-assert.equal(countryLabel(["XX"]), undefined, "an unknown code shows nothing rather than the code");
+assert.deepEqual(normaliseCountries('Jepun'), [], 'not a list: nothing');
+assert.equal(countryName('PE'), 'Peru');
+assert.equal(countryName('Empayar Inka'), 'Empayar Inka');
 
-// Every dictionary name is plain text a reader can understand: no codes or empty names.
+// The suggestions are plain Malay names, never bare codes.
 for (const [code, name] of Object.entries(COUNTRIES)) {
-  assert.ok(name.trim().length > 1, `${code} has a display name`);
-  assert.doesNotMatch(name, /^[A-Z]{2}(-[A-Z]{3})?$/, `${code} is displayed with a name, not its code`);
+  assert.ok(name.trim().length > 1, code + ' has a display name');
+  assert.doesNotMatch(name, /^[A-Z]{2}(-[A-Z]{3})?$/, code + ' is displayed with a name, not its code');
 }
 
 // The small line above a card's title is format and genre only; the country sits beside the reading time (the three-part eyebrow
