@@ -302,6 +302,8 @@ export default function EditWorkPage() {
   const [glossaryBusy, setGlossaryBusy] = useState(false);
   const [fillBusy, setFillBusy] = useState(false);
   const [fillNote, setFillNote] = useState<string[]>([]);
+  /** Fields the chatbot said only the editor can fill (ISI SENDIRI), from the last answer. */
+  const [needsEditor, setNeedsEditor] = useState<{ field: string; reason: string }[]>([]);
   const [selectedTerms, setSelectedTerms] = useState<number[]>([]);
   const [assistantNote, setAssistantNote] = useState("");
   const [glossaryNote, setGlossaryNote] = useState("");
@@ -374,6 +376,25 @@ export default function EditWorkPage() {
     }
   }
 
+  /**
+   * What only the editor can fill, in one list: what the chatbot said is theirs (ISI SENDIRI), and what no chatbot can do
+   * (title, hero image, credits). Each item names its tab. It empties as the fields are filled.
+   */
+  function pendingItems(): { key: string; label: string; reason: string; tab: Tab }[] {
+    const items: { key: string; label: string; reason: string; tab: Tab }[] = [];
+    for (const n of needsEditor) {
+      if (n.field === "Dek" && form.dek.trim()) continue;
+      if (n.field === "Genre" && form.genre.trim()) continue;
+      const tab: Tab = /^(watak|latar)/i.test(n.field) ? "characters" : "content";
+      items.push({ key: `bot-${n.field}`, label: n.field, reason: n.reason || "bot sembang tidak dapat memastikannya daripada teks", tab });
+    }
+    if (!form.title.trim()) items.push({ key: "title", label: "Tajuk", reason: "bot sembang tidak mengisi tajuk", tab: "content" });
+    if (!form.dek.trim() && !needsEditor.some((n) => n.field === "Dek")) items.push({ key: "dek", label: "Dek", reason: "masih kosong", tab: "content" });
+    if (!visuals.some((v) => v.role === "hero")) items.push({ key: "hero", label: "Gambar utama", reason: "bot sembang tidak boleh memuat naik gambar", tab: "content" });
+    if (credits.length === 0) items.push({ key: "credits", label: "Kredit", reason: "bot sembang tidak mengisi kredit", tab: "credits" });
+    return items;
+  }
+
   /** One copy: everything a chatbot may suggest, with the manuscript. */
   async function copyFillPrompt() {
     const namesOf = async (path: "places" | "times") => {
@@ -441,6 +462,11 @@ export default function EditWorkPage() {
       ? guardWorkFill(parsed, form.body)
       : { result: parsed, notes: ["Kandungan masih kosong, jadi jawapan tidak dapat disemak dengan teks karya. Semak sendiri watak, latar dan glosari."] };
     guarded.notes.unshift(...proofNote);
+    const flagged = [...parsed.needsEditor];
+    if (guarded.result.times.length < parsed.times.length && !flagged.some((n) => n.field === "Latar masa")) {
+      flagged.push({ field: "Latar masa", reason: "teks tidak menyatakannya; bot sembang meneka" });
+    }
+    setNeedsEditor(flagged);
     const result = guarded.result;
     if (result.sections.length === 0) {
       // Say what was actually read, so the editor sees at once whether it is the wrong text or a damaged answer.
@@ -2163,6 +2189,19 @@ export default function EditWorkPage() {
             {fillNote.map((line, i) => (<li key={i}>{line}</li>))}
           </ul>
         ) : null}
+        {pendingItems().length > 0 ? (
+          <div className="admin-alert admin-alert-warning" role="status">
+            <strong>Perlu diisi sendiri oleh editor</strong>
+            <ul>
+              {pendingItems().map((item) => (
+                <li key={item.key}>
+                  <a href={`#${item.tab}`} onClick={(event) => { event.preventDefault(); selectTab(item.tab); }}>{item.label}</a>
+                  {item.reason ? `: ${item.reason}` : ""}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
       </section>
 
       <div className="admin-tabs">
@@ -2171,7 +2210,7 @@ export default function EditWorkPage() {
           aria-pressed={activeTab === "content"}
           onClick={() => selectTab("content")}
         >
-          Kandungan
+          Kandungan{pendingItems().some((i) => i.tab === "content") ? " •" : ""}
         </button>
         <button
           className={`admin-tab ${activeTab === "metadata" ? "admin-tab-active" : ""}`}
@@ -2194,7 +2233,7 @@ export default function EditWorkPage() {
           aria-pressed={activeTab === "credits"}
           onClick={() => selectTab("credits")}
         >
-          Kredit{countOf("credits", credits.length)}
+          Kredit{countOf("credits", credits.length)}{pendingItems().some((i) => i.tab === "credits") ? " •" : ""}
         </button>
         <button
           className={`admin-tab ${activeTab === "glossary" ? "admin-tab-active" : ""}`}
@@ -2208,7 +2247,7 @@ export default function EditWorkPage() {
           aria-pressed={activeTab === "characters"}
           onClick={() => selectTab("characters")}
         >
-          Watak &amp; latar{countOf("characters", characters.length)}
+          Watak &amp; latar{countOf("characters", characters.length)}{pendingItems().some((i) => i.tab === "characters") ? " •" : ""}
         </button>
         {isSourced(form.type, form.origin) && (
           <button

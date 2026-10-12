@@ -87,5 +87,30 @@ assert(prompt.includes("BURUK (merumuskan") && prompt.includes("BAIK (tiga bentu
 assert(dekWarning("Izhar menyusun semula jadual selepas mendapat teguran daripada ustaz. Dia kemudian memutuskan untuk berubah. Akhirnya dia berjaya.") !== null, "a summarising dek gets a warning");
 assert(dekWarning("Hujan belum reda, dan ada satu nama yang tidak pernah disebut sesiapa di rumah itu.") === null, "a hook dek gets none");
 
+// --- ISI SENDIRI: what the chatbot says only the editor can fill ----------------------------------------------------
+{
+  const body2 = "Izhar membawa mushaf ke rumah Ustazah Hazarah.";
+  const r = parseWorkFill(`[MAKLUMAT]
+Dek: ISI SENDIRI - teks tidak memberi petunjuk pancingan
+Genre: Drama
+
+[WATAK]
+Nama: Faris
+Peranan: ISI SENDIRI
+
+[LATAR]
+Jenis: masa
+Nama: ISI SENDIRI - teks tidak menyatakan tahun
+Keterangan: ISI SENDIRI`);
+  assert(r.dek === "" && r.genre === "Drama", "ISI SENDIRI is never filled into a field");
+  assert(r.needsEditor.some((n) => n.field === "Dek" && n.reason.includes("pancingan")), "a dek marked ISI SENDIRI is flagged with its reason");
+  assert(r.needsEditor.some((n) => n.field === "Watak Faris"), "a character whose role is ISI SENDIRI is flagged by name");
+  assert(r.characters.length === 0, "and that character is not added with an invented role");
+  assert(r.needsEditor.some((n) => n.field === "Latar masa" && n.reason.includes("tahun")), "a time marked ISI SENDIRI is flagged");
+  assert(r.times.length === 0, "and no time is added");
+  const oldStyle = parseWorkFill("[LATAR]\nTiada latar masa dinyatakan.");
+  assert(oldStyle.needsEditor.some((n) => n.field === "Latar masa"), "the older 'Tiada latar masa dinyatakan' is flagged the same way");
+  assert(body2.length > 0 && buildWorkFillPrompt({ ...base, body: body2 }).includes("ISI SENDIRI"), "the prompt teaches the chatbot the ISI SENDIRI marker");
+}
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);

@@ -44,6 +44,7 @@ PRINSIP
 - Jangan sentuh teks karya, kredit, imej atau hak. Hanya isi bahagian di bawah.
 - Jawab dengan bahagian berformat di bawah sahaja: tiada pengenalan, tiada penutup, tiada nombor, tiada tanda markdown. Jawapan bermula terus dengan [MAKLUMAT].
 - Setiap watak, tempat dan istilah MESTI wujud dalam manuskrip di bawah. Jangan menambah nama yang tidak tertulis dalam teks, walaupun ia kelihatan sesuai.
+- Jika sesuatu maklumat tidak dapat ditentukan daripada teks, atau hanya editor yang tahu, tulis tepat ISI SENDIRI sebagai nilainya (boleh diikuti sebab ringkas selepas tanda -, contoh: Nama: ISI SENDIRI - teks tidak menyatakan tahun). Jangan meneka dan jangan mengisi nilai sementara. Sistem akan menandakan medan itu untuk editor.
 - Gunakan HANYA manuskrip di bawah. Jangan menggunakan ingatan tentang karya lain atau perbualan lain.
 - Jika anda tidak dapat melihat manuskrip penuh sehingga baris TAMAT MANUSKRIP, jangan meneka: jawab hanya dengan satu baris: TEKS TIDAK LENGKAP.
 
@@ -64,7 +65,7 @@ Peranan: ...${novela ? "\nMuncul: ..." : ""}
 ${existingPlaces}${existingTimes}Latar tempat dan latar masa cerita ini. Jenis: tempat atau masa.
 - Tempat: nama tempat seperti dalam teks (kampung, bandar, bangunan, jalan); hanya tempat yang benar-benar disebut atau jelas daripada teks. Keterangan: 2 hingga 8 patah perkataan tentang tempat itu dalam cerita.
 - Masa: TAHUN, TEMPOH atau ERA cerita ini berlaku (contoh: Mei 1969, Era Darurat 1948–1960, Awal 1990-an). Ini BUKAN waktu pagi, siang, petang atau malam. Keterangan: 2 hingga 8 patah perkataan tentang zaman itu. Jika teks menyatakan lebih daripada satu zaman (contoh: kisah lampau dan kini), tulis satu baris masa bagi setiap zaman, tetapi HANYA zaman yang tahun, dekad atau era-nya boleh ditentukan daripada teks; jangan tulis ungkapan kabur seperti "tahun-tahun kemudian" atau "masa lalu".
-- Jangan meneka. Jika teks tidak menyatakan atau tidak memberi petunjuk yang jelas tentang tahun atau era, tulis hanya satu baris: Tiada latar masa dinyatakan. Begitu juga jika tiada tempat yang jelas: Tiada latar tempat dinyatakan.
+- Jangan meneka. Jika teks tidak menyatakan atau tidak memberi petunjuk yang jelas tentang tahun atau era, tulis: Jenis: masa, Nama: ISI SENDIRI - teks tidak menyatakan tahun atau era (atau satu baris: Tiada latar masa dinyatakan). Begitu juga jika tiada tempat yang jelas: Tiada latar tempat dinyatakan.
 Jenis: tempat
 Nama: (nama tempat)
 Keterangan: (2 hingga 8 patah perkataan)
@@ -119,7 +120,15 @@ function manuscriptBlock(body: string): string {
   return ["MANUSKRIP (" + count + " perkataan; mesti dibaca sehingga akhir)", "=== MULA MANUSKRIP ===", text, "=== TAMAT MANUSKRIP ==="].join("\n");
 }
 
+/** A field the chatbot said only the editor can fill (ISI SENDIRI), or that the text does not support. */
+export interface NeedsEditor {
+  field: string;
+  reason: string;
+}
+
 export interface WorkFillResult {
+  /** What the editor must fill themselves; the chatbot said so. */
+  needsEditor: NeedsEditor[];
   dek: string;
   genre: string;
   characters: { name: string; role: string; first: string }[];
@@ -199,7 +208,7 @@ function field(block: string[], names: RegExp): string {
 }
 
 // "tidak dinyatakan" is the word the Tambah Karya prompts teach the chatbot for an unknown value; it must not be filled into a field.
-const EMPTY = /^(tiada|tidak ada|tidak dinyatakan|tidak diketahui|-|—|n\/a|perlu semakan editor|\.\.\.)\.?$/i;
+const EMPTY = /^(tiada|tidak ada|tidak dinyatakan|tidak diketahui|-|—|n\/a|perlu semakan editor|isi sendiri(?:\s*[-–—:].*)?|\.\.\.)\.?$/i;
 const clean = (v: string) => (EMPTY.test(v.trim()) ? "" : v.trim());
 const yearIn = (v: string): number | null => {
   const m = /(?<![0-9])(1[5-9][0-9]{2}|20[0-9]{2})(?![0-9])/.exec(v);
@@ -377,8 +386,30 @@ export function parseWorkFill(answer: string): WorkFillResult {
       }
     : null;
 
+  const needsEditor: NeedsEditor[] = [];
+  const flag = (name: string, v: string) => {
+    const m = /^\s*isi sendiri\b\s*[-–—:]?\s*(.*)$/i.exec(v);
+    if (m) needsEditor.push({ field: name, reason: (m[1] ?? "").trim() });
+  };
+  flag("Dek", field(info, /dek|pancingan|hook/));
+  flag("Genre", field(info, /genre|kategori/));
+  for (const rows of characterBlocks(watak)) {
+    const who = field(rows, /nama|watak/);
+    flag(`Watak ${who}`.trim(), field(rows, /peranan|peranan watak/));
+    flag("Watak", who);
+  }
+  const latarText = (sections.LATAR ?? []).join("\n");
+  for (const rows of settingBlocks(latarText)) {
+    const kindText = field(rows, /jenis/).toLowerCase();
+    flag(/masa|era|tahun|zaman/.test(kindText) ? "Latar masa" : "Latar tempat", field(rows, /nama/));
+  }
+  if (/tiada latar masa dinyatakan/i.test(latarText) && !needsEditor.some((n) => n.field === "Latar masa")) {
+    needsEditor.push({ field: "Latar masa", reason: "teks tidak menyatakan tahun atau era" });
+  }
+
   const real = (v: string) => (isPlaceholder(v) ? "" : v);
   return {
+    needsEditor,
     dek: real(clean(field(info, /dek|pancingan|hook/))),
     genre: real(clean(field(info, /genre|kategori/))),
     characters: uniqueByName(characters.filter((c) => !isPlaceholder(c.name) && !isPlaceholder(c.role))),
