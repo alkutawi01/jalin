@@ -4172,3 +4172,50 @@ html:has(.site-header.is-tucked) .sticky { top: 24px; }
 .share-work ~ .save-work { bottom: 70px; }
 @media (max-width: 480px) { .share-work span { display: none; } .share-work { padding: 0 13px; } .share-work.is-done span { display: inline; } }
 @media print { .share-work, .save-work { display: none; } }
+/* A link's hover line, drawn rather than switched on: a slim straight clay line that sweeps in from the left and, when the pointer
+   leaves, is drawn back the same way (it retreats to the left, the reverse of how it came). It is a background, so it follows the
+   text across wrapped lines and needs no extra markup; the plain underline of these links is turned off, and keyboard focus gets the
+   same line. Reduced motion: it simply appears. */
+.series-feature-latest-title,
+.search-result-title a,
+.story-context-line a,
+.series-crumb a,
+.crumbs a,
+.link-swipe {
+  background-image: linear-gradient(var(--clay), var(--clay));
+  background-repeat: no-repeat;
+  background-position: 0% 100%;
+  background-size: 0% 1.8px;
+  padding-bottom: 4px;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  transition: background-size .38s cubic-bezier(.22, .7, .2, 1);
+}
+.series-feature-latest-title:hover, .series-feature-latest-title:focus-visible,
+.search-result-title a:hover, .search-result-title a:focus-visible,
+.story-context-line a:hover, .story-context-line a:focus-visible,
+.series-crumb a:hover, .series-crumb a:focus-visible,
+.crumbs a:hover, .crumbs a:focus-visible,
+.link-swipe:hover, .link-swipe:focus-visible {
+  text-decoration: none;
+  background-size: 100% 1.8px;
+}
+/* Titles (the latest episode on the homepage, a search result) take the same movement with a brush stroke: thick at the left,
+   tapering to the right. Small links (the breadcrumb, the context line) keep the plain line. Same rule for both: drawn left to right on
+   hover, rubbed out from the right back to the left on leave. */
+:root { --link-brush: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 9' preserveAspectRatio='none'%3E%3Cpath d='M0 5.6C20 1.8 60 2.2 100 4.1C60 3.6 22 4.8 0 8.4Z' fill='%23a76450'/%3E%3C/svg%3E"); }
+.series-feature-latest-title,
+.search-result-title a {
+  background-image: var(--link-brush);
+  background-size: 0% 9px;
+  padding-bottom: 5px;
+}
+.series-feature-latest-title:hover, .series-feature-latest-title:focus-visible,
+.search-result-title a:hover, .search-result-title a:focus-visible {
+  background-size: 100% 9px;
+}
+/* The latest-episode title is a grid item: it would stretch the full column and draw the line far past the words. */
+.series-feature-latest-title { justify-self: start; }
+@media (prefers-reduced-motion: reduce) {
+  .series-feature-latest-title, .search-result-title a, .story-context-line a, .series-crumb a, .crumbs a, .link-swipe { transition: none; }
+}
