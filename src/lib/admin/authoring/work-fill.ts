@@ -106,7 +106,14 @@ export function manuscriptTail(body: string, words = 6): string {
 
 function manuscriptBlock(body: string): string {
   const text = body.trim();
-  if (!text) return "MANUSKRIP\n[Manuskrip belum diisi. Simpan teks karya dahulu sebelum menyalin arahan ini.]";
+  if (!text) {
+    return [
+      "MANUSKRIP (belum ada dalam Kandungan: tampal manuskrip lengkap di antara dua baris di bawah)",
+      "=== MULA MANUSKRIP ===",
+      "[Tampal manuskrip di sini]",
+      "=== TAMAT MANUSKRIP ==="
+    ].join("\n");
+  }
   const count = text.split(/\s+/).filter(Boolean).length;
   return ["MANUSKRIP (" + count + " perkataan; mesti dibaca sehingga akhir)", "=== MULA MANUSKRIP ===", text, "=== TAMAT MANUSKRIP ==="].join("\n");
 }

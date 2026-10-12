@@ -1,7 +1,7 @@
 /**
- * One chatbot help per work. Earlier the work page had a box at the top, a "Bantuan bot sembang" inside every tab, and a separate
- * glossary box with its own prompt: the editor could not tell how many times to ask. Now there is one box at the top (one copy, one paste,
- * once per episode), and no other copy button for the chatbot on the work page.
+ * The editor's flow: (1) the main instruction at the top of the work page, copied with the manuscript, pasted to the chatbot, the answer pasted
+ * back ("Tampal & isi"); (2) the manuscript may be put in Kandungan before or after; (3) if a tab has a problem, a focused instruction in that
+ * tab, which is a different, narrower prompt. The main box and the tab help must be told apart, and neither blocks when Kandungan is empty.
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -12,18 +12,19 @@ function assert(cond: boolean, msg: string) {
   if (cond) { passed++; console.log(`  ✓ ${msg}`); } else { failed++; console.error(`  ✗ ${msg}`); }
 }
 const page = fs.readFileSync(path.join(__dirname, "../src/app/admin/works/[id]/page.tsx"), "utf8").replace(/\r\n/g, "\n");
-assert(page.includes('id="chatbot-fill"'), "the box at the top keeps its anchor");
+assert(page.includes('id="chatbot-fill"'), "the main box at the top keeps its anchor");
 assert(
   page.includes("onClick={() => void copyFillPrompt()} disabled={fillBusy}>1. Salin arahan</button>") &&
     page.includes("onClick={() => void pasteFillFromClipboard()} disabled={fillBusy}>") && page.includes('"2. Tampal & isi"'),
-  "the box has the copy and the paste buttons"
+  "the main box has the copy and the paste buttons"
 );
-assert(page.includes("sekali sahaja bagi satu episod") && page.includes("tiada bantuan berasingan di tab lain"), "and says it is once per episode, with no other help in the tabs");
-assert((page.match(/1\. Salin arahan/g) ?? []).length === 1, "there is exactly one 'Salin arahan' for the chatbot on the work page");
-assert(!page.includes("Bantuan bot sembang untuk tab") && !page.includes("Salin arahan tab ini"), "the per-tab help is gone");
-assert(!page.includes("Glosari dengan bot sembang") && !page.includes("Tampal & import"), "the separate glossary box is gone");
-assert(page.includes('href="#chatbot-fill"'), "the glossary tab points to the single box");
-assert(page.includes("sawWholeManuscript(parsed, form.body)") && page.includes("guardWorkFill(parsed, form.body)"), "the answer is checked for the whole text and for invented names before anything is saved");
-assert(page.includes("Teks di editor belum disimpan"), "unsaved text is named (prompt copy and the Penilaian AI tab) instead of 'belum mempunyai teks'");
+assert(page.includes("arahan utama, sekali bagi satu episod"), "the main box says it is the main instruction, once per episode");
+assert(page.includes("Semakan fokus untuk tab") && page.includes("berbeza daripada kotak utama"), "each tab has a focused help that says how it differs from the main box");
+assert(page.includes("Salin arahan fokus untuk tab ini"), "the focused help has its own button wording");
+assert(page.includes("Glosari dengan bot sembang"), "the glossary tab keeps its own focused glossary instruction");
+assert((page.match(/1\. Salin arahan<\/button>/g) ?? []).length === 2, "the plain '1. Salin arahan' pair is only in the main box and the glossary tab");
+assert(!page.includes("Karya ini belum mempunyai teks. Isi tab Kandungan"), "copying the instruction is not blocked when Kandungan is empty");
+assert(page.includes("const hasText = form.body.trim().length > 0;") && page.includes("hasText && parsed.sections.length > 0 && !sawWholeManuscript"), "the whole-text proof and the name check run only when Kandungan holds the text");
+assert(page.includes("Teks di editor belum disimpan"), "unsaved text in the Penilaian AI tab is named");
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);
