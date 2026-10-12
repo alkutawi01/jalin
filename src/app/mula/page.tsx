@@ -10,6 +10,7 @@ import { DEFAULT_SHARE_IMAGE } from "../../lib/seo";
 import { initContentRepository } from "../../lib/content";
 import { getDb } from "../../lib/db";
 import { displayableGenre } from "../../lib/reader/genre-display";
+import { readingLine } from "../../lib/reader/countries";
 import { projectPublicWorkSummary, type PublicWorkSummary } from "../../lib/reader/public-projection";
 import { computeSiteStats, statItems } from "../../lib/reader/site-stats";
 import { visibleSampleCount } from "../../lib/reader/sample-count";
@@ -143,8 +144,8 @@ export default async function StartPage() {
                         </div>
                         <div className="latest-card-body">
                           <div className="latest-card-meta">
-                            <span className="latest-card-type">{[label, genre, summary.country].filter(Boolean).join(" · ")}</span>
-                            {summary.readingMinutes ? <span className="latest-card-reading">{`± ${summary.readingMinutes} minit`}</span> : null}
+                            <span className="latest-card-type">{genre ? `${label} · ${genre}` : label}</span>
+                            {readingLine(summary.country, summary.readingMinutes) ? <span className="latest-card-reading">{readingLine(summary.country, summary.readingMinutes)}</span> : null}
                           </div>
                           <h3 className="latest-card-title" style={{ fontStyle: "normal" }}>{summary.title}</h3>
                           {summary.attribution ? <p className="work-attribution">{renderAttribution(summary.attribution.primary)}</p> : null}

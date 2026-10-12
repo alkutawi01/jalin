@@ -273,7 +273,6 @@ export default async function WorkView({
               [
                 typeLabel,
                 displayableGenre(work.genre),
-                countryLabel(work.metadata?.countries),
                 landing ? `${sections.length} bab` : ""
               ]
                 .filter(Boolean)

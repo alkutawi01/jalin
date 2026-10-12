@@ -51,6 +51,8 @@ export interface HeroPick {
   type: PublicWorkSummary["type"];
   title: string;
   genre?: string;
+  /** Negara latar as shown on a card; the series' slide has none (a series has no single setting). */
+  country?: string;
   dek?: string;
   attribution?: string;
   readingMinutes?: number;
@@ -81,6 +83,7 @@ export function resolveHeroPicks(picks: PublicWorkSummary[], seriesOfEpisode: (e
         type: pick.type,
         title: pick.title,
         genre: pick.genre,
+        ...(pick.country ? { country: pick.country } : {}),
         dek: pick.dek,
         attribution: pick.attribution?.primary,
         readingMinutes: pick.readingMinutes,

@@ -3648,6 +3648,8 @@ html:has(.a-nav, .admin-login-page) { overflow: visible; }
 .nav-menu-button:hover, .nav-menu-button:focus-visible, .nav-menu-button[aria-expanded="true"] { color: var(--ink); }
 .nav-menu-button.active { color: var(--ink); border-bottom: 1px solid var(--clay); padding-bottom: 5px; }
 .nav-menu-panel { position: absolute; top: calc(100% + 6px); left: -16px; z-index: 40; width: 236px; padding: 8px; border: 1px solid var(--line); border-radius: 14px; background: var(--white); box-shadow: 0 22px 48px -18px rgba(24,52,60,.34), 0 2px 6px rgba(24,52,60,.06); animation: nav-menu-in .16s ease-out; }
+/* The panel floats 6px below the label: this invisible strip is part of the panel, so the pointer never leaves the menu while crossing the gap. */
+.nav-menu-panel::after { content: ""; position: absolute; top: -14px; left: 0; right: 0; height: 14px; }
 .nav-menu-panel::before { content: ""; position: absolute; top: -6px; left: 28px; width: 10px; height: 10px; border-top: 1px solid var(--line); border-left: 1px solid var(--line); background: var(--white); transform: rotate(45deg); }
 .header-nav .nav-menu-panel a { display: flex; align-items: center; min-height: 38px; padding: 0 12px; border-radius: 9px; border-bottom: 0; color: var(--ink); font-size: 15px; }
 .header-nav .nav-menu-panel a:hover, .header-nav .nav-menu-panel a:focus-visible { background: rgba(167,100,80,.1); outline: none; }

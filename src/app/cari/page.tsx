@@ -146,8 +146,9 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
                 return (
                   <li key={`${doc.kind}-${doc.slug}`} className="search-result">
                     <p className="search-result-meta">
-                      {[label, genre, doc.summary.country].filter(Boolean).join(" · ")}
+                      {genre ? `${label} · ${genre}` : label}
                       {doc.kind === "series" && doc.episodeCount ? ` · ${doc.episodeCount} episod` : ""}
+                      {doc.summary.country ? ` · ${doc.summary.country}` : ""}
                       {doc.readingMinutes ? ` · ± ${doc.readingMinutes} minit` : ""}
                     </p>
                     <h2 className="search-result-title"><a href={doc.href}><Marked parts={titleParts} /></a></h2>

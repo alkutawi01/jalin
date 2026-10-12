@@ -4,11 +4,11 @@ Keputusan Izzat, 12 Oktober 2026, selepas perbincangan empat pusingan dengan Cha
 
 ## Apa yang dipaparkan
 
-Nama **negara** tempat cerita berlaku, sebagai bahagian ketiga baris kecil di atas tajuk (eyebrow):
+Nama **negara** tempat cerita berlaku, bersebelahan masa bacaan (bukan dalam eyebrow, kerana tiga bahagian huruf besar terlalu panjang: "Sinopsis · Drama sosial · Amerika Syarikat"):
 
-- Karya luar negara: `Cerpen · Sejarah · Jepun`, `Bersiri · Rumah tangga · Norway`.
-- Karya Malaysia: `Bersiri · Rumah tangga` (Malaysia **tidak** dipaparkan apabila ia satu-satunya negara; Jalin memang Malaysia).
-- Maksimum tiga bahagian. "Pilihan Editor" dibuang daripada eyebrow hero laman utama (carousel itu sendiri ialah pilihan editor).
+- Karya luar negara: eyebrow `Cerpen · Sejarah`, dan di baris masa bacaan `Jepun · ± 11 minit`.
+- Karya Malaysia: `± 11 minit` sahaja (Malaysia **tidak** dipaparkan apabila ia satu-satunya negara; Jalin memang Malaysia).
+- Eyebrow kekal Format · Genre. "Pilihan Editor" dibuang daripada eyebrow hero laman utama (carousel itu sendiri ialah pilihan editor).
 
 Negara sahaja: bukan kampung, lorong atau daerah. Itu kekal pada Latar tempat di halaman karya.
 
