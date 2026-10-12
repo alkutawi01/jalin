@@ -4256,3 +4256,13 @@ body:has(.save-work) .back-to-top { bottom: 76px; }
 .series-carousel-dot { width: 8px; height: 8px; padding: 0; border: 0; border-radius: 50%; background: rgba(24, 52, 60, .25); cursor: pointer; transition: background-color .18s ease, transform .18s ease; }
 .series-carousel-dot.is-active { background: var(--ink); transform: scale(1.25); }
 @media (prefers-reduced-motion: reduce) { .series-carousel-track { scroll-behavior: auto; } .series-carousel-dot, .series-carousel-arrow { transition: none; } }
+
+/* Hero title: the picture's left fade (a veil of the page's own colour, drawn above the picture) reaches 64px into the text column. The text sat at the
+   same level and later elements win, so the veil covered the end of a long title (the last "i" of "Sunyi"). The text column is above it now. */
+.hero-featured-text { z-index: 3; }
+
+/* Latest-episode title on the homepage Bersiri card: it was a grid item, so its box was the full column and, with balanced wrapping, the clay line under it ran
+   past the words. The label is a block and the title runs inline, so the line follows each line of text. */
+.series-feature-latest { display: block; }
+.series-feature-latest-label { display: block; margin-bottom: 6px; }
+.series-feature-latest-title { display: inline; text-wrap: wrap; }
