@@ -19,6 +19,12 @@ export default function NavMenu({
 }) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement | null>(null);
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /** A mouse that leaves for a moment (the gap under the label, a slightly wandering path) must not close the menu at once. */
+  function cancelClose() {
+    if (closeTimer.current) { clearTimeout(closeTimer.current); closeTimer.current = null; }
+  }
+  useEffect(() => cancelClose, []);
 
   useEffect(() => {
     if (!open) return;
@@ -43,8 +49,8 @@ export default function NavMenu({
     <div
       className="nav-menu"
       ref={rootRef}
-      onMouseEnter={(event) => { if (event.nativeEvent instanceof MouseEvent) setOpen(true); }}
-      onMouseLeave={() => setOpen(false)}
+      onMouseEnter={(event) => { cancelClose(); if (event.nativeEvent instanceof MouseEvent) setOpen(true); }}
+      onMouseLeave={() => { cancelClose(); closeTimer.current = setTimeout(() => setOpen(false), 250); }}
       onBlur={(event) => { if (!rootRef.current?.contains(event.relatedTarget as Node | null)) setOpen(false); }}
     >
       <button

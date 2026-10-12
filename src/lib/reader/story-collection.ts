@@ -17,10 +17,10 @@ export const TYPE_LABELS: Record<string, string> = {
   sinopsis: "Sinopsis"
 };
 
-/** The small line above a card's title: format, genre and (when it is not just Malaysia) the country: at most three parts. */
-export function workEyebrow(work: Pick<PublicWorkSummary, "type" | "genre"> & { country?: string }): string {
+/** The small line above a card's title: format and genre only. The country sits beside the reading time (see readingLine in countries.ts). */
+export function workEyebrow(work: Pick<PublicWorkSummary, "type" | "genre">): string {
   const type = TYPE_LABELS[work.type] ?? work.type;
-  return [type, displayableGenre(work.genre), work.country].filter(Boolean).join(" · ");
+  return [type, displayableGenre(work.genre)].filter(Boolean).join(" · ");
 }
 
 /** What one card needs, as plain data (it is sent to the browser when the reader asks for other stories). */
@@ -30,6 +30,8 @@ export interface StoryCard {
   href: string;
   type: string;
   eyebrow: string;
+  /** Negara latar as shown on a card (see countries.ts); absent for none or Malaysia alone. */
+  country?: string;
   /** "Episod 2: Duit Dapur Setiap Isnin" for a series episode, the plain title for any other work. */
   title: string;
   /** Only for a series episode: the series it comes from (shown as "Daripada ..."). */
@@ -85,6 +87,7 @@ async function buildStoryPoolFresh(): Promise<StoryCard[]> {
     const base = {
       type: summary.type,
       eyebrow: workEyebrow(summary),
+      ...(summary.country ? { country: summary.country } : {}),
       ...(summary.dek ? { dek: summary.dek } : {}),
       ...(summary.readingMinutes ? { readingMinutes: summary.readingMinutes } : {}),
       ...(summary.publishedAt ? { publishedAt: summary.publishedAt } : {}),

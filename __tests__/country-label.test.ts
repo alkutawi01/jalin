@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import { COUNTRIES, countryLabel, normaliseCountries, MAX_COUNTRIES } from "../src/lib/reader/countries";
+import { COUNTRIES, countryLabel, normaliseCountries, readingLine, MAX_COUNTRIES } from "../src/lib/reader/countries";
 import { workEyebrow } from "../src/lib/reader/story-collection";
 
 // Negara latar (12 Okt 2026, Izzat): the country only, Malaysia alone is hidden, two countries only when the story truly belongs to both.
@@ -28,14 +28,17 @@ for (const [code, name] of Object.entries(COUNTRIES)) {
   assert.doesNotMatch(name, /^[A-Z]{2}(-[A-Z]{3})?$/, `${code} is displayed with a name, not its code`);
 }
 
-// The small line above a card's title: format, genre, country; at most three parts, no "Pilihan Editor".
-assert.equal(workEyebrow({ type: "cerpen", genre: "sejarah", country: "Jepun" }), "Cerpen · Sejarah · Jepun");
-assert.ok(workEyebrow({ type: "bersiri", genre: "rumah tangga" }).startsWith("Bersiri · "), "a series keeps format and genre");
-assert.equal(workEyebrow({ type: "cerpen", genre: "sejarah" }).split(" · ").length, 2, "no country: two parts");
-assert.equal(workEyebrow({ type: "cerpen", country: "Peru" }), "Cerpen · Peru", "no genre: format and country");
+// The small line above a card's title is format and genre only; the country sits beside the reading time (the three-part eyebrow
+// was too long: 'Sinopsis · Drama sosial · Amerika Syarikat').
+assert.equal(workEyebrow({ type: 'cerpen', genre: 'sejarah' }), 'Cerpen · Sejarah');
+assert.equal(workEyebrow({ type: 'cerpen' }), 'Cerpen');
+assert.equal(readingLine('Jepun', 11), 'Jepun · ± 11 minit');
+assert.equal(readingLine(undefined, 11), '± 11 minit', 'no country: the reading time alone, as before');
+assert.equal(readingLine('Peru', undefined), 'Peru');
+assert.equal(readingLine(undefined, undefined), '');
 
 const page = fs.readFileSync("src/app/page.tsx", "utf8");
 assert.doesNotMatch(page, /Pilihan Editor ·/, "'Pilihan Editor' is not part of the hero eyebrow any more (the carousel is the editor's picks)");
-assert.match(page, /kicker: workEyebrow\(work\)/, "the hero eyebrow is format, genre and country");
+assert.ok(page.includes("[work.country, readingLabel(work.readingMinutes)]"), "the hero slide shows the country beside the reading time");
 
 console.log("country label: passed");

@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 import type { StoryCard } from "../../lib/reader/story-collection";
+import { readingLine } from "../../lib/reader/countries";
 import { formatMalayDate } from "../../lib/reader/format-date";
 import { renderAttribution } from "./Attribution";
 import { WorkCover } from "./WorkCover";
 
 function CardMeta({ card }: { card: StoryCard }) {
-  const reading = card.readingMinutes ? `± ${card.readingMinutes} minit` : null;
+  const reading = readingLine(card.country, card.readingMinutes) || null;
   const published = formatMalayDate(card.publishedAt);
   if (!reading && !published) return null;
   return (

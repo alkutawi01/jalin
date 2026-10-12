@@ -1,5 +1,5 @@
 /**
- * Negara latar: the country a story is set in, shown as the third part of a card's eyebrow ("Cerpen · Sejarah · Jepun").
+ * Negara latar: the country a story is set in, shown on a card beside the reading time ("Jepun · ± 11 minit").
  *
  * Decided with Izzat (12 Oct 2026):
  * - the country only, never a village, street or district;
@@ -108,6 +108,11 @@ export function normaliseCountries(value: unknown): string[] {
     if (seen.size === MAX_COUNTRIES) break;
   }
   return [...seen];
+}
+
+/** "Jepun · ± 11 minit": the country (when there is one to show) next to the reading time. Empty when there is neither. */
+export function readingLine(country: string | undefined, readingMinutes: number | undefined): string {
+  return [country, readingMinutes ? `± ${readingMinutes} minit` : ""].filter(Boolean).join(" · ");
 }
 
 /**

@@ -247,7 +247,7 @@ export default async function Home() {
     kicker: workEyebrow(work),
     attribution: work.attribution,
     dek: work.dek,
-    reading: readingLabel(work.readingMinutes) ?? undefined,
+    reading: [work.country, readingLabel(work.readingMinutes)].filter(Boolean).join(" · ") || undefined,
     date: formatDate(work.publishedAt),
     hero: work.hero,
     rights: `© ADJUNG ${yearOf(work)}`,
