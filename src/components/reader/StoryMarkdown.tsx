@@ -5,6 +5,7 @@ import { headingId } from "../../lib/reader/inline-chapters";
 import GlossaryTerm from "./GlossaryTerm";
 import { glossaryPattern } from "../../lib/reader/glossary-first";
 import { splitCommunicationBlocks } from "../../lib/reader/communication-blocks";
+import { splitMessageSender } from "../../lib/reader/message-sender";
 import { normalizeSceneBreaks } from "../../lib/reader/scene-breaks";
 import { splitFootnoteTokens } from "../../lib/reader/footnotes";
 import { smartQuotes } from "../../lib/admin/smart-quotes";
@@ -99,12 +100,24 @@ export default function StoryMarkdown({
     em: ({ children }: { children?: ReactNode }) => <em>{children}</em>,
     hr: () => <div className="scene-break" aria-hidden="true"><span>•</span></div>,
   };
+  // Inside a message box the name before the colon is bold, so the sender is told from the words.
+  const messageComponents = {
+    ...components,
+    p: ({ children }: { children?: ReactNode }) => {
+      const parts = React.Children.toArray(children);
+      const first = parts[0];
+      const split = typeof first === "string" ? splitMessageSender(first) : null;
+      if (!split) return <p>{decorateChildren(withFootnotes(children, footnoteNumbers), glossary, used)}</p>;
+      parts[0] = split.rest;
+      return <p><strong className="message-sender">{split.sender}:</strong>{decorateChildren(withFootnotes(parts, footnoteNumbers), glossary, used)}</p>;
+    },
+  };
   return (
     <>
       {splitCommunicationBlocks(normalizeMarkdown(children)).map((segment, index) => segment.kind === "prose"
         ? <ReactMarkdown key={index} components={components}>{segment.content}</ReactMarkdown>
         : <div key={index} className={`story-communication story-communication-${segment.kind}`} role="group" aria-label={segment.kind === "mesej" ? "Mesej dalam cerita" : "E-mel dalam cerita"}>
-            <ReactMarkdown components={components}>{segment.content}</ReactMarkdown>
+            <ReactMarkdown components={segment.kind === "mesej" ? messageComponents : components}>{segment.content}</ReactMarkdown>
           </div>)}
     </>
   );
