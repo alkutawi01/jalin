@@ -49,6 +49,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [attachWorkId, setAttachWorkId] = useState("");
+  const [visibilityBusy, setVisibilityBusy] = useState(false);
   /** One episode action at a time: a second click while the first is still running is ignored. */
   const [actionBusy, setActionBusy] = useState(false);
   const [heroFile, setHeroFile] = useState<File | null>(null);
@@ -103,6 +104,28 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
       setLoading(false);
     }
   }, [id]);
+
+  /** Hide the whole series from readers (archive its published episodes) or bring its archived episodes back as drafts. */
+  async function changeVisibility(action: "archive" | "restore") {
+    if (visibilityBusy) return;
+    const ask = action === "archive"
+      ? "Arkibkan siri ini? Semua episod yang diterbitkan akan diarkibkan dan siri hilang daripada pembaca. Teks tidak dipadam dan boleh dipulihkan sebagai draf."
+      : "Pulihkan semua episod yang diarkibkan sebagai draf? Pembaca belum nampak apa-apa sehingga setiap episod diterbitkan semula.";
+    if (!(await confirmAction(ask, { danger: action === "archive", confirmLabel: action === "archive" ? "Ya, arkibkan siri" : "Ya, pulihkan sebagai draf" }))) return;
+    setVisibilityBusy(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/admin/series/${id}/paparan`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action }) });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Tindakan tidak berjaya.");
+      setSuccess(action === "archive" ? `${data.count} episod diarkibkan. Siri tidak lagi kelihatan kepada pembaca.` : `${data.count} episod dipulihkan sebagai draf.`);
+      await loadSeries();
+    } catch (err) {
+      setError(errorText(err, "Tindakan tidak berjaya."));
+    } finally {
+      setVisibilityBusy(false);
+    }
+  }
 
   /** Only episodes that belong to no series at all can be attached; the list is read again after every change. */
   const loadUnattached = useCallback(() => {
@@ -460,6 +483,38 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
           </button>
         </div>
       </form>
+
+      {(() => {
+        const statuses = series.entries.map((entry) => entryWorks.get(entry.work_id)?.status ?? "");
+        const published = statuses.filter((s) => s === "published").length;
+        const archived = statuses.filter((s) => s === "archived").length;
+        if (series.entries.length === 0) return null;
+        return (
+          <section className="admin-section" aria-labelledby="series-visibility-title">
+            <h2 id="series-visibility-title" className="admin-form-section-title">Paparan kepada pembaca</h2>
+            <p className="admin-form-hint">
+              {published > 0
+                ? `${published} episod diterbitkan: siri ini kelihatan kepada pembaca.`
+                : archived > 0
+                  ? `Tiada episod diterbitkan (${archived} diarkibkan): siri ini tidak kelihatan kepada pembaca.`
+                  : "Tiada episod diterbitkan: siri ini tidak kelihatan kepada pembaca."}
+              {" "}Siri tidak mempunyai suis sendiri; ia kelihatan selagi ada episod diterbitkan, jadi tindakan di bawah mengarkibkan atau memulihkan episodnya sekali gus.
+            </p>
+            <div className="admin-form-actions">
+              {published > 0 ? (
+                <button type="button" className="admin-btn admin-btn-outline" disabled={visibilityBusy} onClick={() => void changeVisibility("archive")}>
+                  {visibilityBusy ? "Memproses…" : "Arkibkan siri"}
+                </button>
+              ) : null}
+              {archived > 0 ? (
+                <button type="button" className="admin-btn admin-btn-outline" disabled={visibilityBusy} onClick={() => void changeVisibility("restore")}>
+                  {visibilityBusy ? "Memproses…" : "Pulihkan episod yang diarkibkan sebagai draf"}
+                </button>
+              ) : null}
+            </div>
+          </section>
+        );
+      })()}
 
       <section className="admin-credits" style={{ marginTop: "1.5rem" }}>
         <div className="admin-credits-header">

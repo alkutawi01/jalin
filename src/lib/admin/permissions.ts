@@ -100,6 +100,8 @@ const API_RULES: Rule[] = [
 
   { methods: WRITE, pattern: /^\/credits(\/|$)/, permission: "credit.write" },
   { methods: WRITE, pattern: /^\/glossary(\/|$)/, permission: "glossary.write" },
+  // Hiding a whole series (its published episodes become archived) is the same act as archiving a published work: whoever may publish.
+  { methods: WRITE, pattern: new RegExp(`^/series/${ID}/paparan$`), permission: "work.publish" },
   { methods: WRITE, pattern: /^\/series(\/|$)/, permission: "series.manage" },
   { methods: WRITE, pattern: /^\/(submissions|contributions)(\/|$)/, permission: "submission.manage" },
   { methods: WRITE, pattern: /^\/editorial-issues(\/|$)/, permission: "work.write" },

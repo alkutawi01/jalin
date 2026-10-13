@@ -20,6 +20,8 @@ export const ACTIVITY_ACTIONS = {
   "work.create": "Mencipta karya",
   "work.update": "Menyimpan karya",
   "work.delete": "Memadam draf",
+  "series.archive": "Mengarkibkan siri",
+  "series.restore": "Memulihkan siri sebagai draf",
   "section.create": "Menambah bahagian",
   "section.update": "Menyunting bahagian",
   "section.delete": "Membuang bahagian",

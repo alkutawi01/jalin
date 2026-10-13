@@ -68,6 +68,8 @@ assert(generate.every(([m, u]) => isAllowed("chief_editor", m, u) && !isAllowed(
 assert(isAllowed("editor", "POST", "/api/admin/works/w1/visuals/upload") && isAllowed("editor", "POST", "/api/admin/visual-requests/v1/upload"), "an editor can upload a picture made with an outside tool");
 assert(!isAllowed("editor", "POST", "/api/admin/visual-requests/v1/approve") && isAllowed("chief_editor", "POST", "/api/admin/visual-requests/v1/approve"), "approving a generated picture is the chief editor's");
 
+assert((["owner", "chief_editor", "editor"] as const).every((role) => isAllowed(role, "POST", "/api/admin/series/s1/paparan") === isAllowed(role, "POST", "/api/admin/works/w1/publish")) && isAllowed("owner", "POST", "/api/admin/series/s1/paparan"), "hiding or restoring a whole series is for whoever may publish");
+
 // 4) what an editor can and cannot reach
 assert(isAllowed("editor", "PATCH", "/api/admin/works/w1") && isAllowed("editor", "POST", "/api/admin/works/w1/sections") && isAllowed("editor", "PATCH", "/api/admin/works/w1/characters"), "an editor edits works, sections and characters");
 assert(isAllowed("editor", "POST", "/api/admin/credits") && isAllowed("editor", "POST", "/api/admin/glossary"), "an editor edits credits and the glossary");
