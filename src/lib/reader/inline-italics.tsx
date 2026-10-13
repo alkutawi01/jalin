@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { isDictionaryWord } from "./dictionary-words";
 
 /**
  * Italics the editor marks by hand with *asterisks* in a glossary term or meaning.
@@ -20,7 +21,8 @@ export function renderItalics(text: string): ReactNode {
   for (const match of (text ?? "").matchAll(MARK)) {
     const start = match.index ?? 0;
     if (start > last) parts.push(text.slice(last, start));
-    parts.push(<em key={key++}>{match[1]}</em>);
+    // A word that is in Kamus Dewan is not set in italics, however it was marked.
+    parts.push(isDictionaryWord(match[1]!) ? match[1]! : <em key={key++}>{match[1]}</em>);
     last = start + match[0].length;
   }
   if (last < text.length) parts.push(text.slice(last));

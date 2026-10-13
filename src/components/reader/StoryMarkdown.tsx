@@ -7,6 +7,7 @@ import { glossaryPattern } from "../../lib/reader/glossary-first";
 import { splitCommunicationBlocks } from "../../lib/reader/communication-blocks";
 import { splitMessageSender } from "../../lib/reader/message-sender";
 import { fixEmphasisBeforeSuffix } from "../../lib/reader/emphasis-fix";
+import { unitaliciseDictionaryWords } from "../../lib/reader/dictionary-words";
 import { normalizeSceneBreaks } from "../../lib/reader/scene-breaks";
 import { splitFootnoteTokens } from "../../lib/reader/footnotes";
 import { smartQuotes } from "../../lib/admin/smart-quotes";
@@ -25,7 +26,7 @@ function normalizeMarkdown(markdown: string): string {
   // here would turn an entire scene into a single paragraph.
   // Quotation marks follow the house style (curly, PPRM) however the text was entered or imported: a work typed or imported with straight
   // marks is shown curved here, without touching the stored text (smartQuotes converts only where the direction is clear).
-  return spacedDashes(normalizeSceneBreaks(smartQuotes(fixEmphasisBeforeSuffix(markdown.replace(/\r\n/g, "\n")))));
+  return spacedDashes(normalizeSceneBreaks(smartQuotes(unitaliciseDictionaryWords(fixEmphasisBeforeSuffix(markdown.replace(/\r\n/g, "\n"))))));
 }
 
 function decorateGlossary(text: string, glossary: GlossaryMap, used: Set<string>): ReactNode[] {

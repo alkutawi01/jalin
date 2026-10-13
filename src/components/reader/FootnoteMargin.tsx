@@ -4,6 +4,7 @@ import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "re
 import { createPortal } from "react-dom";
 import ReactMarkdown from "react-markdown";
 import { fixEmphasisBeforeSuffix } from "../../lib/reader/emphasis-fix";
+import { unitaliciseDictionaryWords } from "../../lib/reader/dictionary-words";
 import { placeMarginNotes, trackOffsets } from "../../lib/reader/margin-notes";
 
 type Note = { number: number; text: string };
@@ -231,7 +232,7 @@ export default function FootnoteMargin({ notes }: { notes: Note[] }) {
         {notes.map((note) => (
           <div key={note.number} className="footnote-margin-note" data-margin-note={note.number}>
             <span className="footnote-margin-number">{note.number}</span>
-            <ReactMarkdown components={noteComponents}>{fixEmphasisBeforeSuffix(note.text)}</ReactMarkdown>
+            <ReactMarkdown components={noteComponents}>{unitaliciseDictionaryWords(fixEmphasisBeforeSuffix(note.text))}</ReactMarkdown>
           </div>
         ))}
       </div>
@@ -239,7 +240,7 @@ export default function FootnoteMargin({ notes }: { notes: Note[] }) {
         ? createPortal(
             <div ref={popoverRef} className="glossary-tooltip footnote-popover" role="dialog" aria-label={`Nota ${open.number}`} style={{ visibility: "hidden" }}>
               <span className="footnote-popover-number" aria-hidden="true">{open.number}</span>
-              <ReactMarkdown>{fixEmphasisBeforeSuffix(open.text)}</ReactMarkdown>
+              <ReactMarkdown>{unitaliciseDictionaryWords(fixEmphasisBeforeSuffix(open.text))}</ReactMarkdown>
             </div>,
             document.body
           )
