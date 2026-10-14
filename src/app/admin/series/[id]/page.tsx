@@ -52,6 +52,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
   const [visibilityBusy, setVisibilityBusy] = useState(false);
   /** One episode action at a time: a second click while the first is still running is ignored. */
   const [actionBusy, setActionBusy] = useState(false);
+  const [selectedEpisodes, setSelectedEpisodes] = useState<Set<string>>(new Set());
   const [heroFile, setHeroFile] = useState<File | null>(null);
   const [heroAlt, setHeroAlt] = useState("");
   const [heroBusy, setHeroBusy] = useState(false);
@@ -200,6 +201,51 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
       await loadSeries();
       await loadUnattached();
       setTimeout(() => setSuccess(null), 4000);
+    } catch (err) {
+      setError(errorText(err));
+    } finally {
+      setActionBusy(false);
+    }
+  }
+
+  function toggleEpisode(workId: string) {
+    setSelectedEpisodes((current) => {
+      const next = new Set(current);
+      if (next.has(workId)) next.delete(workId);
+      else next.add(workId);
+      return next;
+    });
+  }
+
+  /** Archive or restore the chosen episodes in one step. Nothing is deleted or published. */
+  async function handleBulk(action: "archive" | "restore") {
+    if (!series || actionBusy) return;
+    const chosen = series.entries.filter((entry) => selectedEpisodes.has(entry.work_id));
+    const eligible = chosen.filter((entry) => {
+      const status = entryWorks.get(entry.work_id)?.status ?? "";
+      return action === "archive" ? status !== "archived" : status === "archived";
+    });
+    if (eligible.length === 0) return;
+    const titles = eligible.slice(0, 6).map((entry) => `Episod ${entry.position}`).join(", ") + (eligible.length > 6 ? `, dan ${eligible.length - 6} lagi` : "");
+    const published = eligible.filter((entry) => entryWorks.get(entry.work_id)?.status === "published").length;
+    const message = action === "archive"
+      ? `Arkibkan ${eligible.length} episod? ${published > 0 ? `${published} sedang diterbitkan dan tidak lagi kelihatan kepada pembaca. ` : ""}Teks dikekalkan dan boleh dipulihkan. (${titles})`
+      : `Pulihkan ${eligible.length} episod sebagai draf? Ia tidak diterbitkan semula secara automatik. (${titles})`;
+    if (!(await confirmAction(message, { danger: action === "archive", confirmLabel: action === "archive" ? "Ya, arkibkan" : "Ya, pulihkan" }))) return;
+    setActionBusy(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/admin/works/bulk-status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: eligible.map((entry) => entry.work_id), action })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Tindakan pukal gagal.");
+      const skipped = Array.isArray(data.skipped) ? data.skipped.length : 0;
+      toast(`${Array.isArray(data.changed) ? data.changed.length : 0} episod ${action === "archive" ? "diarkibkan" : "dipulihkan sebagai draf"}.${skipped ? ` ${skipped} tidak diubah.` : ""}`, skipped ? "error" : "success");
+      setSelectedEpisodes(new Set());
+      await loadSeries();
     } catch (err) {
       setError(errorText(err));
     } finally {
@@ -534,6 +580,11 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
             <table className="admin-table">
               <thead>
                 <tr>
+                  <th className="a-col-fit">
+                    <input type="checkbox" aria-label="Pilih semua episod"
+                      checked={series.entries.length > 0 && selectedEpisodes.size === series.entries.length}
+                      onChange={() => setSelectedEpisodes(selectedEpisodes.size === series.entries.length ? new Set() : new Set(series.entries.map((entry) => entry.work_id)))} />
+                  </th>
                   <th>#</th>
                   <th>Tajuk</th>
                   <th>Status</th>
@@ -546,6 +597,10 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
                   const work = entryWorks.get(entry.work_id);
                   return (
                     <tr key={entry.id}>
+                      <td className="a-col-fit">
+                        <input type="checkbox" aria-label={`Pilih episod ${entry.position}`}
+                          checked={selectedEpisodes.has(entry.work_id)} onChange={() => toggleEpisode(entry.work_id)} />
+                      </td>
                       <td>Episod {entry.position}</td>
                       <td>
                         {work ? (
@@ -591,6 +646,17 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
             </table>
           </div>
         )}
+
+        {selectedEpisodes.size > 0 ? (
+          <div className="admin-pick-savebar" role="region" aria-label="Tindakan pukal episod">
+            <div><strong>{selectedEpisodes.size} episod dipilih</strong></div>
+            <div className="admin-form-actions">
+              <button type="button" className="admin-btn admin-btn-outline" onClick={() => setSelectedEpisodes(new Set())} disabled={actionBusy}>Batal pilihan</button>
+              <button type="button" className="admin-btn admin-btn-outline" onClick={() => void handleBulk("restore")} disabled={actionBusy}>Pulihkan sebagai draf</button>
+              <button type="button" className="admin-btn admin-btn-primary" onClick={() => void handleBulk("archive")} disabled={actionBusy}>Arkibkan terpilih</button>
+            </div>
+          </div>
+        ) : null}
 
         {attachable.length > 0 ? (
           <details className="admin-advanced-field" style={{ marginTop: "1.25rem" }}>

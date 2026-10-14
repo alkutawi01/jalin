@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { toast } from "../../lib/admin/dialogs";
+import { confirmAction, toast } from "../../lib/admin/dialogs";
 import { errorText } from "../../lib/admin/error-text";
 
 export interface AdminWorkRow {
@@ -59,6 +59,12 @@ export default function AdminWorksTable({ works, initialPicks }: { works: AdminW
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkBusy, setBulkBusy] = useState(false);
+  const selectedRows = works.filter((work) => selected.has(work.id));
+  const toArchive = selectedRows.filter((work) => work.status !== "archived");
+  const toRestore = selectedRows.filter((work) => work.status === "archived");
+  const allSelected = works.length > 0 && selected.size === works.length;
   const dirty = useMemo(() => saved.map((work) => work.id).join("|") !== draft.map((work) => work.id).join("|"), [saved, draft]);
 
   useEffect(() => {
@@ -87,6 +93,50 @@ export default function AdminWorksTable({ works, initialPicks }: { works: AdminW
       setNotice(`Had tiga karya. ${current[0].title} akan dikeluarkan dan ${work.title} akan menjadi pilihan ketiga.`);
       return [...current.slice(1), next];
     });
+  }
+
+  function toggleSelected(id: string) {
+    setSelected((current) => {
+      const next = new Set(current);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function toggleAll() {
+    setSelected(allSelected ? new Set() : new Set(works.map((work) => work.id)));
+  }
+
+  async function runBulk(action: "archive" | "restore") {
+    const rows = action === "archive" ? toArchive : toRestore;
+    if (rows.length === 0 || bulkBusy) return;
+    const names = rows.slice(0, 6).map((work) => work.title).join(", ") + (rows.length > 6 ? `, dan ${rows.length - 6} lagi` : "");
+    const published = rows.filter((work) => work.status === "published").length;
+    const message = action === "archive"
+      ? `Arkibkan ${rows.length} karya? ${published > 0 ? `${published} daripadanya sedang diterbitkan dan tidak lagi kelihatan kepada pembaca. ` : ""}Teks dikekalkan dan boleh dipulihkan. (${names})`
+      : `Pulihkan ${rows.length} karya sebagai draf? Ia tidak diterbitkan semula secara automatik. (${names})`;
+    if (!(await confirmAction(message, { danger: action === "archive", confirmLabel: action === "archive" ? "Ya, arkibkan" : "Ya, pulihkan" }))) return;
+    setBulkBusy(true);
+    setError("");
+    try {
+      const response = await fetch("/api/admin/works/bulk-status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: rows.map((work) => work.id), action })
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || "Tindakan pukal gagal.");
+      const changed = Array.isArray(data.changed) ? data.changed.length : 0;
+      const skipped = Array.isArray(data.skipped) ? data.skipped : [];
+      toast(`${changed} karya ${action === "archive" ? "diarkibkan" : "dipulihkan sebagai draf"}.${skipped.length ? ` ${skipped.length} tidak diubah: ${skipped.slice(0, 3).map((s: { title: string; reason: string }) => `${s.title} (${s.reason})`).join("; ")}` : ""}`, skipped.length ? "error" : "success");
+      setSelected(new Set());
+      window.location.reload();
+    } catch (caught) {
+      setError(errorText(caught, "Tindakan pukal gagal."));
+    } finally {
+      setBulkBusy(false);
+    }
   }
 
   function cancel() {
@@ -128,15 +178,16 @@ export default function AdminWorksTable({ works, initialPicks }: { works: AdminW
       </p>
       <div className="admin-table-wrap">
         <table className="admin-table admin-works-table a-compact-table">
-          <thead><tr><th className="admin-pick-column" title="Pilihan Editor">Pilihan</th><th>Tajuk</th><th className="a-col-fit a-col-minor">ID</th><th className="a-col-wide">Pengarang</th><th className="a-col-wide">Alamat pautan</th><th>Jenis</th><th>Status</th><th className="a-col-wide">Versi</th><th className="a-col-fit a-col-minor">Dikemas kini</th><th>Tindakan</th></tr></thead>
+          <thead><tr><th className="a-col-fit"><input type="checkbox" checked={allSelected} onChange={toggleAll} aria-label="Pilih semua karya dalam senarai" /></th><th className="admin-pick-column" title="Pilihan Editor">Pilihan</th><th>Tajuk</th><th className="a-col-fit a-col-minor">ID</th><th className="a-col-wide">Pengarang</th><th className="a-col-wide">Alamat pautan</th><th>Jenis</th><th>Status</th><th className="a-col-wide">Versi</th><th className="a-col-fit a-col-minor">Dikemas kini</th><th>Tindakan</th></tr></thead>
           <tbody>
             {works.length === 0 ? (
-              <tr><td colSpan={10} className="admin-table-empty">Tiada karya yang sepadan. Kosongkan carian atau pilih status lain.</td></tr>
+              <tr><td colSpan={11} className="admin-table-empty">Tiada karya yang sepadan. Kosongkan carian atau pilih status lain.</td></tr>
             ) : works.map((work) => {
               const position = positions.get(work.id);
               const disabled = work.status !== "published";
               return (
-                <tr key={work.id}>
+                <tr key={work.id} className={selected.has(work.id) ? "is-selected" : undefined}>
+                  <td className="a-col-fit"><input type="checkbox" checked={selected.has(work.id)} onChange={() => toggleSelected(work.id)} aria-label={`Pilih ${work.title}`} /></td>
                   <td className="admin-pick-cell">
                     <label className={`admin-pick-toggle${disabled ? " is-disabled" : ""}`} title={disabled ? "Hanya karya yang sudah diterbitkan boleh dipilih." : undefined}>
                       <input type="checkbox" checked={Boolean(position)} disabled={disabled} onChange={() => toggle(work)} aria-label={`${position ? "Keluarkan" : "Tambah"} ${work.title} ${position ? "daripada" : "ke"} Pilihan Editor`} />
@@ -157,6 +208,16 @@ export default function AdminWorksTable({ works, initialPicks }: { works: AdminW
           </tbody>
         </table>
       </div>
+      {selected.size > 0 ? (
+        <div className="admin-pick-savebar" role="region" aria-label="Tindakan pukal">
+          <div><strong>{selected.size} karya dipilih</strong><span role="status">{toArchive.length > 0 ? `${toArchive.length} boleh diarkibkan` : ""}{toArchive.length > 0 && toRestore.length > 0 ? ", " : ""}{toRestore.length > 0 ? `${toRestore.length} boleh dipulihkan sebagai draf` : ""}</span></div>
+          <div className="admin-form-actions">
+            <button type="button" className="admin-btn admin-btn-outline" onClick={() => setSelected(new Set())} disabled={bulkBusy}>Batal pilihan</button>
+            <button type="button" className="admin-btn admin-btn-outline" onClick={() => void runBulk("restore")} disabled={bulkBusy || toRestore.length === 0}>Pulihkan sebagai draf</button>
+            <button type="button" className="admin-btn admin-btn-primary" onClick={() => void runBulk("archive")} disabled={bulkBusy || toArchive.length === 0}>{bulkBusy ? "Memproses…" : "Arkibkan terpilih"}</button>
+          </div>
+        </div>
+      ) : null}
       {dirty ? <div className="admin-pick-savebar" role="region" aria-label="Perubahan Pilihan Editor"><div><strong>{draft.length}/{LIMIT} karya dipilih</strong><span role="status">{notice || "Ada perubahan belum disimpan."}</span></div><div className="admin-form-actions"><button type="button" className="admin-btn admin-btn-outline" onClick={cancel} disabled={saving}>Batal</button><button type="button" className="admin-btn admin-btn-primary" onClick={() => void save()} disabled={saving}>{saving ? "Menyimpan…" : "Simpan Pilihan Editor"}</button></div></div> : notice ? <p className="admin-form-hint" role="status">{notice}</p> : null}
     </>
   );

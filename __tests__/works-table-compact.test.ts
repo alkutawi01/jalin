@@ -16,7 +16,7 @@ assert(/function CopyChip/.test(tsx) && tsx.includes("navigator.clipboard.writeT
 assert(tsx.includes("(klik untuk salin)") && tsx.includes("aria-label={`Salin"), "its tooltip has the whole value and says a click copies; a screen reader hears the same");
 assert(/<CopyChip value=\{work\.id\}/.test(tsx) && /<CopyChip value=\{work\.slug\}/.test(tsx), "the ID and the link address are copy buttons");
 assert(/className="admin-table-title a-cell-clip" title=\{\[work\.title, work\.authors, work\.slug, work\.version\]/.test(tsx), "the title is cut to one line; its tooltip holds title, authors, link address and version");
-assert(tsx.includes("colSpan={10}"), "the empty row spans every column");
+assert(tsx.includes("colSpan={11}"), "the empty row spans every column");
 assert(css.includes("td.admin-table-title { width: 100%; min-width: 120px; }"), "the title takes all the room the other columns leave");
 assert(/\.a-copy \{[^}]*text-overflow: ellipsis/.test(css) && /\.a-copy \{[^}]*max-width: 150px/.test(css), "a copy button is cut at 150px");
 assert(/@container admin-table \(min-width: 561px\)/.test(css), "above 560px the table is a table again (the cards are for a phone)");
