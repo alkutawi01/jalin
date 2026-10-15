@@ -95,6 +95,12 @@ export default function AdminWorksTable({ works, initialPicks }: { works: AdminW
     });
   }
 
+  function removePick(work: PickWork) {
+    setError("");
+    setDraft((current) => current.filter((item) => item.id !== work.id));
+    setNotice(`${work.title} akan dikeluarkan daripada Pilihan Editor.`);
+  }
+
   function toggleSelected(id: string) {
     setSelected((current) => {
       const next = new Set(current);
@@ -176,6 +182,24 @@ export default function AdminWorksTable({ works, initialPicks }: { works: AdminW
       <p className="admin-form-hint admin-pick-summary">
         Gambar utama laman utama: {saved.length}/{LIMIT} pilihan disimpan. Karusel bertukar secara automatik apabila sekurang-kurangnya dua karya disimpan.
       </p>
+      <section className="admin-pick-panel" aria-labelledby="admin-pick-panel-title">
+        <h2 id="admin-pick-panel-title">Pilihan Editor semasa ({draft.length}/{LIMIT})</h2>
+        {draft.length === 0 ? (
+          <p className="admin-form-hint">Belum ada pilihan. Tandakan kotak "Pilihan" di sebelah karya yang sudah diterbitkan dalam jadual di bawah (gunakan carian untuk mencarinya).</p>
+        ) : (
+          <ol className="admin-pick-list">
+            {draft.map((work, index) => (
+              <li key={work.id}>
+                <span className="admin-pick-rank" aria-hidden="true">{index + 1}</span>
+                <a href={`/admin/works/${work.id}`} className="a-work-title-link">{work.title}</a>
+                <span className="admin-form-hint"> · {TYPE_LABELS[work.type] ?? work.type}</span>
+                <button type="button" className="admin-btn admin-btn-sm admin-btn-outline" onClick={() => removePick(work)} aria-label={`Keluarkan ${work.title} daripada Pilihan Editor`}>Keluarkan</button>
+              </li>
+            ))}
+          </ol>
+        )}
+        {dirty ? <p className="admin-form-hint" role="status">Perubahan belum disimpan: tekan Simpan di bawah.</p> : null}
+      </section>
       <div className="admin-table-wrap">
         <table className="admin-table admin-works-table a-compact-table">
           <thead><tr><th className="a-col-fit"><input type="checkbox" checked={allSelected} onChange={toggleAll} aria-label="Pilih semua karya dalam senarai" /></th><th className="admin-pick-column" title="Pilihan Editor">Pilihan</th><th>Tajuk</th><th className="a-col-fit a-col-minor">ID</th><th className="a-col-wide">Pengarang</th><th className="a-col-wide">Alamat pautan</th><th>Jenis</th><th>Status</th><th className="a-col-wide">Versi</th><th className="a-col-fit a-col-minor">Dikemas kini</th><th>Tindakan</th></tr></thead>

@@ -883,3 +883,11 @@
 /* Section titles on the Penilaian AI panel are h2 (h1 > h2, no skipped level) but keep the 16px sans look they had as h3. */
 .a-shell .admin-panel-ai h2 { font-family: var(--a-font); letter-spacing: normal; font-size: 16px; font-weight: 700; margin: 24px 0 8px; }
 .a-assistant-value { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 320px; overflow: auto; font: inherit; }
+
+/* The editor's picks as a short list above the works table, so they are not found by scrolling the table. */
+.a-shell .admin-pick-panel { margin: 12px 0 16px; padding: 12px 16px; border: 1px solid var(--a-line); border-radius: var(--a-radius-lg); background: var(--a-surface); }
+.a-shell .admin-pick-panel h2 { font-family: var(--a-font); font-size: 15px; margin: 0 0 8px; }
+.a-shell .admin-pick-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.a-shell .admin-pick-list li { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.a-shell .admin-pick-rank { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 999px; background: var(--a-ink); color: var(--a-surface); font-size: 12px; font-weight: 700; }
+.a-shell .admin-pick-list .admin-btn { margin-left: auto; }
