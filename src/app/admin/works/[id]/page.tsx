@@ -32,6 +32,7 @@ import { renderItalics, toggleItalicSelection } from "../../../../lib/reader/inl
 import VisualManuscriptEditor, { canEditVisually } from "../../../../components/admin/VisualManuscriptEditor";
 import { danglingEmphasisParagraphs } from "../../../../lib/reader/literal-emphasis";
 import { assistantManuscript } from "../../../../lib/admin/authoring/assistant-manuscript";
+import { readingMinutesFor } from "../../../../lib/reader/reading-time";
 import FootnoteInserter from "../../../../components/admin/FootnoteInserter";
 import { insertFootnote } from "../../../../lib/admin/footnote-insert";
 import SideNoteList from "../../../../components/admin/SideNoteList";
@@ -1566,7 +1567,6 @@ export default function EditWorkPage() {
           ...editableForm,
           title: form.title.trim() ? editableForm.title : UNTITLED_DRAFT,
           // An emptied box is sent as null: left out, the stored number stayed and came back at the next load.
-          readingMinutes: form.readingMinutes.trim() ? Number(form.readingMinutes) : null,
           base: baseRef.current ?? undefined,
         }),
       });
@@ -2510,13 +2510,14 @@ export default function EditWorkPage() {
             </div>
 
             <div className="admin-form-group">
-              <label htmlFor="readingMinutes">Minit Bacaan</label>
+              <label htmlFor="readingMinutes">Tempoh bacaan (automatik)</label>
               <input
                 id="readingMinutes"
-                type="number"
-                value={form.readingMinutes}
-                onChange={(e) => setForm((prev) => ({ ...prev, readingMinutes: e.target.value }))}
+                type="text"
+                readOnly
+                value={(() => { const minutes = readingMinutesFor(undefined, form.body, ...sections.map((s) => s.body)); return minutes ? `± ${minutes} minit` : "Belum ada teks"; })()}
               />
+              <p className="admin-help">Dikira daripada jumlah perkataan teks, termasuk semua bab: 200 perkataan seminit.</p>
             </div>
           </div>
 

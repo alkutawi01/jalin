@@ -532,8 +532,8 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
                     id="f-min"
                     type="number"
                     min={1}
-                    value={review.readingMinutes}
-                    onChange={(e) => setReview({ ...review, readingMinutes: e.target.value })}
+                    value={plan.work.readingMinutes}
+                    readOnly
                   />
                 </div>
               </div>

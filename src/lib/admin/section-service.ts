@@ -8,6 +8,7 @@
 
 import { Kysely, Transaction, sql } from "kysely";
 import { getDb, hasDb } from "../db";
+import { readingMinutesFor } from "../reader/reading-time";
 import type { Database } from "../db/types";
 
 const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -136,7 +137,7 @@ export async function createSection(input: SectionInput): Promise<SectionRecord>
           title: input.title ?? null,
           position: nextPosition,
           body: input.body,
-          reading_minutes: input.readingMinutes ?? null,
+          reading_minutes: readingMinutesFor(undefined, input.body) ?? null,
           created_at: now,
           updated_at: now,
         })
@@ -203,7 +204,7 @@ export async function updateSection(
   if (input.slug !== undefined) updateData.slug = input.slug;
   if (input.title !== undefined) updateData.title = input.title || null;
   if (input.body !== undefined) updateData.body = input.body;
-  if (input.readingMinutes !== undefined) updateData.reading_minutes = input.readingMinutes ?? null;
+  updateData.reading_minutes = readingMinutesFor(undefined, input.body ?? existing.body) ?? null;
   if (input.position !== undefined && (!Number.isInteger(input.position) || input.position < 1)) {
     throw new Error("Kedudukan bab tidak sah: nombor bulat bermula 1.");
   }

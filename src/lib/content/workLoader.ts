@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
+import { readingMinutesFor } from "../reader/reading-time";
 import type {
   ContributorRef,
   EditorialRevision,
@@ -127,7 +128,7 @@ function parseWorkSlug(slug: string): Work | undefined {
     genre: data.genre ? String(data.genre) : undefined,
     audience: data.audience ? String(data.audience) : undefined,
     dek: data.dek ? String(data.dek) : undefined,
-    readingMinutes: typeof data.readingMinutes === "number" ? data.readingMinutes : undefined,
+    readingMinutes: readingMinutesFor(undefined, body),
     publishedAt: data.publishedAt ? String(data.publishedAt) : undefined,
     updatedAt: data.updatedAt ? String(data.updatedAt) : undefined,
     version: String(data.version ?? "v1.0"),

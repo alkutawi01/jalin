@@ -7,6 +7,7 @@
 
 import { Kysely } from "kysely";
 import { tidyShort } from "../capitalise-first";
+import { readingMinutesFor } from "../reader/reading-time";
 import { getDb, hasDb } from "../db";
 import type { Database } from "../db/types";
 import type { WorkType, WorkStatus } from "../db/types";
@@ -173,7 +174,7 @@ export async function createWork(input: WorkInput): Promise<WorkRecord> {
       genre: input.genre || null,
       audience: input.audience || null,
       dek: input.dek || null,
-      reading_minutes: input.readingMinutes || null,
+      reading_minutes: readingMinutesFor(undefined, input.body) ?? null,
       version: input.version || "v1.0",
       version_label: null,
       revision_count: 0,
@@ -225,7 +226,11 @@ export async function updateWork(
   if (input.genre !== undefined) updateData.genre = input.genre || null;
   if (input.audience !== undefined) updateData.audience = input.audience || null;
   if (input.dek !== undefined) updateData.dek = input.dek || null;
-  if (input.readingMinutes !== undefined) updateData.reading_minutes = input.readingMinutes || null;
+  const [currentText, chapterTexts] = await Promise.all([
+    db.selectFrom("works").where("id", "=", id).select("body").executeTakeFirst(),
+    db.selectFrom("reading_sections").where("work_id", "=", id).select("body").execute(),
+  ]);
+  updateData.reading_minutes = readingMinutesFor(undefined, input.body ?? currentText?.body, ...chapterTexts.map((s) => s.body)) ?? null;
   if (input.version !== undefined) updateData.version = input.version;
   if (input.publishedAt !== undefined) updateData.published_at = input.publishedAt || null;
   if (input.editorPick !== undefined) updateData.editor_pick = Boolean(input.editorPick);

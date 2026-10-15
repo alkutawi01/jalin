@@ -69,7 +69,7 @@ Definisi medan:
 - dek: satu atau dua ayat. Terangkan premis atau perkara yang dibincangkan. JANGAN dedahkan penyelesaian atau pengakhiran cerita (tiada spoiler).
 - genre: satu label paling tepat (contoh: drama, keluarga, misteri, sejarah, fiksyen sains). Hanya jika wujud dalam teks atau jelas daripada kandungan; selain itu "tidak dinyatakan".
 - audience: "13-17".
-- readingMinutes: anggaran = bilangan perkataan manuskrip bahagi 200, dibulatkan ke nombor bulat terdekat, minimum 1. Sistem akan mengira semula daripada teks sebenar; anggaran anda hanya untuk semakan silang.
+- readingMinutes: biarkan 0. Sistem mengira tempoh bacaan secara automatik daripada teks sebenar; jangan anggarkan atau tetapkan sendiri.
 - author.name: nama penulis manuskrip jika dinyatakan; selain itu "tidak dinyatakan".
 - author.credit: cadangan peranan penerbitan mengikut kredit sebenar (contoh: "author"). Jangan menyamakan penyunting, penyemak atau penyelidik dengan "Penulis". Keputusan kredit akhir oleh editor.
 - characters: senarai watak yang benar-benar wujud dalam teks: { "name", "role", "description" }. Description berdasarkan apa yang teks nyatakan sahaja. Description TIDAK BOLEH mendedahkan hubungan rahsia, identiti tersembunyi, nasib akhir watak atau konflik masa depan — hanya apa yang sudah jelas pada kemunculan pertama watak itu.

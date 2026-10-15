@@ -307,7 +307,7 @@ export class DatabaseContentRepository implements ContentRepository {
         title: s.title ? String(s.title) : undefined,
         body: String(s.body || ""),
         position: Number(s.position || 0),
-        readingMinutes: s.reading_minutes ? Number(s.reading_minutes) : undefined,
+        readingMinutes: readingMinutesFor(undefined, s.body),
       });
     }
 
@@ -405,7 +405,7 @@ export class DatabaseContentRepository implements ContentRepository {
             publishedAt: row.published_at
               ? new Date(row.published_at).toISOString()
               : undefined,
-            readingMinutes: readingMinutesFor(row.reading_minutes, row.body),
+            readingMinutes: this.worksByIdCache.get(String(row.id))?.readingMinutes,
           });
           publicEligible = true;
         }
@@ -422,7 +422,7 @@ export class DatabaseContentRepository implements ContentRepository {
             publishedAt: row.published_at
               ? new Date(row.published_at).toISOString()
               : undefined,
-            readingMinutes: readingMinutesFor(row.reading_minutes, row.body),
+            readingMinutes: this.worksByIdCache.get(String(row.id))?.readingMinutes,
           });
           publicEligible = true;
         }
@@ -577,7 +577,7 @@ export function workFromSnapshot(snapshot: any, workId: string): Work | undefine
       metadata: snapshot.metadata,
       reader: snapshot.reader,
       sourceWork: sourceFor(snapshot.type, snapshot.metadata, mapPublicSourceWork(snapshot.sourceWork)),
-      sections: snapshot.sections,
+      sections: snapshot.sections?.map((section: any) => ({ ...section, readingMinutes: readingMinutesFor(undefined, section.body) })),
       series: snapshot.series,
       publishedRevision: snapshot.publishedRevision,
     };

@@ -2,11 +2,9 @@
  * Text helpers for manuscript import. Pure functions, no I/O.
  */
 
-export function countWords(text: string): number {
-  const trimmed = text.trim();
-  if (!trimmed) return 0;
-  return trimmed.split(/\s+/).length;
-}
+import { readingWordCount } from "../../reader/reading-time";
+
+export const countWords = readingWordCount;
 
 export function estimateReadingMinutes(words: number): number {
   return Math.max(1, Math.round(words / 200));

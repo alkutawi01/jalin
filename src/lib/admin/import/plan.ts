@@ -464,10 +464,7 @@ export function buildImportPlan(answer: string, manuscript: string, options: Imp
 }
 
 function applyEdits(plan: ImportPlan, edits: ReviewEdits, foldedText: string, warnings: ImportIssue[]): void {
-  if (typeof edits.readingMinutes === "number" && edits.readingMinutes > 0 && edits.readingMinutes < 1000) {
-    plan.work.readingMinutes = Math.round(edits.readingMinutes);
-    plan.stats.readingMinutes = plan.work.readingMinutes;
-  }
+  // Reading time is derived from the manuscript; review edits cannot override it.
 
   if (edits.source && plan.source) {
     const clean = (v: string | null | undefined, old: string | null) => (v === undefined ? old : present(v) ?? null);
