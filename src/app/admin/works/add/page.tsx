@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { KIND_DESCRIPTIONS, KIND_LABELS, WORK_KINDS, type WorkKind } from "../../../../lib/admin/authoring/recipes";
 import { errorText } from "../../../../lib/admin/error-text";
-import { toast } from "../../../../lib/admin/dialogs";
 
 interface SeriesChoice { id: string; title: string; mode: string }
 
@@ -47,11 +46,8 @@ export default function AddWorkPage() {
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.error || "Draf gagal dibuat.");
-      // The toast host lives in the admin shell, so this message is still there when the editor opens.
-      // Credits go public with the episode: when some were copied the editor lands on the credits to check them, and is told.
-      const copied = Boolean(data.inherited?.from) && !String(data.inherited.message).startsWith("Tiada yang perlu");
-      if (copied) toast(`${data.inherited.message} Semak sebelum diteruskan.`, "success");
-      router.push(`/admin/works/${data.id}#${copied && /kredit/.test(String(data.inherited.message)) ? "credits" : "content"}`);
+      // A new draft always opens on its text. Nothing is inherited automatically; the editor is offered the series' details there.
+      router.push(`/admin/works/${data.id}#content`);
     } catch (err) {
       setError(errorText(err, "Draf gagal dibuat."));
       setBusy(false);

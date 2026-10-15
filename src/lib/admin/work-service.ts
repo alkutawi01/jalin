@@ -369,7 +369,8 @@ function validateCharacterEntries(characters: unknown): CharacterEntry[] {
   });
 }
 
-export const PLACES_MAX = 12;
+/** Not a rule for the editor (a story may name as many places as it needs): only a ceiling against a runaway paste. */
+export const PLACES_MAX = 200;
 export const PLACE_NAME_MAX = 80;
 export const PLACE_DESCRIPTION_MAX = 160;
 export const TIMES_MAX = 6;

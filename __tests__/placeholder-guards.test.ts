@@ -54,7 +54,7 @@ const preview = read("src/app/pratonton/[id]/page.tsx");
 assert(preview.includes('selectFrom("contributors")') && preview.includes("displayName: String(row.display_name)") && preview.includes('"is_visible", "=", true'), "the preview takes contributor names from the table (visible ones), as the published page does");
 // Tab counts
 const page = read("src/app/admin/works/[id]/page.tsx");
-assert(page.includes("const countOf = (key: string, n: number) => (loadedLists[key] ?") && page.includes('Glosari{countOf("glossary", glossaryTerms.length)}') && page.includes('Watak &amp; latar{countOf("characters", characters.length)}') && !page.includes("Watak &amp; latar ({characters.length})"), "tab counts appear only after their list has loaded");
+assert(page.includes("const countOf = (key: string, n: number) => (loadedLists[key] ?") && page.includes('Glosari{countOf("glossary", glossaryTerms.length)}') && page.includes('Watak &amp; latar{countOf("characters", characters.length + placeTimeCount)}') && !page.includes("Watak &amp; latar ({characters.length})"), "tab counts appear only after their list has loaded");
 
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);

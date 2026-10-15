@@ -23,6 +23,9 @@ import { countWords, estimateReadingMinutes, foldText, slugify } from "./text-ut
 import { normalizeAudience } from "../../audience";
 import { danglingEmphasisParagraphs } from "../../reader/literal-emphasis";
 
+/** Same ceiling as work-service PLACES_MAX: places are not limited for the editor, only against a runaway paste. */
+const PLACES_MAX = 200;
+
 export interface PlannedCredit {
   guestName: string;
   roleLabel: string;
@@ -275,7 +278,7 @@ export function buildImportPlan(answer: string, manuscript: string, options: Imp
     }
     return out;
   };
-  const places = settingEntries(data.places, 12);
+  const places = settingEntries(data.places, PLACES_MAX);
   const times = settingEntries(data.times, 6);
   // The same character listed twice (a chatbot repeating itself, or a doubled paste) is one character: the first mention wins.
   const seenCharacters = new Set<string>();
@@ -502,7 +505,7 @@ function applyEdits(plan: ImportPlan, edits: ReviewEdits, foldedText: string, wa
     }
     return out;
   };
-  if (edits.places) plan.places = editedSettings(edits.places, 12);
+  if (edits.places) plan.places = editedSettings(edits.places, PLACES_MAX);
   if (edits.times) plan.times = editedSettings(edits.times, 6);
 
   if (edits.glossary) {

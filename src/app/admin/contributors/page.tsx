@@ -1,5 +1,6 @@
 import { listContributors } from "../../../lib/admin/contributor-service";
 import { hasDb } from "../../../lib/db";
+import { listAiPersonas } from "../../../lib/admin/ai-personas";
 
 export const dynamic = "force-dynamic";
 
@@ -35,6 +36,8 @@ export default async function AdminContributorsPage() {
   }
 
   const contributors = await listContributors();
+  // The real AI behind each pseudonym, so two AI names that look alike can be told apart (and a pseudonym no AI uses is plain to see).
+  const aiBySlug = new Map((await listAiPersonas().catch(() => [])).filter((p) => p.slug).map((p) => [p.slug as string, p.ai]));
 
   return (
     <div className="admin-contributors">
@@ -73,7 +76,7 @@ export default async function AdminContributorsPage() {
             ) : (
               contributors.map((contributor) => (
                 <tr key={contributor.slug}>
-                  <td className="admin-table-title"><a href={`/admin/contributors/${contributor.slug}`} className="a-work-title-link">{contributor.display_name}</a></td>
+                  <td className="admin-table-title"><a href={`/admin/contributors/${contributor.slug}`} className="a-work-title-link">{contributor.display_name}</a>{contributor.kind === "virtual" ? <span className="admin-form-hint"> · {aiBySlug.get(contributor.slug) ?? "belum dipadankan dengan AI"}</span> : null}</td>
                   <td><code>{contributor.slug}</code></td>
                   <td>
                     <span className={`admin-kind admin-kind-${contributor.kind}`}>

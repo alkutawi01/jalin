@@ -59,12 +59,14 @@ export default function EditorAssistant({ workId, scope, context, blocked, onApp
     {preview && <section aria-label={`Pratonton AI ${EDITOR_SCOPE_NAMES[scope]}`}>
       <h3>{preview.changes.length} perubahan ditemui</h3>
       <p className="admin-form-hint">Semak ringkasan di bawah. Tiada perubahan disimpan sehingga butang Isi borang ditekan.</p>
+      {preview.changes.some(change => change.problem) ? <p role="alert" className="admin-alert admin-alert-error">Ada perubahan yang akan ditolak semasa disimpan. Betulkan jawapan AI (atau minta AI memendekkannya), kemudian tampal semula. Tiada yang disimpan lagi.</p> : null}
       {preview.changes.map(change => <div className="admin-form-group" key={change.id}>
         <strong>{change.label}</strong>
+        {change.problem ? <p role="alert" className="admin-form-error">{change.problem}</p> : null}
         {change.before ? <details><summary>{isDraftPlaceholder(change) ? "Nilai sementara draf akan diganti" : "Nilai sedia ada akan diganti"}</summary><p>{isDraftPlaceholder(change) ? "Nilai sementara" : "Nilai lama"}</p><pre className="a-assistant-value">{change.before}</pre><p>Nilai baharu</p><pre className="a-assistant-value">{change.after}</pre></details> : <p className="admin-form-hint">Nilai baharu tersedia untuk diisi.</p>}
       </div>)}
       <div className="admin-form-actions">
-        <button type="button" className="admin-btn admin-btn-primary" disabled={busy || blocked || !preview.changes.length} onClick={() => void request(answer, true)}>Isi borang</button>
+        <button type="button" className="admin-btn admin-btn-primary" disabled={busy || blocked || !preview.changes.length || preview.changes.some(change => change.problem)} onClick={() => void request(answer, true)}>Isi borang</button>
         <button type="button" className="admin-btn admin-btn-outline" disabled={busy} onClick={() => { setPreview(null); setSelected([]); }}>Batal</button>
       </div>
     </section>}

@@ -52,7 +52,7 @@ export default function AiCreditPicker({
         {personas.map((p) => (
           // An AI with no pseudonym yet is still listed (it used to vanish, so the editor could not tell why Gemini was missing).
           <option key={p.ai} value={p.ai} disabled={!p.slug}>
-            {p.slug ? p.ai : `${p.ai} (belum ada nama samaran)`}
+            {p.slug ? (p.displayName ? `${p.ai} — ${p.displayName}` : p.ai) : `${p.ai} (belum ada nama samaran)`}
           </option>
         ))}
       </select>
