@@ -13,6 +13,7 @@ import type { Database } from "../db/types";
 import type { WorkType, WorkStatus } from "../db/types";
 import { characterProblems } from "./metadata-rules";
 import { normaliseCountries } from "../reader/countries";
+import { generateWorkId } from "./work-id";
 
 function getAdminDb(): Kysely<Database> {
   if (!hasDb()) {
@@ -151,7 +152,7 @@ export async function createWork(input: WorkInput): Promise<WorkRecord> {
   }
 
   const now = new Date().toISOString();
-  const id = `work-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  const id = await generateWorkId(db, input.type);
 
   const editorialHistory = [
     {
