@@ -100,7 +100,7 @@ function CategoryCard({
           src={imageSrc!}
           alt={imageAlt ?? ""}
           fill
-          sizes="(max-width: 1050px) 45vw, 22vw"
+          sizes={type === "sinopsis" ? "(max-width: 680px) 100vw, (max-width: 1050px) 67vw, 20vw" : "(max-width: 360px) 100vw, (max-width: 680px) 50vw, (max-width: 1050px) 33vw, 20vw"}
           className="category-explorer-card-img"
           style={cropStyle(imageCrop)}
         />
