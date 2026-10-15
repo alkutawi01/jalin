@@ -189,12 +189,20 @@ export default async function AdminDashboard({ searchParams }: { searchParams?: 
 
       <div className="a-stats-wrap">
       <div className="admin-stats-grid a-stats" role="group" aria-label="Bilangan karya mengikut jenis">
-        {([["Jumlah diterbitkan", stats.counts.total], ["Cerpen", stats.counts.byType.cerpen], ["Novela", stats.counts.byType.novela], ["Bersiri", stats.counts.byType.bersiri], ["Fragmen", stats.counts.byType.fragmen], ["Sinopsis", stats.counts.byType.sinopsis]] as const).map(([label, count]) => (
-          <div className={`admin-stat-card${label === "Jumlah diterbitkan" ? " is-total" : ""}`} key={label}>
+        {([
+          ["Jumlah diterbitkan", stats.counts.total, "/admin/works?status=published"],
+          ["Cerpen", stats.counts.byType.cerpen, "/admin/works?type=cerpen&status=published"],
+          ["Novela", stats.counts.byType.novela, "/admin/works?type=novela&status=published"],
+          // A series is one card here; its episodes are works of their own, so the list to open is the list of series.
+          ["Bersiri", stats.counts.byType.bersiri, "/admin/series"],
+          ["Fragmen", stats.counts.byType.fragmen, "/admin/works?type=fragmen&status=published"],
+          ["Sinopsis", stats.counts.byType.sinopsis, "/admin/works?type=sinopsis&status=published"]
+        ] as const).map(([label, count, href]) => (
+          <a className={`admin-stat-card a-stat-link${label === "Jumlah diterbitkan" ? " is-total" : ""}`} key={label} href={href} aria-label={`${label}: ${count?.published ?? 0}. Buka senarai.`}>
             <div className="admin-stat-label">{label}</div>
             <div className="admin-stat-value">{count?.published ?? 0}</div>
             {count && count.pending > 0 ? <div className="admin-section-meta">+ {count.pending} belum diterbitkan</div> : null}
-          </div>
+          </a>
         ))}
       </div>
       </div>
