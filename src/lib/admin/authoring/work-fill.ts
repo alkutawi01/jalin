@@ -120,6 +120,7 @@ export interface WorkFillResult {
   /** Latar tempat and latar masa from [LATAR]. */
   places: { name: string; description: string }[];
   times: { name: string; description: string }[];
+  countries: string[];
   /** Raw [GLOSARI] section, handed to the glossary parser. */
   glossaryText: string;
   source: {
@@ -221,14 +222,15 @@ function settingBlocks(text: string): string[][] {
 }
 
 /** Reads the places and times of a [LATAR] section; tolerant of "Tempat: X" / "Masa: Y" one-line forms. */
-function parseSetting(text: string): { places: WorkFillResult["places"]; times: WorkFillResult["times"] } {
+function parseSetting(text: string): { places: WorkFillResult["places"]; times: WorkFillResult["times"]; countries: string[] } {
   const places: WorkFillResult["places"] = [];
   const times: WorkFillResult["times"] = [];
+  const countries: string[] = [];
   for (const rows of settingBlocks(text)) {
     const kindText = clean(field(rows, /jenis/)).toLowerCase();
     let name = clean(field(rows, /nama/));
     let description = clean(field(rows, /keterangan|penerangan|huraian/));
-    let kind: "tempat" | "masa" | "" = /masa|era|tahun|zaman/.test(kindText) ? "masa" : /tempat|lokasi/.test(kindText) ? "tempat" : "";
+    let kind: "tempat" | "masa" | "negara" | "" = /negara|wilayah/.test(kindText) ? "negara" : /masa|era|tahun|zaman/.test(kindText) ? "masa" : /tempat|lokasi/.test(kindText) ? "tempat" : "";
     if (!name && !kind) {
       // One-line forms ("Tempat: Seremban - bandar", "Masa: Tahun 1998"): every such line is its own entry.
       for (const line of rows) {
@@ -257,9 +259,10 @@ function parseSetting(text: string): { places: WorkFillResult["places"]; times: 
     }
     // Never infer an unspecified type as a place: incorrect classification is worse than omission.
     if (!kind) continue;
-    (kind === "masa" ? times : places).push({ name, description });
+    if (kind === "negara") countries.push(name);
+    else (kind === "masa" ? times : places).push({ name, description });
   }
-  return { places, times };
+  return { places, times, countries: [...new Set(countries.map(country => country.trim()).filter(Boolean))] };
 }
 
 /** The same name twice in one answer (a repeating chatbot, a doubled paste) is one entry, the first; the lists refuse duplicates when saved. */
@@ -351,6 +354,7 @@ export function parseWorkFill(answer: string, scope: WorkFillScope = "all"): Wor
     characters: uniqueByName(characters.filter((c) => !isPlaceholder(c.name) && !isPlaceholder(c.role))),
     places: uniqueByName(setting.places.filter((p) => !isPlaceholder(p.name))),
     times: uniqueByName(setting.times.filter((t) => !isPlaceholder(t.name))),
+    countries: setting.countries.filter(country => !isPlaceholder(country)),
     glossaryText: ["[GLOSARI]", ...(sections.GLOSARI ?? [])].join("\n"),
     source: source && Object.values(source).some((v) => v !== "" && v !== null) ? source : null,
     sections: Object.keys(sections)

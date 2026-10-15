@@ -46,7 +46,7 @@ export async function processEditorAnswer(id: string, input: EditorAnswerRequest
     const version = createHash("sha256").update(JSON.stringify(state)).digest("hex");
     const changes = planEditorAnswer(input.text, input.scope, state).filter(c => (c.group !== "source" || (permissions.source && isSourcedWork(state.work.type, state.work.metadata))) && (c.group !== "credits" || permissions.credits) && (c.group !== "glossary" || permissions.glossary));
     if (!changes.length) throw new Error("Tiada perubahan medan yang dapat dibaca untuk tab ini. Salin jawapan penuh atau semak formatnya.");
-    if (input.action === "preview") return { version, changes, notes: ["Belum disimpan. Pilih perubahan yang mahu diisi. Medan berisi tidak dipilih secara automatik."] };
+    if (input.action === "preview") return { version, changes, notes: ["Belum disimpan. Semak ringkasan sebelum mengisi borang."] };
     if (input.version !== version) throw new Error("Karya berubah sejak pratonton. Semak jawapan sekali lagi; tiada perubahan disimpan.");
     if (!Array.isArray(input.selected) || !input.selected.length || input.selected.some(key => !changes.some(c => c.id === key))) throw new Error("Pilih perubahan yang sah sebelum mengisi borang.");
     const chosen = changes.filter(c => input.selected!.includes(c.id));

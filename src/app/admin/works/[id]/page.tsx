@@ -2021,7 +2021,7 @@ export default function EditWorkPage() {
             )}
           </div>
 
-          <div className="admin-form-row">
+          <div className="admin-form-row admin-form-row--work-core">
             <div className="admin-form-group">
               <label htmlFor="type">Jenis *</label>
               <input id="type" value={WORK_TYPES.find((t) => t.value === form.type)?.label ?? form.type} readOnly aria-describedby="type-hint" />

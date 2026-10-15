@@ -2924,6 +2924,11 @@ dd { margin: 0; color: var(--ink); text-align: left; }
   .series-list-media { min-height: 0; }
   .series-list-body { padding: 0 4px 8px; }
 }
+
+@media (max-width: 760px) {
+  .hero-featured-inner { grid-template-columns: 1fr; min-height: 0; align-items: stretch; }
+  .hero-featured-visual { order: -1; }
+}
 @media (max-width: 480px) {
   .series-feature-media { aspect-ratio: 16 / 9; }
   .series-feature-title { font-size: 1.45rem; }
@@ -2934,8 +2939,9 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 /* 100vw includes a scrollbar's width, so a full-width hero would overshoot a window that has one (tablet, narrow desktop) by half of it on each side and lose its edges (the copyright notice at the right edge was cut). The body is a size container, so 100cqw is the width the page really has, scrollbar excluded; 100vw stays as the fallback. */
 /* "clip", not "hidden": hidden turns the body into a scroll container (its other axis becomes auto), and then the sticky header
    sticks to the body instead of the screen, so on a phone it scrolled away. clip cuts the overshoot without that side effect. */
-@media (max-width: 1050px) { html { overflow-x: clip; } body { overflow-x: hidden; overflow-x: clip; container-type: inline-size; } .hero-featured-visual { order: -1; } }
-@media (max-width: 1050px) {
+@media (max-width: 1050px) { html { overflow-x: clip; } body { overflow-x: hidden; overflow-x: clip; container-type: inline-size; } }
+@media (max-width: 760px) { .hero-featured-visual { order: -1; } }
+@media (max-width: 760px) {
   .hero-featured-visual { width: 100vw; max-width: 100vw; margin-left: calc(50% - 50vw); width: 100cqw; max-width: 100cqw; margin-left: calc(50% - 50cqw); margin-right: 0; margin-top: 0; border-radius: 0; box-shadow: none; -webkit-mask-image: none; mask-image: none; }
 }
 @media (max-width: 900px) {
@@ -4276,19 +4282,18 @@ body:has(.save-work) .back-to-top { bottom: 76px; }
 .episode-card > a { display: flex; flex: 1; flex-direction: column; min-width: 0; }
 .episode-card-body { display: flex; flex: 1; flex-direction: column; gap: 6px; }
 .episode-card-meta { margin-top: auto; padding-top: 6px; }
-/* Homepage hero on a tablet or a narrow desktop window (681-1050px). The picture is across the top and the text under it in one column,
-   which left the right third of the text area empty. The right column now carries the minutes and date and the button: the title,
-   byline and summary on the left, the pills level with the byline, the button level with the foot of the summary. The picture is
-   given a 16:9 frame so the scene stays legible instead of being cropped into a shallow strip. The page may scroll to the controls.
-   Phones (680px and below) are untouched. */
-@media (min-width: 681px) and (max-width: 1050px) {
-  .hero-carousel-slide .hero-featured-text { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 40px; align-items: start; padding-top: 2px; }
-  .hero-carousel-slide .hero-featured-text > * { grid-column: 1; }
-  .hero-carousel-slide .hero-featured-text > .home-work-meta { grid-column: 2; grid-row: 3; align-self: start; justify-content: flex-end; max-width: 270px; margin: 0; }
-  .hero-carousel-slide .hero-featured-text > .hero-featured-cta { grid-column: 2; grid-row: 4; align-self: end; justify-self: end; margin: 0; }
+/* A tablet preserves the desktop composition instead of becoming a stretched
+   phone layout. Text remains one coherent column beside the picture. */
+@media (min-width: 761px) and (max-width: 1050px) {
+  .hero-featured-inner { grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 28px; align-items: center; }
+  .hero-carousel-slide { grid-template-rows: minmax(0, 1fr); gap: 0; }
+  .hero-carousel-slide .hero-featured-text { display: flex; flex-direction: column; align-items: flex-start; padding: 28px 0 34px; }
+  .hero-carousel-slide .hero-featured-text > * { grid-column: auto; grid-row: auto; }
+  .hero-carousel-slide .hero-featured-text > .home-work-meta { align-self: auto; justify-content: flex-start; max-width: none; margin: 0 0 22px; }
+  .hero-carousel-slide .hero-featured-text > .hero-featured-cta { align-self: auto; justify-self: auto; margin-top: auto; }
   .hero-carousel-slide .hero-featured-title { font-size: clamp(30px, 4.4vw, 40px); margin-bottom: 10px; }
-  .hero-carousel-slide .hero-featured-dek { max-width: none; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; line-clamp: 4; overflow: hidden; }
-  .hero-featured-visual, .hero-carousel-slide .hero-featured-visual { aspect-ratio: 16 / 9; height: auto; max-height: none; min-height: 0; }
+  .hero-carousel-slide .hero-featured-dek { max-width: 38ch; display: block; overflow: visible; -webkit-line-clamp: unset; line-clamp: unset; }
+  .hero-featured-visual, .hero-carousel-slide .hero-featured-visual { order: initial; width: 100%; max-width: 100%; height: 100%; min-height: 400px; max-height: 520px; margin: 0; aspect-ratio: auto; border-radius: 16px; box-shadow: none; }
 }
 /* Homepage "Bersiri" carousel on a phone (700px and below). The picture of a series was made full-bleed (width 100cqw, margin-left of
    minus the page margin) before the slides sat in a scrolling track; the track clips on both sides, so the picture was cut at the left

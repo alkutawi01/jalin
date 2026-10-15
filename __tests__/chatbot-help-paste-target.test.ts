@@ -6,5 +6,6 @@ assert.equal((page.match(/<EditorAssistant /g) ?? []).length, 2);
 assert.ok(page.includes('scope="all"') && page.includes("scope={activeTab}"));
 assert.ok(!page.includes("Tempat mengisi jawapan") && !page.includes("copyAssistantPrompt"));
 assert.ok(helper.includes("Salin arahan") && helper.includes("Tampal jawapan") && helper.includes("Semak jawapan"));
-assert.ok(helper.includes("Sahkan &amp; isi") && helper.includes("change.before"));
+assert.ok(helper.includes("Isi borang") && helper.includes("change.before"));
+assert.ok(!helper.includes("Arahan tambahan kepada AI") && !helper.includes("Jawapan AI — boleh tampal secara manual"));
 console.log("Master and per-tab helpers share one scoped copy/paste/preview/apply component");

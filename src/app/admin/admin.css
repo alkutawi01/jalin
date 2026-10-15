@@ -305,6 +305,9 @@
 .a-shell input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--a-accent); margin: 0 8px 0 0; flex: none; }
 .a-shell input[type="file"] { font-size: 13px; }
 .a-shell .admin-form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; align-items: start; }
+.a-shell .admin-form-row--work-core { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media (max-width: 1080px) { .a-shell .admin-form-row--work-core { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 620px) { .a-shell .admin-form-row--work-core { grid-template-columns: 1fr; } }
 .a-shell .admin-form-row > .admin-btn { align-self: end; margin-bottom: 16px; }
 .a-shell .admin-form-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-start; gap: 10px; margin-top: 16px; padding-top: 0; border-top: 0; }
 .a-shell .admin-checkbox-group { display: flex; flex-wrap: wrap; gap: 8px 22px; }
@@ -510,6 +513,7 @@
 .a-assistant h3 { margin: 0 0 8px; font-size: 16px; }
 .a-assistant ol { margin: 0 0 12px; padding-left: 20px; }
 .a-assistant textarea { width: 100%; margin: 8px 0; }
+.a-assistant-manual { margin-top: 12px; }
 /* Links inside running text are underlined, so they are not told apart from the text by colour alone. */
 .a-shell p a:not(.admin-btn),
 .a-shell li a:not(.admin-btn):not(.a-nav-plain),

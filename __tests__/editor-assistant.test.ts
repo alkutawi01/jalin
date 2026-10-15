@@ -10,8 +10,8 @@ for (const scope of EDITOR_SCOPES) {
   assert.ok(changes.length);
   assert.ok(changes.every(c => scope === "all" || c.group === scope));
 }
-assert.throws(() => buildEditorPrompt("all", { type: "cerpen", title: "", body: "" }, ""), /tugasan/);
-assert.match(buildEditorPrompt("content", { type: "cerpen", title: "", body: "" }, "Tulis tentang Aina"), /Tulis tentang Aina/);
+assert.match(buildEditorPrompt("all", { type: "cerpen", title: "", body: "" }), /tanya editor/);
+assert.doesNotMatch(buildEditorPrompt("content", { type: "cerpen", title: "", body: "" }), /objek JSON|```json/);
 const changes = planEditorAnswer(answer, "all", state);
 assert.equal(changes.find(c => c.id === "content:title")?.selected, false);
 assert.equal(changes.find(c => c.id === "metadata:genre")?.selected, true);
@@ -24,6 +24,7 @@ assert.equal(planEditorAnswer('[BAB]\nSlug: bab-1\nTajuk: Pulang\nTeks:\nAina pu
 assert.equal(planEditorAnswer(answer, "sections", { ...state, work: { ...state.work, type: "cerpen" } }).length, 0);
 assert.equal(planEditorAnswer("Ini nasihat sahaja.", "content", state).length, 0);
 assert.equal(planEditorAnswer('{"countries":["Jepun"]}', "characters", state)[0]?.key, "countries");
+assert.deepEqual(planEditorAnswer("[LATAR]\nJenis: negara\nNama: Jepun", "characters", state)[0]?.value, ["Jepun"]);
 assert.equal(planEditorAnswer('{"countries":["Jepun"]}', "content", state).length, 0);
 assert.equal(planEditorAnswer("[KARYA]\nTajuk: Cerita\n[SUMBER]\nTajuk: Buku asal", "content", state).find(c => c.key === "title")?.value, "Cerita", "source title never leaks into content");
 assert.throws(() => planEditorAnswer(buildEditorPrompt("all", { type: "cerpen", title: "", body: "Aina" }, ""), "all", state), /arahan/);
