@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import { sql } from "kysely";
+import { generateWorkId } from "../../../../../lib/admin/work-id";
+import type { WorkType } from "../../../../../lib/db/types";
 import { getCurrentAdmin } from "../../../../../lib/admin/auth";
 import { getDb } from "../../../../../lib/db";
 import { DEFAULT_AUDIENCE } from "../../../../../lib/audience";
@@ -17,8 +20,11 @@ export async function POST(request: NextRequest) {
   try {
     const result = await getDb().transaction().execute(async (tx) => {
       const now = new Date().toISOString();
-      const id = `work-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-      const slug = `draf-${id.slice(5)}`;
+      // The same readable number every other work has (JLN-CER-0012), not a timestamp. Two people starting a draft of one kind at the
+      // same moment must not be given the same number, so the numbering of that kind is held for the length of this transaction.
+      await sql`SELECT pg_advisory_xact_lock(hashtext(${"work-id:" + input.type}))`.execute(tx);
+      const id = await generateWorkId(tx, input.type as WorkType);
+      const slug = `draf-${id.toLowerCase()}`;
       let seriesId: string | null = null;
       if (input.type === "bersiri") {
         if (input.seriesId) {
