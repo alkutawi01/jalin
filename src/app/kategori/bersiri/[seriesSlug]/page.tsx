@@ -147,7 +147,7 @@ export default async function SeriesLandingPage({
                             {[episode.readingMinutes ? `± ${episode.readingMinutes} minit` : "", episode.publishedAt ? formatDate(episode.publishedAt) : ""]
                               .filter(Boolean)
                               .join(" · ")}
-                            <span className="episode-card-arrow" aria-hidden="true"> →</span>
+                            <span className="episode-card-arrow" aria-hidden="true">→</span>
                           </p>
                         </div>
                       </a>

@@ -2850,7 +2850,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 .episode-card-title { margin: 0; font-size: 1.25rem; line-height: 1.3; font-style: normal; }
 .episode-card-dek { margin: 0; color: var(--ink-soft); line-height: 1.5; font-size: 15px; }
 .episode-card-meta { margin: 0; font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-soft); }
-.episode-card-arrow { display: inline-block; color: var(--clay-text); transition: transform .18s ease; }
+.episode-card-arrow { display: inline-block; margin-inline-start: 8px; color: var(--clay-text); transition: transform .18s ease; }
 .episode-card a:hover .episode-card-arrow, .episode-card a:focus-visible .episode-card-arrow { transform: translateX(3px); }
 @media (max-width: 560px) { .episode-grid { grid-template-columns: 1fr; } }
 @media (prefers-reduced-motion: reduce) {

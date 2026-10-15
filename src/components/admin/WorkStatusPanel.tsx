@@ -97,7 +97,7 @@ export default function WorkStatusPanel({
   dirty?: boolean;
   onGoTab: (tab: string) => void;
   /** Set for an episode: the series it belongs to and its number (as readers see it). */
-  series?: { title: string; position: number } | null;
+  series?: { id: string; title: string; position: number } | null;
 }) {
   const canPublish = useAdminCan("work.publish");
   const stepIndex = STEPS.findIndex((s) => s.value === status);
@@ -181,7 +181,14 @@ export default function WorkStatusPanel({
             {TYPE_LABEL[type] ?? type} · <code>{slug}</code> · {workId}
           </p>
           <h1>{title || "(belum bertajuk)"}</h1>
-          {series ? <p className="a-status-series">Episod {series.position} · <strong>{series.title}</strong></p> : null}
+          {series ? (
+            <p className="a-status-series">
+              Episod {series.position} · <strong>{series.title}</strong>
+              <a className="a-status-series-link" href={`/admin/series/${encodeURIComponent(series.id)}`}>
+                Sunting siri <span aria-hidden="true">→</span>
+              </a>
+            </p>
+          ) : null}
         </div>
         <div className="a-status-actions">
           <a href={`/pratonton/${workId}`} className="admin-btn">

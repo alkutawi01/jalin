@@ -580,7 +580,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
             <table className="admin-table">
               <thead>
                 <tr>
-                  <th className="a-col-fit">
+                  <th className="a-col-fit admin-selection-cell">
                     <input type="checkbox" aria-label="Pilih semua episod"
                       checked={series.entries.length > 0 && selectedEpisodes.size === series.entries.length}
                       onChange={() => setSelectedEpisodes(selectedEpisodes.size === series.entries.length ? new Set() : new Set(series.entries.map((entry) => entry.work_id)))} />
@@ -597,7 +597,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
                   const work = entryWorks.get(entry.work_id);
                   return (
                     <tr key={entry.id}>
-                      <td className="a-col-fit">
+                      <td className="a-col-fit admin-selection-cell">
                         <input type="checkbox" aria-label={`Pilih episod ${entry.position}`}
                           checked={selectedEpisodes.has(entry.work_id)} onChange={() => toggleEpisode(entry.work_id)} />
                       </td>

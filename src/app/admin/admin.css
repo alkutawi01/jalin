@@ -424,9 +424,10 @@
 /* Table columns: keep titles readable, let secondary columns stay on one line */
 .a-shell .admin-table td:first-child { min-width: 190px; }
 .a-shell .admin-works-table th:first-child,
-.a-shell .admin-works-table td.admin-selection-cell { min-width: 0; width: 1%; text-align: center; padding-inline: 8px; }
+.a-shell .admin-table th.admin-selection-cell,
+.a-shell .admin-table td.admin-selection-cell { min-width: 0; width: 1%; text-align: center; padding-inline: 8px; }
 .a-shell .admin-works-table th:first-child input[type="checkbox"],
-.a-shell .admin-works-table td.admin-selection-cell input[type="checkbox"] { margin: 0; vertical-align: middle; }
+.a-shell .admin-table .admin-selection-cell input[type="checkbox"] { margin: 0; vertical-align: middle; }
 .a-shell .admin-table td code { max-width: 170px; }
 /* The dashboard's to-do rows are title + type + Buka. The 190px title column made the table wider than its card on a phone and hid Buka, so here the title wraps. */
 .a-shell .a-todo-table td:first-child { min-width: 0; overflow-wrap: anywhere; }
@@ -879,6 +880,7 @@
 
 .a-status-series { margin: 4px 0 0; font-size: 14px; color: var(--a-muted); }
 .a-status-series strong { color: var(--a-ink); font-weight: 600; }
+.a-status-series-link { display: inline-flex; gap: 4px; margin-inline-start: 12px; color: var(--a-accent-text); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
 
 /* Section titles on the Penilaian AI panel are h2 (h1 > h2, no skipped level) but keep the 16px sans look they had as h3. */
 .a-shell .admin-panel-ai h2 { font-family: var(--a-font); letter-spacing: normal; font-size: 16px; font-weight: 700; margin: 24px 0 8px; }
@@ -886,7 +888,7 @@
 
 /* The editor's picks as a short list above the works table, so they are not found by scrolling the table. */
 .a-shell .admin-pick-panel { margin: 12px 0 16px; padding: 12px 16px; border: 1px solid var(--a-line); border-radius: var(--a-radius-lg); background: var(--a-surface); }
-.a-shell .admin-pick-panel h2 { font-family: var(--a-font); font-size: 15px; margin: 0 0 8px; }
+.a-shell .admin-pick-panel h2 { font-family: var(--a-font); font-size: 16px; margin: 0 0 8px; }
 .a-shell .admin-pick-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
 .a-shell .admin-pick-list li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; column-gap: 10px; row-gap: 0; align-items: center; }
 .a-shell .admin-pick-list li .admin-pick-rank { grid-row: 1 / span 2; }
@@ -904,7 +906,7 @@
 .a-shell .a-stats .admin-stat-card.is-total { border-color: var(--a-ink); background: var(--a-surface); box-shadow: inset 0 3px 0 var(--a-ink); }
 .a-shell .a-stats .admin-stat-label { text-transform: none; letter-spacing: 0; font-size: 13px; }
 .a-shell .a-empty.a-empty-compact { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; text-align: left; padding: 10px 14px; border: 1px solid var(--a-line); border-radius: var(--a-radius-lg); margin: 0; }
-.a-shell .a-empty.a-empty-compact strong { display: inline; margin: 0; font-size: inherit; }
+.a-shell .a-empty.a-empty-compact strong { display: inline; margin: 0; font-size: 14px; }
 .a-shell .a-system-line { margin: 0; color: var(--a-muted); font-size: 13px; }
 .a-shell .a-system-line strong { color: var(--a-ink); }
 .a-shell .a-chip-neutral { background: var(--a-surface); color: var(--a-ink-soft); border: 1px solid var(--a-line); }

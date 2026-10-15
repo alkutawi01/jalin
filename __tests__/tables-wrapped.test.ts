@@ -38,6 +38,9 @@ assert(unwrapped.length === 0, `every admin table sits in .admin-table-wrap${unw
 const css = read("src/app/admin/admin.css");
 assert(css.includes(".a-shell .a-form-list td:first-child { width: 30%; }") && !read("src/components/admin/SiteCopySettings.tsx").includes('width: "20%"') && !read("src/components/admin/AiPersonaSettings.tsx").includes('width: "35%"'), "the two name-and-box lists size their columns in CSS, so the card layout can stack them");
 assert(read("src/components/admin/AudienceBandsSettings.tsx").includes('<div className="admin-table-wrap">'), "the Audiens table is wrapped");
+const seriesPage = read("src/app/admin/series/[id]/page.tsx");
+assert((seriesPage.match(/className="a-col-fit admin-selection-cell"/g) ?? []).length === 2, "the series episode table marks its checkbox header and cells as the narrow selection column");
+assert(css.includes(".a-shell .admin-table th.admin-selection-cell,") && css.includes(".a-shell .admin-table td.admin-selection-cell { min-width: 0; width: 1%; text-align: center; padding-inline: 8px; }"), "selection columns stay only as wide as their checkboxes instead of inheriting the 190px title width");
 
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);
