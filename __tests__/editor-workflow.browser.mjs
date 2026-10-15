@@ -72,11 +72,16 @@ await page.route("**/api/admin/**", async (route) => {
   if (target === `/api/admin/works/${id}/assistant-fill` && method === "POST") {
     const data = request.postDataJSON();
     if (failAssistant) { failAssistant = false; return reply({ error: "Ujian kegagalan: semua perubahan dibatalkan." }, 400); }
-    assert.equal(data.expectedText, work.body, "confirmation includes the reviewed manuscript");
+    const change = data.scope === "characters"
+      ? { id: "characters:characters/Aina", group: "characters", label: "Watak: Aina", before: "", after: "Aina — Pemilik kereta", selected: true }
+      : { id: "glossary:glossary/naik harga", group: "glossary", label: "Glosari: naik harga", before: "", after: "Harga menjadi lebih mahal.", selected: true };
+    if (!/Nama: Aina|Istilah.*naik harga/s.test(data.text)) return reply({ error: "Tiada perubahan medan yang dapat dibaca." }, 400);
+    if (data.action === "preview") return reply({ version: "fixture-v1", changes: [change], notes: ["Belum disimpan."] });
+    assert.equal(data.version, "fixture-v1");
+    assert.deepEqual(data.selected, [change.id]);
     if (data.scope === "characters") { characters.push({ name: "Aina", role: "Pemilik kereta", firstAppearanceSection: null }); assistantWrites.push("transaction:characters"); }
     else if (data.scope === "glossary") { glossary.push({ id: glossary.length + 1, work_id: id, term: "naik harga", meaning: "Harga menjadi lebih mahal.", sort_order: glossary.length + 1 }); assistantWrites.push("transaction:glossary"); }
-    else return reply({ error: "Unexpected test scope" }, 400);
-    return reply({ notes: ["Disimpan."], metadataPatch: {} });
+    return reply({ changes: [], notes: ["Disimpan."] });
   }
   if (target === `/api/admin/works/${id}/characters`) {
     if (method === "PATCH") { characters = request.postDataJSON().characters; assistantWrites.push("characters"); }
@@ -116,7 +121,7 @@ await page.route("**/api/admin/**", async (route) => {
 try {
   await page.goto(`${base}/admin/works/add`, { waitUntil: "networkidle" });
   await page.getByRole("button", { name: /Cerpen/ }).click();
-  await page.getByRole("button", { name: /Tulis sendiri/ }).click();
+  assert.equal(await page.getByText("Tulis sendiri", { exact: true }).count(), 0);
   await page.waitForURL(`**/admin/works/${id}#content`);
   await page.getByRole("button", { name: "Maklumat", exact: true }).click();
   await page.getByLabel("Genre").fill("Misteri");
@@ -156,44 +161,48 @@ try {
   // A mixed chatbot answer must be previewed, then import only the explicitly chosen tab.
   const mixed = `[MAKLUMAT]\nDek: Jangan ubah dek ini.\nGenre: Jangan ubah genre.\n[WATAK]\nNama: Aina\nPeranan: Pemilik kereta\n[GLOSARI]\nIstilah: minyak hitam\nMaksud: Jangan ganti maksud.\n[SUMBER]\nTajuk asal: Jangan tambah sumber.\n[KREDIT]\nNama: Jangan tambah kredit.`;
   await page.getByRole("button", { name: /Watak & latar/ }).click();
-  await page.getByLabel("Tempat mengisi jawapan").selectOption("characters");
-  await page.locator("#chatbot-fill summary").click();
-  await page.getByLabel("Jawapan bot sembang (boleh tampal secara manual)").fill(mixed);
+  assert.equal(await page.locator("[data-editor-assistant]").count(), 2);
+  assert.equal(await page.getByLabel("Tempat mengisi jawapan").count(), 0);
+  let assistant = page.locator('[data-editor-assistant="characters"]');
+  await assistant.locator("summary").first().click();
+  await assistant.getByLabel("Jawapan AI — boleh tampal secara manual").fill(mixed);
   const beforeAssistant = patches;
-  await page.getByRole("button", { name: "Semak jawapan", exact: true }).click();
-  await page.getByRole("button", { name: "Sahkan & isi (Watak & latar)" }).waitFor();
-  assert.equal(characters.length, 0, "Preview does not persist characters");
-  assert.equal(patches, beforeAssistant, "Preview does not persist metadata");
-  await page.getByRole("button", { name: "Sahkan & isi (Watak & latar)" }).click();
-  await page.waitForFunction(() => !document.querySelector('#chatbot-fill button')?.disabled);
-  assert.deepEqual(assistantWrites, ["transaction:characters"], "Scoped fill sends one transactional request");
-  assert.equal(patches, beforeAssistant, "Characters tab does not patch metadata");
+  await assistant.getByRole("button", { name: "Semak jawapan", exact: true }).click();
+  await assistant.getByRole("button", { name: "Sahkan & isi (1)" }).waitFor();
+  assert.equal(characters.length, 0);
+  await assistant.getByRole("button", { name: "Batal", exact: true }).click();
+  assert.equal(characters.length, 0);
+  await assistant.getByRole("button", { name: "Semak jawapan", exact: true }).click();
+  await assistant.getByRole("button", { name: "Sahkan & isi (1)" }).click();
+  await page.waitForEvent("load");
+  await page.getByLabel("Nama watak 1", { exact: true }).waitFor();
+  assert.deepEqual(assistantWrites, ["transaction:characters"]);
+  assert.equal(patches, beforeAssistant);
   assert.equal(work.genre, "Drama Sosial");
   assert.equal(work.dek, "Draf ujian aliran editor.");
-  assert.equal(glossary.length, 1, "Characters tab does not import glossary");
-  assert.equal(characters[0]?.name, "Aina");
-  await page.getByLabel("Jawapan bot sembang (boleh tampal secara manual)").fill("Jawapan tanpa label.");
-  await page.getByRole("button", { name: "Semak jawapan", exact: true }).click();
-  assert.equal(await page.getByRole("button", { name: /Sahkan & isi/ }).count(), 0, "Unreadable answer cannot be applied");
-
+  assert.equal(glossary.length, 1);
+  assistant = page.locator('[data-editor-assistant="characters"]');
+  await assistant.locator("summary").first().click();
+  await assistant.getByLabel("Jawapan AI — boleh tampal secara manual").fill("Jawapan tanpa label.");
+  await assistant.getByRole("button", { name: "Semak jawapan", exact: true }).click();
+  await assistant.getByRole("alert").waitFor();
+  assert.equal(await assistant.getByRole("button", { name: /Sahkan & isi/ }).count(), 0);
   await page.getByRole("button", { name: /Glosari/ }).click();
-  const assistant = page.locator('[aria-label="Glosari dengan bot sembang"]');
-  await assistant.getByText("Tampal jawapan glosari secara manual", { exact: true }).click();
-  await page.locator("#glossary-answer").fill("[GLOSARI]\nIstilah\n\nnaik harga\nMaksud = Harga menjadi lebih mahal.\n[MAKLUMAT]\nDek: Jangan ubah.");
+  assistant = page.locator('[data-editor-assistant="glossary"]');
+  await assistant.locator("summary").first().click();
+  await assistant.getByLabel("Jawapan AI — boleh tampal secara manual").fill("[GLOSARI]\\nIstilah: naik harga\\nMaksud: Harga menjadi lebih mahal.");
   await assistant.getByRole("button", { name: "Semak jawapan", exact: true }).click();
-  assert.equal(glossary.length, 1, "glossary preview writes nothing");
-  await assistant.getByRole("button", { name: "Batal", exact: true }).click();
-  assert.equal(glossary.length, 1, "cancel writes nothing");
-  await assistant.getByRole("button", { name: "Semak jawapan", exact: true }).click();
+  await assistant.getByRole("button", { name: "Sahkan & isi (1)" }).waitFor();
+  assert.equal(glossary.length, 1);
   failAssistant = true;
-  await assistant.getByRole("button", { name: "Sahkan & tambah glosari" }).click();
-  await page.getByRole("alert").filter({ hasText: "semua perubahan dibatalkan" }).waitFor();
-  assert.equal(glossary.length, 1, "failed batch leaves glossary unchanged");
-  await assistant.getByRole("button", { name: "Semak jawapan", exact: true }).click();
-  await assistant.getByRole("button", { name: "Sahkan & tambah glosari" }).click();
-  await page.getByText("naik harga", { exact: true }).last().waitFor();
-  assert.equal(glossary.length, 2, "confirmed glossary batch writes once");
-  assert.equal(work.dek, "Draf ujian aliran editor.", "glossary import cannot change dek");
+  await assistant.getByRole("button", { name: "Sahkan & isi (1)" }).click();
+  await assistant.getByRole("alert").waitFor();
+  assert.equal(glossary.length, 1);
+  await assistant.getByRole("button", { name: "Sahkan & isi (1)" }).click();
+  await page.waitForEvent("load");
+  await page.getByText("naik harga", { exact: true }).first().waitFor();
+  assert.equal(glossary.length, 2);
+  assert.equal(work.dek, "Draf ujian aliran editor.");
 
   if (process.env.EDITOR_CHATBOT_ONLY === "1") {
     await page.setViewportSize({ width: 390, height: 844 });
@@ -205,10 +214,10 @@ try {
 
   await page.getByRole("button", { name: "Kandungan", exact: true }).click();
   await page.getByRole("button", { name: "Markdown", exact: true }).click();
-  await page.getByLabel("Teks alternatif * (satu ayat menerangkan gambar untuk pembaca yang tidak nampak gambar)").fill("Kereta di tepi jalan.");
+  await page.locator("#wvu-alt").fill("Kereta di tepi jalan.");
   await page.getByLabel("Fail imej *").setInputFiles(file);
   await page.getByRole("button", { name: "Muat naik & pautkan" }).click();
-  await page.getByText("Gambar utama", { exact: true }).last().waitFor();
+  await page.locator(".work-image-card").first().waitFor();
   assert.equal(visuals[0].role, "hero");
   const patchBeforeReplacement = patches;
   await page.locator(".work-image-card").first().locator('input[type="file"]').setInputFiles(file);
@@ -224,11 +233,11 @@ try {
   assert.match(await manuscript.inputValue(), /\[\[gambar:1\]\]/);
   await page.getByRole("button", { name: "Simpan teks & maklumat" }).click();
   assert.match(work.body, /\[\[gambar:1\]\]/);
-  await page.getByLabel("Teks alternatif * (satu ayat menerangkan gambar untuk pembaca yang tidak nampak gambar)").fill("Aina berdiri di sisi kereta.");
+  await page.locator("#wvu-alt").fill("Aina berdiri di sisi kereta.");
   await page.getByLabel("Fail imej *").setInputFiles(file);
   await page.getByLabel("Penanda gambar dalam manuskrip *").selectOption("[[gambar:1]]");
   await page.getByRole("button", { name: "Muat naik & pautkan" }).click();
-  await page.getByText("Gambar dalam teks", { exact: true }).last().waitFor();
+  await page.locator(".work-image-card").nth(1).waitFor();
   assert.equal(visuals.length, 2);
   assert.equal(visuals[1].anchor, "[[gambar:1]]");
 

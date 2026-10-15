@@ -69,12 +69,9 @@ assert(dekWarning("Sara memulakan kerja baharu pada hari Isnin.") === null && de
 assert(prompt.includes(DEK_RULE) && DEFAULT_GLOBAL_RULES.includes(DEK_RULE) && read("src/lib/admin/authoring/output-format.ts").includes("${DEK_RULE}"), "the same dek rule is in the paste prompt, the global rules and the answer format");
 assert(DEK_RULE.includes("JANGAN ceritakan perkembangan") && DEK_RULE.includes("tidak lebih 30 perkataan") && DEK_RULE.includes("episod bersiri"), "the rule forbids the story's development, caps the length and covers series episodes");
 
-// The page
-const page = read("src/app/admin/works/[id]/page.tsx");
-const reviewFunction = page.slice(page.indexOf("function reviewFillAnswer"), page.indexOf("async function applyFillAnswer"));
-assert(reviewFunction.indexOf("looksLikePrompt(text)") >= 0 && reviewFunction.indexOf("looksLikePrompt(text)") < reviewFunction.indexOf("parseWorkFill(text, scope)"), "review refuses the copied prompt before preparing an actionable result");
-assert(page.includes("Permulaan teks diterima") && page.includes("Tiada perubahan disimpan"), "unreadable answers show the received snippet and do not write");
-assert(page.includes("dekWarning(result.dek)"), "a pasted dek is checked and the editor is told");
-
+// The unified editor rejects prompts before planning and warns about dek in its prompt.
+const planner = read("src/lib/admin/authoring/editor-assistant.ts");
+assert(planner.indexOf("looksLikePrompt(answer)") < planner.indexOf("extractParserJson(answer)"), "prompt rejected before planning");
+assert(planner.includes("${DEK_RULE}"), "unified prompt includes shared dek rule");
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);

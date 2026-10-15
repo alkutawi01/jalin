@@ -64,7 +64,8 @@ assert(oneLine.places[0]?.name === "Seremban" && oneLine.places[0]?.description 
 assert(parsed.sections.includes("LATAR"), "the section is known to the fill step");
 
 // the page writes them, merging with what exists
-assert(editor.includes("2b) places and times") && editor.includes("wrote += 1;\n        notes.push(`${label}: ${fresh.length} ditambah") && editor.includes("setSettingKey((k) => k + 1)"), "the paste adds new places and times, keeps existing ones, and refreshes the lists");
+const editorAnswer = read("src/lib/admin/authoring/editor-answer-service.ts");
+assert(editorAnswer.includes('metadata[key]') && editorAnswer.includes('current.push(next)') && editorAnswer.includes('validateTimeEntries') && editor.includes('window.location.reload()'), "selected settings merge with existing rows and the editor reloads saved lists");
 
 // "Tambah Karya": every recipe asks for [LATAR]; the labelled answer is read and stored with the work
 for (const key of RECIPE_KEYS) assert(composeAiPrompt({ recipe: key }).includes("[LATAR]"), `${key} asks for [LATAR]`);

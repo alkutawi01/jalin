@@ -1,0 +1,28 @@
+import assert from "node:assert/strict";
+import { buildEditorPrompt, planEditorAnswer, EDITOR_SCOPES, type EditorState } from "../src/lib/admin/authoring/editor-assistant";
+const state: EditorState = { work: { type: "novela", title: "Lama", body: "Aina gundah.", metadata: {} }, chapters: [], credits: [], glossary: [], source: null };
+const answer = JSON.stringify({ work: { title: "Baharu", body: "Aina masih gundah.", genre: "Drama" }, characters: [{ name: "Aina", role: "Utama" }], places: [{ name: "Kuala Lumpur" }], glossary: [{ term: "gundah", meaning: "Resah" }], credits: [{ contributorSlug: "chatgpt", roleLabel: "initial_draft", byline: true }], sections: [{ slug: "bab-1", body: "Aina gundah." }], source: { originalTitle: "Buku", publicationYear: 1920 } });
+for (const scope of EDITOR_SCOPES) {
+  const prompt = buildEditorPrompt(scope, { type: "novela", title: "", body: "Aina gundah." }, "");
+  assert.match(prompt, /BOLEH MENGISI BORANG/);
+  assert.doesNotMatch(prompt, /dipindahkan secara manual|Pulangkan nasihat|Editor akan tampal manuskrip/);
+  const changes = planEditorAnswer(answer, scope, state);
+  assert.ok(changes.length);
+  assert.ok(changes.every(c => scope === "all" || c.group === scope));
+}
+assert.throws(() => buildEditorPrompt("all", { type: "cerpen", title: "", body: "" }, ""), /tugasan/);
+assert.match(buildEditorPrompt("content", { type: "cerpen", title: "", body: "" }, "Tulis tentang Aina"), /Tulis tentang Aina/);
+const changes = planEditorAnswer(answer, "all", state);
+assert.equal(changes.find(c => c.id === "content:title")?.selected, false);
+assert.equal(changes.find(c => c.id === "metadata:genre")?.selected, true);
+assert.equal(changes.find(c => c.id === "content:body")?.before, "Aina gundah.");
+assert.equal(planEditorAnswer('{"work":{"body":"Koma, } kekal",},}', "content", state)[0]?.value, "Koma, } kekal");
+assert.equal(planEditorAnswer('Berikut jawapan:\n```json\n' + answer + '\n```', "all", state).length, changes.length);
+assert.equal(planEditorAnswer('[KARYA]\nTajuk\n\nBaharu\n[KANDUNGAN]\nAina pulang.\n\nDia gundah.', "content", state).find(c => c.key === "body")?.value, "Aina pulang.\n\nDia gundah.");
+assert.equal(planEditorAnswer('[KREDIT]\nSlug penyumbang\n\nchatgpt\nPeranan = initial_draft\nNama di bawah tajuk: ya', "credits", state)[0]?.value.contributorSlug, "chatgpt");
+assert.equal(planEditorAnswer('[BAB]\nSlug: bab-1\nTajuk: Pulang\nTeks:\nAina pulang.\n\nDia diam.', "sections", state)[0]?.value.body.trim(), "Aina pulang.\n\nDia diam.");
+assert.equal(planEditorAnswer(answer, "sections", { ...state, work: { ...state.work, type: "cerpen" } }).length, 0);
+assert.equal(planEditorAnswer("Ini nasihat sahaja.", "content", state).length, 0);
+assert.equal(planEditorAnswer("[KARYA]\nTajuk: Cerita\n[SUMBER]\nTajuk: Buku asal", "content", state).find(c => c.key === "title")?.value, "Cerita", "source title never leaks into content");
+assert.throws(() => planEditorAnswer(buildEditorPrompt("all", { type: "cerpen", title: "", body: "Aina" }, ""), "all", state), /arahan/);
+console.log("Unified editor: prompts, all scopes, selective changes, JSON/layout tolerance, prose preservation and advice rejection passed");

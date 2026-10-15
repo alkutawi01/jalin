@@ -114,7 +114,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function stripTrailingCommas(json: string): string {
+export function stripTrailingCommas(json: string): string {
   let out = "";
   let inString = false;
   let escaped = false;

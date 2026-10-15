@@ -12,8 +12,6 @@ export default function AddWorkPage() {
   const router = useRouter();
   const [series, setSeries] = useState<SeriesChoice[]>([]);
   const [chooseSeries, setChooseSeries] = useState(false);
-  /** The kind the editor picked; the next question is how to start it. */
-  const [picked, setPicked] = useState<WorkKind | null>(null);
   const [seriesId, setSeriesId] = useState("");
   const [seriesLoaded, setSeriesLoaded] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -23,7 +21,6 @@ export default function AddWorkPage() {
     const params = new URLSearchParams(window.location.search);
     const kind = params.get("jenis");
     const fromSeries = params.get("siri");
-    if (kind && (WORK_KINDS as string[]).includes(kind)) setPicked(kind as WorkKind);
     // Coming from a series page: go straight to the step that asks about the series, with that series chosen.
     if (kind === "bersiri" && fromSeries) {
       setChooseSeries(true);
@@ -65,22 +62,11 @@ export default function AddWorkPage() {
     <div className="admin-form-page">
       <header className="admin-page-header">
         <h1>Tambah karya</h1>
-        <p className="admin-page-sub">{picked ? `Bagaimana mahu memulakan ${KIND_LABELS[picked]}?` : "Pilih jenis karya. Jenis yang dipilih dikekalkan sehingga draf siap dan tidak boleh ditukar senyap oleh bot sembang. Draf tidak diterbitkan secara automatik."}</p>
+        <p className="admin-page-sub">Pilih jenis karya untuk membuka editor. Anda boleh menulis sendiri atau mengisi borang dengan bantuan AI dalam editor yang sama. Draf tidak diterbitkan secara automatik.</p>
       </header>
       {error && <div className="admin-alert admin-alert-error" role="alert">{error}</div>}
-      {!chooseSeries && picked ? <div className="admin-choice-grid">
-        <button type="button" className="admin-choice" disabled={busy} onClick={() => void start(picked)}>
-          <strong>Tulis sendiri</strong>
-          <span>Buka editor kosong. Anda menaip teks, kemudian menambah kredit, gambar dan glosari sendiri. Tiada bot sembang terlibat.</span>
-        </button>
-        <a className="admin-choice" href={`/admin/works/add/${picked}`}>
-          <strong>Guna bot sembang</strong>
-          <span>Salin arahan, tampal jawapan bot sembang. Sistem mengisi tajuk, glosari, watak dan permintaan gambar. Hasilnya draf yang sama seperti &quot;Tulis sendiri&quot;, tetapi sudah berisi dan boleh disunting.</span>
-        </a>
-        <button type="button" className="admin-btn admin-btn-outline" onClick={() => setPicked(null)}>← Tukar jenis</button>
-      </div> : null}
-      {!chooseSeries && !picked ? <div className="admin-choice-grid">
-        {WORK_KINDS.map((kind) => <button key={kind} type="button" className="admin-choice" disabled={busy} onClick={() => setPicked(kind)}>
+      {!chooseSeries ? <div className="admin-choice-grid">
+        {WORK_KINDS.map((kind) => <button key={kind} type="button" className="admin-choice" disabled={busy} onClick={() => void start(kind)}>
           <strong>{KIND_LABELS[kind]}</strong><span>{KIND_DESCRIPTIONS[kind]}</span>
         </button>)}
       </div> : null}
