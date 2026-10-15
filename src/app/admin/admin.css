@@ -915,3 +915,9 @@
   .a-shell .a-todo-table td:first-child { grid-column: 1 / -1; }
 }
 @media (prefers-reduced-motion: reduce) { .a-side, .a-main { transition: none; } }
+
+/* The type cards open the list they count. */
+.a-shell a.a-stat-link { display: block; color: inherit; text-decoration: none; transition: border-color 0.12s ease, box-shadow 0.12s ease; }
+.a-shell a.a-stat-link:hover { border-color: var(--a-accent); box-shadow: 0 6px 16px -10px rgba(24, 52, 60, 0.35); }
+.a-shell a.a-stat-link:focus-visible { outline: 2px solid var(--a-accent); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .a-shell a.a-stat-link { transition: none; } }
