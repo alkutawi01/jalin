@@ -16,6 +16,7 @@ interface Issue {
 interface Gate {
   pass: boolean;
   blockers: Issue[];
+  warnings?: Issue[];
 }
 export interface ReadinessLike {
   ready: boolean;
@@ -53,6 +54,9 @@ const TYPE_LABEL: Record<string, string> = {
 };
 
 const STATUS_ONLY = "status_not_publishable";
+
+/** Privacy, rights, structure and workflow have nothing to say about most works: a green tick for them on a draft that has nothing in it is noise, so they appear only when they have something to report. */
+const ALWAYS_SHOWN = new Set<keyof ReadinessLike["gates"]>(["content", "credits", "visuals"]);
 
 export default function WorkStatusPanel({
   workId,
@@ -104,6 +108,8 @@ export default function WorkStatusPanel({
   const failing = readiness ? GATES.filter((g) => !gatePasses(g.key)) : [];
   const issueCount = realBlockers.length;
   const allClear = !!readiness && realBlockers.length === 0;
+  // A draft nobody has written anything in is not "wrong": the list of what is missing would only worry a new editor, so it waits.
+  const untouched = status === "draft" && realBlockers.some((b) => b.code === "title_placeholder") && realBlockers.some((b) => b.code === "body_missing");
 
   // Re-check by itself when the editor returns to this tab, so no manual refresh is needed.
   useEffect(() => {
@@ -226,7 +232,9 @@ export default function WorkStatusPanel({
       {next?.hint ? <p className="a-status-hint">{next.hint}</p> : null}
       {waitingNote ? <p className="a-status-hint" role="status">{waitingNote}</p> : null}
 
-      {status !== "archived" && (status !== "published" || issueCount > 0) ? (
+      {untouched ? <p className="a-status-hint">Draf masih kosong. Senarai semakan sebelum terbit muncul selepas anda mula menulis.</p> : null}
+
+      {!untouched && status !== "archived" && (status !== "published" || issueCount > 0) ? (
         <div className="a-check">
           <div className="a-check-head">
             <strong>{status === "published" ? "Perlu dibetulkan sebelum boleh diterbitkan semula" : "Sedia untuk diterbitkan?"}</strong>
@@ -245,7 +253,7 @@ export default function WorkStatusPanel({
           {readiness ? (
             <>
               <div className="a-chips">
-                {GATES.map((gate) => {
+                {GATES.filter((gate) => ALWAYS_SHOWN.has(gate.key) || !gatePasses(gate.key) || (readiness.gates[gate.key]?.warnings?.length ?? 0) > 0).map((gate) => {
                   const pass = gatePasses(gate.key);
                   return (
                     <button
