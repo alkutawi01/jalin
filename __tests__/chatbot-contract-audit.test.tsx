@@ -46,6 +46,11 @@ for (const scope of Object.keys(FILL_SECTIONS) as WorkFillScope[]) {
     for (const excluded of FILL_SECTIONS.all.filter(s => !FILL_SECTIONS[scope].includes(s))) assert(!prompt.includes(`[${excluded}]`), `${scope} excludes ${excluded}`);
   }
 }
+const flat = parseWorkFill("[WATAK] Nama: Nicholas Winton Peranan: Penggerak penyelamatan Nama: Martin Blake Peranan: Rakan Nicholas [LATAR] Jenis: tempat Nama: Prague Keterangan: Bandar pendaftaran Jenis: masa Nama: 1939 Keterangan: Tahun pemindahan", "characters");
+assert.deepEqual(flat.sections, ["WATAK", "LATAR"]);
+assert.equal(flat.characters.length, 2);
+assert.equal(flat.places[0]?.name, "Prague");
+assert.equal(flat.times[0]?.name, "1939");
 const wrapped = parseWorkFill("<escape>[WATAK]</escape>\nNama: Nicholas Winton\nPeranan: Penyelaras pemindahan\n<escape>[LATAR]</escape>\nJenis: tempat\nNama: Prague\nKeterangan: Pusat pendaftaran", "characters");
 assert.deepEqual(wrapped.sections, ["WATAK", "LATAR"], "chat display wrapper headings are recognised");
 assert.equal(wrapped.characters[0]?.name, "Nicholas Winton");

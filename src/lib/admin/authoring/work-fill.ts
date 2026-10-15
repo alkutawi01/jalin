@@ -288,7 +288,12 @@ export function looksLikePrompt(text: string): boolean {
 }
 
 export function parseWorkFill(answer: string, scope: WorkFillScope = "all"): WorkFillResult {
-  const lines = answer.replace(/\r\n/g, "\n").replace(INVISIBLE, "").replace(/ /g, " ").replace(/^```[a-z]*\s*$/gim, "").split("\n");
+  // Copied chat responses may arrive as a single line; split only at exact structured labels.
+  const normalised = answer.replace(/\r\n/g, "\n").replace(INVISIBLE, "").replace(/\u00a0/g, " ")
+    .replace(/<\/?(?:escape|text)(?:\s[^>]*)?>/gi, "")
+    .replace(/\s*(\[(?:WATAK|LATAR|MAKLUMAT|GLOSARI|SUMBER)\])(?=\s|$)/gi, "\n$1\n")
+    .replace(/[ \t]+(?=(?:Nama|Peranan|Jenis|Keterangan|Muncul)\s*[:：])/gi, "\n");
+  const lines = normalised.replace(/^```[a-z]*\s*$/gim, "").split("\n");
   const sections: Record<string, string[]> = {};
   let current: string | null = null;
   for (const line of lines) {
