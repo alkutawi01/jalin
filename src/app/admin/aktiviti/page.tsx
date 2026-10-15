@@ -3,6 +3,7 @@ import { getCurrentAdmin } from "../../../lib/admin/auth";
 import { ACTIVITY_PAGE_SIZE, listActivity, listActors, type ActivityRow } from "../../../lib/admin/activity";
 import type { Role } from "../../../lib/admin/permissions";
 import { notFound } from "next/navigation";
+import { parsePage } from "../../../lib/reader/category-list";
 
 export const dynamic = "force-dynamic";
 
@@ -13,13 +14,20 @@ const when = (iso: string) => new Date(iso).toLocaleString("ms-MY", { timeZone: 
 const one = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value) || undefined;
 
 /** Aktiviti: who changed what, newest first. Only the owner and the chief editor open it (permissions.ts). */
-export default async function ActivityPage({ searchParams }: { searchParams: Promise<{ orang?: string | string[]; karya?: string | string[] }> }) {
+export default async function ActivityPage({ searchParams }: { searchParams: Promise<{ orang?: string | string[]; karya?: string | string[]; halaman?: string | string[] }> }) {
   const query = await searchParams;
   const admin = await getCurrentAdmin();
   if (!admin || (admin.role !== "admin" && admin.role !== "chief_editor")) notFound();
   const isOwner = admin?.role === "admin";
   const actorId = one(query.orang);
   const workId = one(query.karya);
+  const page = parsePage({ halaman: one(query.halaman) });
+  let hasOlder = false;
+  const pageHref = (target: number) => {
+    const params = new URLSearchParams({ ...(actorId ? { orang: actorId } : {}), ...(workId ? { karya: workId } : {}), ...(target > 1 ? { halaman: String(target) } : {}) });
+    const qs = params.toString();
+    return qs ? `/admin/aktiviti?${qs}` : "/admin/aktiviti";
+  };
 
   let rows: ActivityRow[] = [];
   let actors: { id: string; name: string }[] = [];
@@ -29,7 +37,10 @@ export default async function ActivityPage({ searchParams }: { searchParams: Pro
     problem = "Pangkalan data tidak tersedia.";
   } else {
     try {
-      [rows, actors] = await Promise.all([listActivity({ actorId, workId, includeSubscription: isOwner }), listActors()]);
+      [rows, actors] = await Promise.all([listActivity({ actorId, workId, includeSubscription: isOwner, limit: ACTIVITY_PAGE_SIZE + 1, offset: (page - 1) * ACTIVITY_PAGE_SIZE }), listActors()]);
+      // One more than a page was asked for: that is how we know there is an older page.
+      hasOlder = rows.length > ACTIVITY_PAGE_SIZE;
+      rows = rows.slice(0, ACTIVITY_PAGE_SIZE);
       const ids = [...new Set(rows.map((row) => row.workId).filter((id): id is string => Boolean(id)))];
       if (ids.length > 0) {
         for (const work of await getDb().selectFrom("works").select(["id", "title"]).where("id", "in", ids).execute()) titles.set(work.id, work.title);
@@ -44,7 +55,7 @@ export default async function ActivityPage({ searchParams }: { searchParams: Pro
     <div className="admin-activity">
       <header className="admin-page-header">
         <h1>Aktiviti</h1>
-        <p className="admin-page-sub">Siapa mengubah apa: kredit, karya, bahagian dan gambar. Catatan bermula dari hari ia dihidupkan; {ACTIVITY_PAGE_SIZE} yang terkini dipaparkan.</p>
+        <p className="admin-page-sub">Siapa mengubah apa: kredit, karya, bahagian dan gambar. Catatan bermula dari hari ia dihidupkan; {ACTIVITY_PAGE_SIZE} setiap halaman, yang terkini dahulu.</p>
       </header>
       {problem ? (
         <div className="admin-alert admin-alert-error" role="alert">{problem}</div>
@@ -79,6 +90,13 @@ export default async function ActivityPage({ searchParams }: { searchParams: Pro
               ))}
             </ul>
           )}
+          {page > 1 || hasOlder ? (
+            <nav className="admin-pagination" aria-label="Halaman aktiviti">
+              {page > 1 ? <a className="admin-btn admin-btn-sm admin-btn-outline" href={pageHref(page - 1)} rel="prev">‹ Lebih baharu</a> : <span />}
+              <span className="admin-pagination-where" role="status">Halaman {page}</span>
+              {hasOlder ? <a className="admin-btn admin-btn-sm admin-btn-outline" href={pageHref(page + 1)} rel="next">Lebih lama ›</a> : <span />}
+            </nav>
+          ) : null}
         </>
       )}
     </div>

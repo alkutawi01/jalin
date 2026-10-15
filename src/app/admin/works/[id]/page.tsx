@@ -2225,7 +2225,7 @@ export default function EditWorkPage() {
             </span>
           </div>
           <p className="admin-form-hint">
-            Pilihan Editor diurus melalui kotak tanda di sebelah judul pada <a href="/admin/works?status=published">senarai karya terbit</a>.
+            Pilihan Editor diurus melalui kotak tanda di sebelah judul pada <a href="/admin/works?status=published">senarai kandungan terbit</a>.
           </p>
 
         </form>

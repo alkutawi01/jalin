@@ -47,7 +47,7 @@ const NAV: { href: string; label: string; icon: keyof typeof ICONS; match: (p: s
   { href: "/admin", label: "Papan pemuka", icon: "home", match: (p) => p === "/admin" },
   {
     href: "/admin/works",
-    label: "Karya",
+    label: "Kandungan",
     icon: "works",
     match: (p) => (p.startsWith("/admin/works") && !p.startsWith("/admin/works/add")) || p.startsWith("/admin/visual-requests")
   },
