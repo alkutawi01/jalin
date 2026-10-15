@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getContributor, updateContributor } from "../../../../../lib/admin/contributor-service";
+import { getContributor, updateContributor, deleteUnusedContributor } from "../../../../../lib/admin/contributor-service";
+import { getCurrentAdmin } from "../../../../../lib/admin/auth";
 import { setContributorPost } from "../../../../../lib/admin/contributor-profile";
 
 export async function GET(
@@ -69,6 +70,22 @@ export async function PATCH(
     const status = message.includes("already exists") || message.includes("sudah digunakan") ? 409
       : message.includes("tidak ditemui") ? 404
       : message.startsWith("Alamat pautan") ? 400 : 500;
+    return NextResponse.json({ error: message }, { status });
+  }
+}
+
+export async function DELETE(
+  _request: NextRequest,
+  { params }: { params: Promise<{ slug: string }> }
+) {
+  if (!await getCurrentAdmin()) return NextResponse.json({ error: "Sesi anda telah tamat. Log masuk semula." }, { status: 401 });
+  try {
+    const { slug } = await params;
+    await deleteUnusedContributor(slug);
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Ralat tidak diketahui.";
+    const status = message.includes("tidak ditemui") ? 404 : message.includes("masih dipakai") || message.includes("disebut dalam") || message.includes("nama samaran") ? 409 : 500;
     return NextResponse.json({ error: message }, { status });
   }
 }

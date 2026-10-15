@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { errorText } from "../../../../lib/admin/error-text";
+import { confirmAction, toast } from "../../../../lib/admin/dialogs";
 
 const CONTRIBUTOR_TYPES = [
   { value: "human", label: "Manusia" },
@@ -244,6 +245,30 @@ export default function EditContributorPage() {
           </button>
         </div>
       </form>
+
+      <div className="admin-form-group">
+        <strong>Padam penyumbang ini</strong>
+        <p className="admin-form-hint">Hanya untuk rekod yang tidak dipakai di mana-mana (cth. salinan tersilap). Penyumbang yang sudah ada dalam kredit karya tidak boleh dipadam.</p>
+        <button
+          type="button"
+          className="admin-btn admin-btn-danger"
+          disabled={saving}
+          onClick={async () => {
+            if (!(await confirmAction("Padam penyumbang ini selama-lamanya? Tindakan ini tidak boleh dibatalkan.", { danger: true, confirmLabel: "Ya, padam" }))) return;
+            try {
+              const res = await fetch(`/api/admin/contributors/${contributorSlug}`, { method: "DELETE" });
+              const data = await res.json().catch(() => ({}));
+              if (!res.ok) throw new Error(data.error || "Penyumbang gagal dipadam.");
+              toast("Penyumbang dipadam.", "success");
+              router.push("/admin/contributors");
+            } catch (err) {
+              toast(errorText(err, "Penyumbang gagal dipadam."), "error");
+            }
+          }}
+        >
+          Padam penyumbang
+        </button>
+      </div>
 
     </div>
   );
