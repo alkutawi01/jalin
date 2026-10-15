@@ -70,6 +70,11 @@ function labelledEditorFields(answer: string, scope: EditorScope): Record<string
 }
 
 export interface EditorState { work: Record<string, any>; chapters: Record<string, any>[]; credits: Record<string, any>[]; glossary: Record<string, any>[]; source: Record<string, any> | null }
+/** A new draft is created with the title "Draf tanpa tajuk" and a slug "draf-…"; they stand in for a title and an address nobody has written yet. */
+export function isDraftPlaceholder(change: { key: string; before: string }): boolean {
+  return (change.key === "title" && change.before === "Draf tanpa tajuk") || (change.key === "slug" && /^draf-/.test(change.before));
+}
+
 export interface EditorChange { id: string; group: Exclude<EditorScope, "all">; label: string; before: string; after: string; selected: boolean; value: any; key: string }
 const record = (v: unknown): Record<string, any> => v && typeof v === "object" && !Array.isArray(v) ? v as Record<string, any> : {};
 const text = (v: unknown) => typeof v === "string" && !isPlaceholder(v) ? v.trim() : "";

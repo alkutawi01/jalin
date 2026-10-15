@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { copyText } from "./CopyButton";
 import { errorText } from "../../lib/admin/error-text";
-import { buildEditorPrompt, EDITOR_SCOPE_NAMES, type EditorScope, type EditorContext, type EditorChange } from "../../lib/admin/authoring/editor-assistant";
+import { buildEditorPrompt, EDITOR_SCOPE_NAMES, isDraftPlaceholder, type EditorScope, type EditorContext, type EditorChange } from "../../lib/admin/authoring/editor-assistant";
 
 export default function EditorAssistant({ workId, scope, context, blocked, onApplied }: { workId: string; scope: EditorScope; context: EditorContext; blocked: boolean; onApplied: () => void }) {
   const [answer, setAnswer] = useState("");
@@ -61,7 +61,7 @@ export default function EditorAssistant({ workId, scope, context, blocked, onApp
       <p className="admin-form-hint">Semak ringkasan di bawah. Tiada perubahan disimpan sehingga butang Isi borang ditekan.</p>
       {preview.changes.map(change => <div className="admin-form-group" key={change.id}>
         <strong>{change.label}</strong>
-        {change.before ? <details><summary>Nilai sedia ada akan diganti</summary><p>Nilai lama</p><pre className="a-assistant-value">{change.before}</pre><p>Nilai baharu</p><pre className="a-assistant-value">{change.after}</pre></details> : <p className="admin-form-hint">Nilai baharu tersedia untuk diisi.</p>}
+        {change.before ? <details><summary>{isDraftPlaceholder(change) ? "Nilai sementara draf akan diganti" : "Nilai sedia ada akan diganti"}</summary><p>{isDraftPlaceholder(change) ? "Nilai sementara" : "Nilai lama"}</p><pre className="a-assistant-value">{change.before}</pre><p>Nilai baharu</p><pre className="a-assistant-value">{change.after}</pre></details> : <p className="admin-form-hint">Nilai baharu tersedia untuk diisi.</p>}
       </div>)}
       <div className="admin-form-actions">
         <button type="button" className="admin-btn admin-btn-primary" disabled={busy || blocked || !preview.changes.length} onClick={() => void request(answer, true)}>Isi borang</button>
