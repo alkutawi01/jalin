@@ -250,13 +250,13 @@ function seriesMode(value: string | undefined): string {
 }
 
 export function looksLabelled(answer: string): boolean {
-  answer = normaliseLabelledLayout(answer, AUTHORING_LABELS);
+  answer = normaliseLabelledLayout(answer, AUTHORING_LABELS, "KANDUNGAN", false);
   const lines = answer.replace(/\r\n/g, "\n").split("\n");
   return lines.some((line) => headingOf(line) === "KARYA");
 }
 
 export function parseLabelledAnswer(answer: string): LabelledParse | null {
-  answer = normaliseLabelledLayout(answer, AUTHORING_LABELS);
+  answer = normaliseLabelledLayout(answer, AUTHORING_LABELS, "KANDUNGAN", false);
   const source = answer
     .replace(/\r\n/g, "\n")
     .replace(/^\s*```[a-zA-Z]*\s*$/gm, "");

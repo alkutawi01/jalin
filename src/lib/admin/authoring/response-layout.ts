@@ -1,13 +1,13 @@
 /** Recover layout mistakes only. Unknown labels/values are never guessed. Story prose is untouched. */
-export function normaliseLabelledLayout(answer: string, labels: string[], proseSection = "KANDUNGAN"): string {
-  answer = structuredAnswer(answer, labels);
+export function normaliseLabelledLayout(answer: string, labels: string[], proseSection = "KANDUNGAN", acceptStructured = true): string {
+  if (acceptStructured) answer = structuredAnswer(answer, labels);
   const canonical = new Map(labels.map(label => [label.toLocaleLowerCase().replace(/[_\s-]+/g, " ").trim(), label]));
   const known = (value: string) => canonical.get(value.replace(/\*\*|__|`/g, "").replace(/^[#>*•\s-]+/, "").trim().toLocaleLowerCase().replace(/[_\s-]+/g, " "));
   let prose = false;
   let tableColumns: Array<string | undefined> | null = null;
   const out: string[] = [];
   for (const original of answer.replace(/\r\n?/g, "\n").split("\n")) {
-    const structural = original.normalize("NFKC").replace(/[\u200b-\u200f\ufeff]/g, "");
+    const structural = original.normalize("NFKC").replace(/[\u200b-\u200f\ufeff]/g, "").replace(/<\/?(?:escape|text)(?:\s[^>]*)?>/gi, "");
     const header = /^\s*(?:[#>*]+\s*)?\**\[\s*([A-Za-z &/-]+)\s*\]\**\s*[:：]?\s*(.*)$/.exec(structural);
     if (header) {
       // Only actual import sections, not story markers such as [MESEJ].
