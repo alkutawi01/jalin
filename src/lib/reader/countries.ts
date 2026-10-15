@@ -4,8 +4,8 @@
  * Decided with Izzat (12 Oct 2026):
  * - the country only, never a village, street or district;
  * - Malaysia is not shown when it is the only country (Jalin is Malaysian, so it would be noise);
- * - the editor types the name, so it can be a country or an older region ("Empayar Inka", "Al-Andalus", "Joseon"); a story that
- *   truly belongs to two writes "Malaysia-Indonesia", otherwise one name;
+ * - the editor types one principal country or older region ("Empayar Inka", "Al-Andalus", "Joseon"); countries merely mentioned
+ *   in the story are not included;
  * - no flags (modern flags are wrong for Inka, Marinid or Joseon settings);
  * - a historical setting may use its own name; the period is explained on the work page.
  *
@@ -97,14 +97,14 @@ export const COUNTRY_OPTIONS: Array<{ code: string; name: string }> = Object.ent
 /** A label is short: it sits on a card next to the reading time. */
 export const MAX_COUNTRY_LENGTH = 40;
 
-/** Stored lists never hold more than two entries (an older work may hold two codes; the editor now types one label). */
-export const MAX_COUNTRIES = 2;
+/** Negara latar is the single principal country/region, never every country mentioned. */
+export const MAX_COUNTRIES = 1;
 
 /** Remove escaped chatbot layout separators before a country reaches the form or database. */
 export function cleanCountryText(raw: string): string {
   return raw
     .replace(/[\u200B-\u200F\u202A-\u202E\u2060\uFEFF]/g, "")
-    .replace(/\s*(?:\\\s*){2,}\s*-?\s*/g, "-")
+    .split(/(?:_{3,}|={3,}|-{3,}|(?:\\\s*){2,})/, 1)[0]!
     .replace(/\s*\\+\s*/g, " ")
     .replace(/\s*[-–—]\s*/g, "-")
     .replace(/-{2,}/g, "-")
@@ -114,7 +114,7 @@ export function cleanCountryText(raw: string): string {
 }
 
 /**
- * The editor types the country or region as it should read on the card ("Jepun", "Empayar Inka", "Al-Andalus", "Malaysia-Indonesia"),
+ * The editor types the principal country or region as it should read on the card ("Jepun", "Empayar Inka", "Al-Andalus"),
  * so it is not limited to today's countries. The dictionary above only suggests names; a stored entry that is one of its codes
  * (older works) is shown as that code's name. Entries are trimmed, unique, at most MAX_COUNTRY_LENGTH long, at most MAX_COUNTRIES.
  */
@@ -148,11 +148,11 @@ export function readingLine(country: string | undefined, readingMinutes: number 
 
 /**
  * What a card shows for a work's country, or undefined when nothing should be shown: nothing entered, or Malaysia alone.
- * Two stored entries (older works) are joined with a hyphen.
+ * Older arrays with several entries display only their first principal entry.
  */
 export function countryLabel(value: unknown): string | undefined {
   const names = normaliseCountries(value).map(countryName);
   if (names.length === 0) return undefined;
   if (names.length === 1 && names[0]!.toLocaleLowerCase("ms") === "malaysia") return undefined;
-  return names.join("-");
+  return names[0];
 }

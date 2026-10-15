@@ -7,7 +7,7 @@
  */
 import { GLOSSARY_FORMAT, GLOSSARY_RULES } from "./glossary-paste";
 import { DEK_RULE } from "./dek-rule";
-import { isPlaceholder } from "./placeholder";
+import { isPlaceholder, withoutAssistantSeparators } from "./placeholder";
 import { isSourcedWork } from "../../content/source-origin";
 import { responseSection } from "./response-sections";
 import { AUTHORING_LABELS, normaliseLabelledLayout } from "./response-layout";
@@ -70,6 +70,7 @@ Peranan: ...${novela ? "\nMuncul: ..." : ""}
 ${existingPlaces}${existingTimes}Latar tempat dan latar masa cerita ini. Jenis: tempat atau masa.
 - Tempat: nama tempat seperti dalam teks (kampung, bandar, bangunan, jalan); hanya tempat yang benar-benar disebut atau jelas daripada teks. Keterangan: 2 hingga 8 patah perkataan tentang tempat itu dalam cerita.
 - Masa: TAHUN, TEMPOH atau ERA cerita ini berlaku (contoh: Mei 1969, Era Darurat 1948–1960, Awal 1990-an). Ini BUKAN waktu pagi, siang, petang atau malam. Keterangan: 2 hingga 8 patah perkataan tentang zaman itu. Jika teks menyatakan lebih daripada satu zaman (contoh: kisah lampau dan kini), tulis satu baris masa bagi setiap zaman, tetapi HANYA zaman yang tahun, dekad atau era-nya boleh ditentukan daripada teks; jangan tulis ungkapan kabur seperti "tahun-tahun kemudian" atau "masa lalu".
+- Negara: SATU negara atau wilayah UTAMA tempat kebanyakan cerita berlaku. Jangan senaraikan semua negara yang disebut, dilalui atau menjadi asal-usul watak. Jika tiada satu latar negara utama yang jelas, jangan isi negara.
 - Jangan meneka. Jika teks tidak menyatakan atau tidak memberi petunjuk yang jelas tentang tahun atau era, tulis hanya satu baris: Tiada latar masa dinyatakan. Begitu juga jika tiada tempat yang jelas: Tiada latar tempat dinyatakan.
 Jenis: tempat
 Nama: (nama tempat)
@@ -78,6 +79,9 @@ ____
 Jenis: masa
 Nama: (tahun, tempoh atau era)
 Keterangan: (2 hingga 8 patah perkataan)
+____
+Jenis: negara
+Nama: (satu negara atau wilayah utama sahaja)
 
 [GLOSARI]
 ${existingTerms}Peraturan glosari:
@@ -189,7 +193,10 @@ function field(block: string[], names: RegExp): string {
 
 // "tidak dinyatakan" is the word the Tambah Karya prompts teach the chatbot for an unknown value; it must not be filled into a field.
 const EMPTY = /^(tiada|tidak ada|tidak dinyatakan|tidak diketahui|-|—|n\/a|perlu semakan editor|\.\.\.)\.?$/i;
-const clean = (v: string) => (EMPTY.test(v.trim()) ? "" : v.trim());
+const clean = (v: string) => {
+  const value = withoutAssistantSeparators(v);
+  return EMPTY.test(value) ? "" : value;
+};
 const yearIn = (v: string): number | null => {
   const m = /(?<![0-9])(1[5-9][0-9]{2}|20[0-9]{2})(?![0-9])/.exec(v);
   return m ? Number(m[1]) : null;
@@ -266,7 +273,7 @@ function parseSetting(text: string): { places: WorkFillResult["places"]; times: 
     }
     else (kind === "masa" ? times : places).push({ name, description });
   }
-  return { places, times, countries: [...new Set(countries.map(country => country.trim()).filter(Boolean))] };
+  return { places, times, countries: [...new Set(countries.map(country => country.trim()).filter(Boolean))].slice(0, 1) };
 }
 
 /** The same name twice in one answer (a repeating chatbot, a doubled paste) is one entry, the first; the lists refuse duplicates when saved. */

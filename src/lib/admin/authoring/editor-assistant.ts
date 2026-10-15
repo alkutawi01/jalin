@@ -2,7 +2,7 @@ import { extractParserJson, stripTrailingCommas } from "../import/parser-output"
 import { parseLabelledAnswer } from "./labelled-output";
 import { parseWorkFill, looksLikePrompt } from "./work-fill";
 import { parseGlossaryPaste, GLOSSARY_RULES } from "./glossary-paste";
-import { isPlaceholder } from "./placeholder";
+import { isPlaceholder, withoutAssistantSeparators } from "./placeholder";
 import { DEK_RULE } from "./dek-rule";
 import { normaliseLabelledLayout } from "./response-layout";
 
@@ -13,7 +13,7 @@ export interface EditorContext { type: string; title: string; body: string; dek?
 const LABELLED_FORMATS: Record<Exclude<EditorScope, "all">, string> = {
   content: `[KARYA]\nTajuk: (tajuk)\nSlug: (alamat-pautan)\nDek: (dek ringkas)\n\n[KANDUNGAN]\n(teks penuh karya, bukan ulasan atau nasihat)`,
   metadata: `[MAKLUMAT]\nGenre: (genre)\nCatatan editor: (jika berkenaan)\nNota pembaca: (jika berkenaan)`,
-  characters: `[WATAK]\nNama: (nama watak sebenar)\nPeranan: (2–6 patah perkataan)\nMuncul di: (slug bab jika novela)\n____\n\n[LATAR]\nJenis: tempat\nNama: (tempat)\nKeterangan: (ringkas)\n____\nJenis: masa\nNama: (tahun, tempoh atau era; bukan pagi/malam)\nKeterangan: (ringkas)\n____\nJenis: negara\nNama: (negara/wilayah yang jelas dalam teks)`,
+  characters: `[WATAK]\nNama: (nama watak sebenar)\nPeranan: (2–6 patah perkataan)\nMuncul di: (slug bab jika novela)\n____\n\n[LATAR]\nJenis: tempat\nNama: (tempat)\nKeterangan: (ringkas)\n____\nJenis: masa\nNama: (tahun, tempoh atau era; bukan pagi/malam)\nKeterangan: (ringkas)\n____\nJenis: negara\nNama: (SATU negara atau wilayah UTAMA tempat kebanyakan cerita berlaku; bukan semua negara yang disebut)`,
   glossary: `[GLOSARI]\nIstilah: (istilah tepat dalam teks)\nMaksud: (maksud mengikut konteks)\nSebutan: (pilihan)\nBahasa asal: (pilihan)\nEjaan asal: (pilihan)\n____`,
   source: `[SUMBER]\nTajuk asal: (nilai atau tidak dinyatakan)\nPengarang asal: (nilai atau tidak dinyatakan)\nBahasa asal: (nilai atau tidak dinyatakan)\nTahun terbit pertama: (nilai atau tidak dinyatakan)\nPenerbit: (nilai atau tidak dinyatakan)\nTahun edisi: (nilai atau tidak dinyatakan)\nCetakan: (nilai atau tidak dinyatakan)\nPenyunting: (nilai atau tidak dinyatakan)\nPenterjemah: (nilai atau tidak dinyatakan)\nISBN: (nilai atau tidak dinyatakan)\nLokasi petikan: (nilai atau tidak dinyatakan)\nAsas teks: (nilai atau tidak dinyatakan)\nURL sumber: (nilai atau tidak dinyatakan)\nNama edisi: (nilai atau tidak dinyatakan)`,
   credits: `[KREDIT]\nSlug penyumbang: (slug sedia ada, atau kosong)\nNama tetamu: (nama sebenar jika bukan penyumbang, atau kosong)\nPeranan: (peranan sebenar)\nNama di bawah tajuk: ya atau tidak\nPaparan awam: ya atau tidak\n____`,
@@ -33,7 +33,7 @@ ${DEK_RULE}
 ${context.type === "bersiri" ? "Ini episod siri. Jangan mereka canon episod lain; minta bahan kesinambungan jika tugasan memerlukannya." : ""}
 ${scope === "glossary" || scope === "all" ? GLOSSARY_RULES : ""}
 ${scope === "source" ? "Semak setiap medan bibliografi secara berasingan. Medan yang tidak diketahui: null, bukan tekaan. Hak bukan output borang AI." : ""}
-${scope === "characters" ? "Semak watak, tempat dan era yang benar-benar berguna kepada editor. Bezakan peranan dan hubungan, elakkan spoiler. Latar masa mesti tahun/era, bukan pagi atau malam. Pulangkan tempat yang penting sahaja; jangan jadikan objek kecil atau keterangan umum sebagai tempat." : ""}
+${scope === "characters" ? "Semak watak, tempat dan era yang benar-benar berguna kepada editor. Bezakan peranan dan hubungan, elakkan spoiler. Latar masa mesti tahun/era, bukan pagi atau malam. Pulangkan tempat yang penting sahaja; jangan jadikan objek kecil atau keterangan umum sebagai tempat. Untuk negara, pulangkan SATU negara atau wilayah UTAMA tempat kebanyakan cerita berlaku. Jangan senaraikan negara yang hanya disebut, dilalui atau menjadi asal-usul watak." : ""}
 ${scope === "content" ? "Pulangkan manuskrip yang benar-benar sedia dimasukkan ke editor. Sunting atau tulis hanya seperti tugasan; jangan menggantikan manuskrip dengan penilaian struktur." : ""}
 FORMAT JAWAPAN: teks biasa berlabel seperti di bawah. Jangan gunakan JSON, jadual Markdown, blok kod, pengenalan atau penutup. Gunakan ____ untuk memisahkan item berulang. Jangan sertakan bahagian luar skop.
 ${format}
@@ -89,7 +89,10 @@ export function placeEntryProblem(row: { name?: unknown; description?: unknown }
 
 export interface EditorChange { id: string; group: Exclude<EditorScope, "all">; label: string; before: string; after: string; selected: boolean; /** Set when this change would be refused on save: the review step shows it and holds "Isi borang". */ problem?: string; value: any; key: string }
 const record = (v: unknown): Record<string, any> => v && typeof v === "object" && !Array.isArray(v) ? v as Record<string, any> : {};
-const text = (v: unknown) => typeof v === "string" && !isPlaceholder(v) ? v.trim() : "";
+const text = (v: unknown) => {
+  const value = withoutAssistantSeparators(v);
+  return value && !isPlaceholder(value) ? value : "";
+};
 const show = (v: unknown): string => typeof v === "string" ? v : v == null ? "" : JSON.stringify(v, null, 2);
 /** What the editor reads for each source field, in the language of the form (the keys are the code's own names). */
 export const SOURCE_FIELD_LABELS: Record<string, string> = { originalTitle: "Tajuk asal", author: "Pengarang asal", originalLanguage: "Bahasa asal", publicationYear: "Tahun terbit pertama", publisher: "Penerbit", editionYear: "Tahun cetakan", printing: "Cetakan ke", editorName: "Penyunting", translatorName: "Penterjemah", isbn: "ISBN", sourceLocator: "Lokasi petikan", sourceTextBasis: "Asas teks dan terjemahan", sourceUrl: "URL sumber", sourceEdition: "Edisi" };
@@ -120,7 +123,7 @@ export function planEditorAnswer(answer: string, scope: EditorScope, state: Edit
   for (const key of ["title", "slug", "body", "dek"] as const) add("content", key, ({ title: "Tajuk", slug: "Alamat pautan", body: "Manuskrip", dek: "Dek" })[key], state.work[key], text(work[key]));
   add("metadata", "genre", "Genre", state.work.genre, text(work.genre));
   if (Array.isArray(data.countries)) {
-    const countries = data.countries.map(text).filter(Boolean);
+    const countries = data.countries.map(text).filter(Boolean).slice(0, 1);
     if (countries.length) add("characters", "countries", "Negara latar", state.work.metadata?.countries, countries);
   }
   for (const key of ["editorNote", "readerNote"]) add("metadata", key, key === "editorNote" ? "Catatan editor" : "Nota pembaca", key === "readerNote" ? state.work.reader?.note : state.work.metadata?.[key], text(work[key]));

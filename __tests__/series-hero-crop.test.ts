@@ -37,6 +37,9 @@ const shown: Array<[string, string]> = [
 ];
 for (const [file, text] of shown) assert(read(file).includes(text), `${file.replace("src/", "")} uses the crop`);
 
+const seriesLanding = read("src/app/kategori/bersiri/[seriesSlug]/page.tsx");
+assert(seriesLanding.includes("const hero = episodeHeroOf(ownHero, series.hero);") && seriesLanding.includes("hero={hero}"), "an episode card without its own picture falls back to the series hero");
+
 // Two more places showed the centre whatever the editor chose: a picture inside an episode's text, and the category cards of the home page.
 assert(read("src/components/reader/EpisodeView.tsx").replace(/\s+/g, " ").includes("<EditorialImage key={index} src={node.src} alt={node.alt} rights={rights} crop={node.crop} />"),"a picture inside an episode's text uses its crop, as one inside a cerpen does");
 assert(read("src/app/page.tsx").includes("style={cropStyle(imageCrop)}") && read("src/app/page.tsx").includes("imageCrop={img?.crop}"), "the home page's category cards use the crop of the picture they show");

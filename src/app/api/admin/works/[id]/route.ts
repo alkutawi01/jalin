@@ -155,7 +155,7 @@ export async function PATCH(
       }
     }
 
-    // Negara latar: a list of known country codes, at most two.
+    // Negara latar: one principal country or historical region.
     let countries: string[] | undefined;
     if (body.countries !== undefined) {
       if (!Array.isArray(body.countries)) {
@@ -163,7 +163,7 @@ export async function PATCH(
       }
       countries = normaliseCountries(body.countries);
       if (countries.length !== new Set(body.countries.filter((c: unknown) => typeof c === "string" && c.trim()).map((c: string) => c.trim().toUpperCase())).size) {
-        return NextResponse.json({ error: "Negara latar tidak sah, atau lebih daripada dua negara dipilih." }, { status: 400 });
+        return NextResponse.json({ error: "Negara latar tidak sah, atau lebih daripada satu negara dipilih." }, { status: 400 });
       }
     }
 

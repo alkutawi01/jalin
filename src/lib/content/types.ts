@@ -163,7 +163,7 @@ export interface Work {
     places?: Array<{ name: string; description?: string }>;
     /** When the story happens (Latar masa): a year, a period or an era, not the time of day. Shown beside the places. */
     times?: Array<{ name: string; description?: string }>;
-    /** Negara latar: ISO-style codes from lib/reader/countries.ts, at most two (two only when the story truly belongs to both). */
+    /** Negara latar: the single principal country/region, stored in a one-item array for compatibility. */
     countries?: string[];
     fragmenTextLanguage?: string;
     /** Free-form note from the editor, shown at the end of the work (origin, what is interesting, ...). */

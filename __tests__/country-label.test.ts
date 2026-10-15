@@ -2,8 +2,9 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import { COUNTRIES, cleanCountryText, countryLabel, countryName, normaliseCountries, readingLine, MAX_COUNTRIES, MAX_COUNTRY_LENGTH } from "../src/lib/reader/countries";
 import { workEyebrow } from "../src/lib/reader/story-collection";
+import { publicCharacters } from "../src/lib/reader/visible-characters";
 
-// Negara latar (12 Okt 2026, Izzat): the editor types the country or region, Malaysia alone is hidden, a story of two writes 'A-B'.
+// Negara latar: one principal country/region only; Malaysia alone is hidden.
 assert.equal(countryLabel(undefined), undefined, 'no country: nothing shown');
 assert.equal(countryLabel([]), undefined, 'empty list: nothing shown');
 assert.equal(countryLabel(['MY']), undefined, 'a stored Malaysia code is not shown (Jalin is Malaysian)');
@@ -14,19 +15,19 @@ assert.equal(countryLabel(['GB-ENG']), 'England');
 assert.equal(countryLabel(['KR']), 'Korea');
 assert.equal(countryLabel(['Empayar Inka']), 'Empayar Inka', 'an older region typed by the editor is shown as typed');
 assert.equal(countryLabel(['Al-Andalus']), 'Al-Andalus');
-assert.equal(countryLabel(['Malaysia-Indonesia']), 'Malaysia-Indonesia', 'a story of two countries is written with a hyphen');
-assert.equal(countryLabel(['MY', 'ID']), 'Malaysia-Indonesia', 'two stored entries are joined with a hyphen');
-assert.equal(cleanCountryText('Czechoslovakia \\\\ -Britain \\\\'), 'Czechoslovakia-Britain', 'escaped chatbot separators are removed');
-assert.deepEqual(normaliseCountries(['Czechoslovakia \\\\ -Britain \\\\']), ['Czechoslovakia-Britain'], 'formatting debris never reaches storage');
+assert.equal(countryLabel(['MY', 'ID']), undefined, 'only the first principal country is used, and Malaysia alone stays hidden');
+assert.equal(cleanCountryText('Czechoslovakia \\\\ -Britain \\\\'), 'Czechoslovakia', 'everything after a leaked chatbot separator is discarded');
+assert.deepEqual(normaliseCountries(['Czechoslovakia \\\\ -Britain \\\\']), ['Czechoslovakia'], 'formatting debris and the appended country never reach storage');
 
-// Entries are trimmed, unique, short and at most two; anything else is dropped.
-assert.deepEqual(normaliseCountries(['  Jepun  ', 'jepun', 5, 'Norway', 'Peru']), ['Jepun', 'Norway']);
+// Entries are trimmed, unique, short and limited to the first principal country; anything else is dropped.
+assert.deepEqual(normaliseCountries(['  Jepun  ', 'jepun', 5, 'Norway', 'Peru']), ['Jepun']);
 assert.deepEqual(normaliseCountries(['x'.repeat(MAX_COUNTRY_LENGTH + 1)]), [], 'too long for a card');
 assert.deepEqual(normaliseCountries(['<b>Jepun</b>']), [], 'no markup');
-assert.equal(MAX_COUNTRIES, 2);
+assert.equal(MAX_COUNTRIES, 1);
 assert.deepEqual(normaliseCountries('Jepun'), [], 'not a list: nothing');
 assert.equal(countryName('PE'), 'Peru');
 assert.equal(countryName('Empayar Inka'), 'Empayar Inka');
+assert.deepEqual(publicCharacters([{ name: 'Grete Winton', role: 'Isteri Nicholas dan penemu rekod lama ____' }]), [{ name: 'Grete Winton', role: 'Isteri Nicholas dan penemu rekod lama' }]);
 
 // The suggestions are plain Malay names, never bare codes.
 for (const [code, name] of Object.entries(COUNTRIES)) {

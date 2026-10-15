@@ -40,6 +40,7 @@ const page = read("src/app/page.tsx");
 const view = read("src/components/reader/StoryCollection.tsx");
 const lib = read("src/lib/reader/story-collection.ts");
 const api = read("src/app/api/koleksi-cerita/route.ts");
+const css = read("src/app/globals.css");
 assert(!page.includes("Karya terbaru") && view.includes("Koleksi cerita"), "the section is called 'Koleksi cerita' and nothing on the page still says 'Karya terbaru'");
 assert(read("src/lib/site-theme.ts").includes('label: "Koleksi cerita"') && !read("src/lib/site-theme.ts").includes("Karya terbaru"), "Tetapan > Warna blok calls the block 'Koleksi cerita' too");
 assert(page.includes("pickCollection(await buildStoryPool())") && !/slice\(0,\s*6\)/.test(page), "the homepage no longer takes the six newest");
@@ -49,6 +50,9 @@ const iEyebrow = view.indexOf("card.eyebrow"), iTitle = view.indexOf("latest-car
 assert(iEyebrow < iTitle && iTitle < iSeries && iSeries < iDek, "order on a card: eyebrow, title, 'Daripada', dek");
 assert(view.includes("Cerita lain") && view.includes('type="button"') && view.includes("aria-live"), "a real button, announced to screen readers");
 assert(view.includes("Cerita lain tidak dapat dimuatkan.") && view.includes("disabled={loading}"), "a failed load says so and a double click is ignored");
+assert(css.includes(".related-works .latest-card-body > .home-work-meta--line {") && css.includes("gap: 6px 10px;") && css.includes("margin-top: auto;") && css.includes("padding-top: 12px;"), "related-work metadata uses the homepage spacing and shares one aligned row across cards");
+assert(css.includes(".related-works .latest-card-body > .home-work-meta--line span + span::before {") && css.includes('content: "·";'), "related-work metadata uses the same dot separator as homepage cards");
+assert(css.includes(".home-work-meta--line + .latest-card-footer {") && css.includes("margin-top: 12px;"), "the related-work divider sits consistently below its aligned metadata row");
 assert(api.includes("force-dynamic") && api.includes("no-store") && !api.includes("admin"), "the API is public, read-only and never cached");
 assert(!/\/api\/koleksi-cerita/.test(read("src/middleware.ts")), "the middleware leaves the public API alone");
 

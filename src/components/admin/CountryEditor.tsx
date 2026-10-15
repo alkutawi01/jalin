@@ -73,8 +73,8 @@ export default function CountryEditor({ workId }: { workId: string }) {
       <p className="admin-form-hint">
         Negara atau wilayah tempat cerita ini berlaku, ditaip seperti yang mahu dibaca pada kad (contoh: Jepun, Empayar Inka,
         Al-Andalus). Bukan kampung, lorong atau daerah. Isi hanya jika teks menyatakannya atau jelas menunjukkannya; jika perlu
-        meneka, biarkan kosong. Malaysia sahaja tidak dipaparkan. Jika cerita itu benar-benar milik dua negara, tulis
-        Malaysia-Indonesia. Cadangan di bawah termasuk Latar tempat karya ini.
+        meneka, biarkan kosong. Isi SATU negara atau wilayah utama tempat kebanyakan cerita berlaku; jangan masukkan negara yang
+        hanya disebut, dilalui atau menjadi asal-usul watak. Malaysia sahaja tidak dipaparkan. Cadangan di bawah termasuk Latar tempat karya ini.
       </p>
       {error ? <div className="admin-alert admin-alert-error" role="alert">{error}</div> : null}
       {success ? <div className="admin-alert admin-alert-success" role="status">{success}</div> : null}

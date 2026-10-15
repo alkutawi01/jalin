@@ -25,7 +25,11 @@ assert.equal(planEditorAnswer(answer, "sections", { ...state, work: { ...state.w
 assert.equal(planEditorAnswer("Ini nasihat sahaja.", "content", state).length, 0);
 assert.equal(planEditorAnswer('{"countries":["Jepun"]}', "characters", state)[0]?.key, "countries");
 assert.deepEqual(planEditorAnswer("[LATAR]\nJenis: negara\nNama: Jepun", "characters", state)[0]?.value, ["Jepun"]);
-assert.deepEqual(planEditorAnswer("[LATAR]\nJenis: negara\nNama: Czechoslovakia \\\\ -Britain \\\\" , "characters", state)[0]?.value, ["Czechoslovakia-Britain"]);
+assert.deepEqual(planEditorAnswer("[LATAR]\nJenis: negara\nNama: Czechoslovakia \\\\ -Britain \\\\" , "characters", state)[0]?.value, ["Czechoslovakia"]);
+assert.deepEqual(planEditorAnswer('{"countries":["Czechoslovakia","Britain"]}', "characters", state)[0]?.value, ["Czechoslovakia"], "only the principal country is accepted");
+const debris = planEditorAnswer("[WATAK]\nNama: Grete Winton\nPeranan: Isteri Nicholas dan penemu rekod lama ____", "characters", state)[0]?.value;
+assert.equal(debris.role, "Isteri Nicholas dan penemu rekod lama", "a leaked item separator is not stored as character text");
+assert.match(buildEditorPrompt("characters", { type: "cerpen", title: "", body: "" }), /SATU negara atau wilayah UTAMA/);
 assert.equal(planEditorAnswer('{"countries":["Jepun"]}', "content", state).length, 0);
 assert.equal(planEditorAnswer("[KARYA]\nTajuk: Cerita\n[SUMBER]\nTajuk: Buku asal", "content", state).find(c => c.key === "title")?.value, "Cerita", "source title never leaks into content");
 assert.throws(() => planEditorAnswer(buildEditorPrompt("all", { type: "cerpen", title: "", body: "Aina" }, ""), "all", state), /arahan/);

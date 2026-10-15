@@ -2,7 +2,7 @@ import { displayVersion } from "@/lib/admin/version-label";
 import { ContinueNav } from "./ReadingNav";
 import { ChapterHead, NovelaIntro, readingMinutesOf, type ChapterRow } from "./NovelaChapters";
 import { chapterReadingRows } from "../../lib/reader/reading-time";
-import { visibleCharacters } from "../../lib/reader/visible-characters";
+import { publicCharacters, visibleCharacters } from "../../lib/reader/visible-characters";
 import { publicPlaces, publicTimes } from "../../lib/reader/places";
 import { notFound } from "next/navigation";
 import { displayableGenre } from "../../lib/reader/genre-display";
@@ -148,11 +148,7 @@ export default async function WorkView({
   const byline = bylineFor(work);
   const typeLabel = TYPE_LABELS[type] ?? type;
   const baseMeta = buildMetaRows(work);
-  const allCharacters: CharacterMeta[] = (work.metadata?.characters ?? []).map(({ name, role, firstAppearanceSection }) => ({
-    name,
-    role,
-    firstAppearanceSection
-  }));
+  const allCharacters: CharacterMeta[] = publicCharacters(work.metadata?.characters);
   const editorial = projectEditorialCredits(work.credits);
   const aiSummary = (work.type === "cerpen" || work.type === "novela" || work.type === "bersiri") && hasDb() ? await publicRatingSummary(getDb(), work.id) : null;
   const aiRating = aiSummary ? { workId: work.slug, summary: aiSummary } : undefined;

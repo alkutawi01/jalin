@@ -15,6 +15,7 @@ import { formatMalayDate } from "../../../../lib/reader/format-date";
 import { OG_SITE, absoluteUrl, clipDescription, shareImage, DEFAULT_SHARE_IMAGE } from "../../../../lib/seo";
 import { jsonLdString, seriesJsonLd } from "../../../../lib/seo-jsonld";
 import { seriesStatusLabel } from "../../../../lib/reader/series-status";
+import { episodeHeroOf } from "../../../../lib/reader/chapter-visuals";
 
 export const dynamic = "force-dynamic";
 export const dynamicParams = true;
@@ -119,7 +120,8 @@ export default async function SeriesLandingPage({
               <h2 id="series-episodes" className="series-section-title">Episod</h2>
               <ol className="episode-grid">
                 {byPosition.map((episode) => {
-                  const hero = repo.getWork(episode.slug)?.visuals.find((visual) => visual.role === "hero");
+                  const ownHero = repo.getWork(episode.slug)?.visuals.find((visual) => visual.role === "hero");
+                  const hero = episodeHeroOf(ownHero, series.hero);
                   const year = (episode.publishedAt ?? "2026").slice(0, 4);
                   return (
                     <li key={episode.slug} className="episode-card">
@@ -128,7 +130,7 @@ export default async function SeriesLandingPage({
                           <WorkCover
                             type="bersiri"
                             title={episode.title}
-                            hero={hero?.src ? { src: hero.src, alt: hero.alt ?? "" } : undefined}
+                            hero={hero}
                             rightsYear={year}
                             sizes="(max-width: 640px) 100vw, 320px"
                             quality={85}

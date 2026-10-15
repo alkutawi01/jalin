@@ -22,6 +22,7 @@ import ReaderTypography from "./ReaderTypography";
 import { extractFootnotes, markFootnoteReferences } from "../../lib/reader/footnotes";
 import MobileStoryInfo from "./MobileStoryInfo";
 import { publicPlaces, publicTimes } from "../../lib/reader/places";
+import { publicCharacters } from "../../lib/reader/visible-characters";
 import { initContentRepository } from "../../lib/content";
 import { getWorkBySlug, getWorksByType } from "../../lib/content/workLoader";
 import {
@@ -89,7 +90,7 @@ export default function EpisodeView({
     { label: "Versi", value: displayVersion(work.versionLabel || work.version) }
   ];
 
-  const characters: CharacterMeta[] = work.metadata?.characters ?? [];
+  const characters: CharacterMeta[] = publicCharacters(work.metadata?.characters);
   const places = publicPlaces(work.metadata);
   const times = publicTimes(work.metadata);
 

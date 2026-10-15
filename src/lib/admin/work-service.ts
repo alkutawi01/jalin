@@ -44,7 +44,7 @@ export interface WorkInput {
   readerNote?: string;
   /** Cerpen/Novela: "sumber" when taken from another source, "asli" (or empty) for Jalin's own. Stored in works.metadata. */
   origin?: string;
-  /** Negara latar (codes from lib/reader/countries.ts, at most two); an empty list removes it. Stored in works.metadata. */
+  /** Negara latar (one principal country/region); an empty list removes it. Stored in works.metadata. */
   countries?: string[];
 }
 

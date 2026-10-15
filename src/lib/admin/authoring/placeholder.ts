@@ -5,7 +5,16 @@
 export function isPlaceholder(value: unknown): boolean {
   if (typeof value !== "string") return false;
   const v = value.trim();
-  return v.length >= 8 && v.startsWith("(") && v.endsWith(")");
+  return /^(?:_{3,}|={3,}|-{3,}|(?:\\\s*){2,})$/.test(v) || (v.length >= 8 && v.startsWith("(") && v.endsWith(")"));
+}
+
+/** Strip a repeated-item separator that a chatbot accidentally attached to a field value. */
+export function withoutAssistantSeparators(value: unknown): string {
+  if (typeof value !== "string") return "";
+  return value
+    .replace(/[\u200B-\u200F\u202A-\u202E\u2060\uFEFF]/g, "")
+    .split(/(?:_{3,}|={3,}|-{3,}|(?:\\\s*){2,})/, 1)[0]!
+    .trim();
 }
 
 /** Names of public fields of a work that still hold a placeholder (Malay labels, for the editor). */

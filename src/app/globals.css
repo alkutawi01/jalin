@@ -4134,6 +4134,35 @@ ul.latest-grid > li > .latest-card { flex: 1 1 auto; min-width: 0; }
   .related-works .latest-grid.related-works-grid, .related-works .latest-grid.related-works-grid-single { grid-template-columns: minmax(0, 1fr); }
 }
 
+/* "Baca lagi" reuses the homepage card markup outside `.homepage`, so its
+   reading details need their own layout here. Pin the metadata row to the
+   bottom of the flexible card body: cards with different synopsis lengths
+   then keep the divider and action on one horizontal line. */
+.related-works .latest-card-body > .home-work-meta--line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  margin-top: auto;
+  padding-top: 12px;
+  color: var(--ink-soft);
+  font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif;
+  font-size: 12px;
+  line-height: 1.4;
+  font-variant-numeric: tabular-nums;
+}
+.related-works .latest-card-body > .home-work-meta--line span {
+  white-space: nowrap;
+}
+.related-works .latest-card-body > .home-work-meta--line span + span::before {
+  content: "·";
+  margin-right: 10px;
+  color: var(--line-strong, #b8afa3);
+}
+.related-works .latest-card-body > .home-work-meta--line + .latest-card-footer {
+  margin-top: 12px;
+}
+
 /* "Nota kaki": the story-body h2 sizes (1.2 to 1.32em of the text) were winning over the label size, so the heading came out as large as a sub-heading. A label at 15px. */
 .story-body .footnotes-title { font-size: 15px; line-height: 1.4; letter-spacing: .14em; margin: 0 0 12px; }
 /* Back to top: a round button at the lower right, shown once the reader is far down the page. */

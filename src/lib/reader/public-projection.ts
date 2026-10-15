@@ -26,7 +26,7 @@ export interface PublicWorkSummary {
   slug: string;
   title: string;
   genre?: string;
-  /** Negara latar as shown on a card ("Jepun", "Malaysia-Indonesia"); absent for no country or for Malaysia alone. */
+  /** Principal country/region as shown on a card ("Jepun"); absent for no country or for Malaysia alone. */
   country?: string;
   dek?: string;
   readingMinutes?: number;
