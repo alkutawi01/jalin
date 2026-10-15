@@ -41,3 +41,8 @@ assert.equal(parseWorkFill("[KARYA]\nDek: Dek lama\nGenre: Misteri", "metadata")
 assert.equal(parseWorkFill("[WATAK]\n| Nama | Peranan |\n| --- | --- |\n| Aina | Jiran Ali |\n| Ali | Jiran Aina |", "characters").characters.length, 2);
 assert.equal(parseGlossaryPaste("[GLOSARI]\n| Istilah | Maksud |\n| --- | --- |\n| gundah | Berasa resah |", "Aina gundah di rumah.", []).items[0]?.meaning, "Berasa resah");
 console.log("Layout tolerance: seven malformed layouts, all scoped destinations and exact manuscript preservation passed");
+
+// An untyped setting must not be silently classified as a place.
+const ambiguousSetting = parseWorkFill("[LATAR]\nNama: Bangunan lama\nKeterangan: Latar tidak jelas", "characters");
+assert.equal(ambiguousSetting.places.length, 0, "untyped setting is not guessed as a place");
+assert.equal(ambiguousSetting.times.length, 0, "untyped setting is not guessed as a time");
