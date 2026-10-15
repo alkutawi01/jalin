@@ -11,6 +11,7 @@ import { validatePlaceEntries, validateTimeEntries } from "../work-service";
 import { upsertSourceProvenance, type SourceProvenanceInput } from "../source-rights";
 import { planEditorAnswer, SOURCE_FIELDS, EDITOR_SCOPES, type EditorScope, type EditorState } from "./editor-assistant";
 import { parseGlossaryPaste } from "./glossary-paste";
+import { normaliseCountries, MAX_COUNTRY_LENGTH } from "../../reader/countries";
 
 export interface EditorAnswerRequest { action: "preview" | "apply"; text: string; scope: EditorScope; selected?: string[]; version?: string }
 export interface EditorAnswerPermissions { source: boolean; credits: boolean; glossary: boolean }
@@ -70,6 +71,11 @@ export async function processEditorAnswer(id: string, input: EditorAnswerRequest
         else patch[change.key] = row;
       } else if (change.group === "characters") {
         const key = change.key.split("/")[0]!;
+        if (key === "countries") {
+          if (row.some((value: string) => value.length > MAX_COUNTRY_LENGTH)) throw new Error("Nama negara latar terlalu panjang.");
+          metadata.countries = normaliseCountries(row);
+          continue;
+        }
         const current = Array.isArray(metadata[key]) ? [...metadata[key]] : [];
         const next = key === "characters" ? { name: clean(row.name), role: clean(row.role), firstAppearanceSection: clean(row.firstAppearanceSection) || null } : { name: clean(row.name), description: clean(row.description) };
         if (!next.name || (key === "characters" && !("role" in next && next.role))) throw new Error("Watak mesti mempunyai nama dan peranan.");

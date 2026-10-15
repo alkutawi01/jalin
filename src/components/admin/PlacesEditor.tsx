@@ -90,7 +90,7 @@ export default function PlacesEditor({ workId, kind = "places" }: { workId: stri
   }
 
   return (
-    <div className="admin-places">
+    <div className="admin-places" data-unsaved={dirty || saving}>
       <div className="admin-credits-header">
         <h3>{cfg.title}</h3>
         <button

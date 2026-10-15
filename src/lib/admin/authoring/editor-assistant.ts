@@ -13,7 +13,7 @@ export interface EditorContext { type: string; title: string; body: string; dek?
 const FORMATS = {
   content: { work: { title: "Tajuk", slug: "tajuk", body: "TEKS PENUH, bukan nasihat", dek: "Dek pendek" } },
   metadata: { work: { genre: "Genre", editorNote: "Catatan editor jika diberikan", readerNote: "Nota pembaca jika diberikan" } },
-  characters: { characters: [{ name: "Nama", role: "Peranan ringkas", firstAppearanceSection: "slug-bab atau null" }], places: [{ name: "Tempat", description: "Keterangan" }], times: [{ name: "Tahun/era", description: "Keterangan" }] },
+  characters: { characters: [{ name: "Nama", role: "Peranan ringkas", firstAppearanceSection: "slug-bab atau null" }], places: [{ name: "Tempat", description: "Keterangan" }], times: [{ name: "Tahun/era", description: "Keterangan" }], countries: ["Negara/wilayah sebenar jika jelas dalam teks, bukan tekaan"] },
   glossary: { glossary: [{ term: "Istilah dalam teks", meaning: "Maksud mengikut konteks", pronunciation: "pilihan", originalText: "pilihan", originalLanguage: "pilihan" }] },
   source: { source: { originalTitle: "Tajuk asal", author: "Pengarang asal", originalLanguage: "Bahasa asal", publicationYear: null, publisher: "Penerbit jika diketahui", editionYear: null, printing: "Cetakan", editorName: "Penyunting", translatorName: "Penterjemah", isbn: "ISBN", sourceLocator: "Lokasi petikan", sourceTextBasis: "Asas teks", sourceUrl: "URL sumber", sourceEdition: "Nama edisi" } },
   credits: { credits: [{ contributorSlug: "slug penyumbang sedia ada ATAU null", guestName: "nama tetamu ATAU null", roleLabel: "initial_draft atau peranan sebenar", byline: true, isPublic: true }] },
@@ -100,6 +100,10 @@ export function planEditorAnswer(answer: string, scope: EditorScope, state: Edit
   const work = { ...data, ...record(data.work), ...record(data.metadata) };
   for (const key of ["title", "slug", "body", "dek"] as const) add("content", key, ({ title: "Tajuk", slug: "Alamat pautan", body: "Manuskrip", dek: "Dek" })[key], state.work[key], text(work[key]));
   add("metadata", "genre", "Genre", state.work.genre, text(work.genre));
+  if (Array.isArray(data.countries)) {
+    const countries = data.countries.map(text).filter(Boolean);
+    if (countries.length) add("characters", "countries", "Negara latar", state.work.metadata?.countries, countries);
+  }
   for (const key of ["editorNote", "readerNote"]) add("metadata", key, key === "editorNote" ? "Catatan editor" : "Nota pembaca", key === "readerNote" ? state.work.reader?.note : state.work.metadata?.[key], text(work[key]));
   for (const [key, group] of [["characters", "characters"], ["places", "characters"], ["times", "characters"], ["glossary", "glossary"], ["credits", "credits"], ["sections", "sections"]] as const) {
     if (!owns(group) || !Array.isArray(data[key])) continue;

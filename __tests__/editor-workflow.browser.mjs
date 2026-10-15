@@ -167,6 +167,11 @@ try {
   await assistant.locator("summary").first().click();
   await assistant.getByLabel("Jawapan AI — boleh tampal secara manual").fill(mixed);
   const beforeAssistant = patches;
+  await page.getByLabel("Negara atau wilayah", { exact: true }).fill("Jepun");
+  await assistant.getByRole("button", { name: "Semak jawapan", exact: true }).click();
+  await assistant.getByRole("alert").filter({ hasText: "Simpan atau batalkan" }).waitFor();
+  assert.equal(await page.getByLabel("Negara atau wilayah", { exact: true }).inputValue(), "Jepun", "unsaved child form cannot be lost during AI refresh");
+  await page.getByLabel("Negara atau wilayah", { exact: true }).fill("");
   await assistant.getByRole("button", { name: "Semak jawapan", exact: true }).click();
   await assistant.getByRole("button", { name: "Sahkan & isi (1)" }).waitFor();
   assert.equal(characters.length, 0);

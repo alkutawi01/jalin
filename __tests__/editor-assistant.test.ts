@@ -23,6 +23,8 @@ assert.equal(planEditorAnswer('[KREDIT]\nSlug penyumbang\n\nchatgpt\nPeranan = i
 assert.equal(planEditorAnswer('[BAB]\nSlug: bab-1\nTajuk: Pulang\nTeks:\nAina pulang.\n\nDia diam.', "sections", state)[0]?.value.body.trim(), "Aina pulang.\n\nDia diam.");
 assert.equal(planEditorAnswer(answer, "sections", { ...state, work: { ...state.work, type: "cerpen" } }).length, 0);
 assert.equal(planEditorAnswer("Ini nasihat sahaja.", "content", state).length, 0);
+assert.equal(planEditorAnswer('{"countries":["Jepun"]}', "characters", state)[0]?.key, "countries");
+assert.equal(planEditorAnswer('{"countries":["Jepun"]}', "content", state).length, 0);
 assert.equal(planEditorAnswer("[KARYA]\nTajuk: Cerita\n[SUMBER]\nTajuk: Buku asal", "content", state).find(c => c.key === "title")?.value, "Cerita", "source title never leaks into content");
 assert.throws(() => planEditorAnswer(buildEditorPrompt("all", { type: "cerpen", title: "", body: "Aina" }, ""), "all", state), /arahan/);
 console.log("Unified editor: prompts, all scopes, selective changes, JSON/layout tolerance, prose preservation and advice rejection passed");

@@ -66,7 +66,7 @@ export default function WorkVisualUpload({ workId, onDone, hasHero, published, s
   }
 
   return (
-    <div className="admin-credit-form" style={{ marginBottom: 16 }}>
+    <div className="admin-credit-form" data-unsaved={!!file || !!alt.trim() || busy} style={{ marginBottom: 16 }}>
       <h4 style={{ margin: "0 0 8px" }}>Tambah gambar</h4>
       <p className="admin-form-hint">
         Pilih imej (PNG/JPEG/WebP, maksimum {MAX_UPLOAD_LABEL}). Muat naik menyimpan dan memautkan gambar terus; tidak perlu tekan “Simpan teks &amp; maklumat” selepasnya.

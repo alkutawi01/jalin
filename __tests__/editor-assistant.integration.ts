@@ -38,6 +38,10 @@ async function main() {
     await call({ action: "apply", scope: "all", text, selected: preview.changes.map(c => c.id), version: preview.version });
     const work = await db.selectFrom("works").selectAll().executeTakeFirstOrThrow();
     assert.equal(work.title, "Baharu"); assert.equal(work.status, "draft"); assert.ok(work.reading_minutes! > 0);
+    const countriesText = '{"countries":["Jepun"]}';
+    const countriesPreview = await call({ action: "preview", scope: "characters", text: countriesText });
+    await call({ action: "apply", scope: "characters", text: countriesText, selected: ["characters:countries"], version: countriesPreview.version });
+    assert.deepEqual((await db.selectFrom("works").selectAll().executeTakeFirstOrThrow()).metadata?.countries, ["Jepun"]);
     assert.equal((await db.selectFrom("credits").selectAll().execute()).length, 1);
     assert.equal((await db.selectFrom("glossary_terms").selectAll().execute()).length, 1);
     assert.equal((await db.selectFrom("reading_sections").selectAll().execute())[0].slug, "bab-1");

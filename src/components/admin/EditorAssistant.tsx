@@ -22,7 +22,7 @@ export default function EditorAssistant({ workId, scope, context, blocked, onApp
     } catch (e) { setError(errorText(e, "Arahan tidak dapat disalin.")); }
   }
   async function request(text: string, apply = false) {
-    if (blocked) { setError("Simpan atau batalkan perubahan manual dahulu supaya kerja anda tidak hilang."); return; }
+    if (blocked || document.querySelector('[data-unsaved="true"]')) { setError("Simpan atau batalkan perubahan manual dahulu supaya kerja anda tidak hilang."); return; }
     setError(""); setBusy(true);
     if (!apply) setPreview(null);
     try {

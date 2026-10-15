@@ -66,7 +66,7 @@ export default function CountryEditor({ workId }: { workId: string }) {
   }
 
   return (
-    <div className="admin-places">
+    <div className="admin-places" data-unsaved={dirty || saving}>
       <div className="admin-credits-header">
         <h3>Negara Latar</h3>
       </div>

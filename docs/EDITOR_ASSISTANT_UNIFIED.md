@@ -8,6 +8,8 @@ Aliran: Salin arahan → Tampal jawapan → pratonton nilai lama/baharu dengan p
 
 Kredit memerlukan identiti/peranan sebenar; bab hanya untuk novela, alamat bab awam tidak ditukar dan bab sedia ada tidak dipadam. Hak tetap melalui semakan manusia. Penulisan/suntingan kandungan mengekalkan penanda imej dan nota kaki sedia ada. Tempoh bacaan dikira sistem.
 
+Negara latar turut boleh diisi master/pembantu Watak & latar. Borang negara, tempat/masa dan gambar yang belum disimpan menyekat tindakan AI sebelum penyegaran halaman, supaya input setempat tidak hilang.
+
 ## Semakan
 
 - `npx tsx __tests__/editor-assistant.test.ts`: kontrak master dan tujuh tab, skop, nilai lama/baharu, format JSON/label, pemeliharaan prosa dan penolakan arahan/nasihat sebagai input.
