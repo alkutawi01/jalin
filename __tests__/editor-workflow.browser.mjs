@@ -1,15 +1,98 @@
 /**
- * Local, no-production-data editor simulation. Start the app with
- * ADMIN_DEV_BYPASS=true npm run dev -- -p 3100, then run this file.
+ * Local, no-production-data editor simulation.
+ *
+ * The file starts its own isolated dev server (ADMIN_DEV_BYPASS=true, no DATABASE_URL) on a free
+ * port, runs the flow and stops that server again, so `npm run test:editor-ui` needs no account, no
+ * production data and no server started by hand. Set EDITOR_TEST_URL to reuse an already running
+ * server instead; set EDITOR_TEST_PORT to pin the port of the server this file starts.
  * Playwright intercepts admin APIs with in-memory fixtures, so no DB is written.
  */
 import assert from "node:assert/strict";
+import net from "node:net";
 import os from "node:os";
 import path from "node:path";
+import { spawn, spawnSync } from "node:child_process";
+import { openSync } from "node:fs";
 import { chromium } from "playwright";
 
-const base = process.env.EDITOR_TEST_URL || "http://localhost:3100";
+const root = process.cwd();
 const chrome = process.env.EDITOR_CHROME_PATH || "C:/Program Files/Google/Chrome/Application/chrome.exe";
+
+/** A port nothing is listening on; the test never reuses a server someone else left running. */
+function freePort() {
+  if (process.env.EDITOR_TEST_PORT) return Promise.resolve(Number(process.env.EDITOR_TEST_PORT));
+  return new Promise((resolve, reject) => {
+    const probe = net.createServer();
+    probe.unref();
+    probe.on("error", reject);
+    probe.listen(0, "127.0.0.1", () => {
+      const { port } = probe.address();
+      probe.close(() => resolve(port));
+    });
+  });
+}
+
+/** The dev server itself, tree-killed on Windows so no listener survives the test. */
+let server = null;
+function stopServer() {
+  if (!server) return;
+  const { pid } = server;
+  server = null;
+  try {
+    if (process.platform === "win32") spawnSync("taskkill", ["/pid", String(pid), "/T", "/F"], { stdio: "ignore" });
+    else process.kill(-pid, "SIGTERM");
+  } catch {}
+}
+
+async function waitForServer(url, child, timeoutMs, devLog) {
+  const deadline = Date.now() + timeoutMs;
+  let last = "";
+  while (Date.now() < deadline) {
+    if (child.exitCode !== null) throw new Error(`Next dev exited with code ${child.exitCode} before ${url} answered; see ${devLog}.`);
+    try {
+      const response = await fetch(url, { redirect: "manual" });
+      const location = response.headers.get("location") || "";
+      // A redirect to the login page means this server is not running with ADMIN_DEV_BYPASS.
+      if (response.status === 200 && !location.includes("/admin/login")) return;
+      last = `status ${response.status}${location ? ` -> ${location}` : ""}`;
+    } catch (error) {
+      last = error.message;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  }
+  throw new Error(`Timed out waiting for ${url} (${last}); see ${devLog}.`);
+}
+
+async function startServer() {
+  const port = await freePort();
+  const url = `http://127.0.0.1:${port}`;
+  const nextBin = path.join(root, "node_modules", "next", "dist", "bin", "next");
+  const devLog = path.join(os.tmpdir(), "jalin-editor-ui-dev.log");
+  const logFd = openSync(devLog, "w");
+  const child = spawn(process.execPath, [nextBin, "dev", "--port", String(port)], {
+    cwd: root,
+    // ADMIN_DEV_BYPASS is development-only (see src/middleware.ts); an empty DATABASE_URL keeps this
+    // run away from any database, so a stray .env.local cannot point it at real data.
+    env: { ...process.env, ADMIN_DEV_BYPASS: "true", DATABASE_URL: "", DATABASE_URL_UNPOOLED: "" },
+    stdio: ["ignore", logFd, logFd],
+    detached: process.platform !== "win32"
+  });
+  child.on("error", () => {});
+  server = child;
+  try {
+    await waitForServer(`${url}/admin/works/add`, child, 240_000, devLog);
+  } catch (error) {
+    stopServer();
+    throw error;
+  }
+  console.log(`dev server ready at ${url} (ADMIN_DEV_BYPASS, no database)`);
+  return url;
+}
+
+const base = process.env.EDITOR_TEST_URL || (await startServer());
+process.on("exit", stopServer);
+process.on("SIGINT", () => { stopServer(); process.exit(130); });
+process.on("SIGTERM", () => { stopServer(); process.exit(143); });
 const id = "JLN-CER-UI-TEST";
 const imageSrc = (color) => `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="640" height="400"><rect width="640" height="400" fill="${color}"/></svg>`)}`;
 const file = { name: "ujian.png", mimeType: "image/png", buffer: Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=", "base64") };
@@ -205,10 +288,10 @@ try {
 
   await page.getByRole("button", { name: "Kandungan", exact: true }).click();
   await page.getByRole("button", { name: "Markdown", exact: true }).click();
-  await page.getByLabel("Teks alternatif * (satu ayat menerangkan gambar untuk pembaca yang tidak nampak gambar)").fill("Kereta di tepi jalan.");
+  await page.getByLabel("Teks alternatif (pilihan; satu ayat untuk pembaca yang tidak nampak gambar)").fill("Kereta di tepi jalan.");
   await page.getByLabel("Fail imej *").setInputFiles(file);
   await page.getByRole("button", { name: "Muat naik & pautkan" }).click();
-  await page.getByText("Gambar utama", { exact: true }).last().waitFor();
+  await page.locator(".work-image-card").first().getByText("Gambar utama", { exact: true }).waitFor();
   assert.equal(visuals[0].role, "hero");
   const patchBeforeReplacement = patches;
   await page.locator(".work-image-card").first().locator('input[type="file"]').setInputFiles(file);
@@ -224,7 +307,7 @@ try {
   assert.match(await manuscript.inputValue(), /\[\[gambar:1\]\]/);
   await page.getByRole("button", { name: "Simpan teks & maklumat" }).click();
   assert.match(work.body, /\[\[gambar:1\]\]/);
-  await page.getByLabel("Teks alternatif * (satu ayat menerangkan gambar untuk pembaca yang tidak nampak gambar)").fill("Aina berdiri di sisi kereta.");
+  await page.getByLabel("Teks alternatif (pilihan; satu ayat untuk pembaca yang tidak nampak gambar)").fill("Aina berdiri di sisi kereta.");
   await page.getByLabel("Fail imej *").setInputFiles(file);
   await page.getByLabel("Penanda gambar dalam manuskrip *").selectOption("[[gambar:1]]");
   await page.getByRole("button", { name: "Muat naik & pautkan" }).click();
@@ -256,4 +339,5 @@ try {
   }
 } finally {
   await browser.close();
+  stopServer();
 }
