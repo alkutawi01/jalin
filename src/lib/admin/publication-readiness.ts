@@ -426,14 +426,6 @@ export function evaluatePublicationReadinessFromData(
       issue("dek_missing", "Ringkasan belum diisi. Disyorkan untuk senarai awam.")
     );
   }
-  if (isSourcedWork(String(work.type), work.metadata)) {
-    contentWarnings.push(
-      issue(
-        "provenance_expected",
-        "Karya turunan (Sinopsis/Terjemahan/Fragmen): butiran sumber disemak melalui semakan hak."
-      )
-    );
-  }
   if (glossary.length === 0) {
     contentWarnings.push(
       issue("glossary_empty", "Glosari kosong. Disyorkan sekurang-kurangnya beberapa istilah.")

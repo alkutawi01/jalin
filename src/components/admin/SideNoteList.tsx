@@ -98,6 +98,7 @@ export default function SideNoteList({
                   <button
                     type="button"
                     className="admin-btn admin-btn-danger admin-btn-sm"
+                    aria-label={`Padam nota tanpa nombor ${item.label}`}
                     onClick={async () => {
                       if (!(await confirmAction(`Padam nota tanpa nombor [^${item.label}]?`, { danger: true, confirmLabel: "Padam nota" }))) return;
                       onChange(removeFootnote(body, item.label));

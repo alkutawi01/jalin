@@ -150,7 +150,7 @@ export default function PlacesEditor({ workId, kind = "places" }: { workId: stri
                     />
                   </td>
                   <td>
-                    <button type="button" className="admin-btn admin-btn-sm admin-btn-danger" onClick={() => { setPlaces(places.filter((_, i) => i !== index)); setSelected((prev) => prev.filter((i) => i !== index).map((i) => i > index ? i - 1 : i)); }}>
+                    <button type="button" className="admin-btn admin-btn-sm admin-btn-danger" aria-label={`Padam ${cfg.noun} ${place.name || index + 1}`} onClick={() => { setPlaces(places.filter((_, i) => i !== index)); setSelected((prev) => prev.filter((i) => i !== index).map((i) => i > index ? i - 1 : i)); }}>
                       Padam
                     </button>
                   </td>
