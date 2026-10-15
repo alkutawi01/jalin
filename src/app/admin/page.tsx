@@ -1,3 +1,4 @@
+import { sql } from "kysely";
 import { initContentRepository } from "../../lib/content";
 import { getAllWorks } from "../../lib/content/workLoader";
 import { hasDb } from "../../lib/db";
@@ -30,12 +31,31 @@ async function loadSeriesOf(): Promise<Map<string, string>> {
   }
 }
 
+/** A real round trip to the database, not only "is DATABASE_URL set": the green chip must mean it answered. */
+async function pingDatabase(): Promise<{ ok: boolean; message: string | null }> {
+  if (!hasDb()) return { ok: false, message: "DATABASE_URL belum ditetapkan." };
+  try {
+    await Promise.race([
+      sql`select 1`.execute(getDb()),
+      new Promise((_, reject) => setTimeout(() => reject(new Error("Pangkalan data tidak menjawab dalam 4 saat.")), 4000))
+    ]);
+    return { ok: true, message: null };
+  } catch (error) {
+    return { ok: false, message: error instanceof Error ? error.message.slice(0, 160) : "Ralat tidak diketahui." };
+  }
+}
+
+function reasonOf(error: unknown): string {
+  return error instanceof Error && error.message ? error.message.slice(0, 160) : "Ralat tidak diketahui.";
+}
+
 async function getStats() {
   if (!hasDb()) {
     return {
       contentSource: "markdown",
       counts: countWorks(getAllWorks().map((w) => ({ type: w.type, status: "published" }))),
       editorialHealth: null,
+      healthError: null as string | null,
     };
   }
 
@@ -46,16 +66,18 @@ async function getStats() {
   const works = (await listWorks()).filter((work) => !isUntouchedProvisionalDraft(work));
   
   let editorialHealth = null;
+  let healthError: string | null = null;
   try {
     editorialHealth = await getEditorialHealth();
   } catch (e) {
-    // Ignore errors for now
+    healthError = reasonOf(e);
   }
 
   return {
     contentSource: useDb ? "database" : "markdown",
     counts: countWorks(works, await loadSeriesOf()),
     editorialHealth,
+    healthError,
   };
 }
 
@@ -68,12 +90,12 @@ const TODO_GROUPS: { status: string; title: string; hint: string }[] = [
   { status: "blocked", title: "Bertanda sedia tetapi disekat", hint: "Status Sedia, tetapi satu semakan masih gagal. Buka untuk melihat puncanya." }
 ];
 
-async function getTodo() {
-  if (!hasDb()) return null;
+async function getTodo(): Promise<{ works: Awaited<ReturnType<typeof listWorks>> | null; error: string | null }> {
+  if (!hasDb()) return { works: null, error: "Pangkalan data tidak tersedia." };
   try {
-    return (await listWorks()).filter((work) => !isUntouchedProvisionalDraft(work));
-  } catch {
-    return null;
+    return { works: (await listWorks()).filter((work) => !isUntouchedProvisionalDraft(work)), error: null };
+  } catch (e) {
+    return { works: null, error: reasonOf(e) };
   }
 }
 
@@ -81,7 +103,11 @@ export default async function AdminDashboard({ searchParams }: { searchParams?: 
   // The page a person asked for is not for their role (see middleware.ts): say so instead of landing here without a word.
   const notAllowed = ((await searchParams)?.terhad ?? "") === "1";
   const stats = await getStats();
-  const works = await getTodo();
+  const { works, error: todoError } = await getTodo();
+  const dbCheck = await pingDatabase();
+  const storageSet = imageStorageSet();
+  const sessionKeyOk = hasDedicatedAdminSessionKey();
+  const systemOk = dbCheck.ok && storageSet && sessionKeyOk;
   const checks = stats.editorialHealth ? buildContentChecks(stats.editorialHealth) : null;
   // The same readiness service the Terbitkan button uses decides who is really ready.
   const verdicts = works ? await summarizeReadiness(works.filter((w) => w.status === "ready").map((w) => w.id)) : new Map();
@@ -107,11 +133,13 @@ export default async function AdminDashboard({ searchParams }: { searchParams?: 
       <section className="admin-section" aria-label="Yang perlu dibuat">
         <h2>Yang perlu dibuat</h2>
         {works === null ? (
-          <p className="admin-form-hint">Senarai kerja belum tersedia.</p>
+          <div className="admin-alert admin-alert-warning" role="alert">
+            <strong>Senarai kerja tidak dapat dimuat.</strong> {todoError ?? "Sebab tidak diketahui."} <a href="/admin">Cuba lagi</a>
+          </div>
         ) : TODO_GROUPS.every((g) => !works.some((w) => inGroup(w, g.status))) ? (
-          <div className="a-empty">
-            <strong>Tiada kerja tertunggak.</strong>
-            Mulakan dengan butang Tambah Karya di sebelah kiri.
+          <div className="a-empty a-empty-compact">
+            <span><strong>Tiada kerja tertunggak.</strong> Mulakan dengan karya baharu.</span>
+            <a href="/admin/works/add" className="admin-btn admin-btn-primary admin-btn-sm">Tambah karya</a>
           </div>
         ) : (
           TODO_GROUPS.map((group) => {
@@ -125,6 +153,7 @@ export default async function AdminDashboard({ searchParams }: { searchParams?: 
                 <p className="admin-form-hint" style={{ margin: "0 0 8px" }}>{group.hint}</p>
                 <div className="admin-table-wrap">
                   <table className="admin-table a-todo-table">
+                    <thead className="a-visually-hidden"><tr><th scope="col">Tajuk</th><th scope="col">Jenis</th><th scope="col">Tindakan</th></tr></thead>
                     <tbody>
                       {items.slice(0, 6).map((w) => (
                         <tr key={w.id}>
@@ -158,41 +187,53 @@ export default async function AdminDashboard({ searchParams }: { searchParams?: 
         )}
       </section>
 
-      <div className="admin-stats-grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))" }}>
-        {([["Karya diterbitkan", stats.counts.total], ["Cerpen", stats.counts.byType.cerpen], ["Novela", stats.counts.byType.novela], ["Bersiri", stats.counts.byType.bersiri], ["Fragmen", stats.counts.byType.fragmen], ["Sinopsis", stats.counts.byType.sinopsis]] as const).map(([label, count]) => (
-          <div className="admin-stat-card" key={label}>
+      <div className="a-stats-wrap">
+      <div className="admin-stats-grid a-stats" role="group" aria-label="Bilangan karya mengikut jenis">
+        {([["Jumlah diterbitkan", stats.counts.total], ["Cerpen", stats.counts.byType.cerpen], ["Novela", stats.counts.byType.novela], ["Bersiri", stats.counts.byType.bersiri], ["Fragmen", stats.counts.byType.fragmen], ["Sinopsis", stats.counts.byType.sinopsis]] as const).map(([label, count]) => (
+          <div className={`admin-stat-card${label === "Jumlah diterbitkan" ? " is-total" : ""}`} key={label}>
             <div className="admin-stat-label">{label}</div>
             <div className="admin-stat-value">{count?.published ?? 0}</div>
             {count && count.pending > 0 ? <div className="admin-section-meta">+ {count.pending} belum diterbitkan</div> : null}
           </div>
         ))}
       </div>
+      </div>
 
-      <section className="admin-section" id="status-sistem" aria-label="Status sistem">
-        <h2>Status sistem</h2>
-        {!hasDedicatedAdminSessionKey() ? <div className="admin-alert admin-alert-warning" role="alert">ADMIN_SESSION_KEY belum ditetapkan. Sesi pentadbir masih menggunakan kunci log masuk lama untuk tandatangan.</div> : null}
-        <ul className="a-system-status">
-          <li>
-            <span>Pangkalan data</span>
-            <span className={`a-chip ${hasDb() ? "a-chip-pass" : "a-chip-fail"}`}>{hasDb() ? "Bersambung" : "Tidak tersedia"}</span>
-          </li>
-          <li>
-            <span>Storan gambar</span>
-            <span className={`a-chip ${imageStorageSet() ? "a-chip-pass" : "a-chip-warning"}`}>{imageStorageSet() ? "Ditetapkan" : "Belum ditetapkan"}</span>
-            {imageStorageSet() ? null : <span className="admin-form-hint">Gambar yang dimuat naik tidak kekal.</span>}
-          </li>
-        </ul>
+      <section className="admin-section a-system" id="status-sistem" aria-label="Status sistem">
+        {systemOk ? (
+          <p className="a-system-line">
+            <strong>Sistem baik.</strong> Pangkalan data menjawab; storan gambar dan kunci sesi sudah dikonfigurasi (storan tidak diuji dengan memuat naik).
+          </p>
+        ) : (
+          <>
+            <h2>Status sistem</h2>
+            {!sessionKeyOk ? <div className="admin-alert admin-alert-warning" role="alert">ADMIN_SESSION_KEY belum ditetapkan. Sesi pentadbir masih menggunakan kunci log masuk lama untuk tandatangan.</div> : null}
+            <ul className="a-system-status">
+              <li>
+                <span>Pangkalan data</span>
+                <span className={`a-chip ${dbCheck.ok ? "a-chip-pass" : "a-chip-fail"}`}>{dbCheck.ok ? "Menjawab" : "Tidak dapat dihubungi"}</span>
+                {dbCheck.ok ? null : <span className="admin-form-hint">{dbCheck.message}</span>}
+              </li>
+              <li>
+                <span>Storan gambar</span>
+                <span className={`a-chip ${storageSet ? "a-chip-neutral" : "a-chip-warning"}`}>{storageSet ? "Dikonfigurasi (tidak diuji)" : "Belum dikonfigurasi"}</span>
+                {storageSet ? null : <span className="admin-form-hint">Gambar yang dimuat naik tidak kekal.</span>}
+              </li>
+            </ul>
+          </>
+        )}
       </section>
 
       <section className="admin-section" aria-label="Semakan kandungan">
         <h2>Semakan kandungan</h2>
         {!checks ? (
-          <p className="admin-form-hint">Semakan belum tersedia.</p>
-        ) : checks.needAttention.length === 0 ? (
-          <div className="a-empty">
-            <strong>Semua semakan lulus.</strong>
-            Tiada karya terbit yang perlu dibaiki.
+          <div className="admin-alert admin-alert-warning" role="alert">
+            <strong>Semakan kandungan tidak dapat dijalankan.</strong> {stats.healthError ?? "Pangkalan data tidak tersedia."} <a href="/admin">Cuba lagi</a>
           </div>
+        ) : checks.needAttention.length === 0 ? (
+          <p className="a-empty a-empty-compact">
+            <span><strong>Semua semakan lulus.</strong> {stats.counts.total.published} karya terbit disemak, 0 isu · disemak {new Date().toLocaleTimeString("ms-MY", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Kuala_Lumpur" })}.</span>
+          </p>
         ) : (
           <>
             {checks.needAttention.map((row) => (
@@ -205,6 +246,7 @@ export default async function AdminDashboard({ searchParams }: { searchParams?: 
                 <p className="admin-form-hint">{row.about}</p>
                 <div className="admin-table-wrap">
                   <table className="admin-table">
+                    <thead className="a-visually-hidden"><tr><th scope="col">Isu</th><th scope="col">Tindakan</th></tr></thead>
                     <tbody>
                       {row.shown.map((item) => (
                         <tr key={item.href + item.message}>
@@ -230,7 +272,7 @@ export default async function AdminDashboard({ searchParams }: { searchParams?: 
       </section>
 
       <details className="admin-section a-tech">
-        <summary>Alat pentadbir (jarang diperlukan)</summary>
+        <summary>Alat lanjutan</summary>
         <div className="a-tech-body">
           <div>
             <h3>Semak dan segerakkan</h3>
