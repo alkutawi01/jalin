@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { errorText } from "../../lib/admin/error-text";
-import { COUNTRY_OPTIONS, MAX_COUNTRY_LENGTH, countryLabel, countryName, normaliseCountries } from "../../lib/reader/countries";
+import { COUNTRY_OPTIONS, MAX_COUNTRY_LENGTH, cleanCountryText, countryLabel, countryName, normaliseCountries } from "../../lib/reader/countries";
 
 /**
  * Negara latar: the country or region the story is set in, shown on cards beside the reading time ("Jepun · ± 11 minit").
@@ -37,7 +37,7 @@ export default function CountryEditor({ workId }: { workId: string }) {
 
   if (!loaded) return <p className="admin-form-hint">{error ?? "Memuatkan negara latar…"}</p>;
 
-  const value = text.replace(/\s+/g, " ").trim();
+  const value = cleanCountryText(text);
   const dirty = value !== baseline;
   const preview = countryLabel(value ? [value] : []);
   const tooLong = value.length > MAX_COUNTRY_LENGTH;

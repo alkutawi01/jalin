@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import { COUNTRIES, countryLabel, countryName, normaliseCountries, readingLine, MAX_COUNTRIES, MAX_COUNTRY_LENGTH } from "../src/lib/reader/countries";
+import { COUNTRIES, cleanCountryText, countryLabel, countryName, normaliseCountries, readingLine, MAX_COUNTRIES, MAX_COUNTRY_LENGTH } from "../src/lib/reader/countries";
 import { workEyebrow } from "../src/lib/reader/story-collection";
 
 // Negara latar (12 Okt 2026, Izzat): the editor types the country or region, Malaysia alone is hidden, a story of two writes 'A-B'.
@@ -16,6 +16,8 @@ assert.equal(countryLabel(['Empayar Inka']), 'Empayar Inka', 'an older region ty
 assert.equal(countryLabel(['Al-Andalus']), 'Al-Andalus');
 assert.equal(countryLabel(['Malaysia-Indonesia']), 'Malaysia-Indonesia', 'a story of two countries is written with a hyphen');
 assert.equal(countryLabel(['MY', 'ID']), 'Malaysia-Indonesia', 'two stored entries are joined with a hyphen');
+assert.equal(cleanCountryText('Czechoslovakia \\\\ -Britain \\\\'), 'Czechoslovakia-Britain', 'escaped chatbot separators are removed');
+assert.deepEqual(normaliseCountries(['Czechoslovakia \\\\ -Britain \\\\']), ['Czechoslovakia-Britain'], 'formatting debris never reaches storage');
 
 // Entries are trimmed, unique, short and at most two; anything else is dropped.
 assert.deepEqual(normaliseCountries(['  Jepun  ', 'jepun', 5, 'Norway', 'Peru']), ['Jepun', 'Norway']);

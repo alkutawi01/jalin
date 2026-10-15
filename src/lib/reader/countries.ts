@@ -100,6 +100,19 @@ export const MAX_COUNTRY_LENGTH = 40;
 /** Stored lists never hold more than two entries (an older work may hold two codes; the editor now types one label). */
 export const MAX_COUNTRIES = 2;
 
+/** Remove escaped chatbot layout separators before a country reaches the form or database. */
+export function cleanCountryText(raw: string): string {
+  return raw
+    .replace(/[\u200B-\u200F\u202A-\u202E\u2060\uFEFF]/g, "")
+    .replace(/\s*(?:\\\s*){2,}\s*-?\s*/g, "-")
+    .replace(/\s*\\+\s*/g, " ")
+    .replace(/\s*[-–—]\s*/g, "-")
+    .replace(/-{2,}/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 /**
  * The editor types the country or region as it should read on the card ("Jepun", "Empayar Inka", "Al-Andalus", "Malaysia-Indonesia"),
  * so it is not limited to today's countries. The dictionary above only suggests names; a stored entry that is one of its codes
@@ -111,7 +124,7 @@ export function normaliseCountries(value: unknown): string[] {
   const out: string[] = [];
   for (const raw of value) {
     if (typeof raw !== "string") continue;
-    const text = raw.replace(/\s+/g, " ").trim();
+    const text = cleanCountryText(raw);
     if (!text || text.length > MAX_COUNTRY_LENGTH || /[<>]/.test(text)) continue;
     const key = text.toLocaleLowerCase("ms");
     if (seen.has(key)) continue;

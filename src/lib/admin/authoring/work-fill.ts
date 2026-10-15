@@ -11,6 +11,7 @@ import { isPlaceholder } from "./placeholder";
 import { isSourcedWork } from "../../content/source-origin";
 import { responseSection } from "./response-sections";
 import { AUTHORING_LABELS, normaliseLabelledLayout } from "./response-layout";
+import { cleanCountryText } from "../../reader/countries";
 
 export type WorkFillScope = "all" | "metadata" | "characters" | "source";
 export const FILL_SECTIONS: Record<WorkFillScope, string[]> = {
@@ -259,7 +260,10 @@ function parseSetting(text: string): { places: WorkFillResult["places"]; times: 
     }
     // Never infer an unspecified type as a place: incorrect classification is worse than omission.
     if (!kind) continue;
-    if (kind === "negara") countries.push(name);
+    if (kind === "negara") {
+      const country = cleanCountryText(name);
+      if (country) countries.push(country);
+    }
     else (kind === "masa" ? times : places).push({ name, description });
   }
   return { places, times, countries: [...new Set(countries.map(country => country.trim()).filter(Boolean))] };
