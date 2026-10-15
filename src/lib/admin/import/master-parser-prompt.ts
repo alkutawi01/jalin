@@ -7,7 +7,7 @@
  * Change the prompt only as a new version.
  */
 
-export const MASTER_PARSER_PROMPT_VERSION = "v3";
+export const MASTER_PARSER_PROMPT_VERSION = "v4";
 
 export const MASTER_PARSER_PROMPT = `PERANAN
 
@@ -77,7 +77,7 @@ Definisi medan:
 - locations: nama lokasi yang disebut dalam teks.
   - Jika type=novela, tambah "firstAppearanceSection" mengikut prinsip yang sama seperti characters.
 - themes: tema yang benar-benar hadir dalam teks. Jangan memaksa tema agama atau moral jika ia tidak wujud. Tema yang berpotensi spoiler (pengkhianatan, kematian watak, rahsia keluarga) kekal medan editorial dalaman — bukan untuk paparan pembaca.
-- glossary: perkataan istilah, istilah sastera atau perkataan sukar untuk pembaca 13–17: { "term", "meaning" }. "term" mesti wujud dalam teks manuskrip, dieja sama seperti dalam teks. Meaning berdasarkan konteks penggunaan dalam manuskrip sahaja; jangan reka definisi daripada pengetahuan luar. JANGAN masukkan nama watak, lokasi, institusi, sistem atau jenama sebagai istilah glosari — pembaca melihat garis bawah pada SETIAP kemunculan istilah dalam teks, jadi pilih hanya perkataan biasa atau istilah teknikal yang mungkin sukar (3–8 istilah).
+- glossary: perkataan istilah, istilah sastera atau perkataan yang benar-benar sukar: { "term", "meaning" }. Tiada kuota minimum atau had maksimum. "term" mesti wujud dalam teks manuskrip, dieja sama seperti dalam teks. Meaning berdasarkan konteks penggunaan dalam manuskrip sahaja; jangan reka definisi daripada pengetahuan luar. JANGAN masukkan nama watak, lokasi, institusi, sistem atau jenama sebagai istilah glosari. Tooltip hanya muncul pada kemunculan pertama setiap istilah.
   - Jika type=novela, tambah "firstAppearanceSection" — bab pertama istilah itu digunakan dalam teks.
 
 Medan TAMBAHAN — hanya jika type memerlukannya:

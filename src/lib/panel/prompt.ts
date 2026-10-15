@@ -26,7 +26,7 @@ export function buildPrompt(input: PromptInput): string {
   L.push("2. Nilai hanya mutu sastera karya dan hanya apa yang diberi. Jangan menilai penulisnya, niatnya atau selera anda, dan jangan mengandaikan bahagian yang tiada. Jangan menghukum kelemahan yang sama dalam dua komponen tanpa alasan berbeza.");
   L.push("3. Berikan satu skor 1.0 hingga 10.0, langkah 0.5, bagi setiap enam komponen K1 hingga K6. Semua komponen wajib; tiada N/A. Jangan kira jumlah atau purata; sistem yang mengiranya.");
   L.push("4. Setiap komponen mesti ada SATU petikan bukti yang disalin TEPAT daripada teks (aksara demi aksara, boleh dipotong dengan ... di tengah) dan satu sebab ringkas (satu atau dua ayat) yang menghubungkan petikan itu dengan skor. Sebab mesti berdasarkan keseluruhan teks, bukan petikan itu sahaja.");
-  L.push("5. BUKTI_AWAL ialah 8 hingga 15 perkataan PERTAMA teks karya dan BUKTI_AKHIR ialah 8 hingga 15 perkataan TERAKHIR, disalin tepat. Ini membuktikan anda menerima keseluruhan teks. Jika teks terpotong atau anda tidak dapat membacanya hingga akhir, nyatakan itu dan JANGAN beri penilaian.");
+  L.push("5. BUKTI_AWAL ialah petikan pendek dari permulaan teks (15% pertama; sekurang-kurangnya 700 aksara awal bagi teks pendek) dan BUKTI_AKHIR dari 30% terakhir teks. Setiap petikan sekurang-kurangnya 12 aksara selepas normalisasi, disalin tepat; petikan penghujung cerita sebelum nota/sumber dibenarkan. Semakan petikan tidak membuktikan anda membaca keseluruhan teks. Jika teks terpotong atau anda tidak dapat membacanya hingga akhir, nyatakan itu dan JANGAN beri penilaian. Petikan komponen yang tidak ditemui akan ditanda untuk semakan editor, bukan dianggap bukti sah.");
   L.push("6. Jawab HANYA dalam format di bawah: teks biasa, satu medan satu baris, label tetap, tanpa jadual, tanpa Markdown, tanpa JSON, tanpa baris tambahan. Jangan letak simbol baris baharu dalam nilai.");
   L.push("");
   L.push("SAUH SKOR (sama untuk semua komponen)");
@@ -51,8 +51,8 @@ export function buildPrompt(input: PromptInput): string {
   L.push(`KOD: ${input.code}`);
   L.push("MODEL: <nama dan versi model anda>");
   L.push("VERDIK: <tepat satu ayat ulasan mutu, maksimum 250 aksara; bukan keputusan lulus atau gagal>");
-  L.push('BUKTI_AWAL: "<8 hingga 15 perkataan pertama teks, tepat>"');
-  L.push('BUKTI_AKHIR: "<8 hingga 15 perkataan terakhir teks, tepat>"');
+  L.push('BUKTI_AWAL: "<petikan pendek dari permulaan teks, tepat>"');
+  L.push('BUKTI_AKHIR: "<petikan pendek dari 30% terakhir teks, tepat>"');
   for (const c of COMPONENTS) {
     L.push(`${c.code}_SKOR: <1.0 hingga 10.0, langkah 0.5>`);
     L.push(`${c.code}_BUKTI: "<satu petikan tepat, maksimum 200 aksara>"`);

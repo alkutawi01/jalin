@@ -187,9 +187,10 @@ export async function loadSourceWork(
 }
 
 export async function getSourceRightsView(
-  workId: string
+  workId: string,
+  connection?: Kysely<Database>
 ): Promise<SourceRightsAdminView | null> {
-  const db = getDbOrThrow();
+  const db = connection ?? getDbOrThrow();
   const work = await db
     .selectFrom("works")
     .where("id", "=", workId)
@@ -201,7 +202,9 @@ export async function getSourceRightsView(
   const source = await loadSourceWork(db, workId);
 
   // Compute rights blockers via central readiness for a single source of truth.
-  const readiness = await evaluatePublicationReadiness(workId);
+  // A batched importer must not open a second connection while its transaction holds locks.
+  // Its client reloads full readiness after commit; this interim view never grants a pass.
+  const readiness = connection ? null : await evaluatePublicationReadiness(workId);
   const rightsGate = readiness?.gates?.rights;
   const rightsBlockers = rightsGate?.blockers ?? [];
   const rightsReady = isDerivative
@@ -338,9 +341,10 @@ async function saveFragmenTextLanguage(
 export async function upsertSourceProvenance(
   workId: string,
   input: SourceProvenanceInput,
-  actor: { id: string; email?: string }
+  actor: { id: string; email?: string },
+  connection?: Transaction<Database>
 ): Promise<SourceRightsResult> {
-  const db = getDbOrThrow();
+  const db = connection ?? getDbOrThrow();
   const work = await db
     .selectFrom("works")
     .where("id", "=", workId)
@@ -472,16 +476,18 @@ export async function upsertSourceProvenance(
   if (input.chatbotFields && input.chatbotFields.length > 0) {
     const chatbotFields = input.chatbotFields;
     // Under a row lock, so a character or note save at the same moment is not overwritten.
-    await db.transaction().execute(async (trx) => {
+    const mergeChatbotFields = async (trx: Kysely<Database>) => {
       const fresh = await trx.selectFrom("works").where("id", "=", workId).select("metadata").forUpdate().executeTakeFirst();
       const metadata = { ...((fresh?.metadata ?? {}) as Record<string, unknown>) };
       const have = Array.isArray(metadata.sourceChatbotFields) ? (metadata.sourceChatbotFields as unknown[]).map(String) : [];
       metadata.sourceChatbotFields = [...new Set([...have, ...chatbotFields])];
       await trx.updateTable("works").where("id", "=", workId).set({ metadata: metadata as never }).execute();
-    });
+    };
+    if (connection) await mergeChatbotFields(connection);
+    else await db.transaction().execute(mergeChatbotFields);
   }
 
-  const view = await getSourceRightsView(workId);
+  const view = await getSourceRightsView(workId, connection);
   if (!view) throw new Error("Karya tidak ditemui.");
   return { view, invalidatedApproval };
 }

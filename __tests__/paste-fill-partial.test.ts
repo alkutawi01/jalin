@@ -1,6 +1,5 @@
 /**
- * Tampal & isi writes in steps (maklumat, watak, glosari, sumber). When one fails part-way the note must say truthfully whether the earlier
- * steps were saved (it always claimed "Bahagian sebelumnya sudah disimpan", even when the very first write had failed).
+ * One confirmed answer is one atomic server request; late failures cannot leave partial records.
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -13,9 +12,10 @@ function assert(cond: boolean, msg: string) {
 const page = fs.readFileSync(path.join(__dirname, "../src/app/admin/works/[id]/page.tsx"), "utf8").replace(/\r\n/g, "\n");
 const start = page.indexOf("async function applyFillAnswer");
 const fn = page.slice(start, page.indexOf("\n  }\n", start));
-assert((fn.match(/wrote \+= 1/g) ?? []).length === 5, "each of the five write steps (maklumat, watak, latar, glosari per istilah, sumber) is counted when it succeeds");
-assert(fn.includes('"Tiada apa-apa disimpan."') && fn.includes("wrote > 0"), "an error before any write says nothing was saved");
+assert((fn.match(/await fetch\(/g) ?? []).length === 1 && fn.includes("assistant-fill"), "all tab writes are sent in one request");
+const service = fs.readFileSync(path.join(__dirname, "../src/lib/admin/authoring/apply-answer.ts"), "utf8");
+assert(service.includes("db.transaction().execute") && service.includes(".forUpdate()"), "server transaction locks and re-reads current records");
 assert(!fn.includes("Bahagian sebelumnya sudah disimpan"), "the always-true-claim is gone");
-assert(fn.includes("istilah sempat ditambah sebelum ralat"), "a glossary failure part-way reports how many terms were added");
+assert(!page.includes("istilah sempat ditambah sebelum ralat") && page.includes("Sahkan &amp; tambah glosari"), "glossary uses explicit confirmation instead of partial per-term writes");
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);

@@ -6,6 +6,7 @@
  * Quoted evidence is checked against the exact snapshot text; a quote not found does not refuse the rating, it is flagged on it.
  */
 import { COMPONENTS, FORMAT_NAME, LIMITS, validScore, type ComponentKey } from "./rubric";
+import { normaliseLabelledLayout } from "../admin/authoring/response-layout";
 
 export interface ParsedComponent { key: ComponentKey; code: string; score: number; evidence: string; reason: string; evidenceOk: boolean }
 export interface ParsedRating {
@@ -71,7 +72,19 @@ const MIN_REASON = 20;
 export function parseRating(raw: string, expected: { code: string; snapshotText: string }): ParseOutcome {
   const errors: string[] = [];
   const warnings: string[] = [];
-  const lines = raw.replace(/\r\n/g, "\n").split("\n").map(cleanLine);
+  const laidOut = normaliseLabelledLayout(raw, FIELD_LABELS, "__NO_PROSE__").split("\n").map(cleanLine);
+  const lines: string[] = [];
+  for (let i = 0; i < laidOut.length; i++) {
+    let line = laidOut[i]!;
+    if (/^(FORMAT|TAMAT):\s*$/.test(line)) {
+      let next = i + 1;
+      while (next < laidOut.length && !laidOut[next]) next++;
+      if (/^JALIN[_ -]+PANEL[_ -]+V2$/i.test(laidOut[next] ?? "")) { line += ` ${laidOut[next]}`; i = next; }
+    }
+    line = line.replace(/^(FORMAT|TAMAT):\s*jalin[_ -]+panel[_ -]+v2\s*$/i, (_, label: string) => `${label.toUpperCase()}: JALIN_PANEL_V2`);
+    if (/^K[1-6]_SKOR:/.test(line)) line = line.replace(/(:\s*\d+(?:[.,]\d+)?)\s*\/\s*10\s*$/, "$1");
+    lines.push(line);
+  }
 
   const isStart = (l: string) => /^FORMAT\s*:\s*JALIN_PANEL_V2\s*$/.test(l);
   const isEnd = (l: string) => /^TAMAT\s*:\s*JALIN_PANEL_V2\s*$/.test(l);

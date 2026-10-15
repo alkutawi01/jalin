@@ -14,6 +14,7 @@ import { DEFAULT_AUDIENCE } from "../../audience";
 import type { OutputSection } from "./recipes";
 import { isPlaceholder } from "./placeholder";
 import { normaliseResponseLine, responseSection } from "./response-sections";
+import { AUTHORING_LABELS, normaliseLabelledLayout } from "./response-layout";
 
 export interface LabelledParse {
   raw: Record<string, unknown>;
@@ -57,8 +58,8 @@ function headingOf(line: string): OutputSection | null {
   // bracketed ([BAB]), a Markdown heading (## Bab), or written in capitals (BAB / BAB:).
   const raw = line.trim().replace(/^[*_\s>-]+/, "");
   const decorated = /^[\[<(#]/.test(raw);
-  if (!decorated && stripped !== stripped.toUpperCase()) return null;
   const key = fold(stripped).toUpperCase();
+  if (!decorated && key === "BAB" && stripped !== stripped.toUpperCase()) return null;
   return HEADING_ALIASES[key] ?? null;
 }
 
@@ -249,11 +250,13 @@ function seriesMode(value: string | undefined): string {
 }
 
 export function looksLabelled(answer: string): boolean {
+  answer = normaliseLabelledLayout(answer, AUTHORING_LABELS);
   const lines = answer.replace(/\r\n/g, "\n").split("\n");
   return lines.some((line) => headingOf(line) === "KARYA");
 }
 
 export function parseLabelledAnswer(answer: string): LabelledParse | null {
+  answer = normaliseLabelledLayout(answer, AUTHORING_LABELS);
   const source = answer
     .replace(/\r\n/g, "\n")
     .replace(/^\s*```[a-zA-Z]*\s*$/gm, "");

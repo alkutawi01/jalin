@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { glossaryTermsMissingFromText } from "../../lib/admin/glossary-check";
-import CopyButton from "./CopyButton";
+import CopyButton, { copyText } from "./CopyButton";
 import FilePicker from "./FilePicker";
 import { pasteAsMarkdown } from "./pasteMarkdown";
 import { errorText } from "../../lib/admin/error-text";
@@ -168,16 +168,16 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
     };
   }
 
-  function requestBody(dryRun: boolean, overrideAnswer?: string, current: Review | null = review) {
+  function requestBody(dryRun: boolean, overrideAnswer?: string, current: Review | null = review, fresh = false) {
     return JSON.stringify({
       answer: overrideAnswer ?? answer,
       manuscript: mode === "data" ? material : "",
       mode,
       expectedType: recipeKey.split(".")[0],
       dryRun,
-      writerName: writer || undefined,
-      overrides: { title: title || undefined, slug: slug || undefined, dek: dek || undefined, genre: genre || undefined },
-      series: seriesBody,
+      writerName: fresh ? undefined : writer || undefined,
+      overrides: fresh ? {} : { title: title || undefined, slug: slug || undefined, dek: dek || undefined, genre: genre || undefined },
+      series: fresh && series?.kind === "baharu" ? { kind: "baharu" } : seriesBody,
       edits: editsBody(current)
     });
   }
@@ -199,7 +199,7 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
       if (!response.ok) throw new Error(data.error ?? "Arahan tidak dapat disediakan.");
       const heading = needsManuscript ? "TEKS KARYA" : "MAKLUMAT KARYA SUMBER";
       const text = material.trim() ? `${data.prompt}\n\n=== ${heading} ===\n${material.trim()}\n` : data.prompt;
-      await navigator.clipboard.writeText(text);
+      if (!await copyText(text)) throw new Error("Arahan tidak dapat disalin. Benarkan papan keratan dan cuba lagi.");
       setCopyNote("Arahan AI disalin. Tampal dalam bot sembang (ChatGPT/Claude/Gemini), kemudian salin jawapannya.");
     } catch (err) {
       setError(errorText(err, "Arahan tidak dapat disalin."));
@@ -216,7 +216,7 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
       const response = await fetch("/api/admin/works/import", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: requestBody(true, opts.answerText, opts.fresh ? null : review)
+        body: requestBody(true, opts.answerText, opts.fresh ? null : review, opts.fresh === true)
       });
       if (response.status === 401) throw new Error("Sesi tamat. Log masuk semula.");
       const data = (await response.json()) as CheckResponse;
@@ -269,6 +269,8 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
       return;
     }
     setAnswer(text);
+    setWriter("");
+    setSeriesTitle("");
     setResult(null);
     setReview(null);
     setTitle("");
@@ -409,7 +411,7 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
             className="admin-textarea"
             rows={6}
             value={answer}
-            onChange={(e) => setAnswer(e.target.value)}
+            onChange={(e) => { setAnswer(e.target.value); setResult(null); setReview(null); }}
             placeholder="Tampal jawapan bot sembang di sini…"
           />
           <div className="admin-form-actions">
@@ -423,6 +425,8 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
                 setSlug("");
                 setDek("");
                 setGenre("");
+                setWriter("");
+                setSeriesTitle("");
                 check({ fresh: true });
               }}
             >

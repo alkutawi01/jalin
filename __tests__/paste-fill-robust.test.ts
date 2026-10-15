@@ -72,7 +72,7 @@ assert(DEK_RULE.includes("JANGAN ceritakan perkembangan") && DEK_RULE.includes("
 // The page
 const page = read("src/app/admin/works/[id]/page.tsx");
 assert(page.includes("looksLikePrompt(text)") && page.indexOf("looksLikePrompt(text)") < page.indexOf("parseWorkFill(text, scope)"), "the page refuses the copied prompt before scoped parsing");
-assert(page.includes("Papan keratan mengandungi ${text.length} aksara dan bermula dengan"), "when nothing is found the notice says what was read");
+assert(page.includes("Jawapan tidak mengandungi bahagian untuk skop ini") && page.includes("Tiada perubahan disimpan"), "unreadable answers explain the scope problem and do not write");
 assert(page.includes("dekWarning(result.dek)"), "a pasted dek is checked and the editor is told");
 
 console.log(`\n${passed} passed, ${failed} failed`);

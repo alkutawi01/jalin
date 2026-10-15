@@ -29,7 +29,9 @@ export interface ComposeInput {
 /** Older settings stored the WHOLE composed prompt, including its obsolete schema and example.
  * Keep the editor's instructions; the answer contract is appended once from current code. */
 export function editorialInstructions(text: string | null | undefined): string {
-  return (text ?? "").split(/(?:^|\n)\s*FORMAT JAWAPAN[^\n]*\n/i)[0]!.trim();
+  return (text ?? "").split(/(?:^|\n)\s*FORMAT JAWAPAN[^\n]*\n/i)[0]!.trim()
+    .replace(/(?:sehingga|maksimum|maximum|up to)\s+(?:8|lapan)\s+(?:perkataan|istilah|terms|words)/gi, "istilah yang benar-benar sukar, tanpa had bilangan")
+    .replace(/3\s*[–-]\s*8\s+istilah/gi, "tiada kuota istilah");
 }
 
 function seriesBlock(series: SeriesContext | null | undefined): string | null {

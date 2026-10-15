@@ -34,8 +34,7 @@ export function exampleBlock(recipe: Recipe, sections: OutputSection[]): string 
         "Slug: kunci-almari-lama",
         "Dek: Ketika mengemas rumah arwah datuk, seorang cucu menemui sebiji kunci yang tidak muat pada mana-mana pintu.",
         "Genre: misteri keluarga",
-        "Penulis: tidak dinyatakan",
-        "Anggaran bacaan: 6"
+        "Penulis: tidak dinyatakan"
       )
     );
   }

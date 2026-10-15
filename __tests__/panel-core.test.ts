@@ -89,7 +89,7 @@ bad({ K1_SKOR: "NaN" }, /tidak sah/, "NaN is not a score");
 bad({ K1_SKOR: "8.0001" }, /tidak sah/, "8.0001 is not on the 0.5 grid");
 bad({ K1_SKOR: "1e1" }, /tidak sah/, "exponent notation is not a score");
 bad({ K1_SKOR: "Infinity" }, /tidak sah/, "Infinity is not a score");
-bad({ K1_SKOR: "８" }, /tidak sah/, "a full-width digit is not a score");
+assert(parse(text({ K1_SKOR: "８" })).ok, "a full-width digit is normalised without changing its value");
 bad({ VERDIK: null }, /VERDIK/, "a missing verdict is refused");
 bad({ MODEL: null }, /MODEL/, "a missing model line is refused");
 { const p = parse(text().replace(`TAMAT: ${FORMAT_NAME}`, `SKOR_AKHIR: 10
@@ -110,6 +110,10 @@ const dup = parse(text().replace(`TAMAT: ${FORMAT_NAME}`, `K1_SKOR: 10\nTAMAT: $
 assert(!dup.ok && dup.errors.some((e) => /berulang/.test(e)), "a repeated label is refused");
 
 console.log("\nTolerance for what a chat window does to text");
+assert(parse(text().replace(/_/g, " ").replace(/: /g, "\n\n")).ok, "spaces in labels and values on separate lines are accepted");
+assert(parse(text().split("\n").map(line => { const at = line.indexOf(":"); return `| ${line.slice(0, at).toLowerCase()} | ${line.slice(at + 1).trim()} |`; }).join("\n")).ok, "two-column Markdown tables are accepted");
+assert(parse(text({ K1_SKOR: "8.5/10" })).ok, "a score written /10 preserves its number");
+bad({ K1_SKOR: "4/5" }, /tidak sah/, "scores on a different scale are never guessed");
 const chatty = text().split("\n").map((l, i) => (i > 1 && i < 12 ? `- **${l.split(":")[0]}**:${l.slice(l.indexOf(":") + 1)}` : l)).join("\n");
 assert(parse("Berikut penilaian saya:\n\n" + chatty + "\n\nSemoga membantu.").ok, "bullets, bold marks and chatter outside the block are tolerated");
 const outside = parse("Berikut:\n" + text());

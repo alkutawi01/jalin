@@ -2,11 +2,15 @@
 
 | | |
 | --- | --- |
-| **Versi** | v3 |
-| **Status** | Aktif |
-| **Tarikh** | 2026-09-29 |
+| **Versi** | v4 |
+| **Status** | Keserasian import JSON lama; UI utama menggunakan tujuh resipi berlabel |
+| **Tarikh** | 2026-10-15 |
 | **Skop** | Satu prompt sahaja untuk semua jenis karya Jalin: cerpen, novela, bersiri, fragmen, sinopsis |
 | **Berkaitan** | `docs/MASTER_PLAN.md`, `docs/CONTENT_MODEL.md`, `AGENTS.md`, `docs/NOVELA_PROGRESSIVE_DISCLOSURE.md`, `docs/VISUAL_GENERATION_GUARDRAILS.md`, `docs/PHASE_4D_9_MANUSCRIPT_IMPORT.md` |
+
+## Perubahan v3 → v4
+
+Tempoh bacaan dikira sistem, bukan dianggarkan oleh bot sembang. Glosari tiada kuota; tooltip hanya pada kemunculan pertama. Struktur JSON kekal parserVersion v3 untuk keserasian data lama. Laluan /admin/works/import kini menghala ke /admin/works/add.
 
 ## Perubahan v2 → v3
 
@@ -150,7 +154,7 @@ Definisi medan:
 - dek: satu atau dua ayat. Terangkan premis atau perkara yang dibincangkan. JANGAN dedahkan penyelesaian atau pengakhiran cerita (tiada spoiler).
 - genre: satu label paling tepat (contoh: drama, keluarga, misteri, sejarah, fiksyen sains). Hanya jika wujud dalam teks atau jelas daripada kandungan; selain itu "tidak dinyatakan".
 - audience: "13-17".
-- readingMinutes: anggaran = bilangan perkataan manuskrip bahagi 200, dibulatkan ke nombor bulat terdekat, minimum 1. Sistem akan mengira semula daripada teks sebenar; anggaran anda hanya untuk semakan silang.
+- readingMinutes: biarkan 0. Sistem mengira tempoh bacaan secara automatik daripada teks sebenar; jangan anggarkan atau tetapkan sendiri.
 - author.name: nama penulis manuskrip jika dinyatakan; selain itu "tidak dinyatakan".
 - author.credit: cadangan peranan penerbitan mengikut kredit sebenar (contoh: "author"). Jangan menyamakan penyunting, penyemak atau penyelidik dengan "Penulis". Keputusan kredit akhir oleh editor.
 - characters: senarai watak yang benar-benar wujud dalam teks: { "name", "role", "description" }. Description berdasarkan apa yang teks nyatakan sahaja. Description TIDAK BOLEH mendedahkan hubungan rahsia, identiti tersembunyi, nasib akhir watak atau konflik masa depan — hanya apa yang sudah jelas pada kemunculan pertama watak itu.
@@ -158,7 +162,7 @@ Definisi medan:
 - locations: nama lokasi yang disebut dalam teks.
   - Jika type=novela, tambah "firstAppearanceSection" mengikut prinsip yang sama seperti characters.
 - themes: tema yang benar-benar hadir dalam teks. Jangan memaksa tema agama atau moral jika ia tidak wujud. Tema yang berpotensi spoiler (pengkhianatan, kematian watak, rahsia keluarga) kekal medan editorial dalaman — bukan untuk paparan pembaca.
-- glossary: perkataan istilah, istilah sastera atau perkataan sukar untuk pembaca 13–17: { "term", "meaning" }. "term" mesti wujud dalam teks manuskrip, dieja sama seperti dalam teks. Meaning berdasarkan konteks penggunaan dalam manuskrip sahaja; jangan reka definisi daripada pengetahuan luar. JANGAN masukkan nama watak, lokasi, institusi, sistem atau jenama sebagai istilah glosari — pembaca melihat garis bawah pada SETIAP kemunculan istilah dalam teks, jadi pilih hanya perkataan biasa atau istilah teknikal yang mungkin sukar (3–8 istilah).
+- glossary: perkataan istilah, istilah sastera atau perkataan yang benar-benar sukar: { "term", "meaning" }. Tiada kuota minimum atau had maksimum. "term" mesti wujud dalam teks manuskrip, dieja sama seperti dalam teks. Meaning berdasarkan konteks penggunaan dalam manuskrip sahaja; jangan reka definisi daripada pengetahuan luar. JANGAN masukkan nama watak, lokasi, institusi, sistem atau jenama sebagai istilah glosari. Tooltip hanya muncul pada kemunculan pertama setiap istilah.
   - Jika type=novela, tambah "firstAppearanceSection" — bab pertama istilah itu digunakan dalam teks.
 
 Medan TAMBAHAN — hanya jika type memerlukannya:

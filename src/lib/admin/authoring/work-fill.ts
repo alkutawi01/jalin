@@ -10,6 +10,7 @@ import { DEK_RULE } from "./dek-rule";
 import { isPlaceholder } from "./placeholder";
 import { isSourcedWork } from "../../content/source-origin";
 import { responseSection } from "./response-sections";
+import { AUTHORING_LABELS, normaliseLabelledLayout } from "./response-layout";
 
 export type WorkFillScope = "all" | "metadata" | "characters" | "source";
 export const FILL_SECTIONS: Record<WorkFillScope, string[]> = {
@@ -143,14 +144,14 @@ export interface WorkFillResult {
  * A section heading as chatbots really write it: [MAKLUMAT], **[MAKLUMAT]**, ### [MAKLUMAT], [MAKLUMAT]:, MAKLUMAT,
  * **MAKLUMAT**, ## Maklumat. Only a line that is nothing but the heading counts, so ordinary text is never mistaken for one.
  */
-const SECTION = /^\s*(?:[#>*_\-•]+\s*)*(?:\d+[.)]\s*)?\[?\s*(MAKLUMAT(?: KARYA)?|WATAK|LATAR(?: TEMPAT DAN MASA)?|GLOSARI|SUMBER)\s*\]?\s*[:：]?\s*[*_]*\s*[:：]?\s*$/i;
+const SECTION = /^\s*(?:[#>*_\-•]+\s*)*(?:\d+[.)]\s*)?\[?\s*(KARYA|MAKLUMAT(?: KARYA)?|WATAK|LATAR(?: TEMPAT DAN MASA)?|GLOSARI|SUMBER)\s*\]?\s*[:：]?\s*[*_]*\s*[:：]?\s*$/i;
 
 const NAME_LINE = /^[\s*_\-•>]*(?:\d+[.)]\s*)?[*_]*(?:nama|watak)[*_]*\s*[:：]/i;
 
 /** Splits the character section into one list of lines per character: by separators, blank lines, or a new "Nama:". */
 function characterBlocks(text: string): string[][] {
   const blocks: string[][] = [];
-  for (const chunk of text.split(/\n\s*(?:_{3,}|-{3,}|={3,})\s*\n|\n\s*\n/)) {
+  for (const chunk of text.split(/\n\s*(?:_{3,}|-{3,}|={3,})\s*\n/)) {
     let current: string[] = [];
     let hasName = false;
     for (const line of chunk.split("\n")) {
@@ -174,7 +175,8 @@ function field(block: string[], names: RegExp): string {
     if (m) {
       const value = [m[1] ?? ""];
       for (const next of block.slice(index + 1)) {
-        if (!next.trim() || /^[\s*_\-•>]*(?:\d+[.)]\s*)?[^:：]{1,45}[:：]/.test(next) || responseSection(next) || /^\s*[_=-]{3,}\s*$/.test(next)) break;
+        if (!next.trim()) continue;
+        if (/^[\s*_\-•>]*(?:\d+[.)]\s*)?[^:：]{1,45}[:：]/.test(next) || responseSection(next) || /^\s*[_=-]{3,}\s*$/.test(next)) break;
         value.push(next.trim());
       }
       return value.join(" ").replace(/\*\*|__/g, "").trim().replace(/^["“”']+|["“”']+$/g, "");
@@ -200,7 +202,7 @@ const isbnOf = (v: string): string => {
 /** Splits [LATAR] into one list of lines per entry: by separators, blank lines, or a new "Jenis:". */
 function settingBlocks(text: string): string[][] {
   const blocks: string[][] = [];
-  for (const chunk of text.split(/\n\s*(?:_{3,}|-{3,}|={3,})\s*\n|\n\s*\n/)) {
+  for (const chunk of text.split(/\n\s*(?:_{3,}|-{3,}|={3,})\s*\n/)) {
     let current: string[] = [];
     let hasKind = false;
     for (const line of chunk.split("\n")) {
@@ -288,13 +290,14 @@ export function looksLikePrompt(text: string): boolean {
 }
 
 export function parseWorkFill(answer: string, scope: WorkFillScope = "all"): WorkFillResult {
+  answer = normaliseLabelledLayout(answer, AUTHORING_LABELS);
   const lines = answer.replace(/\r\n/g, "\n").replace(INVISIBLE, "").replace(/ /g, " ").replace(/^```[a-z]*\s*$/gim, "").split("\n");
   const sections: Record<string, string[]> = {};
   let current: string | null = null;
   for (const line of lines) {
     const m = SECTION.exec(headingForm(line));
     if (m) {
-      const name = m[1]!.toUpperCase().replace(/^MAKLUMAT KARYA$/, "MAKLUMAT").replace(/^LATAR TEMPAT DAN MASA$/, "LATAR");
+      const name = m[1]!.toUpperCase().replace(/^(KARYA|MAKLUMAT KARYA)$/, "MAKLUMAT").replace(/^LATAR TEMPAT DAN MASA$/, "LATAR");
       current = FILL_SECTIONS[scope].includes(name) ? name : null;
       if (current) sections[current] = sections[current] ?? [];
       continue;

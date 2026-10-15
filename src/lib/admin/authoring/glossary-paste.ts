@@ -1,5 +1,6 @@
 import { isPlaceholder } from "./placeholder";
 import { responseSectionText } from "./response-sections";
+import { AUTHORING_LABELS, normaliseLabelledLayout } from "./response-layout";
 /**
  * Glossary tab: the prompt the editor copies and the parser for what the chatbot answers.
  *
@@ -119,6 +120,7 @@ function fold(value: string): string {
 const NO_MEANING = /^(tiada|tidak ada|tidak dinyatakan|tidak diketahui|n\/a|-|—|\.\.\.)\.?$/i;
 
 export function parseGlossaryPaste(answer: string, body: string, existingTerms: string[]): GlossaryPasteResult {
+  answer = normaliseLabelledLayout(answer, AUTHORING_LABELS);
   const text = responseSectionText(answer, "GLOSARI")
     .replace(/\r\n/g, "\n")
     .replace(/^```[a-z]*\s*$/gim, "")

@@ -22,6 +22,7 @@ const assistantWrites = [];
 let nextVisualId = 1;
 let patches = 0;
 let replacements = 0;
+let failAssistant = false;
 const pageErrors = [];
 const browser = await chromium.launch({ headless: true, executablePath: chrome });
 const page = await browser.newPage({ viewport: { width: 1360, height: 900 } });
@@ -68,6 +69,15 @@ await page.route("**/api/admin/**", async (route) => {
   }
   if (target === `/api/admin/works/${id}/source-rights`) return reply({ sourceWork: null, rightsHistory: [], rightsReady: false, rightsBlockers: [] });
   if (target === `/api/admin/works/${id}/sections`) return reply([]);
+  if (target === `/api/admin/works/${id}/assistant-fill` && method === "POST") {
+    const data = request.postDataJSON();
+    if (failAssistant) { failAssistant = false; return reply({ error: "Ujian kegagalan: semua perubahan dibatalkan." }, 400); }
+    assert.equal(data.expectedText, work.body, "confirmation includes the reviewed manuscript");
+    if (data.scope === "characters") { characters.push({ name: "Aina", role: "Pemilik kereta", firstAppearanceSection: null }); assistantWrites.push("transaction:characters"); }
+    else if (data.scope === "glossary") { glossary.push({ id: glossary.length + 1, work_id: id, term: "naik harga", meaning: "Harga menjadi lebih mahal.", sort_order: glossary.length + 1 }); assistantWrites.push("transaction:glossary"); }
+    else return reply({ error: "Unexpected test scope" }, 400);
+    return reply({ notes: ["Disimpan."], metadataPatch: {} });
+  }
   if (target === `/api/admin/works/${id}/characters`) {
     if (method === "PATCH") { characters = request.postDataJSON().characters; assistantWrites.push("characters"); }
     return reply(characters);
@@ -156,7 +166,7 @@ try {
   assert.equal(patches, beforeAssistant, "Preview does not persist metadata");
   await page.getByRole("button", { name: "Sahkan & isi (Watak & latar)" }).click();
   await page.waitForFunction(() => !document.querySelector('#chatbot-fill button')?.disabled);
-  assert.deepEqual(assistantWrites, ["characters"], "Scoped fill writes only characters");
+  assert.deepEqual(assistantWrites, ["transaction:characters"], "Scoped fill sends one transactional request");
   assert.equal(patches, beforeAssistant, "Characters tab does not patch metadata");
   assert.equal(work.genre, "Drama Sosial");
   assert.equal(work.dek, "Draf ujian aliran editor.");
@@ -166,12 +176,31 @@ try {
   await page.getByRole("button", { name: "Semak jawapan", exact: true }).click();
   assert.equal(await page.getByRole("button", { name: /Sahkan & isi/ }).count(), 0, "Unreadable answer cannot be applied");
 
+  await page.getByRole("button", { name: /Glosari/ }).click();
+  const assistant = page.locator('[aria-label="Glosari dengan bot sembang"]');
+  await assistant.getByText("Tampal jawapan glosari secara manual", { exact: true }).click();
+  await page.locator("#glossary-answer").fill("[GLOSARI]\nIstilah\n\nnaik harga\nMaksud = Harga menjadi lebih mahal.\n[MAKLUMAT]\nDek: Jangan ubah.");
+  await assistant.getByRole("button", { name: "Semak jawapan", exact: true }).click();
+  assert.equal(glossary.length, 1, "glossary preview writes nothing");
+  await assistant.getByRole("button", { name: "Batal", exact: true }).click();
+  assert.equal(glossary.length, 1, "cancel writes nothing");
+  await assistant.getByRole("button", { name: "Semak jawapan", exact: true }).click();
+  failAssistant = true;
+  await assistant.getByRole("button", { name: "Sahkan & tambah glosari" }).click();
+  await page.getByRole("alert").filter({ hasText: "semua perubahan dibatalkan" }).waitFor();
+  assert.equal(glossary.length, 1, "failed batch leaves glossary unchanged");
+  await assistant.getByRole("button", { name: "Semak jawapan", exact: true }).click();
+  await assistant.getByRole("button", { name: "Sahkan & tambah glosari" }).click();
+  await page.getByText("naik harga", { exact: true }).last().waitFor();
+  assert.equal(glossary.length, 2, "confirmed glossary batch writes once");
+  assert.equal(work.dek, "Draf ujian aliran editor.", "glossary import cannot change dek");
+
   if (process.env.EDITOR_CHATBOT_ONLY === "1") {
     await page.setViewportSize({ width: 390, height: 844 });
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1), false, "chatbot controls fit a phone");
     assert.deepEqual(pageErrors, [], "no uncaught browser errors");
     await page.screenshot({ path: path.join(os.tmpdir(), "jalin-chatbot-mobile.png"), fullPage: true });
-    console.log(JSON.stringify({ result: "PASS", previewWrites: 0, scopedWrites: assistantWrites, metadataUnchanged: true, glossaryUnchanged: true, invalidAnswerBlocked: true, mobileOverflow: false }));
+    console.log(JSON.stringify({ result: "PASS", previewWrites: 0, scopedWrites: assistantWrites, metadataUnchanged: true, glossaryPreviewCancelAndFailureSafe: true, invalidAnswerBlocked: true, mobileOverflow: false }));
   } else {
 
   await page.getByRole("button", { name: "Kandungan", exact: true }).click();

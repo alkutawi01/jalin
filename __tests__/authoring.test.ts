@@ -135,7 +135,7 @@ const edited = buildImportPlan(REAL, realText, {
     visuals: [null, { altText: "Lampu di senja", place: "before", scene: "A lamp at dusk, no people." }]
   }
 });
-assert(edited.ok && edited.plan!.work.readingMinutes === 7, "edited reading minutes are used");
+assert(edited.ok && edited.plan!.work.readingMinutes === Math.max(1, Math.round(edited.plan!.stats.storedWords / 200)), "manual minutes cannot override automatic manuscript calculation");
 assert(edited.plan!.glossary.length === 1 && edited.plan!.glossary[0]!.meaning === "bahagian depan rumah", "edited glossary replaces the parsed one and drops terms absent from the text");
 assert(edited.plan!.characters.length === 1 && edited.plan!.characters[0]!.role === "Anak", "edited characters replace the parsed ones");
 assert(edited.plan!.visuals.length === 1 && edited.plan!.visuals[0]!.place === "before" && edited.plan!.visuals[0]!.originalIndex === 1, "an image can be removed and another edited");
