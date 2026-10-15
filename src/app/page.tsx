@@ -198,11 +198,11 @@ function SeriesFeatureCard({ data }: { data: SeriesHighlightData }) {
             </span>
           </a>
           <div className="series-feature-footer">
-            {data.authors.length > 0 ? <p className="series-feature-byline">{`Oleh ${data.authors.join(", ")}`}</p> : null}
             <div className="series-feature-latest">
               <span className="home-eyebrow series-feature-latest-label">Episod terkini · Episod {data.latest.position}</span>
               <a className="series-feature-latest-title" href={`${base}/${data.latest.slug}`}>{data.latest.title}</a>
             </div>
+            {data.authors.length > 0 ? <p className="series-feature-byline">{`Oleh ${data.authors.join(", ")}`}</p> : null}
             <WorkMeta work={{ readingMinutes: data.latest.readingMinutes, publishedAt: data.latest.publishedAt }} variant="pills" />
             <div className="series-feature-actions">
               <a className="home-action-primary hero-featured-cta" href={base}>Baca sekarang</a>
