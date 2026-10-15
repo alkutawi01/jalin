@@ -888,6 +888,9 @@
 .a-shell .admin-pick-panel { margin: 12px 0 16px; padding: 12px 16px; border: 1px solid var(--a-line); border-radius: var(--a-radius-lg); background: var(--a-surface); }
 .a-shell .admin-pick-panel h2 { font-family: var(--a-font); font-size: 15px; margin: 0 0 8px; }
 .a-shell .admin-pick-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
-.a-shell .admin-pick-list li { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.a-shell .admin-pick-list li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; column-gap: 10px; row-gap: 0; align-items: center; }
+.a-shell .admin-pick-list li .admin-pick-rank { grid-row: 1 / span 2; }
+.a-shell .admin-pick-list li .a-work-title-link { grid-column: 2; overflow-wrap: anywhere; }
+.a-shell .admin-pick-list li .admin-form-hint { grid-column: 2; margin: 0; }
+.a-shell .admin-pick-list li .admin-btn { grid-column: 3; grid-row: 1 / span 2; }
 .a-shell .admin-pick-rank { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 999px; background: var(--a-ink); color: var(--a-surface); font-size: 12px; font-weight: 700; }
-.a-shell .admin-pick-list .admin-btn { margin-left: auto; }

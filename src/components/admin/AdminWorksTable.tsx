@@ -192,7 +192,7 @@ export default function AdminWorksTable({ works, initialPicks }: { works: AdminW
               <li key={work.id}>
                 <span className="admin-pick-rank" aria-hidden="true">{index + 1}</span>
                 <a href={`/admin/works/${work.id}`} className="a-work-title-link">{work.title}</a>
-                <span className="admin-form-hint"> · {TYPE_LABELS[work.type] ?? work.type}</span>
+                <span className="admin-form-hint">{TYPE_LABELS[work.type] ?? work.type}</span>
                 <button type="button" className="admin-btn admin-btn-sm admin-btn-outline" onClick={() => removePick(work)} aria-label={`Keluarkan ${work.title} daripada Pilihan Editor`}>Keluarkan</button>
               </li>
             ))}
