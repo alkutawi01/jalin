@@ -38,6 +38,7 @@ import PlacesEditor from "../../../../components/admin/PlacesEditor";
 import CountryEditor from "../../../../components/admin/CountryEditor";
 import { uploadTooLargeMessage } from "../../../../lib/admin/upload-limit";
 import { errorText } from "../../../../lib/admin/error-text";
+import { sourceFieldLabel } from "../../../../lib/admin/authoring/editor-assistant";
 
 const WORK_TYPES = [
   { value: "cerpen", label: "Cerpen" },
@@ -3186,7 +3187,7 @@ export default function EditWorkPage() {
                   </span>
                   {(sourceRights?.chatbotFilledFields ?? []).length > 0 && (
                     <span className="admin-alert admin-alert-info" style={{ display: "block", margin: "0.5rem 0" }}>
-                      Bot sembang mengisi: {(sourceRights?.chatbotFilledFields ?? []).join(", ")}. Semak setiap satu dengan naskhah sebenar; tanda ini hilang selepas anda merekod semakan hak.
+                      Bot sembang mengisi: {(sourceRights?.chatbotFilledFields ?? []).map(sourceFieldLabel).join(", ")}. Semak setiap satu dengan naskhah sebenar; tanda ini hilang selepas anda merekod semakan hak.
                     </span>
                   )}
                   <div className="admin-form-row">

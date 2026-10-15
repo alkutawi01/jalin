@@ -33,7 +33,7 @@ ${DEK_RULE}
 ${context.type === "bersiri" ? "Ini episod siri. Jangan mereka canon episod lain; minta bahan kesinambungan jika tugasan memerlukannya." : ""}
 ${scope === "glossary" || scope === "all" ? GLOSSARY_RULES : ""}
 ${scope === "source" ? "Semak setiap medan bibliografi secara berasingan. Medan yang tidak diketahui: null, bukan tekaan. Hak bukan output borang AI." : ""}
-${scope === "characters" ? "Semak watak, tempat dan era yang benar-benar berguna kepada editor. Bezakan peranan dan hubungan, elakkan spoiler. Latar masa mesti tahun/era, bukan pagi atau malam. Pulangkan paling banyak 12 tempat penting; jangan jadikan objek kecil atau keterangan umum sebagai tempat." : ""}
+${scope === "characters" ? "Semak watak, tempat dan era yang benar-benar berguna kepada editor. Bezakan peranan dan hubungan, elakkan spoiler. Latar masa mesti tahun/era, bukan pagi atau malam. Pulangkan tempat yang penting sahaja; jangan jadikan objek kecil atau keterangan umum sebagai tempat." : ""}
 ${scope === "content" ? "Pulangkan manuskrip yang benar-benar sedia dimasukkan ke editor. Sunting atau tulis hanya seperti tugasan; jangan menggantikan manuskrip dengan penilaian struktur." : ""}
 FORMAT JAWAPAN: teks biasa berlabel seperti di bawah. Jangan gunakan JSON, jadual Markdown, blok kod, pengenalan atau penutup. Gunakan ____ untuk memisahkan item berulang. Jangan sertakan bahagian luar skop.
 ${format}
@@ -91,6 +91,10 @@ export interface EditorChange { id: string; group: Exclude<EditorScope, "all">; 
 const record = (v: unknown): Record<string, any> => v && typeof v === "object" && !Array.isArray(v) ? v as Record<string, any> : {};
 const text = (v: unknown) => typeof v === "string" && !isPlaceholder(v) ? v.trim() : "";
 const show = (v: unknown): string => typeof v === "string" ? v : v == null ? "" : JSON.stringify(v, null, 2);
+/** What the editor reads for each source field, in the language of the form (the keys are the code's own names). */
+export const SOURCE_FIELD_LABELS: Record<string, string> = { originalTitle: "Tajuk asal", author: "Pengarang asal", originalLanguage: "Bahasa asal", publicationYear: "Tahun terbit pertama", publisher: "Penerbit", editionYear: "Tahun cetakan", printing: "Cetakan ke", editorName: "Penyunting", translatorName: "Penterjemah", isbn: "ISBN", sourceLocator: "Lokasi petikan", sourceTextBasis: "Asas teks dan terjemahan", sourceUrl: "URL sumber", sourceEdition: "Edisi" };
+export const sourceFieldLabel = (key: string): string => SOURCE_FIELD_LABELS[key] ?? key;
+
 export const SOURCE_FIELDS: Record<string, string> = { originalTitle: "original_title", author: "author", originalLanguage: "original_language", publicationYear: "publication_year", publisher: "publisher", editionYear: "edition_year", printing: "printing", editorName: "editor_name", translatorName: "translator_name", isbn: "isbn", sourceLocator: "source_locator", sourceTextBasis: "source_text_basis", sourceUrl: "source_url", sourceEdition: "source_edition" };
 
 export function planEditorAnswer(answer: string, scope: EditorScope, state: EditorState): EditorChange[] {
@@ -139,7 +143,7 @@ export function planEditorAnswer(answer: string, scope: EditorScope, state: Edit
   }
   if (owns("source")) for (const [key, column] of Object.entries(SOURCE_FIELDS)) {
     const value = record(data.source)[key];
-    add("source", key, `Sumber: ${key}`, state.source?.[column], typeof value === "string" ? text(value) : value);
+    add("source", key, `Sumber: ${sourceFieldLabel(key)}`, state.source?.[column], typeof value === "string" ? text(value) : value);
   }
   return changes.filter((change, i) => changes.findIndex(row => row.id === change.id) === i);
 }
