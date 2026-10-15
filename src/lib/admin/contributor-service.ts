@@ -199,6 +199,25 @@ export async function updateContributor(
 }
 
 /**
+ * Delete a contributor nobody uses: a record left over (a duplicate made by mistake). One that appears in any credit, in a submission,
+ * or as an AI's pseudonym is refused with what holds it, so a name already printed under a work cannot be pulled out from under it.
+ */
+export async function deleteUnusedContributor(slug: string): Promise<void> {
+  const db = getAdminDb();
+  await db.transaction().execute(async (trx) => {
+    const row = await trx.selectFrom("contributors").select("slug").where("slug", "=", slug).forUpdate().executeTakeFirst();
+    if (!row) throw new Error("Penyumbang tidak ditemui.");
+    const credits = await trx.selectFrom("credits").select("id").where("contributor_slug", "=", slug).execute();
+    if (credits.length) throw new Error(`Penyumbang ini masih dipakai dalam ${credits.length} kredit karya. Alihkan atau buang kredit itu dahulu.`);
+    const submissions = await trx.selectFrom("submission_contributions").select("contributor_slug").where("contributor_slug", "=", slug).execute();
+    if (submissions.length) throw new Error(`Penyumbang ini disebut dalam ${submissions.length} kiriman. Tidak boleh dipadam.`);
+    const persona = await trx.selectFrom("prompt_templates").select("name").where("scope", "=", "ai_persona").where("status", "=", "active").where("prompt_text", "=", slug).execute();
+    if (persona.length) throw new Error(`Penyumbang ini ialah nama samaran bagi ${persona.map((p) => p.name).join(", ")}. Tukar nama samaran AI itu di Tetapan dahulu.`);
+    await trx.deleteFrom("contributors").where("slug", "=", slug).execute();
+  });
+}
+
+/**
  * Hide a contributor (soft delete).
  * Sets is_visible to false while preserving all data.
  */
