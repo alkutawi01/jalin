@@ -28,6 +28,8 @@ const internal = /\bWork\b|reading_section|works\.body|series_entries|\bsort_ord
 const offenders = messages.filter((m) => internal.test(m));
 assert(offenders.length === 0, `no readiness message shows an internal name${offenders.length ? ": " + offenders.slice(0, 3).join(" | ") : ""}`);
 assert(!/works\.body|kekal satu Work/.test(page), "the chapter tab does not show database names");
+assert(!/disabled=\{manuscriptMode === "markdown" && !canEditVisually\(form\.body\)\}/.test(page), "Visual is never disabled merely because the manuscript contains unsupported editing syntax");
+assert(page.includes("Paparan visual sahaja") && page.includes("admin-manuscript-visual-preview"), "unsupported Markdown still has a safe, read-only visual view");
 
 const visualEditor = fs.readFileSync(path.join(__dirname, "../src/components/admin/VisualManuscriptEditor.tsx"), "utf8");
 assert(visualEditor.includes("partOf") && visualEditor.includes("!saved.collapsed"), "selected text becomes the message/e-mail box (only the paragraphs that hold selected words)");

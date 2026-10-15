@@ -2023,15 +2023,21 @@ export default function EditWorkPage() {
           <div className="admin-form-group">
             <label htmlFor={manuscriptMode === "visual" ? undefined : "body"}>Manuskrip *</label>
             <div className="admin-manuscript-mode" role="group" aria-label="Mod penyuntingan manuskrip">
-              <button type="button" className={manuscriptMode === "visual" ? "is-active" : ""} aria-pressed={manuscriptMode === "visual"} disabled={manuscriptMode === "markdown" && !canEditVisually(form.body)} onClick={() => setManuscriptMode("visual")}>Visual</button>
+              <button type="button" className={manuscriptMode === "visual" ? "is-active" : ""} aria-pressed={manuscriptMode === "visual"} onClick={() => setManuscriptMode("visual")}>Visual</button>
               <button type="button" className={manuscriptMode === "markdown" ? "is-active" : ""} aria-pressed={manuscriptMode === "markdown"} onClick={() => setManuscriptMode("markdown")}>Markdown</button>
             </div>
-            {manuscriptMode === "visual" ? <VisualManuscriptEditor
-              value={form.body}
-              onChange={(body) => { setForm((prev) => ({ ...prev, body })); setDirty(true); }}
-              existingAnchors={visuals.map((visual) => visual.anchor)}
-              onMarkerInserted={(marker) => { setSelectedImageAnchor(marker); toast(`Penanda ${marker} disisipkan. Simpan teks & maklumat sebelum memuat naik gambar.`, "success"); }}
-            /> : <>
+            {manuscriptMode === "visual" ? (canEditVisually(form.body) ? <VisualManuscriptEditor
+                value={form.body}
+                onChange={(body) => { setForm((prev) => ({ ...prev, body })); setDirty(true); }}
+                existingAnchors={visuals.map((visual) => visual.anchor)}
+                onMarkerInserted={(marker) => { setSelectedImageAnchor(marker); toast(`Penanda ${marker} disisipkan. Simpan teks & maklumat sebelum memuat naik gambar.`, "success"); }}
+              /> : (() => {
+                const footnotes = extractFootnotes(stripImageMarkers(form.body));
+                return <>
+                  <p className="admin-alert admin-alert-info" role="status">Paparan visual sahaja. Manuskrip ini mengandungi format yang perlu disunting dalam mod Markdown supaya format asal tidak berubah.</p>
+                  <div className="admin-markdown-preview admin-manuscript-visual-preview"><StoryMarkdown glossary={{}} footnoteNumbers={footnotes.numbers}>{markFootnoteReferences(footnotes.body, footnotes.numbers)}</StoryMarkdown><FootnoteList notes={footnotes.notes} /></div>
+                </>;
+              })()) : <>
               <textarea
                 id="body"
                 ref={manuscriptRef}
@@ -2045,7 +2051,7 @@ export default function EditWorkPage() {
               <FootnoteInserter onInsert={addFootnote} />
             </>}
             {danglingEmphasisParagraphs(form.body) > 0 && <p className="admin-form-hint" role="status">Ada tanda * condong yang belum berpasangan dalam manuskrip. Semak perenggan berkenaan dalam mod Markdown sebelum menerbitkan.</p>}
-            {manuscriptMode === "markdown" && !canEditVisually(form.body) && <span className="admin-form-hint">Manuskrip ini menggunakan sintaks yang belum disokong oleh mod Visual. Teruskan dalam Markdown supaya format asal tidak berubah.</span>}
+            {manuscriptMode === "markdown" && !canEditVisually(form.body) && <span className="admin-form-hint">Mod Visual masih boleh dibuka sebagai pratonton. Gunakan Markdown untuk menyunting supaya format asal tidak berubah.</span>}
             <SideNoteList
               body={form.body}
               onChange={(body) => { setForm((prev) => ({ ...prev, body })); setDirty(true); }}
