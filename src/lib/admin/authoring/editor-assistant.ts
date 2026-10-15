@@ -75,7 +75,19 @@ export function isDraftPlaceholder(change: { key: string; before: string }): boo
   return (change.key === "title" && change.before === "Draf tanpa tajuk") || (change.key === "slug" && /^draf-/.test(change.before));
 }
 
-export interface EditorChange { id: string; group: Exclude<EditorScope, "all">; label: string; before: string; after: string; selected: boolean; value: any; key: string }
+/** The same limits the save enforces (work-service), told at the review step instead of after "Isi borang" rolled everything back. */
+export const PLACE_NAME_LIMIT = 80;
+export const PLACE_DESCRIPTION_LIMIT = 160;
+
+export function placeEntryProblem(row: { name?: unknown; description?: unknown }): string | undefined {
+  const name = String(row.name ?? "").trim();
+  const description = String(row.description ?? "").trim();
+  if (name.length > PLACE_NAME_LIMIT) return `Nama ${name.length} aksara; paling banyak ${PLACE_NAME_LIMIT}. Pendekkan nama dalam jawapan.`;
+  if (description.length > PLACE_DESCRIPTION_LIMIT) return `Keterangan ${description.length} aksara; paling banyak ${PLACE_DESCRIPTION_LIMIT}. Pendekkan keterangan dalam jawapan.`;
+  return undefined;
+}
+
+export interface EditorChange { id: string; group: Exclude<EditorScope, "all">; label: string; before: string; after: string; selected: boolean; /** Set when this change would be refused on save: the review step shows it and holds "Isi borang". */ problem?: string; value: any; key: string }
 const record = (v: unknown): Record<string, any> => v && typeof v === "object" && !Array.isArray(v) ? v as Record<string, any> : {};
 const text = (v: unknown) => typeof v === "string" && !isPlaceholder(v) ? v.trim() : "";
 const show = (v: unknown): string => typeof v === "string" ? v : v == null ? "" : JSON.stringify(v, null, 2);
@@ -118,6 +130,11 @@ export function planEditorAnswer(answer: string, scope: EditorScope, state: Edit
       if (!identity || identity === "|") continue;
       const old = current.find((r: any) => (key === "glossary" ? r.term : key === "sections" ? r.slug : key === "credits" ? `${r.contributor_slug || r.guest_name}|${r.role_label}` : r.name)?.toLocaleLowerCase() === identity.toLocaleLowerCase());
       add(group, `${key}/${identity}`, `${({ characters: "Watak", places: "Tempat", times: "Masa", glossary: "Glosari", credits: "Kredit", sections: "Bab" })[key]}: ${identity}`, old ?? null, row);
+      if (key === "places" || key === "times") {
+        const problem = placeEntryProblem(row);
+        const made = changes[changes.length - 1];
+        if (problem && made && made.id === `${group}:${key}/${identity}`) made.problem = problem;
+      }
     }
   }
   if (owns("source")) for (const [key, column] of Object.entries(SOURCE_FIELDS)) {

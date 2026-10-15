@@ -111,7 +111,7 @@ assert(describeFilled({ genre: false, audience: false, credits: 0, characters: 0
 
 // ── wiring (source level) ──
 const start = read("src/app/api/admin/works/start-draft/route.ts");
-assert(start.includes("loadSeriesInheritance(tx, seriesId)") && start.includes("draftDefaults(inheritance)") && start.includes("insertInheritedCredits(tx, id, inheritance.credits"), "start-draft inherits inside its transaction");
+assert(!start.includes("loadSeriesInheritance") && !start.includes("insertInheritedCredits") && start.includes("draftDefaults(null)"), "16 Okt: start-draft no longer inherits by itself; the editor accepts or declines in the editor");
 assert(start.includes("genre: defaults.genre") && start.includes("audience: defaults.audience") && !/status: "draft", body: "", genre: null/.test(start), "the new episode's genre and audience come from the defaults, not from a fixed null and 13-17");
 const importService = read("src/lib/admin/import/import-service.ts");
 assert(importService.includes("loadSeriesInheritance(trx, plan.series.seriesId)") && importService.includes("mergeImportCredits(") && importService.includes("mergeByName(plan.characters"), "the chatbot import inherits for 'sambung'");
@@ -126,14 +126,14 @@ assert(lib.includes('work.status === "published" || work.status === "archived"')
 assert(lib.includes("if (!entry) throw") && lib.includes('.where("series_id", "=", seriesId).where("work_id", "=", workId)'), "the episode must belong to the series named in the URL");
 const page = read("src/app/admin/series/[id]/page.tsx");
 assert(page.includes("entry.position > 1") && page.includes('!["published", "archived"].includes(work.status)') && page.includes("handleInherit(entry.work_id)"), "the series page offers the button on later, unpublished episodes only");
-assert(read("src/app/admin/works/add/page.tsx").includes("data.inherited?.from"), "after creating an episode the editor is told what it received");
+assert(!read("src/app/admin/works/add/page.tsx").includes("data.inherited?.from"), "nothing was inherited, so the editor is not told it received anything");
 
 // ── 8 Okt: uniform by default, the editor decides ──
 assert(plan.includes("!options.seriesDefaults?.hasByline") && route.includes("hasByline: inheritance.credits.some((c) => c.byline)"), "the import does not warn that a writer is missing when the series already gives a name under the title");
 assert(lib.includes("const ownCredits = existing.some((c) => c.byline)") && lib.includes("ownCredits ? [] :"), "filling never adds the series credits to an episode that already has its own name under the title");
 assert(page.includes("await confirmAction(\"Isi episod ini daripada siri?"), "the editor is asked before an existing episode is filled");
 const addPage = read("src/app/admin/works/add/page.tsx");
-assert(addPage.includes("const copied =") && addPage.includes("\"credits\" : \"content\"") && addPage.includes("startsWith(\"Tiada yang perlu\")"), "the editor lands on the credits tab only when credits were copied, and is told only when something was filled");
+assert(addPage.includes("#content`") && !addPage.includes("#credits") && !addPage.includes("\"credits\" : \"content\""), "a new draft always opens on the text (Kandungan)");
 assert(read("src/components/admin/AuthoringForm.tsx").includes("genre dan audiens mengikut siri") && !lib.includes("khalayak"), "the copy says audiens, not khalayak");
 
 

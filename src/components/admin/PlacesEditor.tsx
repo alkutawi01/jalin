@@ -13,7 +13,7 @@ const DESCRIPTION_MAX = 160;
 const SETTINGS = {
   places: {
     path: "places",
-    max: 12,
+    max: 200,
     title: "Latar Tempat",
     noun: "latar tempat",
     nameLabel: "Nama tempat",
@@ -103,7 +103,7 @@ export default function PlacesEditor({ workId, kind = "places" }: { workId: stri
         </button>
       </div>
       <p className="admin-form-hint">
-        {cfg.hint} Paling banyak {PLACES_MAX}.
+        {cfg.hint} Keterangan: paling banyak 160 aksara.{kind === "times" ? ` Paling banyak ${PLACES_MAX} masa.` : ""}
       </p>
       {error ? <div className="admin-alert admin-alert-error" role="alert">{error}</div> : null}
       {success ? <div className="admin-alert admin-alert-success" role="status">{success}</div> : null}

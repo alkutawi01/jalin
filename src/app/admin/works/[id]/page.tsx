@@ -298,12 +298,18 @@ export default function EditWorkPage() {
   const [savedBody, setSavedBody] = useState("");
   const [positionError, setPositionError] = useState("");
   // The series this work is an episode of, and its number: shown under the title so the editor knows which episode is open.
-  const [seriesInfo, setSeriesInfo] = useState<{ title: string; position: number } | null>(null);
+  const [seriesInfo, setSeriesInfo] = useState<{ id: string; title: string; position: number } | null>(null);
+  // An episode is never filled from the series behind the editor's back: a new, empty draft is offered it, and the editor accepts or declines.
+  const [inheritDeclined, setInheritDeclined] = useState(false);
+  const [inheriting, setInheriting] = useState(false);
+  useEffect(() => {
+    try { setInheritDeclined(window.localStorage.getItem(`jalin-warisan-ditolak:${params.id as string}`) === "1"); } catch { /* private window */ }
+  }, [params.id]);
   useEffect(() => {
     let alive = true;
     fetch(`/api/admin/works/${params.id as string}/series`)
       .then((r) => (r.ok ? r.json() : null))
-      .then((data) => { if (alive) setSeriesInfo(data?.series ? { title: String(data.series.title), position: Number(data.series.position) } : null); })
+      .then((data) => { if (alive) setSeriesInfo(data?.series ? { id: String(data.series.id), title: String(data.series.title), position: Number(data.series.position) } : null); })
       .catch(() => { if (alive) setSeriesInfo(null); });
     return () => { alive = false; };
   }, [params.id]);
@@ -448,6 +454,20 @@ export default function EditWorkPage() {
   /** When the server's copy was last saved: a browser copy older than this is not the latest word on the work. */
   /** Bumped when the chatbot fill adds places or times, so the two lists below reload. */
   const [settingKey, setSettingKey] = useState(0);
+  // The "Watak & latar" tab holds characters, places and times; its number counts all three, not the characters alone.
+  const [placeTimeCount, setPlaceTimeCount] = useState(0);
+  useEffect(() => {
+    let alive = true;
+    const count = async (kind: "places" | "times") => {
+      try {
+        const res = await fetch(`/api/admin/works/${workId}/${kind}`);
+        const data = res.ok ? await res.json() : [];
+        return Array.isArray(data) ? data.length : 0;
+      } catch { return 0; }
+    };
+    void Promise.all([count("places"), count("times")]).then(([p, t]) => { if (alive) setPlaceTimeCount(p + t); });
+    return () => { alive = false; };
+  }, [workId, settingKey, activeTab]);
   const [serverSavedAt, setServerSavedAt] = useState<number | null>(null);
   /** The characters as last loaded or saved, to tell whether the editor has unsaved character edits. */
   const charactersBaseline = useRef<string>("[]");
@@ -1821,6 +1841,31 @@ export default function EditWorkPage() {
       </div>
       <p className="admin-form-hint a-work-save-help">Gambar, kredit, glosari dan bab disimpan melalui tindakan masing-masing — tidak memerlukan butang ini.</p>
 
+      {seriesInfo && seriesInfo.position > 1 && form.status === "draft" && !form.genre && !inheritDeclined && loadedLists.credits && loadedLists.characters && credits.length === 0 && characters.length === 0 ? (
+        <div className="admin-alert admin-alert-info a-inherit-offer" role="region" aria-label="Warisan daripada siri">
+          <p><strong>Warisi daripada siri?</strong> Genre, khalayak, kredit, watak dan latar tempat boleh diisi daripada episod terdahulu dalam siri ini. Anda boleh membuang yang tidak berkenaan selepas itu.</p>
+          <div className="admin-form-actions">
+            <button type="button" className="admin-btn admin-btn-primary admin-btn-sm" disabled={inheriting} onClick={async () => {
+              setInheriting(true);
+              try {
+                const res = await fetch(`/api/admin/series/${seriesInfo.id}/entries/${workId}/inherit`, { method: "POST" });
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) throw new Error(data.error || "Pewarisan gagal.");
+                toast(String(data.message || "Diisi daripada siri."), "success");
+                window.location.reload();
+              } catch (err) {
+                toast(errorText(err, "Pewarisan gagal."), "error");
+                setInheriting(false);
+              }
+            }}>{inheriting ? "Mengisi…" : "Terima"}</button>
+            <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" disabled={inheriting} onClick={() => {
+              try { window.localStorage.setItem(`jalin-warisan-ditolak:${workId}`, "1"); } catch { /* private window */ }
+              setInheritDeclined(true);
+            }}>Tolak</button>
+          </div>
+        </div>
+      ) : null}
+
       <EditorAssistant workId={workId} scope="all" context={assistantContext} blocked={assistantBlocked} onApplied={() => window.location.reload()} />
 
       <div className="admin-tabs">
@@ -1866,7 +1911,7 @@ export default function EditWorkPage() {
           aria-pressed={activeTab === "characters"}
           onClick={() => selectTab("characters")}
         >
-          Watak &amp; latar{countOf("characters", characters.length)}
+          Watak &amp; latar{countOf("characters", characters.length + placeTimeCount)}
         </button>
         {isSourced(form.type, form.origin) && (
           <button
