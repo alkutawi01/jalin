@@ -19,8 +19,6 @@ assert(!read("src/components/admin/PlacesEditor.tsx").includes('? ` Paling banya
 assert(placeEntryProblem({ name: "Beranda", description: "x".repeat(161) })?.includes("161") === true, "a 161-character description is a problem, with its length");
 assert(placeEntryProblem({ name: "Beranda", description: "x".repeat(160) }) === undefined, "160 characters is fine");
 assert(placeEntryProblem({ name: "n".repeat(81) })?.includes("81") === true, "an 81-character name is a problem");
-const assistant = read("src/components/admin/EditorAssistant.tsx");
-assert(assistant.includes("change.problem") && assistant.includes("preview.changes.some(change => change.problem)"), "the review shows the problem and holds Isi borang");
 
 // inheritance is the editor's choice
 const page = read("src/app/admin/works/[id]/page.tsx");

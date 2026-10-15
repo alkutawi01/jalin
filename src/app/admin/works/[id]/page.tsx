@@ -2388,6 +2388,7 @@ export default function EditWorkPage() {
                             type="button"
                             className="admin-btn admin-btn-sm admin-btn-danger"
                             onClick={() => handleDeleteSection(section.id)}
+                            aria-label={`Padam bab ${section.title || section.slug}`}
                           >
                             Padam
                           </button>
@@ -2635,6 +2636,7 @@ export default function EditWorkPage() {
                             type="button"
                             className="admin-btn admin-btn-sm admin-btn-danger"
                             onClick={() => handleDeleteCredit(credit.id)}
+                            aria-label={`Padam kredit ${credit.guest_name || credit.contributor_slug || credit.role_label}`}
                           >
                             Padam
                           </button>
@@ -2987,6 +2989,7 @@ export default function EditWorkPage() {
                             type="button"
                             className="admin-btn admin-btn-sm admin-btn-danger"
                             onClick={() => handleDeleteGlossary(term.id)}
+                            aria-label={`Padam istilah ${term.term}`}
                           >
                             Padam
                           </button>
@@ -3131,7 +3134,7 @@ export default function EditWorkPage() {
             <>
               {!sourceRights.isDerivative && (
                 <p className="admin-form-hint">
-                  Gate rights hanya aktif untuk terjemahan/fragmen/sinopsis.
+                  Semakan hak hanya untuk terjemahan, fragmen dan sinopsis.
                 </p>
               )}
               {sourceRights.rightsBlockers.length > 0 && (
@@ -3421,8 +3424,8 @@ export default function EditWorkPage() {
             <strong>Padam karya ini</strong>
             <p className="admin-form-hint">Padam terus karya yang tidak pernah diterbitkan (cth. karya ujian). Tidak boleh dipulihkan.</p>
           </div>
-          <button type="button" className="admin-btn admin-btn-danger" onClick={handleDeleteWork} disabled={saving}>
-            Padam
+          <button type="button" className="admin-btn admin-btn-danger" onClick={handleDeleteWork} disabled={saving} aria-label="Padam karya ini selama-lamanya">
+            Padam karya
           </button>
         </div>
       ) : null}

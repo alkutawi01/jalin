@@ -127,7 +127,8 @@ export default function WorkStatusPanel({
   } else if ((status === "draft" || status === "review") && allClear) {
     next = { label: "Terbitkan", run: onPublishNow };
   } else if (status === "draft") {
-    next = { label: "Hantar untuk semakan", run: () => onChangeStatus("review") };
+    // Nothing written yet: there is nothing to review, so the step waits until there is a title and some text.
+    next = { label: "Hantar untuk semakan", run: () => onChangeStatus("review"), disabled: untouched, hint: untouched ? "Taip tajuk dan teks dahulu." : undefined };
   } else if (status === "review") {
     next = {
       label: "Tandakan sedia",
@@ -164,7 +165,7 @@ export default function WorkStatusPanel({
     } else if (next.label === "Terbitkan") {
       // Draft or in review and all clear: the next step is the one an editor can take.
       next = status === "draft"
-        ? { label: "Hantar untuk semakan", run: () => onChangeStatus("review") }
+        ? { label: "Hantar untuk semakan", run: () => onChangeStatus("review"), disabled: untouched, hint: untouched ? "Taip tajuk dan teks dahulu." : undefined }
         : { label: "Tandakan sedia", run: () => onChangeStatus("ready"), hint: "Pemilik yang menerbitkan karya selepas ini." };
     }
   }
