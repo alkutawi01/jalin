@@ -71,8 +71,9 @@ assert(DEK_RULE.includes("JANGAN ceritakan perkembangan") && DEK_RULE.includes("
 
 // The page
 const page = read("src/app/admin/works/[id]/page.tsx");
-assert(page.includes("looksLikePrompt(text)") && page.indexOf("looksLikePrompt(text)") < page.indexOf("parseWorkFill(text, scope)"), "the page refuses the copied prompt before scoped parsing");
-assert(page.includes("Jawapan tidak mengandungi bahagian untuk skop ini") && page.includes("Tiada perubahan disimpan"), "unreadable answers explain the scope problem and do not write");
+const reviewFunction = page.slice(page.indexOf("function reviewFillAnswer"), page.indexOf("async function applyFillAnswer"));
+assert(reviewFunction.indexOf("looksLikePrompt(text)") >= 0 && reviewFunction.indexOf("looksLikePrompt(text)") < reviewFunction.indexOf("parseWorkFill(text, scope)"), "review refuses the copied prompt before preparing an actionable result");
+assert(page.includes("Permulaan teks diterima") && page.includes("Tiada perubahan disimpan"), "unreadable answers show the received snippet and do not write");
 assert(page.includes("dekWarning(result.dek)"), "a pasted dek is checked and the editor is told");
 
 console.log(`\n${passed} passed, ${failed} failed`);
