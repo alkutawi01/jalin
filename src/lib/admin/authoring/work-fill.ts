@@ -281,7 +281,7 @@ const INVISIBLE = /[​-‏‪-‮⁠﻿]/g;
  * invisible characters. Used only to recognise a heading; the lines kept as content are not rewritten.
  */
 function headingForm(line: string): string {
-  return line.replace(INVISIBLE, "").replace(/ /g, " ").normalize("NFKC").replace(/[【〔]/g, "[").replace(/[】〕]/g, "]").replace(/\\([[\]_*#>:-])/g, "$1");
+  return line.replace(/<\/?(?:escape|text)(?:\s[^>]*)?>/gi, "").replace(INVISIBLE, "").replace(/ /g, " ").normalize("NFKC").replace(/[【〔]/g, "[").replace(/[】〕]/g, "]").replace(/\\([[\]_*#>:-])/g, "$1");
 }
 
 export { isPlaceholder };
