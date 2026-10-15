@@ -255,6 +255,8 @@ function parseSetting(text: string): { places: WorkFillResult["places"]; times: 
         description = split[2]!.trim();
       }
     }
+    // Never infer an unspecified type as a place: incorrect classification is worse than omission.
+    if (!kind) continue;
     (kind === "masa" ? times : places).push({ name, description });
   }
   return { places, times };
