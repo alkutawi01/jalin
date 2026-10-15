@@ -56,6 +56,7 @@ async function getStats() {
       counts: countWorks(getAllWorks().map((w) => ({ type: w.type, status: "published" }))),
       editorialHealth: null,
       healthError: null as string | null,
+      entries: null as { works: number; episodes: number } | null,
     };
   }
 
@@ -78,6 +79,11 @@ async function getStats() {
     counts: countWorks(works, await loadSeriesOf()),
     editorialHealth,
     healthError,
+    // The cards count a series once; the list of works shows every episode as a work of its own. Both numbers are told.
+    entries: {
+      works: works.filter((work) => work.status === "published").length,
+      episodes: works.filter((work) => work.status === "published" && work.type === "bersiri").length
+    } as { works: number; episodes: number } | null,
   };
 }
 
@@ -201,6 +207,8 @@ export default async function AdminDashboard({ searchParams }: { searchParams?: 
           <a className={`admin-stat-card a-stat-link${label === "Jumlah diterbitkan" ? " is-total" : ""}`} key={label} href={href} aria-label={`${label}: ${count?.published ?? 0}. Buka senarai.`}>
             <div className="admin-stat-label">{label}</div>
             <div className="admin-stat-value">{count?.published ?? 0}</div>
+            {label === "Bersiri" && stats.entries ? <div className="admin-section-meta">{stats.entries.episodes} episod diterbitkan</div> : null}
+            {label === "Jumlah diterbitkan" && stats.entries ? <div className="admin-section-meta">{stats.entries.works} termasuk setiap episod</div> : null}
             {count && count.pending > 0 ? <div className="admin-section-meta">+ {count.pending} belum diterbitkan</div> : null}
           </a>
         ))}
