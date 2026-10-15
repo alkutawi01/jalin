@@ -19,7 +19,8 @@ const read = (p: string) => fs.readFileSync(path.join(__dirname, "..", p), "utf8
 const chrome = read("src/components/reader/StoryChrome.tsx");
 const left = chrome.slice(chrome.indexOf("export function LeftRail"), chrome.indexOf("export function RightRail"));
 const right = chrome.slice(chrome.indexOf("export function RightRail"), chrome.indexOf("export function EditorNote"));
-assert(left.includes("Tentang karya") && left.includes(">Penyuntingan<"), "the left column holds Tentang karya and Penyuntingan");
+assert(left.includes("Tentang karya") && left.includes(">Editorial<"), "the left column holds Tentang karya and Editorial");
+assert(fs.readFileSync(path.join(__dirname, "../src/components/reader/MobileStoryInfo.tsx"), "utf8").includes("            Editorial"), "mobile uses the same Editorial label");
 assert(right.includes(">Watak<") && right.includes("Latar tempat") && !right.includes("Editorial"), "the right column holds Watak and Latar tempat, not Editorial");
 
 const story = read("src/components/reader/WorkView.tsx");
