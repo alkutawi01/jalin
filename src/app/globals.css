@@ -4322,7 +4322,18 @@ body:has(.save-work) .back-to-top { bottom: 76px; }
   .hero-carousel-slide .hero-featured-text > .hero-featured-cta { align-self: auto; justify-self: auto; margin-top: auto; }
   .hero-carousel-slide .hero-featured-title { font-size: clamp(30px, 4.4vw, 40px); margin-bottom: 10px; }
   .hero-carousel-slide .hero-featured-dek { max-width: 38ch; display: block; overflow: visible; -webkit-line-clamp: unset; line-clamp: unset; }
-  .hero-featured-visual, .hero-carousel-slide .hero-featured-visual { order: initial; width: 100%; max-width: 100%; height: 100%; min-height: 400px; max-height: 520px; margin: 0; aspect-ratio: auto; border-radius: 16px; box-shadow: none; }
+  .hero-featured-visual, .hero-carousel-slide .hero-featured-visual { order: initial; width: 100%; max-width: 100%; height: 100%; min-height: 400px; max-height: 520px; margin: 0; aspect-ratio: auto; border-radius: 0; box-shadow: none; }
+  /* The picture's left edge melts into the page (as on a wide window) and its corners are square. The veil is the page's own colour over the
+     picture, so it looks the same while one slide fades over another. */
+  .hero-carousel-slide .hero-featured-visual::after {
+    content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+    background: linear-gradient(to right,
+      var(--ground-bg, var(--paper)) 0,
+      color-mix(in srgb, var(--ground-bg, var(--paper)) 82%, transparent) 56px,
+      color-mix(in srgb, var(--ground-bg, var(--paper)) 28%, transparent) 150px,
+      transparent 240px);
+  }
+  .hero-carousel-slide .hero-featured-visual .image-rights { z-index: 2; }
 }
 /* Homepage "Bersiri" carousel on a phone (700px and below). The picture of a series was made full-bleed (width 100cqw, margin-left of
    minus the page margin) before the slides sat in a scrolling track; the track clips on both sides, so the picture was cut at the left
