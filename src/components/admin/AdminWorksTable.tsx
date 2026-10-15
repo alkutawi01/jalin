@@ -202,7 +202,7 @@ export default function AdminWorksTable({ works, initialPicks }: { works: AdminW
       </section>
       <div className="admin-table-wrap">
         <table className="admin-table admin-works-table a-compact-table">
-          <thead><tr><th className="a-col-fit"><input type="checkbox" checked={allSelected} onChange={toggleAll} aria-label="Pilih semua karya dalam senarai" /></th><th className="admin-pick-column" title="Pilihan Editor">Pilihan</th><th>Tajuk</th><th className="a-col-fit a-col-minor">ID</th><th className="a-col-wide">Pengarang</th><th className="a-col-wide">Alamat pautan</th><th>Jenis</th><th>Status</th><th className="a-col-wide">Versi</th><th className="a-col-fit a-col-minor">Dikemas kini</th><th>Tindakan</th></tr></thead>
+          <thead><tr><th className="a-col-fit"><input type="checkbox" checked={allSelected} onChange={toggleAll} aria-label="Pilih semua kandungan dalam halaman ini" /></th><th className="admin-pick-column" title="Pilihan Editor">Pilihan</th><th>Tajuk</th><th className="a-col-fit a-col-minor">ID</th><th className="a-col-wide">Pengarang</th><th className="a-col-wide">Alamat pautan</th><th>Jenis</th><th>Status</th><th className="a-col-wide">Versi</th><th className="a-col-fit a-col-minor">Dikemas kini</th><th>Tindakan</th></tr></thead>
           <tbody>
             {works.length === 0 ? (
               <tr><td colSpan={11} className="admin-table-empty">Tiada karya yang sepadan. Kosongkan carian atau pilih status lain.</td></tr>

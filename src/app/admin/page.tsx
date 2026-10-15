@@ -276,7 +276,7 @@ export default async function AdminDashboard({ searchParams }: { searchParams?: 
                   </table>
                 </div>
                 {row.hidden > 0 ? (
-                  <p className="admin-form-hint">dan {row.hidden} lagi. <a href="/admin/works">Lihat senarai karya</a></p>
+                  <p className="admin-form-hint">dan {row.hidden} lagi. <a href="/admin/works">Lihat senarai kandungan</a></p>
                 ) : null}
               </div>
             ))}

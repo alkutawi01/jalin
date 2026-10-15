@@ -148,6 +148,8 @@ export interface ActivityFilter {
   actorId?: string;
   workId?: string;
   limit?: number;
+  /** Rows to skip: the page of older changes the editor asked for. */
+  offset?: number;
   /** Rows about readers, codes and access hold commercial secrets and reader identifiers: only the owner is shown them. */
   includeSubscription?: boolean;
 }
@@ -160,7 +162,7 @@ export async function listActivity(filter: ActivityFilter = {}): Promise<Activit
   if (filter.actorId) query = query.where("actor_id", "=", filter.actorId);
   if (filter.workId) query = query.where("work_id", "=", filter.workId);
   if (!filter.includeSubscription) query = query.where("action", "not like", "subscription.%");
-  const rows = await query.limit(Math.min(Math.max(filter.limit ?? ACTIVITY_PAGE_SIZE, 1), 500)).execute();
+  const rows = await query.limit(Math.min(Math.max(filter.limit ?? ACTIVITY_PAGE_SIZE, 1), 500)).offset(Math.max(filter.offset ?? 0, 0)).execute();
   return rows.map((row) => ({
     id: String(row.id),
     at: new Date(row.at).toISOString(),

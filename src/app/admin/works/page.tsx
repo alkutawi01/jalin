@@ -5,6 +5,12 @@ import { summarizeReadiness } from "../../../lib/admin/publication-service";
 import { getPickState } from "../../../lib/admin/editor-picks-service";
 import AdminWorksTable, { type AdminWorkRow } from "../../../components/admin/AdminWorksTable";
 import { isUntouchedProvisionalDraft } from "../../../lib/admin/provisional-draft";
+import AdminPagination from "../../../components/admin/AdminPagination";
+import { paginate, parsePage } from "../../../lib/reader/category-list";
+import { redirect } from "next/navigation";
+
+/** The list of works is cut into pages of this many, so a thousand of them stays quick to open and to scroll. */
+const WORKS_PAGE_SIZE = 50;
 
 export const dynamic = "force-dynamic";
 
@@ -27,9 +33,9 @@ const STATUS_LABELS: Record<string, string> = {
 export default async function AdminWorksPage({
   searchParams
 }: {
-  searchParams: Promise<{ status?: string; q?: string; type?: string }>;
+  searchParams: Promise<{ status?: string; q?: string; type?: string; halaman?: string }>;
 }) {
-  const { status, q, type } = await searchParams;
+  const { status, q, type, halaman } = await searchParams;
   if (!hasDb()) {
     return (
       <div className="admin-placeholder">
@@ -76,9 +82,19 @@ export default async function AdminWorksPage({
         [w.id, w.title, w.slug, authorsByWork.get(w.id) ?? ""].some((field) => field.toLowerCase().includes(query)))
   );
   const works = matchingWorks.filter((w) => !filter || w.status === filter);
-  const verdicts = await summarizeReadiness(works.filter((w) => w.status === "ready").map((w) => w.id));
+  const requestedPage = parsePage({ halaman });
+  const paged = paginate(works, requestedPage, WORKS_PAGE_SIZE);
+  // A page past the end is not a page: go to the last real one, with the filters kept.
+  const hrefForPage = (target: number) => {
+    const params = new URLSearchParams({ ...(filter ? { status: filter } : {}), ...(query ? { q: q ?? "" } : {}), ...(typeFilter ? { type: typeFilter } : {}), ...(target > 1 ? { halaman: String(target) } : {}) });
+    const qs = params.toString();
+    return qs ? `/admin/works?${qs}` : "/admin/works";
+  };
+  if (requestedPage > paged.page) redirect(hrefForPage(paged.page));
+  const pageWorks = paged.items;
+  const verdicts = await summarizeReadiness(pageWorks.filter((w) => w.status === "ready").map((w) => w.id));
   const pickState = await getPickState();
-  const tableRows: AdminWorkRow[] = works.map((work) => {
+  const tableRows: AdminWorkRow[] = pageWorks.map((work) => {
     const verdict = verdicts.get(work.id);
     return {
       id: work.id,
@@ -107,8 +123,8 @@ export default async function AdminWorksPage({
       <header className="admin-page-header">
         <div className="admin-page-header-row">
           <div>
-            <h1>Karya</h1>
-            <p className="admin-page-sub">{works.length} karya{filter ? ` (${STATUS_LABELS[filter]})` : ""}</p>
+            <h1>Senarai kandungan</h1>
+            <p className="admin-page-sub">{works.length} kandungan{filter ? ` (${STATUS_LABELS[filter]})` : ""}</p>
           </div>
           <div className="admin-page-header-actions">
             <a href="/admin/visual-requests" className="admin-btn admin-btn-outline">
@@ -153,7 +169,9 @@ export default async function AdminWorksPage({
         ))}
       </nav>
 
+      <AdminPagination page={paged.page} pages={paged.pages} total={paged.total} size={WORKS_PAGE_SIZE} hrefFor={hrefForPage} />
       <AdminWorksTable works={tableRows} initialPicks={pickState.picks} />
+      <AdminPagination page={paged.page} pages={paged.pages} total={paged.total} size={WORKS_PAGE_SIZE} hrefFor={hrefForPage} />
     </div>
   );
 }

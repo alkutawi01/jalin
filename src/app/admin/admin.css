@@ -921,3 +921,8 @@
 .a-shell a.a-stat-link:hover { border-color: var(--a-accent); box-shadow: 0 6px 16px -10px rgba(24, 52, 60, 0.35); }
 .a-shell a.a-stat-link:focus-visible { outline: 2px solid var(--a-accent); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) { .a-shell a.a-stat-link { transition: none; } }
+
+/* Previous / next above and under a long admin list. */
+.a-shell .admin-pagination { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; margin: 12px 0; }
+.a-shell .admin-pagination-where { color: var(--a-muted); font-size: 13px; }
+.a-shell .admin-pagination .is-disabled { opacity: 0.45; pointer-events: none; }
