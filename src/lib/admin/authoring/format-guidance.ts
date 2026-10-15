@@ -13,7 +13,7 @@ export const SELF_CHECK = [
   "2. Setiap istilah glosari ialah perkataan yang benar-benar sukar; tiada nama watak atau lokasi.",
   "3. Setiap Adegan menggambarkan keadaan pada titik itu dalam cerita sahaja (cuaca, waktu, objek, siapa hadir), dan sepadan dengan pilihan Muka.",
   "4. Dek dan ringkasan tidak mendedahkan pengakhiran atau kejutan.",
-  "5. Tiada Markdown, tiada nota atau penjelasan di luar format."
+  "5. Metadata tanpa Markdown; penekanan dalam [KANDUNGAN] mesti berpasangan. Tiada nota atau penjelasan di luar format."
 ].join("\n");
 
 function lines(...items: (string | null)[]): string {
@@ -50,6 +50,7 @@ export function exampleBlock(recipe: Recipe, sections: OutputSection[]): string 
       )
     );
   }
+  if (has("SIRI")) blocks.push("[SIRI]\nTajuk siri: Kunci Almari Lama\nMod: continuous\nDek siri: Sebuah keluarga menelusuri rahsia rumah lama.");
   if (has("BAB")) {
     blocks.push(
       lines(

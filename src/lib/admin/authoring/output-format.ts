@@ -22,7 +22,7 @@ export interface FormatOptions {
 
 const INTRO = [
   "FORMAT JAWAPAN (WAJIB DIIKUTI TEPAT)",
-  "Balas dengan teks biasa sahaja mengikut bahagian di bawah, mengikut turutan. Tiada pengenalan, tiada penutup, tiada Markdown (jangan guna **, #, tanda bintang atau blok kod).",
+  "Balas dengan label teks biasa mengikut bahagian di bawah. Tiada pengenalan, penutup, jadual atau blok kod. Metadata tidak menggunakan Markdown. Dalam [KANDUNGAN] sahaja, penekanan *miring* atau **tebal** yang diperlukan mesti berpasangan dan ditutup sebelum akhir perenggan.",
   "Setiap bahagian bermula dengan tajuknya dalam kurungan siku, contoh [KARYA]. Setiap maklumat ditulis sebagai \"Label: nilai\" pada satu baris; nilai yang panjang boleh bersambung pada baris berikutnya.",
   "Bahagian yang mengandungi banyak item (watak, glosari, gambar, bab) diasingkan satu item daripada satu lagi dengan satu baris yang hanya mengandungi ____",
   "Jika sesuatu maklumat tiada dalam bahan, tulis: tidak dinyatakan"

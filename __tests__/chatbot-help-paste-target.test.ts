@@ -13,11 +13,10 @@ function assert(cond: boolean, msg: string) {
 const page = fs.readFileSync(path.join(__dirname, "../src/app/admin/works/[id]/page.tsx"), "utf8").replace(/\r\n/g, "\n");
 assert(page.includes('id="chatbot-fill"'), "the box at the top keeps its anchor");
 assert(
-  page.includes("onClick={() => void copyFillPrompt()} disabled={fillBusy}>1. Salin arahan</button>") &&
-    page.includes('onClick={() => void pasteFillFromClipboard()} disabled={fillBusy}>{fillBusy ? "Mengisi…" : "2. Tampal & isi"}</button>'),
-  "the Watak & latar tab itself has the copy and the paste buttons"
+  page.includes("copyFillPrompt(activeTab as WorkFillScope)") && page.includes("pasteFillFromClipboard(activeTab as WorkFillScope)"),
+  "per-tab copy and paste carry the tab's scope"
 );
-assert(page.includes("watak, latar tempat dan latar masa") && page.includes("bukan pagi, siang atau malam"), "and says what it fills, and that latar masa is a year or era");
+assert(page.includes("Bahagian tab lain dalam jawapan dilangkau") && page.includes("reviewFillAnswer(fillAnswer, fillScope)"), "the destination is explicit and other tabs are ignored");
 assert(page.includes("tiada tempat untuk menampalnya"), "other tabs say the answer is advice only");
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);

@@ -21,6 +21,7 @@ import {
 } from "./parser-output";
 import { countWords, estimateReadingMinutes, foldText, slugify } from "./text-utils";
 import { normalizeAudience } from "../../audience";
+import { danglingEmphasisParagraphs } from "../../reader/literal-emphasis";
 
 export interface PlannedCredit {
   guestName: string;
@@ -215,6 +216,8 @@ export function buildImportPlan(answer: string, manuscript: string, options: Imp
     return { ok: false, errors, warnings, plan: null, report: parsed.report };
   }
 
+  const emphasisIssues = danglingEmphasisParagraphs(mode === "tulis" ? bodyForWork : manuscript);
+  if (emphasisIssues) warnings.push({ code: "unclosed_emphasis", message: `${emphasisIssues} perenggan mempunyai tanda * condong yang belum berpasangan. Semak dalam pratonton sebelum menyimpan.` });
   const readingMinutes = estimateReadingMinutes(storedWords);
   if (data.readingMinutes !== null && Math.abs(data.readingMinutes - readingMinutes) > Math.max(2, readingMinutes * 0.25)) {
     warnings.push({

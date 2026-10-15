@@ -187,7 +187,7 @@ export default function AdminWorksTable({ works, initialPicks }: { works: AdminW
               const disabled = work.status !== "published";
               return (
                 <tr key={work.id} className={selected.has(work.id) ? "is-selected" : undefined}>
-                  <td className="a-col-fit"><input type="checkbox" checked={selected.has(work.id)} onChange={() => toggleSelected(work.id)} aria-label={`Pilih ${work.title}`} /></td>
+                  <td className="a-col-fit admin-selection-cell"><input type="checkbox" checked={selected.has(work.id)} onChange={() => toggleSelected(work.id)} aria-label={`Pilih ${work.title}`} /></td>
                   <td className="admin-pick-cell">
                     <label className={`admin-pick-toggle${disabled ? " is-disabled" : ""}`} title={disabled ? "Hanya karya yang sudah diterbitkan boleh dipilih." : undefined}>
                       <input type="checkbox" checked={Boolean(position)} disabled={disabled} onChange={() => toggle(work)} aria-label={`${position ? "Keluarkan" : "Tambah"} ${work.title} ${position ? "daripada" : "ke"} Pilihan Editor`} />

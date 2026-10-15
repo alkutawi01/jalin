@@ -1,4 +1,6 @@
-import type { ReactNode } from "react";
+import React, { type ReactNode } from "react";
+import ReactMarkdown from "react-markdown";
+import { cleanLiteralEmphasis } from "./literal-emphasis";
 import { isDictionaryWord } from "./dictionary-words";
 
 /**
@@ -15,18 +17,14 @@ export function stripItalicMarks(text: string): string {
 
 /** Render *marked* parts in <em>; everything else as plain text. */
 export function renderItalics(text: string): ReactNode {
-  const parts: ReactNode[] = [];
-  let last = 0;
-  let key = 0;
-  for (const match of (text ?? "").matchAll(MARK)) {
-    const start = match.index ?? 0;
-    if (start > last) parts.push(text.slice(last, start));
-    // A word that is in Kamus Dewan is not set in italics, however it was marked.
-    parts.push(isDictionaryWord(match[1]!) ? match[1]! : <em key={key++}>{match[1]}</em>);
-    last = start + match[0].length;
-  }
-  if (last < text.length) parts.push(text.slice(last));
-  return parts.length === 1 && typeof parts[0] === "string" ? parts[0] : <>{parts}</>;
+  const cleanChildren = (children: ReactNode): ReactNode => React.Children.map(children, child =>
+    typeof child === "string" && !/\\\*/.test(text) ? cleanLiteralEmphasis(child) : child);
+  return <ReactMarkdown allowedElements={["p", "em", "strong", "code", "br"]} unwrapDisallowed components={{
+    p: ({ children }) => <>{cleanChildren(children)}</>,
+    strong: ({ children }) => <strong>{cleanChildren(children)}</strong>,
+    em: ({ children }) => typeof children === "string" && isDictionaryWord(children)
+      ? <>{children}</> : <em>{cleanChildren(children)}</em>,
+  }}>{text ?? ""}</ReactMarkdown>;
 }
 
 /**

@@ -26,6 +26,12 @@ export interface ComposeInput {
   specialInstruction?: string | null;
 }
 
+/** Older settings stored the WHOLE composed prompt, including its obsolete schema and example.
+ * Keep the editor's instructions; the answer contract is appended once from current code. */
+export function editorialInstructions(text: string | null | undefined): string {
+  return (text ?? "").split(/(?:^|\n)\s*FORMAT JAWAPAN[^\n]*\n/i)[0]!.trim();
+}
+
 function seriesBlock(series: SeriesContext | null | undefined): string | null {
   if (!series) return null;
   if (series.kind === "baharu") {
@@ -44,8 +50,8 @@ function seriesBlock(series: SeriesContext | null | undefined): string | null {
 
 export function composeAiPrompt(input: ComposeInput): string {
   const recipe = getRecipe(input.recipe);
-  const globalRules = (input.globalRules ?? "").trim() || DEFAULT_GLOBAL_RULES;
-  const recipeText = (input.recipeText ?? "").trim() || DEFAULT_RECIPE_TEXT[input.recipe];
+  const globalRules = editorialInstructions(input.globalRules) || DEFAULT_GLOBAL_RULES;
+  const recipeText = editorialInstructions(input.recipeText) || DEFAULT_RECIPE_TEXT[input.recipe];
   const special = (input.specialInstruction ?? "").trim();
 
   const parts = [

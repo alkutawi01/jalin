@@ -11,7 +11,7 @@ function assert(cond: boolean, msg: string) {
   if (cond) { passed++; console.log(`  ✓ ${msg}`); } else { failed++; console.error(`  ✗ ${msg}`); }
 }
 const page = fs.readFileSync(path.join(__dirname, "../src/app/admin/works/[id]/page.tsx"), "utf8").replace(/\r\n/g, "\n");
-const start = page.indexOf("async function pasteFillFromClipboard");
+const start = page.indexOf("async function applyFillAnswer");
 const fn = page.slice(start, page.indexOf("\n  }\n", start));
 assert((fn.match(/wrote \+= 1/g) ?? []).length === 5, "each of the five write steps (maklumat, watak, latar, glosari per istilah, sumber) is counted when it succeeds");
 assert(fn.includes('"Tiada apa-apa disimpan."') && fn.includes("wrote > 0"), "an error before any write says nothing was saved");

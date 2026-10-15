@@ -71,7 +71,7 @@ assert(DEK_RULE.includes("JANGAN ceritakan perkembangan") && DEK_RULE.includes("
 
 // The page
 const page = read("src/app/admin/works/[id]/page.tsx");
-assert(page.includes("looksLikePrompt(text)") && page.indexOf("looksLikePrompt(text)") < page.indexOf("parseWorkFill(text)"), "the page refuses the copied prompt before parsing");
+assert(page.includes("looksLikePrompt(text)") && page.indexOf("looksLikePrompt(text)") < page.indexOf("parseWorkFill(text, scope)"), "the page refuses the copied prompt before scoped parsing");
 assert(page.includes("Papan keratan mengandungi ${text.length} aksara dan bermula dengan"), "when nothing is found the notice says what was read");
 assert(page.includes("dekWarning(result.dek)"), "a pasted dek is checked and the editor is told");
 

@@ -12,6 +12,7 @@ import { normalizeSceneBreaks } from "../../lib/reader/scene-breaks";
 import { splitFootnoteTokens } from "../../lib/reader/footnotes";
 import { smartQuotes } from "../../lib/admin/smart-quotes";
 import { spacedDashes } from "../../lib/reader/spaced-dash";
+import { cleanLiteralEmphasis } from "../../lib/reader/literal-emphasis";
 
 function plainText(node: ReactNode): string {
   if (typeof node === "string" || typeof node === "number") return String(node);
@@ -75,11 +76,11 @@ function withFootnotes(children: ReactNode, numbers: Record<string, number>): Re
   });
 }
 
-function decorateChildren(children: ReactNode, glossary: GlossaryMap, used: Set<string>): ReactNode {
+function decorateChildren(children: ReactNode, glossary: GlossaryMap, used: Set<string>, cleanMarks = true): ReactNode {
   return React.Children.map(children, (child) =>
-    typeof child === "string" ? decorateGlossary(child, glossary, used)
+    typeof child === "string" ? decorateGlossary(cleanMarks ? cleanLiteralEmphasis(child) : child, glossary, used)
       : React.isValidElement<{ children?: ReactNode }>(child) && child.type !== FootnoteRef && child.type !== "a" && child.type !== "code" && child.type !== "button"
-        ? React.cloneElement(child, { children: decorateChildren(child.props.children, glossary, used) })
+        ? React.cloneElement(child, { children: decorateChildren(child.props.children, glossary, used, cleanMarks) })
         : child
   );
 }
@@ -117,7 +118,10 @@ export default function StoryMarkdown({
   return (
     <>
       {splitCommunicationBlocks(normalizeMarkdown(children)).map((segment, index) => segment.kind === "prose"
-        ? <ReactMarkdown key={index} components={components}>{segment.content}</ReactMarkdown>
+        ? <ReactMarkdown key={index} components={{ ...components, p: ({ node, children }) => {
+            const raw = segment.content.slice(node?.position?.start.offset ?? 0, node?.position?.end.offset ?? segment.content.length);
+            return <p>{decorateChildren(withFootnotes(children, footnoteNumbers), glossary, used, !/\\\*/.test(raw))}</p>;
+          } }}>{segment.content}</ReactMarkdown>
         : <div key={index} className={`story-communication story-communication-${segment.kind}`} role="group" aria-label={segment.kind === "mesej" ? "Mesej dalam cerita" : "E-mel dalam cerita"}>
             <ReactMarkdown components={segment.kind === "mesej" ? messageComponents : components}>{segment.content}</ReactMarkdown>
           </div>)}

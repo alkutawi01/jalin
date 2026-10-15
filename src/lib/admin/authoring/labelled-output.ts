@@ -13,6 +13,7 @@ import { SECTION_NAMES } from "./output-format";
 import { DEFAULT_AUDIENCE } from "../../audience";
 import type { OutputSection } from "./recipes";
 import { isPlaceholder } from "./placeholder";
+import { normaliseResponseLine, responseSection } from "./response-sections";
 
 export interface LabelledParse {
   raw: Record<string, unknown>;
@@ -46,6 +47,7 @@ function fold(text: string): string {
 
 /** Recognises "[KARYA]", "KARYA:", "## Karya", "**[WATAK]**" as section headings. */
 function headingOf(line: string): OutputSection | null {
+  line = normaliseResponseLine(line);
   const stripped = line
     .trim()
     .replace(/^[#>*_\s\[\(<-]+/, "")
@@ -61,6 +63,7 @@ function headingOf(line: string): OutputSection | null {
 }
 
 function isClosingTag(line: string): boolean {
+  line = normaliseResponseLine(line);
   return /^\s*[\[<]\s*\/\s*[A-Za-z ]+\s*[\]>]\s*$/.test(line);
 }
 
@@ -257,14 +260,19 @@ export function parseLabelledAnswer(answer: string): LabelledParse | null {
   const lines = source.split("\n");
 
   const sections: { name: OutputSection; lines: string[] }[] = [];
+  let active: { name: OutputSection; lines: string[] } | null = null;
   for (const line of lines) {
     const heading = headingOf(line);
     if (heading) {
-      sections.push({ name: heading, lines: [] });
+      active = { name: heading, lines: [] };
+      sections.push(active);
       continue;
     }
-    if (isClosingTag(line)) continue;
-    if (sections.length > 0) sections[sections.length - 1]!.lines.push(line);
+    const boundary = responseSection(line);
+    // Story communication markers (e.g. [MESEJ]) are prose, not import sections.
+    if (isClosingTag(line) && active?.name !== "KANDUNGAN") { active = null; continue; }
+    if (boundary && (active?.name !== "KANDUNGAN" || /^(KREDIT|HAK|NOTA EDITOR|EDITOR REPORT)$/.test(boundary))) { active = null; continue; }
+    if (active) active.lines.push(line);
   }
   if (!sections.some((s) => s.name === "KARYA")) return null;
   // The prompt's own format block pasted back (its Tajuk line is still the instruction, and its example follows): not an answer.

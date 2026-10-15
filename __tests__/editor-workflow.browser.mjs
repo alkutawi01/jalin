@@ -17,12 +17,16 @@ const file = { name: "ujian.png", mimeType: "image/png", buffer: Buffer.from("iV
 let work;
 let visuals = [];
 let glossary = [];
+let characters = [];
+const assistantWrites = [];
 let nextVisualId = 1;
 let patches = 0;
 let replacements = 0;
 const pageErrors = [];
 const browser = await chromium.launch({ headless: true, executablePath: chrome });
 const page = await browser.newPage({ viewport: { width: 1360, height: 900 } });
+page.setDefaultNavigationTimeout(90000);
+page.setDefaultTimeout(60000);
 page.on("pageerror", (error) => pageErrors.push(error.message));
 
 await page.route("**/api/admin/**", async (route) => {
@@ -64,7 +68,10 @@ await page.route("**/api/admin/**", async (route) => {
   }
   if (target === `/api/admin/works/${id}/source-rights`) return reply({ sourceWork: null, rightsHistory: [], rightsReady: false, rightsBlockers: [] });
   if (target === `/api/admin/works/${id}/sections`) return reply([]);
-  if (target === `/api/admin/works/${id}/characters`) return reply([]);
+  if (target === `/api/admin/works/${id}/characters`) {
+    if (method === "PATCH") { characters = request.postDataJSON().characters; assistantWrites.push("characters"); }
+    return reply(characters);
+  }
   if (target === "/api/admin/visuals" && method === "GET") return reply(visuals);
   if (target === `/api/admin/works/${id}/visuals/upload` && method === "POST") {
     const body = await new Request(request.url(), { method: "POST", headers: { "content-type": request.headers()["content-type"] }, body: request.postDataBuffer() }).formData();
@@ -99,6 +106,7 @@ await page.route("**/api/admin/**", async (route) => {
 try {
   await page.goto(`${base}/admin/works/add`, { waitUntil: "networkidle" });
   await page.getByRole("button", { name: /Cerpen/ }).click();
+  await page.getByRole("button", { name: /Tulis sendiri/ }).click();
   await page.waitForURL(`**/admin/works/${id}#content`);
   await page.getByRole("button", { name: "Maklumat", exact: true }).click();
   await page.getByLabel("Genre").fill("Misteri");
@@ -106,11 +114,12 @@ try {
   assert.equal(work.genre, "Misteri", "Metadata may be saved before a manuscript exists");
   assert.equal(work.body, "", "Saving metadata must not invent manuscript text");
   await page.getByRole("button", { name: "Kandungan", exact: true }).click();
+  await page.getByRole("button", { name: "Markdown", exact: true }).click();
   await page.getByLabel("Tajuk *").fill("Cerpen Ujian Editor");
-  await page.getByLabel("Manuskrip (Markdown) *").fill("Minyak hitam naik harga.\n\nAina memandang kereta itu.\n\nMinyak hitam masih diperlukan.");
-  await page.getByLabel("Dek").fill("Draf ujian aliran editor.");
+  await page.locator("#body").fill("Minyak hitam naik harga.\n\nAina memandang kereta itu.\n\nMinyak hitam masih diperlukan.");
+  await page.getByLabel("Ringkasan", { exact: true }).fill("Draf ujian aliran editor.");
   await page.getByRole("button", { name: "Simpan teks & maklumat" }).click();
-  await page.getByLabel("Manuskrip (Markdown) *").waitFor();
+  await page.locator("#body").waitFor();
   assert.equal(work.status, "draft", "New cerpen must remain a draft");
 
   await page.getByLabel("Tajuk *").fill("Cerpen Ujian Editor Disunting");
@@ -134,7 +143,39 @@ try {
   await page.getByText("minyak hitam", { exact: true }).waitFor();
   assert.equal(glossary.length, 1);
 
+  // A mixed chatbot answer must be previewed, then import only the explicitly chosen tab.
+  const mixed = `[MAKLUMAT]\nDek: Jangan ubah dek ini.\nGenre: Jangan ubah genre.\n[WATAK]\nNama: Aina\nPeranan: Pemilik kereta\n[GLOSARI]\nIstilah: minyak hitam\nMaksud: Jangan ganti maksud.\n[SUMBER]\nTajuk asal: Jangan tambah sumber.\n[KREDIT]\nNama: Jangan tambah kredit.`;
+  await page.getByRole("button", { name: /Watak & latar/ }).click();
+  await page.getByLabel("Tempat mengisi jawapan").selectOption("characters");
+  await page.locator("#chatbot-fill summary").click();
+  await page.getByLabel("Jawapan bot sembang (boleh tampal secara manual)").fill(mixed);
+  const beforeAssistant = patches;
+  await page.getByRole("button", { name: "Semak jawapan", exact: true }).click();
+  await page.getByRole("button", { name: "Sahkan & isi (Watak & latar)" }).waitFor();
+  assert.equal(characters.length, 0, "Preview does not persist characters");
+  assert.equal(patches, beforeAssistant, "Preview does not persist metadata");
+  await page.getByRole("button", { name: "Sahkan & isi (Watak & latar)" }).click();
+  await page.waitForFunction(() => !document.querySelector('#chatbot-fill button')?.disabled);
+  assert.deepEqual(assistantWrites, ["characters"], "Scoped fill writes only characters");
+  assert.equal(patches, beforeAssistant, "Characters tab does not patch metadata");
+  assert.equal(work.genre, "Drama Sosial");
+  assert.equal(work.dek, "Draf ujian aliran editor.");
+  assert.equal(glossary.length, 1, "Characters tab does not import glossary");
+  assert.equal(characters[0]?.name, "Aina");
+  await page.getByLabel("Jawapan bot sembang (boleh tampal secara manual)").fill("Jawapan tanpa label.");
+  await page.getByRole("button", { name: "Semak jawapan", exact: true }).click();
+  assert.equal(await page.getByRole("button", { name: /Sahkan & isi/ }).count(), 0, "Unreadable answer cannot be applied");
+
+  if (process.env.EDITOR_CHATBOT_ONLY === "1") {
+    await page.setViewportSize({ width: 390, height: 844 });
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1), false, "chatbot controls fit a phone");
+    assert.deepEqual(pageErrors, [], "no uncaught browser errors");
+    await page.screenshot({ path: path.join(os.tmpdir(), "jalin-chatbot-mobile.png"), fullPage: true });
+    console.log(JSON.stringify({ result: "PASS", previewWrites: 0, scopedWrites: assistantWrites, metadataUnchanged: true, glossaryUnchanged: true, invalidAnswerBlocked: true, mobileOverflow: false }));
+  } else {
+
   await page.getByRole("button", { name: "Kandungan", exact: true }).click();
+  await page.getByRole("button", { name: "Markdown", exact: true }).click();
   await page.getByLabel("Teks alternatif * (satu ayat menerangkan gambar untuk pembaca yang tidak nampak gambar)").fill("Kereta di tepi jalan.");
   await page.getByLabel("Fail imej *").setInputFiles(file);
   await page.getByRole("button", { name: "Muat naik & pautkan" }).click();
@@ -147,7 +188,7 @@ try {
   assert.equal(replacements, 1, "Replace should call its own API");
   assert.equal(patches, patchBeforeReplacement, "Replace must not require work-level save");
 
-  const manuscript = page.getByLabel("Manuskrip (Markdown) *");
+  const manuscript = page.locator("#body");
   await manuscript.focus();
   await manuscript.press("Control+Home");
   await page.getByRole("button", { name: "Sisip penanda gambar selepas perenggan ini" }).click();
@@ -175,13 +216,15 @@ try {
   await page.screenshot({ path: path.join(os.tmpdir(), "jalin-editor-desktop.png"), fullPage: true });
   await page.setViewportSize({ width: 390, height: 844 });
   await page.reload({ waitUntil: "networkidle" });
-  await page.getByLabel("Manuskrip (Markdown) *").waitFor();
+  await page.getByRole("button", { name: "Markdown", exact: true }).click();
+  await page.locator("#body").waitFor();
   await page.evaluate(() => window.scrollTo(0, 0));
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
   assert.equal(overflow, false, "Mobile editor should not overflow horizontally");
   await page.screenshot({ path: path.join(os.tmpdir(), "jalin-editor-mobile.png"), fullPage: true });
   assert.deepEqual(pageErrors, [], "Browser should have no uncaught page errors");
   console.log(JSON.stringify({ result: "PASS", createdDraft: work.id, workPatches: patches, imageUploads: 2, replacements, glossaryTerms: glossary.length, mobileOverflow: overflow, screenshots: [path.join(os.tmpdir(), "jalin-editor-desktop.png"), path.join(os.tmpdir(), "jalin-editor-mobile.png")] }));
+  }
 } finally {
   await browser.close();
 }
