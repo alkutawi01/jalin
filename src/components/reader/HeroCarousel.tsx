@@ -16,6 +16,7 @@ export interface HeroSlide {
   attribution?: string;
   dek?: string;
   reading?: string;
+  country?: string;
   date: string;
   hero?: { src: string; alt: string; crop?: ImageCrop };
   rights: string;
@@ -104,6 +105,7 @@ export default function HeroCarousel({ slides, ground }: { slides: HeroSlide[]; 
                   {work.attribution ? <p className="work-attribution hero-featured-attribution">{renderAttribution(work.attribution)}</p> : null}
                   {work.dek ? <p className="hero-featured-dek">{spacedDashes(smartQuotes(work.dek))}</p> : null}
                   <div className="home-work-meta home-work-meta--pills">
+                    {work.country ? <span>{work.country}</span> : null}
                     {work.reading ? <span>{work.reading}</span> : null}
                     <span>{work.date}</span>
                   </div>

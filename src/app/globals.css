@@ -4276,16 +4276,16 @@ body:has(.save-work) .back-to-top { bottom: 76px; }
 /* Homepage hero on a tablet or a narrow desktop window (681-1050px). The picture is across the top and the text under it in one column,
    which left the right third of the text area empty. The right column now carries the minutes and date and the button: the title,
    byline and summary on the left, the pills level with the byline, the button level with the foot of the summary. The picture is
-   held to about a third of the window's height and the summary to four lines, so the button and the dots stay in view on a laptop-height
-   window. Phones (680px and below) are untouched. */
+   given a 16:9 frame so the scene stays legible instead of being cropped into a shallow strip. The page may scroll to the controls.
+   Phones (680px and below) are untouched. */
 @media (min-width: 681px) and (max-width: 1050px) {
   .hero-carousel-slide .hero-featured-text { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 40px; align-items: start; padding-top: 2px; }
   .hero-carousel-slide .hero-featured-text > * { grid-column: 1; }
-  .hero-carousel-slide .hero-featured-text > .home-work-meta { grid-column: 2; grid-row: 3; align-self: start; justify-content: flex-end; margin: 0; }
+  .hero-carousel-slide .hero-featured-text > .home-work-meta { grid-column: 2; grid-row: 3; align-self: start; justify-content: flex-end; max-width: 270px; margin: 0; }
   .hero-carousel-slide .hero-featured-text > .hero-featured-cta { grid-column: 2; grid-row: 4; align-self: end; justify-self: end; margin: 0; }
   .hero-carousel-slide .hero-featured-title { font-size: clamp(30px, 4.4vw, 40px); margin-bottom: 10px; }
   .hero-carousel-slide .hero-featured-dek { max-width: none; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; line-clamp: 4; overflow: hidden; }
-  .hero-featured-visual, .hero-carousel-slide .hero-featured-visual { max-height: clamp(220px, 34svh, 340px); min-height: 0; }
+  .hero-featured-visual, .hero-carousel-slide .hero-featured-visual { aspect-ratio: 16 / 9; height: auto; max-height: none; min-height: 0; }
 }
 /* Homepage "Bersiri" carousel on a phone (700px and below). The picture of a series was made full-bleed (width 100cqw, margin-left of
    minus the page margin) before the slides sat in a scrolling track; the track clips on both sides, so the picture was cut at the left

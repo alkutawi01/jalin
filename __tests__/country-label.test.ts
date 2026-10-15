@@ -43,6 +43,6 @@ assert.equal(readingLine(undefined, undefined), '');
 
 const page = fs.readFileSync("src/app/page.tsx", "utf8");
 assert.doesNotMatch(page, /Pilihan Editor ·/, "'Pilihan Editor' is not part of the hero eyebrow any more (the carousel is the editor's picks)");
-assert.ok(page.includes("[work.country, readingLabel(work.readingMinutes)]"), "the hero slide shows the country beside the reading time");
+assert.ok(page.includes("country: work.country") && page.includes("reading: readingLabel(work.readingMinutes)"), "the hero carries country and reading time separately");
 
 console.log("country label: passed");
