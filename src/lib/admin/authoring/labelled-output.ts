@@ -274,7 +274,7 @@ export function parseLabelledAnswer(answer: string): LabelledParse | null {
     const boundary = responseSection(line);
     // Story communication markers (e.g. [MESEJ]) are prose, not import sections.
     if (isClosingTag(line) && active?.name !== "KANDUNGAN") { active = null; continue; }
-    if (boundary && (active?.name !== "KANDUNGAN" || /^(KREDIT|HAK|NOTA EDITOR|EDITOR REPORT)$/.test(boundary))) { active = null; continue; }
+    if (boundary && (active?.name !== "KANDUNGAN" || /^(MAKLUMAT|KREDIT|HAK|NOTA EDITOR|EDITOR REPORT)$/.test(boundary))) { active = null; continue; }
     if (active) active.lines.push(line);
   }
   if (!sections.some((s) => s.name === "KARYA")) return null;
