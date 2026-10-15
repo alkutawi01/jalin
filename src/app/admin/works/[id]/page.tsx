@@ -26,7 +26,7 @@ import { extractFootnotes, markFootnoteReferences } from "../../../../lib/reader
 import { stripImageMarkers } from "../../../../lib/reader/image-markers";
 import { classifyFragmen, isIndonesianLanguage, isMalayLanguage } from "../../../../lib/content/fragmen-kind";
 import { buildGlossaryPrompt, parseGlossaryPaste } from "../../../../lib/admin/authoring/glossary-paste";
-import { buildWorkFillPrompt, looksLikePrompt, parseWorkFill, type WorkFillScope } from "../../../../lib/admin/authoring/work-fill";
+import { buildWorkFillPrompt, looksLikePrompt, parseWorkFill, type WorkFillScope, FILL_SECTIONS } from "../../../../lib/admin/authoring/work-fill";
 import { dekWarning } from "../../../../lib/admin/authoring/dek-rule";
 import { renderItalics, toggleItalicSelection } from "../../../../lib/reader/inline-italics";
 import VisualManuscriptEditor, { canEditVisually } from "../../../../components/admin/VisualManuscriptEditor";
@@ -444,6 +444,7 @@ export default function EditWorkPage() {
       return;
     }
     setFillAnswer(text);
+    if (!parseWorkFill(text, scope).sections.length) setManualFillOpen(true);
     reviewFillAnswer(text, scope);
   }
 
@@ -451,7 +452,12 @@ export default function EditWorkPage() {
     setPendingFill(null);
     if (looksLikePrompt(text)) { setFillNote(["Ini arahan yang disalin, bukan jawapan bot sembang. Salin jawapannya dahulu."]); return; }
     const result = parseWorkFill(text, scope);
-    if (!result.sections.length) { setFillNote(["Jawapan tidak mengandungi bahagian untuk skop ini. Semak label bahagian atau gunakan arahan tab yang betul. Tiada perubahan disimpan."]); return; }
+    if (!result.sections.length) {
+      setManualFillOpen(true);
+      const expected = scope === "characters" ? "[WATAK] dan [LATAR]" : FILL_SECTIONS[scope].map(s => `[${s}]`).join(", ");
+      const snippet = text.trim().slice(0, 180).replace(/\s+/g, " ") || "(papan keratan kosong)";
+      setFillNote([`Bahagian ${expected} tidak dikesan dalam teks yang diterima.`, `Permulaan teks diterima: ${snippet}`, "Semak sama ada jawapan bot telah disalin, kemudian tampal secara manual dan tekan Semak jawapan. Tiada perubahan disimpan."]); return;
+    }
     const glossary = result.sections.includes("GLOSARI") ? parseGlossaryPaste(result.glossaryText, assistantManuscript(form.type, form.body, sections), glossaryTerms.map(t => t.term)) : null;
     setFillNote([
       `Skop: ${scope === "all" ? "semua maklumat karya" : scope === "metadata" ? "Maklumat sahaja" : scope === "characters" ? "Watak & latar sahaja" : "Sumber sahaja"}.`,
