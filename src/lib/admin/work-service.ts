@@ -373,7 +373,7 @@ function validateCharacterEntries(characters: unknown): CharacterEntry[] {
 export const PLACES_MAX = 200;
 export const PLACE_NAME_MAX = 80;
 export const PLACE_DESCRIPTION_MAX = 160;
-export const TIMES_MAX = 6;
+export const TIMES_MAX = 50;
 
 /** A short list of named things with an optional few words each (places, times): a name and, optionally, a description. */
 function validateSettingEntries(list: unknown, noun: string, max: number, listName: string, noun2: string): Array<{ name: string; description?: string }> {

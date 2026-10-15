@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { copyText } from "./CopyButton";
 import { errorText } from "../../lib/admin/error-text";
-import { buildEditorPrompt, EDITOR_SCOPE_NAMES, isDraftPlaceholder, type EditorScope, type EditorContext, type EditorChange } from "../../lib/admin/authoring/editor-assistant";
+import { buildEditorPrompt, EDITOR_SCOPE_NAMES, type EditorScope, type EditorContext } from "../../lib/admin/authoring/editor-assistant";
 
 export default function EditorAssistant({ workId, scope, context, blocked, onApplied }: { workId: string; scope: EditorScope; context: EditorContext; blocked: boolean; onApplied: () => void }) {
   const [answer, setAnswer] = useState("");
@@ -10,8 +10,6 @@ export default function EditorAssistant({ workId, scope, context, blocked, onApp
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState("");
   const [error, setError] = useState("");
-  const [preview, setPreview] = useState<{ version: string; changes: EditorChange[] } | null>(null);
-  const [selected, setSelected] = useState<string[]>([]);
   const id = `assistant-${scope}`;
   async function copy() {
     setError("");
@@ -21,20 +19,17 @@ export default function EditorAssistant({ workId, scope, context, blocked, onApp
       setNote("Arahan disalin. Berikan arahan atau bahan kepada bot sembang, kemudian salin jawapannya dan tekan Tampal jawapan.");
     } catch (e) { setError(errorText(e, "Arahan tidak dapat disalin.")); }
   }
-  async function request(text: string, apply = false) {
+  async function request(text: string) {
     if (blocked || document.querySelector('[data-unsaved="true"]')) { setError("Simpan atau batalkan perubahan manual dahulu supaya kerja anda tidak hilang."); return; }
     setError(""); setBusy(true);
-    if (!apply) setPreview(null);
     try {
-      const chosen = apply && preview ? preview.changes.map(change => change.id) : selected;
-      const res = await fetch(`/api/admin/works/${workId}/assistant-fill`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ mode: "editor", action: apply ? "apply" : "preview", scope, text, version: preview?.version, selected: chosen }) });
+      const res = await fetch(`/api/admin/works/${workId}/assistant-fill`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ mode: "editor", action: "apply", scope, text }) });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Jawapan tidak dapat dibaca.");
-      if (!Array.isArray(data.notes) || !Array.isArray(data.changes)) throw new Error("Respons pelayan tidak lengkap. Muat semula untuk menyemak status simpan.");
+      if (!Array.isArray(data.notes)) throw new Error("Respons pelayan tidak lengkap. Muat semula untuk menyemak status simpan.");
       setNote(data.notes.join(" "));
-      if (apply) { setPreview(null); onApplied(); }
-      else { setPreview(data); setSelected(data.changes.map((c: EditorChange) => c.id)); }
-    } catch (e) { if (apply) setPreview(null); setError(errorText(e, "Sambungan terputus. Muat semula untuk menyemak status simpan.")); }
+      onApplied();
+    } catch (e) { setError(errorText(e, "Sambungan terputus. Muat semula untuk menyemak status simpan.")); }
     finally { setBusy(false); }
   }
   async function paste() {
@@ -50,25 +45,11 @@ export default function EditorAssistant({ workId, scope, context, blocked, onApp
     </div>
     {manualPaste && <div className="a-assistant-manual">
       <label htmlFor={`${id}-answer`}>Tampal jawapan secara manual</label>
-      <textarea id={`${id}-answer`} className="admin-textarea" rows={5} value={answer} disabled={busy} onChange={e => { setAnswer(e.target.value); setPreview(null); }} autoFocus />
-      <button type="button" className="admin-btn admin-btn-outline" disabled={busy || blocked || !answer.trim()} onClick={() => void request(answer)}>{busy ? "Memproses…" : "Semak jawapan"}</button>
+      <textarea id={`${id}-answer`} className="admin-textarea" rows={5} value={answer} disabled={busy} onChange={e => setAnswer(e.target.value)} autoFocus />
+      <button type="button" className="admin-btn admin-btn-outline" disabled={busy || blocked || !answer.trim()} onClick={() => void request(answer)}>{busy ? "Mengisi…" : "Isi daripada jawapan"}</button>
     </div>}
     {blocked && <p className="admin-form-hint">Simpan atau batalkan perubahan manual sebelum menyemak jawapan AI.</p>}
     {error && <p role="alert" className="admin-alert admin-alert-error">{error}</p>}
     {note && <p role="status" className="admin-form-hint">{note}</p>}
-    {preview && <section aria-label={`Pratonton AI ${EDITOR_SCOPE_NAMES[scope]}`}>
-      <h3>{preview.changes.length} perubahan ditemui</h3>
-      <p className="admin-form-hint">Semak ringkasan di bawah. Tiada perubahan disimpan sehingga butang Isi borang ditekan.</p>
-      {preview.changes.some(change => change.problem) ? <p role="alert" className="admin-alert admin-alert-error">Ada perubahan yang akan ditolak semasa disimpan. Betulkan jawapan AI (atau minta AI memendekkannya), kemudian tampal semula. Tiada yang disimpan lagi.</p> : null}
-      {preview.changes.map(change => <div className="admin-form-group" key={change.id}>
-        <strong>{change.label}</strong>
-        {change.problem ? <p role="alert" className="admin-form-error">{change.problem}</p> : null}
-        {change.before ? <details><summary>{isDraftPlaceholder(change) ? "Nilai sementara draf akan diganti" : "Nilai sedia ada akan diganti"}</summary><p>{isDraftPlaceholder(change) ? "Nilai sementara" : "Nilai lama"}</p><pre className="a-assistant-value">{change.before}</pre><p>Nilai baharu</p><pre className="a-assistant-value">{change.after}</pre></details> : <p className="admin-form-hint">Nilai baharu tersedia untuk diisi.</p>}
-      </div>)}
-      <div className="admin-form-actions">
-        <button type="button" className="admin-btn admin-btn-primary" disabled={busy || blocked || !preview.changes.length || preview.changes.some(change => change.problem)} onClick={() => void request(answer, true)}>Isi borang</button>
-        <button type="button" className="admin-btn admin-btn-outline" disabled={busy} onClick={() => { setPreview(null); setSelected([]); }}>Batal</button>
-      </div>
-    </section>}
   </details>;
 }

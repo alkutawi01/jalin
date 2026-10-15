@@ -292,6 +292,8 @@ export default function EditWorkPage() {
   const router = useRouter();
   const params = useParams();
   const workId = params.id as string;
+  const provisionalVisit = useRef(false);
+  const leavingProvisional = useRef(false);
 
   const [activeTab, setActiveTab] = useState<Tab>("content");
   const manuscriptRef = useRef<HTMLTextAreaElement>(null);
@@ -542,6 +544,7 @@ export default function EditWorkPage() {
   const [glossaryError, setGlossaryError] = useState<string | null>(null);
 
   const [characters, setCharacters] = useState<CharacterEntry[]>([]);
+  const [selectedCharacters, setSelectedCharacters] = useState<number[]>([]);
   // While there are unsaved changes, keep a copy in this browser (shortly after the last keystroke), so a refresh does not lose them.
   useEffect(() => {
     if (!dirty || restoreOffer) return;
@@ -700,11 +703,44 @@ export default function EditWorkPage() {
   useEffect(() => {
     if (!dirty && !unsavedElsewhere) return;
     const warn = (e: BeforeUnloadEvent) => {
+      if (leavingProvisional.current) return;
       e.preventDefault();
     };
     window.addEventListener("beforeunload", warn);
     return () => window.removeEventListener("beforeunload", warn);
   }, [dirty, unsavedElsewhere]);
+
+  useEffect(() => {
+    provisionalVisit.current = new URLSearchParams(window.location.search).get("baharu") === "1";
+    if (!provisionalVisit.current) return;
+    const discard = async () => {
+      const response = await fetch(`/api/admin/works/${workId}/discard-empty`, { method: "POST", keepalive: true });
+      if (!response.ok) throw new Error("Draf kosong tidak dapat dibuang.");
+    };
+    const pagehide = () => { if (!leavingProvisional.current) void discard().catch(() => undefined); };
+    const followLink = async (event: MouseEvent) => {
+      const anchor = (event.target as Element | null)?.closest<HTMLAnchorElement>("a[href]");
+      if (!anchor || anchor.target || anchor.download || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      const next = new URL(anchor.href, window.location.href);
+      if (next.href === window.location.href || next.origin !== window.location.origin) return;
+      event.preventDefault();
+      if ((dirty || unsavedElsewhere) && !await confirmAction("Perubahan belum disimpan. Keluar tanpa menyimpan dan buang draf ini?", { title: "Simpan draf dahulu?", confirmLabel: "Keluar tanpa simpan", cancelLabel: "Kembali menyunting", danger: true })) return;
+      leavingProvisional.current = true;
+      try {
+        await discard();
+        window.location.href = next.href;
+      } catch (error) {
+        leavingProvisional.current = false;
+        setError(errorText(error, "Draf kosong tidak dapat dibuang. Cuba lagi."));
+      }
+    };
+    window.addEventListener("pagehide", pagehide);
+    document.addEventListener("click", followLink, true);
+    return () => {
+      window.removeEventListener("pagehide", pagehide);
+      document.removeEventListener("click", followLink, true);
+    };
+  }, [dirty, unsavedElsewhere, workId]);
 
   async function loadSections() {
     try {
@@ -1157,6 +1193,7 @@ export default function EditWorkPage() {
         const loaded = await res.json();
         charactersBaseline.current = JSON.stringify(loaded);
         setCharacters(loaded);
+        setSelectedCharacters([]);
       }
       noteLoad("characters", "watak", res.ok);
     } catch {
@@ -1174,6 +1211,13 @@ export default function EditWorkPage() {
 
   function removeCharacterRow(index: number) {
     setCharacters((prev) => prev.filter((_, i) => i !== index));
+    setSelectedCharacters((prev) => prev.filter((i) => i !== index).map((i) => i > index ? i - 1 : i));
+  }
+
+  function removeSelectedCharacters() {
+    const selected = new Set(selectedCharacters);
+    setCharacters((prev) => prev.filter((_, index) => !selected.has(index)));
+    setSelectedCharacters([]);
   }
 
   async function handleSaveCharacters() {
@@ -2961,13 +3005,16 @@ export default function EditWorkPage() {
 
           <div className="admin-credits-header">
             <h3>Watak Karya</h3>
-            <button
-              type="button"
-              className="admin-btn admin-btn-sm admin-btn-primary"
-              onClick={addCharacterRow}
-            >
-              + Tambah watak
-            </button>
+            <div className="admin-form-actions">
+              {selectedCharacters.length > 0 && <button type="button" className="admin-btn admin-btn-sm admin-btn-danger" onClick={removeSelectedCharacters}>Padam dipilih ({selectedCharacters.length})</button>}
+              <button
+                type="button"
+                className="admin-btn admin-btn-sm admin-btn-primary"
+                onClick={addCharacterRow}
+              >
+                + Tambah watak
+              </button>
+            </div>
           </div>
 
           <p className="admin-form-hint admin-characters-note">
@@ -2984,6 +3031,7 @@ export default function EditWorkPage() {
               <table className="admin-table">
                 <thead>
                   <tr>
+                    <th className="a-col-fit"><input type="checkbox" aria-label="Pilih semua watak" checked={characters.length > 0 && selectedCharacters.length === characters.length} onChange={(event) => setSelectedCharacters(event.target.checked ? characters.map((_, index) => index) : [])} /></th>
                     <th>Nama</th>
                     <th>Peranan</th>
                     {form.type === "novela" && <th>Kemunculan Pertama</th>}
@@ -2993,6 +3041,7 @@ export default function EditWorkPage() {
                 <tbody>
                   {characters.map((character, index) => (
                     <tr key={index}>
+                      <td><input type="checkbox" aria-label={`Pilih watak ${(character.name ?? "").trim() || index + 1}`} checked={selectedCharacters.includes(index)} onChange={(event) => setSelectedCharacters((prev) => event.target.checked ? [...prev, index] : prev.filter((item) => item !== index))} /></td>
                       <td>
                         <input
                           type="text"

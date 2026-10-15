@@ -71,10 +71,14 @@ export async function processEditorAnswer(id: string, input: EditorAnswerRequest
     const planned = planEditorAnswer(input.text, input.scope, state).filter(c => (c.group !== "source" || (permissions.source && isSourcedWork(state.work.type, state.work.metadata))) && (c.group !== "credits" || permissions.credits) && (c.group !== "glossary" || permissions.glossary));
     const { changes, notes: slugNotes } = await dropTakenSlug(trx, id, planned);
     if (!changes.length) throw new Error(slugNotes[0] ?? "Tiada perubahan medan yang dapat dibaca untuk tab ini. Salin jawapan penuh atau semak formatnya.");
-    if (input.action === "preview") return { version, changes, notes: [...slugNotes, "Belum disimpan. Semak ringkasan sebelum mengisi borang."] };
-    if (input.version !== version) throw new Error("Karya berubah sejak pratonton. Semak jawapan sekali lagi; tiada perubahan disimpan.");
-    if (!Array.isArray(input.selected) || !input.selected.length || input.selected.some(key => !changes.some(c => c.id === key))) throw new Error("Pilih perubahan yang sah sebelum mengisi borang.");
-    const chosen = changes.filter(c => input.selected!.includes(c.id));
+    if (input.action === "preview") return { version, changes, notes: [...slugNotes, "Belum disimpan."] };
+    if (input.version && input.version !== version) throw new Error("Karya berubah sejak jawapan dibaca. Tampal jawapan sekali lagi; tiada perubahan disimpan.");
+    if (input.selected?.some(key => !changes.some(c => c.id === key))) throw new Error("Pilihan perubahan tidak sah.");
+    // The editor has already read and deliberately pasted this answer. Apply every field in the
+    // requested scope directly; the resulting ordinary form rows remain editable afterward.
+    const chosen = input.selected?.length
+      ? changes.filter(c => input.selected!.includes(c.id))
+      : changes;
     const metadata = { ...(state.work.metadata ?? {}) };
     const patch: Record<string, any> = {};
     const sourcePatch: Record<string, string | number> = {};

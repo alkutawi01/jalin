@@ -47,7 +47,7 @@ export default function AddWorkPage() {
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.error || "Draf gagal dibuat.");
       // A new draft always opens on its text. Nothing is inherited automatically; the editor is offered the series' details there.
-      router.push(`/admin/works/${data.id}#content`);
+      router.push(`/admin/works/${data.id}?baharu=1#content`);
     } catch (err) {
       setError(errorText(err, "Draf gagal dibuat."));
       setBusy(false);

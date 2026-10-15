@@ -15,7 +15,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     if (body.mode === "editor") {
       const id = (await params).id;
       const result = await processEditorAnswer(id, body, admin, { source: can(role, "source.manage"), credits: can(role, "credit.write"), glossary: can(role, "glossary.write") });
-      if (body.action === "apply") await logActivity({ action: "work.update", subjectType: "work", subjectId: id, workId: id, summary: `Pengisian AI ${body.scope} disahkan editor.` });
+      if (body.action === "apply") await logActivity({ action: "work.update", subjectType: "work", subjectId: id, workId: id, summary: `Jawapan AI ${body.scope} ditampal editor.` });
       return NextResponse.json(result);
     }
     if (typeof body.text !== "string" || typeof body.expectedText !== "string" || typeof body.scope !== "string" || (body.preserve !== undefined && (!Array.isArray(body.preserve) || body.preserve.some((v: unknown) => typeof v !== "string")))) return NextResponse.json({ error: "Bentuk jawapan tidak sah." }, { status: 400 });

@@ -25,7 +25,7 @@ const SETTINGS = {
   },
   times: {
     path: "times",
-    max: 6,
+    max: 50,
     title: "Latar Masa",
     noun: "latar masa",
     nameLabel: "Tahun atau era",
@@ -45,6 +45,7 @@ export default function PlacesEditor({ workId, kind = "places" }: { workId: stri
   const cfg = SETTINGS[kind];
   const PLACES_MAX = cfg.max;
   const [places, setPlaces] = useState<Place[] | null>(null);
+  const [selected, setSelected] = useState<number[]>([]);
   const [baseline, setBaseline] = useState("[]");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -56,6 +57,7 @@ export default function PlacesEditor({ workId, kind = "places" }: { workId: stri
     const data = (await res.json()) as Place[];
     setPlaces(data);
     setBaseline(JSON.stringify(data));
+    setSelected([]);
   }, [workId, cfg.path, cfg.noun]);
 
   useEffect(() => {
@@ -93,14 +95,17 @@ export default function PlacesEditor({ workId, kind = "places" }: { workId: stri
     <div className="admin-places" data-unsaved={dirty || saving}>
       <div className="admin-credits-header">
         <h3>{cfg.title}</h3>
-        <button
-          type="button"
-          className="admin-btn admin-btn-sm admin-btn-primary"
-          disabled={places.length >= PLACES_MAX}
-          onClick={() => setPlaces([...places, { name: "", description: "" }])}
-        >
-          {cfg.add}
-        </button>
+        <div className="admin-form-actions">
+          {selected.length > 0 && <button type="button" className="admin-btn admin-btn-sm admin-btn-danger" onClick={() => { const chosen = new Set(selected); setPlaces(places.filter((_, index) => !chosen.has(index))); setSelected([]); }}>Padam dipilih ({selected.length})</button>}
+          <button
+            type="button"
+            className="admin-btn admin-btn-sm admin-btn-primary"
+            disabled={places.length >= PLACES_MAX}
+            onClick={() => setPlaces([...places, { name: "", description: "" }])}
+          >
+            {cfg.add}
+          </button>
+        </div>
       </div>
       <p className="admin-form-hint">
         {cfg.hint} Keterangan: paling banyak 160 aksara.{kind === "times" ? ` Paling banyak ${PLACES_MAX} masa.` : ""}
@@ -114,6 +119,7 @@ export default function PlacesEditor({ workId, kind = "places" }: { workId: stri
           <table className="admin-table">
             <thead>
               <tr>
+                <th className="a-col-fit"><input type="checkbox" aria-label={`Pilih semua ${cfg.noun}`} checked={places.length > 0 && selected.length === places.length} onChange={(event) => setSelected(event.target.checked ? places.map((_, index) => index) : [])} /></th>
                 <th>{cfg.nameLabel}</th>
                 <th>Keterangan ringkas</th>
                 <th>Tindakan</th>
@@ -122,6 +128,7 @@ export default function PlacesEditor({ workId, kind = "places" }: { workId: stri
             <tbody>
               {places.map((place, index) => (
                 <tr key={index}>
+                  <td><input type="checkbox" aria-label={`Pilih ${cfg.noun} ${place.name || index + 1}`} checked={selected.includes(index)} onChange={(event) => setSelected((prev) => event.target.checked ? [...prev, index] : prev.filter((item) => item !== index))} /></td>
                   <td>
                     <input
                       type="text"
@@ -143,7 +150,7 @@ export default function PlacesEditor({ workId, kind = "places" }: { workId: stri
                     />
                   </td>
                   <td>
-                    <button type="button" className="admin-btn admin-btn-sm admin-btn-danger" onClick={() => setPlaces(places.filter((_, i) => i !== index))}>
+                    <button type="button" className="admin-btn admin-btn-sm admin-btn-danger" onClick={() => { setPlaces(places.filter((_, i) => i !== index)); setSelected((prev) => prev.filter((i) => i !== index).map((i) => i > index ? i - 1 : i)); }}>
                       Padam
                     </button>
                   </td>
