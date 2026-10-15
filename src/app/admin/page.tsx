@@ -12,6 +12,7 @@ import { summarizeReadiness } from "../../lib/admin/publication-service";
 import { countWorks } from "../../lib/admin/dashboard-counts";
 import { buildContentChecks } from "../../lib/admin/dashboard-labels";
 import { hasDedicatedAdminSessionKey } from "../../lib/admin/session-key";
+import { isUntouchedProvisionalDraft } from "../../lib/admin/provisional-draft";
 
 export const dynamic = "force-dynamic";
 
@@ -42,7 +43,7 @@ async function getStats() {
   const useDb = repo.source === "database";
 
   // Admin totals include drafts/review/ready, unlike the public repository.
-  const works = await listWorks();
+  const works = (await listWorks()).filter((work) => !isUntouchedProvisionalDraft(work));
   
   let editorialHealth = null;
   try {
@@ -70,7 +71,7 @@ const TODO_GROUPS: { status: string; title: string; hint: string }[] = [
 async function getTodo() {
   if (!hasDb()) return null;
   try {
-    return await listWorks();
+    return (await listWorks()).filter((work) => !isUntouchedProvisionalDraft(work));
   } catch {
     return null;
   }

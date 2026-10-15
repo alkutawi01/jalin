@@ -4,6 +4,7 @@ import { getDb, hasDb } from "../../../lib/db";
 import { summarizeReadiness } from "../../../lib/admin/publication-service";
 import { getPickState } from "../../../lib/admin/editor-picks-service";
 import AdminWorksTable, { type AdminWorkRow } from "../../../components/admin/AdminWorksTable";
+import { isUntouchedProvisionalDraft } from "../../../lib/admin/provisional-draft";
 
 export const dynamic = "force-dynamic";
 
@@ -43,7 +44,7 @@ export default async function AdminWorksPage({
     );
   }
 
-  const allWorks = await listWorks();
+  const allWorks = (await listWorks()).filter((work) => !isUntouchedProvisionalDraft(work));
   // Credited names per work (registered contributors and guests), so a work can be found by its author.
   const authorsByWork = new Map<string, string>();
   try {
