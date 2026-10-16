@@ -467,7 +467,7 @@ export default function EditSubmissionPage() {
         </div>
 
         <div className="admin-form-group">
-          <label htmlFor="dek">Dek</label>
+          <label htmlFor="dek">Blurb</label>
           <textarea className="admin-textarea" rows={4}
             id="dek"
             value={form.dek}

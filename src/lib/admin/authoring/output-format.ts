@@ -35,7 +35,7 @@ function karya(recipe: Recipe): string {
     `Jenis: ${recipe.kind}`,
     "Tajuk: (tajuk karya)",
     "Slug: (huruf kecil latin dipisahkan tanda -, tanpa simbol)",
-    `Dek: (${DEK_RULE})`,
+    `Blurb: (${DEK_RULE})`,
     "Genre: (satu label, contoh drama, keluarga, misteri, sejarah)",
     "Penulis: (nama penulis jika dinyatakan dalam bahan)"
   ].join("\n");
@@ -45,7 +45,7 @@ const SIRI = [
   "[SIRI]",
   "Tajuk siri: (tajuk siri)",
   "Mod: (bersambung atau antologi)",
-  "Dek siri: (satu atau dua ayat tentang siri ini)"
+  "Blurb siri: (satu atau dua ayat tentang siri ini)"
 ].join("\n");
 
 const BAB = [

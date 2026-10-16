@@ -12,7 +12,7 @@ export const SELF_CHECK = [
   "1. Setiap Petikan ialah teks yang wujud HURUF DEMI HURUF dalam bahan, tanpa tanda petikan tambahan.",
   "2. Setiap istilah glosari ialah perkataan yang benar-benar sukar; tiada nama watak atau lokasi.",
   "3. Setiap Adegan menggambarkan keadaan pada titik itu dalam cerita sahaja (cuaca, waktu, objek, siapa hadir), dan sepadan dengan pilihan Muka.",
-  "4. Dek dan ringkasan tidak mendedahkan pengakhiran atau kejutan.",
+  "4. Blurb tidak mendedahkan pengakhiran atau kejutan.",
   "5. Metadata tanpa Markdown; penekanan dalam [KANDUNGAN] mesti berpasangan. Tiada nota atau penjelasan di luar format."
 ].join("\n");
 
@@ -32,7 +32,7 @@ export function exampleBlock(recipe: Recipe, sections: OutputSection[]): string 
         `Jenis: ${recipe.kind}`,
         "Tajuk: Kunci Almari Lama",
         "Slug: kunci-almari-lama",
-        "Dek: Ketika mengemas rumah arwah datuk, seorang cucu menemui sebiji kunci yang tidak muat pada mana-mana pintu.",
+        "Blurb: Ketika mengemas rumah arwah datuk, seorang cucu menemui sebiji kunci yang tidak muat pada mana-mana pintu.",
         "Genre: misteri keluarga",
         "Penulis: tidak dinyatakan"
       )

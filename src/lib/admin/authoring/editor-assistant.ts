@@ -11,7 +11,7 @@ export type EditorScope = typeof EDITOR_SCOPES[number];
 export const EDITOR_SCOPE_NAMES: Record<EditorScope, string> = { all: "semua tab", content: "Kandungan", metadata: "Maklumat", characters: "Watak & latar", glossary: "Glosari", source: "Sumber & Hak", credits: "Kredit", sections: "Bab" };
 export interface EditorContext { type: string; title: string; body: string; dek?: string; genre?: string; chapters?: unknown[]; credits?: unknown[]; contributors?: unknown[]; source?: unknown; characters?: unknown[]; glossary?: unknown[] }
 const LABELLED_FORMATS: Record<Exclude<EditorScope, "all">, string> = {
-  content: `[KARYA]\nTajuk: (tajuk)\nSlug: (alamat-pautan)\nDek: (dek ringkas)\n\n[KANDUNGAN]\n(teks penuh karya, bukan ulasan atau nasihat)`,
+  content: `[KARYA]\nTajuk: (tajuk)\nSlug: (alamat-pautan)\nBlurb: (blurb ringkas)\n\n[KANDUNGAN]\n(teks penuh karya, bukan ulasan atau nasihat)`,
   metadata: `[MAKLUMAT]\nGenre: (genre)\nCatatan editor: (jika berkenaan)\nNota pembaca: (jika berkenaan)`,
   characters: `[WATAK]\nNama: (nama watak sebenar)\nPeranan: (2–6 patah perkataan)\nMuncul di: (slug bab jika novela)\n____\n\n[LATAR]\nJenis: tempat\nNama: (tempat)\nKeterangan: (ringkas)\n____\nJenis: masa\nNama: (tahun, tempoh atau era; bukan pagi/malam)\nKeterangan: (ringkas)\n____\nJenis: negara\nNama: (SATU negara atau wilayah UTAMA tempat kebanyakan cerita berlaku; bukan semua negara yang disebut)`,
   glossary: `[GLOSARI]\nIstilah: (istilah tepat dalam teks)\nMaksud: (maksud mengikut konteks)\nSebutan: (pilihan)\nBahasa asal: (pilihan)\nEjaan asal: (pilihan)\n____`,
@@ -120,7 +120,7 @@ export function planEditorAnswer(answer: string, scope: EditorScope, state: Edit
     changes.push({ id: `${group}:${key}`, group, key, label, before: show(before), after: show(value), value, selected: !show(before).trim() || generatedDraft });
   };
   const work = { ...data, ...record(data.work), ...record(data.metadata) };
-  for (const key of ["title", "slug", "body", "dek"] as const) add("content", key, ({ title: "Tajuk", slug: "Alamat pautan", body: "Manuskrip", dek: "Dek" })[key], state.work[key], text(work[key]));
+  for (const key of ["title", "slug", "body", "dek"] as const) add("content", key, ({ title: "Tajuk", slug: "Alamat pautan", body: "Manuskrip", dek: "Blurb" })[key], state.work[key], text(work[key]));
   add("metadata", "genre", "Genre", state.work.genre, text(work.genre));
   if (Array.isArray(data.countries)) {
     const countries = data.countries.map(text).filter(Boolean).slice(0, 1);

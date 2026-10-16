@@ -18,7 +18,7 @@ export function dekWarning(dek: string): string | null {
   if (!text) return null;
   const words = text.split(/\s+/).length;
   const turn = TURN_WORDS.exec(text);
-  if (words > DEK_MAX_WORDS) return `Dek: ${words} perkataan, terlalu panjang. Semak supaya tidak membocorkan jalan cerita; ringkaskan kepada suasana atau persoalan di permulaan.`;
-  if (turn) return `Dek: mengandungi "${turn[0]}" yang selalunya menceritakan perkembangan. Semak supaya tidak membocorkan jalan cerita.`;
+  if (words > DEK_MAX_WORDS) return `Blurb: ${words} perkataan, terlalu panjang. Semak supaya tidak membocorkan jalan cerita; ringkaskan kepada suasana atau persoalan di permulaan.`;
+  if (turn) return `Blurb: mengandungi "${turn[0]}" yang selalunya menceritakan perkembangan. Semak supaya tidak membocorkan jalan cerita.`;
   return null;
 }

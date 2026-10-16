@@ -92,8 +92,8 @@ assert(read("src/components/admin/AuthoringForm.tsx").includes("Latar tempat ({r
 // the writing recipes (found by testing sinopsis.tulis with ChatGPT: it answered "tidak dinyatakan" to everything)
 const sinopsis = composeAiPrompt({ recipe: "sinopsis.tulis" });
 assert(sinopsis.includes("PENGECUALIAN KEPADA PERATURAN 1") && sinopsis.includes("pengetahuan anda tentang karya itu") && sinopsis.includes("JANGAN menulis sinopsis rekaan"), "sinopsis.tulis may use real knowledge of a published work, and must not invent when unsure");
-assert(sinopsis.includes("Dek, Genre, Anggaran bacaan dan glosari diisi daripada sinopsis yang anda tulis"), "and fills the other fields from what it wrote");
-assert(composeAiPrompt({ recipe: "fragmen.tulis" }).includes("Dek, Genre dan Anggaran bacaan diisi daripada fragmen yang anda hasilkan"), "fragmen.tulis fills them from the fragment");
+assert(sinopsis.includes("Blurb, Genre, Anggaran bacaan dan glosari diisi daripada sinopsis yang anda tulis"), "and fills the other fields from what it wrote");
+assert(composeAiPrompt({ recipe: "fragmen.tulis" }).includes("Blurb, Genre dan Anggaran bacaan diisi daripada fragmen yang anda hasilkan"), "fragmen.tulis fills them from the fragment");
 
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);
