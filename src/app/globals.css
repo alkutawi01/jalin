@@ -731,7 +731,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
   position: absolute;
   inset: 0;
   z-index: 1;
-  background: linear-gradient(180deg, rgb(var(--ink-rgb) / .05) 0%, rgba(18,28,30,.55) 65%, rgba(14,20,21,.82) 100%);
+  background: linear-gradient(180deg, rgba(24, 52, 60, .05) 0%, rgba(18,28,30,.55) 65%, rgba(14,20,21,.82) 100%);
 }
 .category-explorer-card-body {
   position: relative;
@@ -740,7 +740,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 }
 .category-explorer-card--photo h3,
 .category-explorer-card--photo p {
-  color: var(--white);
+  color: #fffefa;
 }
 .category-explorer-card--photo p {
   opacity: .85;
@@ -757,7 +757,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
   margin-top: 14px;
   border-radius: 999px;
   background: rgba(255,254,250,.16);
-  color: var(--white);
+  color: #fffefa;
   font-size: 15px;
   transition: background .18s ease, transform .18s ease;
 }
@@ -3002,7 +3002,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 .chapter-index summary { padding: 4px 0; }
 
 /* Skip link: first thing a keyboard user reaches, visible only on focus. */
-.skip-link { position: absolute; left: 12px; top: -48px; z-index: 100; padding: 10px 16px; border-radius: 8px; background: var(--ink); color: #fff; font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 14px; transition: top .15s ease; }
+.skip-link { position: absolute; left: 12px; top: -48px; z-index: 100; padding: 10px 16px; border-radius: 8px; background: var(--ink); color: var(--paper); font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 14px; transition: top .15s ease; }
 .skip-link:focus { top: 12px; }
 main:focus { outline: none; }
 
@@ -3343,10 +3343,10 @@ main:focus { outline: none; }
 }
 
 /* The editor's preview: a quiet bar above the real page saying it is a preview and what the reader sees. */
-.preview-banner { background: var(--ink); color: #f4ecdf; font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 13px; line-height: 1.45; }
+.preview-banner { background: var(--ink); color: var(--on-ink-b); font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 13px; line-height: 1.45; }
 .preview-banner-inner { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 10px; }
 .preview-banner p { margin: 0; }
-.preview-banner a { flex: none; color: #fff; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+.preview-banner a { flex: none; color: var(--on-ink-a); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
 @media (max-width: 680px) { .preview-banner-inner { flex-direction: column; align-items: flex-start; gap: 6px; } }
 
 /* The row that holds the "Tentang karya" trigger on a narrow screen (hidden above 820px, where the side columns show it). */
@@ -3431,7 +3431,7 @@ body { overflow-wrap: break-word; }
 /* A note's box looks different from a glossary term's: a warm tint, a clay edge and the number as a small badge, no heading. */
 .footnote-popover { background: var(--x-fbf2ec-bg); border-color: rgba(167, 100, 80, .28); border-left: 3px solid var(--clay); }
 .footnote-popover p { display: block; margin: 0; }
-.footnote-popover-number { display: inline-block !important; margin-bottom: 6px; padding: 1px 7px; border-radius: 999px; background: var(--clay); color: #fff; font-size: 11px; font-weight: 700; line-height: 1.5; }
+.footnote-popover-number { display: inline-block !important; margin-bottom: 6px; padding: 1px 7px; border-radius: 999px; background: var(--clay); color: var(--on-clay); font-size: 11px; font-weight: 700; line-height: 1.5; }
 /* The list at the end of the chapter: hidden from view once the notes are in a margin (wide screen), still there for screen readers. On a phone it stays visible. */
 .footnotes[data-margin="all"], .footnotes[data-margin="some"] li[data-in-margin="true"] {
   position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
@@ -3457,7 +3457,7 @@ body { overflow-wrap: break-word; }
 }
 .search-form input[type="search"]:focus-visible, .search-form select:focus-visible { outline: 2px solid var(--clay); outline-offset: 2px; }
 .search-submit, .search-apply {
-  min-height: 46px; padding: 0 22px; border: 0; border-radius: 8px; background: var(--ink); color: #fffdf8;
+  min-height: 46px; padding: 0 22px; border: 0; border-radius: 8px; background: var(--ink); color: var(--on-ink-a);
   font: inherit; font-size: 15px; font-weight: 600; cursor: pointer;
 }
 .search-submit:hover { background: var(--x-0f262c-bg); }
@@ -3727,7 +3727,7 @@ html:has(.a-nav, .admin-login-page) { overflow: visible; }
 .lock-panel > .lock-fine a { color: var(--clay-text); text-decoration: underline; text-underline-offset: 3px; }
 .lock-open { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 26px; border: 0; border-radius: 999px; background: var(--ink); color: var(--paper); font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 15px; font-weight: 600; cursor: pointer; }
 .lock-open:hover, .lock-open:focus-visible { background: var(--x-0f2a31-bg); }
-.lock-backdrop { position: fixed; inset: 0; z-index: 80; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgb(var(--ink-rgb) / .55); overflow-y: auto; }
+.lock-backdrop { position: fixed; inset: 0; z-index: 80; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(24, 52, 60, .55); overflow-y: auto; }
 .lock-dialog { position: relative; box-sizing: border-box; width: min(440px, 100%); max-height: calc(100dvh - 32px); overflow-x: hidden; overflow-y: auto; padding: 20px 20px 8px; border-radius: 18px; background: var(--paper); box-shadow: 0 30px 80px -20px rgba(0, 0, 0, .45); outline: none; }
 .lock-close { position: absolute; top: 8px; right: 10px; width: 40px; height: 40px; border: 0; border-radius: 50%; background: transparent; color: var(--ink); font-size: 26px; line-height: 1; cursor: pointer; }
 .lock-close:hover, .lock-close:focus-visible { background: rgb(var(--ink-rgb) / .08); }
@@ -3834,7 +3834,7 @@ html:has(.a-nav, .admin-login-page) { overflow: visible; }
 .ai-rating-open:disabled { color: var(--x-748184-fg); cursor: default; }
 .ai-rating-open:not(:disabled):hover { border-color: var(--ink); }
 .ai-rating-dialog { max-width: min(640px, calc(100vw - 32px)); max-height: calc(100vh - 48px); width: 100%; padding: 0; border: 1px solid var(--line); border-radius: 10px; background: var(--white); color: var(--ink); }
-.ai-rating-dialog::backdrop { background: rgb(var(--ink-rgb) / .45); }
+.ai-rating-dialog::backdrop { background: rgba(24, 52, 60, .45); }
 .ai-rating-sheet { padding: 22px 24px 26px; font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 14px; line-height: 1.55; }
 .ai-rating-head { display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1; margin: -22px -24px 10px; padding: 22px 24px 10px; background: var(--white); border-bottom: 1px solid var(--line); }
 .ai-rating-head h2 { margin: 0; font-family: Georgia, serif; font-size: 22px; }
@@ -4080,7 +4080,7 @@ ul.latest-grid > li > .latest-card { flex: 1 1 auto; min-width: 0; }
 .list-pagination ol { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
 .list-pagination a, .list-pagination [aria-current], .list-pagination [aria-disabled] { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; padding: 8px 16px; border: 1px solid var(--line); color: var(--ink); text-decoration: none; }
 .list-pagination a:hover, .list-pagination a:focus-visible { border-color: var(--clay); }
-.list-pagination [aria-current] { background: var(--ink); border-color: var(--ink); color: #fffdf8; }
+.list-pagination [aria-current] { background: var(--ink); border-color: var(--ink); color: var(--on-ink-a); }
 .list-pagination [aria-disabled] { color: var(--ink-soft); opacity: .55; }
 /* Header tabs centred on the page, not in the space left beside the logo: logo | tabs | search and account, with equal outer columns. */
 @media (min-width: 821px) {
