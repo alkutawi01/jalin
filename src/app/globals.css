@@ -2835,7 +2835,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 
 /* ---- Series title page: hero beside the masthead, episodes as cards ---- */
 .series-masthead--hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, min(560px, 46%)); gap: 40px; align-items: center; max-width: none; }
-.series-hero { position: relative; margin: 0; aspect-ratio: 4 / 3; border-radius: 18px; overflow: hidden; background: #e8dfd2; box-shadow: 0 24px 60px -28px rgba(24, 52, 60, .45); }
+.series-hero { position: relative; margin: 0; aspect-ratio: 4 / 3; border-radius: 0; overflow: hidden; background: #e8dfd2; box-shadow: 0 24px 60px -28px rgba(24, 52, 60, .45); }
 .series-hero img { object-fit: cover; }
 /* Beside the text the picture is as tall as the text (it used to be a fixed shape, so on a narrower screen it was much shorter than the title and the quote). */
 @media (min-width: 901px) { .series-masthead--hero { align-items: stretch; } .series-masthead--hero .series-masthead-text { align-self: center; } .series-masthead--hero .series-hero { aspect-ratio: auto; min-height: 320px; } }
