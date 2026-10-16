@@ -81,6 +81,35 @@ export async function listSeries(): Promise<SeriesRecord[]> {
   return db.selectFrom("series").selectAll().orderBy("title", "asc").execute();
 }
 
+export interface SeriesSummary {
+  published: number;
+  total: number;
+  /** Highest-numbered published episode: what readers see as the newest instalment. */
+  latest?: { position: number; title: string; publishedAt: Date | string | null };
+}
+
+/** Per series: how many episodes are published out of how many exist, and the newest published one. */
+export async function listSeriesSummaries(): Promise<Map<string, SeriesSummary>> {
+  const db = getAdminDb();
+  const rows = await db
+    .selectFrom("series_entries")
+    .innerJoin("works", "works.id", "series_entries.work_id")
+    .select(["series_entries.series_id", "series_entries.position", "works.title", "works.status", "works.published_at"])
+    .orderBy("series_entries.position", "asc")
+    .execute();
+  const out = new Map<string, SeriesSummary>();
+  for (const r of rows) {
+    const s = out.get(r.series_id) ?? { published: 0, total: 0 };
+    s.total += 1;
+    if (r.status === "published") {
+      s.published += 1;
+      s.latest = { position: r.position, title: r.title, publishedAt: r.published_at };
+    }
+    out.set(r.series_id, s);
+  }
+  return out;
+}
+
 export async function getSeries(id: string): Promise<SeriesRecord | undefined> {
   const db = getAdminDb();
   return db.selectFrom("series").where("id", "=", id).selectAll().executeTakeFirst();

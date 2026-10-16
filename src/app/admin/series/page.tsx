@@ -1,4 +1,4 @@
-import { listSeries } from "../../../lib/admin/series-service";
+import { listSeries, listSeriesSummaries, type SeriesSummary } from "../../../lib/admin/series-service";
 import { hasDb } from "../../../lib/db";
 import { getCurrentAdmin } from "../../../lib/admin/auth";
 import { can, roleFromClaim } from "../../../lib/admin/permissions";
@@ -15,6 +15,18 @@ const STATUS_LABELS: Record<string, string> = {
   completed: "Tamat",
 };
 
+/** "10 terbit" when every episode is out, "8 / 10 terbit" when some are still draft or archived. */
+function episodeCount(s?: SeriesSummary): string {
+  if (!s || s.total === 0) return "Tiada episod";
+  return s.published === s.total ? `${s.total} terbit` : `${s.published} / ${s.total} terbit`;
+}
+
+function latestText(s?: SeriesSummary): string {
+  if (!s?.latest) return "Belum ada yang terbit";
+  const when = s.latest.publishedAt ? new Date(s.latest.publishedAt).toLocaleDateString("ms-MY", { day: "numeric", month: "short", year: "numeric" }) : "";
+  return `Ep ${s.latest.position}: ${s.latest.title}${when ? ` · ${when}` : ""}`;
+}
+
 export default async function AdminSeriesPage() {
   if (!hasDb()) {
     return (
@@ -30,7 +42,7 @@ export default async function AdminSeriesPage() {
     );
   }
 
-  const series = await listSeries();
+  const [series, summaries] = await Promise.all([listSeries(), listSeriesSummaries()]);
   // Only the chief editor and the owner manage series; an editor sees the list but is not offered what the server would refuse.
   const admin = await getCurrentAdmin();
   const canManage = can((admin && roleFromClaim(admin.role)) || "owner", "series.manage");
@@ -56,8 +68,10 @@ export default async function AdminSeriesPage() {
           <thead>
             <tr>
               <th>Tajuk</th>
+              <th>Episod</th>
+              <th className="a-cell-clip">Episod terkini</th>
               <th className="a-col-wide">Alamat pautan</th>
-              <th>Mod</th>
+              <th className="a-col-wide">Mod</th>
               <th>Status</th>
               <th>Tindakan</th>
             </tr>
@@ -65,7 +79,7 @@ export default async function AdminSeriesPage() {
           <tbody>
             {series.length === 0 ? (
               <tr>
-                <td colSpan={5} className="admin-table-empty">
+                <td colSpan={7} className="admin-table-empty">
                   Tiada siri dalam pangkalan data.
                 </td>
               </tr>
@@ -73,8 +87,10 @@ export default async function AdminSeriesPage() {
               series.map((s) => (
                 <tr key={s.id}>
                   <td className="admin-table-title a-cell-clip" title={`${s.title} · ${s.slug}`}>{canManage ? <a href={`/admin/series/${s.id}`} className="a-work-title-link">{s.title}</a> : s.title}</td>
+                  <td>{episodeCount(summaries.get(s.id))}</td>
+                  <td className="a-cell-clip" title={latestText(summaries.get(s.id))}>{latestText(summaries.get(s.id))}</td>
                   <td className="a-col-wide"><code>{s.slug}</code></td>
-                  <td>{MODE_LABELS[s.mode] ?? s.mode}</td>
+                  <td className="a-col-wide">{MODE_LABELS[s.mode] ?? s.mode}</td>
                   <td>
                     <span className={`admin-status admin-status-${s.status === "completed" ? "ready" : "draft"}`}>
                       {STATUS_LABELS[s.status] ?? s.status}
