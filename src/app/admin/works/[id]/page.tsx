@@ -2200,7 +2200,7 @@ export default function EditWorkPage() {
               rows={8}
               maxLength={5000}
               value={form.editorNote}
-              onChange={(value) => setForm((prev) => ({ ...prev, editorNote: value }))}
+              onChange={(value) => { setForm((prev) => ({ ...prev, editorNote: value })); setDirty(true); }}
               placeholder="Cerita asal usul karya ini, apa yang menarik tentangnya, atau apa-apa yang editor mahu kongsi dengan pembaca."
             />
             <span className="admin-form-hint">
@@ -2217,7 +2217,7 @@ export default function EditWorkPage() {
               rows={3}
               maxLength={600}
               value={form.readerNote}
-              onChange={(value) => setForm((prev) => ({ ...prev, readerNote: value }))}
+              onChange={(value) => { setForm((prev) => ({ ...prev, readerNote: value })); setDirty(true); }}
               placeholder="Satu atau dua ayat pendek di bawah jadual Jenis, Genre, Bacaan dan Versi."
             />
             <span className="admin-form-hint">
