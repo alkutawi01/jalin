@@ -17,8 +17,11 @@ const SINGLE_CLOSE = "’";
 const BEFORE_OPENING = /^$|[\s([{—–“‘]$/u;
 /** What may stand after a closing mark. */
 const AFTER_CLOSING = /^$|^[\s.,;:!?…)\]}—–”’-]/u;
-/** What an opening mark must be followed by (something to quote). */
-const STARTS_QUOTED = /^[^\s.,;:!?…)\]}”’]/u;
+/**
+ * What an opening mark must be followed by (something to quote). Speech that trails off from its first word
+ * ("...abang mana?") opens with an ellipsis, so "..." and "…" count as something to quote; a lone full stop does not.
+ */
+const STARTS_QUOTED = /^(?:\.\.\.|…|[^\s.,;:!?…)\]}”’])/u;
 
 /** Parts of a line that are not prose: image markers, inline code, link targets. */
 const NOT_PROSE = /\[\[[^\]]*\]\]|`[^`]*`|\]\([^)]*\)/g;
@@ -35,6 +38,9 @@ function convertLine(line: string): string {
     if (ch === "\u0000") continue;
     const before = i === 0 ? "" : chars[i - 1]!;
     const after = view[i + 1] === undefined || view[i + 1] === "\u0000" ? "" : view[i + 1]!;
+    // The next three characters (up to a masked part), so an opening ellipsis can be recognised.
+    let rest = "";
+    for (let k = i + 1; k < Math.min(view.length, i + 4) && view[k] !== "\u0000"; k++) rest += view[k];
     const beforeIsOpener = BEFORE_OPENING.test(before);
     if (ch === OPEN) { double = true; continue; }
     if (ch === CLOSE) { double = false; single = false; continue; }
@@ -42,10 +48,10 @@ function convertLine(line: string): string {
     if (ch === SINGLE_CLOSE) { single = false; continue; }
     if (ch === "\"") {
       // After a colon, semicolon or comma a quotation may follow without a space (kata:"Hai"): that opens it.
-      if ((beforeIsOpener || /[:;,]/.test(before)) && STARTS_QUOTED.test(after)) { chars[i] = OPEN; double = true; }
+      if ((beforeIsOpener || /[:;,]/.test(before)) && STARTS_QUOTED.test(rest)) { chars[i] = OPEN; double = true; }
       else if (!beforeIsOpener && AFTER_CLOSING.test(after)) { chars[i] = CLOSE; double = false; single = false; }
     } else if (ch === "'" && double) {
-      if (beforeIsOpener && STARTS_QUOTED.test(after)) { chars[i] = SINGLE_OPEN; single = true; }
+      if (beforeIsOpener && STARTS_QUOTED.test(rest)) { chars[i] = SINGLE_OPEN; single = true; }
       else if (!beforeIsOpener && single && AFTER_CLOSING.test(after)) { chars[i] = SINGLE_CLOSE; single = false; }
     }
   }

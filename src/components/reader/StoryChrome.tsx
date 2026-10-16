@@ -259,7 +259,7 @@ export function EditorNote({ note }: { note?: string }) {
   if (paragraphs.length === 0) return null;
   return (
     <aside className="site-shell editor-note" aria-labelledby="editor-note-title">
-      <h2 id="editor-note-title">Catatan penyunting</h2>
+      <h2 id="editor-note-title">Catatan</h2>
       {paragraphs.map((paragraph, index) => (
         <p key={index}>{renderItalics(paragraph)}</p>
       ))}

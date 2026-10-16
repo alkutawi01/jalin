@@ -217,7 +217,7 @@ export default function WorkStatusPanel({
       {status === "published" ? (
         <p className="a-status-hint" role="status">
           {readiness?.unpublished?.changed
-            ? "Ada perubahan dalam draf yang belum diterbitkan. Pembaca masih melihat versi terakhir yang diterbitkan."
+            ? "Draf berbeza daripada versi terbit. Pembaca masih melihat versi terbit yang terakhir; tekan Terbitkan semula untuk menunjukkan perubahan teks, kredit, gambar atau glosari."
             : readiness?.unpublished?.snapshotMissing
               ? "Karya ini diterbitkan sebelum versi beku wujud, jadi pembaca melihat draf semasa. Terbitkan semula untuk membekukan versi awam."
               : "Pembaca melihat versi yang sama seperti draf ini."}

@@ -4,9 +4,10 @@ import { getDb } from "../../db";
 import type { Database } from "../../db/types";
 import { readingMinutesFor } from "../../reader/reading-time";
 import { imageMarkers } from "../../reader/image-markers";
-import { isDerivativeType, roleNotAllowed } from "../../credit-roles";
+import { bylineByDefault, isDerivativeType, roleNotAllowed } from "../../credit-roles";
 import { isSourcedWork } from "../../content/source-origin";
 import { characterProblems } from "../metadata-rules";
+import { assertNoteFits, EDITOR_NOTE_LABEL, EDITOR_NOTE_MAX, READER_NOTE_LABEL, READER_NOTE_MAX } from "../note-limits";
 import { validatePlaceEntries, validateTimeEntries } from "../work-service";
 import { upsertSourceProvenance, type SourceProvenanceInput } from "../source-rights";
 import { planEditorAnswer, SOURCE_FIELDS, EDITOR_SCOPES, type EditorScope, type EditorState } from "./editor-assistant";
@@ -95,8 +96,9 @@ export async function processEditorAnswer(id: string, input: EditorAnswerRequest
           if (state.work.first_published_at || state.work.published_revision_id || state.work.status === "published") throw new Error("Alamat karya yang sudah diterbitkan dikekalkan. Nyahpilih perubahan alamat pautan.");
           if (await trx.selectFrom("works").where("slug", "=", row).where("id", "!=", id).select("id").executeTakeFirst()) throw new Error("Alamat pautan sudah digunakan.");
         }
-        if (change.key === "editorNote") metadata.editorNote = row;
-        else if (change.key === "readerNote") patch.reader = { ...(state.work.reader ?? {}), note: row };
+        // The same limits as the form's own save: a pasted note over the limit is refused here, with its length, not saved and refused later.
+        if (change.key === "editorNote") metadata.editorNote = assertNoteFits(EDITOR_NOTE_LABEL, String(row ?? ""), EDITOR_NOTE_MAX);
+        else if (change.key === "readerNote") patch.reader = { ...(state.work.reader ?? {}), note: assertNoteFits(READER_NOTE_LABEL, String(row ?? ""), READER_NOTE_MAX) };
         else patch[change.key] = row;
       } else if (change.group === "characters") {
         const key = change.key.split("/")[0]!;
@@ -124,7 +126,7 @@ export async function processEditorAnswer(id: string, input: EditorAnswerRequest
         if ((!slug && !guest) || (slug && guest) || !role) throw new Error("Kredit memerlukan satu identiti penyumbang dan peranan sebenar.");
         const problem = roleNotAllowed(state.work.type, role); if (problem) throw new Error(problem);
         if (slug && !await trx.selectFrom("contributors").where("slug", "=", slug).select("slug").executeTakeFirst()) throw new Error(`Penyumbang ${slug} tidak ditemui.`);
-        const values = { contributor_slug: slug || null, guest_name: guest || null, role_label: role, byline: !isDerivativeType(state.work.type) && flag(row.byline, false), is_public: flag(row.isPublic, true) };
+        const values = { contributor_slug: slug || null, guest_name: guest || null, role_label: role, byline: !isDerivativeType(state.work.type) && flag(row.byline, bylineByDefault(role)), is_public: flag(row.isPublic, true) };
         const old = state.credits.find(c => (slug ? c.contributor_slug === slug : c.guest_name === guest) && c.role_label === role);
         if (old) await trx.updateTable("credits").where("id", "=", old.id).set(values).execute();
         else await trx.insertInto("credits").values({ ...values, work_id: id, sort_order: ++creditPosition, created_at: now }).execute();
