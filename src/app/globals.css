@@ -2886,7 +2886,10 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 /* The title box and the copyright notice sit against the picture's own edges (left and right, bottom), not floating inside it. */
 .series-feature-overlay { position: absolute; z-index: 2; bottom: 32px; left: 0; display: grid; gap: 4px; width: max-content; max-width: min(68%, 320px); padding: 10px 14px 11px 26px; border-radius: 0 6px 6px 0; background: rgba(0, 0, 0, .82); color: #fff; }
 .series-feature-media > .image-rights { right: 0; bottom: 14px; border-radius: 4px 0 0 4px; }
-.series-feature-title { margin: 0; font-size: clamp(1.3rem, 2.1vw, 1.85rem); line-height: 1.12; font-weight: 500; text-wrap: balance; }
+.series-feature-title { margin: 0; font-size: clamp(36px, 2.6vw, 40px); line-height: 1.12; font-weight: 500; text-wrap: balance; overflow-wrap: anywhere; hyphens: none; }
+@media (min-width: 701px) and (max-width: 1050px) {
+  .series-feature-title { font-size: clamp(30px, 3.1vw, 32px); }
+}
 .series-feature-meta, .series-list-meta { margin: 0; color: var(--clay-text); font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; }
 .series-feature-overlay .series-feature-meta { color: #f5dfc6; font-size: 10px; }
 .series-feature-footer { min-width: 0; display: grid; align-content: center; gap: 20px; padding-block: 20px; }
@@ -2916,7 +2919,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
   .series-feature { grid-template-columns: minmax(0, 1fr); gap: 12px; }
   .series-feature-media { aspect-ratio: 2 / 1; }
   .series-feature-overlay { bottom: 26px; padding: 9px 12px 10px 20px; }
-  .series-feature-title { font-size: clamp(1.4rem, 4vw, 1.8rem); }
+  .series-feature-title { font-size: clamp(26px, 4vw, 28px); }
   .series-feature-overlay .series-feature-meta { font-size: 9px; }
   .series-feature-footer { gap: 4px; padding-block: 0; }
   .series-feature-actions { flex-direction: row; align-items: center; gap: 4px 22px; }
@@ -2931,7 +2934,6 @@ dd { margin: 0; color: var(--ink); text-align: left; }
 }
 @media (max-width: 480px) {
   .series-feature-media { aspect-ratio: 16 / 9; }
-  .series-feature-title { font-size: 1.45rem; }
 }
 /* A hero is edge to edge on the screen whenever it stands alone, above or below its text, whatever kind it is: the homepage carousel,
    the homepage series picture, a work's hero, a series page's hero. (Beside its text on a desktop it is a picture in the layout; a
@@ -4329,9 +4331,9 @@ body:has(.save-work) .back-to-top { bottom: 76px; }
     content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none;
     background: linear-gradient(to right,
       var(--ground-bg, var(--paper)) 0,
-      color-mix(in srgb, var(--ground-bg, var(--paper)) 82%, transparent) 56px,
-      color-mix(in srgb, var(--ground-bg, var(--paper)) 28%, transparent) 150px,
-      transparent 240px);
+      color-mix(in srgb, var(--ground-bg, var(--paper)) 82%, transparent) 8%,
+      color-mix(in srgb, var(--ground-bg, var(--paper)) 28%, transparent) 20%,
+      transparent 32%);
   }
   .hero-carousel-slide .hero-featured-visual .image-rights { z-index: 2; }
 }

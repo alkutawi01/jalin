@@ -3,14 +3,31 @@
 import { useRef } from "react";
 import { cropStyle } from "../../lib/reader/crop";
 
-/** The frame shapes Jalin shows an image in. One crop (focus + zoom) serves every one of them. */
-const FRAMES: Array<{ label: string; ratio: string }> = [
+/**
+ * The frame shapes Jalin shows an image in. One crop (focus + zoom) serves every one of them.
+ * The homepage hero is not one shape: it was measured on the live site at 1.20 (desktop), 1.66 (laptop), 0.94 and 0.74 (tablet, upright)
+ * and 1.18 (phone). Where the picture melts into the page on its left (everything wider than a phone) that fade is drawn on the preview too,
+ * with the same stops as globals.css: wide screens 12% / 31% / 48% of the picture, tablets 8% / 20% / 32%.
+ */
+const FRAMES: Array<{ label: string; ratio: string; veil?: [number, number, number] }> = [
+  { label: "Laman utama, komputer 1.2", ratio: "1.2 / 1", veil: [12, 31, 48] },
+  { label: "Laman utama, laptop 1.66", ratio: "1.66 / 1", veil: [12, 31, 48] },
+  { label: "Laman utama, tablet 0.94", ratio: "0.94 / 1", veil: [8, 20, 32] },
+  { label: "Laman utama, tablet tegak 0.74", ratio: "0.74 / 1", veil: [8, 20, 32] },
+  { label: "Laman utama, telefon 1.18", ratio: "1.18 / 1" },
   { label: "Kepala karya 16:9", ratio: "16 / 9" },
   { label: "Kad 16:10", ratio: "16 / 10" },
   { label: "Gambar dalam teks 4:3", ratio: "4 / 3" },
-  { label: "Laman utama 4:3.4", ratio: "4 / 3.4" },
   { label: "Siri 3:2", ratio: "3 / 2" }
 ];
+
+/** The page colour laid over the picture, thinning to nothing: the same veil the live homepage uses. */
+function veilBackground([a, b, c]: [number, number, number]): string {
+  return `linear-gradient(to right, var(--a-side) 0, color-mix(in srgb, var(--a-side) 82%, transparent) ${a}%, color-mix(in srgb, var(--a-side) 28%, transparent) ${b}%, transparent ${c}%)`;
+}
+
+/** A focus point further left than this sits under the fade on a wide screen or a tablet. */
+export const VEIL_FOCUS_LIMIT = 35;
 
 export interface FocusValue {
   x: number;
@@ -70,12 +87,18 @@ export default function ImageFocusPicker({
         <button type="button" className="admin-btn admin-btn-sm admin-btn-outline" onClick={() => onChange({ x: 50, y: 50, zoom: 100 })}>Tetapkan semula (tengah)</button>
       </div>
 
+      {value.x < VEIL_FOCUS_LIMIT ? (
+        <p className="admin-alert admin-alert-warning" role="status">
+          Titik fokus ada di bahagian kiri gambar. Di laman utama (skrin lebar dan tablet) bahagian kiri larut ke latar halaman, jadi subjek di situ akan kabur. Gerakkan titik ke kanan, atau lihat bingkai "Laman utama" di bawah.
+        </p>
+      ) : null}
       <div className="a-focus-frames" aria-label="Pratonton bingkai">
         {FRAMES.map((frame) => (
           <figure key={frame.label}>
             <div className="a-focus-frame" style={{ aspectRatio: frame.ratio }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={src} alt="" style={cropStyle(value)} />
+              {frame.veil ? <span className="a-focus-veil" aria-hidden="true" style={{ background: veilBackground(frame.veil) }} /> : null}
             </div>
             <figcaption>{frame.label}</figcaption>
           </figure>
