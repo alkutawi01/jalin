@@ -4329,9 +4329,9 @@ body:has(.save-work) .back-to-top { bottom: 76px; }
     content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none;
     background: linear-gradient(to right,
       var(--ground-bg, var(--paper)) 0,
-      color-mix(in srgb, var(--ground-bg, var(--paper)) 82%, transparent) 56px,
-      color-mix(in srgb, var(--ground-bg, var(--paper)) 28%, transparent) 150px,
-      transparent 240px);
+      color-mix(in srgb, var(--ground-bg, var(--paper)) 82%, transparent) 8%,
+      color-mix(in srgb, var(--ground-bg, var(--paper)) 28%, transparent) 20%,
+      transparent 32%);
   }
   .hero-carousel-slide .hero-featured-visual .image-rights { z-index: 2; }
 }
