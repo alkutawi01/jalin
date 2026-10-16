@@ -52,11 +52,11 @@ export default async function AdminSeriesPage() {
       </header>
 
       <div className="admin-table-wrap">
-        <table className="admin-table">
+        <table className="admin-table a-compact-table">
           <thead>
             <tr>
               <th>Tajuk</th>
-              <th>Alamat pautan</th>
+              <th className="a-col-wide">Alamat pautan</th>
               <th>Mod</th>
               <th>Status</th>
               <th>Tindakan</th>
@@ -72,8 +72,8 @@ export default async function AdminSeriesPage() {
             ) : (
               series.map((s) => (
                 <tr key={s.id}>
-                  <td className="admin-table-title">{canManage ? <a href={`/admin/series/${s.id}`} className="a-work-title-link">{s.title}</a> : s.title}</td>
-                  <td><code>{s.slug}</code></td>
+                  <td className="admin-table-title a-cell-clip" title={`${s.title} · ${s.slug}`}>{canManage ? <a href={`/admin/series/${s.id}`} className="a-work-title-link">{s.title}</a> : s.title}</td>
+                  <td className="a-col-wide"><code>{s.slug}</code></td>
                   <td>{MODE_LABELS[s.mode] ?? s.mode}</td>
                   <td>
                     <span className={`admin-status admin-status-${s.status === "completed" ? "ready" : "draft"}`}>
