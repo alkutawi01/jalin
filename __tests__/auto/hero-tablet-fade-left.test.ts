@@ -15,7 +15,7 @@ assert(block.length > 0, "there is a tablet block");
 assert(block.includes("grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr)"), "text on the left and the picture on the right");
 assert(block.includes("border-radius: 0; box-shadow: none; }"), "the picture's corners are square");
 assert(/\.hero-carousel-slide \.hero-featured-visual::after \{[^}]*linear-gradient\(to right,/.test(block), "a veil fades the picture's left edge");
-assert(block.includes("var(--ground-bg, var(--paper)) 0,") && block.includes("transparent 240px"), "the veil starts at the page colour and is clear by 240px");
+assert(block.includes("var(--ground-bg, var(--paper)) 0,") && block.includes("transparent 32%"), "the veil starts at the page colour and is clear by 32% of the picture");
 assert(block.includes(".image-rights { z-index: 2; }"), "the rights line stays above the veil");
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);
