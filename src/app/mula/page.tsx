@@ -67,7 +67,7 @@ const FAQ = [
   { q: "Apakah itu Jalin?", a: "Jalin ialah laman cerpen, novela dan cerita bersiri berilustrasi dalam Bahasa Melayu, terbitan Adjung Press." },
   { q: "Berapa harga untuk membaca?", a: "Percubaan percuma selama 14 hari bermula apabila anda mengaktifkannya selepas log masuk. Selepas itu, kad langganan berharga RM15 untuk 1 bulan, RM30 untuk 6 bulan atau RM50 untuk 12 bulan. Kad langganan belum dijual buat masa ini." },
   { q: "Adakah Jalin menyimpan butiran kad bank?", a: "Tidak. Jalin tidak menyimpan butiran kad bank dan langganan tidak diperbaharui secara automatik." },
-  { q: "Apa yang boleh saya baca tanpa log masuk?", a: "Senarai karya, tajuk dan ringkasan boleh dilihat oleh sesiapa, dan beberapa cerita contoh boleh dibaca penuh tanpa akaun." },
+  { q: "Apa yang boleh saya baca tanpa log masuk?", a: "Senarai karya, tajuk dan blurb boleh dilihat oleh sesiapa, dan beberapa cerita contoh boleh dibaca penuh tanpa akaun." },
   { q: "Di mana boleh saya membaca?", a: "Anda boleh membaca melalui telefon, tablet atau komputer. Satu akaun boleh digunakan pada sehingga dua peranti." },
   { q: "Bagaimana jika percubaan atau langganan saya tamat?", a: "Anda masih boleh log masuk untuk mengurus akaun dan menebus kod langganan baharu. Karya penuh boleh dibaca semula apabila langganan diaktifkan." },
   { q: "Bolehkah saya memadam akaun?", a: "Boleh. Anda boleh memadam akaun pada bila-bila masa di halaman Akaun. Pemadaman tidak boleh dipulihkan." },
