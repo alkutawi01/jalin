@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { applyTheme } from "./ThemeSync";
+import { ACCOUNT_THEME_KEY, THEME_KEY } from "../../lib/site-theme-mode";
 
 type Device = { id: string; label: string; lastSeenAt: string };
 type Prefs = { fontSizePx: number; lineHeightX100: number; textWidthCh: number; theme: "cerah" | "sepia" | "gelap"; fontFamily: "serif" | "sans"; dimPercent: number };
@@ -14,8 +16,12 @@ const DIMS = [0, 5, 10, 15, 20];
 const THEME_COLOURS: Record<Prefs["theme"], { bg: string; fg: string }> = {
   cerah: { bg: "#fbf8f2", fg: "#18343c" },
   sepia: { bg: "#f1e4cc", fg: "#3b2f1e" },
-  gelap: { bg: "#17191a", fg: "#e7e2d8" },
+  gelap: { bg: "#101e22", fg: "#eee8dd" },
 };
+
+function storedFollowsDevice(): boolean {
+  try { return localStorage.getItem(THEME_KEY) === "sistem"; } catch { return false; }
+}
 
 function formatDate(iso: string | null): string {
   if (!iso) return "";
@@ -65,7 +71,22 @@ export default function AccountPanel(props: {
     setMessage("Nama disimpan.");
   }
 
+  const [followDevice, setFollowDevice] = useState(false);
+  useEffect(() => { setFollowDevice(storedFollowsDevice()); }, []);
+
+  /** "Ikut peranti" is a choice for this device only; the account keeps its saved theme (no migration, nothing rewritten silently). */
+  function followDeviceTheme() {
+    try { localStorage.setItem(THEME_KEY, "sistem"); } catch { /* the choice just is not remembered */ }
+    setFollowDevice(true);
+    applyTheme("sistem");
+  }
+
   async function savePrefs(change: Partial<Prefs>) {
+    if (change.theme) {
+      try { localStorage.removeItem(THEME_KEY); localStorage.setItem(ACCOUNT_THEME_KEY, change.theme); } catch { /* the account still saves it */ }
+      setFollowDevice(false);
+      applyTheme(change.theme);
+    }
     const next = { ...prefs, ...change };
     setPrefs(next);
     setError(""); setMessage("");
@@ -216,7 +237,8 @@ export default function AccountPanel(props: {
       </div>
       <div className="auth-row"><span>Tema</span>
         <span className="auth-choices" role="group" aria-label="Tema">
-          {THEMES.map((t) => <button key={t.value} type="button" className="auth-choice" aria-pressed={prefs.theme === t.value} onClick={() => savePrefs({ theme: t.value })}>{t.label}</button>)}
+          {THEMES.map((t) => <button key={t.value} type="button" className="auth-choice" aria-pressed={!followDevice && prefs.theme === t.value} onClick={() => savePrefs({ theme: t.value })}>{t.label}</button>)}
+          <button type="button" className="auth-choice" aria-pressed={followDevice} onClick={followDeviceTheme}>Ikut peranti</button>
         </span>
       </div>
       <div className="auth-row"><span>Jenis huruf</span>
