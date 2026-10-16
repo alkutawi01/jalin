@@ -91,7 +91,7 @@ function TermsWithAccounts() {
 
       <h2>Membaca</h2>
       <p>
-        Senarai karya, tajuk dan ringkasan boleh dilihat oleh sesiapa. Beberapa karya dipilih sebagai contoh dan boleh dibaca tanpa
+        Senarai karya, tajuk dan blurb boleh dilihat oleh sesiapa. Beberapa karya dipilih sebagai contoh dan boleh dibaca tanpa
         akaun. Membaca karya penuh memerlukan akaun dengan percubaan percuma atau langganan yang aktif; akaun yang akses bacaannya
         tidak aktif masih boleh log masuk untuk menguruskan akaun dan menebus kod.
       </p>
