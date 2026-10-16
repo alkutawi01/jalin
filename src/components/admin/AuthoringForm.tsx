@@ -522,7 +522,7 @@ export default function AuthoringForm({ recipeKey, needsManuscript, series }: Pr
                 <input id="f-slug" value={slug} onChange={(e) => setSlug(e.target.value)} placeholder="(dijana daripada tajuk)" />
               </div>
               <div className="admin-form-group">
-                <label htmlFor="f-dek">Ringkasan</label>
+                <label htmlFor="f-dek">Blurb</label>
                 <textarea id="f-dek" className="admin-textarea" rows={4} value={dek} onChange={(e) => setDek(e.target.value)} />
               </div>
               <div className="admin-form-row">

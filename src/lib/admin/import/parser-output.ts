@@ -309,7 +309,7 @@ function normaliseParserOutput(
   if (!slug) errors.push(parseIssue("slug_missing", "Slug tidak dapat ditentukan.", "slug"));
 
   const dek = text(raw.dek);
-  if (!dek) warnings.push(parseIssue("dek_missing", "Ringkasan tiada.", "dek"));
+  if (!dek) warnings.push(parseIssue("dek_missing", "Blurb tiada.", "dek"));
   const genre = text(raw.genre);
   if (!genre) warnings.push(parseIssue("genre_missing", "Genre tidak dinyatakan.", "genre"));
 

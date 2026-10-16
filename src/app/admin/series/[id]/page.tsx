@@ -482,7 +482,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
             onChange={(e) => setForm((p) => ({ ...p, slug: e.target.value }))} />
         </div>
         <div className="admin-form-group">
-          <label htmlFor="dek">Dek</label>
+          <label htmlFor="dek">Blurb</label>
           <textarea id="dek" className="admin-textarea" rows={4} value={form.dek}
             onChange={(e) => setForm((p) => ({ ...p, dek: e.target.value }))} />
         </div>

@@ -80,6 +80,7 @@ const FIELD_ALIASES: Record<OutputSection, FieldMap> = {
     title: "title",
     slug: "slug",
     dek: "dek",
+    blurb: "dek",
     genre: "genre",
     penulis: "author",
     pengarang: "author",
@@ -95,7 +96,9 @@ const FIELD_ALIASES: Record<OutputSection, FieldMap> = {
     "tajuk siri": "title",
     tajuk: "title",
     mod: "mode",
+    "blurb siri": "dek",
     "dek siri": "dek",
+    blurb: "dek",
     dek: "dek"
   },
   KANDUNGAN: {},

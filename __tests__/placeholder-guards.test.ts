@@ -30,7 +30,7 @@ const input = (w: ReadinessWorkInput, glossary = [{ id: 1, work_id: "JLN-CER-000
 
 assert(evaluatePublicationReadinessFromData(input(work())).blockers.every((b) => b.code !== "placeholder_text"), "a work with real text has no placeholder blocker");
 const cases: Array<[string, Partial<ReadinessWorkInput>, string]> = [
-  ["dek", { dek: "(satu atau dua ayat yang menarik pembaca)" }, "Dek"],
+  ["dek", { dek: "(satu atau dua ayat yang menarik pembaca)" }, "Blurb"],
   ["genre", { genre: "(satu genre dalam satu atau dua patah perkataan)" }, "Genre"],
   ["time", { metadata: { times: [{ name: "(tahun, tempoh atau era)", description: "(2 hingga 8 patah perkataan)" }] } }, "Latar masa"],
   ["place", { metadata: { places: [{ name: "(nama tempat)" }] } }, "Latar tempat"],
@@ -43,7 +43,7 @@ for (const [label, over, expected] of cases) {
 }
 const g = evaluatePublicationReadinessFromData(input(work(), [{ id: 1, work_id: "JLN-CER-0001", term: "(perkataan seperti dieja dalam teks)", meaning: "(maksud ringkas)", source: "x" }]));
 assert(g.blockers.some((b) => b.code === "placeholder_text" && b.message.includes("Glosari")), "a placeholder glossary term blocks publication");
-assert(placeholderFields(work({ dek: "(satu atau dua ayat)", genre: "(satu genre dalam satu patah)" }), []).join() === "Dek,Genre", "all fields with leftovers are listed together");
+assert(placeholderFields(work({ dek: "(satu atau dua ayat)", genre: "(satu genre dalam satu patah)" }), []).join() === "Blurb,Genre", "all fields with leftovers are listed together");
 
 // Glossary paste drops placeholders
 const pasted = parseGlossaryPaste("[GLOSARI]\nIstilah: (perkataan seperti dieja dalam teks)\nMaksud: (maksud ringkas)\n____\nIstilah: simpul\nMaksud: Ikatan tali.", "Dia membuat simpul pada tali.", []);

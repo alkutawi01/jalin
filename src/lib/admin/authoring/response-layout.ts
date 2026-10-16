@@ -72,9 +72,9 @@ function structuredAnswer(answer: string, labels: string[]): string {
   };
   const group = (name: string, rows: string[]) => { if (rows.length) out.push(`[${name}]`, ...rows); };
   const work = Object.keys(record(root.work)).length ? record(root.work) : { ...root, ...record(root.metadata) };
-  group("KARYA", fields(work, { type: "Jenis", title: "Tajuk", slug: "Slug", dek: "Dek", genre: "Genre", author: "Penulis" }));
+  group("KARYA", fields(work, { type: "Jenis", title: "Tajuk", slug: "Slug", dek: "Blurb", genre: "Genre", author: "Penulis" }));
   if (typeof root.content === "string") group("KANDUNGAN", [root.content]);
-  group("SIRI", fields(root.series, { title: "Tajuk siri", mode: "Mod", dek: "Dek siri" }));
+  group("SIRI", fields(root.series, { title: "Tajuk siri", mode: "Mod", dek: "Blurb siri" }));
   group("SUMBER", fields(root.source, { title: "Tajuk asal", originalTitle: "Tajuk asal", author: "Pengarang asal", language: "Bahasa asal", originalLanguage: "Bahasa asal", publicationYear: "Tahun terbit pertama", publisher: "Penerbit", editionYear: "Tahun cetakan", printing: "Cetakan ke", editor: "Penyunting", translator: "Penterjemah", isbn: "ISBN", locator: "Lokasi petikan", basis: "Asas teks" }));
   const list = (name: string, data: unknown, mapping: Record<string, string>) => {
     if (Array.isArray(data)) group(name, data.flatMap(item => [...fields(item, mapping), "____"]));
@@ -92,4 +92,4 @@ function structuredAnswer(answer: string, labels: string[]): string {
   return out.length ? out.join("\n") : answer;
 }
 
-export const AUTHORING_LABELS = ["Jenis", "Type", "Tajuk", "Title", "Slug", "Dek", "Ringkasan", "Genre", "Penulis", "Pengarang", "Anggaran bacaan", "Nama", "Peranan", "Penerangan", "Keterangan", "Muncul di", "Muncul", "Kemunculan pertama", "Nombor", "Bab", "Tajuk dalam manuskrip", "Tajuk siri", "Mod", "Dek siri", "Tajuk asal", "Pengarang asal", "Penulis asal", "Bahasa asal", "Asal-usul", "Tahun terbit pertama", "Penerbit", "Tahun cetakan", "Cetakan ke", "Penyunting", "Penterjemah", "ISBN", "Lokasi petikan", "Asas teks", "Istilah", "Term", "Perkataan", "Maksud", "Makna", "Meaning", "Definisi", "Takrif", "Asing", "Sebutan", "Ejaan asal", "Petikan", "Letak", "Nisbah", "Adegan", "Bukan dalam adegan", "Muka", "Alt", "Sebab"];
+export const AUTHORING_LABELS = ["Jenis", "Type", "Tajuk", "Title", "Slug", "Blurb", "Blurb siri", "Dek", "Dek siri", "Ringkasan", "Genre", "Penulis", "Pengarang", "Anggaran bacaan", "Nama", "Peranan", "Penerangan", "Keterangan", "Muncul di", "Muncul", "Kemunculan pertama", "Nombor", "Bab", "Tajuk dalam manuskrip", "Tajuk siri", "Mod", "Dek siri", "Tajuk asal", "Pengarang asal", "Penulis asal", "Bahasa asal", "Asal-usul", "Tahun terbit pertama", "Penerbit", "Tahun cetakan", "Cetakan ke", "Penyunting", "Penterjemah", "ISBN", "Lokasi petikan", "Asas teks", "Istilah", "Term", "Perkataan", "Maksud", "Makna", "Meaning", "Definisi", "Takrif", "Asing", "Sebutan", "Ejaan asal", "Petikan", "Letak", "Nisbah", "Adegan", "Bukan dalam adegan", "Muka", "Alt", "Sebab"];

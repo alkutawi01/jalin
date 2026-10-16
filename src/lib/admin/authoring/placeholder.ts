@@ -20,7 +20,7 @@ export function withoutAssistantSeparators(value: unknown): string {
 /** Names of public fields of a work that still hold a placeholder (Malay labels, for the editor). */
 export function placeholderFields(work: { dek?: string | null; genre?: string | null; metadata?: Record<string, unknown> | null }, glossary: Array<{ term: string; meaning: string }>): string[] {
   const found: string[] = [];
-  if (isPlaceholder(work.dek)) found.push("Dek");
+  if (isPlaceholder(work.dek)) found.push("Blurb");
   if (isPlaceholder(work.genre)) found.push("Genre");
   const meta = work.metadata ?? {};
   const list = (key: string): Array<Record<string, unknown>> => (Array.isArray(meta[key]) ? (meta[key] as Array<Record<string, unknown>>).filter((e) => e && typeof e === "object") : []);

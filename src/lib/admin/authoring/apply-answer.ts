@@ -38,7 +38,7 @@ export async function applyAssistantAnswer(workId: string, input: ApplyAnswerInp
     const metadataPatch: Record<string, string> = {};
     if (input.scope !== "glossary") {
       for (const key of ["dek", "genre"] as const) {
-        if (parsed[key] && !work[key]?.trim() && !input.preserve?.includes(key)) { patch[key] = parsed[key]; metadataPatch[key] = parsed[key]; notes.push(`${key === "dek" ? "Dek" : "Genre"}: diisi.`); }
+        if (parsed[key] && !work[key]?.trim() && !input.preserve?.includes(key)) { patch[key] = parsed[key]; metadataPatch[key] = parsed[key]; notes.push(`${key === "dek" ? "Blurb" : "Genre"}: diisi.`); }
       }
       const merge = (key: "characters" | "places" | "times", fresh: Array<{ name: string }>) => {
         const existing = Array.isArray(metadata[key]) ? metadata[key] as Array<{ name: string }> : [];

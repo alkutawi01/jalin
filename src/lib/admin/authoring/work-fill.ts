@@ -55,7 +55,7 @@ PRINSIP
 - Jawab dengan bahagian berformat di bawah sahaja: tiada pengenalan, tiada penutup, tiada nombor, tiada tanda markdown.
 
 [MAKLUMAT]
-Dek: (${DEK_RULE})
+Blurb: (${DEK_RULE})
 Genre: (satu genre dalam satu atau dua patah perkataan)
 
 [WATAK]
@@ -360,7 +360,7 @@ export function parseWorkFill(answer: string, scope: WorkFillScope = "all"): Wor
 
   const real = (v: string) => (isPlaceholder(v) ? "" : v);
   return {
-    dek: real(clean(field(info, /dek|ringkasan/))),
+    dek: real(clean(field(info, /blurb|dek|ringkasan/))),
     genre: real(clean(field(info, /genre/))),
     characters: uniqueByName(characters.filter((c) => !isPlaceholder(c.name) && !isPlaceholder(c.role))),
     places: uniqueByName(setting.places.filter((p) => !isPlaceholder(p.name))),

@@ -423,7 +423,7 @@ export function evaluatePublicationReadinessFromData(
   }
   if (!work.dek || !work.dek.trim()) {
     contentWarnings.push(
-      issue("dek_missing", "Ringkasan belum diisi. Disyorkan untuk senarai awam.")
+      issue("dek_missing", "Blurb belum diisi. Disyorkan untuk senarai awam.")
     );
   }
   if (glossary.length === 0) {

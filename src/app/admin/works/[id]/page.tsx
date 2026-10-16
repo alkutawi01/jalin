@@ -1999,7 +1999,7 @@ export default function EditWorkPage() {
           </div>
 
           <div className="admin-form-group">
-            <label htmlFor="dek">Ringkasan</label>
+            <label htmlFor="dek">Blurb</label>
             <textarea
               id="dek"
               className="admin-textarea"
