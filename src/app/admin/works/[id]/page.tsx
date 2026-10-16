@@ -2191,14 +2191,16 @@ export default function EditWorkPage() {
           </div>
 
           <div className="admin-form-group">
-            <label htmlFor="editorNote">Catatan editor</label>
-            <textarea
+            <label id="editorNote-label">Catatan editor</label>
+            <InlineRichField
               id="editorNote"
-              className="admin-textarea"
+              labelledBy="editorNote-label"
+              multiline
+              typography
               rows={8}
               maxLength={5000}
               value={form.editorNote}
-              onChange={(e) => dashChange(e, (value) => setForm((prev) => ({ ...prev, editorNote: value })))}
+              onChange={(value) => setForm((prev) => ({ ...prev, editorNote: value }))}
               placeholder="Cerita asal usul karya ini, apa yang menarik tentangnya, atau apa-apa yang editor mahu kongsi dengan pembaca."
             />
             <span className="admin-form-hint">
@@ -2206,14 +2208,16 @@ export default function EditWorkPage() {
             </span>
           </div>
           <div className="admin-form-group">
-            <label htmlFor="readerNote">Nota pada kad &quot;Tentang karya&quot;</label>
-            <textarea
+            <label id="readerNote-label">Nota pada kad &quot;Tentang karya&quot;</label>
+            <InlineRichField
               id="readerNote"
-              className="admin-textarea"
+              labelledBy="readerNote-label"
+              multiline
+              typography
               rows={3}
               maxLength={600}
               value={form.readerNote}
-              onChange={(e) => dashChange(e, (value) => setForm((prev) => ({ ...prev, readerNote: value })))}
+              onChange={(value) => setForm((prev) => ({ ...prev, readerNote: value }))}
               placeholder="Satu atau dua ayat pendek di bawah jadual Jenis, Genre, Bacaan dan Versi."
             />
             <span className="admin-form-hint">
