@@ -32,12 +32,23 @@ function ToolbarIcon({ name }: { name: ToolbarIconName }) {
 
 /** Keep unsupported Markdown in the source editor; never silently flatten it. The side notes are kept apart by the editor, so only the text counts. */
 export function canEditVisually(markdown: string): boolean {
+  return firstUnsupportedLine(markdown) === null;
+}
+
+/** The first line the visual editor cannot hold without flattening it, so the editor can be told which text to look at; null when all can be edited visually. */
+export function firstUnsupportedLine(markdown: string): string | null {
   const segments = splitCommunicationBlocks(splitFootnotes(markdown).prose);
-  if (segments.some((segment) => segment.content.includes(":::"))) return false;
+  const colonBlock = segments.find((segment) => segment.content.includes(":::"));
+  if (colonBlock) return colonBlock.content.split("\n").find((line) => line.includes(":::")) ?? colonBlock.content;
   const blocks = segments.flatMap((segment) => segment.kind === "prose" ? segment.content.split(/\n{2,}/) : [segment.content]);
-  if (blocks.some((block) => block.split("\n").length > 1 && block.split("\n").some((line) => MARKER.test(line.trim()) || /^(---|\*\*\*)$/.test(line.trim()) || /^## /.test(line)))) return false;
+  const mixed = blocks.find((block) => block.split("\n").length > 1 && block.split("\n").some((line) => MARKER.test(line.trim()) || /^(---|\*\*\*)$/.test(line.trim()) || /^## /.test(line)));
+  if (mixed) return mixed.split("\n").find((line) => MARKER.test(line.trim()) || /^(---|\*\*\*)$/.test(line.trim()) || /^## /.test(line)) ?? mixed;
   const lines = blocks.flatMap((block) => block.split("\n"));
-  return lines.every((line) => {
+  return lines.find((line) => !lineEditableVisually(line)) ?? null;
+}
+
+function lineEditableVisually(line: string): boolean {
+  {
     if (!line.trim() || MARKER.test(line.trim()) || /^(---|\*\*\*)$/.test(line.trim())) return true;
     // "\*" and "\\" are what this editor itself writes for a literal * or \, so they are not unsupported syntax.
     const text = line.replace(/\\[\\*]/g, "");
@@ -48,7 +59,7 @@ export function canEditVisually(markdown: string): boolean {
     if (/^#{1,6}\s|^>\s|^[-+*]\s|^\d+\.\s|^\s{4}|^\||^:::/.test(line)) return false;
     if (unsupportedInline.test(text)) return false;
     return !text.replace(/\*\*[^*\n]+\*\*|\*[^*\n]+\*/g, "").includes("*");
-  });
+  }
 }
 
 function toHtml(markdown: string, notes?: NoteContext): string {

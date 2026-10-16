@@ -90,8 +90,10 @@ export default function AdminWorksTable({ works, initialPicks }: { works: AdminW
         setNotice(`${work.title} akan ditambah sebagai pilihan ${current.length + 1}.`);
         return [...current, next];
       }
-      setNotice(`Had tiga karya. ${current[0].title} akan dikeluarkan dan ${work.title} akan menjadi pilihan ketiga.`);
-      return [...current.slice(1), next];
+      // Three are chosen already: nothing is dropped for the editor. They take one out, then add this one.
+      setNotice(`Pilihan Editor sudah penuh (${LIMIT}/${LIMIT}). Keluarkan satu dahulu dengan butang Keluarkan di panel di atas, kemudian tambah ${work.title}.`);
+      toast(`Pilihan Editor sudah penuh. Keluarkan satu dahulu, kemudian tambah ${work.title}.`, "error");
+      return current;
     });
   }
 
