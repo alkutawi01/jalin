@@ -26,7 +26,8 @@ import FootnoteList from "../../../../components/reader/FootnoteList";
 import { extractFootnotes, markFootnoteReferences } from "../../../../lib/reader/footnotes";
 import { stripImageMarkers } from "../../../../lib/reader/image-markers";
 import { classifyFragmen, isIndonesianLanguage, isMalayLanguage } from "../../../../lib/content/fragmen-kind";
-import { renderItalics, toggleItalicSelection } from "../../../../lib/reader/inline-italics";
+import { renderItalics } from "../../../../lib/reader/inline-italics";
+import InlineRichField from "../../../../components/admin/InlineRichField";
 import VisualManuscriptEditor, { canEditVisually } from "../../../../components/admin/VisualManuscriptEditor";
 import { danglingEmphasisParagraphs } from "../../../../lib/reader/literal-emphasis";
 import { readingMinutesFor } from "../../../../lib/reader/reading-time";
@@ -333,17 +334,6 @@ export default function EditWorkPage() {
   function selectTab(tab: Tab) {
     setActiveTab(tab);
     window.history.replaceState(window.history.state, "", `#${tab}`);
-  }
-  /** Ctrl+I (or Cmd+I) italicises the selection with *asterisks*; nothing is italicised automatically. */
-  function italicShortcut(event: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>, field: "term" | "meaning") {
-    if (!(event.ctrlKey || event.metaKey) || event.key.toLowerCase() !== "i") return;
-    event.preventDefault();
-    const el = event.currentTarget;
-    const next = toggleItalicSelection(el.value, el.selectionStart ?? 0, el.selectionEnd ?? 0);
-    setEditingGlossary((prev) => (prev ? { ...prev, [field]: next.value } : prev));
-    requestAnimationFrame(() => {
-      el.setSelectionRange(next.selectionStart, next.selectionEnd);
-    });
   }
 
   async function deleteSelectedGlossary() {
@@ -2817,36 +2807,27 @@ export default function EditWorkPage() {
           {editingGlossary && (
             <div className="admin-credit-form">
               <div className="admin-form-group">
-                <label>Istilah *</label>
-                <input
-                  type="text"
+                <label id="glossary-term-label">Istilah *</label>
+                <InlineRichField
+                  labelledBy="glossary-term-label"
                   value={editingGlossary.term || ""}
-                  onChange={(e) => setEditingGlossary((prev) => ({
-                    ...prev,
-                    term: e.target.value,
-                  }))}
+                  onChange={(term) => setEditingGlossary((prev) => ({ ...prev, term }))}
                   placeholder="Istilah"
-                  onKeyDown={(e) => italicShortcut(e, "term")}
-                  aria-describedby="glossary-italic-hint"
                 />
               </div>
 
               <div className="admin-form-group">
-                <label>Maksud *</label>
-                <textarea
-                  value={editingGlossary.meaning || ""}
-                  onChange={(e) => setEditingGlossary((prev) => ({
-                    ...prev,
-                    meaning: e.target.value,
-                  }))}
+                <label id="glossary-meaning-label">Maksud *</label>
+                <InlineRichField
+                  labelledBy="glossary-meaning-label"
+                  multiline
                   rows={5}
-                  className="admin-textarea"
+                  value={editingGlossary.meaning || ""}
+                  onChange={(meaning) => setEditingGlossary((prev) => ({ ...prev, meaning }))}
                   placeholder="Maksud istilah"
-                  onKeyDown={(e) => italicShortcut(e, "meaning")}
-                  aria-describedby="glossary-italic-hint"
                 />
                 <span id="glossary-italic-hint" className="admin-form-hint">
-                  Untuk mencondongkan perkataan (cth. perkataan asing): pilih teks dan tekan Ctrl+I, atau tulis *teks*. Tiada yang dicondongkan secara automatik.
+                  Untuk mencondongkan perkataan (cth. perkataan asing): pilih teks dan tekan Ctrl+I. Tiada yang dicondongkan secara automatik.
                 </span>
               </div>
 
@@ -3052,21 +3033,19 @@ export default function EditWorkPage() {
                     <tr key={index}>
                       <td><input type="checkbox" aria-label={`Pilih watak ${(character.name ?? "").trim() || index + 1}`} checked={selectedCharacters.includes(index)} onChange={(event) => setSelectedCharacters((prev) => event.target.checked ? [...prev, index] : prev.filter((item) => item !== index))} /></td>
                       <td>
-                        <input
-                          type="text"
+                        <InlineRichField
                           value={character.name}
-                          onChange={(e) => updateCharacterRow(index, { name: e.target.value })}
+                          onChange={(name) => updateCharacterRow(index, { name })}
                           placeholder="Nama watak"
-                          aria-label={`Nama watak ${index + 1}`}
+                          ariaLabel={`Nama watak ${index + 1}`}
                         />
                       </td>
                       <td>
-                        <input
-                          type="text"
+                        <InlineRichField
                           value={character.role}
-                          onChange={(e) => updateCharacterRow(index, { role: e.target.value })}
+                          onChange={(role) => updateCharacterRow(index, { role })}
                           placeholder="Contoh: Watak utama"
-                          aria-label={`Peranan watak ${index + 1}`}
+                          ariaLabel={`Peranan watak ${index + 1}`}
                         />
                       </td>
                       {form.type === "novela" && (
