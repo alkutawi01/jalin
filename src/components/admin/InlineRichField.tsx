@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, type KeyboardEvent } from "react";
 import { fieldValueFromNodes, inlineHtml, type InlineNode } from "../../lib/admin/inline-format";
+import { dashInSelection, quotesInBlock } from "../../lib/admin/auto-dash";
 
 /**
  * A short text the reader sees with italic or bold in it (a side note, a glossary meaning, a character's role, a place, the card note).
@@ -22,6 +23,7 @@ export default function InlineRichField({
   className = "",
   disabled = false,
   autoFocus = false,
+  typography = false,
   onKeyDown
 }: {
   value: string;
@@ -36,6 +38,8 @@ export default function InlineRichField({
   className?: string;
   disabled?: boolean;
   autoFocus?: boolean;
+  /** For text that is read as prose: two hyphens become a dash and straight quotes the house style, as the manuscript does. */
+  typography?: boolean;
   onKeyDown?: (event: KeyboardEvent<HTMLDivElement>) => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -63,6 +67,10 @@ export default function InlineRichField({
   function handleInput() {
     const el = ref.current;
     if (!el) return;
+    if (typography) {
+      dashInSelection();
+      quotesInBlock(el);
+    }
     const next = read();
     if (maxLength !== undefined && next.length > maxLength) {
       // Over the limit: put back what was there (the browser cannot be told to refuse a character it has already taken).
