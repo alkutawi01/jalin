@@ -2227,7 +2227,7 @@ export default function EditWorkPage() {
           </div>
 
           <div className="admin-form-group">
-            <label htmlFor="editorNote">Catatan editor</label>
+            <label htmlFor="editorNote">Catatan</label>
             <textarea
               id="editorNote"
               className="admin-textarea"
@@ -2238,7 +2238,7 @@ export default function EditWorkPage() {
               placeholder="Cerita asal usul karya ini, apa yang menarik tentangnya, atau apa-apa yang editor mahu kongsi dengan pembaca."
             />
             <span className="admin-form-hint">
-              Dipaparkan kepada pembaca di hujung karya, bawah tajuk &quot;Catatan Editor&quot;. Bebas ditulis; baris kosong memulakan perenggan baharu. Biarkan kosong jika tiada catatan. Karya terbit hanya menunjukkan catatan baharu selepas diterbitkan semula.{" "}
+              Dipaparkan kepada pembaca di hujung karya, bawah tajuk &quot;Catatan&quot;. Bebas ditulis; baris kosong memulakan perenggan baharu. Biarkan kosong jika tiada catatan. Karya terbit hanya menunjukkan catatan baharu selepas diterbitkan semula.{" "}
               <span aria-live="polite">{form.editorNote.length.toLocaleString("en-US")} daripada {EDITOR_NOTE_MAX.toLocaleString("en-US")} aksara.</span>
             </span>
           </div>

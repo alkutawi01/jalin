@@ -7,7 +7,7 @@ export const READER_NOTE_MAX = 600;
 export const EDITOR_NOTE_MAX = 5000;
 
 export const READER_NOTE_LABEL = "Nota pada kad 'Tentang karya'";
-export const EDITOR_NOTE_LABEL = "Catatan editor";
+export const EDITOR_NOTE_LABEL = "Catatan";
 
 const COUNT = new Intl.NumberFormat("en-US");
 

@@ -18,7 +18,7 @@ ok(assertNoteFits(READER_NOTE_LABEL, "a".repeat(600), READER_NOTE_MAX).length ==
 ok(assertNoteFits(READER_NOTE_LABEL, "", READER_NOTE_MAX) === "", "an empty note is accepted");
 ok(throwsWith(() => assertNoteFits(READER_NOTE_LABEL, "a".repeat(601), READER_NOTE_MAX), "601 aksara; maksimum 600"), "one character over is refused and says how long it is");
 ok(throwsWith(() => assertNoteFits(READER_NOTE_LABEL, "a".repeat(1034), READER_NOTE_MAX), "1,034 aksara"), "the length is written with a thousands separator");
-ok(throwsWith(() => assertNoteFits(EDITOR_NOTE_LABEL, "a".repeat(5001), EDITOR_NOTE_MAX), "Catatan editor terlalu panjang"), "the editor's note names itself in the message");
+ok(throwsWith(() => assertNoteFits(EDITOR_NOTE_LABEL, "a".repeat(5001), EDITOR_NOTE_MAX), "Catatan terlalu panjang"), "the editor's note names itself in the message");
 ok(throwsWith(() => assertNoteFits(READER_NOTE_LABEL, "a".repeat(700), READER_NOTE_MAX), "tiada perubahan disimpan"), "a pasted answer is told nothing was saved");
 ok(noteTooLongMessage("X", 10, 5) === "X terlalu panjang (10 aksara; maksimum 5).", "the form's message has the same shape");
 

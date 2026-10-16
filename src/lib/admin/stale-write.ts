@@ -11,7 +11,7 @@ export type GuardedField = (typeof GUARDED_FIELDS)[number];
 
 export const GUARDED_LABELS: Record<GuardedField, string> = {
   title: "tajuk", slug: "alamat pautan", body: "teks", dek: "ringkasan", genre: "genre", audience: "audiens",
-  readingMinutes: "minit bacaan", editorNote: "catatan editor", readerNote: "nota pembaca", origin: "asal karya",
+  readingMinutes: "minit bacaan", editorNote: "catatan", readerNote: "nota pembaca", origin: "asal karya",
 };
 
 /** The stored work as the form shows it (every guarded field as text), for comparing with what the form loaded and sends. */

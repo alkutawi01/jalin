@@ -62,7 +62,7 @@ export const COLLAPSE_MINUTES = 10;
 
 const FIELD_LABELS: Record<string, string> = {
   title: "tajuk", slug: "alamat pautan", status: "status", body: "teks", genre: "genre", audience: "audiens", dek: "dek",
-  readingMinutes: "minit bacaan", publishedAt: "tarikh terbit", editorNote: "nota editor", readerNote: "nota pembaca", origin: "asal"
+  readingMinutes: "minit bacaan", publishedAt: "tarikh terbit", editorNote: "catatan", readerNote: "nota pembaca", origin: "asal"
 };
 
 /** "Anak Qasab: tajuk, dek" (the fields the save carried; a save with none says so). */

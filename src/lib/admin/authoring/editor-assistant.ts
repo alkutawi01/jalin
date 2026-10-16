@@ -12,7 +12,7 @@ export const EDITOR_SCOPE_NAMES: Record<EditorScope, string> = { all: "semua tab
 export interface EditorContext { type: string; title: string; body: string; dek?: string; genre?: string; chapters?: unknown[]; credits?: unknown[]; contributors?: unknown[]; source?: unknown; characters?: unknown[]; glossary?: unknown[] }
 const LABELLED_FORMATS: Record<Exclude<EditorScope, "all">, string> = {
   content: `[KARYA]\nTajuk: (tajuk)\nSlug: (alamat-pautan)\nBlurb: (blurb ringkas)\n\n[KANDUNGAN]\n(teks penuh karya, bukan ulasan atau nasihat)`,
-  metadata: `[MAKLUMAT]\nGenre: (genre)\nCatatan editor: (jika berkenaan)\nNota pembaca: (jika berkenaan)`,
+  metadata: `[MAKLUMAT]\nGenre: (genre)\nCatatan: (jika berkenaan)\nNota pembaca: (jika berkenaan)`,
   characters: `[WATAK]\nNama: (nama watak sebenar)\nPeranan: (2–6 patah perkataan)\nMuncul di: (slug bab jika novela)\n____\n\n[LATAR]\nJenis: tempat\nNama: (tempat)\nKeterangan: (ringkas)\n____\nJenis: masa\nNama: (tahun, tempoh atau era; bukan pagi/malam)\nKeterangan: (ringkas)\n____\nJenis: negara\nNama: (SATU negara atau wilayah UTAMA tempat kebanyakan cerita berlaku; bukan semua negara yang disebut)`,
   glossary: `[GLOSARI]\nIstilah: (istilah tepat dalam teks)\nMaksud: (maksud mengikut konteks)\nSebutan: (pilihan)\nBahasa asal: (pilihan)\nEjaan asal: (pilihan)\n____`,
   source: `[SUMBER]\nTajuk asal: (nilai atau tidak dinyatakan)\nPengarang asal: (nilai atau tidak dinyatakan)\nBahasa asal: (nilai atau tidak dinyatakan)\nTahun terbit pertama: (nilai atau tidak dinyatakan)\nPenerbit: (nilai atau tidak dinyatakan)\nTahun edisi: (nilai atau tidak dinyatakan)\nCetakan: (nilai atau tidak dinyatakan)\nPenyunting: (nilai atau tidak dinyatakan)\nPenterjemah: (nilai atau tidak dinyatakan)\nISBN: (nilai atau tidak dinyatakan)\nLokasi petikan: (nilai atau tidak dinyatakan)\nAsas teks: (nilai atau tidak dinyatakan)\nURL sumber: (nilai atau tidak dinyatakan)\nNama edisi: (nilai atau tidak dinyatakan)`,
@@ -44,7 +44,7 @@ ${JSON.stringify(context, null, 2)}`;
 
 /** Recover labelled credits/chapters without treating advice as a manuscript. */
 function labelledEditorFields(answer: string, scope: EditorScope): Record<string, any> {
-  const aliases: Record<string, string> = { "slug penyumbang": "contributorSlug", "nama tetamu": "guestName", "peranan": "roleLabel", "nama di bawah tajuk": "byline", "paparan awam": "isPublic", "slug": "slug", "tajuk": "title", "teks": "body", "kandungan": "body", "catatan editor": "editorNote", "nota pembaca": "readerNote" };
+  const aliases: Record<string, string> = { "slug penyumbang": "contributorSlug", "nama tetamu": "guestName", "peranan": "roleLabel", "nama di bawah tajuk": "byline", "paparan awam": "isPublic", "slug": "slug", "tajuk": "title", "teks": "body", "kandungan": "body", "catatan": "editorNote", "catatan editor": "editorNote", "nota pembaca": "readerNote" };
   const lines = normaliseLabelledLayout(answer, Object.keys(aliases), "KANDUNGAN", false).split("\n");
   const result: Record<string, any> = { credits: [], sections: [], work: {} };
   let group = scope === "credits" ? "credits" : scope === "sections" ? "sections" : "work";
@@ -126,7 +126,7 @@ export function planEditorAnswer(answer: string, scope: EditorScope, state: Edit
     const countries = data.countries.map(text).filter(Boolean).slice(0, 1);
     if (countries.length) add("characters", "countries", "Negara latar", state.work.metadata?.countries, countries);
   }
-  for (const key of ["editorNote", "readerNote"]) add("metadata", key, key === "editorNote" ? "Catatan editor" : "Nota pembaca", key === "readerNote" ? state.work.reader?.note : state.work.metadata?.[key], text(work[key]));
+  for (const key of ["editorNote", "readerNote"]) add("metadata", key, key === "editorNote" ? "Catatan" : "Nota pembaca", key === "readerNote" ? state.work.reader?.note : state.work.metadata?.[key], text(work[key]));
   for (const [key, group] of [["characters", "characters"], ["places", "characters"], ["times", "characters"], ["glossary", "glossary"], ["credits", "credits"], ["sections", "sections"]] as const) {
     if (!owns(group) || !Array.isArray(data[key])) continue;
     if (key === "sections" && state.work.type !== "novela") continue;

@@ -9,6 +9,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { SUGGESTED_ROLES, STANDARD_ROLES, bylineByDefault } from "../src/lib/credit-roles";
+import { planEditorAnswer, type EditorState } from "../src/lib/admin/authoring/editor-assistant";
 
 let passed = 0;
 let failed = 0;
@@ -49,6 +50,18 @@ ok(!panel.includes("Ada perubahan dalam draf yang belum diterbitkan"), "the old 
 ok(panel.includes("Draf berbeza daripada versi terbit") && panel.includes("Terbitkan semula untuk menunjukkan perubahan teks, kredit, gambar atau glosari"), "the publish sentence says what to press and which changes it covers");
 ok(!page.includes("Tiada perubahan tertunggak"), "the save bar no longer says 'perubahan' for 'nothing to save'");
 ok(page.includes("Teks dan maklumat sudah disimpan") && page.includes("Pembaca hanya melihat apa-apa perubahan selepas karya diterbitkan"), "the save bar says it is saved and that readers see changes only after publishing");
+
+// the editor's note is called "Catatan" everywhere (admin, reader, chatbot format); the old label is still read
+ok(src("src/components/reader/StoryChrome.tsx").includes('<h2 id="editor-note-title">Catatan</h2>'), "the reader's heading is 'Catatan'");
+ok(page.includes('<label htmlFor="editorNote">Catatan</label>') && page.includes("bawah tajuk &quot;Catatan&quot;"), "the admin field and its hint say 'Catatan'");
+const assistant = src("src/lib/admin/authoring/editor-assistant.ts");
+ok(assistant.includes("Catatan: (jika berkenaan)") && !assistant.includes("Catatan editor: (jika berkenaan)"), "the chatbot format asks for 'Catatan:'");
+{
+  const state = { work: { type: "cerpen", title: "T", body: "B", metadata: {}, reader: {} }, chapters: [], credits: [], glossary: [], source: null } as unknown as EditorState;
+  const noteOf = (answer: string) => planEditorAnswer(answer, "metadata", state).find((c) => c.key === "editorNote")?.value;
+  ok(noteOf("[MAKLUMAT]\nGenre: Fiksyen\nCatatan: Satu catatan.") === "Satu catatan.", "an answer with 'Catatan:' fills the note");
+  ok(noteOf("[MAKLUMAT]\nGenre: Fiksyen\nCatatan editor: Jawapan lama.") === "Jawapan lama.", "an older answer with 'Catatan editor:' still fills the note");
+}
 
 // Markdown pointer
 ok(page.includes("data-markdown-pointer") && page.includes(":::mesej"), "the Visual mode names what only Markdown mode edits");
