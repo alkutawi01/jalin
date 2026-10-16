@@ -63,6 +63,16 @@ ok(assistant.includes("Catatan: (jika berkenaan)") && !assistant.includes("Catat
   ok(noteOf("[MAKLUMAT]\nGenre: Fiksyen\nCatatan editor: Jawapan lama.") === "Jawapan lama.", "an older answer with 'Catatan editor:' still fills the note");
 }
 
+// the note under the story is set smaller than the story at every size, so it does not read as more story
+{
+  const css = src("src/app/globals.css");
+  const px = (re: RegExp) => Number(re.exec(css)?.[1]);
+  const noteBase = px(/\.editor-note p \{[^}]*?font-size: ([\d.]+)px/);
+  const noteLaptop = px(/@media \(min-width: 1051px\) and \(max-width: 1600px\) \{ \.editor-note p \{ font-size: ([\d.]+)px/);
+  const notePhone = px(/@media \(max-width: 820px\) \{ \.editor-note p \{ font-size: ([\d.]+)px/);
+  ok(noteBase < 21 && noteLaptop < 19 && notePhone < 17.5, `the note (${noteBase}px, ${noteLaptop}px laptop, ${notePhone}px phone) is smaller than the story (21px, 19px, 17.5px)`);
+}
+
 // Markdown pointer
 ok(page.includes("data-markdown-pointer") && page.includes(":::mesej"), "the Visual mode names what only Markdown mode edits");
 ok(page.includes("onClick={openWritingGuide}") && page.includes("ref={writingGuideRef}"), "the pointer opens Markdown mode and the folded guide");
