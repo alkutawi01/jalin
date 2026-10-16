@@ -14,5 +14,6 @@ assert(/<InlineRichField\n\s+id="readerNote"\n\s+labelledBy="readerNote-label"\n
 assert(!/<textarea[^>]*id="(editorNote|readerNote)"/.test(page), "no plain text box is left for them");
 const field = read("src", "components", "admin", "InlineRichField.tsx");
 assert(field.includes("typography?: boolean") && field.includes("dashInSelection();") && field.includes("quotesInBlock(el);"), "two hyphens become a dash and quotes follow the house style, as before");
+assert(/editorNote: value \}\)\); setDirty\(true\)/.test(page) && /readerNote: value \}\)\); setDirty\(true\)/.test(page), "typing in either note marks the form unsaved (contentEditable does not trigger the form onChange)");
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);
