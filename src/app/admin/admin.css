@@ -799,7 +799,9 @@
   .a-shell .admin-table.a-compact-table .admin-table-actions { justify-content: flex-end; flex-wrap: nowrap; }
   /* Only some headings are centred (the tick, the status and the actions); Tajuk and Jenis stay at the left. The values keep their own alignment. */
   .a-shell .admin-table.a-compact-table th:nth-child(1), .a-shell .admin-table.a-compact-table th:nth-child(7), .a-shell .admin-table.a-compact-table th:last-child { text-align: center; }
-  .a-shell .admin-table.a-compact-table .admin-work-blocker { display: none; }
+  .a-shell .admin-table.a-compact-table .admin-work-blocker { display: block; max-width: 230px; margin: 4px 0 0; white-space: normal; text-align: left; font-size: 12px; line-height: 1.35; color: var(--a-warn); }
+  .a-shell .admin-table.a-compact-table td.admin-table-title.a-cell-clip { white-space: normal; text-overflow: clip; }
+  .a-shell .admin-table.a-compact-table td.admin-table-title .a-work-title-link { display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
 }
 @container admin-table (min-width: 561px) and (max-width: 759px) {
   .a-shell .admin-table.a-compact-table td.a-col-minor:nth-child(n+1),

@@ -49,7 +49,7 @@ const panel = src("src/components/admin/WorkStatusPanel.tsx");
 ok(!panel.includes("Ada perubahan dalam draf yang belum diterbitkan"), "the old publish sentence is gone");
 ok(panel.includes("Draf berbeza daripada versi terbit") && panel.includes("Terbitkan semula untuk menunjukkan perubahan teks, kredit, gambar atau glosari"), "the publish sentence says what to press and which changes it covers");
 ok(!page.includes("Tiada perubahan tertunggak"), "the save bar no longer says 'perubahan' for 'nothing to save'");
-ok(page.includes("Teks dan maklumat sudah disimpan") && page.includes("Pembaca hanya melihat apa-apa perubahan selepas karya diterbitkan"), "the save bar says it is saved and that readers see changes only after publishing");
+ok(page.includes("Teks & maklumat: sudah disimpan") && page.includes("Pembaca hanya melihat apa-apa perubahan selepas karya diterbitkan"), "the save bar says it is saved and that readers see changes only after publishing");
 
 // the editor's note is called "Catatan" everywhere (admin, reader, chatbot format); the old label is still read
 ok(src("src/components/reader/StoryChrome.tsx").includes('<h2 id="editor-note-title">Catatan</h2>'), "the reader's heading is 'Catatan'");

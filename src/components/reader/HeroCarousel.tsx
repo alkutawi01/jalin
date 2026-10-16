@@ -81,6 +81,7 @@ export default function HeroCarousel({ slides, ground }: { slides: HeroSlide[]; 
       onBlur={(event) => { if (!rootRef.current?.contains(event.relatedTarget as Node | null)) setFocused(false); }}
     >
       <div className="site-shell">
+        <h1 className="sr-only">Jalin: cerpen, novela dan cerita bersiri berilustrasi</h1>
         <div className="hero-carousel-stack" aria-live={stopped || reduced ? "polite" : "off"}>
           {slides.map((work, i) => {
             const active = i === index;
@@ -96,12 +97,8 @@ export default function HeroCarousel({ slides, ground }: { slides: HeroSlide[]; 
               >
                 <div className="hero-featured-text">
                   <p className="home-eyebrow hero-featured-kicker">{work.kicker}</p>
-                  {/* The page has one h1: the first slide's title. The other slides are h2, so a screen reader's heading list is not three h1s. */}
-                  {i === 0 ? (
-                    <h1 className="hero-featured-title" style={{ fontStyle: "normal" }}>{work.title}</h1>
-                  ) : (
-                    <h2 className="hero-featured-title" style={{ fontStyle: "normal" }}>{work.title}</h2>
-                  )}
+                  {/* The page's one h1 is outside the slides (below); every slide title is an h2, so the page never loses its h1 when a slide is hidden. */}
+                  <h2 className="hero-featured-title" style={{ fontStyle: "normal" }}>{work.title}</h2>
                   {work.attribution ? <p className="work-attribution hero-featured-attribution">{renderAttribution(work.attribution)}</p> : null}
                   {work.dek ? <p className="hero-featured-dek">{spacedDashes(smartQuotes(work.dek))}</p> : null}
                   <div className="home-work-meta home-work-meta--pills">

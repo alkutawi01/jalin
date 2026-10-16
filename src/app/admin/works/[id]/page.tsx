@@ -28,7 +28,7 @@ import { stripImageMarkers } from "../../../../lib/reader/image-markers";
 import { classifyFragmen, isIndonesianLanguage, isMalayLanguage } from "../../../../lib/content/fragmen-kind";
 import { renderItalics } from "../../../../lib/reader/inline-italics";
 import InlineRichField from "../../../../components/admin/InlineRichField";
-import VisualManuscriptEditor, { canEditVisually } from "../../../../components/admin/VisualManuscriptEditor";
+import VisualManuscriptEditor, { canEditVisually, firstUnsupportedLine } from "../../../../components/admin/VisualManuscriptEditor";
 import { danglingEmphasisParagraphs } from "../../../../lib/reader/literal-emphasis";
 import { readingMinutesFor } from "../../../../lib/reader/reading-time";
 import FootnoteInserter from "../../../../components/admin/FootnoteInserter";
@@ -1889,7 +1889,7 @@ export default function EditWorkPage() {
       <div className="a-work-savebar" aria-label="Simpan teks dan maklumat karya">
         <div>
           <strong>Teks &amp; maklumat karya</strong>
-          <span className="a-savebar-note" role="status">{dirty ? "Ada perubahan belum disimpan" : "Teks dan maklumat sudah disimpan"}</span>
+          <span className="a-savebar-note" role="status">{dirty ? "Teks & maklumat: ada perubahan belum disimpan" : "Teks & maklumat: sudah disimpan"}</span>
           <span className="admin-form-hint" style={{ display: "block", margin: 0 }}>
             Teks dan maklumat hanya disimpan apabila anda menekan butang ini. Kredit, gambar, glosari dan watak disimpan serta-merta apabila anda menyimpannya sendiri di tab masing-masing. Pembaca hanya melihat apa-apa perubahan selepas karya diterbitkan.
           </span>
@@ -2077,7 +2077,7 @@ export default function EditWorkPage() {
               <FootnoteInserter onInsert={addFootnote} />
             </>}
             {danglingEmphasisParagraphs(form.body) > 0 && <p className="admin-form-hint" role="status">Ada tanda * condong yang belum berpasangan dalam manuskrip. Semak perenggan berkenaan dalam mod Markdown sebelum menerbitkan.</p>}
-            {manuscriptMode === "markdown" && !canEditVisually(form.body) && <span className="admin-form-hint">Mod Visual masih boleh dibuka sebagai pratonton. Gunakan Markdown untuk menyunting supaya format asal tidak berubah.</span>}
+            {manuscriptMode === "markdown" && !canEditVisually(form.body) && <span className="admin-form-hint">Mod Visual masih boleh dibuka sebagai pratonton. Gunakan Markdown untuk menyunting supaya format asal tidak berubah. Baris yang menghalang: &ldquo;{(firstUnsupportedLine(form.body) ?? "").trim().slice(0, 80)}&rdquo;.</span>}
             <SideNoteList
               body={form.body}
               onChange={(body) => { setForm((prev) => ({ ...prev, body })); setDirty(true); }}
