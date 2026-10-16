@@ -12,8 +12,8 @@ const at = src.indexOf("characters.map((character, index)");
 const block = at >= 0 ? src.slice(at, src.indexOf("</tbody>", at)) : "";
 
 assert(at > 0, "found the character rows");
-assert(block.includes("aria-label={`Nama watak ${index + 1}`}"), "the name field is labelled with its row");
-assert(block.includes("aria-label={`Peranan watak ${index + 1}`}"), "the role field is labelled with its row");
+assert(block.includes("ariaLabel={`Nama watak ${index + 1}`}"), "the name field is labelled with its row");
+assert(block.includes("ariaLabel={`Peranan watak ${index + 1}`}"), "the role field is labelled with its row");
 assert(block.includes("aria-label={`Kemunculan pertama watak ${index + 1}`}"), "the first-appearance field is labelled with its row");
 assert(/aria-label=\{`Padam watak \$\{[^}]*\}`\}/.test(block), "each delete button says whom it deletes");
 console.log(`\n${passed} passed, ${failed} failed`);
