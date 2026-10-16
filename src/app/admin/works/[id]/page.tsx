@@ -16,7 +16,7 @@ import WorkVisualUpload from "../../../../components/admin/WorkVisualUpload";
 import { imageMarkerLabel, imageMarkers, insertImageMarker, isImageMarker } from "../../../../lib/reader/image-markers";
 import CreditRoleSelect from "../../../../components/admin/CreditRoleSelect";
 import AiCreditPicker from "../../../../components/admin/AiCreditPicker";
-import { isDerivativeType, roleDisplay } from "../../../../lib/credit-roles";
+import { bylineByDefault, isDerivativeType, roleDisplay } from "../../../../lib/credit-roles";
 import AudiencePicker from "../../../../components/admin/AudiencePicker";
 import WorkStatusPanel from "../../../../components/admin/WorkStatusPanel";
 import { toast, confirmAction } from "../../../../lib/admin/dialogs";
@@ -40,6 +40,7 @@ import CountryEditor from "../../../../components/admin/CountryEditor";
 import { uploadTooLargeMessage } from "../../../../lib/admin/upload-limit";
 import { errorText } from "../../../../lib/admin/error-text";
 import { sourceFieldLabel } from "../../../../lib/admin/authoring/editor-assistant";
+import { EDITOR_NOTE_MAX, READER_NOTE_MAX } from "../../../../lib/admin/note-limits";
 
 const WORK_TYPES = [
   { value: "cerpen", label: "Cerpen" },
@@ -518,6 +519,23 @@ export default function EditWorkPage() {
   // A credit is either to a human or to an AI (shown under its pseudonym); the form never mixes the two.
   const [creditKind, setCreditKind] = useState<"manusia" | "ai">("manusia");
   const isAiSlug = (slug: string | null | undefined) => contributors.find((c) => c.slug === slug)?.kind === "virtual";
+  // Which AI writes under which pseudonym, so the credits table can say "Rafiq Naim (ChatGPT)": the editor sees who it really is. Admin only; readers see the pseudonym.
+  const [aiBySlug, setAiBySlug] = useState<Record<string, string>>({});
+  useEffect(() => {
+    fetch("/api/admin/ai-personas")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!data || !Array.isArray(data.personas)) return;
+        const map: Record<string, string> = {};
+        for (const persona of data.personas as { ai: string; slug: string | null }[]) if (persona.slug) map[persona.slug] = persona.ai;
+        setAiBySlug(map);
+      })
+      .catch(() => {});
+  }, []);
+  const contributorLabel = (slug: string) => {
+    const name = contributors.find((c) => c.slug === slug)?.display_name || slug;
+    return aiBySlug[slug] ? `${name} (${aiBySlug[slug]})` : name;
+  };
   const [editingCredit, setEditingCredit] = useState<Partial<CreditData> | null>(null);
   const [creditError, setCreditError] = useState<string | null>(null);
 
@@ -1315,6 +1333,15 @@ export default function EditWorkPage() {
   const [creditSaving, setCreditSaving] = useState(false);
   /** Set at once (state updates wait for the next render), so two quick clicks cannot both save. */
   const creditSavingNow = useRef(false);
+  /** True once the editor has ticked or unticked "Nama di bawah tajuk" on the credit being added: the role then stops choosing it. */
+  const bylineTouched = useRef(false);
+  /** The writing guide under the manuscript box. It is folded by default; the pointer under the mode switch opens it. */
+  const writingGuideRef = useRef<HTMLDetailsElement>(null);
+  function openWritingGuide() {
+    setManuscriptMode("markdown");
+    const guide = writingGuideRef.current;
+    if (guide) { guide.open = true; guide.scrollIntoView({ block: "nearest", behavior: "smooth" }); }
+  }
   async function handleSaveCredit() {
     if (!editingCredit || creditSavingNow.current) return;
     creditSavingNow.current = true;
@@ -1862,9 +1889,9 @@ export default function EditWorkPage() {
       <div className="a-work-savebar" aria-label="Simpan teks dan maklumat karya">
         <div>
           <strong>Teks &amp; maklumat karya</strong>
-          <span className="a-savebar-note" role="status">{dirty ? "Ada perubahan belum disimpan" : "Tiada perubahan tertunggak"}</span>
+          <span className="a-savebar-note" role="status">{dirty ? "Ada perubahan belum disimpan" : "Teks dan maklumat sudah disimpan"}</span>
           <span className="admin-form-hint" style={{ display: "block", margin: 0 }}>
-            Teks dan maklumat hanya disimpan apabila anda menekan butang ini. Kredit, gambar, glosari dan watak disimpan serta-merta apabila anda menyimpannya sendiri di tab masing-masing.
+            Teks dan maklumat hanya disimpan apabila anda menekan butang ini. Kredit, gambar, glosari dan watak disimpan serta-merta apabila anda menyimpannya sendiri di tab masing-masing. Pembaca hanya melihat apa-apa perubahan selepas karya diterbitkan.
           </span>
         </div>
         <div className="a-work-savebar-actions">
@@ -2016,6 +2043,12 @@ export default function EditWorkPage() {
               <button type="button" className={manuscriptMode === "visual" ? "is-active" : ""} aria-pressed={manuscriptMode === "visual"} onClick={() => setManuscriptMode("visual")}>Visual</button>
               <button type="button" className={manuscriptMode === "markdown" ? "is-active" : ""} aria-pressed={manuscriptMode === "markdown"} onClick={() => setManuscriptMode("markdown")}>Markdown</button>
             </div>
+            {manuscriptMode === "visual" ? (
+              <span className="admin-form-hint" data-markdown-pointer>
+                Kotak mesej sembang (<code>:::mesej</code>), pemisah adegan, nota kaki dan penanda gambar disunting dalam mod Markdown.{" "}
+                <button type="button" className="admin-btn admin-btn-quiet admin-btn-sm" onClick={openWritingGuide}>Buka Markdown dan panduan</button>
+              </span>
+            ) : null}
             {manuscriptMode === "visual" ? (canEditVisually(form.body) ? <VisualManuscriptEditor
                 value={form.body}
                 onChange={(body) => { setForm((prev) => ({ ...prev, body })); setDirty(true); }}
@@ -2037,7 +2070,10 @@ export default function EditWorkPage() {
                 rows={25}
                 className="admin-textarea"
               />
-              <span className="admin-form-hint">Gunakan Markdown. Ganti baris kosong untuk perenggan baharu.</span>
+              <span className="admin-form-hint">
+                Gunakan Markdown. Ganti baris kosong untuk perenggan baharu. Kotak mesej, pemisah adegan dan penanda gambar ada dalam panduan.{" "}
+                <button type="button" className="admin-btn admin-btn-quiet admin-btn-sm" onClick={openWritingGuide}>Buka panduan</button>
+              </span>
               <FootnoteInserter onInsert={addFootnote} />
             </>}
             {danglingEmphasisParagraphs(form.body) > 0 && <p className="admin-form-hint" role="status">Ada tanda * condong yang belum berpasangan dalam manuskrip. Semak perenggan berkenaan dalam mod Markdown sebelum menerbitkan.</p>}
@@ -2047,7 +2083,7 @@ export default function EditWorkPage() {
               onChange={(body) => { setForm((prev) => ({ ...prev, body })); setDirty(true); }}
               onJump={jumpToFootnote}
             />
-            <details className="admin-advanced-field">
+            <details className="admin-advanced-field" ref={writingGuideRef} id="panduan-penulisan">
               <summary>Panduan penulisan &amp; Markdown</summary>
               <p>Dalam mod Visual, pilih teks dan gunakan butang pemformatan. Mod Markdown memberi kawalan penuh. Kedua-duanya menyimpan manuskrip yang sama.</p>
               <ul>
@@ -2196,13 +2232,14 @@ export default function EditWorkPage() {
               id="editorNote"
               className="admin-textarea"
               rows={8}
-              maxLength={5000}
+              maxLength={EDITOR_NOTE_MAX}
               value={form.editorNote}
               onChange={(e) => dashChange(e, (value) => setForm((prev) => ({ ...prev, editorNote: value })))}
               placeholder="Cerita asal usul karya ini, apa yang menarik tentangnya, atau apa-apa yang editor mahu kongsi dengan pembaca."
             />
             <span className="admin-form-hint">
-              Dipaparkan kepada pembaca di hujung karya, bawah tajuk &quot;Catatan Editor&quot;. Bebas ditulis; baris kosong memulakan perenggan baharu. Biarkan kosong jika tiada catatan. Karya terbit hanya menunjukkan catatan baharu selepas diterbitkan semula.
+              Dipaparkan kepada pembaca di hujung karya, bawah tajuk &quot;Catatan Editor&quot;. Bebas ditulis; baris kosong memulakan perenggan baharu. Biarkan kosong jika tiada catatan. Karya terbit hanya menunjukkan catatan baharu selepas diterbitkan semula.{" "}
+              <span aria-live="polite">{form.editorNote.length.toLocaleString("en-US")} daripada {EDITOR_NOTE_MAX.toLocaleString("en-US")} aksara.</span>
             </span>
           </div>
           <div className="admin-form-group">
@@ -2211,13 +2248,14 @@ export default function EditWorkPage() {
               id="readerNote"
               className="admin-textarea"
               rows={3}
-              maxLength={600}
+              maxLength={READER_NOTE_MAX}
               value={form.readerNote}
               onChange={(e) => dashChange(e, (value) => setForm((prev) => ({ ...prev, readerNote: value })))}
               placeholder="Satu atau dua ayat pendek di bawah jadual Jenis, Genre, Bacaan dan Versi."
             />
             <span className="admin-form-hint">
-              Dipaparkan kepada pembaca di kad &quot;Tentang karya&quot; di tepi karya. Biarkan kosong jika tiada nota. Karya terbit hanya menunjukkan nota baharu selepas diterbitkan semula.
+              Dipaparkan kepada pembaca di kad &quot;Tentang karya&quot; di tepi karya. Biarkan kosong jika tiada nota. Karya terbit hanya menunjukkan nota baharu selepas diterbitkan semula.{" "}
+              <span aria-live="polite">{form.readerNote.length.toLocaleString("en-US")} daripada {READER_NOTE_MAX.toLocaleString("en-US")} aksara.</span>
             </span>
           </div>
           <p className="admin-form-hint">
@@ -2406,6 +2444,7 @@ export default function EditWorkPage() {
               className="admin-btn admin-btn-sm admin-btn-primary"
               onClick={() => {
                 setCreditKind("manusia");
+                bylineTouched.current = false;
                 setEditingCredit({
                   contributor_slug: "",
                   guest_name: "",
@@ -2496,6 +2535,8 @@ export default function EditWorkPage() {
                     onChange={(role) => setEditingCredit((prev) => ({
                       ...prev,
                       role_label: role,
+                      // A new credit for the people who wrote the text starts with the name under the title ticked, unless the editor has already chosen.
+                      byline: prev?.id || bylineTouched.current || isDerivativeType(form.type) ? prev?.byline : bylineByDefault(role),
                     }))}
                   />
                 </div>
@@ -2508,10 +2549,13 @@ export default function EditWorkPage() {
                         <input
                           type="checkbox"
                           checked={editingCredit.byline || false}
-                          onChange={(e) => setEditingCredit((prev) => ({
-                            ...prev,
-                            byline: e.target.checked,
-                          }))}
+                          onChange={(e) => {
+                            bylineTouched.current = true;
+                            setEditingCredit((prev) => ({
+                              ...prev,
+                              byline: e.target.checked,
+                            }));
+                          }}
                         />
                         Nama di bawah tajuk
                       </label>
@@ -2578,7 +2622,7 @@ export default function EditWorkPage() {
                     <tr key={credit.id}>
                       <td>
                         {credit.contributor_slug
-                          ? contributors.find((c) => c.slug === credit.contributor_slug)?.display_name || credit.contributor_slug
+                          ? contributorLabel(credit.contributor_slug)
                           : credit.guest_name || "—"}
                       </td>
                       <td>{isAiSlug(credit.contributor_slug) ? "AI" : "Manusia"}</td>
@@ -2591,7 +2635,7 @@ export default function EditWorkPage() {
                               checked={credit.byline}
                               disabled={creditToggleBusy === credit.id}
                               onChange={(e) => void toggleCreditFlag(credit, "byline", e.target.checked)}
-                              aria-label={`Papar nama ${credit.contributor_slug ? contributors.find((c) => c.slug === credit.contributor_slug)?.display_name || credit.contributor_slug : credit.guest_name || "ini"} di bawah tajuk`}
+                              aria-label={`Papar nama ${credit.contributor_slug ? contributorLabel(credit.contributor_slug) : credit.guest_name || "ini"} di bawah tajuk`}
                             />
                             <span>{credit.byline ? "Ya" : "Tidak"}</span>
                           </label>

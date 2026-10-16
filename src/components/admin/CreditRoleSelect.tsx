@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { STANDARD_ROLES, canonicalRole, normaliseCustomRole } from "../../lib/credit-roles";
+import { STANDARD_ROLES, SUGGESTED_ROLES, canonicalRole, normaliseCustomRole } from "../../lib/credit-roles";
 
 const NEW_ROLE = "__new__";
 
@@ -35,7 +35,9 @@ export default function CreditRoleSelect({
       .catch(() => setCustom([]));
   }, []);
 
-  const known = new Set([...STANDARD_ROLES.map((role) => role.value), ...custom]);
+  // Suggested roles are always listed, once, after the roles editors added earlier.
+  const listed = [...custom, ...SUGGESTED_ROLES.filter((role) => !custom.includes(role))];
+  const known = new Set([...STANDARD_ROLES.map((role) => role.value), ...listed]);
   // A role on this credit that is not in the list yet (e.g. just typed) is still selectable.
   const extra = value && !known.has(value) ? [value] : [];
 
@@ -60,7 +62,7 @@ export default function CreditRoleSelect({
             {role.label}
           </option>
         ))}
-        {[...custom, ...extra].map((role) => (
+        {[...listed, ...extra].map((role) => (
           <option key={role} value={role}>
             {role}
           </option>

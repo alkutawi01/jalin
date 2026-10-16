@@ -24,6 +24,16 @@ eq(smartQuotes('Dia "Hai"'), "Dia “Hai”", "typing the closing mark closes it
 eq(smartQuotes('x"y'), 'x"y', "a mark between letters is ambiguous and left alone");
 eq(smartQuotes('" "'), '" "', "a mark with spaces on both sides is left alone");
 
+// speech that trails off from its first word opens with an ellipsis: the pair must convert together, never half
+eq(smartQuotes('"...abang mana?"'), "“...abang mana?”", "an opening ellipsis opens the quotation (both marks convert)");
+eq(smartQuotes('"…Hai," katanya.'), "“…Hai,” katanya.", "an opening ellipsis character opens the quotation");
+eq(smartQuotes('Dia kata "...tidak mahu".'), "Dia kata “...tidak mahu”.", "an opening ellipsis inside a sentence");
+eq(smartQuotes('"...abang mana?"\n\n"Jangan."'), "“...abang mana?”\n\n“Jangan.”", "an opening ellipsis, then a normal paragraph");
+eq(smartQuotes('Dia "..'), 'Dia "..', "two dots typed so far: left until it is clearly an ellipsis");
+eq(smartQuotes('Dia "...'), "Dia “...", "three dots typed: opens");
+eq(smartQuotes("Dia kata '...' sahaja."), "Dia kata '...' sahaja.", "single marks outside a double quotation are still left alone");
+eq(smartQuotes('"Dia berkata, \'...pergi!\' lalu keluar."'), "“Dia berkata, ‘...pergi!’ lalu keluar.”", "an inner single quotation may open with an ellipsis");
+
 // never touched
 eq(smartQuotes("“Sudah” ‘ini’"), "“Sudah” ‘ini’", "already curly text is unchanged");
 eq(smartQuotes('Lihat [[gambar:"1"]] dan "ok"'), 'Lihat [[gambar:"1"]] dan “ok”', "image markers are not prose");

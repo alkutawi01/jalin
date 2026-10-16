@@ -15,6 +15,22 @@ export const STANDARD_ROLES: { value: string; label: string }[] = [
   { value: "author", label: "Pengarang asal" }
 ];
 
+/**
+ * Roles always offered besides the standard ones and those editors added earlier, so a common role need not be typed as a
+ * "+ Peranan baharu" the first time. Stored as its own text, like any role an editor adds; the reader shows it as written.
+ */
+export const SUGGESTED_ROLES: string[] = ["Pembantu"];
+
+/**
+ * Whether "Nama di bawah tajuk" starts ticked for this role. The people who wrote the text are named under the title; a helper,
+ * editor or fact-checker is credited at the end of the work only (AGENTS.md rule 23), so those start unticked. An editor can still
+ * change the tick either way; this is only the starting value, and it never overrides a tick the editor has already set.
+ */
+export function bylineByDefault(role: string | null | undefined): boolean {
+  const canonical = canonicalRole(String(role ?? ""));
+  return canonical === "initial_draft" || canonical === "story_editor";
+}
+
 /** Older credits stored "co_writer" or the text "Penulis bersama"; both now mean plain "Penulis". */
 export function canonicalRole(value: string): string {
   const text = (value ?? "").trim();
