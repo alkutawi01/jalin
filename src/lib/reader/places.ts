@@ -3,6 +3,7 @@
  * Only those two fields are passed on, whatever else the stored metadata holds.
  */
 import { capitaliseFirst } from "../capitalise-first";
+import { stripSeparatorMarks } from "../separator-marks";
 import type { PlaceMeta } from "../../components/reader/types";
 
 export function publicPlaces(metadata: { places?: unknown } | null | undefined): PlaceMeta[] {
@@ -11,9 +12,9 @@ export function publicPlaces(metadata: { places?: unknown } | null | undefined):
   const places: PlaceMeta[] = [];
   for (const entry of list) {
     const row = (entry ?? {}) as { name?: unknown; description?: unknown };
-    const name = typeof row.name === "string" ? row.name.trim() : "";
+    const name = typeof row.name === "string" ? stripSeparatorMarks(row.name) : "";
     if (!name) continue;
-    const description = typeof row.description === "string" ? row.description.trim() : "";
+    const description = typeof row.description === "string" ? stripSeparatorMarks(row.description) : "";
     places.push(description ? { name, description: capitaliseFirst(description) } : { name });
   }
   return places;

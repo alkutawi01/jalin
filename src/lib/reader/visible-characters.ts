@@ -1,11 +1,11 @@
 import type { CharacterMeta } from "../content/types";
+import { stripSeparatorMarks } from "../separator-marks";
 
 /** Layout separators belong to the chatbot answer, never to public character metadata. */
 export function publicCharacterText(value: unknown): string {
   if (typeof value !== "string") return "";
-  return value
-    .replace(/[\u200B-\u200F\u202A-\u202E\u2060\uFEFF]/g, "")
-    .split(/(?:_{3,}|={3,}|-{3,}|(?:\\\s*){2,})/, 1)[0]!
+  return stripSeparatorMarks(value.replace(/[\u200B-\u200F\u202A-\u202E\u2060\uFEFF]/g, ""))
+    .split(/(?:(?:\\\s*){2,})/, 1)[0]!
     .trim();
 }
 

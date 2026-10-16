@@ -14,6 +14,7 @@
  * or "Korea Selatan" for a story set in Manchester or in the Joseon period.
  */
 
+import { stripSeparatorMarks } from "../separator-marks";
 export const COUNTRIES: Record<string, string> = {
   MY: "Malaysia",
   ID: "Indonesia",
@@ -102,9 +103,9 @@ export const MAX_COUNTRIES = 1;
 
 /** Remove escaped chatbot layout separators before a country reaches the form or database. */
 export function cleanCountryText(raw: string): string {
-  return raw
-    .replace(/[\u200B-\u200F\u202A-\u202E\u2060\uFEFF]/g, "")
-    .split(/(?:_{3,}|={3,}|-{3,}|(?:\\\s*){2,})/, 1)[0]!
+  return stripSeparatorMarks(raw
+    .replace(/[\u200B-\u200F\u202A-\u202E\u2060\uFEFF]/g, ""))
+    .split(/(?:(?:\\\s*){2,})/, 1)[0]!
     .replace(/\s*\\+\s*/g, " ")
     .replace(/\s*[-–—]\s*/g, "-")
     .replace(/-{2,}/g, "-")

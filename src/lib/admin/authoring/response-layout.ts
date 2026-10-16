@@ -1,5 +1,8 @@
 /** Recover layout mistakes only. Unknown labels/values are never guessed. Story prose is untouched. */
+import { unescapeSeparatorRuns } from "../../separator-marks";
 export function normaliseLabelledLayout(answer: string, labels: string[], proseSection = "KANDUNGAN", acceptStructured = true): string {
+  // A chat window copies a row of underscores out as \_\_\_\_ ; that is the separator, not text.
+  answer = unescapeSeparatorRuns(answer);
   if (acceptStructured) answer = structuredAnswer(answer, labels);
   const canonical = new Map(labels.map(label => [label.toLocaleLowerCase().replace(/[_\s-]+/g, " ").trim(), label]));
   const known = (value: string) => canonical.get(value.replace(/\*\*|__|`/g, "").replace(/^[#>*•\s-]+/, "").trim().toLocaleLowerCase().replace(/[_\s-]+/g, " "));
