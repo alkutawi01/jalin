@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { errorText } from "../../lib/admin/error-text";
+import InlineRichField from "./InlineRichField";
 
 interface Place {
   name: string;
@@ -130,23 +131,21 @@ export default function PlacesEditor({ workId, kind = "places" }: { workId: stri
                 <tr key={index}>
                   <td><input type="checkbox" aria-label={`Pilih ${cfg.noun} ${place.name || index + 1}`} checked={selected.includes(index)} onChange={(event) => setSelected((prev) => event.target.checked ? [...prev, index] : prev.filter((item) => item !== index))} /></td>
                   <td>
-                    <input
-                      type="text"
+                    <InlineRichField
                       value={place.name}
                       maxLength={NAME_MAX}
-                      aria-label={`${cfg.nameLabel} ${index + 1}`}
+                      ariaLabel={`${cfg.nameLabel} ${index + 1}`}
                       placeholder={cfg.namePlaceholder}
-                      onChange={(e) => setPlaces(places.map((p, i) => (i === index ? { ...p, name: e.target.value } : p)))}
+                      onChange={(name) => setPlaces(places.map((p, i) => (i === index ? { ...p, name } : p)))}
                     />
                   </td>
                   <td>
-                    <input
-                      type="text"
+                    <InlineRichField
                       value={place.description ?? ""}
                       maxLength={DESCRIPTION_MAX}
-                      aria-label={`Keterangan ${cfg.noun} ${index + 1}`}
+                      ariaLabel={`Keterangan ${cfg.noun} ${index + 1}`}
                       placeholder={cfg.descriptionPlaceholder}
-                      onChange={(e) => setPlaces(places.map((p, i) => (i === index ? { ...p, description: e.target.value } : p)))}
+                      onChange={(description) => setPlaces(places.map((p, i) => (i === index ? { ...p, description } : p)))}
                     />
                   </td>
                   <td>
