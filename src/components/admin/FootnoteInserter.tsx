@@ -2,6 +2,7 @@
 
 import { useId, useState } from "react";
 import { cleanFootnoteText } from "../../lib/admin/footnote-insert";
+import InlineRichField from "./InlineRichField";
 
 /**
  * The box for a side note: the editor types the note's words, and the manuscript editor puts the number at the cursor and the note at the
@@ -44,8 +45,8 @@ export default function FootnoteInserter({
   }
   return (
     <div className="a-footnote-inserter a-footnote-panel" role="group" aria-label="Sisip nota sisi" onKeyDown={(e) => e.key === "Escape" && close()}>
-      <label htmlFor={id}>Isi nota sisi</label>
-      <textarea id={id} className="admin-textarea" rows={3} maxLength={600} autoFocus value={text} onChange={(e) => setText(e.target.value)} placeholder="cth. Pasar malam itu ditutup pada tahun 2019." />
+      <span id={`${id}-label`} className="a-field-label">Isi nota sisi</span>
+      <InlineRichField id={id} labelledBy={`${id}-label`} multiline rows={3} maxLength={600} autoFocus value={text} onChange={setText} placeholder="cth. Pasar malam itu ditutup pada tahun 2019." />
       <span className="admin-form-hint">Nombor nota diletakkan di tempat kursor tadi; pembaca melihat nota ini di sisi teks.</span>
       <div className="admin-form-actions">
         <button

@@ -3,6 +3,7 @@
 import { useId, useMemo, useState } from "react";
 import { confirmAction, toast } from "../../lib/admin/dialogs";
 import { footnoteOverview, removeFootnote, setFootnoteText } from "../../lib/admin/footnote-edit";
+import InlineRichField from "./InlineRichField";
 
 /**
  * Every side note of the manuscript in one place, in the order (and with the numbers) a reader sees: read it, rewrite it, jump to where
@@ -143,16 +144,17 @@ function NoteRow({
   return (
     <li className="a-note-item">
       <div className="a-note-head">
-        <label className="a-note-number" htmlFor={id}>{heading}</label>
+        <span className="a-note-number" id={`${id}-label`}>{heading}</span>
         {context ? <span className="a-note-context">selepas “{context}”</span> : null}
       </div>
-      <textarea
+      <InlineRichField
         id={id}
-        className="admin-textarea"
+        labelledBy={`${id}-label`}
+        multiline
         rows={2}
         maxLength={600}
         value={draft}
-        onChange={(e) => setDraft(e.target.value)}
+        onChange={setDraft}
         onKeyDown={(e) => {
           if (e.key === "Enter" && (e.ctrlKey || e.metaKey) && changed && !empty) {
             e.preventDefault();

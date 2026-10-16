@@ -10,6 +10,7 @@ import { cleanFootnoteText, nextFootnoteLabel } from "../../lib/admin/footnote-i
 import { splitFootnotes } from "../../lib/admin/footnote-edit";
 import { buildNoteContext, joinProseAndNotes, noteChipHtml, noteWithText, notesToWrite, withNoteChips, type NoteContext } from "../../lib/admin/visual-notes";
 import FootnoteInserter from "./FootnoteInserter";
+import { escapeHtml, unescapeLiteral, inlineHtml, inlineMarkdown } from "../../lib/admin/inline-format";
 
 const MARKER = /^\[\[gambar:[1-9]\d*\]\]$/;
 
@@ -27,25 +28,6 @@ function ToolbarIcon({ name }: { name: ToolbarIconName }) {
     {name === "email" && <><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></>}
     {name === "note" && <><path d="M5 4h14v10l-6 6H5Z"/><path d="M13 20v-6h6"/><path d="M8.5 9h7"/></>}
   </svg>;
-}
-
-function escapeHtml(value: string): string {
-  return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-}
-
-/** The editor writes a literal "*" as "\*" and a literal "\" as "\\"; reading it back undoes that, so a round trip is stable. */
-function unescapeLiteral(value: string): string {
-  return value.replace(/\\([\\*])/g, "$1");
-}
-
-/** The numbers of side notes in the text become chips when `notes` is given (see lib/admin/visual-notes.ts). */
-function inlineHtml(value: string, notes?: NoteContext): string {
-  const text = (part: string) => (notes ? withNoteChips(escapeHtml(unescapeLiteral(part)), notes) : escapeHtml(unescapeLiteral(part)));
-  return value.split(/((?<!\\)\*\*[^*\n]+?(?<!\\)\*\*|(?<!\\)\*[^*\n]+?(?<!\\)\*)/g).map((part) => {
-    if (part.startsWith("**") && part.endsWith("**") && part.length > 4) return `<strong>${text(part.slice(2, -2))}</strong>`;
-    if (part.startsWith("*") && part.endsWith("*") && part.length > 2) return `<em>${text(part.slice(1, -1))}</em>`;
-    return text(part).replace(/\n/g, "<br>");
-  }).join("");
 }
 
 /** Keep unsupported Markdown in the source editor; never silently flatten it. The side notes are kept apart by the editor, so only the text counts. */
@@ -82,19 +64,6 @@ function toHtml(markdown: string, notes?: NoteContext): string {
     if (trimmed.startsWith("## ")) return `<h2>${inlineHtml(trimmed.slice(3), notes)}</h2>`;
     return `<p>${inlineHtml(block, notes)}</p>`;
   }).join("") : `<div class="visual-manuscript-communication visual-manuscript-communication-${segment.kind}" data-communication="${segment.kind}">${inlineHtml(segment.content, notes)}</div>`).join("");
-}
-
-function inlineMarkdown(node: Node): string {
-  if (node.nodeType === Node.TEXT_NODE) return (node.textContent ?? "").replace(/\\/g, "\\\\").replace(/\*/g, "\\*");
-  if (!(node instanceof HTMLElement)) return "";
-  if (node.tagName === "BR") return "\n";
-  // A side note's chip is written back as its number in the text; the note's words are written after the text (see sync).
-  if (node.tagName === "SUP" && node.dataset.note) return `[^${node.dataset.note}]`;
-  const body = [...node.childNodes].map(inlineMarkdown).join("");
-  if (node.tagName === "STRONG" || node.tagName === "B") return `**${body}**`;
-  if (node.tagName === "EM" || node.tagName === "I") return `*${body}*`;
-  if (node.tagName === "DIV" || node.tagName === "P") return `${body}\n`;
-  return body;
 }
 
 /**
