@@ -3,6 +3,7 @@
 :root {
   --ink-rgb: 24 52 60;
   --on-clay: #fff;
+  --x-4b5f64-fg: #4b5f64;
   --on-ink-a: #fffdf8;
   --on-ink-b: #f4ecdf;
   --x-084298-fg: #084298;
@@ -271,4 +272,22 @@
 @media screen {
   html[data-theme="gelap"] .header-wordmark .wordmark-light { display: none; }
   html[data-theme="gelap"] .header-wordmark .wordmark-reversed { display: block; }
+}
+
+/* The page logo on the information pages swaps to the reversed logo in the same way. */
+.info-brand .wordmark-reversed { display: none; }
+@media screen {
+  html[data-theme="gelap"] .info-brand .wordmark-light { display: none; }
+  html[data-theme="gelap"] .info-brand .wordmark-reversed { display: block; }
+}
+
+/* A colour set inline by a component (the chapter list on a novella). */
+@media screen {
+  html[data-theme="gelap"] { --x-4b5f64-fg: #a8b8b5; }
+  html[data-theme="sepia"] { --x-4b5f64-fg: #6b5a42; }
+}
+
+/* The emblem's deep teal blades would vanish on a dark page: they turn ivory (as they do on the teal boot screen); terracotta and peach keep their colours. */
+@media screen {
+  html[data-theme="gelap"] .jalin-emblem .emblem-teal { fill: #eee8dd; }
 }

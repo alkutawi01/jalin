@@ -53,5 +53,8 @@ assert(lightTokens.length > 40 && lightTokens.every((m) => m[2] === "#" + m[1]),
 assert(read("src", "app", "layout.tsx").includes("THEME_INIT_SCRIPT") && read("src", "app", "layout.tsx").includes("suppressHydrationWarning"), "the theme is set before the first paint");
 assert(!/theme === "gelap"|THEMES\[/.test(read("src", "components", "reader", "ReadingTracker.tsx")), "the reading page no longer paints its own theme beside the site's");
 assert(fs.existsSync(path.join(__dirname, "..", "..", "public", "brand", "jalin-wordmark-reversed.svg")), "there is a reversed wordmark for dark grounds");
+assert(read("src", "components", "reader", "InfoPage.tsx").includes("jalin-logo-reversed.svg") && themes.includes(".info-brand .wordmark-reversed"), "the logo on the information pages swaps to the reversed logo in the dark theme");
+assert(read("src", "components", "reader", "JalinEmblem.tsx").includes("emblem-teal") && themes.includes(".jalin-emblem .emblem-teal"), "the emblem's teal blades turn ivory in the dark theme");
+assert(!read("src", "components", "reader", "WorkView.tsx").includes('color: "#4b5f64"'), "no reader component sets a fixed dark text colour inline");
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);
