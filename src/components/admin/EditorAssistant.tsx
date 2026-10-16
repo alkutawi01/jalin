@@ -41,7 +41,7 @@ export default function EditorAssistant({ workId, scope, context, blocked, onApp
     <p className="admin-form-hint">{scope === "all" ? "Isi semua tab yang berkenaan." : `Isi tab ${EDITOR_SCOPE_NAMES[scope]} sahaja.`} Arahan menggunakan format teks berlabel yang mudah dibaca dan boleh diterima walaupun jarak atau pemisah barisnya tidak sempurna.</p>
     <div className="admin-form-actions">
       <button type="button" className="admin-btn admin-btn-outline" disabled={busy} onClick={() => void copy()}>1. Salin arahan</button>
-      <button type="button" className="admin-btn admin-btn-outline" disabled={busy || blocked} onClick={() => void paste()}>2. Tampal jawapan</button>
+      <button type="button" className="admin-btn admin-btn-outline" disabled={busy || blocked} onClick={() => void paste()}>{busy ? "Mengisi…" : "2. Tampal jawapan"}</button>
     </div>
     {manualPaste && <div className="a-assistant-manual">
       <label htmlFor={`${id}-answer`}>Tampal jawapan secara manual</label>

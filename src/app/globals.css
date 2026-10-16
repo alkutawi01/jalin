@@ -2920,7 +2920,7 @@ dd { margin: 0; color: var(--ink); text-align: left; }
   .series-feature-media { aspect-ratio: 2 / 1; }
   .series-feature-overlay { bottom: 26px; padding: 9px 12px 10px 20px; }
   .series-feature-title { font-size: clamp(26px, 4vw, 28px); }
-  .series-feature-overlay .series-feature-meta { font-size: 9px; }
+  .series-feature-overlay .series-feature-meta { font-size: 11px; }
   .series-feature-footer { gap: 4px; padding-block: 0; }
   .series-feature-actions { flex-direction: row; align-items: center; gap: 4px 22px; }
   .series-list-card > a { grid-template-columns: 1fr; gap: 20px; }
