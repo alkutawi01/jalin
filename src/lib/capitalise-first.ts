@@ -3,6 +3,7 @@
  * so the lists look the same everywhere. Only the first LETTER is changed: opening quotes, brackets and the editor's *italic* marks in front
  * of it are skipped, a text that starts with a digit is left alone, and nothing else in the text is touched.
  */
+import { stripSeparatorTail } from "./separator-marks";
 const SKIPPED = /^[\s"'“‘«(\[*_]*/u;
 
 export function capitaliseFirst(text: string | null | undefined): string {
@@ -18,6 +19,6 @@ export function capitaliseFirst(text: string | null | undefined): string {
  * ("Ibu Aminah." becomes "Ibu Aminah"). A text with several sentences keeps its stops.
  */
 export function tidyShort(text: string | null | undefined): string {
-  const value = capitaliseFirst(String(text ?? "").trim());
+  const value = capitaliseFirst(stripSeparatorTail(text));
   return /[.!?…]/.test(value.slice(0, -1)) ? value : value.replace(/\.$/, "").trimEnd();
 }
