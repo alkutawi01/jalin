@@ -689,7 +689,7 @@
 /* "+ Nota sisi" beside the manuscript: a button, which opens a small box for the note's words. */
 .a-shell .a-footnote-inserter { margin: 8px 0; }
 .a-shell .a-footnote-panel { display: grid; gap: 8px; padding: 12px; border: 1px solid var(--a-line); border-radius: var(--a-radius); background: var(--a-surface); }
-.a-shell .a-footnote-panel label { font-weight: 600; font-size: 13px; }
+.a-shell .a-footnote-panel label, .a-shell .a-footnote-panel .a-field-label { font-weight: 600; font-size: 13px; }
 /* Inside the visual editor the row sits between the toolbar and the text, like a second toolbar row. */
 .a-shell .visual-manuscript .a-footnote-inserter { margin: 0; padding: 8px 10px; border-bottom: 1px solid var(--a-line); }
 .a-shell .visual-manuscript .a-footnote-panel { border: 0; background: transparent; }
@@ -928,3 +928,14 @@
 .a-shell .admin-pagination { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; margin: 12px 0; }
 .a-shell .admin-pagination-where { color: var(--a-muted); font-size: 13px; }
 .a-shell .admin-pagination .is-disabled { opacity: 0.45; pointer-events: none; }
+
+/* A short formatted text (InlineRichField): looks like the other fields, but italic and bold are real. */
+.a-shell .admin-rich-field {
+  display: block; width: 100%; min-width: 0; box-sizing: border-box; padding: 8px 12px;
+  border: 1px solid var(--a-line-strong); border-radius: var(--a-radius); background: var(--a-surface); color: var(--a-ink);
+  font-family: var(--a-font); font-size: 14px; line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; cursor: text;
+}
+.a-shell .admin-rich-field:not(.is-multiline) { min-height: 38px !important; line-height: 1.4; white-space: normal; }
+.a-shell .admin-rich-field:focus { outline: none; border-color: var(--a-accent); box-shadow: 0 0 0 3px var(--a-focus); }
+.a-shell .admin-rich-field[data-placeholder]:empty::before { content: attr(data-placeholder); color: var(--a-muted); pointer-events: none; }
+.a-shell .admin-rich-field[aria-disabled="true"] { background: var(--a-bg); cursor: not-allowed; }
