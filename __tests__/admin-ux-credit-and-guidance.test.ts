@@ -75,6 +75,7 @@ ok(assistant.includes("Catatan: (jika berkenaan)") && !assistant.includes("Catat
 
 // Markdown pointer
 ok(page.includes("data-markdown-pointer") && page.includes(":::mesej"), "the Visual mode names what only Markdown mode edits");
+ok(/\.admin-form-hint\[data-markdown-pointer\] \{[^}]*display: flex;[^}]*margin: 8px 0 12px/.test(src("src/app/admin/admin.css")), "the pointer's button has its own line space instead of touching the toolbar below");
 ok(page.includes("onClick={openWritingGuide}") && page.includes("ref={writingGuideRef}"), "the pointer opens Markdown mode and the folded guide");
 
 console.log(`\n${passed} passed, ${failed} failed`);

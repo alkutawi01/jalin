@@ -2045,7 +2045,7 @@ export default function EditWorkPage() {
             </div>
             {manuscriptMode === "visual" ? (
               <span className="admin-form-hint" data-markdown-pointer>
-                Kotak mesej sembang (<code>:::mesej</code>), pemisah adegan, nota kaki dan penanda gambar disunting dalam mod Markdown.{" "}
+                <span>Kotak mesej sembang (<code>:::mesej</code>), pemisah adegan dan penanda gambar disunting dalam mod Markdown.</span>
                 <button type="button" className="admin-btn admin-btn-quiet admin-btn-sm" onClick={openWritingGuide}>Buka Markdown dan panduan</button>
               </span>
             ) : null}

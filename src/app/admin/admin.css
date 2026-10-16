@@ -221,6 +221,8 @@
 .a-shell .admin-page-header-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
 .a-shell .admin-page-header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 .a-shell .admin-form-hint { display: block; font-size: 13px; color: var(--a-muted); margin: 6px 0 0; }
+/* The hint carries a 32px button: as inline content it overflowed its 13px line and touched the toolbar below, so the line wraps as a flex row with its own gap and bottom space. */
+.a-shell .admin-form-hint[data-markdown-pointer] { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin: 8px 0 12px; }
 .a-shell code { font-family: var(--a-mono); font-size: 12px; background: var(--a-sunk); border-radius: var(--a-radius-sm); padding: 1px 5px; }
 .a-shell a { color: var(--a-accent); }
 .a-shell a.a-nav-link, .a-shell a.admin-btn, .a-shell a.a-brand { color: inherit; }
