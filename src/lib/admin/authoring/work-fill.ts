@@ -141,6 +141,9 @@ export interface WorkFillResult {
     translator: string;
     isbn: string;
     locator: string;
+    /** Address of the source (URL sumber) and the name of the edition used (Nama edisi). */
+    url: string;
+    edition: string;
   } | null;
   /** Section names that were present in the answer. */
   sections: string[];
@@ -354,7 +357,9 @@ export function parseWorkFill(answer: string, scope: WorkFillScope = "all"): Wor
         editor: clean(field(src, /penyunting/)),
         translator: clean(field(src, /penterjemah|penerjemah/)),
         isbn: isbnOf(clean(field(src, /isbn/))),
-        locator: clean(field(src, /lokasi petikan|lokasi/))
+        locator: clean(field(src, /lokasi petikan|lokasi/)),
+        url: clean(field(src, /url sumber|pautan sumber|url/)),
+        edition: clean(field(src, /nama edisi/))
       }
     : null;
 

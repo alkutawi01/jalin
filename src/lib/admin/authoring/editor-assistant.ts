@@ -110,7 +110,7 @@ export function planEditorAnswer(answer: string, scope: EditorScope, state: Edit
     const raw = parseLabelledAnswer(/^\s*\[KARYA\]/im.test(answer) ? answer : `[KARYA]\n${answer}`)?.raw ?? {};
     const extra = labelledEditorFields(answer, scope);
     data = { ...extra, work: { title: raw.title, slug: raw.slug, body: raw.content, dek: fill.dek, genre: fill.genre, ...extra.work }, characters: fill.characters.map(c => ({ ...c, firstAppearanceSection: c.first })), places: fill.places, times: fill.times, countries: fill.countries, glossary: parseGlossaryPaste(answer, String(state.work.body ?? ""), []).items };
-    if (fill.source) data.source = { originalTitle: fill.source.title, author: fill.source.author, originalLanguage: fill.source.language, publicationYear: fill.source.firstPublished, publisher: fill.source.publisher, editionYear: fill.source.editionYear, printing: fill.source.printing, editorName: fill.source.editor, translatorName: fill.source.translator, isbn: fill.source.isbn, sourceLocator: fill.source.locator, sourceTextBasis: fill.source.basis };
+    if (fill.source) data.source = { originalTitle: fill.source.title, author: fill.source.author, originalLanguage: fill.source.language, publicationYear: fill.source.firstPublished, publisher: fill.source.publisher, editionYear: fill.source.editionYear, printing: fill.source.printing, editorName: fill.source.editor, translatorName: fill.source.translator, isbn: fill.source.isbn, sourceLocator: fill.source.locator, sourceTextBasis: fill.source.basis, sourceUrl: /^https?:\/\//i.test(fill.source.url) ? fill.source.url : undefined, sourceEdition: fill.source.edition };
   }
   const changes: EditorChange[] = [];
   const owns = (group: EditorScope) => scope === "all" || scope === group;

@@ -44,6 +44,8 @@ const flat = "Anak-anak Kereta Api Slug: anak-anak-kereta-api Blurb: Kehidupan t
   + "[WATAK] Nama: Bobbie Peranan: Anak sulung ____ Nama: Peter Peranan: Adik lelaki "
   + "[SUMBER] Tajuk asal: The Railway Children Pengarang asal: E. Nesbit Bahasa asal: Inggeris Tahun terbit pertama: 1906 Penerbit: tidak dinyatakan";
 
+// A third kind of copy: the paragraphs are glued ("William.Pengalaman") and a section tag follows the last word with no space.
+const glued = "[KARYA] Tajuk: Anak-anak Kereta Api Slug: anak-anak-kereta-api Blurb: Kehidupan tiga beradik berubah apabila bapa mereka tiba-tiba tiada di rumah.[KANDUNGAN]Roberta yang dipanggil Bobbie hidup bahagia.Keluarga itu berpindah ke Three Chimneys.[MAKLUMAT]Genre: Fiksyen kanak-kanak Catatan: Sinopsis novel The Railway Children.[WATAK]Nama: Bobbie Peranan: Anak sulung ____ Nama: Peter Peranan: Adik lelaki[SUMBER]Tajuk asal: The Railway Children Pengarang asal: E. Nesbit Bahasa asal: Inggeris Tahun terbit pertama: 1906 Penerbit: tidak dinyatakan";
 const wrapped = `<escape>${tidy}</escape>`;
 const flatWithHead = flat.replace(/^/, "[KARYA] Tajuk: ");
 
@@ -51,7 +53,7 @@ const state = { work: { type: "sinopsis", title: "Draf tanpa tajuk", slug: "draf
 const bodyOf = (changes: Array<{ id: string; after: string }>) => changes.find((change) => change.id === "content:body")?.after ?? "";
 const field = (changes: Array<{ id: string; after: string }>, id: string) => changes.find((change) => change.id === id)?.after ?? "";
 
-for (const [name, text] of [["tidy", tidy], ["wrapped in <escape>", wrapped], ["flat without the opening tag", flat], ["flat with the opening tag", flatWithHead]] as const) {
+for (const [name, text] of [["tidy", tidy], ["wrapped in <escape>", wrapped], ["flat without the opening tag", flat], ["flat with the opening tag", flatWithHead], ["glued paragraphs", glued]] as const) {
   const changes = planEditorAnswer(text, "all", state as never) as Array<{ id: string; after: string }>;
   assert(field(changes, "content:title") === "Anak-anak Kereta Api", `${name}: the title is only the title (got "${field(changes, "content:title").slice(0, 40)}")`);
   assert(field(changes, "content:slug") === "anak-anak-kereta-api", `${name}: the slug is read`);
@@ -66,6 +68,16 @@ for (const [name, text] of [["tidy", tidy], ["wrapped in <escape>", wrapped], ["
 
 assert(restoreFlatAnswer(tidy, AUTHORING_LABELS) === tidy, "an answer that already has its lines is returned as it came");
 assert(restoreFlatAnswer("Tajuk: Satu\nSlug: satu", AUTHORING_LABELS) === "Tajuk: Satu\nSlug: satu", "a short answer with no section tags is left alone");
+
+// Items separated only by blank lines (glossary, places), a label glued to the full stop before it, and a web address given as a link to itself.
+const mixed = "[KARYA] Tajuk: X Slug: x Blurb: Satu dua.[KANDUNGAN]Satu perenggan.Dua perenggan.[LATAR] Jenis: tempat Nama: Raveloe Keterangan: Desa.\n\nJenis: masa Nama: Akhir abad Keterangan: Era.[GLOSARI] Istilah: candu Maksud: Bahan narkotik.\n\nIstilah: kuari Maksud: Kawasan penggalian batu.\n\nIstilah: doktrinal Maksud: Berkaitan dengan ajaran.Asing: tiada[SUMBER] Tajuk asal: Silas Marner Pengarang asal: George Eliot Bahasa asal: Inggeris Tahun terbit pertama: 1861 URL sumber: [https://www.gutenberg.org/ebooks/550](https://www.gutenberg.org/ebooks/550?utm_source=chatgpt.com) Nama edisi: Project Gutenberg";
+const mixedChanges = planEditorAnswer(mixed, "all", state as never) as Array<{ id: string; after: unknown }>;
+const ids = mixedChanges.map((change) => change.id);
+assert(["glossary:glossary/candu", "glossary:glossary/kuari", "glossary:glossary/doktrinal"].every((id) => ids.includes(id)), "glossary items separated only by blank lines are three items");
+assert(!JSON.stringify(mixedChanges.find((change) => change.id === "glossary:glossary/doktrinal")?.after).includes("Asing"), "the Asing line glued to the last meaning is not part of the meaning");
+assert(mixedChanges.find((change) => change.id === "source:sourceUrl")?.after === "https://www.gutenberg.org/ebooks/550", "a web address given as a link to itself is read as the address, without the tracking tag");
+assert(mixedChanges.find((change) => change.id === "source:sourceEdition")?.after === "Project Gutenberg", "the edition name is read");
+assert(ids.includes("characters:places/Raveloe") && ids.includes("characters:times/Akhir abad"), "places and times separated only by blank lines are read");
 
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);

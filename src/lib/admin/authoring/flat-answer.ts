@@ -18,12 +18,21 @@ export function restoreFlatAnswer(answer: string, labels: string[]): string {
   if (text.split(/\r?\n/).filter((line) => tagLine.test(line)).length >= 2) return answer;
 
   const all = [...new Set([...labels, ...EXTRA_LABELS])].sort((a, b) => b.length - a.length).map(escapeRe);
-  const inlineLabel = new RegExp(`\\s+(?=(?:${all.join("|")})\\s*:)`, "g");
+  const inlineLabel = new RegExp(`(?:\\s+|(?<=[.!?]))(?=(?:${all.join("|")})\\s*:)`, "g");
   const startsWithLabel = new RegExp(`^\\s*(?:${all.join("|")})\\s*:`);
   const lines = (body: string, title: boolean) => {
     const split = body.trim().replace(/\s*_{3,}\s*/g, "\n____\n").replace(inlineLabel, "\n").split("\n").map((line) => line.trim()).filter(Boolean);
     if (title && split.length > 0 && !startsWithLabel.test(split[0]!)) split[0] = `Tajuk: ${split[0]}`;
-    return split;
+    // A list of items (glossary, characters, places) separated only by blank lines loses them here: the label every item starts with, seen
+    // again, starts a new item, so it gets the ____ separator the format asks for.
+    const first = /^([^:]{1,30}):/.exec(split[0] ?? "")?.[1];
+    if (!first) return split;
+    const result: string[] = [];
+    split.forEach((line, index) => {
+      if (index > 0 && line.startsWith(`${first}:`) && result[result.length - 1] !== "____") result.push("____");
+      result.push(line);
+    });
+    return result;
   };
 
   const parts = text.split(tag);
@@ -35,8 +44,15 @@ export function restoreFlatAnswer(answer: string, labels: string[]): string {
     const body = parts[i + 1] ?? "";
     // ChatGPT's Copy button gives plain text with no line breaks at all: a paragraph ends with a full stop and TWO spaces. In the prose that is
     // a paragraph break (one space between sentences is kept).
-    if (name === "KANDUNGAN") out.push(body.trim().replace(/[ \t]{2,}/g, "\n\n"));
+    // Another copy comes out with the paragraphs simply run together: "...dengan William.Pengalaman itu..." (a full stop, then a capital letter with
+    // no space at all, which prose never has). That too is a paragraph break.
+    if (name === "KANDUNGAN") out.push(body.trim().replace(/[ \t]{2,}/g, "\n\n").replace(/([a-zà-ÿ0-9][.!?]["”’]?)(?=[A-ZÀ-Ý“"‘])/g, "$1\n\n"));
     else out.push(...lines(body, name === "KARYA"));
   }
   return out.join("\n");
+}
+
+/** ChatGPT shows a web address as a link to itself with its own tracking tag: "[https://x.org/a](https://x.org/a?utm_source=chatgpt.com)". Only the address is meant. */
+export function collapseLinks(answer: string): string {
+  return answer.replace(/\[(https?:\/\/[^\]\s]+)\]\((https?:\/\/[^)\s]+)\)/g, (_all, shown: string) => shown.replace(/[?&]utm_source=chatgpt\.com$/i, ""));
 }
