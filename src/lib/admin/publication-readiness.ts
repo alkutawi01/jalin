@@ -699,28 +699,12 @@ export function evaluatePublicationReadinessFromData(
       }
 
       const status = String(src.rights_status || "unknown");
-      const reviewed = Boolean(src.reviewed_at && src.reviewed_by);
-      const currentHash = computeMaterialHash(src);
-      const approvedHash = src.approved_material_hash;
-      const stale = reviewed && approvedHash !== null && approvedHash !== currentHash;
 
-      if (!RIGHTS_PASS_STATUSES.has(status)) {
+      // Owner's decision (17 Okt 2026): publishing no longer waits for a rights review ("unknown", "needs_review", a missing review stamp
+      // or a stale approval all pass). Only a status the editor deliberately set to "restricted" or "rejected" still stops it.
+      if (status === "restricted" || status === "rejected") {
         rightsBlockers.push(
-          issue(
-            "rights_not_approved",
-            `Hak sumber masih ${status === "needs_review" ? "perlu semakan" : status === "unknown" ? "belum diketahui" : "belum diluluskan"}. Semak bukti dan sahkan keputusan hak dalam tab Sumber.`
-          )
-        );
-      } else if (!reviewed) {
-        rightsBlockers.push(
-          issue("rights_not_reviewed", "Hak telah diluluskan tetapi siapa yang menyemak dan bila belum direkod (semakan manusia belum dicatat).")
-        );
-      } else if (stale) {
-        rightsBlockers.push(
-          issue(
-            "rights_stale_approval",
-            "Kelulusan hak sudah lapuk: butiran sumber berubah selepas semakan terakhir. Semak dan sahkan semula."
-          )
+          issue("rights_not_approved", `Hak sumber ditandakan "${status === "restricted" ? "terhad" : "ditolak"}" oleh editor, jadi karya ini tidak boleh diterbitkan.`)
         );
       } else if (status === "public_domain") {
         rightsWarnings.push(
