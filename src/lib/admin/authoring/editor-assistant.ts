@@ -5,14 +5,17 @@ import { parseGlossaryPaste, GLOSSARY_RULES } from "./glossary-paste";
 import { isPlaceholder, withoutAssistantSeparators } from "./placeholder";
 import { DEK_RULE } from "./dek-rule";
 import { normaliseLabelledLayout } from "./response-layout";
+import { audienceCodes, audienceValue, bandRangeLabel, DEFAULT_AUDIENCE_BANDS, type AudienceBand } from "../../audience";
 
 export const EDITOR_SCOPES = ["all", "content", "metadata", "characters", "glossary", "source", "credits", "sections"] as const;
 export type EditorScope = typeof EDITOR_SCOPES[number];
 export const EDITOR_SCOPE_NAMES: Record<EditorScope, string> = { all: "semua tab", content: "Kandungan", metadata: "Maklumat", characters: "Watak & latar", glossary: "Glosari", source: "Sumber & Hak", credits: "Kredit", sections: "Bab" };
 export interface EditorContext { type: string; title: string; body: string; dek?: string; genre?: string; chapters?: unknown[]; credits?: unknown[]; contributors?: unknown[]; source?: unknown; characters?: unknown[]; glossary?: unknown[] }
+/** What the chatbot is told about Audiens: only the bands that really suit the work, from Jalin's own list (Tetapan > Audiens). */
+const AUDIENCE_HINT = `satu atau lebih peringkat pembaca yang sesuai dengan isi karya, dipisahkan koma, daripada: ${DEFAULT_AUDIENCE_BANDS.map((b) => `${b.label} ${bandRangeLabel(b)} tahun`).join("; ")}. Tulis nama peringkat sahaja, contoh: Remaja, Belia`;
 const LABELLED_FORMATS: Record<Exclude<EditorScope, "all">, string> = {
   content: `[KARYA]\nTajuk: (tajuk)\nSlug: (alamat-pautan)\nBlurb: (blurb ringkas)\n\n[KANDUNGAN]\n(teks penuh karya, bukan ulasan atau nasihat)`,
-  metadata: `[MAKLUMAT]\nGenre: (genre)\nCatatan: (jika berkenaan)\nNota pembaca: (jika berkenaan)`,
+  metadata: `[MAKLUMAT]\nGenre: (genre)\nAudiens: (${AUDIENCE_HINT})\nCatatan: (jika berkenaan)\nNota pembaca: (jika berkenaan)`,
   characters: `[WATAK]\nNama: (nama watak sebenar)\nPeranan: (2–6 patah perkataan)\nMuncul di: (slug bab jika novela)\n____\n\n[LATAR]\nJenis: tempat\nNama: (tempat)\nKeterangan: (ringkas)\n____\nJenis: masa\nNama: (tahun, tempoh atau era; bukan pagi/malam)\nKeterangan: (ringkas)\n____\nJenis: negara\nNama: (SATU negara atau wilayah UTAMA tempat kebanyakan cerita berlaku; bukan semua negara yang disebut)`,
   glossary: `[GLOSARI]\nIstilah: (istilah tepat dalam teks)\nMaksud: (maksud mengikut konteks)\nSebutan: (pilihan)\nBahasa asal: (pilihan)\nEjaan asal: (pilihan)\n____`,
   source: `[SUMBER]\nTajuk asal: (nilai atau tidak dinyatakan)\nPengarang asal: (nilai atau tidak dinyatakan)\nBahasa asal: (nilai atau tidak dinyatakan)\nTahun terbit pertama: (nilai atau tidak dinyatakan)\nPenerbit: (nilai atau tidak dinyatakan)\nTahun edisi: (nilai atau tidak dinyatakan)\nCetakan: (nilai atau tidak dinyatakan)\nPenyunting: (nilai atau tidak dinyatakan)\nPenterjemah: (nilai atau tidak dinyatakan)\nISBN: (nilai atau tidak dinyatakan)\nLokasi petikan: (nilai atau tidak dinyatakan)\nAsas teks: (nilai atau tidak dinyatakan)\nURL sumber: (nilai atau tidak dinyatakan)\nNama edisi: (nilai atau tidak dinyatakan)`,
@@ -102,7 +105,7 @@ export const sourceFieldLabel = (key: string): string => SOURCE_FIELD_LABELS[key
 
 export const SOURCE_FIELDS: Record<string, string> = { originalTitle: "original_title", author: "author", originalLanguage: "original_language", publicationYear: "publication_year", publisher: "publisher", editionYear: "edition_year", printing: "printing", editorName: "editor_name", translatorName: "translator_name", isbn: "isbn", sourceLocator: "source_locator", sourceTextBasis: "source_text_basis", sourceUrl: "source_url", sourceEdition: "source_edition" };
 
-export function planEditorAnswer(answer: string, scope: EditorScope, state: EditorState): EditorChange[] {
+export function planEditorAnswer(answer: string, scope: EditorScope, state: EditorState, bands: AudienceBand[] = DEFAULT_AUDIENCE_BANDS): EditorChange[] {
   if (looksLikePrompt(answer) || /Jawapan mesti BOLEH MENGISI BORANG/.test(answer)) throw new Error("Ini arahan, bukan jawapan AI.");
   let data: Record<string, any> = {};
   const extracted = extractParserJson(answer);
@@ -111,7 +114,7 @@ export function planEditorAnswer(answer: string, scope: EditorScope, state: Edit
     const fill = parseWorkFill(answer);
     const raw = parseLabelledAnswer(/^\s*\[KARYA\]/im.test(answer) ? answer : `[KARYA]\n${answer}`)?.raw ?? {};
     const extra = labelledEditorFields(answer, scope);
-    data = { ...extra, work: { title: raw.title, slug: raw.slug, body: raw.content, dek: fill.dek, genre: fill.genre, ...extra.work }, characters: fill.characters.map(c => ({ ...c, firstAppearanceSection: c.first })), places: fill.places, times: fill.times, countries: fill.countries, glossary: parseGlossaryPaste(answer, String(state.work.body ?? ""), []).items };
+    data = { ...extra, work: { title: raw.title, slug: raw.slug, body: raw.content, dek: fill.dek, genre: fill.genre, audience: fill.audience, ...extra.work }, characters: fill.characters.map(c => ({ ...c, firstAppearanceSection: c.first })), places: fill.places, times: fill.times, countries: fill.countries, glossary: parseGlossaryPaste(answer, String(state.work.body ?? ""), []).items };
     if (fill.source) data.source = { originalTitle: fill.source.title, author: fill.source.author, originalLanguage: fill.source.language, publicationYear: fill.source.firstPublished, publisher: fill.source.publisher, editionYear: fill.source.editionYear, printing: fill.source.printing, editorName: fill.source.editor, translatorName: fill.source.translator, isbn: fill.source.isbn, sourceLocator: fill.source.locator, sourceTextBasis: fill.source.basis, sourceUrl: /^https?:\/\//i.test(fill.source.url) ? fill.source.url : undefined, sourceEdition: fill.source.edition };
   }
   const changes: EditorChange[] = [];
@@ -124,6 +127,11 @@ export function planEditorAnswer(answer: string, scope: EditorScope, state: Edit
   const work = { ...data, ...record(data.work), ...record(data.metadata) };
   for (const key of ["title", "slug", "body", "dek"] as const) add("content", key, ({ title: "Tajuk", slug: "Alamat pautan", body: "Manuskrip", dek: "Blurb" })[key], state.work[key], text(work[key]));
   add("metadata", "genre", "Genre", state.work.genre, text(work.genre));
+  // Only band names/codes Jalin knows are kept (the stored value is the codes in band order); a guess outside the list changes nothing.
+  // The chatbot may echo the age range after the name ("Remaja 13–17 tahun"): the name alone is what counts; a bare range ("13-17") still works.
+  const audienceText = text(work.audience);
+  const byName = audienceCodes(audienceText.split(/[,;/]+/).map((token) => token.replace(/\s*\d.*$/, "").trim()).join(","), bands);
+  add("metadata", "audience", "Audiens", state.work.audience, audienceValue(byName.length ? byName : audienceCodes(audienceText, bands), bands));
   if (Array.isArray(data.countries)) {
     const countries = data.countries.map(text).filter(Boolean).slice(0, 1);
     if (countries.length) add("characters", "countries", "Negara latar", state.work.metadata?.countries, countries);

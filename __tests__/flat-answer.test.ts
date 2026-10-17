@@ -1,6 +1,6 @@
 /** An AI answer copied with its line breaks lost (everything in one line) is still read into the right fields. */
 import { restoreFlatAnswer } from "../src/lib/admin/authoring/flat-answer";
-import { planEditorAnswer } from "../src/lib/admin/authoring/editor-assistant";
+import { buildEditorPrompt, planEditorAnswer } from "../src/lib/admin/authoring/editor-assistant";
 import { AUTHORING_LABELS } from "../src/lib/admin/authoring/response-layout";
 
 let passed = 0;
@@ -95,6 +95,14 @@ const nothingIds = nothingChanges.map((change) => change.id);
 assert(nothingIds.includes("metadata:genre") && nothingIds.includes("metadata:editorNote"), "the genre and the note that hold real content are read");
 assert(!nothingIds.includes("metadata:readerNote"), "\"Tiada nota tambahan.\" is not a reader note");
 assert(nothingIds.includes("glossary:glossary/*heat stroke*"), "a glossary term the chatbot wrote in italics keeps its marks: that is how Jalin italicises a foreign word (Anak Qasab, Plasmodium)");
+
+// Audiens: the one editor field only the chatbot can suggest. Band names become stored codes in band order; a guess outside the list changes nothing.
+const audienceOf = (text: string) => (planEditorAnswer(text, "metadata", state as never) as Array<{ id: string; after: unknown }>).find((change) => change.id === "metadata:audience")?.after;
+assert(audienceOf("[MAKLUMAT]\nGenre: Drama\nAudiens: Belia, Remaja") === "remaja,belia", "Audiens: band names become the stored codes, in band order");
+assert(audienceOf("[MAKLUMAT]\nGenre: Drama\nAudiens: Dewasa 30+ tahun") === "dewasa", "Audiens: a band written with its age range is still the band");
+assert(audienceOf("[MAKLUMAT]\nGenre: Drama\nAudiens: semua orang") === undefined || audienceOf("[MAKLUMAT]\nGenre: Drama\nAudiens: semua orang") === "", "Audiens: a guess outside Jalin's list changes nothing");
+assert(audienceOf("[MAKLUMAT] Genre: Drama Audiens: Remaja Catatan: x") === undefined, "Audiens equal to the draft's own value (remaja) is not offered as a change");
+assert(buildEditorPrompt("metadata", { type: "sinopsis", title: "T", body: "B" } as never).includes("Audiens: (satu atau lebih peringkat pembaca"), "the metadata prompt asks the chatbot for Audiens, from Jalin's own list");
 
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);

@@ -10,6 +10,7 @@ import { characterProblems } from "../metadata-rules";
 import { assertNoteFits, EDITOR_NOTE_LABEL, EDITOR_NOTE_MAX, READER_NOTE_LABEL, READER_NOTE_MAX } from "../note-limits";
 import { validatePlaceEntries, validateTimeEntries } from "../work-service";
 import { upsertSourceProvenance, type SourceProvenanceInput } from "../source-rights";
+import { loadAudienceBands } from "../../audience-store";
 import { planEditorAnswer, SOURCE_FIELDS, EDITOR_SCOPES, type EditorScope, type EditorState } from "./editor-assistant";
 import { parseGlossaryPaste } from "./glossary-paste";
 import { normaliseCountries, MAX_COUNTRY_LENGTH } from "../../reader/countries";
@@ -69,7 +70,7 @@ export async function processEditorAnswer(id: string, input: EditorAnswerRequest
     await sql`SELECT pg_advisory_xact_lock(hashtext(${"glossary:" + id}))`.execute(trx);
     const state = await stateOf(trx, id);
     const version = createHash("sha256").update(JSON.stringify(state)).digest("hex");
-    const planned = planEditorAnswer(input.text, input.scope, state).filter(c => (c.group !== "source" || (permissions.source && isSourcedWork(state.work.type, state.work.metadata))) && (c.group !== "credits" || permissions.credits) && (c.group !== "glossary" || permissions.glossary));
+    const planned = planEditorAnswer(input.text, input.scope, state, await loadAudienceBands()).filter(c => (c.group !== "source" || (permissions.source && isSourcedWork(state.work.type, state.work.metadata))) && (c.group !== "credits" || permissions.credits) && (c.group !== "glossary" || permissions.glossary));
     const { changes, notes: slugNotes } = await dropTakenSlug(trx, id, planned);
     if (!changes.length) throw new Error(slugNotes[0] ?? "Tiada perubahan medan yang dapat dibaca untuk tab ini. Salin jawapan penuh atau semak formatnya.");
     if (input.action === "preview") return { version, changes, notes: [...slugNotes, "Belum disimpan."] };
