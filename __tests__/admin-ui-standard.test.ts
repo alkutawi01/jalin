@@ -48,6 +48,8 @@ assert(inline <= CEILING.inlineStyles, `inline style objects in admin components
 const standard = fs.readFileSync(path.join(root, "docs/ADMIN_UI_STANDARD.md"), "utf8");
 assert(["Prinsip", "Token", "Komponen", "Angka asas"].every((h) => standard.includes(h)), "the standard document keeps its sections");
 assert(fs.readFileSync(path.join(root, "AGENTS.md"), "utf8").includes("docs/ADMIN_UI_STANDARD.md"), "AGENTS.md points to the standard");
+const addWork = fs.readFileSync(path.join(root, "src/app/admin/works/add/page.tsx"), "utf8");
+assert(addWork.includes("terus mencipta draf kosong yang tersimpan") && addWork.includes("tidak terbit secara automatik") && addWork.includes("Cipta draf {KIND_LABELS[kind]}"), "the add-work choice and buttons explain that selecting a type persists an unpublished draft");
 
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);

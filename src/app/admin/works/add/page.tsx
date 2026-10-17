@@ -58,12 +58,12 @@ export default function AddWorkPage() {
     <div className="admin-form-page">
       <header className="admin-page-header">
         <h1>Tambah karya</h1>
-        <p className="admin-page-sub">Pilih jenis karya untuk membuka editor. Anda boleh menulis sendiri atau mengisi borang dengan bantuan AI dalam editor yang sama. Draf tidak diterbitkan secara automatik.</p>
+        <p className="admin-page-sub">Memilih jenis karya terus mencipta draf kosong yang tersimpan; isi kandungannya dalam editor sebelum dihantar untuk semakan, dan ia tidak terbit secara automatik.</p>
       </header>
       {error && <div className="admin-alert admin-alert-error" role="alert">{error}</div>}
       {!chooseSeries ? <div className="admin-choice-grid">
         {WORK_KINDS.map((kind) => <button key={kind} type="button" className="admin-choice" disabled={busy} onClick={() => void start(kind)}>
-          <strong>{KIND_LABELS[kind]}</strong><span>{KIND_DESCRIPTIONS[kind]}</span>
+          <strong>Cipta draf {KIND_LABELS[kind]}</strong><span>{KIND_DESCRIPTIONS[kind]}</span>
         </button>)}
       </div> : null}
       {chooseSeries ? <div className="admin-form">

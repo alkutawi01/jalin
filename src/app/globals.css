@@ -4052,16 +4052,14 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; color-scheme: lig
 .list-controls { margin: 0 0 8px; }
 /* One grid for the fields and the buttons: each field is a column of at most 240px (it never stretches across the page when there is only
    one or two) and the buttons are the last column, so they sit beside the last field on the same row. --medan is the number of fields.
-   When the row no longer fits (a tablet), the fields wrap two to a row and the buttons take their own row; on a phone it is one column. */
+   When the row no longer fits, the fields wrap two to a row and the buttons take their own row. */
 .list-controls-form { display: grid; grid-template-columns: repeat(var(--medan, 2), minmax(0, 240px)) auto; justify-content: start; gap: 14px 18px; align-items: end; margin: 8px 0 20px; }
 .list-controls-form .search-filters { display: contents; }
 .list-controls-form .search-actions { margin: 0; min-height: 46px; white-space: nowrap; }
 @media (max-width: 640px) {
-  .list-controls-form { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .list-controls-form { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 12px; }
+  .list-controls-form .search-filters > div, .list-controls-form select { min-width: 0; }
   .list-controls-form .search-actions { grid-column: 1 / -1; }
-}
-@media (max-width: 480px) {
-  .list-controls-form { grid-template-columns: 1fr; }
 }
 .list-count { margin: 0 0 18px; }
 .list-no-match { margin: 8px 0 0; font-size: 17px; color: var(--ink-soft); }

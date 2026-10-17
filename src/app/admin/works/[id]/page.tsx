@@ -167,7 +167,7 @@ function WorkImageCard({ visual, body, onEdit, onReplace, onDelete }: {
         ) : <p className="admin-form-hint">Dipaparkan pada kad dan kepala halaman karya.</p>}
         <div className="work-image-card-actions">
           <button type="button" className="admin-btn admin-btn-sm" onClick={() => onEdit(visual)}>Ubah butiran</button>
-          <label className="admin-btn admin-btn-sm" style={{ cursor: "pointer" }}>
+          <label className="admin-btn admin-btn-sm">
             Ganti gambar
             <input type="file" accept="image/png,image/jpeg,image/webp" hidden onChange={(e) => {
               const file = e.target.files?.[0];

@@ -105,6 +105,8 @@ assert(/method="get"/.test(controls) && /role="status"/.test(controls), "the con
 assert(/name="umur"/.test(controls) && /name="status"/.test(controls), "the controls offer audience and series status");
 const css = fs.readFileSync(path.join(__dirname, "..", "src", "app", "globals.css"), "utf8");
 assert(controls.includes("--medan") && css.includes("repeat(var(--medan, 2), minmax(0, 240px)) auto"), "the buttons are the last column of the same grid as the fields (one row while it fits)");
+assert(/@media \(max-width: 640px\)\s*\{\s*\.list-controls-form \{ grid-template-columns: repeat\(2, minmax\(0, 1fr\)\); column-gap: 12px; \}/.test(css), "category filters use two compact columns even on narrow phones");
+assert(css.includes(".list-controls-form .search-filters > div, .list-controls-form select { min-width: 0; }") && !css.includes("@media (max-width: 359px)"), "the narrow phone controls can shrink without reverting to a tall one-column stack");
 const projection = fs.readFileSync(path.join(__dirname, "..", "src", "lib", "reader", "public-projection.ts"), "utf8");
 assert(/audience\?: string/.test(projection), "the public summary carries the audience for filtering");
 const labelSites = ["src/app/kategori/[type]/page.tsx", "src/app/kategori/bersiri/[seriesSlug]/page.tsx", "src/components/reader/EpisodeView.tsx"].map((p) => fs.readFileSync(path.join(__dirname, "..", p), "utf8"));
