@@ -23,7 +23,7 @@ export interface FormatOptions {
 const INTRO = [
   "FORMAT JAWAPAN (WAJIB DIIKUTI TEPAT)",
   "Kontrak ini mengatasi format atau contoh lama: tempoh bacaan dikira sistem (jangan pulangkan anggaran minit); glosari tiada kuota atau had bilangan, hanya istilah yang benar-benar sukar.",
-  "Balas dengan label teks biasa mengikut bahagian di bawah. Tiada pengenalan, penutup, jadual atau blok kod. Metadata tidak menggunakan Markdown. Dalam [KANDUNGAN] sahaja, penekanan *miring* atau **tebal** yang diperlukan mesti berpasangan dan ditutup sebelum akhir perenggan.",
+  "Letakkan SELURUH jawapan dalam SATU blok kod (``` pada baris pertama dan ``` pada baris terakhir, tanpa nama bahasa) supaya butang Salin pada blok itu menyalin setiap baris baharu dengan tepat. Di luar blok tiada pengenalan atau penutup. Di dalam blok: label teks biasa mengikut bahagian di bawah, tanpa jadual, pautan Markdown atau tag seperti <escape>; tulis alamat web sebagai teks biasa. Metadata tidak menggunakan Markdown. Dalam [KANDUNGAN] sahaja, penekanan *miring* atau **tebal** yang diperlukan mesti berpasangan dan ditutup sebelum akhir perenggan.",
   "Setiap bahagian bermula dengan tajuknya dalam kurungan siku, contoh [KARYA]. Setiap maklumat ditulis sebagai \"Label: nilai\" pada satu baris; nilai yang panjang boleh bersambung pada baris berikutnya.",
   "Bahagian yang mengandungi banyak item (watak, glosari, gambar, bab) diasingkan satu item daripada satu lagi dengan satu baris yang hanya mengandungi ____",
   "Jika sesuatu maklumat tiada dalam bahan, tulis: tidak dinyatakan"
@@ -61,7 +61,7 @@ const BAB = [
 
 const KANDUNGAN = [
   "[KANDUNGAN]",
-  "(teks penuh karya dalam perenggan biasa. Satu baris kosong antara perenggan. Penekanan *miring* atau **tebal** dibenarkan jika berpasangan; tiada pembalut blok kod.)"
+  "(teks penuh karya dalam perenggan biasa. Satu baris kosong antara perenggan. Penekanan *miring* atau **tebal** dibenarkan jika berpasangan; seluruh jawapan sudah berada dalam satu blok kod di luar bahagian ini.)"
 ].join("\n");
 
 const SUMBER = [

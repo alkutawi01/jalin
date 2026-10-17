@@ -47,13 +47,15 @@ const flat = "Anak-anak Kereta Api Slug: anak-anak-kereta-api Blurb: Kehidupan t
 // A third kind of copy: the paragraphs are glued ("William.Pengalaman") and a section tag follows the last word with no space.
 const glued = "[KARYA] Tajuk: Anak-anak Kereta Api Slug: anak-anak-kereta-api Blurb: Kehidupan tiga beradik berubah apabila bapa mereka tiba-tiba tiada di rumah.[KANDUNGAN]Roberta yang dipanggil Bobbie hidup bahagia.Keluarga itu berpindah ke Three Chimneys.[MAKLUMAT]Genre: Fiksyen kanak-kanak Catatan: Sinopsis novel The Railway Children.[WATAK]Nama: Bobbie Peranan: Anak sulung ____ Nama: Peter Peranan: Adik lelaki[SUMBER]Tajuk asal: The Railway Children Pengarang asal: E. Nesbit Bahasa asal: Inggeris Tahun terbit pertama: 1906 Penerbit: tidak dinyatakan";
 const wrapped = `<escape>${tidy}</escape>`;
+const fenced = "```\n" + tidy + "\n```";
+const fencedWithName = "```text\n" + tidy + "\n```\n";
 const flatWithHead = flat.replace(/^/, "[KARYA] Tajuk: ");
 
 const state = { work: { type: "sinopsis", title: "Draf tanpa tajuk", slug: "draf-jln-sin-0006", body: "", metadata: {} }, chapters: [], credits: [], glossary: [], source: null };
 const bodyOf = (changes: Array<{ id: string; after: string }>) => changes.find((change) => change.id === "content:body")?.after ?? "";
 const field = (changes: Array<{ id: string; after: string }>, id: string) => changes.find((change) => change.id === id)?.after ?? "";
 
-for (const [name, text] of [["tidy", tidy], ["wrapped in <escape>", wrapped], ["flat without the opening tag", flat], ["flat with the opening tag", flatWithHead], ["glued paragraphs", glued]] as const) {
+for (const [name, text] of [["tidy", tidy], ["wrapped in <escape>", wrapped], ["inside a code block (what the new prompt asks for)", fenced], ["inside a named code block", fencedWithName], ["flat without the opening tag", flat], ["flat with the opening tag", flatWithHead], ["glued paragraphs", glued]] as const) {
   const changes = planEditorAnswer(text, "all", state as never) as Array<{ id: string; after: string }>;
   assert(field(changes, "content:title") === "Anak-anak Kereta Api", `${name}: the title is only the title (got "${field(changes, "content:title").slice(0, 40)}")`);
   assert(field(changes, "content:slug") === "anak-anak-kereta-api", `${name}: the slug is read`);
