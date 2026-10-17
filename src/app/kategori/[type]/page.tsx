@@ -1,5 +1,6 @@
 import { SiteFooter, SiteHeader } from "../../../components/reader/StoryChrome";
-import { readingLine } from "../../../lib/reader/countries";
+import { StoryCardView } from "../../../components/reader/StoryCollection";
+import { workToStoryCard } from "../../../lib/reader/story-collection";
 import { gateSite } from "../../../lib/reader/access-gate";
 import { OG_SITE, DEFAULT_SHARE_IMAGE, clipDescription, shareImage } from "../../../lib/seo";
 import { categoryJsonLd, jsonLdString } from "../../../lib/seo-jsonld";
@@ -65,33 +66,7 @@ function formatDate(date: string | undefined): string {
 }
 
 function WorkCard({ work, type, priority }: { work: PublicWorkSummary; type: string; priority?: boolean }) {
-  const genre = displayableGenre(work.genre);
-  const published = work.publishedAt;
-  const year = (published ?? "2026").slice(0, 4);
-  const label = categoryMeta(type)?.headerLabel ?? type;
-  return (
-    <article className="latest-card">
-      <a href={`/kategori/${type}/${work.slug}`}>
-        <div className="latest-card-cover">
-          <WorkCover type={work.type} title={work.title} hero={work.hero} rightsYear={year} priority={priority} />
-        </div>
-        <div className="latest-card-body">
-          <div className="latest-card-meta">
-            <span className="latest-card-type">{genre ? `${label} · ${genre}` : label}</span>
-          </div>
-          <h2 className="latest-card-title" style={{ fontStyle: "normal" }}>{work.title}</h2>
-          {work.attribution ? <p className="work-attribution">{renderAttribution(work.attribution.primary)}</p> : null}
-          {work.attribution?.secondary ? <p className="work-attribution-source">{renderAttribution(work.attribution.secondary)}</p> : null}
-          {work.dek ? <p className="latest-card-dek">{work.dek}</p> : null}
-          {readingLine(work.country, work.readingMinutes) ? <p className="latest-card-facts">{readingLine(work.country, work.readingMinutes)}</p> : null}
-          <div className="latest-card-footer">
-            <span className="latest-card-cta">Baca →</span>
-            <span className="latest-card-date">{formatDate(published) === "—" ? null : formatDate(published)}</span>
-          </div>
-        </div>
-      </a>
-    </article>
-  );
+  return <StoryCardView card={workToStoryCard(work, `/kategori/${type}/${work.slug}`)} heading="h2" priority={priority} />;
 }
 
 export const dynamic = "force-dynamic";

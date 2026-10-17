@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { readingLine } from "../../lib/reader/countries";
+import { StoryCardView } from "../../components/reader/StoryCollection";
+import { workToStoryCard } from "../../lib/reader/story-collection";
 import { notFound } from "next/navigation";
 import { SiteFooter, SiteHeader } from "../../components/reader/StoryChrome";
 import { WorkCover } from "../../components/reader/WorkCover";
@@ -132,30 +133,7 @@ export default async function StartPage() {
               <h2 id="contoh">Baca dahulu, tanpa log masuk</h2>
               <p className="start-lead">Cerita pilihan yang boleh dibaca penuh tanpa akaun.</p>
               <div className={samples.length < 3 ? "start-samples start-samples--few" : "start-samples"}>
-                {samples.map(({ summary, href }) => {
-                  const genre = displayableGenre(summary.genre);
-                  const year = (summary.publishedAt ?? "2026").slice(0, 4);
-                  const label = summary.type.charAt(0).toUpperCase() + summary.type.slice(1);
-                  return (
-                    <article className="latest-card" key={href}>
-                      <a href={href}>
-                        <div className="latest-card-cover">
-                          <WorkCover type={summary.type} title={summary.title} hero={summary.hero} rightsYear={year} />
-                        </div>
-                        <div className="latest-card-body">
-                          <div className="latest-card-meta">
-                            <span className="latest-card-type">{genre ? `${label} · ${genre}` : label}</span>
-                          </div>
-                          <h3 className="latest-card-title" style={{ fontStyle: "normal" }}>{summary.title}</h3>
-                          {summary.attribution ? <p className="work-attribution">{renderAttribution(summary.attribution.primary)}</p> : null}
-                          {summary.dek ? <p className="latest-card-dek">{summary.dek}</p> : null}
-                          {readingLine(summary.country, summary.readingMinutes) ? <p className="latest-card-facts">{readingLine(summary.country, summary.readingMinutes)}</p> : null}
-                          <div className="latest-card-footer"><span className="latest-card-cta">Baca →</span></div>
-                        </div>
-                      </a>
-                    </article>
-                  );
-                })}
+                {samples.map(({ summary, href }) => <StoryCardView key={href} card={workToStoryCard(summary, href)} />)}
               </div>
             </section>
           ) : null}
