@@ -81,5 +81,12 @@ assert(mixedChanges.find((change) => change.id === "source:sourceUrl")?.after ==
 assert(mixedChanges.find((change) => change.id === "source:sourceEdition")?.after === "Project Gutenberg", "the edition name is read");
 assert(ids.includes("characters:places/Raveloe") && ids.includes("characters:times/Akhir abad"), "places and times separated only by blank lines are read");
 
+// Tags on their own lines, but every glossary item on ONE line and the items separated by blank lines (a real Black Beauty answer).
+const crowded = "[KARYA]\nTajuk: X\nSlug: x\nBlurb: Satu dua.\n\n[KANDUNGAN]\nSatu perenggan.\n\nDua perenggan.\n\n[GLOSARI]\n\nIstilah: kuda padi Maksud: Kuda kecil. Asing: tiada\n\nIstilah: ladam Maksud: Besi pada kuku kuda. Asing: tiada\n\n[SUMBER]\n\nTajuk asal: Y\nPengarang asal: Z\n";
+const crowdedChanges = planEditorAnswer(crowded, "all", state as never) as Array<{ id: string; after: unknown }>;
+const crowdedIds = crowdedChanges.map((change) => change.id);
+assert(crowdedIds.includes("glossary:glossary/kuda padi") && crowdedIds.includes("glossary:glossary/ladam"), "glossary items written one per line (Istilah, Maksud and Asing together) are read");
+assert(crowdedChanges.find((change) => change.id === "content:body")?.after === "Satu perenggan.\n\nDua perenggan.", "the prose is kept exactly as it came");
+
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);

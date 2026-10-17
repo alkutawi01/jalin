@@ -15,7 +15,7 @@ export function restoreFlatAnswer(answer: string, labels: string[]): string {
   const tag = new RegExp(`\\[\\s*(${SECTION_TAGS})\\s*\\]`, "gi");
   if ((text.match(tag) ?? []).length < 2) return answer;
   const tagLine = new RegExp(`^\\s*[#>*]*\\s*\\**\\[\\s*(?:${SECTION_TAGS})\\s*\\]\\**\\s*:?\\s*$`, "i");
-  if (text.split(/\r?\n/).filter((line) => tagLine.test(line)).length >= 2) return answer;
+  const tidy = text.split(/\r?\n/).filter((line) => tagLine.test(line)).length >= 2;
 
   const all = [...new Set([...labels, ...EXTRA_LABELS])].sort((a, b) => b.length - a.length).map(escapeRe);
   const inlineLabel = new RegExp(`(?:\\s+|(?<=[.!?]))(?=(?:${all.join("|")})\\s*:)`, "g");
@@ -36,12 +36,20 @@ export function restoreFlatAnswer(answer: string, labels: string[]): string {
   };
 
   const parts = text.split(tag);
+  if (tidy) {
+    // The tags are on their own lines, but a line may hold a whole item ("Istilah: kuda padi Maksud: ... Asing: tiada", one item per paragraph).
+    // Only then is the answer rebuilt; the prose is kept exactly as it came.
+    const crowded = parts.some((part, index) => index % 2 === 0 && index > 0 && parts[index - 1]!.toUpperCase() !== "KANDUNGAN"
+      && part.split(/\r?\n/).some((line) => (line.match(new RegExp(`(?:^|\\s)(?:${all.join("|")})\\s*:`, "g")) ?? []).length >= 2));
+    if (!crowded) return answer;
+  }
   const out: string[] = [];
   if (parts[0]!.trim()) out.push("[KARYA]", ...lines(parts[0]!, true));
   for (let i = 1; i < parts.length; i += 2) {
     const name = parts[i]!.toUpperCase();
     out.push(`[${name}]`);
     const body = parts[i + 1] ?? "";
+    if (tidy && name === "KANDUNGAN") { out.push(body.trim()); continue; }
     // ChatGPT's Copy button gives plain text with no line breaks at all: a paragraph ends with a full stop and TWO spaces. In the prose that is
     // a paragraph break (one space between sentences is kept).
     // Another copy comes out with the paragraphs simply run together: "...dengan William.Pengalaman itu..." (a full stop, then a capital letter with
