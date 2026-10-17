@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { readingLine } from "../../lib/reader/countries";
 import { notFound } from "next/navigation";
 import { SiteFooter, SiteHeader } from "../../components/reader/StoryChrome";
 import { WorkCover } from "../../components/reader/WorkCover";
@@ -144,12 +145,11 @@ export default async function StartPage() {
                         <div className="latest-card-body">
                           <div className="latest-card-meta">
                             <span className="latest-card-type">{genre ? `${label} · ${genre}` : label}</span>
-                            {summary.country ? <span className="latest-card-reading">{summary.country}</span> : null}
-                            {summary.readingMinutes ? <span className="latest-card-reading">{`± ${summary.readingMinutes} minit`}</span> : null}
                           </div>
                           <h3 className="latest-card-title" style={{ fontStyle: "normal" }}>{summary.title}</h3>
                           {summary.attribution ? <p className="work-attribution">{renderAttribution(summary.attribution.primary)}</p> : null}
                           {summary.dek ? <p className="latest-card-dek">{summary.dek}</p> : null}
+                          {readingLine(summary.country, summary.readingMinutes) ? <p className="latest-card-facts">{readingLine(summary.country, summary.readingMinutes)}</p> : null}
                           <div className="latest-card-footer"><span className="latest-card-cta">Baca →</span></div>
                         </div>
                       </a>

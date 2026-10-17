@@ -588,6 +588,9 @@ dd { margin: 0; color: var(--ink); text-align: left; }
   font-weight: 700;
   text-transform: uppercase;
 }
+/* Country and reading time: one plain line above the footer, never wrapped, so the eyebrow stays on one line. */
+.latest-card-facts { margin: 10px 0 0; font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 12px; letter-spacing: .02em; color: var(--ink-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.latest-card-facts + .latest-card-footer { margin-top: 12px; }
 .latest-card-reading { padding: 4px 8px; border: 1px solid var(--line); border-radius: 999px; background: var(--white); letter-spacing: .02em; white-space: nowrap; }
 .latest-card-title {
   margin: 10px 0 8px;

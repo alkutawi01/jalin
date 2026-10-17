@@ -1,4 +1,5 @@
 import { SiteFooter, SiteHeader } from "../../../components/reader/StoryChrome";
+import { readingLine } from "../../../lib/reader/countries";
 import { gateSite } from "../../../lib/reader/access-gate";
 import { OG_SITE, DEFAULT_SHARE_IMAGE, clipDescription, shareImage } from "../../../lib/seo";
 import { categoryJsonLd, jsonLdString } from "../../../lib/seo-jsonld";
@@ -77,13 +78,12 @@ function WorkCard({ work, type, priority }: { work: PublicWorkSummary; type: str
         <div className="latest-card-body">
           <div className="latest-card-meta">
             <span className="latest-card-type">{genre ? `${label} · ${genre}` : label}</span>
-            {work.country ? <span className="latest-card-reading">{work.country}</span> : null}
-            {work.readingMinutes ? <span className="latest-card-reading">{`± ${work.readingMinutes} minit`}</span> : null}
           </div>
           <h2 className="latest-card-title" style={{ fontStyle: "normal" }}>{work.title}</h2>
           {work.attribution ? <p className="work-attribution">{renderAttribution(work.attribution.primary)}</p> : null}
           {work.attribution?.secondary ? <p className="work-attribution-source">{renderAttribution(work.attribution.secondary)}</p> : null}
           {work.dek ? <p className="latest-card-dek">{work.dek}</p> : null}
+          {readingLine(work.country, work.readingMinutes) ? <p className="latest-card-facts">{readingLine(work.country, work.readingMinutes)}</p> : null}
           <div className="latest-card-footer">
             <span className="latest-card-cta">Baca →</span>
             <span className="latest-card-date">{formatDate(published) === "—" ? null : formatDate(published)}</span>
