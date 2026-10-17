@@ -89,9 +89,11 @@ export function placeEntryProblem(row: { name?: unknown; description?: unknown }
 
 export interface EditorChange { id: string; group: Exclude<EditorScope, "all">; label: string; before: string; after: string; selected: boolean; /** Set when this change would be refused on save: the review step shows it and holds "Isi borang". */ problem?: string; value: any; key: string }
 const record = (v: unknown): Record<string, any> => v && typeof v === "object" && !Array.isArray(v) ? v as Record<string, any> : {};
+/** "Tiada nota tambahan.", "Tidak berkenaan", "Tiada": a chatbot's way of saying there is nothing to put in the field. It is not a note, a genre or a place. */
+const NOTHING = /^(?:tiada|tidak ada|tidak berkenaan|tidak dinyatakan|tiada (?:nota|catatan|maklumat|amaran)(?: (?:tambahan|khas|untuk dinyatakan))?|n\/a|-|—)\.?$/i;
 const text = (v: unknown) => {
   const value = withoutAssistantSeparators(v);
-  return value && !isPlaceholder(value) ? value : "";
+  return value && !isPlaceholder(value) && !NOTHING.test(value) ? value : "";
 };
 const show = (v: unknown): string => typeof v === "string" ? v : v == null ? "" : JSON.stringify(v, null, 2);
 /** What the editor reads for each source field, in the language of the form (the keys are the code's own names). */

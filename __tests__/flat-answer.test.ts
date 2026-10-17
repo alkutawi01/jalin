@@ -88,5 +88,13 @@ const crowdedIds = crowdedChanges.map((change) => change.id);
 assert(crowdedIds.includes("glossary:glossary/kuda padi") && crowdedIds.includes("glossary:glossary/ladam"), "glossary items written one per line (Istilah, Maksud and Asing together) are read");
 assert(crowdedChanges.find((change) => change.id === "content:body")?.after === "Satu perenggan.\n\nDua perenggan.", "the prose is kept exactly as it came");
 
+// "Nothing to say" answers are not content, and emphasis marks around a glossary term are not part of the term (a real Ayat-ayat Cinta answer).
+const nothing = "[MAKLUMAT]\nGenre: Romantis Islam\nCatatan: Sinopsis berdasarkan kisah mahasiswa Al Azhar.\nNota pembaca: Tiada nota tambahan.\n\n[GLOSARI]\nIstilah: *heat stroke*\nMaksud: Strok haba.\n____\nIstilah: talaqqi\nMaksud: Belajar secara bersemuka.\n";
+const nothingChanges = planEditorAnswer(nothing, "all", state as never) as Array<{ id: string; after: unknown }>;
+const nothingIds = nothingChanges.map((change) => change.id);
+assert(nothingIds.includes("metadata:genre") && nothingIds.includes("metadata:editorNote"), "the genre and the note that hold real content are read");
+assert(!nothingIds.includes("metadata:readerNote"), "\"Tiada nota tambahan.\" is not a reader note");
+assert(nothingIds.includes("glossary:glossary/*heat stroke*"), "a glossary term the chatbot wrote in italics keeps its marks: that is how Jalin italicises a foreign word (Anak Qasab, Plasmodium)");
+
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);
