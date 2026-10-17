@@ -765,6 +765,15 @@
   .a-shell .admin-table:not(.a-todo-table) td:last-child { grid-column: 1 / -1; }
 }
 
+/* Audiens (a name, two ages and a Buang button): as a card the name takes the first line and the two ages and the button share the second,
+   instead of four stacked lines. */
+@container admin-table (max-width: 760px) {
+  .a-shell .admin-table.a-bands-table:not(.a-todo-table) tr { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; column-gap: 12px; align-items: end; padding: 10px 14px; }
+  .a-shell .admin-table.a-bands-table:not(.a-todo-table) td { width: auto; }
+  .a-shell .admin-table.a-bands-table:not(.a-todo-table) td.admin-table-title { grid-column: 1 / -1; }
+  .a-shell .admin-table.a-bands-table:not(.a-todo-table) td:last-child { grid-column: auto; }
+}
+
 /* Langganan */
 .admin-sub-nav { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
 .admin-inline-form { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px; }
