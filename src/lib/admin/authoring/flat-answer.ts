@@ -33,7 +33,9 @@ export function restoreFlatAnswer(answer: string, labels: string[]): string {
     const name = parts[i]!.toUpperCase();
     out.push(`[${name}]`);
     const body = parts[i + 1] ?? "";
-    if (name === "KANDUNGAN") out.push(body.trim());
+    // ChatGPT's Copy button gives plain text with no line breaks at all: a paragraph ends with a full stop and TWO spaces. In the prose that is
+    // a paragraph break (one space between sentences is kept).
+    if (name === "KANDUNGAN") out.push(body.trim().replace(/[ \t]{2,}/g, "\n\n"));
     else out.push(...lines(body, name === "KARYA"));
   }
   return out.join("\n");
