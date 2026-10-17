@@ -131,7 +131,7 @@ export default function ReaderTypographySettings() {
         <p className="admin-form-hint">Samakan semua mengisi nilai di atas ke setiap skrin di bawah (kotak yang kosong di atas tidak mengubah apa-apa). Belum disimpan sehingga anda tekan Simpan.</p>
 
         <div className="admin-table-wrap">
-          <table className="admin-table">
+          <table className="admin-table a-device-table">
             <thead>
               <tr><th>Skrin</th><th>Teks karya (px)</th><th>Tajuk bahagian (em)</th></tr>
             </thead>
