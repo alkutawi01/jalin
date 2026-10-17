@@ -10,7 +10,7 @@ function assert(cond: boolean, msg: string) {
 
 async function main() {
   const byKey = new Map((securityHeaders as Array<{ key: string; value: string }>).map((h) => [h.key, h.value]));
-  assert(byKey.get("X-Frame-Options") === "DENY", "pages cannot be framed by another site");
+  assert(byKey.get("X-Frame-Options") === "SAMEORIGIN", "pages cannot be framed by another site (only by Jalin itself)");
   assert(byKey.get("X-Content-Type-Options") === "nosniff", "browsers do not guess content types");
   assert(Boolean(byKey.get("Referrer-Policy")), "a referrer policy is set");
   assert(/camera=\(\)/.test(byKey.get("Permissions-Policy") ?? ""), "camera and the like are switched off");

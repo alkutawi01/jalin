@@ -40,6 +40,9 @@
 .rail span:nth-child(odd) { width: 60%; }
 .rail span:nth-child(even) { width: 90%; }
 
+.page { display: block; width: var(--rt-w); height: var(--rt-h); border: 0; background: var(--paper); }
+.empty { margin: 0; padding: 24px; font-size: 14px; color: var(--ink-soft); }
+
 .caption { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; font-size: 13px; color: var(--a-muted); }
 .scale { color: var(--a-faint); }
 :global(.a-shell) .body p.break { text-align: center; letter-spacing: .4em; color: var(--ink-soft); }

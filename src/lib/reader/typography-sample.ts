@@ -8,6 +8,8 @@ export type SampleBlock = { kind: "p" | "h2" | "break"; text: string };
 
 export interface TypographySample {
   slug: string;
+  /** The public address of the story: the mock-up opens the real page. */
+  href: string;
   eyebrow: string;
   title: string;
   dek: string;
@@ -59,7 +61,7 @@ export async function typographySampleOptions(): Promise<Work[]> {
   const repo = await initContentRepository();
   const all = repo.source === "database" ? await repo.getWorks() : getAllWorks();
   return all
-    .filter((work) => work.status === "published" && (work.type === "cerpen" || work.type === "novela" || work.type === "bersiri") && work.body.trim().length > 400)
+    .filter((work) => work.status === "published" && (work.type === "cerpen" || work.type === "novela") && work.body.trim().length > 400)
     .sort((a, b) => Number(hasHeading(b)) - Number(hasHeading(a)) || (b.publishedAt ?? "").localeCompare(a.publishedAt ?? ""));
 }
 
@@ -69,7 +71,7 @@ export async function getTypographySample(slug?: string): Promise<{ sample: Typo
   const options = works.slice(0, 12).map((w) => ({ slug: w.slug, title: w.title, hasHeading: hasHeading(w) }));
   if (!work) return { sample: null, options };
   return {
-    sample: { slug: work.slug, eyebrow: TYPE_LABELS[work.type] ?? work.type, title: work.title, dek: work.dek ?? "", blocks: sampleBlocks(work.body) },
+    sample: { slug: work.slug, href: `/kategori/${work.type}/${work.slug}`, eyebrow: TYPE_LABELS[work.type] ?? work.type, title: work.title, dek: work.dek ?? "", blocks: sampleBlocks(work.body) },
     options
   };
 }
