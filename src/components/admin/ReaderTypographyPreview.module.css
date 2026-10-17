@@ -42,3 +42,4 @@
 
 .caption { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; font-size: 13px; color: var(--a-muted); }
 .scale { color: var(--a-faint); }
+:global(.a-shell) .body p.break { text-align: center; letter-spacing: .4em; color: var(--ink-soft); }

@@ -2,6 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { deviceInfo, type DeviceId } from "../../lib/reader/typography-devices";
+import type { TypographySample } from "../../lib/reader/typography-sample";
 import styles from "./ReaderTypographyPreview.module.css";
 
 /**
@@ -13,18 +14,16 @@ import styles from "./ReaderTypographyPreview.module.css";
  * and proportions are what a reader gets. Everything that depends on the screen is handed to the stylesheet as a CSS variable.
  */
 
-const SAMPLE = {
+/** Shown only when no published story can serve as the sample. */
+const FALLBACK: TypographySample = {
+  slug: "",
   eyebrow: "Cerpen",
   title: "Hujan di Beranda",
   dek: "Sebuah cerita pendek tentang pulang, dan tentang apa yang tinggal selepas hujan.",
-  before: [
-    "Hujan turun sejak selepas Asar. Di beranda, Mak Cik Salmah menyusun semula pasu-pasu kecil di tepi tangga, sementara anak-anak jiran berlari mencari tempat berteduh.",
-    "Dia tidak berkata apa-apa kepada sesiapa. Bunyi air di atas bumbung zink sudah cukup untuk menenggelamkan segala yang belum sempat diucapkan sepanjang hari itu."
-  ],
-  heading: "Selepas Asar",
-  after: [
-    "Apabila langit akhirnya reda, jalan di hadapan rumah berkilat seperti kaca. Seseorang menolak pagar dan melangkah masuk dengan beg yang sudah terlalu lama dibawa.",
-    "Mak Cik Salmah mengangkat muka. Dia mengenali langkah itu sebelum dia mengenali wajahnya."
+  blocks: [
+    { kind: "p", text: "Hujan turun sejak selepas Asar. Di beranda, Mak Cik Salmah menyusun semula pasu-pasu kecil di tepi tangga, sementara anak-anak jiran berlari mencari tempat berteduh." },
+    { kind: "h2", text: "Selepas Asar" },
+    { kind: "p", text: "Apabila langit akhirnya reda, jalan di hadapan rumah berkilat seperti kaca. Seseorang menolak pagar dan melangkah masuk dengan beg yang sudah terlalu lama dibawa." }
   ]
 };
 
@@ -38,7 +37,8 @@ const FRAME = {
 /** The tallest the mock-up is drawn when it is made to fit: a phone is taller than it is wide, and the page should not become a long scroll. */
 const MAX_HEIGHT = 520;
 
-export default function ReaderTypographyPreview({ device, bodyPx, headingEm }: { device: DeviceId; bodyPx: number | null; headingEm: number | null }) {
+export default function ReaderTypographyPreview({ device, bodyPx, headingEm, sample }: { device: DeviceId; bodyPx: number | null; headingEm: number | null; sample?: TypographySample | null }) {
+  const story = sample ?? FALLBACK;
   const info = deviceInfo(device);
   const stage = useRef<HTMLDivElement>(null);
   const frameRef = useRef<HTMLDivElement>(null);
@@ -108,16 +108,16 @@ export default function ReaderTypographyPreview({ device, bodyPx, headingEm }: {
                 {info.layout.nav ? <span className={styles.nav}><span>Utama</span><span>Cerpen</span><span>Novela</span><span>Bersiri</span><span>Fragmen</span></span> : <span className={styles.menu}>Menu</span>}
               </div>
               <div className={styles.head}>
-                <p className={styles.eyebrow}>{SAMPLE.eyebrow}</p>
-                <h1>{SAMPLE.title}</h1>
-                <p className={styles.dek}>{SAMPLE.dek}</p>
+                <p className={styles.eyebrow}>{story.eyebrow}</p>
+                <h1>{story.title}</h1>
+                {story.dek ? <p className={styles.dek}>{story.dek}</p> : null}
               </div>
               <div className={styles.page}>
                 {info.layout.left > 0 ? <Rail /> : null}
                 <article className={styles.body}>
-                  {SAMPLE.before.map((text) => <p key={text}>{text}</p>)}
-                  <h2>{SAMPLE.heading}</h2>
-                  {SAMPLE.after.map((text) => <p key={text}>{text}</p>)}
+                  {story.blocks.map((block, index) =>
+                    block.kind === "h2" ? <h2 key={index}>{block.text}</h2> : block.kind === "break" ? <p key={index} className={styles.break}>* * *</p> : <p key={index}>{block.text}</p>
+                  )}
                 </article>
                 {info.layout.right > 0 ? <Rail /> : null}
               </div>
