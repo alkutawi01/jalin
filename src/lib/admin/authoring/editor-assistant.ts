@@ -10,12 +10,12 @@ import { audienceCodes, audienceValue, bandRangeLabel, DEFAULT_AUDIENCE_BANDS, t
 export const EDITOR_SCOPES = ["all", "content", "metadata", "characters", "glossary", "source", "credits", "sections"] as const;
 export type EditorScope = typeof EDITOR_SCOPES[number];
 export const EDITOR_SCOPE_NAMES: Record<EditorScope, string> = { all: "semua tab", content: "Kandungan", metadata: "Maklumat", characters: "Watak & latar", glossary: "Glosari", source: "Sumber & Hak", credits: "Kredit", sections: "Bab" };
-export interface EditorContext { type: string; title: string; body: string; dek?: string; genre?: string; chapters?: unknown[]; credits?: unknown[]; contributors?: unknown[]; source?: unknown; characters?: unknown[]; glossary?: unknown[] }
-/** What the chatbot is told about Audiens: only the bands that really suit the work, from Jalin's own list (Tetapan > Audiens). */
-const AUDIENCE_HINT = `satu atau lebih peringkat pembaca yang sesuai dengan isi karya, dipisahkan koma, daripada: ${DEFAULT_AUDIENCE_BANDS.map((b) => `${b.label} ${bandRangeLabel(b)} tahun`).join("; ")}. Tulis nama peringkat sahaja, contoh: Remaja, Belia`;
+export interface EditorContext { /** The reader age bands as set in Tetapan (the prompt asks for Audiens from this list). */ bands?: AudienceBand[]; type: string; title: string; body: string; dek?: string; genre?: string; chapters?: unknown[]; credits?: unknown[]; contributors?: unknown[]; source?: unknown; characters?: unknown[]; glossary?: unknown[] }
+/** What the chatbot is told about Audiens: only the bands that really suit the work, from Jalin's own list (Tetapan > Audiens, as it is now). */
+const audienceHint = (bands: AudienceBand[]) => `satu atau lebih peringkat pembaca yang sesuai dengan isi karya, dipisahkan koma, daripada: ${bands.map((b) => `${b.label} ${bandRangeLabel(b)} tahun`).join("; ")}. Tulis nama peringkat sahaja, contoh: ${bands.slice(1, 3).map((b) => b.label).join(", ") || bands[0]?.label || "Remaja"}`;
 const LABELLED_FORMATS: Record<Exclude<EditorScope, "all">, string> = {
   content: `[KARYA]\nTajuk: (tajuk)\nSlug: (alamat-pautan)\nBlurb: (blurb ringkas)\n\n[KANDUNGAN]\n(teks penuh karya, bukan ulasan atau nasihat)`,
-  metadata: `[MAKLUMAT]\nGenre: (genre)\nAudiens: (${AUDIENCE_HINT})\nCatatan: (jika berkenaan)\nNota pembaca: (jika berkenaan)`,
+  metadata: `[MAKLUMAT]\nGenre: (genre)\nAudiens: ({{AUDIENS}})\nCatatan: (jika berkenaan)\nNota pembaca: (jika berkenaan)`,
   characters: `[WATAK]\nNama: (nama watak sebenar)\nPeranan: (2–6 patah perkataan)\nMuncul di: (slug bab jika novela)\n____\n\n[LATAR]\nJenis: tempat\nNama: (tempat)\nKeterangan: (ringkas)\n____\nJenis: masa\nNama: (tahun, tempoh atau era; bukan pagi/malam)\nKeterangan: (ringkas)\n____\nJenis: negara\nNama: (SATU negara atau wilayah UTAMA tempat kebanyakan cerita berlaku; bukan semua negara yang disebut)`,
   glossary: `[GLOSARI]\nIstilah: (istilah tepat dalam teks)\nMaksud: (maksud mengikut konteks)\nSebutan: (pilihan)\nBahasa asal: (pilihan)\nEjaan asal: (pilihan)\n____`,
   source: `[SUMBER]\nTajuk asal: (nilai atau tidak dinyatakan)\nPengarang asal: (nilai atau tidak dinyatakan)\nBahasa asal: (nilai atau tidak dinyatakan)\nTahun terbit pertama: (nilai atau tidak dinyatakan)\nPenerbit: (nilai atau tidak dinyatakan)\nTahun edisi: (nilai atau tidak dinyatakan)\nCetakan: (nilai atau tidak dinyatakan)\nPenyunting: (nilai atau tidak dinyatakan)\nPenterjemah: (nilai atau tidak dinyatakan)\nISBN: (nilai atau tidak dinyatakan)\nLokasi petikan: (nilai atau tidak dinyatakan)\nAsas teks: (nilai atau tidak dinyatakan)\nURL sumber: (nilai atau tidak dinyatakan)\nNama edisi: (nilai atau tidak dinyatakan)`,
@@ -24,7 +24,9 @@ const LABELLED_FORMATS: Record<Exclude<EditorScope, "all">, string> = {
 };
 
 export function buildEditorPrompt(scope: EditorScope, context: EditorContext, _task = ""): string {
-  const format = scope === "all" ? Object.values(LABELLED_FORMATS).join("\n\n") : LABELLED_FORMATS[scope];
+  const { bands, ...shown } = context;
+  context = shown as EditorContext;
+  const format = (scope === "all" ? Object.values(LABELLED_FORMATS).join("\n\n") : LABELLED_FORMATS[scope]).split("{{AUDIENS}}").join(audienceHint(bands && bands.length > 0 ? bands : DEFAULT_AUDIENCE_BANDS));
   const focus = scope === "all" ? "Lengkapkan medan editorial yang berkenaan di semua tab; keluarkan teks dan data untuk borang." : `Teliti tab ${EDITOR_SCOPE_NAMES[scope]} secara mendalam. Keluarkan hanya medan tab ini, bukan bahagian tab lain.`;
   return `Anda pembantu editorial Jalin. Jenis karya: ${context.type}. SKOP: ${EDITOR_SCOPE_NAMES[scope]}.
 ${focus}

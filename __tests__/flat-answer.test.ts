@@ -104,5 +104,10 @@ assert(audienceOf("[MAKLUMAT]\nGenre: Drama\nAudiens: semua orang") === undefine
 assert(audienceOf("[MAKLUMAT] Genre: Drama Audiens: Remaja Catatan: x") === undefined, "Audiens equal to the draft's own value (remaja) is not offered as a change");
 assert(buildEditorPrompt("metadata", { type: "sinopsis", title: "T", body: "B" } as never).includes("Audiens: (satu atau lebih peringkat pembaca"), "the metadata prompt asks the chatbot for Audiens, from Jalin's own list");
 
+// The prompt follows the bands as Tetapan has them now.
+const customPrompt = buildEditorPrompt("metadata", { type: "sinopsis", title: "T", body: "B", bands: [{ code: "pra", label: "Prasekolah", min: 4, max: 6 }, { code: "tua", label: "Warga emas", min: 60, max: null }] } as never);
+assert(customPrompt.includes("Prasekolah 4–6 tahun; Warga emas 60+ tahun") && !customPrompt.includes("Remaja 13"), "the prompt lists the editor's own audience bands, not the defaults");
+assert(!customPrompt.includes('"bands"'), "the bands are not pasted into the reference data of the prompt");
+
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);

@@ -1,5 +1,6 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { DEFAULT_AUDIENCE_BANDS, type AudienceBand } from "../../lib/audience";
 import { copyText } from "./CopyButton";
 import { errorText } from "../../lib/admin/error-text";
 import { confirmAction } from "../../lib/admin/dialogs";
@@ -12,10 +13,17 @@ export default function EditorAssistant({ workId, scope, context, blocked, onApp
   const [note, setNote] = useState("");
   const [error, setError] = useState("");
   const id = `assistant-${scope}`;
+  // The prompt asks for Audiens from the bands as Tetapan has them now, not from a copy of the defaults.
+  const [bands, setBands] = useState<AudienceBand[]>(DEFAULT_AUDIENCE_BANDS);
+  useEffect(() => {
+    let alive = true;
+    fetch("/api/admin/audience-bands").then((res) => (res.ok ? res.json() : null)).then((data: { bands?: AudienceBand[] } | null) => { if (alive && data?.bands?.length) setBands(data.bands); }).catch(() => {});
+    return () => { alive = false; };
+  }, []);
   async function copy() {
     setError("");
     try {
-      const prompt = buildEditorPrompt(scope, context);
+      const prompt = buildEditorPrompt(scope, { ...context, bands });
       if (!await copyText(prompt)) throw new Error("Penyalinan gagal. Benarkan akses papan keratan dan cuba lagi.");
       setNote("Arahan disalin. Berikan arahan atau bahan kepada bot sembang, kemudian salin jawapannya dan tekan Tampal jawapan.");
     } catch (e) { setError(errorText(e, "Arahan tidak dapat disalin.")); }
