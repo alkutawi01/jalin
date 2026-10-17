@@ -4068,16 +4068,32 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; color-scheme: lig
 
 /* Category lists: the sort and filter bar is the search page's form (.search-form and friends); only what search does not have is here. */
 .list-controls { margin: 0 0 8px; }
-/* One grid for the fields and the buttons: each field is a column of at most 240px (it never stretches across the page when there is only
-   one or two) and the buttons are the last column, so they sit beside the last field on the same row. --medan is the number of fields.
-   When the row no longer fits, the fields wrap two to a row and the buttons take their own row. */
+/* The sort and filter bar. One grid for the fields and the button: each field is a column of at most 240px and the button is the last column, so it
+   sits beside the last field on the same row. --medan is the number of fields. This is the look on a wide screen (1200px and up), with the names above. */
 .list-controls-form { display: grid; grid-template-columns: repeat(var(--medan, 2), minmax(0, 240px)) auto; justify-content: start; gap: 14px 18px; align-items: end; margin: 8px 0 20px; }
 .list-controls-form .search-filters { display: contents; }
 .list-controls-form .search-actions { margin: 0; min-height: 46px; white-space: nowrap; }
+/* Below 1200px the columns are too narrow for 16px text (the choices were cut: "Terbaru diter"), so the bar is one row of compact bordered fields:
+   "Susun" shows its name, the filters say what they are in their first choice ("Semua genre", "Mana-mana tempoh", "Semua pembaca"). The choices
+   apply by themselves (CategoryControlsAutoApply marks the form is-auto and hides the button); without JavaScript the button stays. */
+@media (min-width: 641px) and (max-width: 1199px) {
+  .list-controls-form { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 8px 0 16px; }
+  .list-controls-form .search-actions { min-height: 40px; }
+  .list-controls-form.is-auto .search-apply { display: none; }
+  .list-field { display: flex; align-items: center; gap: 8px; min-height: 40px; padding-left: 10px; border: 1px solid rgba(24,52,60,.55); border-radius: 8px; background: #fffdf8; }
+  .list-field:focus-within { outline: 2px solid var(--clay); outline-offset: 2px; }
+  .list-field label { margin: 0; white-space: nowrap; }
+  .list-field select { width: auto; min-width: 0; min-height: 38px; padding: 6px 4px 6px 0; border: 0; background: transparent; font-size: 14px; field-sizing: content; }
+  .list-field select:focus-visible { outline: 0; }
+  .list-field .list-field-quiet { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+  .list-controls-form .search-apply { min-height: 40px; padding-inline: 14px; }
+}
+/* A phone: two fields to a row with the names above, 16px so iOS does not zoom in; the button hides when the choices apply by themselves. */
 @media (max-width: 640px) {
   .list-controls-form { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 12px; }
   .list-controls-form .search-filters > div, .list-controls-form select { min-width: 0; }
   .list-controls-form .search-actions { grid-column: 1 / -1; }
+  .list-controls-form.is-auto .search-apply { display: none; }
 }
 .list-count { margin: 0 0 18px; }
 .list-no-match { margin: 8px 0 0; font-size: 17px; color: var(--ink-soft); }
