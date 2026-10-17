@@ -339,11 +339,19 @@ console.log("\n=== Readiness: visuals ===");
       sourceWork: approvedSourceForVisualPolicy,
     })
   );
-  assert(fragmenNoHero.ready === true, "fragmen without hero still ready (recommended only)");
+  assert(fragmenNoHero.ready === false, "fragmen without hero is not ready: every kind of work except a series episode needs a hero");
   assert(
-    fragmenNoHero.warnings.some((w) => w.code === "hero_missing"),
-    "fragmen missing hero is warning not blocker"
+    fragmenNoHero.blockers.some((b) => b.code === "hero_missing"),
+    "fragmen missing hero is a blocker"
   );
+  for (const type of ["sinopsis", "terjemahan"] as const) {
+    const noHero = evaluatePublicationReadinessFromData(validInput({
+      work: baseWork({ type }),
+      visuals: [],
+      sourceWork: approvedSourceForVisualPolicy,
+    }));
+    assert(noHero.blockers.some((b) => b.code === "hero_missing"), `${type} without a hero is blocked`);
+  }
 
   const fragmenMissingLanguage = evaluatePublicationReadinessFromData(validInput({
     work: baseWork({ type: "fragmen" }), sourceWork: approvedSourceForVisualPolicy,

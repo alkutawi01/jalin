@@ -7,7 +7,6 @@ import { WorkCover } from "../../../components/reader/WorkCover";
 import { cropStyle } from "../../../lib/reader/crop";
 import { initContentRepository } from "../../../lib/content";
 import { displayableGenre } from "../../../lib/reader/genre-display";
-import { readingLine } from "../../../lib/reader/countries";
 import { formatMalayDate } from "../../../lib/reader/format-date";
 import { getWorksByType } from "../../../lib/content/workLoader";
 import type { Work, WorkType } from "../../../lib/content/types";
@@ -66,7 +65,6 @@ function formatDate(date: string | undefined): string {
 
 function WorkCard({ work, type, priority }: { work: PublicWorkSummary; type: string; priority?: boolean }) {
   const genre = displayableGenre(work.genre);
-  const reading = readingLine(work.country, work.readingMinutes) || null;
   const published = work.publishedAt;
   const year = (published ?? "2026").slice(0, 4);
   const label = categoryMeta(type)?.headerLabel ?? type;
@@ -79,7 +77,8 @@ function WorkCard({ work, type, priority }: { work: PublicWorkSummary; type: str
         <div className="latest-card-body">
           <div className="latest-card-meta">
             <span className="latest-card-type">{genre ? `${label} · ${genre}` : label}</span>
-            {reading ? <span className="latest-card-reading">{reading}</span> : null}
+            {work.country ? <span className="latest-card-reading">{work.country}</span> : null}
+            {work.readingMinutes ? <span className="latest-card-reading">{`± ${work.readingMinutes} minit`}</span> : null}
           </div>
           <h2 className="latest-card-title" style={{ fontStyle: "normal" }}>{work.title}</h2>
           {work.attribution ? <p className="work-attribution">{renderAttribution(work.attribution.primary)}</p> : null}

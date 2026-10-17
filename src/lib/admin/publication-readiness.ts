@@ -223,9 +223,9 @@ export const VISUAL_POLICY: Record<
   cerpen: { hero: "required", inline: "optional" },
   novela: { hero: "required", inline: "optional" },
   bersiri: { hero: "required", inline: "optional" },
-  terjemahan: { hero: "recommended", inline: "optional" },
-  fragmen: { hero: "recommended", inline: "optional" },
-  sinopsis: { hero: "recommended", inline: "optional" },
+  terjemahan: { hero: "required", inline: "optional" },
+  fragmen: { hero: "required", inline: "optional" },
+  sinopsis: { hero: "required", inline: "optional" },
 };
 
 const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;

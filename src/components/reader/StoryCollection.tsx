@@ -2,19 +2,17 @@
 
 import { useState } from "react";
 import type { StoryCard } from "../../lib/reader/story-collection";
-import { readingLine } from "../../lib/reader/countries";
 import { formatMalayDate } from "../../lib/reader/format-date";
 import { renderAttribution } from "./Attribution";
 import { WorkCover } from "./WorkCover";
 
 function CardMeta({ card }: { card: StoryCard }) {
-  const reading = readingLine(card.country, card.readingMinutes) || null;
-  const published = formatMalayDate(card.publishedAt);
-  if (!reading && !published) return null;
+  // Country, reading time and date are three separate items, so the separator dot has the same space on both sides everywhere.
+  const parts = [card.country || null, card.readingMinutes ? `± ${card.readingMinutes} minit` : null, formatMalayDate(card.publishedAt) || null].filter(Boolean) as string[];
+  if (parts.length === 0) return null;
   return (
     <div className="home-work-meta home-work-meta--line">
-      {reading ? <span>{reading}</span> : null}
-      {published ? <span>{published}</span> : null}
+      {parts.map((part) => <span key={part}>{part}</span>)}
     </div>
   );
 }

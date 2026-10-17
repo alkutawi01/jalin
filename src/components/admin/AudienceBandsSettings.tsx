@@ -75,8 +75,8 @@ export default function AudienceBandsSettings() {
           {rows.map((row, index) => (
             <tr key={row.code + index}>
               <td className="admin-table-title"><input aria-label={`Nama peringkat ${index + 1}`} value={row.label} maxLength={30} onChange={(e) => patch(index, { label: e.target.value })} /></td>
-              <td><input aria-label={`Dari umur, ${row.label}`} inputMode="numeric" value={row.min} onChange={(e) => patch(index, { min: e.target.value })} /></td>
-              <td><input aria-label={`Hingga umur, ${row.label}`} inputMode="numeric" placeholder="ke atas" value={row.max} onChange={(e) => patch(index, { max: e.target.value })} /></td>
+              <td><input aria-label={`Dari umur, ${row.label}`} type="number" min={0} max={99} step={1} inputMode="numeric" value={row.min} onChange={(e) => patch(index, { min: e.target.value })} /></td>
+              <td><input aria-label={`Hingga umur, ${row.label}`} type="number" min={Number(row.min) || 0} max={99} step={1} inputMode="numeric" placeholder="ke atas" value={row.max} onChange={(e) => patch(index, { max: e.target.value })} /></td>
               <td>
                 <button type="button" className="admin-btn admin-btn-sm admin-btn-danger" disabled={rows.length < 2 || saving} onClick={() => setRows(rows.filter((_, i) => i !== index))}>Buang</button>
               </td>
