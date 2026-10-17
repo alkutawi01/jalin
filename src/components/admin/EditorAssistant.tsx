@@ -34,7 +34,19 @@ export default function EditorAssistant({ workId, scope, context, blocked, onApp
   }
   async function paste() {
     try { const text = await navigator.clipboard.readText(); setAnswer(text); await request(text); }
-    catch { setManualPaste(true); setError("Pelayar tidak membenarkan bacaan papan keratan. Gunakan tampalan manual yang dibuka di bawah."); }
+    catch {
+      // Some browsers (and the in-app browser) never let a page read the clipboard. A paste the reader makes themselves is always allowed,
+      // so the box below takes the answer the moment it is pasted: Ctrl+V is the whole job, no second button.
+      setManualPaste(true);
+      setNote("Pelayar tidak membenarkan bacaan papan keratan terus. Tekan Ctrl+V (atau Cmd+V) dalam kotak di bawah; jawapan terus diisi.");
+    }
+  }
+  function pasted(event: React.ClipboardEvent<HTMLTextAreaElement>) {
+    const text = event.clipboardData.getData("text");
+    if (!text.trim()) return;
+    event.preventDefault();
+    setAnswer(text);
+    void request(text);
   }
   return <details className="a-assistant" data-editor-assistant={scope}>
     <summary>{scope === "all" ? "Bantuan AI master — semua tab" : `Bantuan AI — ${EDITOR_SCOPE_NAMES[scope]}`}</summary>
@@ -45,7 +57,7 @@ export default function EditorAssistant({ workId, scope, context, blocked, onApp
     </div>
     {manualPaste && <div className="a-assistant-manual">
       <label htmlFor={`${id}-answer`}>Tampal jawapan secara manual</label>
-      <textarea id={`${id}-answer`} className="admin-textarea" rows={5} value={answer} disabled={busy} onChange={e => setAnswer(e.target.value)} autoFocus />
+      <textarea id={`${id}-answer`} className="admin-textarea" rows={5} value={answer} disabled={busy} onChange={e => setAnswer(e.target.value)} onPaste={pasted} autoFocus />
       <button type="button" className="admin-btn admin-btn-outline" disabled={busy || blocked || !answer.trim()} onClick={() => void request(answer)}>{busy ? "Mengisi…" : "Isi daripada jawapan"}</button>
     </div>}
     {blocked && <p className="admin-form-hint">Simpan atau batalkan perubahan manual sebelum menyemak jawapan AI.</p>}

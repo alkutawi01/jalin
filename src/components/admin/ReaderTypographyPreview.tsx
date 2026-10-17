@@ -88,7 +88,7 @@ export default function ReaderTypographyPreview({ device, bodyPx, headingEm, sam
       <div ref={stage} className={`${styles.stage}${real ? ` ${styles.stageReal}` : ""}`}>
         <div ref={frameRef} className={`${styles.device} ${styles[FRAME[info.frame].style]}`} role="img" aria-label={`Pratonton ${info.label}: teks ${body} px, tajuk bahagian ${heading} em`}>
           <div ref={viewport} className={styles.viewport}>
-            <div ref={screen} className={styles.screen}>
+            <div ref={screen} className={styles.screen} aria-hidden="true">
               {sample ? (
                 <iframe
                   ref={frameDoc}

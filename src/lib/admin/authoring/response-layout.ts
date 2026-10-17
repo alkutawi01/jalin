@@ -1,6 +1,9 @@
 /** Recover layout mistakes only. Unknown labels/values are never guessed. Story prose is untouched. */
 import { unescapeSeparatorRuns } from "../../separator-marks";
+import { restoreFlatAnswer } from "./flat-answer";
 export function normaliseLabelledLayout(answer: string, labels: string[], proseSection = "KANDUNGAN", acceptStructured = true): string {
+  // An answer copied with its line breaks lost gets them back first (flat-answer.ts).
+  answer = restoreFlatAnswer(answer, labels);
   // A chat window copies a row of underscores out as \_\_\_\_ ; that is the separator, not text.
   answer = unescapeSeparatorRuns(answer);
   if (acceptStructured) answer = structuredAnswer(answer, labels);
