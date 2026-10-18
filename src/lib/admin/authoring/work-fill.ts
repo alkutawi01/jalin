@@ -12,6 +12,7 @@ import { isSourcedWork } from "../../content/source-origin";
 import { responseSection } from "./response-sections";
 import { AUTHORING_LABELS, normaliseLabelledLayout } from "./response-layout";
 import { cleanCountryText } from "../../reader/countries";
+import { firstGenre } from "../../reader/genre-display";
 
 export type WorkFillScope = "all" | "metadata" | "characters" | "source";
 export const FILL_SECTIONS: Record<WorkFillScope, string[]> = {
@@ -368,7 +369,8 @@ export function parseWorkFill(answer: string, scope: WorkFillScope = "all"): Wor
   const real = (v: string) => (isPlaceholder(v) ? "" : v);
   return {
     dek: real(clean(field(info, /blurb|dek|ringkasan/))),
-    genre: real(clean(field(info, /genre/))),
+    // One genre only: a chatbot's "Fiksyen klasik, drama sosial" is cut to its first genre instead of being stored whole.
+    genre: real(firstGenre(clean(field(info, /genre/)))),
     audience: real(clean(field(info, /audiens|khalayak/))),
     characters: uniqueByName(characters.filter((c) => !isPlaceholder(c.name) && !isPlaceholder(c.role))),
     places: uniqueByName(setting.places.filter((p) => !isPlaceholder(p.name))),

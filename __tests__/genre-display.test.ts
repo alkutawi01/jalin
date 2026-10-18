@@ -2,7 +2,7 @@
  * A genre is shown with a capital first letter whatever the editor typed: "Sinopsis · sejarah" and "Sinopsis · Sejarah",
  * "drama keluarga" and "Drama Sosial" were on the site side by side. Only the display changes; the stored value is not touched.
  */
-import { displayableGenre } from "../src/lib/reader/genre-display";
+import { displayableGenre, firstGenre, hasMultipleGenres } from "../src/lib/reader/genre-display";
 
 let passed = 0;
 let failed = 0;
@@ -16,6 +16,9 @@ assert(displayableGenre("") === undefined && displayableGenre("   ") === undefin
 assert(displayableGenre("needs_review") === undefined && displayableGenre("Needs Review") === undefined && displayableGenre("—") === undefined, "a placeholder is still never shown");
 assert(displayableGenre("Keluarga · Ingatan") === "Keluarga" && displayableGenre("drama · Keluarga") === "Drama" && displayableGenre("· Keluarga") === undefined, "a genre that lists two shows the first only");
 assert(displayableGenre("1980-an") === "1980-an" && displayableGenre("élan") === "Élan", "a genre that starts with a digit is left alone; an accented letter is capitalised");
+assert(displayableGenre("Fiksyen klasik, drama sosial") === "Fiksyen klasik" && displayableGenre("A; B") === "A" && displayableGenre("A / B") === "A", "commas, semicolons and slashes also show the first genre only");
+assert(hasMultipleGenres("Fiksyen klasik, drama sosial") && hasMultipleGenres("A · B") && !hasMultipleGenres("Fiksyen sejarah") && !hasMultipleGenres("") && !hasMultipleGenres(null), "two listed genres are detected, one is not");
+assert(firstGenre("Fiksyen haiwan, klasik") === "Fiksyen haiwan" && firstGenre(null) === "", "firstGenre keeps the first genre of a pasted list");
 
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);

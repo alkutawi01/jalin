@@ -22,11 +22,25 @@ const PLACEHOLDER_VALUES: ReadonlySet<string> = new Set([
   "—",
 ]);
 
+/** Separators an editor or a chatbot uses to list several genres ("Fiksyen klasik, drama sosial"). */
+const GENRE_SEPARATORS = /[·,;/|]/;
+
+/** True when the stored genre lists more than one ("Fiksyen klasik, drama sosial"); Jalin allows one genre only. */
+export function hasMultipleGenres(genre: string | null | undefined): boolean {
+  if (!genre) return false;
+  return genre.split(GENRE_SEPARATORS).filter((part) => part.trim() !== "").length > 1;
+}
+
+/** The first, main genre of a pasted value; empty when there is none. */
+export function firstGenre(genre: string | null | undefined): string {
+  return (genre ?? "").split(GENRE_SEPARATORS)[0]!.trim();
+}
+
 export function displayableGenre(
   genre: string | null | undefined
 ): string | undefined {
   if (genre === null || genre === undefined) return undefined;
-  const value = genre.split("·")[0]!.trim();
+  const value = firstGenre(genre);
   if (value === "") return undefined;
   if (PLACEHOLDER_VALUES.has(value.toLowerCase())) return undefined;
   return capitaliseFirst(value);
