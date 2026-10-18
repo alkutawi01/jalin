@@ -13,6 +13,7 @@ import { upsertSourceProvenance, type SourceProvenanceInput } from "../source-ri
 import { loadAudienceBands } from "../../audience-store";
 import { planEditorAnswer, SOURCE_FIELDS, EDITOR_SCOPES, type EditorScope, type EditorState } from "./editor-assistant";
 import { parseGlossaryPaste } from "./glossary-paste";
+import { unescapeItalicMarks } from "../../reader/literal-emphasis";
 import { normaliseCountries, MAX_COUNTRY_LENGTH } from "../../reader/countries";
 
 export interface EditorAnswerRequest { action: "preview" | "apply"; text: string; scope: EditorScope; selected?: string[]; version?: string }
@@ -98,7 +99,7 @@ export async function processEditorAnswer(id: string, input: EditorAnswerRequest
           if (await trx.selectFrom("works").where("slug", "=", row).where("id", "!=", id).select("id").executeTakeFirst()) throw new Error("Alamat pautan sudah digunakan.");
         }
         // The same limits as the form's own save: a pasted note over the limit is refused here, with its length, not saved and refused later.
-        if (change.key === "editorNote") metadata.editorNote = assertNoteFits(EDITOR_NOTE_LABEL, String(row ?? ""), EDITOR_NOTE_MAX);
+        if (change.key === "editorNote") metadata.editorNote = assertNoteFits(EDITOR_NOTE_LABEL, unescapeItalicMarks(String(row ?? "")), EDITOR_NOTE_MAX);
         else if (change.key === "readerNote") patch.reader = { ...(state.work.reader ?? {}), note: assertNoteFits(READER_NOTE_LABEL, String(row ?? ""), READER_NOTE_MAX) };
         else patch[change.key] = row;
       } else if (change.group === "characters") {

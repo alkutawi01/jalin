@@ -13,3 +13,11 @@ export function danglingEmphasisParagraphs(markdown: string): number {
     return singles.length % 2 !== 0 && /\*(?=\p{L})|\p{L}\*/u.test(prose);
   }).length;
 }
+
+/**
+ * A note pasted from a chat or a document can arrive with its italic marks escaped (\*Judul\*), which Markdown shows as stars. A note is
+ * prose written by the editor and never wants a literal star, so the escape is removed and the marks italicise.
+ */
+export function unescapeItalicMarks(text: string): string {
+  return (text ?? "").replace(/\\\*/g, "*");
+}

@@ -1,4 +1,5 @@
 import { renderItalics } from "../../lib/reader/inline-italics";
+import { unescapeItalicMarks } from "../../lib/reader/literal-emphasis";
 import LilitDivider from "./LilitDivider";
 import { capitaliseFirst } from "../../lib/capitalise-first";
 import { smartQuotes } from "../../lib/admin/smart-quotes";
@@ -261,7 +262,7 @@ export function EditorNote({ note }: { note?: string }) {
     <aside className="site-shell editor-note" aria-labelledby="editor-note-title">
       <h2 id="editor-note-title">Catatan</h2>
       {paragraphs.map((paragraph, index) => (
-        <p key={index}>{renderItalics(paragraph)}</p>
+        <p key={index}>{renderItalics(unescapeItalicMarks(paragraph))}</p>
       ))}
     </aside>
   );
