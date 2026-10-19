@@ -4080,7 +4080,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; color-scheme: lig
   .list-controls-form { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 8px 0 16px; }
   .list-controls-form .search-actions { min-height: 40px; }
   .list-controls-form.is-auto .search-apply { display: none; }
-  .list-field { display: flex; align-items: center; gap: 8px; min-height: 40px; padding-left: 10px; border: 1px solid rgba(24,52,60,.55); border-radius: 8px; background: #fffdf8; }
+  .list-field { display: flex; align-items: center; gap: 8px; min-height: 40px; padding-left: 10px; border: 1px solid rgb(var(--ink-rgb) / .55); border-radius: 8px; background: var(--x-fffdf8-bg); }
   .list-field:focus-within { outline: 2px solid var(--clay); outline-offset: 2px; }
   .list-field label { margin: 0; white-space: nowrap; }
   .list-field select { width: auto; min-width: 0; min-height: 38px; padding: 6px 4px 6px 0; border: 0; background: transparent; font-size: 14px; field-sizing: content; }
