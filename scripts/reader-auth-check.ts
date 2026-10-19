@@ -9,9 +9,11 @@ config({ path: ".env.local", override: true });
 import { sql } from "kysely";
 import { closeDb, getDb } from "../src/lib/db";
 import {
+  canStartTrial,
   deleteAccount,
   getSession,
   listDevices,
+  loginChallengeNeeded,
   requestLoginCode,
   setDisplayName,
   signOut,
@@ -21,7 +23,7 @@ import {
   type Db,
 } from "../src/lib/reader-auth/service";
 import { clearReading, isSaved, listReading, listSaved, recordProgress, setSaved } from "../src/lib/reader-auth/library";
-import { emailLookupMac, ipMac, type MacKey, type Mailer } from "../src/lib/reader-auth/primitives";
+import { emailLookupMac, ipMac, trialClaimMac, type MacKey, type Mailer } from "../src/lib/reader-auth/primitives";
 
 let passed = 0;
 let failed = 0;
@@ -157,6 +159,37 @@ async function main() {
       assert(back.ver.status === "ok" && back.ver.isNewAccount && back.ver.trialEndsAt === null, "registering again after deleting starts clean");
       if (back.ver.status !== "ok") throw new Error("cannot continue");
       assert((await startTrial(trx, { key, now: at(61) }, back.ver.accountId)).status === "used", "and gets no second trial: the address has used it");
+
+      // Aliases of one mailbox share one trial.
+      const alias1 = await signIn(trx, "ali.baba@gmail.com", 70);
+      assert(alias1.ver.status === "ok", "a Gmail address signs in");
+      if (alias1.ver.status !== "ok") throw new Error("cannot continue");
+      assert((await startTrial(trx, { key, now: at(71) }, alias1.ver.accountId)).status === "ok", "and starts its trial");
+      const alias2 = await signIn(trx, "alibaba+jalin@googlemail.com", 72);
+      assert(alias2.ver.status === "ok" && alias2.ver.isNewAccount, "an alias of the same mailbox is its own account (the address is kept as typed)");
+      if (alias2.ver.status !== "ok") throw new Error("cannot continue");
+      assert(!(await canStartTrial(trx, { key }, alias2.ver.accountId)), "but it is told the trial is already taken");
+      assert((await startTrial(trx, { key, now: at(73) }, alias2.ver.accountId)).status === "used", "and gets no second trial");
+      // Two different Gmail users are not joined.
+      const other = await signIn(trx, "abu.bakar@gmail.com", 76);
+      if (other.ver.status !== "ok") throw new Error("cannot continue");
+      assert(await canStartTrial(trx, { key }, other.ver.accountId), "a different Gmail user can still start a trial");
+      // A claim made before aliases were joined (the address as typed) still counts.
+      const olderClaim = await signIn(trx, "lama+x@contoh.my", 74);
+      if (olderClaim.ver.status !== "ok") throw new Error("cannot continue");
+      await trx.insertInto("reader_trial_claims").values({ email_mac: trialClaimMac(key, "lama+x@contoh.my"), key_id: key.keyId, claimed_at: at(74) }).execute();
+      assert((await startTrial(trx, { key, now: at(75) }, olderClaim.ver.accountId)).status === "used", "an older claim made with the address as typed is still honoured");
+
+      // The bot challenge is asked for by network address and by how much of the mail budget is used, never by the e-mail address.
+      const quiet = ipMac(key, "198.51.100.20");
+      assert(!(await loginChallengeNeeded(trx, { now: at(800), limits: { requestsPerDayAll: 1000 } }, { ipMac: quiet })), "a quiet visitor on a quiet day is not challenged");
+      await requestLoginCode(trx, { key, mailer, now: at(801), limits: { requestsPerDayAll: 1000 } }, { email: "satu@contoh.my", ipMac: quiet });
+      assert(!(await loginChallengeNeeded(trx, { now: at(802), limits: { requestsPerDayAll: 1000 } }, { ipMac: quiet })), "one request from an address is not enough to challenge it");
+      await requestLoginCode(trx, { key, mailer, now: at(803), limits: { requestsPerDayAll: 1000 } }, { email: "dua@contoh.my", ipMac: quiet });
+      assert(await loginChallengeNeeded(trx, { now: at(804), limits: { requestsPerDayAll: 1000 } }, { ipMac: quiet }), "the second request from the same address within an hour calls for the challenge");
+      assert(!(await loginChallengeNeeded(trx, { now: at(805), limits: { requestsPerDayAll: 1000 } }, { ipMac: ipMac(key, "198.51.100.21") })), "another visitor is not challenged for it");
+      assert(await loginChallengeNeeded(trx, { now: at(806), limits: { requestsPerDayAll: 4 } }, { ipMac: ipMac(key, "198.51.100.22") }), "when 40% of a small daily budget is used, everyone is challenged");
+      assert(!(await loginChallengeNeeded(trx, { now: at(2000), limits: { requestsPerDayAll: 1000 } }, { ipMac: quiet })), "an hour later the same address is not challenged any more");
 
       // One address: five codes an hour.
       let hourly = -1;

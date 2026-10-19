@@ -8,6 +8,7 @@ import PaywallSwitch from "./PaywallSwitch";
 import { isPaywallSwitchOn, countSamples } from "../../../lib/reader-auth/switches";
 import { countEvents, readerMailDailyCap } from "../../../lib/reader-auth/service";
 import { controllerMissing } from "../../../lib/legal-identity";
+import { turnstileConfig } from "../../../lib/reader-auth/turnstile";
 
 export const dynamic = "force-dynamic";
 
@@ -80,6 +81,9 @@ export default async function LanggananPage() {
           <h2>Kuota e-mel kod</h2>
           <p>{mailUsed} daripada {mailCap} e-mel kod digunakan dalam 24 jam terakhir.</p>
           {mailUsed >= Math.ceil(mailCap * 0.7) ? <div className="admin-alert admin-alert-warning" role="status">Penggunaan e-mel kod mencapai sekurang-kurangnya 70% kuota harian. Semak aktiviti dan kapasiti penghantaran.</div> : null}
+          {turnstileConfig()
+            ? <p>Cabaran bot Turnstile aktif: ia disoal hanya apabila ada tanda penyalahgunaan atau kuota e-mel hampir habis.</p>
+            : <div className="admin-alert admin-alert-warning" role="status">Cabaran bot Turnstile belum dikonfigurasi (TURNSTILE_SITE_KEY dan TURNSTILE_SECRET_KEY). Tetapkan kedua-duanya sebelum akaun dibuka kepada umum.</div>}
           <h2>Salinan kod di luar pangkalan data</h2>
           <p>Setiap malam, satu fail disulitkan dan bertandatangan berisi semua kod dan penebusan disimpan di luar pangkalan data. Jika pangkalan data dipulihkan ke masa lampau, fail inilah yang menghalang kad yang sudah digunakan daripada digunakan semula.</p>
           {exportWarning ? <div className="admin-alert admin-alert-error" role="alert">{exportWarning}</div> : null}

@@ -24,6 +24,7 @@ import {
   normaliseOtpInput,
   otpMac,
   trialClaimMac,
+  trialIdentity,
   type MacKey,
   type Mailer,
 } from "./primitives";
@@ -43,6 +44,10 @@ export const LIMITS = {
   failedChecksPerEmailPerHour: 10,
   failedChecksPerEmailPerDay: 30,
   failedChecksPerIpPerHour: 30,
+  /** Ask for the bot challenge (Turnstile) once one network address has asked for this many codes in an hour... */
+  challengeAfterIpRequestsPerHour: 2,
+  /** ...or once this share of the daily mail budget is used (a number of requests, worked out from the cap). */
+  challengeAfterDailyShare: 0.4,
   maxActiveDevices: 2,
   lastSeenRefreshMinutes: 10,
 } as const;
@@ -86,6 +91,24 @@ export async function recordEvent(db: Db, kind: EventKind, scope: EventScope, ke
 }
 
 export type RequestCodeResult = { ok: true } | { ok: false; reason: "invalid_email" | "throttled" | "mail_failed" };
+
+/**
+ * Whether this visitor must pass the bot challenge before a code is sent. It depends on the visitor's network address and on how much of
+ * the daily mail budget is used, never on whether the e-mail address has an account, so it tells nobody who is registered. Nothing is
+ * recorded here: only a request that is actually sent is counted.
+ */
+export async function loginChallengeNeeded(
+  db: Db,
+  deps: { now?: Date; limits?: Partial<LimitSettings> },
+  input: { ipMac: string }
+): Promise<boolean> {
+  const now = deps.now ?? new Date();
+  const dailyCap = deps.limits?.requestsPerDayAll ?? readerMailDailyCap();
+  const limits: LimitSettings = { ...LIMITS, requestsPerDayAll: dailyCap, requestsPerDayNew: newReaderMailDailyCap(dailyCap), ...deps.limits };
+  if ((await countEvents(db, "request", "ip", input.ipMac, new Date(now.getTime() - HOUR_MS))) >= limits.challengeAfterIpRequestsPerHour) return true;
+  const used = await countEvents(db, "request", "global", "all", new Date(now.getTime() - DAY_MS));
+  return used >= Math.ceil(limits.requestsPerDayAll * limits.challengeAfterDailyShare);
+}
 
 /**
  * "Send me a code." The caller shows the same message whatever the result except `invalid_email`, so nobody can learn whether an
@@ -310,9 +333,12 @@ export async function startTrial(db: Db, deps: { key: MacKey; now?: Date }, acco
     const account = await trx.selectFrom("reader_accounts").selectAll().where("id", "=", accountId).where("status", "<>", "deleted").forUpdate().executeTakeFirst();
     if (!account) return { status: "no_account" };
     if (account.trial_starts_at) return { status: "already", startsAt: account.trial_starts_at, endsAt: account.trial_ends_at };
+    // A claim made before aliases were joined (the address as typed) still counts.
+    const legacy = await trx.selectFrom("reader_trial_claims").select("email_mac").where("email_mac", "=", trialClaimMac(deps.key, account.email_normalized)).executeTakeFirst();
+    if (legacy) return { status: "used" };
     const claim = await trx
       .insertInto("reader_trial_claims")
-      .values({ email_mac: trialClaimMac(deps.key, account.email_normalized), key_id: deps.key.keyId, claimed_at: now })
+      .values({ email_mac: trialClaimMac(deps.key, trialIdentity(account.email_normalized)), key_id: deps.key.keyId, claimed_at: now })
       .onConflict((oc) => oc.column("email_mac").doNothing())
       .returning("email_mac")
       .executeTakeFirst();
@@ -328,7 +354,8 @@ export async function startTrial(db: Db, deps: { key: MacKey; now?: Date }, acco
 export async function canStartTrial(db: Db, deps: { key: MacKey }, accountId: string): Promise<boolean> {
   const account = await db.selectFrom("reader_accounts").select(["trial_starts_at", "email_normalized"]).where("id", "=", accountId).where("status", "<>", "deleted").executeTakeFirst();
   if (!account || account.trial_starts_at) return false;
-  const claim = await db.selectFrom("reader_trial_claims").select("email_mac").where("email_mac", "=", trialClaimMac(deps.key, account.email_normalized)).executeTakeFirst();
+  const macs = [...new Set([trialClaimMac(deps.key, account.email_normalized), trialClaimMac(deps.key, trialIdentity(account.email_normalized))])];
+  const claim = await db.selectFrom("reader_trial_claims").select("email_mac").where("email_mac", "in", macs).executeTakeFirst();
   return !claim;
 }
 

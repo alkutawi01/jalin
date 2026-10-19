@@ -18,6 +18,8 @@ Senarai ini berasaskan kajian awal dan semakan ChatGPT (sumber: JPDP, KPDN, MCMC
 - Halaman Akaun: padam akaun menunjukkan tarikh tamat akses, memberi pilihan "Kekalkan akaun sehingga tamat" dan "Padam sekarang juga".
 - Admin Langganan: amaran jika maklumat pengawal data belum lengkap.
 - Prosedur pelanggaran data: `docs/PROSEDUR_PELANGGARAN_DATA.md`.
+- Percubaan percuma sekali bagi setiap peti e-mel: alias Gmail (titik, +tag, googlemail.com) dan +tag pada domain lain dikira satu percubaan (19 Oktober 2026, lihat `docs/CABARAN_BOT_DAN_PERCUBAAN.md`).
+- Cabaran bot Cloudflare Turnstile pada permintaan kod log masuk, disoal hanya apabila perlu; mati selagi kunci tidak ditetapkan (sama dokumen).
 
 ## Perlu dilakukan oleh Izzat sebelum akaun dihidupkan
 
@@ -30,7 +32,9 @@ Senarai ini berasaskan kajian awal dan semakan ChatGPT (sumber: JPDP, KPDN, MCMC
 | 5 | Kedai Shopee: nama penjual, e-mel, telefon, alamat, harga penuh, syarat dan polisi pulangan dalam Bahasa Melayu | Peraturan Perlindungan Pengguna (Urus Niaga Perdagangan Elektronik) 2024 |
 | 6 | Semak tanggungjawab cukai dengan LHDN dan JKDM (cukai pendapatan, rekod jualan, ambang cukai perkhidmatan) | Ketiadaan pendaftaran cukai tidak bermaksud pendapatan boleh diabaikan |
 | 7 | Sahkan lokasi pemprosesan dan perjanjian pemprosesan data Vercel, Neon dan Resend (log, sandaran, subpemproses) | PDPA seksyen 129: pemindahan rentas sempadan |
-| 8 | Pastikan alamat e-mel editorial@adjung.com dipantau (telefon tidak diperlukan) | Hak akses, pembetulan dan prosedur pelanggaran |
+| 8 | Pastikan alamat e-mel editorial@adjung.com dipantau (telefon tidak diperlukan) |
+| 9 | Cipta tapak Cloudflare Turnstile (percuma, mod Managed, domain jalin.adjung.com); tetapkan `TURNSTILE_SITE_KEY` dan `TURNSTILE_SECRET_KEY` pada Vercel Production | Tanpa kunci, cabaran bot mati dan skrip boleh menghabiskan kuota e-mel harian; admin Langganan memberi amaran selagi tiada |
+| 10 | Naikkan pelan Resend dan tetapkan `READER_MAIL_DAILY_CAP` selaras; sahkan SPF, DKIM dan DMARC domain penghantar | Had asal 90 sehari mengikut pelan percuma; setiap pendaftaran dan log masuk menghantar satu e-mel | Hak akses, pembetulan dan prosedur pelanggaran |
 
 ## Dinilai, tidak menghalang pelancaran (keyakinan sederhana)
 
