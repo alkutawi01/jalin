@@ -112,7 +112,7 @@ function SectionIndexDetails({ items }: { items: { label: string; href: string }
   if (items.length === 0) return null;
   return (
     <details className="chapter-index">
-      <summary style={{ cursor: "pointer", fontSize: "0.78rem", letterSpacing: "0.06em", textTransform: "uppercase", opacity: 1, color: "#4b5f64" }}>
+      <summary style={{ cursor: "pointer", fontSize: "0.78rem", letterSpacing: "0.06em", textTransform: "uppercase", opacity: 1, color: "var(--x-4b5f64-fg)" }}>
         Senarai bab ({items.length})
       </summary>
       <ol style={{ margin: "0.5rem 0 0", paddingLeft: "1.1rem", fontSize: "0.85rem", lineHeight: 1.55 }}>

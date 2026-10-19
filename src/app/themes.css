@@ -1,0 +1,293 @@
+/* Written once, by a script, from the literal colours of globals.css (each became a --x-HEX-KIND token). Values are edited here by hand; overrides go in themes-overrides below.
+   The light theme leaves every colour as it was; Sepia and Gelap are the same tokens re-valued. Screen only: print stays on paper. */
+:root {
+  --ink-rgb: 24 52 60;
+  --on-clay: #fff;
+  --x-4b5f64-fg: #4b5f64;
+  --on-ink-a: #fffdf8;
+  --on-ink-b: #f4ecdf;
+  --x-084298-fg: #084298;
+  --x-0d262e-bg: #0d262e;
+  --x-0f262c-bg: #0f262c;
+  --x-0f2a31-bg: #0f2a31;
+  --x-0f5132-fg: #0f5132;
+  --x-1f6f5c-fg: #1f6f5c;
+  --x-243d43-fg: #243d43;
+  --x-2f6b3a-fg: #2f6b3a;
+  --x-55676b-fg: #55676b;
+  --x-5a6b6f-fg: #5a6b6f;
+  --x-5b6b6f-fg: #5b6b6f;
+  --x-5d696b-fg: #5d696b;
+  --x-5f7074-fg: #5f7074;
+  --x-664d03-fg: #664d03;
+  --x-6b7575-fg: #6b7575;
+  --x-6f7a7d-fg: #6f7a7d;
+  --x-718083-fg: #718083;
+  --x-74392a-fg: #74392a;
+  --x-748184-fg: #748184;
+  --x-842029-fg: #842029;
+  --x-856404-fg: #856404;
+  --x-8a5a00-fg: #8a5a00;
+  --x-8b3f30-fg: #8b3f30;
+  --x-a1362a-fg: #a1362a;
+  --x-badbcc-ln: #badbcc;
+  --x-cfe2ff-bg: #cfe2ff;
+  --x-d1e7dd-bg: #d1e7dd;
+  --x-d6ded3-bg: #d6ded3;
+  --x-d7d4cc-bg: #d7d4cc;
+  --x-d8d4cc-ln: #d8d4cc;
+  --x-dceadd-bg: #dceadd;
+  --x-e2eaf3-bg: #e2eaf3;
+  --x-e3ddd0-ln: #e3ddd0;
+  --x-e5def0-bg: #e5def0;
+  --x-e8dfd2-bg: #e8dfd2;
+  --x-e8e4dc-bg: #e8e4dc;
+  --x-eaf1ea-bg: #eaf1ea;
+  --x-ece5dc-bg: #ece5dc;
+  --x-eee5cd-bg: #eee5cd;
+  --x-eef2f7-bg: #eef2f7;
+  --x-efe9dd-bg: #efe9dd;
+  --x-f0ddd1-bg: #f0ddd1;
+  --x-f0ecf5-bg: #f0ecf5;
+  --x-f0ede8-ln: #f0ede8;
+  --x-f1eee8-bg: #f1eee8;
+  --x-f3efe7-bg: #f3efe7;
+  --x-f5c2c7-ln: #f5c2c7;
+  --x-f5f3ef-bg: #f5f3ef;
+  --x-f5f5f5-bg: #f5f5f5;
+  --x-f6f0e1-bg: #f6f0e1;
+  --x-f7ece4-bg: #f7ece4;
+  --x-f7ece5-bg: #f7ece5;
+  --x-f7f4ee-bg: #f7f4ee;
+  --x-f8d7da-bg: #f8d7da;
+  --x-f8e8e1-bg: #f8e8e1;
+  --x-f8f5ef-bg: #f8f5ef;
+  --x-faf3ee-bg: #faf3ee;
+  --x-faf8f4-bg: #faf8f4;
+  --x-faf9f6-bg: #faf9f6;
+  --x-fafafa-bg: #fafafa;
+  --x-fbf2ec-bg: #fbf2ec;
+  --x-fbf3ea-bg: #fbf3ea;
+  --x-fbf8f2-ln: #fbf8f2;
+  --x-fbfaf7-bg: #fbfaf7;
+  --x-fef3cd-bg: #fef3cd;
+  --x-ffecb5-ln: #ffecb5;
+  --x-fff3cd-bg: #fff3cd;
+  --x-fffdf8-bg: #fffdf8;
+  --x-ffffff-bg: #ffffff;
+}
+
+/* ── Sepia ── */
+@media screen {
+  html[data-theme="sepia"] {
+    color-scheme: light;
+    --ink-rgb: 59 47 30;
+    --ink: #3b2f1e; --ink-soft: #6b5a42; --paper: #f1e4cc; --white: #f8eed9; --line: #d6c3a1; --beige: #d8b9a6;
+    --clay: #8f4f3a; --clay-text: #85452f;
+    --x-084298-fg: #3a4e6d;
+    --x-0d262e-bg: #0d2327;
+    --x-0f262c-bg: #0f2325;
+    --x-0f2a31-bg: #0f272a;
+    --x-0f5132-fg: #3d563a;
+    --x-1f6f5c-fg: #45654f;
+    --x-243d43-fg: #484c43;
+    --x-2f6b3a-fg: #4d633e;
+    --x-55676b-fg: #606157;
+    --x-5a6b6f-fg: #636359;
+    --x-5b6b6f-fg: #636359;
+    --x-5d696b-fg: #646257;
+    --x-5f7074-fg: #65655b;
+    --x-664d03-fg: #695423;
+    --x-6b7575-fg: #6b685c;
+    --x-6f7a7d-fg: #6d6a60;
+    --x-718083-fg: #6e6d63;
+    --x-74392a-fg: #704a36;
+    --x-748184-fg: #706e63;
+    --x-842029-fg: #783d36;
+    --x-856404-fg: #785f23;
+    --x-8a5a00-fg: #7b5a21;
+    --x-8b3f30-fg: #7b4d39;
+    --x-a1362a-fg: #864836;
+    --x-badbcc-ln: #b5ccae;
+    --x-cfe2ff-bg: #c9d3d9;
+    --x-d1e7dd-bg: #cbd8bc;
+    --x-d6ded3-bg: #d0cfb4;
+    --x-d7d4cc-bg: #d1c6ae;
+    --x-d8d4cc-ln: #d2c6ae;
+    --x-dceadd-bg: #d6dabc;
+    --x-e2eaf3-bg: #dcdacf;
+    --x-e3ddd0-ln: #ddceb1;
+    --x-e5def0-bg: #dfcfcc;
+    --x-e8dfd2-bg: #e2d0b3;
+    --x-e8e4dc-bg: #e2d5bb;
+    --x-eaf1ea-bg: #e4e1c7;
+    --x-ece5dc-bg: #e6d6bb;
+    --x-eee5cd-bg: #e7d6ae;
+    --x-eef2f7-bg: #e7e2d2;
+    --x-efe9dd-bg: #e8d9bc;
+    --x-f0ddd1-bg: #e9ceb2;
+    --x-f0ecf5-bg: #e9dcd0;
+    --x-f0ede8-ln: #e9ddc5;
+    --x-f1eee8-bg: #eadec5;
+    --x-f3efe7-bg: #ecdfc5;
+    --x-f5c2c7-ln: #eeb5a9;
+    --x-f5f3ef-bg: #eee3cb;
+    --x-f5f5f5-bg: #eee5d0;
+    --x-f6f0e1-bg: #efe0bf;
+    --x-f7ece4-bg: #f0dcc2;
+    --x-f7ece5-bg: #f0dcc3;
+    --x-f7f4ee-bg: #f0e4cb;
+    --x-f8d7da-bg: #f1c9ba;
+    --x-f8e8e1-bg: #f1d9bf;
+    --x-f8f5ef-bg: #f1e5cb;
+    --x-faf3ee-bg: #f3e3cb;
+    --x-faf8f4-bg: #f3e7d0;
+    --x-faf9f6-bg: #f3e8d1;
+    --x-fafafa-bg: #f3e9d5;
+    --x-fbf2ec-bg: #f4e2c9;
+    --x-fbf3ea-bg: #f4e3c7;
+    --x-fbf8f2-ln: #f4e7ce;
+    --x-fbfaf7-bg: #f4e9d2;
+    --x-fef3cd-bg: #f7e3ae;
+    --x-ffecb5-ln: #f8dc9a;
+    --x-fff3cd-bg: #f8e3ae;
+    --x-fffdf8-bg: #f8ecd3;
+    --x-ffffff-bg: #f8eed9;
+  }
+
+/* ── Gelap: dakwat teal, teks gading, aksen tanah liat lembut ── */
+  html[data-theme="gelap"] {
+    color-scheme: dark;
+    --ink-rgb: 238 232 221;
+    --on-ink-a: #101e22; --on-ink-b: #101e22; --on-clay: #101e22;
+    --ink: #eee8dd; --ink-soft: #b4c2bf; --paper: #101e22; --white: #192c31; --line: #35494d; --beige: #4a3a33;
+    --clay: #d9a58c; --clay-text: #d9a58c;
+    --x-084298-fg: #8fa9cf;
+    --x-0d262e-bg: #ffffff;
+    --x-0f262c-bg: #ffffff;
+    --x-0f2a31-bg: #ffffff;
+    --x-0f5132-fg: #bce2d0;
+    --x-1f6f5c-fg: #9cd4c7;
+    --x-243d43-fg: #bfd3d8;
+    --x-2f6b3a-fg: #9acaa3;
+    --x-55676b-fg: #9ba9ac;
+    --x-5a6b6f-fg: #9ca8ab;
+    --x-5b6b6f-fg: #9aa9ac;
+    --x-5d696b-fg: #9aa9ac;
+    --x-5f7074-fg: #9aa9ac;
+    --x-664d03-fg: #e0d5b5;
+    --x-6b7575-fg: #9aa9ac;
+    --x-6f7a7d-fg: #9aa9ac;
+    --x-718083-fg: #9aa9ac;
+    --x-74392a-fg: #ce9e92;
+    --x-748184-fg: #9aa9ac;
+    --x-842029-fg: #ce8c92;
+    --x-856404-fg: #d6c89f;
+    --x-8a5a00-fg: #d6c29e;
+    --x-8b3f30-fg: #c78b7f;
+    --x-a1362a-fg: #c8867e;
+    --x-badbcc-ln: #3d5449;
+    --x-cfe2ff-bg: #232d3d;
+    --x-d1e7dd-bg: #2b3f36;
+    --x-d6ded3-bg: #353c32;
+    --x-d7d4cc-bg: #3f3c36;
+    --x-d8d4cc-ln: #494640;
+    --x-dceadd-bg: #2a392b;
+    --x-e2eaf3-bg: #232d39;
+    --x-e3ddd0-ln: #484338;
+    --x-e5def0-bg: #2d253a;
+    --x-e8dfd2-bg: #3f372a;
+    --x-e8e4dc-bg: #38342c;
+    --x-eaf1ea-bg: #273227;
+    --x-ece5dc-bg: #3a3228;
+    --x-eee5cd-bg: #433b26;
+    --x-eef2f7-bg: #212933;
+    --x-efe9dd-bg: #3b3426;
+    --x-f0ddd1-bg: #413025;
+    --x-f0ecf5-bg: #2a2333;
+    --x-f0ede8-ln: #3b3730;
+    --x-f1eee8-bg: #342f26;
+    --x-f3efe7-bg: #363024;
+    --x-f5c2c7-ln: #4b3235;
+    --x-f5f3ef-bg: #302c24;
+    --x-f5f5f5-bg: #1c3136;
+    --x-f6f0e1-bg: #3a3321;
+    --x-f7ece4-bg: #382b20;
+    --x-f7ece5-bg: #382a20;
+    --x-f7f4ee-bg: #332d21;
+    --x-f8d7da-bg: #3c2325;
+    --x-f8e8e1-bg: #392821;
+    --x-f8f5ef-bg: #332d20;
+    --x-faf3ee-bg: #34271e;
+    --x-faf8f4-bg: #312b1f;
+    --x-faf9f6-bg: #2e2b20;
+    --x-fafafa-bg: #1a2e32;
+    --x-fbf2ec-bg: #35271e;
+    --x-fbf3ea-bg: #352b1f;
+    --x-fbf8f2-ln: #3a3326;
+    --x-fbfaf7-bg: #2e2b1f;
+    --x-fef3cd-bg: #3e3823;
+    --x-ffecb5-ln: #4c4633;
+    --x-fff3cd-bg: #3d3723;
+    --x-fffdf8-bg: #302a1b;
+    --x-ffffff-bg: #182b2f;
+  }
+}
+
+/* ── themes-overrides: what a token swap cannot reach (hand-written) ── */
+@media screen {
+  /* The header and the "Mula" band wash the page colour over what lies beneath. */
+  html[data-theme="gelap"] .site-header { background: rgba(16, 30, 34, .94); border-bottom-color: rgba(238, 232, 221, .12); }
+  html[data-theme="sepia"] .site-header { background: rgba(241, 228, 204, .94); }
+  html[data-theme="gelap"] .start-hero-band::after { background: radial-gradient(ellipse at center, rgba(16, 30, 34, .94) 0%, rgba(16, 30, 34, .82) 55%, rgba(16, 30, 34, .55) 100%); }
+  html[data-theme="sepia"] .start-hero-band::after { background: radial-gradient(ellipse at center, rgba(241, 228, 204, .94) 0%, rgba(241, 228, 204, .82) 55%, rgba(241, 228, 204, .55) 100%); }
+  html[data-theme="gelap"] .episode-card-num { background: rgba(25, 44, 49, .92); }
+  html[data-theme="gelap"] :root:not(:has(.a-nav, .admin-login-page))::-webkit-scrollbar-thumb,
+  html[data-theme="gelap"] *::-webkit-scrollbar-thumb { background: #4a6166; border-color: var(--paper); }
+  html[data-theme="gelap"] { scrollbar-color: #4a6166 var(--paper); }
+
+  /* Home page blocks (Tetapan > Warna blok): the editor's choice is kept; each ground has a dark and a sepia face. */
+  html[data-theme="gelap"] .homepage [data-ground="paper"] { --ground-bg: #101e22; }
+  html[data-theme="gelap"] .homepage [data-ground="white"] { --ground-bg: #14252a; }
+  html[data-theme="gelap"] .homepage [data-ground="sand"] { --ground-bg: #1c2927; }
+  html[data-theme="gelap"] .homepage [data-ground="beige"] { --ground-bg: #3b2f29; --ink-soft: #d8cfc2; --clay-text: #e8cfc0; }
+  html[data-theme="gelap"] .homepage [data-ground="clay"] { --ground-bg: #7a4a3b; }
+  html[data-theme="sepia"] .homepage [data-ground="paper"] { --ground-bg: #f1e4cc; }
+  html[data-theme="sepia"] .homepage [data-ground="white"] { --ground-bg: #f8eed9; }
+  html[data-theme="sepia"] .homepage [data-ground="sand"] { --ground-bg: #ead9bd; }
+
+  /* Cards sit on any ground with their own face: a dark card with ivory text in Gelap, a warm card in Sepia. */
+  html[data-theme="gelap"] .homepage [data-ground] :is(.latest-card, .category-explorer-card, .editorial-pick, .hero-carousel-btn) {
+    color: #eee8dd; --ink: #eee8dd; --ink-soft: #b4c2bf; --line: #35494d; --clay-text: #d9a58c; --clay: #d9a58c;
+  }
+  html[data-theme="sepia"] .homepage [data-ground] :is(.latest-card, .category-explorer-card, .editorial-pick, .hero-carousel-btn) {
+    color: #3b2f1e; --ink: #3b2f1e; --ink-soft: #6b5a42; --line: #d6c3a1; --clay-text: #85452f; --clay: #8f4f3a;
+  }
+  /* The call-to-action on a dark ground keeps its readable pairing in the dark theme. */
+  html[data-theme="gelap"] .homepage [data-ground="ink"] .hero-featured-cta, html[data-theme="gelap"] .homepage [data-ground="clay"] .hero-featured-cta, html[data-theme="gelap"] .homepage [data-ground="black"] .hero-featured-cta { color: #18343c; }
+}
+
+/* The logo has a reversed wordmark for dark grounds; the picture itself is never filtered or recoloured by CSS. */
+.header-wordmark .wordmark-reversed { display: none; }
+@media screen {
+  html[data-theme="gelap"] .header-wordmark .wordmark-light { display: none; }
+  html[data-theme="gelap"] .header-wordmark .wordmark-reversed { display: block; }
+}
+
+/* The page logo on the information pages swaps to the reversed logo in the same way. */
+.info-brand .wordmark-reversed { display: none; }
+@media screen {
+  html[data-theme="gelap"] .info-brand .wordmark-light { display: none; }
+  html[data-theme="gelap"] .info-brand .wordmark-reversed { display: block; }
+}
+
+/* A colour set inline by a component (the chapter list on a novella). */
+@media screen {
+  html[data-theme="gelap"] { --x-4b5f64-fg: #a8b8b5; }
+  html[data-theme="sepia"] { --x-4b5f64-fg: #6b5a42; }
+}
+
+/* The emblem's deep teal blades would vanish on a dark page: they turn ivory (as they do on the teal boot screen); terracotta and peach keep their colours. */
+@media screen {
+  html[data-theme="gelap"] .jalin-emblem .emblem-teal { fill: #eee8dd; }
+}

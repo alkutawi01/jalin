@@ -58,7 +58,7 @@ export default function JalinEmblem({ animated = false, size = 96, label, tone =
         {BLADES.map((b, i) => (
           <g key={i} transform="translate(1042 525)">
             <g className="jalin-blade" style={{ ["--i" as string]: ORDER.indexOf(i) }}>
-              <path transform="translate(-1042 -525)" fill={tone === "on-teal" && b.fill === TEAL ? "#fff" : b.fill.replace("url(#", "url(#je-")} d={b.d} />
+              <path className={tone !== "on-teal" && b.fill === TEAL ? "emblem-teal" : undefined} transform="translate(-1042 -525)" fill={tone === "on-teal" && b.fill === TEAL ? "#fff" : b.fill.replace("url(#", "url(#je-")} d={b.d} />
             </g>
           </g>
         ))}

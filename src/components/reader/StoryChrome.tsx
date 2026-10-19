@@ -36,7 +36,8 @@ export async function SiteHeader({ active }: { active?: string }) {
       <div className="site-shell header-inner">
         <div className="header-brand">
           <a className="header-wordmark" href="/" aria-label="Jalin utama">
-            <img src="/brand/jalin-wordmark.svg" alt="Jalin" />
+            <img className="wordmark-light" src="/brand/jalin-wordmark.svg" alt="Jalin" />
+            <img className="wordmark-reversed" src="/brand/jalin-wordmark-reversed.svg" alt="" aria-hidden="true" />
           </a>
         </div>
         <div className="header-main">
