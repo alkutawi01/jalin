@@ -27,7 +27,7 @@ export function applyTheme(choice: ThemeChoice = chosenTheme(read(THEME_KEY), re
  * Draws nothing. Keeps the theme right after the first paint: follows the device while the choice is "sistem", and learns the signed-in
  * reader's saved theme (a visitor has none, so an account's theme never carries over to the next person on this browser).
  */
-export default function ThemeSync() {
+export default function ThemeSync({ accounts }: { accounts: boolean }) {
   const pathname = usePathname();
   useEffect(() => { applyTheme(); }, [pathname]);
   useEffect(() => {
@@ -35,6 +35,11 @@ export default function ThemeSync() {
     const onChange = () => applyTheme();
     query.addEventListener("change", onChange);
     let alive = true;
+    // Where reader accounts are not open there is nobody to ask (the question would only come back 404), and the admin is never themed.
+    if (!accounts || window.location.pathname.startsWith("/admin")) {
+      try { if (!accounts) localStorage.removeItem(ACCOUNT_THEME_KEY); } catch { /* nothing to clear */ }
+      return () => { query.removeEventListener("change", onChange); };
+    }
     loadWho().then(async (who) => {
       if (!alive) return;
       try {
@@ -47,6 +52,6 @@ export default function ThemeSync() {
       } catch { /* the theme already on the page stays */ }
     });
     return () => { alive = false; query.removeEventListener("change", onChange); };
-  }, []);
+  }, [accounts]);
   return null;
 }
