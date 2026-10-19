@@ -30,8 +30,9 @@ export interface AdminUser {
 }
 
 const SESSION_COOKIE = "jalin-admin-session";
-const SESSION_EXPIRY = 24 * 60 * 60 * 1000; // 24 hours (owner)
-const STAFF_SESSION_EXPIRY = 12 * 60 * 60 * 1000; // 12 hours (staff accounts)
+/** An editor stays signed in until they sign out themselves; the cookie only lapses after a quarter of a year without signing in again. */
+const SESSION_EXPIRY = 90 * 24 * 60 * 60 * 1000; // owner
+const STAFF_SESSION_EXPIRY = 90 * 24 * 60 * 60 * 1000; // staff accounts (still checked against the table on every request, so switching one off is immediate)
 
 /**
  * Get the admin secret. Fails closed if not configured.
