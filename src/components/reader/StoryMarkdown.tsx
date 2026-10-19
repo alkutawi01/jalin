@@ -123,7 +123,14 @@ export default function StoryMarkdown({
             return <p>{decorateChildren(withFootnotes(children, footnoteNumbers), glossary, used, !/\\\*/.test(raw))}</p>;
           } }}>{segment.content}</ReactMarkdown>
         : <div key={index} className={`story-communication story-communication-${segment.kind}`} role="group" aria-label={segment.kind === "mesej" ? "Mesej dalam cerita" : "E-mel dalam cerita"}>
-            <ReactMarkdown components={segment.kind === "mesej" ? messageComponents : components}>{segment.content}</ReactMarkdown>
+            {segment.kind === "mesej"
+              // One message per line: a single line break is kept (Markdown would join the lines into one paragraph); a blank line starts a new group.
+              ? segment.content.split(/\n{2,}/).map((group, g) => (
+                  <div key={g} className="message-group">
+                    {group.split("\n").filter((line) => line.trim() !== "").map((line, l) => <ReactMarkdown key={l} components={messageComponents}>{line}</ReactMarkdown>)}
+                  </div>
+                ))
+              : <ReactMarkdown components={components}>{segment.content}</ReactMarkdown>}
           </div>)}
     </>
   );

@@ -8,6 +8,7 @@
 import { Kysely } from "kysely";
 import { tidyShort } from "../capitalise-first";
 import { readingMinutesFor } from "../reader/reading-time";
+import { unescapeItalicMarks } from "../reader/literal-emphasis";
 import { getDb, hasDb } from "../db";
 import type { Database } from "../db/types";
 import type { WorkType, WorkStatus } from "../db/types";
@@ -254,7 +255,7 @@ export async function updateWork(
       const current = await trx.selectFrom("works").where("id", "=", id).select("metadata").forUpdate().executeTakeFirst();
       const metadata: Record<string, unknown> = { ...((current?.metadata ?? {}) as Record<string, unknown>) };
       if (input.editorNote !== undefined) {
-        const note = String(input.editorNote ?? "").trim();
+        const note = unescapeItalicMarks(String(input.editorNote ?? "")).trim();
         if (note) metadata.editorNote = note;
         else delete metadata.editorNote;
       }

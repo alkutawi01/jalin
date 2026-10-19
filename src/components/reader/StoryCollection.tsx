@@ -18,25 +18,25 @@ function CardMeta({ card }: { card: StoryCard }) {
 }
 
 /** The card of the homepage and of "Baca lagi" after a story: one card, one look. */
-export function StoryCardView({ card }: { card: StoryCard }) {
+export function StoryCardView({ card, heading: Heading = "h3", priority }: { card: StoryCard; heading?: "h2" | "h3"; priority?: boolean }) {
   return (
     <article className="latest-card">
       <a href={card.href}>
         <div className="latest-card-cover">
-          <WorkCover type={card.type} title={card.title} hero={card.hero} rightsYear={card.year} />
+          <WorkCover type={card.type} title={card.title} hero={card.hero} rightsYear={card.year} priority={priority} />
         </div>
         <div className="latest-card-body">
           <div className="latest-card-meta">
             <span className="home-eyebrow latest-card-type">{card.eyebrow}</span>
           </div>
-          <h3 className="latest-card-title" style={{ fontStyle: "normal" }}>{card.title}</h3>
+          <Heading className="latest-card-title" style={{ fontStyle: "normal" }}>{card.title}</Heading>
           {card.seriesTitle ? <p className="latest-card-series">Daripada {card.seriesTitle}</p> : null}
           {card.attribution ? <p className="work-attribution">{renderAttribution(card.attribution.primary)}</p> : null}
           {card.attribution?.secondary ? <p className="work-attribution-source">{renderAttribution(card.attribution.secondary)}</p> : null}
           {card.dek ? <p className="latest-card-dek">{card.dek}</p> : null}
           <CardMeta card={card} />
           <div className="latest-card-footer">
-            <span className="home-action-text latest-card-cta">Baca sekarang</span>
+            <span className="home-action-text latest-card-cta">Baca →</span>
           </div>
         </div>
       </a>

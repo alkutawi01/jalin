@@ -44,6 +44,25 @@ export interface StoryCard {
   attribution?: CardAttribution;
 }
 
+/** One card for any list of works (homepage, category list, start page, "Baca lagi"): the same data, so the same card. */
+export function workToStoryCard(summary: PublicWorkSummary, href: string, extra: { title?: string; seriesTitle?: string } = {}): StoryCard {
+  return {
+    key: href,
+    href,
+    type: summary.type,
+    eyebrow: workEyebrow(summary),
+    ...(summary.country ? { country: summary.country } : {}),
+    title: extra.title ?? summary.title,
+    ...(extra.seriesTitle ? { seriesTitle: extra.seriesTitle } : {}),
+    ...(summary.dek ? { dek: summary.dek } : {}),
+    ...(summary.readingMinutes ? { readingMinutes: summary.readingMinutes } : {}),
+    ...(summary.publishedAt ? { publishedAt: summary.publishedAt } : {}),
+    year: (summary.updatedAt ?? summary.publishedAt ?? "2026").slice(0, 4),
+    ...(summary.hero ? { hero: summary.hero } : {}),
+    ...(summary.attribution ? { attribution: summary.attribution } : {})
+  };
+}
+
 export function episodeTitle(position: number, title: string): string {
   return `Episod ${position}: ${title}`;
 }
@@ -84,25 +103,12 @@ async function buildStoryPoolFresh(): Promise<StoryCard[]> {
   for (const work of works) {
     if (pickedSlugs.has(work.slug)) continue;
     const summary = projectPublicWorkSummary(work);
-    const base = {
-      type: summary.type,
-      eyebrow: workEyebrow(summary),
-      ...(summary.country ? { country: summary.country } : {}),
-      ...(summary.dek ? { dek: summary.dek } : {}),
-      ...(summary.readingMinutes ? { readingMinutes: summary.readingMinutes } : {}),
-      ...(summary.publishedAt ? { publishedAt: summary.publishedAt } : {}),
-      year: (summary.updatedAt ?? summary.publishedAt ?? "2026").slice(0, 4),
-      ...(summary.hero ? { hero: summary.hero } : {}),
-      ...(summary.attribution ? { attribution: summary.attribution } : {})
-    };
     if (work.type === "bersiri") {
       const info = episodeInfo.get(work.slug);
       if (!info) continue;
-      const href = `/kategori/bersiri/${info.series.slug}/${work.slug}`;
-      cards.push({ ...base, key: href, href, title: episodeTitle(info.position, summary.title), seriesTitle: info.series.title });
+      cards.push(workToStoryCard(summary, `/kategori/bersiri/${info.series.slug}/${work.slug}`, { title: episodeTitle(info.position, summary.title), seriesTitle: info.series.title }));
     } else {
-      const href = `/kategori/${work.type}/${work.slug}`;
-      cards.push({ ...base, key: href, href, title: summary.title });
+      cards.push(workToStoryCard(summary, `/kategori/${work.type}/${work.slug}`));
     }
   }
   return cards;
