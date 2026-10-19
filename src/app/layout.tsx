@@ -5,6 +5,7 @@ import "./themes.css";
 import { SITE_URL, DEFAULT_SHARE_IMAGE } from "../lib/seo";
 import BootScreen from "../components/reader/BootScreen";
 import ThemeSync from "../components/reader/ThemeSync";
+import { readerAccountsEnabled } from "../lib/reader-auth/enabled";
 import { THEME_INIT_SCRIPT } from "../lib/site-theme-mode";
 
 /**
@@ -61,7 +62,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <link rel="alternate" type="application/rss+xml" title="Jalin: karya terbaharu" href="/feed.xml" />
       </head>
       <body>
-        <ThemeSync />
+        <ThemeSync accounts={readerAccountsEnabled()} />
         <BootScreen />
         {children}
       </body>

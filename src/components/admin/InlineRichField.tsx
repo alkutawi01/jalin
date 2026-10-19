@@ -23,6 +23,8 @@ export default function InlineRichField({
   className = "",
   disabled = false,
   autoFocus = false,
+  required = false,
+  invalid = false,
   typography = false,
   onKeyDown
 }: {
@@ -38,6 +40,9 @@ export default function InlineRichField({
   className?: string;
   disabled?: boolean;
   autoFocus?: boolean;
+  /** A box is not a form control, so the field says itself that it must be filled and when it was left empty. */
+  required?: boolean;
+  invalid?: boolean;
   /** For text that is read as prose: two hyphens become a dash and straight quotes the house style, as the manuscript does. */
   typography?: boolean;
   onKeyDown?: (event: KeyboardEvent<HTMLDivElement>) => void;
@@ -126,6 +131,8 @@ export default function InlineRichField({
       aria-label={ariaLabel}
       aria-labelledby={labelledBy}
       aria-disabled={disabled || undefined}
+      aria-required={required || undefined}
+      aria-invalid={invalid || undefined}
       aria-description="Ctrl+I untuk condong, Ctrl+B untuk tebal"
       data-placeholder={placeholder}
       contentEditable={!disabled}

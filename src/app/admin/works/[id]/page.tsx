@@ -1559,6 +1559,12 @@ export default function EditWorkPage() {
 
   async function handleSaveGlossary() {
     if (!editingGlossary) return;
+    const missing = !(editingGlossary.term ?? "").trim() ? "term" : !(editingGlossary.meaning ?? "").trim() ? "meaning" : null;
+    if (missing) {
+      setGlossaryError(missing === "term" ? "Istilah diperlukan." : "Maksud diperlukan.");
+      document.getElementById(missing === "term" ? "glossary-term" : "glossary-meaning")?.focus();
+      return;
+    }
     // The API takes camelCase for the optional pronunciation and original spelling.
     const extras = {
       pronunciation: editingGlossary.pronunciation ?? "",
@@ -2227,7 +2233,7 @@ export default function EditWorkPage() {
           </div>
 
           <div className="admin-form-group">
-            <label id="editorNote-label">Catatan</label>
+            <label id="editorNote-label" onClick={() => document.getElementById("editorNote")?.focus()}>Catatan</label>
             <InlineRichField
               id="editorNote"
               labelledBy="editorNote-label"
@@ -2245,7 +2251,7 @@ export default function EditWorkPage() {
             </span>
           </div>
           <div className="admin-form-group">
-            <label id="readerNote-label">Nota pada kad &quot;Tentang karya&quot;</label>
+            <label id="readerNote-label" onClick={() => document.getElementById("readerNote")?.focus()}>Nota pada kad &quot;Tentang karya&quot;</label>
             <InlineRichField
               id="readerNote"
               labelledBy="readerNote-label"
@@ -2855,8 +2861,11 @@ export default function EditWorkPage() {
           {editingGlossary && (
             <div className="admin-credit-form">
               <div className="admin-form-group">
-                <label id="glossary-term-label">Istilah *</label>
+                <label id="glossary-term-label" onClick={() => document.getElementById("glossary-term")?.focus()}>Istilah *</label>
                 <InlineRichField
+                  id="glossary-term"
+                  required
+                  invalid={!!glossaryError && !(editingGlossary.term ?? "").trim()}
                   labelledBy="glossary-term-label"
                   value={editingGlossary.term || ""}
                   onChange={(term) => setEditingGlossary((prev) => ({ ...prev, term }))}
@@ -2865,8 +2874,11 @@ export default function EditWorkPage() {
               </div>
 
               <div className="admin-form-group">
-                <label id="glossary-meaning-label">Maksud *</label>
+                <label id="glossary-meaning-label" onClick={() => document.getElementById("glossary-meaning")?.focus()}>Maksud *</label>
                 <InlineRichField
+                  id="glossary-meaning"
+                  required
+                  invalid={!!glossaryError && !(editingGlossary.meaning ?? "").trim()}
                   labelledBy="glossary-meaning-label"
                   multiline
                   rows={5}
