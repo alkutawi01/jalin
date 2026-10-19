@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import ReactMarkdown from "react-markdown";
 import { fixEmphasisBeforeSuffix } from "../../lib/reader/emphasis-fix";
 import { unitaliciseDictionaryWords } from "../../lib/reader/dictionary-words";
+import { shortenNoteLinks } from "../../lib/reader/note-links";
 import { placeMarginNotes, trackOffsets } from "../../lib/reader/margin-notes";
 
 type Note = { number: number; text: string };
@@ -16,7 +17,7 @@ const MAX_SHIFT = 220;
 
 /** A link inside a margin note is reachable by touch or mouse, but not by Tab: the list at the end of the chapter is the keyboard route. */
 const noteComponents = {
-  a: ({ href, children }: { href?: string; children?: ReactNode }) => <a href={href} tabIndex={-1}>{children}</a>
+  a: ({ href, children }: { href?: string; children?: ReactNode }) => <a href={href} tabIndex={-1} target="_blank" rel="noopener noreferrer">{children}</a>
 };
 
 /**
@@ -232,7 +233,7 @@ export default function FootnoteMargin({ notes }: { notes: Note[] }) {
         {notes.map((note) => (
           <div key={note.number} className="footnote-margin-note" data-margin-note={note.number}>
             <span className="footnote-margin-number">{note.number}</span>
-            <ReactMarkdown components={noteComponents}>{unitaliciseDictionaryWords(fixEmphasisBeforeSuffix(note.text))}</ReactMarkdown>
+            <ReactMarkdown components={noteComponents}>{unitaliciseDictionaryWords(fixEmphasisBeforeSuffix(shortenNoteLinks(note.text)))}</ReactMarkdown>
           </div>
         ))}
       </div>
@@ -240,7 +241,7 @@ export default function FootnoteMargin({ notes }: { notes: Note[] }) {
         ? createPortal(
             <div ref={popoverRef} className="glossary-tooltip footnote-popover" role="dialog" aria-label={`Nota ${open.number}`} style={{ visibility: "hidden" }}>
               <span className="footnote-popover-number" aria-hidden="true">{open.number}</span>
-              <ReactMarkdown>{unitaliciseDictionaryWords(fixEmphasisBeforeSuffix(open.text))}</ReactMarkdown>
+              <ReactMarkdown>{unitaliciseDictionaryWords(fixEmphasisBeforeSuffix(shortenNoteLinks(open.text)))}</ReactMarkdown>
             </div>,
             document.body
           )

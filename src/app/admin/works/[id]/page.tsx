@@ -578,7 +578,7 @@ export default function EditWorkPage() {
       const form = document.querySelector<HTMLElement>(".admin-credit-form");
       if (!form) return;
       form.scrollIntoView({ behavior: "smooth", block: "center" });
-      form.querySelector<HTMLElement>("input:not([type=hidden]):not([disabled]), select, textarea")?.focus({ preventScroll: true });
+      form.querySelector<HTMLElement>("input:not([type=hidden]):not([disabled]), select, textarea, [contenteditable=true]")?.focus({ preventScroll: true });
     }, 50);
     return () => window.clearTimeout(timer);
   }, [openEditorKey]);
