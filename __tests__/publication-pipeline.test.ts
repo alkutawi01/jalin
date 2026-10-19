@@ -339,11 +339,19 @@ console.log("\n=== Readiness: visuals ===");
       sourceWork: approvedSourceForVisualPolicy,
     })
   );
-  assert(fragmenNoHero.ready === true, "fragmen without hero still ready (recommended only)");
+  assert(fragmenNoHero.ready === false, "fragmen without hero is not ready: every kind of work except a series episode needs a hero");
   assert(
-    fragmenNoHero.warnings.some((w) => w.code === "hero_missing"),
-    "fragmen missing hero is warning not blocker"
+    fragmenNoHero.blockers.some((b) => b.code === "hero_missing"),
+    "fragmen missing hero is a blocker"
   );
+  for (const type of ["sinopsis", "terjemahan"] as const) {
+    const noHero = evaluatePublicationReadinessFromData(validInput({
+      work: baseWork({ type }),
+      visuals: [],
+      sourceWork: approvedSourceForVisualPolicy,
+    }));
+    assert(noHero.blockers.some((b) => b.code === "hero_missing"), `${type} without a hero is blocked`);
+  }
 
   const fragmenMissingLanguage = evaluatePublicationReadinessFromData(validInput({
     work: baseWork({ type: "fragmen" }), sourceWork: approvedSourceForVisualPolicy,
@@ -640,9 +648,17 @@ console.log("\n=== Readiness: derivative rights gate (4D-7) ===");
     })
   );
   assert(
-    noReview.blockers.some((b) => b.code === "rights_not_reviewed"),
-    "rights_not_reviewed when PASS without server review stamps"
+    !noReview.blockers.some((b) => b.code.startsWith("rights_")) && noReview.gates.rights.pass === true,
+    "no rights review stamp does not block (the owner removed the rights review requirement)"
   );
+  const unknownRights = evaluatePublicationReadinessFromData(
+    validInput({
+      work: baseWork({ type: "terjemahan", id: "JLN-TER-0001" }),
+      visuals: [baseVisual({ role: "section" })],
+      sourceWork: { ...baseSource, rights_status: "unknown", reviewed_at: null, reviewed_by: null },
+    })
+  );
+  assert(unknownRights.gates.rights.pass === true, "rights status unknown does not block publication");
 
   // BLOCK status → BLOCK.
   const restricted = evaluatePublicationReadinessFromData(
@@ -707,8 +723,8 @@ console.log("\n=== Readiness: derivative rights gate (4D-7) ===");
     })
   );
   assert(
-    stale.blockers.some((b) => b.code === "rights_stale_approval"),
-    "rights_stale_approval when material fields change after approval"
+    !stale.blockers.some((b) => b.code === "rights_stale_approval"),
+    "a changed source after an earlier approval no longer blocks (no rights review is required)"
   );
 
   // Invalid source_url scheme → BLOCK (no SSRF fetch; validate only).

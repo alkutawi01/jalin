@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { toast } from "../../lib/admin/dialogs";
 import { DEVICES, DEVICE_IDS, deviceInfo, type DeviceId } from "../../lib/reader/typography-devices";
 import ReaderTypographyPreview from "./ReaderTypographyPreview";
+import type { TypographySample, TypographySampleOption } from "../../lib/reader/typography-sample";
 
 interface Limits {
   min: number;
@@ -19,6 +20,8 @@ interface Loaded {
   headingEm: number | null;
   devices?: Partial<Record<DeviceId, Sizes>>;
   limits: { bodyPx: Limits; headingEm: Limits };
+  sample?: TypographySample | null;
+  sampleOptions?: TypographySampleOption[];
 }
 type Boxes = Record<DeviceId, { body: string; heading: string }>;
 
@@ -49,15 +52,15 @@ export default function ReaderTypographySettings() {
     setBoxes(Object.fromEntries(DEVICE_IDS.map((id) => [id, { body: text(loaded.devices?.[id]?.bodyPx ?? loaded.bodyPx), heading: text(loaded.devices?.[id]?.headingEm ?? loaded.headingEm) }])) as Boxes);
   }, []);
 
-  const load = useCallback(async () => {
-    const res = await fetch("/api/admin/reader-typography");
+  const load = useCallback(async (story?: string) => {
+    const res = await fetch(story ? `/api/admin/reader-typography?karya=${encodeURIComponent(story)}` : "/api/admin/reader-typography");
     if (!res.ok) {
       setFailed(true);
       return setNote("Saiz teks karya tidak dapat dimuatkan.");
     }
     const loaded = (await res.json()) as Loaded;
     setData(loaded);
-    apply(loaded);
+    if (!story) apply(loaded);
   }, [apply]);
 
   useEffect(() => {
@@ -131,7 +134,7 @@ export default function ReaderTypographySettings() {
         <p className="admin-form-hint">Samakan semua mengisi nilai di atas ke setiap skrin di bawah (kotak yang kosong di atas tidak mengubah apa-apa). Belum disimpan sehingga anda tekan Simpan.</p>
 
         <div className="admin-table-wrap">
-          <table className="admin-table">
+          <table className="admin-table a-device-table">
             <thead>
               <tr><th>Skrin</th><th>Teks karya (px)</th><th>Tajuk bahagian (em)</th></tr>
             </thead>
@@ -183,8 +186,16 @@ export default function ReaderTypographySettings() {
             </button>
           ))}
         </div>
-        <ReaderTypographyPreview device={active} bodyPx={usable(shown.body, bodyPx)} headingEm={usable(shown.heading, headingEm)} />
-        <p className="admin-form-hint">{deviceInfo(active).label}: {deviceInfo(active).range}. Skrin sebenar berbeza-beza; ini contoh {deviceInfo(active).screen.w} × {deviceInfo(active).screen.h} px.</p>
+        {data.sampleOptions && data.sampleOptions.length > 0 ? (
+          <div className="admin-form-group">
+            <label htmlFor="saiz-karya-contoh">Karya untuk contoh</label>
+            <select id="saiz-karya-contoh" className="admin-input" value={data.sample?.slug ?? ""} onChange={(e) => load(e.target.value)}>
+              {data.sampleOptions.map((option) => <option key={option.slug} value={option.slug}>{option.title}{option.hasHeading ? " (ada tajuk bahagian)" : ""}</option>)}
+            </select>
+          </div>
+        ) : null}
+        <ReaderTypographyPreview device={active} bodyPx={usable(shown.body, bodyPx)} headingEm={usable(shown.heading, headingEm)} sample={data.sample} />
+        <p className="admin-form-hint">{deviceInfo(active).label}: {deviceInfo(active).range}. Skrin sebenar berbeza-beza; ini contoh {deviceInfo(active).screen.w} × {deviceInfo(active).screen.h} px, memaparkan permulaan karya sebenar yang dipilih di atas.</p>
       </section>
     </>
   );

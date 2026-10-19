@@ -11,6 +11,7 @@ import { isSourcedWork } from "../content/source-origin";
 import type { WorkStatus, WorkType } from "../db/types";
 import { isDerivativeType, roleNotAllowed } from "../credit-roles";
 import { classifyFragmen, fragmenTextHash, isIndonesianLanguage, isMalayLanguage, readFragmenTextReview } from "../content/fragmen-kind";
+import { hasMultipleGenres } from "../reader/genre-display";
 
 /** A work type as an editor reads it ("Novela"), not the stored key ("novela"). */
 function jenisKarya(type: unknown): string {
@@ -223,9 +224,9 @@ export const VISUAL_POLICY: Record<
   cerpen: { hero: "required", inline: "optional" },
   novela: { hero: "required", inline: "optional" },
   bersiri: { hero: "required", inline: "optional" },
-  terjemahan: { hero: "recommended", inline: "optional" },
-  fragmen: { hero: "recommended", inline: "optional" },
-  sinopsis: { hero: "recommended", inline: "optional" },
+  terjemahan: { hero: "required", inline: "optional" },
+  fragmen: { hero: "required", inline: "optional" },
+  sinopsis: { hero: "required", inline: "optional" },
 };
 
 const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -419,6 +420,11 @@ export function evaluatePublicationReadinessFromData(
   if (leftover.length > 0) {
     contentBlockers.push(
       issue("placeholder_text", `Teks arahan (dalam kurungan) masih ada dalam: ${leftover.join(", ")}. Ganti atau padam sebelum menerbitkan.`)
+    );
+  }
+  if (hasMultipleGenres(work.genre)) {
+    contentBlockers.push(
+      issue("genre_multiple", `Genre mesti satu sahaja, bukan senarai ("${work.genre}"). Pilih satu genre utama.`)
     );
   }
   if (!work.dek || !work.dek.trim()) {
@@ -699,28 +705,12 @@ export function evaluatePublicationReadinessFromData(
       }
 
       const status = String(src.rights_status || "unknown");
-      const reviewed = Boolean(src.reviewed_at && src.reviewed_by);
-      const currentHash = computeMaterialHash(src);
-      const approvedHash = src.approved_material_hash;
-      const stale = reviewed && approvedHash !== null && approvedHash !== currentHash;
 
-      if (!RIGHTS_PASS_STATUSES.has(status)) {
+      // Owner's decision (17 Okt 2026): publishing no longer waits for a rights review ("unknown", "needs_review", a missing review stamp
+      // or a stale approval all pass). Only a status the editor deliberately set to "restricted" or "rejected" still stops it.
+      if (status === "restricted" || status === "rejected") {
         rightsBlockers.push(
-          issue(
-            "rights_not_approved",
-            `Hak sumber masih ${status === "needs_review" ? "perlu semakan" : status === "unknown" ? "belum diketahui" : "belum diluluskan"}. Semak bukti dan sahkan keputusan hak dalam tab Sumber.`
-          )
-        );
-      } else if (!reviewed) {
-        rightsBlockers.push(
-          issue("rights_not_reviewed", "Hak telah diluluskan tetapi siapa yang menyemak dan bila belum direkod (semakan manusia belum dicatat).")
-        );
-      } else if (stale) {
-        rightsBlockers.push(
-          issue(
-            "rights_stale_approval",
-            "Kelulusan hak sudah lapuk: butiran sumber berubah selepas semakan terakhir. Semak dan sahkan semula."
-          )
+          issue("rights_not_approved", `Hak sumber ditandakan "${status === "restricted" ? "terhad" : "ditolak"}" oleh editor, jadi karya ini tidak boleh diterbitkan.`)
         );
       } else if (status === "public_domain") {
         rightsWarnings.push(

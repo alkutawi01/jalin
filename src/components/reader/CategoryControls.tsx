@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import CategoryControlsAutoApply from "./CategoryControlsAutoApply";
 import { isFilteredQuery, SORTS, type ListFacets, type ListQuery, type ListSort } from "../../lib/reader/category-list";
 
 /**
@@ -45,9 +46,9 @@ export default function CategoryControls({
   const id = (name: string) => `senarai-${type}-${name}`;
   return (
     <section className="list-controls" aria-label={`Susun dan tapis senarai ${nounPlural}`}>
-      <form className="search-form list-controls-form" method="get" action={base} style={{ "--medan": fieldCount } as CSSProperties}>
+      <form id={id("borang")} className="search-form list-controls-form" method="get" action={base} style={{ "--medan": fieldCount } as CSSProperties}>
         <div className="search-filters">
-          <div>
+          <div className="list-field">
             <label htmlFor={id("susun")}>Susun</label>
             <select id={id("susun")} name="susun" defaultValue={query.susun}>
               {(Object.keys(SORTS) as ListSort[]).map((key) => (
@@ -56,8 +57,8 @@ export default function CategoryControls({
             </select>
           </div>
           {showGenreFilter ? (
-            <div>
-              <label htmlFor={id("genre")}>Genre</label>
+            <div className="list-field">
+              <label htmlFor={id("genre")} className="list-field-quiet">Genre</label>
               <select id={id("genre")} name="genre" defaultValue={query.genre}>
                 <option value="">Semua genre</option>
                 {facets.genres.map((genre) => (
@@ -67,8 +68,8 @@ export default function CategoryControls({
             </div>
           ) : null}
           {showBandFilter ? (
-            <div>
-              <label htmlFor={id("bacaan")}>Tempoh bacaan</label>
+            <div className="list-field">
+              <label htmlFor={id("bacaan")} className="list-field-quiet">Tempoh bacaan</label>
               <select id={id("bacaan")} name="bacaan" defaultValue={query.bacaan}>
                 <option value="">Mana-mana tempoh</option>
                 {facets.bands.map((band) => (
@@ -78,8 +79,8 @@ export default function CategoryControls({
             </div>
           ) : null}
           {showAudienceFilter ? (
-            <div>
-              <label htmlFor={id("umur")}>Sesuai untuk</label>
+            <div className="list-field">
+              <label htmlFor={id("umur")} className="list-field-quiet">Sesuai untuk</label>
               <select id={id("umur")} name="umur" defaultValue={query.umur}>
                 <option value="">Semua pembaca</option>
                 {facets.audiences.map((band) => (
@@ -89,8 +90,8 @@ export default function CategoryControls({
             </div>
           ) : null}
           {showStatusFilter ? (
-            <div>
-              <label htmlFor={id("status")}>Status siri</label>
+            <div className="list-field">
+              <label htmlFor={id("status")} className="list-field-quiet">Status siri</label>
               <select id={id("status")} name="status" defaultValue={query.status}>
                 <option value="">Semua status</option>
                 {facets.statuses.map((status) => (
@@ -105,6 +106,7 @@ export default function CategoryControls({
           {filtered ? <a className="search-clear" href={base}>Kosongkan</a> : null}
         </div>
       </form>
+      <CategoryControlsAutoApply formId={id("borang")} />
       <p className="search-count list-count" role="status">{count}</p>
     </section>
   );

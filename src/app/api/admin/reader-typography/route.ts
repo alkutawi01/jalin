@@ -1,15 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentAdmin } from "../../../../lib/admin/auth";
+import { getTypographySample } from "../../../../lib/reader/typography-sample";
 import { BODY_PX, HEADING_EM, listSavedTypography, saveReaderTypography, TypographyInputError } from "../../../../lib/reader/reader-typography";
 
 const SESSION_ENDED = "Sesi anda telah tamat. Log masuk semula.";
 
 /** GET: the saved text and sub-heading sizes (null = Jalin's own sizes) and the limits that can be set. */
-export async function GET() {
+export async function GET(request: NextRequest) {
   const admin = await getCurrentAdmin();
   if (!admin) return NextResponse.json({ error: SESSION_ENDED }, { status: 401 });
   const saved = await listSavedTypography();
-  return NextResponse.json({ ...saved, limits: { bodyPx: BODY_PX, headingEm: HEADING_EM } });
+  const { sample, options } = await getTypographySample(request.nextUrl.searchParams.get("karya") ?? undefined).catch(() => ({ sample: null, options: [] }));
+  return NextResponse.json({ ...saved, limits: { bodyPx: BODY_PX, headingEm: HEADING_EM }, sample, sampleOptions: options });
 }
 
 /** POST { bodyPx, headingEm }: set both sizes for every work; null or an empty value goes back to Jalin's own size. Chief editor and owner only (see permissions.ts). */

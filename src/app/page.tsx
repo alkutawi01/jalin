@@ -19,6 +19,7 @@ import { getEditorPickSummaries, resolveHeroPicks } from "../lib/reader/editor-p
 import { projectPublicWorkSummary, type PublicWorkSummary } from "../lib/reader/public-projection";
 import { buildStoryPool, pickCollection, workEyebrow } from "../lib/reader/story-collection";
 import { homeGrounds, type GroundKey } from "../lib/site-theme";
+import { categoryTiles, type CategoryType } from "../lib/site-copy";
 import HomeStats from "../components/reader/HomeStats";
 import { computeSiteStats, statItems } from "../lib/reader/site-stats";
 
@@ -30,14 +31,6 @@ export const metadata: Metadata = { alternates: { canonical: "/" } };
 function formatDate(date: string | undefined): string {
   return formatMalayDate(date) ?? "—";
 }
-
-const TYPE_DESCS: Record<string, string> = {
-  cerpen: "Cerita pendek berilustrasi untuk pembaca Jalin",
-  novela: "Novela pendek berilustrasi untuk pembaca Jalin",
-  bersiri: "Karya bersiri berilustrasi — sambungan demi sambungan",
-  fragmen: "Sedutan bermakna daripada karya agung",
-  sinopsis: "Penceritaan semula editorial karya lain"
-};
 
 const CATEGORIES: { type: string; label: string }[] = [
   { type: "cerpen", label: "Cerpen" },
@@ -78,12 +71,15 @@ function yearOf(work: { updatedAt?: string; publishedAt?: string }): string {
 function CategoryCard({
   type,
   label,
+  desc,
   imageSrc,
   imageAlt,
   imageCrop,
 }: {
   type: string;
   label: string;
+  /** The line under the name; an editor changes it in Tetapan. */
+  desc: string;
   imageSrc?: string | null;
   imageAlt?: string | null;
   /** The part of the picture its editor chose (the card showed the centre whatever was chosen). */
@@ -108,7 +104,7 @@ function CategoryCard({
       <div className="category-explorer-card-scrim" />
       <div className="category-explorer-card-body">
         <h3>{label}</h3>
-        <p>{TYPE_DESCS[type] ?? ""}</p>
+        <p>{desc}</p>
         <span className="category-explorer-card-arrow" aria-hidden="true">→</span>
       </div>
     </a>
@@ -273,6 +269,7 @@ export default async function Home() {
   }));
   // Koleksi cerita is random on every visit (single works and series episodes), not "the newest".
   const collection = pickCollection(await buildStoryPool());
+  const tileCopy = await categoryTiles();
 
   const categoryImages = new Map<string, { src: string; alt: string; year: string; crop?: ImageCrop }>();
   for (const cat of CATEGORIES) {
@@ -321,6 +318,7 @@ export default async function Home() {
                     key={cat.type}
                     type={cat.type}
                     label={cat.label}
+                    desc={tileCopy[cat.type as CategoryType] ?? ""}
                     imageSrc={img?.src}
                     imageCrop={img?.crop}
                     imageAlt={img?.alt}

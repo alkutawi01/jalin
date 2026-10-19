@@ -221,6 +221,8 @@
 .a-shell .admin-page-header-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
 .a-shell .admin-page-header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 .a-shell .admin-form-hint { display: block; font-size: 13px; color: var(--a-muted); margin: 6px 0 0; }
+/* The hint carries a 32px button: as inline content it overflowed its 13px line and touched the toolbar below, so the line wraps as a flex row with its own gap and bottom space. */
+.a-shell .admin-form-hint[data-markdown-pointer] { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin: 8px 0 12px; }
 .a-shell code { font-family: var(--a-mono); font-size: 12px; background: var(--a-sunk); border-radius: var(--a-radius-sm); padding: 1px 5px; }
 .a-shell a { color: var(--a-accent); }
 .a-shell a.a-nav-link, .a-shell a.admin-btn, .a-shell a.a-brand { color: inherit; }
@@ -763,6 +765,15 @@
   .a-shell .admin-table:not(.a-todo-table) td:last-child { grid-column: 1 / -1; }
 }
 
+/* Audiens (a name, two ages and a Buang button): as a card the name takes the first line and the two ages and the button share the second,
+   instead of four stacked lines. */
+@container admin-table (max-width: 760px) {
+  .a-shell .admin-table.a-bands-table:not(.a-todo-table) tr { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; column-gap: 12px; align-items: end; padding: 10px 14px; }
+  .a-shell .admin-table.a-bands-table:not(.a-todo-table) td { width: auto; }
+  .a-shell .admin-table.a-bands-table:not(.a-todo-table) td.admin-table-title { grid-column: 1 / -1; }
+  .a-shell .admin-table.a-bands-table:not(.a-todo-table) td:last-child { grid-column: auto; }
+}
+
 /* Langganan */
 .admin-sub-nav { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
 .admin-inline-form { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px; }
@@ -942,3 +953,30 @@
 .a-shell .admin-rich-field:focus { outline: none; border-color: var(--a-accent); box-shadow: 0 0 0 3px var(--a-focus); }
 .a-shell .admin-rich-field[data-placeholder]:empty::before { content: attr(data-placeholder); color: var(--a-muted); pointer-events: none; }
 .a-shell .admin-rich-field[aria-disabled="true"] { background: var(--a-bg); cursor: not-allowed; }
+
+/* Card lists (Permintaan gambar, Templat arahan, Penyumbang): the action button sits in the card's top right corner instead of on a line
+   of its own below the fields. */
+@container admin-table (max-width: 760px) {
+  .a-shell .admin-table.a-actions-corner:not(.a-todo-table) tr { position: relative; }
+  .a-shell .admin-table.a-actions-corner:not(.a-todo-table) td:first-child { padding-right: 76px; }
+  .a-shell .admin-table.a-actions-corner:not(.a-todo-table) td:last-child { position: absolute; top: 10px; right: 14px; width: auto; padding: 0; }
+}
+
+/* A table of "label, value" rows (Langganan, Ringkasan): each row is one line, label left and value right, not a grey label block over the value. */
+@container admin-table (max-width: 760px) {
+  .a-shell .admin-table.a-kv-table:not(.a-todo-table) tr { display: grid; grid-template-columns: minmax(0, 42%) minmax(0, 1fr); column-gap: 14px; align-items: baseline; padding: 8px 14px; }
+  .a-shell .admin-table.a-kv-table:not(.a-todo-table) th,
+  .a-shell .admin-table.a-kv-table:not(.a-todo-table) td { display: block; width: auto; padding: 0; background: transparent; border: 0; }
+}
+
+/* Teks karya per screen: the screen's name and range take the first line, the two sizes sit side by side below it. */
+@container admin-table (max-width: 760px) {
+  .a-shell .admin-table.a-device-table:not(.a-todo-table) tr { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 14px; padding: 10px 14px; }
+  .a-shell .admin-table.a-device-table:not(.a-todo-table) td { width: auto; }
+  .a-shell .admin-table.a-device-table:not(.a-todo-table) td:first-child { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; }
+  .a-shell .admin-table.a-device-table:not(.a-todo-table) td:first-child .a-meta-line { margin: 0; }
+}
+@container admin-table (max-width: 760px) {
+  .a-shell .admin-table.a-kv-table:not(.a-todo-table) td { grid-column: auto; width: auto; }
+  .a-shell .admin-table.a-device-table:not(.a-todo-table) td:last-child { grid-column: auto; }
+}

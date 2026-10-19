@@ -65,7 +65,7 @@ export default async function AdminVisualRequestsPage() {
       </header>
 
       <div className="admin-table-wrap">
-        <table className="admin-table">
+        <table className="admin-table a-actions-corner">
           <thead>
             <tr>
               <th>ID</th>

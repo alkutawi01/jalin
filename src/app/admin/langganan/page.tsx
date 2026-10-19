@@ -55,7 +55,7 @@ export default async function LanggananPage() {
       ) : (
         <>
           <div className="admin-table-wrap">
-            <table className="admin-table">
+            <table className="admin-table a-kv-table">
               <tbody>
                 <tr><th scope="row">Pembaca berdaftar</th><td>{data.accounts}</td></tr>
                 <tr><th scope="row">Dalam percubaan percuma</th><td>{data.inTrial}</td></tr>
