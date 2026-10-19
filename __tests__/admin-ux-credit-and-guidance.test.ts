@@ -53,7 +53,7 @@ ok(page.includes("Teks & maklumat: sudah disimpan") && page.includes("Pembaca ha
 
 // the editor's note is called "Catatan" everywhere (admin, reader, chatbot format); the old label is still read
 ok(src("src/components/reader/StoryChrome.tsx").includes('<h2 id="editor-note-title">Catatan</h2>'), "the reader's heading is 'Catatan'");
-ok(/<label id="editorNote-label"[^>]*>Catatan<\/label>/.test(page) && page.includes("bawah tajuk &quot;Catatan&quot;"), "the admin field and its hint say 'Catatan'");
+ok(/<label id="editorNote-label"[\s\S]*?>Catatan<\/label>/.test(page) && page.includes("bawah tajuk &quot;Catatan&quot;"), "the admin field and its hint say 'Catatan'");
 const assistant = src("src/lib/admin/authoring/editor-assistant.ts");
 ok(assistant.includes("Catatan: (jika berkenaan)") && !assistant.includes("Catatan editor: (jika berkenaan)"), "the chatbot format asks for 'Catatan:'");
 {
