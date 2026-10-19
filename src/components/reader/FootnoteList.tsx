@@ -1,6 +1,7 @@
 import ReactMarkdown from "react-markdown";
 import { fixEmphasisBeforeSuffix } from "../../lib/reader/emphasis-fix";
 import { unitaliciseDictionaryWords } from "../../lib/reader/dictionary-words";
+import { shortenNoteLinks } from "../../lib/reader/note-links";
 import type { Footnote } from "../../lib/reader/footnotes";
 
 /**
@@ -16,7 +17,7 @@ export default function FootnoteList({ notes }: { notes: Footnote[] }) {
         {notes.map((note) => (
           <li key={note.label} id={`nota-${note.number}`} role="doc-endnote" value={note.number}>
             <div className="footnote-text">
-              <ReactMarkdown>{unitaliciseDictionaryWords(fixEmphasisBeforeSuffix(note.text))}</ReactMarkdown>
+              <ReactMarkdown>{unitaliciseDictionaryWords(fixEmphasisBeforeSuffix(shortenNoteLinks(note.text)))}</ReactMarkdown>
             </div>
             <a className="footnote-back" href={`#rujuk-${note.number}`} role="doc-backlink" aria-label={`Kembali ke nota ${note.number} dalam teks`}>↩</a>
           </li>
