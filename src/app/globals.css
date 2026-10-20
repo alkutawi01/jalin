@@ -4406,8 +4406,8 @@ body:has(.save-work) .back-to-top { bottom: 76px; }
 .theme-switch-btn[aria-pressed="true"] { background: #f3e9df; border-color: #f3e9df; color: #0b2935; font-weight: 600; }
 @media print { .theme-switch { display: none; } }
 
-/* Arabic in a story (Izzat, 20 Oct 2026): a run of Arabic is its own language and direction, in the Amiri Naskh face, a little larger because Arabic letters sit small beside Latin ones. */
-.arabic { font-family: var(--font-amiri), "Amiri", "Noto Naskh Arabic", "Traditional Arabic", serif; font-size: 1.22em; line-height: 1.7; font-style: normal; unicode-bidi: isolate; }
+/* Arabic in a story (Izzat, 20 Oct 2026): a run of Arabic is its own language and direction, in the Amiri Naskh face, kept close to the body size: Arabic should stand alone in its own paragraph (Izzat), so a run inside a Malay sentence only appears in older notes and must not shout. */
+.arabic { font-family: var(--font-amiri), "Amiri", "Noto Naskh Arabic", "Traditional Arabic", serif; font-size: 1.08em; line-height: 1.7; font-style: normal; unicode-bidi: isolate; }
 /* A verse or quotation on its own line: right to left, centred, roomy. */
 p.arabic-block { font-family: var(--font-amiri), "Amiri", "Noto Naskh Arabic", "Traditional Arabic", serif; font-size: 1.55em; line-height: 2.1; text-align: center; margin-block: 1.1em; font-style: normal; unicode-bidi: isolate; }
-.footnote-text .arabic { font-size: 1.15em; }
+.footnote-text .arabic { font-size: 1.05em; }
