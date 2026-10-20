@@ -16,7 +16,8 @@ const nextConfig = {
   // A second dev server (a test run, another session) can use its own build folder: NEXT_DIST_DIR=.next-test npx next dev -p 3100
   distDir: process.env.NEXT_DIST_DIR || ".next",
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    // Hostinger release branch: Vercel added Strict-Transport-Security itself; Hostinger does not.
+    return [{ source: "/:path*", headers: [...securityHeaders, { key: "Strict-Transport-Security", value: "max-age=63072000" }] }];
   },
   images: {
     // Uploaded/generated visuals live in Vercel Blob (public store).
