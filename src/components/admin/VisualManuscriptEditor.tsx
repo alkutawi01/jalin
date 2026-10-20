@@ -5,6 +5,7 @@ import { pastedHtmlToMarkdown } from "../../lib/admin/paste-format";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { nextImageMarker } from "../../lib/reader/image-markers";
 import { splitCommunicationBlocks } from "../../lib/reader/communication-blocks";
+import { hasArabic } from "../../lib/reader/arabic-text";
 import { confirmAction, toast } from "../../lib/admin/dialogs";
 import { cleanFootnoteText, nextFootnoteLabel } from "../../lib/admin/footnote-insert";
 import { splitFootnotes } from "../../lib/admin/footnote-edit";
@@ -13,7 +14,61 @@ import FootnoteInserter from "./FootnoteInserter";
 import { escapeHtml, unescapeLiteral, inlineHtml, inlineMarkdown } from "../../lib/admin/inline-format";
 
 /** A new verse box shows the three kinds of line: the verse (replaced by pasting), its meaning and its reference. */
-const AYAT_PLACEHOLDER = "Tampal ayat di sini.<br>Maksud: terjemahan Melayu.<br>Surah nama surah, ayat 1–3.";
+const AYAT_PLACEHOLDER = '<div class="ayat-line ayat-line-ar" dir="auto">الصق الآية هنا</div><div class="ayat-line" dir="auto">Maksud: terjemahan Melayu.</div><div class="ayat-line" dir="auto">Surah nama surah, ayat 1–3.</div>';
+
+/** One line of a verse box is a block of its own with dir="auto", so an Arabic line is right to left and right aligned and a Malay line is left to right (a <br> would not split the bidi paragraph). */
+function ayatLineHtml(text: string, notes?: NoteContext): string {
+  return `<div class="ayat-line${hasArabic(text) ? " ayat-line-ar" : ""}" dir="auto">${text ? inlineHtml(text, notes) : "<br>"}</div>`;
+}
+
+const LINE_BLOCK = /^(DIV|P)$/;
+
+/** Keeps every line of a verse box a block of its own (text typed straight into the box, or a lone <br>, is wrapped) and marks the Arabic ones. */
+function normalizeAyatBoxes(editor: HTMLElement) {
+  editor.querySelectorAll<HTMLElement>('[data-communication="ayat"]').forEach((box) => {
+    const selection = window.getSelection();
+    const anchor = selection?.isCollapsed ? { node: selection.anchorNode, offset: selection.anchorOffset } : null;
+    let line: HTMLElement | null = null;
+    for (const node of [...box.childNodes]) {
+      if (node instanceof HTMLElement && LINE_BLOCK.test(node.tagName)) { line = null; continue; }
+      if (!line) {
+        line = document.createElement("div");
+        box.insertBefore(line, node);
+      }
+      line.appendChild(node);
+      if (node instanceof HTMLElement && node.tagName === "BR") line = null;
+    }
+    if (!box.firstChild) box.innerHTML = '<div class="ayat-line" dir="auto"><br></div>';
+    box.querySelectorAll<HTMLElement>(":scope > div, :scope > p").forEach((el) => {
+      el.classList.add("ayat-line");
+      el.setAttribute("dir", "auto");
+      el.classList.toggle("ayat-line-ar", hasArabic(el.textContent ?? ""));
+    });
+    // Moving a node out and back drops the caret to the edge of its parent; put it back where it was.
+    if (anchor?.node && box.contains(anchor.node) && selection) {
+      const range = document.createRange();
+      range.setStart(anchor.node, Math.min(anchor.offset, anchor.node.nodeType === Node.TEXT_NODE ? anchor.node.textContent?.length ?? 0 : anchor.node.childNodes.length));
+      range.collapse(true);
+      selection.removeAllRanges();
+      selection.addRange(range);
+    }
+  });
+}
+
+/** A verse box back to Markdown: one line of text per line block (blank lines kept, so the round trip does not change the text). */
+function ayatMarkdown(box: HTMLElement): string {
+  const lines: string[] = [];
+  let loose: string | null = null;
+  const flush = () => { if (loose !== null) lines.push(loose.replace(/\n$/, "")); loose = null; };
+  for (const node of [...box.childNodes]) {
+    if (node instanceof HTMLElement && LINE_BLOCK.test(node.tagName)) {
+      flush();
+      lines.push([...node.childNodes].map(inlineMarkdown).join("").replace(/\n$/, ""));
+    } else loose = (loose ?? "") + inlineMarkdown(node);
+  }
+  flush();
+  return lines.join("\n").trimEnd();
+}
 
 const MARKER = /^\[\[gambar:[1-9]\d*\]\]$/;
 
@@ -78,7 +133,7 @@ function toHtml(markdown: string, notes?: NoteContext): string {
     if (/^(---|\*\*\*)$/.test(trimmed)) return '<hr class="visual-manuscript-break">';
     if (trimmed.startsWith("## ")) return `<h2>${inlineHtml(trimmed.slice(3), notes)}</h2>`;
     return `<p>${inlineHtml(block, notes)}</p>`;
-  }).join("") : `<div class="visual-manuscript-communication visual-manuscript-communication-${segment.kind}" data-communication="${segment.kind}">${inlineHtml(segment.content, notes)}</div>`).join("");
+  }).join("") : `<div class="visual-manuscript-communication visual-manuscript-communication-${segment.kind}" data-communication="${segment.kind}">${segment.kind === "ayat" ? segment.content.split("\n").map((line) => ayatLineHtml(line, notes)).join("") : inlineHtml(segment.content, notes)}</div>`).join("");
 }
 
 /**
@@ -119,7 +174,7 @@ function fromHtml(root: HTMLElement): string {
     if (node.nodeType === Node.TEXT_NODE) return inlineMarkdown(node);
     const element = node as HTMLElement;
     if (element.dataset.marker) return element.dataset.marker;
-    if (element.dataset.communication) return `:::${element.dataset.communication}\n${[...element.childNodes].map(inlineMarkdown).join("").trimEnd()}\n:::`;
+    if (element.dataset.communication) return `:::${element.dataset.communication}\n${element.dataset.communication === "ayat" ? ayatMarkdown(element) : [...element.childNodes].map(inlineMarkdown).join("").trimEnd()}\n:::`;
     if (element.tagName === "HR") return "---";
     const body = [...element.childNodes].map(inlineMarkdown).join("").trimEnd();
     if (element.tagName === "H2") return `## ${body}`;
@@ -168,6 +223,7 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
     const editor = editorRef.current;
     if (!editor) return;
     dashInSelection();
+    normalizeAyatBoxes(editor);
     renumberNotes(editor);
     const labels = [...new Set([...editor.querySelectorAll<HTMLElement>("[data-note]")].map((chip) => chip.dataset.note!))];
     const next = joinProseAndNotes(fromHtml(editor), notesToWrite(labels, notesRef.current));
@@ -303,7 +359,9 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
         const first = touched[0]!;
         const last = touched[touched.length - 1]!;
         // Only the selected words go into the box; what is left of the first paragraph before it, and of the last after it, stays outside.
-        const selectedHtml = touched.map((block) => htmlOf(partOf(block))).join("<br>");
+        const selectedHtml = kind === "ayat"
+          ? touched.map((block) => `<div class="ayat-line" dir="auto">${htmlOf(partOf(block))}</div>`).join("")
+          : touched.map((block) => htmlOf(partOf(block))).join("<br>");
         const beforeRange = document.createRange();
         beforeRange.selectNodeContents(first);
         const firstPart = partOf(first);
@@ -315,6 +373,24 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
         const before = beforeRange.toString().trim() ? htmlOf(beforeRange) : "";
         const after = afterRange.toString().trim() ? htmlOf(afterRange) : "";
         const tag = (block: Element) => block.tagName.toLowerCase();
+        if (kind === "ayat") {
+          // The browser's insertHTML would tear a box of several line blocks apart (and merge the rest into the paragraph after it), so this box is built in the page itself.
+          const box = document.createElement("div");
+          box.className = "visual-manuscript-communication visual-manuscript-communication-ayat";
+          box.dataset.communication = "ayat";
+          box.innerHTML = selectedHtml;
+          const keep = (block: Element, html: string) => {
+            const part = document.createElement(tag(block));
+            part.innerHTML = html;
+            return part;
+          };
+          first.before(...(before ? [keep(first, before)] : []), box);
+          if (after) last.after(keep(last, after));
+          touched.forEach((block) => block.remove());
+          sync();
+          rememberSelection();
+          return;
+        }
         editor.focus();
         const selection = window.getSelection();
         const whole = document.createRange();
@@ -373,8 +449,8 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
       if (box) {
         const inner = document.createRange();
         inner.selectNodeContents(box);
-        const firstBreak = kind === "ayat" ? box.querySelector("br") : null;
-        if (firstBreak) inner.setEndBefore(firstBreak);
+        const firstLine = kind === "ayat" ? box.firstElementChild : null;
+        if (firstLine) inner.selectNodeContents(firstLine);
         selection?.removeAllRanges();
         selection?.addRange(inner);
       }
@@ -477,16 +553,47 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
           return;
         }
       }
+      // Backspace at the very start of a verse box, or Delete at its very end, would pull the neighbouring paragraph into the box (or the line out of it).
+      if ((event.key === "Backspace" || event.key === "Delete") && !event.nativeEvent.isComposing) {
+        const selection = window.getSelection();
+        const node = selection?.anchorNode;
+        const holder = node instanceof Element ? node : node?.parentElement;
+        const box = holder?.closest<HTMLElement>('[data-communication="ayat"]');
+        if (selection && box && selection.isCollapsed) {
+          const edge = document.createRange();
+          edge.selectNodeContents(box);
+          if (event.key === "Backspace") edge.setEnd(selection.anchorNode!, selection.anchorOffset);
+          else edge.setStart(selection.anchorNode!, selection.anchorOffset);
+          const edgeLine = event.key === "Backspace" ? box.firstElementChild : box.lastElementChild;
+          if (!edge.toString().length && (edgeLine === node || edgeLine?.contains(node ?? null))) event.preventDefault();
+        }
+      }
       // Enter inside a message or e-mail box starts a new line in that box (the browser would split it into a second box).
       if (event.key !== "Enter" || event.shiftKey || event.nativeEvent.isComposing) return;
       const anchor = window.getSelection()?.anchorNode;
       const element = anchor instanceof Element ? anchor : anchor?.parentElement;
       if (!element?.closest("[data-communication]")) return;
+      // A verse box keeps one block per line: the browser's own Enter splits the line into two.
+      if (element.closest('[data-communication="ayat"]')) return;
       event.preventDefault();
       document.execCommand("insertLineBreak");
       sync();
     }} onKeyUp={rememberSelection} onMouseUp={rememberSelection} onBlur={rememberSelection} onPaste={(event) => {
       event.preventDefault();
+      // In a verse box every pasted line becomes a line block of its own (Arabic and Maksud together paste into the right lines); no formatting is kept.
+      const pasteAnchor = window.getSelection()?.anchorNode;
+      if ((pasteAnchor instanceof Element ? pasteAnchor : pasteAnchor?.parentElement)?.closest('[data-communication="ayat"]')) {
+        const lines = event.clipboardData.getData("text/plain").split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+        // Several lines pasted after text already on the line start on a line of their own instead of running into it.
+        const pasteLine = (pasteAnchor instanceof Element ? pasteAnchor : pasteAnchor?.parentElement)?.closest(".ayat-line");
+        const startNew = lines.length > 1 && !!pasteLine?.textContent?.trim();
+        lines.forEach((line, index) => {
+          if (index > 0 || startNew) document.execCommand("insertParagraph");
+          document.execCommand("insertText", false, line);
+        });
+        sync();
+        return;
+      }
       // Text from Word or Google Docs keeps its italics and bold; anything else goes in as plain text, as before.
       const html = event.clipboardData.getData("text/html");
       const pasted = html ? pastedHtmlToMarkdown(html) : null;

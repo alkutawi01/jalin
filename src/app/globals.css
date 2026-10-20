@@ -4433,5 +4433,7 @@ p.arabic-block { font-family: var(--font-amiri), "Amiri", "Noto Naskh Arabic", "
 .story-ayat .ayat-reference { margin: .5em 0 0; font-size: .92em; color: var(--ink-soft); }
 @media print { .story-ayat { background: none; border-color: currentColor; } }
 
-/* The same box in the visual editor (right to left; the Latin lines keep the text face, Arabic falls through to Amiri). */
-.visual-manuscript-communication-ayat { border-left-color: var(--line); border-right: 3px solid var(--clay); background: var(--x-f8f5ef-bg); direction: rtl; text-align: right; font-family: Georgia, "Times New Roman", var(--font-amiri), "Amiri", "Noto Naskh Arabic", serif; font-size: 1.15em; line-height: 2; }
+/* The same box in the visual editor (one block per line with dir=auto: an Arabic line is right to left and right aligned in Amiri, a Malay line left to right). */
+.visual-manuscript-communication-ayat { border-left-color: var(--line); border-right: 3px solid var(--clay); background: var(--x-f8f5ef-bg); white-space: normal; font-family: Georgia, "Times New Roman", var(--font-amiri), "Amiri", "Noto Naskh Arabic", serif; line-height: 1.8; }
+.visual-manuscript-communication-ayat .ayat-line { min-height: 1.8em; text-align: start; unicode-bidi: isolate; }
+.visual-manuscript-communication-ayat .ayat-line-ar { font-family: var(--font-amiri), "Amiri", "Noto Naskh Arabic", "Traditional Arabic", serif; font-size: 1.45em; line-height: 2; }

@@ -54,7 +54,15 @@ const editorMarkup = renderToStaticMarkup(<VisualManuscriptEditor value="" onCha
 assert.match(editorMarkup, /aria-label="Sisip kotak ayat"[^>]*data-label="Kotak ayat"/, "the toolbar has a verse box button");
 assert.match(editorMarkup, /baris yang bermula &quot;Maksud:&quot;/, "the editor explains the three kinds of line");
 const editorSource = readFileSync(new URL("../src/components/admin/VisualManuscriptEditor.tsx", import.meta.url), "utf8");
-assert.match(editorSource, /AYAT_PLACEHOLDER = "Tampal ayat di sini\.<br>Maksud: [^"]*<br>Surah [^"]*ayat 1\u20133\."/, "a new box shows the verse, Maksud and Surah lines");
+const has = (needle: string) => editorSource.replace(/\r\n/g, "\n").includes(needle);
+assert.ok(has('<div class="ayat-line ayat-line-ar" dir="auto">الصق الآية هنا</div><div class="ayat-line" dir="auto">Maksud: terjemahan Melayu.</div><div class="ayat-line" dir="auto">Surah nama surah, ayat 1–3.</div>'), "a new box shows an Arabic line, a Maksud line and a Surah line, each its own dir=auto block");
+assert.ok(has('class="ayat-line${hasArabic(text) ? " ayat-line-ar" : ""}" dir="auto"'), "every line of a loaded verse box is a dir=auto block, Arabic ones marked");
+assert.ok(has("normalizeAyatBoxes(editor);"), "lines are kept as blocks on every change");
+assert.ok(has("A verse box keeps one block per line: the browser's own Enter splits the line into two."), "Enter in a verse box is left to the browser, which splits the line block");
+assert.ok(has('every pasted line becomes a line block of its own'), "pasting several lines into a verse box makes one block per line");
+assert.ok(has("ayatMarkdown(element)"), "a verse box is written back to Markdown one line per block");
+assert.ok(has("this box is built in the page itself"), "wrapping selected paragraphs builds the verse box in the page (insertHTML would tear its line blocks apart)");
+assert.ok(has("Backspace at the very start of a verse box"), "Backspace and Delete cannot pull text out of or into a verse box at its edges");
 assert.match(editorSource, /insertBlock\("ayat"\)/, "the button inserts a verse box");
 
 // Authoring guide
