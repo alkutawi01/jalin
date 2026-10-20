@@ -23,7 +23,7 @@ assert(shortenNoteLinks("Lihat [laman ini](https://example.org/x) sahaja") === "
 assert(shortenNoteLinks("Tiada pautan di sini") === "Tiada pautan di sini", "text without an address is unchanged");
 assert(shortenNoteLinks("a https://x.com/1 dan http://www.y.org/2").includes("[x.com](https://x.com/1)") && shortenNoteLinks("a https://x.com/1 dan http://www.y.org/2").includes("[y.org](http://www.y.org/2)"), "several addresses in one note");
 for (const f of ["FootnoteMargin.tsx", "FootnoteList.tsx"]) {
-  assert(read("src", "components", "reader", f).includes("shortenNoteLinks"), `${f} shortens addresses`);
+  assert(read("src", "components", "reader", f).includes("noteMarkdown"), `${f} shortens addresses (through noteMarkdown)`);
 }
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);

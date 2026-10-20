@@ -4,6 +4,7 @@ import { useId, useMemo, useState } from "react";
 import { confirmAction, toast } from "../../lib/admin/dialogs";
 import { footnoteOverview, removeFootnote, setFootnoteText } from "../../lib/admin/footnote-edit";
 import InlineRichField from "./InlineRichField";
+import { renderItalics } from "../../lib/reader/inline-italics";
 
 /**
  * Every side note of the manuscript in one place, in the order (and with the numbers) a reader sees: read it, rewrite it, jump to where
@@ -94,7 +95,7 @@ export default function SideNoteList({
                 <div className="a-note-head">
                   <span className="a-note-number">[^{item.label}]</span>
                 </div>
-                <p className="a-note-text">{item.text}</p>
+                <p className="a-note-text">{renderItalics(item.text)}</p>
                 <div className="admin-form-actions">
                   <button
                     type="button"
