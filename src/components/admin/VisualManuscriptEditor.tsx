@@ -12,9 +12,12 @@ import { buildNoteContext, joinProseAndNotes, noteChipHtml, noteWithText, notesT
 import FootnoteInserter from "./FootnoteInserter";
 import { escapeHtml, unescapeLiteral, inlineHtml, inlineMarkdown } from "../../lib/admin/inline-format";
 
+/** A new verse box shows the three kinds of line: the verse (replaced by pasting), its meaning and its reference. */
+const AYAT_PLACEHOLDER = "Tampal ayat di sini.<br>Maksud: terjemahan Melayu.<br>Surah nama surah, ayat 1–3.";
+
 const MARKER = /^\[\[gambar:[1-9]\d*\]\]$/;
 
-type ToolbarIconName = "bold" | "italic" | "paragraph" | "heading" | "scene" | "image" | "message" | "email" | "note";
+type ToolbarIconName = "bold" | "italic" | "paragraph" | "heading" | "scene" | "image" | "message" | "email" | "verse" | "note";
 
 function ToolbarIcon({ name }: { name: ToolbarIconName }) {
   if (name === "bold") return <span className="visual-manuscript-glyph visual-manuscript-glyph-bold" aria-hidden="true">B</span>;
@@ -26,6 +29,7 @@ function ToolbarIcon({ name }: { name: ToolbarIconName }) {
     {name === "image" && <><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8" cy="9" r="1.4"/><path d="m4 17 5-5 3 3 3-3 5 5"/></>}
     {name === "message" && <path d="M4 5h16v11H9l-5 4V5Z"/>}
     {name === "email" && <><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></>}
+    {name === "verse" && <><path d="M4 5h6a2 2 0 0 1 2 2v12a2 2 0 0 0-2-2H4Z"/><path d="M20 5h-6a2 2 0 0 0-2 2v12a2 2 0 0 1 2-2h6Z"/></>}
     {name === "note" && <><path d="M5 4h14v10l-6 6H5Z"/><path d="M13 20v-6h6"/><path d="M8.5 9h7"/></>}
   </svg>;
 }
@@ -274,13 +278,13 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
     rememberSelection();
   }
 
-  function insertBlock(kind: "paragraph" | "heading" | "scene" | "image" | "mesej" | "emel") {
+  function insertBlock(kind: "paragraph" | "heading" | "scene" | "image" | "mesej" | "emel" | "ayat") {
     const editor = editorRef.current;
     if (!editor) return;
     const saved = selectionRef.current;
     // Text is selected: turn the paragraphs it touches into one message or e-mail box (their wording and emphasis kept),
     // instead of adding an empty box beside it.
-    if ((kind === "mesej" || kind === "emel") && saved && !saved.collapsed && editor.contains(saved.commonAncestorContainer)) {
+    if ((kind === "mesej" || kind === "emel" || kind === "ayat") && saved && !saved.collapsed && editor.contains(saved.commonAncestorContainer)) {
       // The part of a block that is inside the selection (a selection that merely begins at the end of a paragraph has none).
       const partOf = (block: Element) => {
         const part = document.createRange();
@@ -340,7 +344,7 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
       const number = marker.match(/\d+/)?.[0];
       html = `<div class="visual-manuscript-marker" contenteditable="false" data-marker="${marker}"><span data-marker-label>Gambar ${number} · belum dipautkan</span><button type="button" data-remove-marker aria-label="Buang penanda Gambar ${number}" title="Buang penanda Gambar ${number}">Buang</button></div>`;
       onMarkerInserted(marker);
-    } else html = `<div class="visual-manuscript-communication visual-manuscript-communication-${kind}" data-communication="${kind}">Tulis kandungan di sini.</div>`;
+    } else html = `<div class="visual-manuscript-communication visual-manuscript-communication-${kind}" data-communication="${kind}">${kind === "ayat" ? AYAT_PLACEHOLDER : "Tulis kandungan di sini."}</div>`;
     // Inserted through the browser's own editing command, so Ctrl+Z (and Edit > Undo) takes the block away again.
     editor.focus();
     const selection = window.getSelection();
@@ -363,12 +367,14 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
     if (!(target!.tagName === "P" && !target!.textContent?.trim())) document.execCommand("insertParagraph");
     if (kind !== "paragraph") document.execCommand("insertHTML", false, html);
     sync();
-    if (kind === "mesej" || kind === "emel") {
-      // Select the placeholder text so the editor can type over it.
+    if (kind === "mesej" || kind === "emel" || kind === "ayat") {
+      // Select the placeholder text so the editor can type over it (in a verse box only the first line, so the Maksud and Surah lines keep showing the format).
       const box = (window.getSelection()?.anchorNode?.parentElement ?? null)?.closest("[data-communication]");
       if (box) {
         const inner = document.createRange();
         inner.selectNodeContents(box);
+        const firstBreak = kind === "ayat" ? box.querySelector("br") : null;
+        if (firstBreak) inner.setEndBefore(firstBreak);
         selection?.removeAllRanges();
         selection?.addRange(inner);
       }
@@ -443,6 +449,7 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
       <button type="button" onClick={() => insertBlock("image")} aria-label="Sisip penanda gambar" data-label="Penanda gambar"><ToolbarIcon name="image" /></button>
       <button type="button" onClick={() => insertBlock("mesej")} aria-label="Sisip kotak mesej" data-label="Kotak mesej"><ToolbarIcon name="message" /></button>
       <button type="button" onClick={() => insertBlock("emel")} aria-label="Sisip kotak e-mel" data-label="Kotak e-mel"><ToolbarIcon name="email" /></button>
+      <button type="button" onClick={() => insertBlock("ayat")} aria-label="Sisip kotak ayat" data-label="Kotak ayat"><ToolbarIcon name="verse" /></button>
       <span className="visual-manuscript-toolbar-divider" aria-hidden="true" />
       <button type="button" onClick={() => setNoteOpen((open) => !open)} aria-label="Sisip nota sisi" aria-expanded={noteOpen} data-label="Nota sisi"><ToolbarIcon name="note" /></button>
     </div>
@@ -553,6 +560,6 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
         </div>
       </div>
     ) : null}
-    <p className="admin-form-hint">Nota sisi ialah nombor kecil dalam teks: klik nombor itu untuk membaca, menukar atau memadam notanya. Untuk nota baharu, letakkan kursor di tempat nombor patut berada dan tekan ikon nota di bar alat. Pilih teks untuk Tebal atau Condong. Penanda gambar boleh dibuang di sini; simpan teks untuk menerapkan perubahan. Gambar yang sudah dimuat naik dipadam secara berasingan melalui kadnya.</p>
+    <p className="admin-form-hint">Nota sisi ialah nombor kecil dalam teks: klik nombor itu untuk membaca, menukar atau memadam notanya. Untuk nota baharu, letakkan kursor di tempat nombor patut berada dan tekan ikon nota di bar alat. Pilih teks untuk Tebal atau Condong. Dalam kotak ayat, baris Arab ialah ayat, baris yang bermula "Maksud:" ialah terjemahan dan baris yang bermula "Surah" ialah rujukan. Penanda gambar boleh dibuang di sini; simpan teks untuk menerapkan perubahan. Gambar yang sudah dimuat naik dipadam secara berasingan melalui kadnya.</p>
   </div>;
 }

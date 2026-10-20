@@ -2054,7 +2054,7 @@ export default function EditWorkPage() {
             </div>
             {manuscriptMode === "visual" ? (
               <span className="admin-form-hint" data-markdown-pointer>
-                <span>Kotak mesej sembang (<code>:::mesej</code>), pemisah adegan dan penanda gambar disunting dalam mod Markdown.</span>
+                <span>Kotak mesej sembang (<code>:::mesej</code>), kotak ayat (<code>:::ayat</code>), pemisah adegan dan penanda gambar disunting dalam mod Markdown.</span>
                 <button type="button" className="admin-btn admin-btn-quiet admin-btn-sm" onClick={openWritingGuide}>Buka Markdown dan panduan</button>
               </span>
             ) : null}
@@ -2080,7 +2080,7 @@ export default function EditWorkPage() {
                 className="admin-textarea"
               />
               <span className="admin-form-hint">
-                Gunakan Markdown. Ganti baris kosong untuk perenggan baharu. Kotak mesej, pemisah adegan dan penanda gambar ada dalam panduan.{" "}
+                Gunakan Markdown. Ganti baris kosong untuk perenggan baharu. Kotak mesej, kotak ayat, pemisah adegan dan penanda gambar ada dalam panduan.{" "}
                 <button type="button" className="admin-btn admin-btn-quiet admin-btn-sm" onClick={openWritingGuide}>Buka panduan</button>
               </span>
               <FootnoteInserter onInsert={addFootnote} />
@@ -2103,6 +2103,7 @@ export default function EditWorkPage() {
                 <li>Nota sisi: letakkan kursor di tempat nombor patut berada, tekan ikon <strong>Nota sisi</strong> di bar alat (mod Visual) atau butang <strong>+ Nota sisi</strong> (mod Markdown) dan taip isinya; nombor dan nota ditulis untuk anda. (Dalam Markdown ia ialah <code>[^1]</code> dalam ayat dan baris <code>[^1]: isi nota</code> di hujung.)</li>
                 <li><code>[[gambar:1]]</code> pada baris sendiri → lokasi gambar dalam teks. Alihkan baris penanda untuk mengalihkan gambar.</li>
                 <li>Kotak mesej: <code>:::mesej</code>, isi mesej, kemudian <code>:::</code> pada baris sendiri. Untuk e-mel, gunakan <code>:::emel</code>. Tiada nombor telefon atau alamat diperlukan.</li>
+                <li>Kotak ayat: <code>:::ayat</code>, kemudian <code>:::</code> pada baris sendiri. Dalam kotak: baris Arab ialah ayat (letakkan penanda akhir ayat ﴿١﴾ selepas setiap ayat), baris <code>Maksud: ...</code> ialah terjemahan Melayu, dan baris <code>Surah al-Asr, ayat 1–3</code> (atau <code>Rujukan: ...</code>) ialah rujukan. Pembaca melihat ayat, maksud, kemudian rujukan, walau apa pun susunan anda menulisnya. Teks Arab tidak dicampur dengan Rumi dalam satu baris.</li>
               </ul>
               <p>Isi tajuk utama dalam medan Tajuk—<code># Tajuk</code> di dalam manuskrip tidak dipaparkan kepada pembaca. &quot;Pratonton teks&quot; di bawah hanya menunjukkan teks yang sedang anda taip. Untuk halaman penuh seperti yang dilihat pembaca (kepala, gambar, lajur sisi, bab), simpan dahulu kemudian tekan Pratonton di bahagian atas.</p>
             </details>

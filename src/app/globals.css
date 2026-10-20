@@ -4411,3 +4411,27 @@ body:has(.save-work) .back-to-top { bottom: 76px; }
 /* A verse or quotation on its own line: right to left, centred, roomy. */
 p.arabic-block { font-family: var(--font-amiri), "Amiri", "Noto Naskh Arabic", "Traditional Arabic", serif; font-size: 1.55em; line-height: 2.1; text-align: center; margin-block: 1.1em; font-style: normal; unicode-bidi: isolate; }
 .footnote-text .arabic { font-size: 1.05em; }
+
+/* Verse box (:::ayat, Izzat 20 Oct 2026): the verse right to left and right aligned in Amiri; below it, in the same box, the Malay meaning and the reference, left to right. */
+.story-ayat {
+  margin: .4em 0 1.9em;
+  padding: .9em 1.25em 1.1em;
+  border: 1px solid var(--line);
+  border-right: 3px solid var(--clay);
+  border-radius: 5px;
+  background: var(--x-f8f5ef-bg);
+  break-inside: avoid;
+}
+.story-ayat .ayat-label,
+.story-ayat .ayat-caption-label { font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: .72em; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-soft); }
+.story-ayat .ayat-label { display: block; margin-bottom: .4em; text-align: left; }
+.story-ayat .ayat-text { margin: 0 0 .15em; font-family: var(--font-amiri), "Amiri", "Noto Naskh Arabic", "Traditional Arabic", serif; font-size: 1.6em; line-height: 2.1; text-align: right; font-style: normal; unicode-bidi: isolate; }
+.story-ayat .ayat-number { unicode-bidi: isolate; font-size: .85em; }
+.story-ayat figcaption { margin-top: .7em; padding-top: .7em; border-top: 1px solid var(--line); direction: ltr; text-align: left; font-size: .9em; line-height: 1.65; }
+.story-ayat .ayat-meaning p { margin: 0 0 .4em; }
+.story-ayat .ayat-caption-label { display: block; margin-bottom: .15em; }
+.story-ayat .ayat-reference { margin: .5em 0 0; font-size: .92em; color: var(--ink-soft); }
+@media print { .story-ayat { background: none; border-color: currentColor; } }
+
+/* The same box in the visual editor (right to left; the Latin lines keep the text face, Arabic falls through to Amiri). */
+.visual-manuscript-communication-ayat { border-left-color: var(--line); border-right: 3px solid var(--clay); background: var(--x-f8f5ef-bg); direction: rtl; text-align: right; font-family: Georgia, "Times New Roman", var(--font-amiri), "Amiri", "Noto Naskh Arabic", serif; font-size: 1.15em; line-height: 2; }

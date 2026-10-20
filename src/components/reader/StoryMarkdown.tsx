@@ -4,7 +4,7 @@ import type { GlossaryMap } from "./types";
 import { headingId } from "../../lib/reader/inline-chapters";
 import GlossaryTerm from "./GlossaryTerm";
 import { glossaryPattern } from "../../lib/reader/glossary-first";
-import { splitCommunicationBlocks } from "../../lib/reader/communication-blocks";
+import { parseAyat, splitCommunicationBlocks } from "../../lib/reader/communication-blocks";
 import { splitMessageSender } from "../../lib/reader/message-sender";
 import { fixEmphasisBeforeSuffix } from "../../lib/reader/emphasis-fix";
 import { unitaliciseDictionaryWords } from "../../lib/reader/dictionary-words";
@@ -52,6 +52,15 @@ function decorateGlossary(text: string, glossary: GlossaryMap, used: Set<string>
   }
   result.push(text.slice(cursor));
   return result;
+}
+
+/** A verse line: the end-of-verse mark (ornate brackets and the number) is kept as one isolated piece so its Arabic-Indic digits keep their order. */
+function VerseLine({ text, numbers }: { text: string; numbers: Record<string, number> }) {
+  return (
+    <p className="ayat-text" lang="ar" dir="rtl">
+      {text.split(/([﴾﴿][^﴾﴿\n]{1,8}[﴾﴿])/u).map((piece, i) => i % 2 === 1 ? <bdi key={i} className="ayat-number">{piece}</bdi> : <React.Fragment key={i}>{withFootnotes(piece, numbers)}</React.Fragment>)}
+    </p>
+  );
 }
 
 /** A reference in the text: a small number that links to its note. The first reference to a note is where "back" returns to. */
@@ -116,9 +125,30 @@ export default function StoryMarkdown({
       return <p><strong className="message-sender">{split.sender}:</strong>{decorateChildren(withFootnotes(parts, footnoteNumbers), glossary, used)}</p>;
     },
   };
+  // A verse box: the verse, then its meaning, then its reference, whatever order they were written in.
+  const ayatBox = (content: string, index: number) => {
+    const { verses, meanings, references } = parseAyat(content);
+    return (
+      <figure key={index} className="story-ayat" aria-label="Ayat al-Quran">
+        <span className="ayat-label" aria-hidden="true">Ayat al-Quran</span>
+        {verses.map((verse, v) => <VerseLine key={v} text={verse} numbers={footnoteNumbers} />)}
+        {meanings.length + references.length > 0 && (
+          <figcaption>
+            {meanings.map((meaning, m) => (
+              <div key={`m${m}`} className="ayat-meaning">
+                {m === 0 && <span className="ayat-caption-label">Maksud</span>}
+                <ReactMarkdown components={components}>{meaning}</ReactMarkdown>
+              </div>
+            ))}
+            {references.map((reference, r) => <p key={`r${r}`} className="ayat-reference">{reference}</p>)}
+          </figcaption>
+        )}
+      </figure>
+    );
+  };
   return (
     <>
-      {splitCommunicationBlocks(normalizeMarkdown(children)).map((segment, index) => segment.kind === "prose"
+      {splitCommunicationBlocks(normalizeMarkdown(children)).map((segment, index) => segment.kind === "ayat" ? ayatBox(segment.content, index) : segment.kind === "prose"
         ? <ReactMarkdown key={index} components={{ ...components, p: ({ node, children }) => {
             // A paragraph that is only Arabic (a verse of the Quran on its own line) is set right to left, centred, in the Naskh face.
             if (isArabicOnly(plainText(children))) return <p className="arabic-block" lang="ar" dir="rtl">{withFootnotes(children, footnoteNumbers)}</p>;
