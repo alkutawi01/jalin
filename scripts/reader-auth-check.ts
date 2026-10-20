@@ -22,6 +22,7 @@ import {
   verifyLoginCode,
   type Db,
 } from "../src/lib/reader-auth/service";
+import { overview } from "../src/lib/reader-auth/admin";
 import { clearReading, isSaved, listReading, listSaved, recordProgress, setSaved } from "../src/lib/reader-auth/library";
 import { emailLookupMac, ipMac, trialClaimMac, type MacKey, type Mailer } from "../src/lib/reader-auth/primitives";
 
@@ -160,11 +161,22 @@ async function main() {
       if (back.ver.status !== "ok") throw new Error("cannot continue");
       assert((await startTrial(trx, { key, now: at(61) }, back.ver.accountId)).status === "used", "and gets no second trial: the address has used it");
 
+      // The owner's overview of recent movement (deltas, since the development database may hold other rows).
+      const dayMin = 24 * 60;
+      const nowAfterStart = at(3 * dayMin);   // 3 days in: the trial begun at minute 71 started within the last 7 days
+      const nowNearEnd = at(10 * dayMin);     // 10 days in: it ends within the next 7 days
+      const nowAfterEnd = at(16 * dayMin);    // 16 days in: it ended 1 day ago and nothing else gives access
+      const base = { real: await overview(trx, new Date()), started: await overview(trx, nowAfterStart), ending: await overview(trx, nowNearEnd), gone: await overview(trx, nowAfterEnd) };
       // Aliases of one mailbox share one trial.
       const alias1 = await signIn(trx, "ali.baba@gmail.com", 70);
       assert(alias1.ver.status === "ok", "a Gmail address signs in");
       if (alias1.ver.status !== "ok") throw new Error("cannot continue");
       assert((await startTrial(trx, { key, now: at(71) }, alias1.ver.accountId)).status === "ok", "and starts its trial");
+      assert((await overview(trx, new Date())).recent.signups1d === base.real.recent.signups1d + 1 && (await overview(trx, new Date())).recent.signups7d === base.real.recent.signups7d + 1, "the overview counts the new sign-up in 24 hours and in 7 days");
+      assert((await overview(trx, nowAfterStart)).recent.trialsStarted7d === base.started.recent.trialsStarted7d + 1, "the overview counts a trial started in the last 7 days");
+      assert((await overview(trx, nowNearEnd)).recent.trialsEnding7d === base.ending.recent.trialsEnding7d + 1, "the overview counts a trial that ends within 7 days");
+      assert((await overview(trx, nowAfterStart)).recent.trialsEnding7d === base.started.recent.trialsEnding7d, "a trial that ends later than 7 days from now is not counted as ending");
+      assert((await overview(trx, nowAfterEnd)).recent.trialsExpired7d === base.gone.recent.trialsExpired7d + 1, "the overview counts a trial that ended in the last 7 days with no other access");
       const alias2 = await signIn(trx, "alibaba+jalin@googlemail.com", 72);
       assert(alias2.ver.status === "ok" && alias2.ver.isNewAccount, "an alias of the same mailbox is its own account (the address is kept as typed)");
       if (alias2.ver.status !== "ok") throw new Error("cannot continue");

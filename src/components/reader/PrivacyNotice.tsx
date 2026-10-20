@@ -73,6 +73,7 @@ export default function PrivacyNotice() {
         <li>Penyedia hos dan penghantaran laman (Vercel) memproses permintaan teknikal biasa (alamat IP, jenis pelayar, masa) untuk keselamatan dan kestabilan.</li>
         <li>Penyedia pangkalan data (Neon) menyimpan data akaun anda. Pangkalan data berada di Singapura.</li>
         <li>Penyedia penghantaran e-mel (Resend) menerima alamat e-mel anda dan kandungan e-mel kod log masuk untuk tujuan penghantaran.</li>
+        <li>Statistik laman (Vercel Web Analytics, dan Cloudflare Web Analytics jika dihidupkan) mengira bilangan paparan halaman awam secara agregat, tanpa kuki dan tanpa pengecam peribadi. Halaman akaun, pentadbir dan API tidak dikira.</li>
         <li>Penyedia semakan keselamatan (Cloudflare Turnstile) dipanggil pada borang log masuk hanya apabila ada tanda penyalahgunaan atau beban tinggi, untuk membezakan manusia daripada skrip. Ia menerima maklumat teknikal pelayar anda dan alamat IP, bukan alamat e-mel anda.</li>
         <li>Pihak berkuasa, jika dikehendaki oleh undang-undang.</li>
       </ul>
@@ -195,6 +196,7 @@ export default function PrivacyNotice() {
           <li>The hosting and delivery provider (Vercel) processes ordinary technical requests (IP address, browser type, time) for security and stability.</li>
           <li>The database provider (Neon) stores your account data. The database is in Singapore.</li>
           <li>The e-mail delivery provider (Resend) receives your e-mail address and the content of the sign-in e-mail, for delivery.</li>
+          <li>Site statistics (Vercel Web Analytics, and Cloudflare Web Analytics if switched on) count page views of public pages in aggregate, without cookies and without a personal identifier. Account, admin and API pages are not counted.</li>
           <li>The security check provider (Cloudflare Turnstile) is called on the sign-in form only when there are signs of abuse or heavy load, to tell people from scripts. It receives technical information about your browser and your IP address, not your e-mail address.</li>
           <li>Authorities, where the law requires it.</li>
         </ul>

@@ -74,6 +74,18 @@ export default async function LanggananPage() {
               </tbody>
             </table>
           </div>
+          <h2>Pergerakan terkini</h2>
+          <div className="admin-table-wrap">
+            <table className="admin-table a-kv-table">
+              <tbody>
+                <tr><th scope="row">Pendaftaran baharu</th><td>{data.recent.signups1d} dalam 24 jam · {data.recent.signups7d} dalam 7 hari</td></tr>
+                <tr><th scope="row">Percubaan dimulakan (7 hari)</th><td>{data.recent.trialsStarted7d}</td></tr>
+                <tr><th scope="row">Percubaan akan tamat dalam 7 hari</th><td>{data.recent.trialsEnding7d}{data.recent.trialsEnding7d > 0 ? " (belum ada akses lain; belum ada e-mel peringatan)" : ""}</td></tr>
+                <tr><th scope="row">Percubaan tamat dalam 7 hari lalu tanpa akses</th><td>{data.recent.trialsExpired7d}</td></tr>
+                <tr><th scope="row">Kad dan kod kongsi ditebus (7 hari)</th><td>{data.recent.redeemed7d}</td></tr>
+              </tbody>
+            </table>
+          </div>
           <h2>Dinding bayar</h2>
           <PaywallSwitch initialOn={paywall} accountsEnabled={readerAccountsEnabled()} samples={samples} />
           <h2>Suis henti penebusan</h2>

@@ -19,6 +19,7 @@ Senarai ini berasaskan kajian awal dan semakan ChatGPT (sumber: JPDP, KPDN, MCMC
 - Admin Langganan: amaran jika maklumat pengawal data belum lengkap.
 - Prosedur pelanggaran data: `docs/PROSEDUR_PELANGGARAN_DATA.md`.
 - Percubaan percuma sekali bagi setiap peti e-mel: alias Gmail (titik, +tag, googlemail.com) dan +tag pada domain lain dikira satu percubaan (19 Oktober 2026, lihat `docs/CABARAN_BOT_DAN_PERCUBAAN.md`).
+- Papan pemuka: Langganan > Ringkasan memaparkan "Pergerakan terkini" (pendaftaran 24 jam dan 7 hari, percubaan dimulakan, percubaan akan tamat dalam 7 hari, percubaan tamat tanpa akses, penebusan 7 hari). Statistik trafik: Vercel Web Analytics (hanya di produksi) dan Cloudflare Web Analytics (tidur sehingga `CF_ANALYTICS_TOKEN` ditetapkan); halaman admin, akaun dan API tidak dikira.
 - Cabaran bot Cloudflare Turnstile pada permintaan kod log masuk, disoal hanya apabila perlu; mati selagi kunci tidak ditetapkan (sama dokumen).
 
 ## Perlu dilakukan oleh Izzat sebelum akaun dihidupkan
@@ -35,6 +36,7 @@ Senarai ini berasaskan kajian awal dan semakan ChatGPT (sumber: JPDP, KPDN, MCMC
 | 8 | Pastikan alamat e-mel editorial@adjung.com dipantau (telefon tidak diperlukan) |
 | 9 | PILIHAN, tidak diperlukan untuk pelancaran (keputusan Izzat 20 Oktober 2026: Resend dan had e-mel dahulu). Jika penyalahgunaan berlaku: cipta tapak Cloudflare Turnstile (percuma, mod Managed, domain jalin.adjung.com) dan tetapkan `TURNSTILE_SITE_KEY` dan `TURNSTILE_SECRET_KEY` pada Vercel Production | Tanpa kunci, cabaran bot mati; kod kekal tidur dan tidak berkos |
 | 10 | Resend (disemak 20 Oktober 2026): domain penghantar `mail.adjung.com` Verified; SPF, DKIM dan DMARC (`p=none`, tanpa alamat laporan) ada. Pelan percuma: 3,000 e-mel sebulan dan 100 sehari (penggunaan 5/3,000). Naikkan pelan dan tetapkan `READER_MAIL_DAILY_CAP` apabila Izzat bersedia; had dalaman 90 sehari muat dalam had bulanan (90 x 30 = 2,700) | Setiap pendaftaran dan log masuk menghantar satu e-mel; jika kuota habis, kod tidak dapat dihantar |
+| 11 | Hidupkan Web Analytics pada projek Vercel (Analytics > Enable) untuk melihat trafik di dashboard Vercel. Pilihan: cipta tapak di Cloudflare Web Analytics, salin token, tetapkan `CF_ANALYTICS_TOKEN` pada Vercel Production | Tanpa itu, tiada angka trafik; skrip Vercel dimuat tetapi tidak merekod selagi tidak dihidupkan |
 
 ## Dinilai, tidak menghalang pelancaran (keyakinan sederhana)
 

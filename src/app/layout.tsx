@@ -3,6 +3,7 @@ import { Inter, Figtree } from "next/font/google";
 import "./globals.css";
 import { SITE_URL, DEFAULT_SHARE_IMAGE } from "../lib/seo";
 import BootScreen from "../components/reader/BootScreen";
+import SiteAnalytics from "../components/reader/SiteAnalytics";
 
 /**
  * The sans-serif the stylesheet has always named (Inter) is now actually loaded, self-hosted by Next at build time, with a
@@ -58,6 +59,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body>
         <BootScreen />
         {children}
+        <SiteAnalytics vercel={process.env.VERCEL_ENV === "production"} cloudflareToken={(process.env.CF_ANALYTICS_TOKEN ?? "").trim()} />
       </body>
     </html>
   );
