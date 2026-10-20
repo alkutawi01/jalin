@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Figtree } from "next/font/google";
+import { Inter, Figtree, Amiri } from "next/font/google";
 import "./globals.css";
 import "./themes.css";
 import { SITE_URL, DEFAULT_SHARE_IMAGE } from "../lib/seo";
@@ -15,6 +15,8 @@ import { THEME_INIT_SCRIPT } from "../lib/site-theme-mode";
 const inter = Inter({ subsets: ["latin", "latin-ext"], display: "swap", variable: "--font-inter" });
 /** The typeface of the main menu (Izzat chose Figtree, 5 Oct 2026). Only the menu uses it; labels and buttons stay Inter. */
 const figtree = Figtree({ subsets: ["latin", "latin-ext"], display: "swap", variable: "--font-figtree" });
+/** The Naskh face for Arabic in a story: verses of the Quran and Arabic quotations (Izzat chose Amiri, 20 Oct 2026). Loaded only where Arabic appears. */
+const amiri = Amiri({ subsets: ["arabic"], weight: ["400", "700"], display: "swap", variable: "--font-amiri", preload: false });
 
 /** The browser's own bar (address bar on a phone, status bar on iOS) takes the page's paper colour instead of white. */
 export const viewport: Viewport = {
@@ -53,7 +55,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="ms" className={`${inter.variable} ${figtree.variable}`} suppressHydrationWarning>
+    <html lang="ms" className={`${inter.variable} ${figtree.variable} ${amiri.variable}`} suppressHydrationWarning>
       <head>
         {/* Sets the theme before the first paint so a dark device never sees a flash of the light page. */}
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />

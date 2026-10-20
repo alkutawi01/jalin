@@ -13,6 +13,7 @@ import { splitFootnoteTokens } from "../../lib/reader/footnotes";
 import { smartQuotes } from "../../lib/admin/smart-quotes";
 import { spacedDashes } from "../../lib/reader/spaced-dash";
 import { cleanLiteralEmphasis } from "../../lib/reader/literal-emphasis";
+import { isArabicOnly, wrapArabic } from "../../lib/reader/arabic-text";
 
 function plainText(node: ReactNode): string {
   if (typeof node === "string" || typeof node === "number") return String(node);
@@ -78,7 +79,7 @@ function withFootnotes(children: ReactNode, numbers: Record<string, number>): Re
 
 function decorateChildren(children: ReactNode, glossary: GlossaryMap, used: Set<string>, cleanMarks = true): ReactNode {
   return React.Children.map(children, (child) =>
-    typeof child === "string" ? decorateGlossary(cleanMarks ? cleanLiteralEmphasis(child) : child, glossary, used)
+    typeof child === "string" ? decorateGlossary(cleanMarks ? cleanLiteralEmphasis(child) : child, glossary, used).flatMap((piece) => typeof piece === "string" ? wrapArabic(piece) : [piece])
       : React.isValidElement<{ children?: ReactNode }>(child) && child.type !== FootnoteRef && child.type !== "a" && child.type !== "code" && child.type !== "button"
         ? React.cloneElement(child, { children: decorateChildren(child.props.children, glossary, used, cleanMarks) })
         : child
@@ -119,6 +120,8 @@ export default function StoryMarkdown({
     <>
       {splitCommunicationBlocks(normalizeMarkdown(children)).map((segment, index) => segment.kind === "prose"
         ? <ReactMarkdown key={index} components={{ ...components, p: ({ node, children }) => {
+            // A paragraph that is only Arabic (a verse of the Quran on its own line) is set right to left, centred, in the Naskh face.
+            if (isArabicOnly(plainText(children))) return <p className="arabic-block" lang="ar" dir="rtl">{withFootnotes(children, footnoteNumbers)}</p>;
             const raw = segment.content.slice(node?.position?.start.offset ?? 0, node?.position?.end.offset ?? segment.content.length);
             return <p>{decorateChildren(withFootnotes(children, footnoteNumbers), glossary, used, !/\\\*/.test(raw))}</p>;
           } }}>{segment.content}</ReactMarkdown>
