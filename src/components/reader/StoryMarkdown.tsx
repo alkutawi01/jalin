@@ -13,7 +13,7 @@ import { splitFootnoteTokens } from "../../lib/reader/footnotes";
 import { smartQuotes } from "../../lib/admin/smart-quotes";
 import { spacedDashes } from "../../lib/reader/spaced-dash";
 import { cleanLiteralEmphasis } from "../../lib/reader/literal-emphasis";
-import { isArabicOnly, wrapArabic } from "../../lib/reader/arabic-text";
+import { ayatMarkChildren, ayatMarkNodes, isArabicOnly, wrapArabic } from "../../lib/reader/arabic-text";
 
 function plainText(node: ReactNode): string {
   if (typeof node === "string" || typeof node === "number") return String(node);
@@ -54,11 +54,11 @@ function decorateGlossary(text: string, glossary: GlossaryMap, used: Set<string>
   return result;
 }
 
-/** A verse line: the end-of-verse mark (ornate brackets and the number) is kept as one isolated piece so its Arabic-Indic digits keep their order. */
+/** A verse line: the end-of-verse mark (۝ and its number, which Amiri draws as a circle round the number) is kept as one isolated piece so its digits keep their order; older forms such as ﴿١﴾ or (1) are shown the same way. */
 function VerseLine({ text, numbers }: { text: string; numbers: Record<string, number> }) {
   return (
     <p className="ayat-text" lang="ar" dir="rtl">
-      {text.split(/([﴾﴿][^﴾﴿\n]{1,8}[﴾﴿])/u).map((piece, i) => i % 2 === 1 ? <bdi key={i} className="ayat-number">{piece}</bdi> : <React.Fragment key={i}>{withFootnotes(piece, numbers)}</React.Fragment>)}
+      {ayatMarkNodes(text).map((piece, i) => typeof piece === "string" ? <React.Fragment key={i}>{withFootnotes(piece, numbers)}</React.Fragment> : piece)}
     </p>
   );
 }
@@ -151,7 +151,7 @@ export default function StoryMarkdown({
       {splitCommunicationBlocks(normalizeMarkdown(children)).map((segment, index) => segment.kind === "ayat" ? ayatBox(segment.content, index) : segment.kind === "prose"
         ? <ReactMarkdown key={index} components={{ ...components, p: ({ node, children }) => {
             // A paragraph that is only Arabic (a verse of the Quran on its own line) is set right to left, centred, in the Naskh face.
-            if (isArabicOnly(plainText(children))) return <p className="arabic-block" lang="ar" dir="rtl">{withFootnotes(children, footnoteNumbers)}</p>;
+            if (isArabicOnly(plainText(children))) return <p className="arabic-block" lang="ar" dir="rtl">{ayatMarkChildren(withFootnotes(children, footnoteNumbers))}</p>;
             const raw = segment.content.slice(node?.position?.start.offset ?? 0, node?.position?.end.offset ?? segment.content.length);
             return <p>{decorateChildren(withFootnotes(children, footnoteNumbers), glossary, used, !/\\\*/.test(raw))}</p>;
           } }}>{segment.content}</ReactMarkdown>

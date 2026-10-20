@@ -5,7 +5,7 @@ import { pastedHtmlToMarkdown } from "../../lib/admin/paste-format";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { nextImageMarker } from "../../lib/reader/image-markers";
 import { AYAT_PLACEHOLDER_LINES, splitCommunicationBlocks } from "../../lib/reader/communication-blocks";
-import { hasArabic } from "../../lib/reader/arabic-text";
+import { hasArabic, toArabicIndic } from "../../lib/reader/arabic-text";
 import { confirmAction, toast } from "../../lib/admin/dialogs";
 import { cleanFootnoteText, nextFootnoteLabel } from "../../lib/admin/footnote-insert";
 import { splitFootnotes } from "../../lib/admin/footnote-edit";
@@ -72,7 +72,7 @@ function ayatMarkdown(box: HTMLElement): string {
 
 const MARKER = /^\[\[gambar:[1-9]\d*\]\]$/;
 
-type ToolbarIconName = "bold" | "italic" | "paragraph" | "heading" | "scene" | "image" | "message" | "email" | "verse" | "note";
+type ToolbarIconName = "bold" | "italic" | "paragraph" | "heading" | "scene" | "image" | "message" | "email" | "verse" | "verse-number" | "note";
 
 function ToolbarIcon({ name }: { name: ToolbarIconName }) {
   if (name === "bold") return <span className="visual-manuscript-glyph visual-manuscript-glyph-bold" aria-hidden="true">B</span>;
@@ -85,6 +85,7 @@ function ToolbarIcon({ name }: { name: ToolbarIconName }) {
     {name === "message" && <path d="M4 5h16v11H9l-5 4V5Z"/>}
     {name === "email" && <><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></>}
     {name === "verse" && <><path d="M4 5h6a2 2 0 0 1 2 2v12a2 2 0 0 0-2-2H4Z"/><path d="M20 5h-6a2 2 0 0 0-2 2v12a2 2 0 0 1 2-2h6Z"/></>}
+    {name === "verse-number" && <><circle cx="12" cy="12" r="8.5"/><path d="M10.5 9.5 12.5 8v8"/></>}
     {name === "note" && <><path d="M5 4h14v10l-6 6H5Z"/><path d="M13 20v-6h6"/><path d="M8.5 9h7"/></>}
   </svg>;
 }
@@ -195,6 +196,8 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
   const selectionRef = useRef<Range | null>(null);
   const caretRef = useRef<{ block: number; offset: number } | null>(null);
   const [noteOpen, setNoteOpen] = useState(false);
+  /** The caret is in a verse box: the verse number button works only there. */
+  const [inAyat, setInAyat] = useState(false);
   /** The side notes of the manuscript: the words are kept here (not in the text of the editor) and written after the text on every change. */
   const notesRef = useRef<NoteContext>({ numbers: {}, definitions: new Map(), orphans: [] });
   /** What was last drawn into the editor from `value`; null once the editor has sent text of its own. */
@@ -308,6 +311,8 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
   function rememberSelection() {
     const selection = window.getSelection();
     const editor = editorRef.current;
+    const holder = selection?.anchorNode instanceof Element ? selection.anchorNode : selection?.anchorNode?.parentElement;
+    if (selection?.rangeCount && editor?.contains(selection.anchorNode)) setInAyat(!!holder?.closest('[data-communication="ayat"]'));
     if (selection?.rangeCount && editor?.contains(selection.anchorNode)) {
       selectionRef.current = selection.getRangeAt(0).cloneRange();
       // Also as a place (which block, how many characters in): the saved range is lost when the editor redraws its text before the first edit.
@@ -330,6 +335,30 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
       selection?.addRange(selectionRef.current);
     }
     document.execCommand(command);
+    sync();
+    rememberSelection();
+  }
+
+  /** The end-of-verse mark at the caret in a verse box: U+06DD and the next number in Arabic-Indic digits (the circle of a printed Mushaf), one more than the highest in the box. */
+  function insertAyatNumber() {
+    const editor = editorRef.current;
+    // The caret as it is now (the button does not take focus); the remembered one only when the page has none.
+    const current = window.getSelection();
+    const inEditor = !!current?.rangeCount && !!editor?.contains(current.anchorNode);
+    const saved = inEditor ? current!.getRangeAt(0).cloneRange() : selectionRef.current;
+    const holder = saved?.startContainer instanceof Element ? saved.startContainer : saved?.startContainer.parentElement;
+    const box = holder?.closest<HTMLElement>('[data-communication="ayat"]');
+    if (!editor || !saved || !box || !editor.contains(box)) return;
+    editor.focus();
+    const selection = window.getSelection();
+    selection?.removeAllRanges();
+    selection?.addRange(saved);
+    const used = [...(box.textContent ?? "").matchAll(/۝([٠-٩]+)/g)].map((m) => Number([...m[1]!].map((d) => d.charCodeAt(0) - 0x0660).join("")));
+    const before = document.createRange();
+    before.selectNodeContents(box);
+    before.setEnd(saved.startContainer, saved.startOffset);
+    const spaced = /\S$/.test(before.toString());
+    document.execCommand("insertText", false, `${spaced ? " " : ""}۝${toArabicIndic(String(Math.max(0, ...used) + 1))}`);
     sync();
     rememberSelection();
   }
@@ -526,6 +555,7 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
       <button type="button" onClick={() => insertBlock("mesej")} aria-label="Sisip kotak mesej" data-label="Kotak mesej"><ToolbarIcon name="message" /></button>
       <button type="button" onClick={() => insertBlock("emel")} aria-label="Sisip kotak e-mel" data-label="Kotak e-mel"><ToolbarIcon name="email" /></button>
       <button type="button" onClick={() => insertBlock("ayat")} aria-label="Sisip kotak ayat" data-label="Kotak ayat"><ToolbarIcon name="verse" /></button>
+      <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={insertAyatNumber} disabled={!inAyat} aria-label="Sisip nombor ayat" data-label="Nombor ayat"><ToolbarIcon name="verse-number" /></button>
       <span className="visual-manuscript-toolbar-divider" aria-hidden="true" />
       <button type="button" onClick={() => setNoteOpen((open) => !open)} aria-label="Sisip nota sisi" aria-expanded={noteOpen} data-label="Nota sisi"><ToolbarIcon name="note" /></button>
     </div>
@@ -667,6 +697,6 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
         </div>
       </div>
     ) : null}
-    <p className="admin-form-hint">Nota sisi ialah nombor kecil dalam teks: klik nombor itu untuk membaca, menukar atau memadam notanya. Untuk nota baharu, letakkan kursor di tempat nombor patut berada dan tekan ikon nota di bar alat. Pilih teks untuk Tebal atau Condong. Dalam kotak ayat, baris Arab ialah ayat, baris yang bermula "Maksud:" ialah terjemahan dan baris yang bermula "Surah" ialah rujukan. Penanda gambar boleh dibuang di sini; simpan teks untuk menerapkan perubahan. Gambar yang sudah dimuat naik dipadam secara berasingan melalui kadnya.</p>
+    <p className="admin-form-hint">Nota sisi ialah nombor kecil dalam teks: klik nombor itu untuk membaca, menukar atau memadam notanya. Untuk nota baharu, letakkan kursor di tempat nombor patut berada dan tekan ikon nota di bar alat. Pilih teks untuk Tebal atau Condong. Dalam kotak ayat, baris Arab ialah ayat, baris yang bermula "Maksud:" ialah terjemahan dan baris yang bermula "Surah" ialah rujukan. Letakkan kursor selepas ayat dan tekan butang Nombor ayat untuk tanda akhir ayat berbentuk bulatan (۝١); nombor dalam kurungan selepas ayat, cth. (1), yang ditaip juga dipaparkan sebagai bulatan. Penanda gambar boleh dibuang di sini; simpan teks untuk menerapkan perubahan. Gambar yang sudah dimuat naik dipadam secara berasingan melalui kadnya.</p>
   </div>;
 }

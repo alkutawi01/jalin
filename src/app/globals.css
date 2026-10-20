@@ -4426,7 +4426,7 @@ p.arabic-block { font-family: var(--font-amiri), "Amiri", "Noto Naskh Arabic", "
 .story-ayat .ayat-caption-label { font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: .72em; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-soft); }
 .story-ayat .ayat-label { display: block; margin-bottom: .4em; text-align: left; }
 .story-ayat .ayat-text { margin: 0 0 .15em; font-family: var(--font-amiri), "Amiri", "Noto Naskh Arabic", "Traditional Arabic", serif; font-size: 1.6em; line-height: 2.1; text-align: right; font-style: normal; unicode-bidi: isolate; }
-.story-ayat .ayat-number { unicode-bidi: isolate; font-size: .85em; }
+.ayat-number { unicode-bidi: isolate; white-space: nowrap; font-size: 1.1em; margin-inline: .12em; }
 .story-ayat figcaption { margin-top: .7em; padding-top: .7em; border-top: 1px solid var(--line); direction: ltr; text-align: left; font-size: .9em; line-height: 1.65; }
 .story-ayat .ayat-meaning p { margin: 0 0 .4em; }
 .story-ayat .ayat-caption-label { display: block; margin-bottom: .15em; }
@@ -4435,5 +4435,6 @@ p.arabic-block { font-family: var(--font-amiri), "Amiri", "Noto Naskh Arabic", "
 
 /* The same box in the visual editor (one block per line with dir=auto: an Arabic line is right to left and right aligned in Amiri, a Malay line left to right). */
 .visual-manuscript-communication-ayat { border-left-color: var(--line); border-right: 3px solid var(--clay); background: var(--x-f8f5ef-bg); white-space: normal; font-family: Georgia, "Times New Roman", var(--font-amiri), "Amiri", "Noto Naskh Arabic", serif; line-height: 1.8; }
+.visual-manuscript-toolbar button:disabled { opacity: .4; cursor: not-allowed; }
 .visual-manuscript-communication-ayat .ayat-line { min-height: 1.8em; text-align: start; unicode-bidi: isolate; }
 .visual-manuscript-communication-ayat .ayat-line-ar { font-family: var(--font-amiri), "Amiri", "Noto Naskh Arabic", "Traditional Arabic", serif; font-size: 1.45em; line-height: 2; }

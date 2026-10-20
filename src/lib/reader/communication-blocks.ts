@@ -46,7 +46,7 @@ export function parseAyat(content: string): AyatParts {
 }
 
 /** The three lines a new verse box starts with (the visual editor writes them; publication readiness refuses a work that still holds them). One source for both. */
-export const AYAT_PLACEHOLDER_LINES = ["الصق الآية هنا", "Maksud: terjemahan Melayu.", "Surah nama surah, ayat 1–3."] as const;
+export const AYAT_PLACEHOLDER_LINES = ["الصق الآية هنا ۝١", "Maksud: terjemahan Melayu.", "Surah nama surah, ayat 1–3."] as const;
 
 /** True when any line of the text is still one of the verse box placeholder lines. */
 export function hasAyatPlaceholder(markdown: string): boolean {

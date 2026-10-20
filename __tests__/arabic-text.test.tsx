@@ -28,6 +28,8 @@ assert(dated.includes(">م-1860م<"), "digits and a hyphen between Arabic letter
 
 assert(isArabicOnly("﴿ ٱلْحَمْدُ لِلَّهِ رَبِّ ٱلْعَـٰلَمِينَ ﴾"), "a verse in ornate brackets on its own is Arabic only");
 assert(isArabicOnly("وَالْعَصْرِ ﴿١﴾"), "a verse with its number is Arabic only");
+assert(isArabicOnly("وَالْعَصْرِ ۝١"), "a verse with the circle mark is Arabic only");
+assert(isArabicOnly("وَالْعَصْرِ (1) {2}"), "a verse with written-out marks is Arabic only");
 assert(!isArabicOnly("Allah berfirman: ٱلْحَمْدُ لِلَّهِ"), "a sentence with Malay is not Arabic only");
 assert(!isArabicOnly(""), "empty text is not Arabic only");
 assert(!isArabicOnly("1856"), "numbers alone are not Arabic only");

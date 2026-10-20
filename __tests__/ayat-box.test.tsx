@@ -5,6 +5,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import StoryMarkdown from "../src/components/reader/StoryMarkdown";
 import VisualManuscriptEditor, { canEditVisually } from "../src/components/admin/VisualManuscriptEditor";
 import { AYAT_PLACEHOLDER_LINES, hasAyatPlaceholder, parseAyat, splitCommunicationBlocks } from "../src/lib/reader/communication-blocks";
+import { normalizeAyatMarks } from "../src/lib/reader/arabic-text";
 import { readFileSync } from "node:fs";
 
 const verse = "وَالْعَصْرِ ﴿١﴾ إِنَّ الْإِنسَانَ لَفِي خُسْرٍ ﴿٢﴾";
@@ -36,7 +37,33 @@ const html = render(`Sebelum.\n\n${box(`Surah al-Asr, ayat 1-3\nMaksud: Demi mas
 assert.match(html, /<figure class="story-ayat" aria-label="Ayat al-Quran">/, "the box is a figure with an accessible name");
 assert.match(html, /<p class="ayat-text" lang="ar" dir="rtl">/, "the verse is Arabic, right to left");
 assert.equal((html.match(/<bdi class="ayat-number">/g) ?? []).length, 2, "each end-of-verse mark is isolated");
-assert.match(html, /<bdi class="ayat-number">﴿١﴾<\/bdi>/, "the Arabic-Indic digit stays inside its brackets, unconverted");
+assert.match(html, /<bdi class="ayat-number">۝١<\/bdi>/, "an old-style mark is shown as the circle mark, U+06DD and the Arabic-Indic number");
+assert.ok(!html.includes("﴿") && !html.includes("﴾"), "no ornate brackets are left in the shown verse");
+
+// Marks in every written form become U+06DD + Arabic-Indic digits when shown; the stored text is not touched
+const mark = (n: string) => "۝" + n;
+const forms: Array<[string, string]> = [
+  ["وَالْعَصْرِ ۝١", "وَالْعَصْرِ " + mark("١")],
+  ["وَالْعَصْرِ۝١", "وَالْعَصْرِ " + mark("١")],
+  ["وَالْعَصْرِ ۝ 1", "وَالْعَصْرِ " + mark("١")],
+  ["وَالْعَصْرِ ﴿١﴾", "وَالْعَصْرِ " + mark("١")],
+  ["وَالْعَصْرِ ﴿1﴾", "وَالْعَصْرِ " + mark("١")],
+  ["وَالْعَصْرِ (١)", "وَالْعَصْرِ " + mark("١")],
+  ["وَالْعَصْرِ (12)", "وَالْعَصْرِ " + mark("١٢")],
+  ["وَالْعَصْرِ {1}", "وَالْعَصْرِ " + mark("١")],
+  ["وَالْعَصْرِ (1) خُسْرٍ (2)", "وَالْعَصْرِ " + mark("١") + " خُسْرٍ " + mark("٢")],
+  ["وَالْعَصْرِ (1)(2)", "وَالْعَصْرِ " + mark("١") + " " + mark("٢")],
+];
+for (const [written, shown] of forms) assert.equal(normalizeAyatMarks(written), shown, "mark form " + written);
+assert.equal(normalizeAyatMarks("Dia berkata (1) dan {2}."), "Dia berkata (1) dan {2}.", "brackets after Malay text are not verse marks");
+
+// The three verses of Surah al-Asr, 103:1-3, in the box and in an Arabic-only paragraph
+const asr = "وَٱلْعَصْرِ ۝١ إِنَّ ٱلْإِنسَـٰنَ لَفِى خُسْرٍ ۝٢ إِلَّا ٱلَّذِينَ ءَامَنُوا۟ وَعَمِلُوا۟ ٱلصَّـٰلِحَـٰتِ ۝٣";
+const asrBox = render(box(asr + "\nMaksud: Demi masa.\nSurah al-Asr, ayat 1-3"));
+assert.equal((asrBox.match(/<bdi class="ayat-number">۝[٠-٩]<\/bdi>/g) ?? []).length, 3, "three circle marks in the verse box");
+const asrPlain = render(asr.replace(/۝١/, "(1)").replace(/۝٢/, "﴿٢﴾").replace(/۝٣/, "{3}"));
+assert.match(asrPlain, /<p class="arabic-block" lang="ar" dir="rtl">/, "an Arabic-only paragraph with written-out marks is still a verse paragraph");
+assert.equal((asrPlain.match(/<bdi class="ayat-number">۝[٠-٩]<\/bdi>/g) ?? []).length, 3, "the same three marks in an Arabic-only paragraph, whatever form was written");
 assert.ok(!/[0-9]/.test(html.match(/<p class="ayat-text"[\s\S]*?<\/p>/)![0]), "no Latin digit is put into the verse");
 assert.ok(html.indexOf('class="ayat-text"') < html.indexOf('class="ayat-meaning"') && html.indexOf('class="ayat-meaning"') < html.indexOf('class="ayat-reference"'), "order is verse, meaning, reference");
 assert.match(html, /<span class="ayat-caption-label">Maksud<\/span>/, "the meaning has a small label");
@@ -52,6 +79,8 @@ assert.match(render(verse), /<p class="arabic-block" lang="ar" dir="rtl">/, "an 
 // Editor
 const editorMarkup = renderToStaticMarkup(<VisualManuscriptEditor value="" onChange={() => {}} existingAnchors={[]} onMarkerInserted={() => {}} />);
 assert.match(editorMarkup, /aria-label="Sisip kotak ayat"[^>]*data-label="Kotak ayat"/, "the toolbar has a verse box button");
+assert.match(editorMarkup, /aria-label="Sisip nombor ayat"[^>]*data-label="Nombor ayat"/, "the toolbar has a verse number button");
+assert.match(editorMarkup, /<button[^>]*disabled=""[^>]*aria-label="Sisip nombor ayat"|disabled=""[^>]*aria-label="Sisip nombor ayat"/, "the verse number button is off outside a verse box");
 assert.match(editorMarkup, /baris yang bermula &quot;Maksud:&quot;/, "the editor explains the three kinds of line");
 const editorSource = readFileSync(new URL("../src/components/admin/VisualManuscriptEditor.tsx", import.meta.url), "utf8");
 const has = (needle: string) => editorSource.replace(/\r\n/g, "\n").includes(needle);
@@ -70,6 +99,7 @@ assert.match(editorSource, /insertBlock\("ayat"\)/, "the button inserts a verse 
 // Authoring guide
 const page = readFileSync(new URL("../src/app/admin/works/[id]/page.tsx", import.meta.url), "utf8");
 assert.ok((page.match(/:::ayat/g) ?? []).length >= 2, "the guide names :::ayat in the hint and the list");
+assert.ok(page.includes("۝١") && page.includes("Nombor ayat"), "the guide explains the circle mark and the Nombor ayat button");
 assert.ok(page.includes("Maksud: ...") && page.includes("Surah al-Asr, ayat 1–3"), "the guide explains the Maksud and Surah lines");
 
 console.log("ayat-box: passed");
