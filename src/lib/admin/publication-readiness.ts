@@ -12,6 +12,7 @@ import type { WorkStatus, WorkType } from "../db/types";
 import { isDerivativeType, roleNotAllowed } from "../credit-roles";
 import { classifyFragmen, fragmenTextHash, isIndonesianLanguage, isMalayLanguage, readFragmenTextReview } from "../content/fragmen-kind";
 import { hasMultipleGenres } from "../reader/genre-display";
+import { hasAyatPlaceholder, hasMixedArabicParagraph } from "../reader/communication-blocks";
 
 /** A work type as an editor reads it ("Novela"), not the stored key ("novela"). */
 function jenisKarya(type: unknown): string {
@@ -420,6 +421,17 @@ export function evaluatePublicationReadinessFromData(
   if (leftover.length > 0) {
     contentBlockers.push(
       issue("placeholder_text", `Teks arahan (dalam kurungan) masih ada dalam: ${leftover.join(", ")}. Ganti atau padam sebelum menerbitkan.`)
+    );
+  }
+  // A verse box (:::ayat) the editor inserted and never filled in would be shown to readers with its placeholder lines.
+  if (hasAyatPlaceholder(work.body ?? "")) {
+    contentBlockers.push(
+      issue("ayat_placeholder", "Kotak ayat masih mengandungi teks pemegang tempat. Gantikan dengan ayat, maksud dan rujukan sebenar.")
+    );
+  }
+  if (hasMixedArabicParagraph(work.body ?? "")) {
+    contentWarnings.push(
+      issue("arabic_mixed_with_latin", "Teks Arab bercampur dengan Rumi dalam satu perenggan; letakkan ayat Arab dalam kotak ayat atau perenggan berasingan.")
     );
   }
   if (hasMultipleGenres(work.genre)) {

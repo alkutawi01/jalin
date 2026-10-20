@@ -4,7 +4,7 @@ import { dashInSelection, quotesInAllBlocks } from "../../lib/admin/auto-dash";
 import { pastedHtmlToMarkdown } from "../../lib/admin/paste-format";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { nextImageMarker } from "../../lib/reader/image-markers";
-import { splitCommunicationBlocks } from "../../lib/reader/communication-blocks";
+import { AYAT_PLACEHOLDER_LINES, splitCommunicationBlocks } from "../../lib/reader/communication-blocks";
 import { hasArabic } from "../../lib/reader/arabic-text";
 import { confirmAction, toast } from "../../lib/admin/dialogs";
 import { cleanFootnoteText, nextFootnoteLabel } from "../../lib/admin/footnote-insert";
@@ -14,7 +14,7 @@ import FootnoteInserter from "./FootnoteInserter";
 import { escapeHtml, unescapeLiteral, inlineHtml, inlineMarkdown } from "../../lib/admin/inline-format";
 
 /** A new verse box shows the three kinds of line: the verse (replaced by pasting), its meaning and its reference. */
-const AYAT_PLACEHOLDER = '<div class="ayat-line ayat-line-ar" dir="auto">الصق الآية هنا</div><div class="ayat-line" dir="auto">Maksud: terjemahan Melayu.</div><div class="ayat-line" dir="auto">Surah nama surah, ayat 1–3.</div>';
+const AYAT_PLACEHOLDER = AYAT_PLACEHOLDER_LINES.map((line, index) => `<div class="ayat-line${index === 0 ? " ayat-line-ar" : ""}" dir="auto">${line}</div>`).join("");
 
 /** One line of a verse box is a block of its own with dir="auto", so an Arabic line is right to left and right aligned and a Malay line is left to right (a <br> would not split the bidi paragraph). */
 function ayatLineHtml(text: string, notes?: NoteContext): string {

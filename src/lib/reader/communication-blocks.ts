@@ -44,3 +44,18 @@ export function parseAyat(content: string): AyatParts {
   }
   return parts;
 }
+
+/** The three lines a new verse box starts with (the visual editor writes them; publication readiness refuses a work that still holds them). One source for both. */
+export const AYAT_PLACEHOLDER_LINES = ["الصق الآية هنا", "Maksud: terjemahan Melayu.", "Surah nama surah, ayat 1–3."] as const;
+
+/** True when any line of the text is still one of the verse box placeholder lines. */
+export function hasAyatPlaceholder(markdown: string): boolean {
+  const placeholders: readonly string[] = AYAT_PLACEHOLDER_LINES;
+  return markdown.split(/\r?\n/).some((line) => placeholders.includes(line.trim()));
+}
+
+/** True when a paragraph outside any box holds Arabic and Latin letters together (a verse belongs in a verse box or a paragraph of its own). Footnote definitions are left out. */
+export function hasMixedArabicParagraph(markdown: string): boolean {
+  return splitCommunicationBlocks(markdown).some((segment) => segment.kind === "prose"
+    && segment.content.split(/\n{2,}/).some((paragraph) => !/^\s*\[\^/.test(paragraph) && hasArabic(paragraph) && /[A-Za-z]/.test(paragraph.replace(/\[\[gambar:\d+\]\]/g, ""))));
+}

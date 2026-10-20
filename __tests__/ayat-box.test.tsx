@@ -4,7 +4,7 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import StoryMarkdown from "../src/components/reader/StoryMarkdown";
 import VisualManuscriptEditor, { canEditVisually } from "../src/components/admin/VisualManuscriptEditor";
-import { parseAyat, splitCommunicationBlocks } from "../src/lib/reader/communication-blocks";
+import { AYAT_PLACEHOLDER_LINES, hasAyatPlaceholder, parseAyat, splitCommunicationBlocks } from "../src/lib/reader/communication-blocks";
 import { readFileSync } from "node:fs";
 
 const verse = "وَالْعَصْرِ ﴿١﴾ إِنَّ الْإِنسَانَ لَفِي خُسْرٍ ﴿٢﴾";
@@ -55,7 +55,9 @@ assert.match(editorMarkup, /aria-label="Sisip kotak ayat"[^>]*data-label="Kotak 
 assert.match(editorMarkup, /baris yang bermula &quot;Maksud:&quot;/, "the editor explains the three kinds of line");
 const editorSource = readFileSync(new URL("../src/components/admin/VisualManuscriptEditor.tsx", import.meta.url), "utf8");
 const has = (needle: string) => editorSource.replace(/\r\n/g, "\n").includes(needle);
-assert.ok(has('<div class="ayat-line ayat-line-ar" dir="auto">الصق الآية هنا</div><div class="ayat-line" dir="auto">Maksud: terjemahan Melayu.</div><div class="ayat-line" dir="auto">Surah nama surah, ayat 1–3.</div>'), "a new box shows an Arabic line, a Maksud line and a Surah line, each its own dir=auto block");
+assert.ok(has("AYAT_PLACEHOLDER_LINES.map(") && has("import { AYAT_PLACEHOLDER_LINES"), "the editor builds a new box from the same placeholder lines publication readiness refuses");
+assert.deepEqual([...AYAT_PLACEHOLDER_LINES].map((l) => hasAyatPlaceholder(l)), [true, true, true], "each placeholder line is recognised");
+assert.equal(hasAyatPlaceholder(box(verse)), false, "a real verse is not a placeholder");
 assert.ok(has('class="ayat-line${hasArabic(text) ? " ayat-line-ar" : ""}" dir="auto"'), "every line of a loaded verse box is a dir=auto block, Arabic ones marked");
 assert.ok(has("normalizeAyatBoxes(editor);"), "lines are kept as blocks on every change");
 assert.ok(has("A verse box keeps one block per line: the browser's own Enter splits the line into two."), "Enter in a verse box is left to the browser, which splits the line block");
