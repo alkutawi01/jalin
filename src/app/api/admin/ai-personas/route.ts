@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentAdmin } from "../../../../lib/admin/auth";
 import { listAiPersonas, listContributorOptions, saveAiPersona, findOrCreatePersona } from "../../../../lib/admin/ai-personas";
+import { publicErrorMessage } from "../../../../lib/admin/api-errors";
 
 /** GET: every AI with its pseudonym (if set), plus the contributors that can be chosen. */
 export async function GET() {
@@ -24,6 +25,6 @@ export async function POST(request: NextRequest) {
     await saveAiPersona(body.ai, slug);
     return NextResponse.json({ ok: true });
   } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : "Ralat." }, { status: 500 });
+    return NextResponse.json({ error: publicErrorMessage(error, "Ralat.") }, { status: 500 });
   }
 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentAdmin } from "../../../../lib/admin/auth";
 import { CATEGORY_TYPES, DEFAULT_CATEGORY_INTROS, DEFAULT_CATEGORY_TILES, isCategoryType, isCopyKind, listSavedCategoryIntros, saveCategoryIntro } from "../../../../lib/site-copy";
+import { publicErrorMessage } from "../../../../lib/admin/api-errors";
 
 /** GET: the intro sentence of each list page and the line under each home page tile, the saved one and the default. */
 export async function GET() {
@@ -27,7 +28,7 @@ export async function POST(request: NextRequest) {
     await saveCategoryIntro(body.type, body.text, kind);
     return NextResponse.json({ ok: true });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Ralat.";
+    const message = publicErrorMessage(error, "Ralat.");
     return NextResponse.json({ error: message }, { status: message.startsWith("Ayat") ? 400 : 500 });
   }
 }

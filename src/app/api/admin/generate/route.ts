@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "../../../../lib/db";
 import { executeGeneration, createOpenAIAdapter, createMockAdapter } from "../../../../lib/admin/generation";
 import type { WorkType } from "../../../../lib/db/types";
+import { publicErrorMessage } from "../../../../lib/admin/api-errors";
 
 /**
  * POST /api/admin/generate
@@ -91,7 +92,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Ralat tidak diketahui." },
+      { error: publicErrorMessage(error, "Ralat tidak diketahui.") },
       { status: 500 }
     );
   }

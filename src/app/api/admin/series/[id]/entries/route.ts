@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { attachEpisode, listSeriesEntries } from "../../../../../../lib/admin/series-service";
 import { getCurrentAdmin } from "../../../../../../lib/admin/auth";
+import { publicErrorMessage } from "../../../../../../lib/admin/api-errors";
 
 export async function GET(
   request: NextRequest,
@@ -12,7 +13,7 @@ export async function GET(
     return NextResponse.json(entries);
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Ralat tidak diketahui." },
+      { error: publicErrorMessage(error, "Ralat tidak diketahui.") },
       { status: 500 }
     );
   }
@@ -43,7 +44,7 @@ export async function POST(
 
     return NextResponse.json(entry, { status: 201 });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Ralat tidak diketahui.";
+    const message = publicErrorMessage(error, "Ralat tidak diketahui.");
     const status = message.includes("tidak ditemui")
       ? 404
       : message.includes("sudah menjadi") || message.includes("duplicate")

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { listSubmissions, createSubmission } from "../../../../lib/admin/submission-service";
+import { publicErrorMessage } from "../../../../lib/admin/api-errors";
 
 export async function GET() {
   try {
@@ -7,7 +8,7 @@ export async function GET() {
     return NextResponse.json(submissions);
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Ralat tidak diketahui." },
+      { error: publicErrorMessage(error, "Ralat tidak diketahui.") },
       { status: 500 }
     );
   }
@@ -30,7 +31,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(submission, { status: 201 });
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Ralat tidak diketahui." },
+      { error: publicErrorMessage(error, "Ralat tidak diketahui.") },
       { status: 500 }
     );
   }

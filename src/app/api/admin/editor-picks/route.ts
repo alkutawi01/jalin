@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentAdmin } from "../../../../lib/admin/auth";
 import { getPickState, savePicks } from "../../../../lib/admin/editor-picks-service";
+import { publicErrorMessage } from "../../../../lib/admin/api-errors";
 
 export async function GET() {
   if (!(await getCurrentAdmin())) {
@@ -9,7 +10,7 @@ export async function GET() {
   try {
     return NextResponse.json(await getPickState());
   } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : "Ralat tidak diketahui." }, { status: 500 });
+    return NextResponse.json({ error: publicErrorMessage(error, "Ralat tidak diketahui.") }, { status: 500 });
   }
 }
 
@@ -27,7 +28,7 @@ export async function PUT(request: NextRequest) {
     await savePicks(picks);
     return NextResponse.json(await getPickState());
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Ralat tidak diketahui.";
+    const message = publicErrorMessage(error, "Ralat tidak diketahui.");
     const status = /maksimum|sama|hanya karya|tidak sah/i.test(message) ? 400 : 500;
     return NextResponse.json({ error: message }, { status });
   }

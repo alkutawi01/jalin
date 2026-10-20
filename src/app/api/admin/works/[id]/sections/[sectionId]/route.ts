@@ -7,6 +7,7 @@ import {
 import { getCurrentAdmin } from "../../../../../../../lib/admin/auth";
 import { parseDbId } from "../../../../../../../lib/admin/ids";
 import { logActivity } from "../../../../../../../lib/admin/activity";
+import { publicErrorMessage } from "../../../../../../../lib/admin/api-errors";
 
 export async function GET(
   request: NextRequest,
@@ -26,7 +27,7 @@ export async function GET(
     return NextResponse.json(section);
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Ralat tidak diketahui." },
+      { error: publicErrorMessage(error, "Ralat tidak diketahui.") },
       { status: 500 }
     );
   }
@@ -69,7 +70,7 @@ export async function PATCH(
     await logActivity({ action: "section.update", subjectType: "section", subjectId: id, workId, summary: String(existing.title || existing.slug), collapse: true });
     return NextResponse.json(section);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Ralat tidak diketahui.";
+    const message = publicErrorMessage(error, "Ralat tidak diketahui.");
     const status = message.includes("tidak ditemui")
       ? 404
       : message.includes("sudah digunakan")
@@ -110,7 +111,7 @@ export async function DELETE(
     await logActivity({ action: "section.delete", subjectType: "section", subjectId: id, workId, summary: String(existing.title || existing.slug) });
     return NextResponse.json({ success: true });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Ralat tidak diketahui.";
+    const message = publicErrorMessage(error, "Ralat tidak diketahui.");
     const status = message.includes("tidak ditemui") ? 404 : message.includes("masih dirujuk") || message.includes("Perlu disahkan") ? 409 : 500;
     return NextResponse.json({ error: message }, { status });
   }

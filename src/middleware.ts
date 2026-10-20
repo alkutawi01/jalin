@@ -138,6 +138,20 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/admin/ubah-kata-laluan", request.url));
   }
 
+  // A browser always names the site a change comes from. One that names another site is refused (the cookie is SameSite=Lax as well; this is
+  // the second lock). A request with no Origin (a script, a tool) is not a browser form and is judged by its cookie alone.
+  if (pathname.startsWith("/api/admin/") && request.method !== "GET" && request.method !== "HEAD") {
+    const origin = request.headers.get("origin");
+    if (origin) {
+      let host = "";
+      try { host = new URL(origin).host; } catch { host = ""; }
+      const own = request.headers.get("x-forwarded-host") ?? request.headers.get("host") ?? request.nextUrl.host;
+      if (!host || host !== own) {
+        return NextResponse.json({ error: "Permintaan dari laman lain ditolak." }, { status: 403 });
+      }
+    }
+  }
+
   // A valid session still needs the permission this address and method ask for (see lib/admin/permissions).
   if (!isAllowed(role, request.method, pathname)) {
     if (pathname.startsWith("/api/")) {

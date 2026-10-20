@@ -3,6 +3,7 @@ import { getCurrentAdmin } from "../../../../lib/admin/auth";
 import { DEFAULT_AUDIENCE_BANDS } from "../../../../lib/audience";
 import { loadAudienceBands, saveAudienceBands } from "../../../../lib/audience-store";
 import { hasDb } from "../../../../lib/db";
+import { publicErrorMessage } from "../../../../lib/admin/api-errors";
 
 /** GET: the audience bands (what an editor ticks on a work) and the default ones. */
 export async function GET() {
@@ -20,7 +21,7 @@ export async function POST(request: NextRequest) {
   try {
     return NextResponse.json({ bands: await saveAudienceBands(body.bands) });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Ralat.";
+    const message = publicErrorMessage(error, "Ralat.");
     const user = /^(Sekurang|Paling|Peringkat)/.test(message);
     return NextResponse.json({ error: user ? message : "Gagal menyimpan peringkat." }, { status: user ? 400 : 500 });
   }

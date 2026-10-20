@@ -3,6 +3,7 @@ import { capitaliseFirst } from "../../../../../lib/capitalise-first";
 import { getGlossaryTerm, updateGlossaryTerm, deleteGlossaryTerm, listGlossaryForWork } from "../../../../../lib/admin/glossary-service";
 import { findDuplicateTerm } from "../../../../../lib/admin/metadata-rules";
 import { parseDbId } from "../../../../../lib/admin/ids";
+import { publicErrorMessage } from "../../../../../lib/admin/api-errors";
 
 export async function GET(
   request: NextRequest,
@@ -25,7 +26,7 @@ export async function GET(
     return NextResponse.json(term);
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Ralat tidak diketahui." },
+      { error: publicErrorMessage(error, "Ralat tidak diketahui.") },
       { status: 500 }
     );
   }
@@ -80,7 +81,7 @@ export async function PATCH(
     return NextResponse.json(term);
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Ralat tidak diketahui." },
+      { error: publicErrorMessage(error, "Ralat tidak diketahui.") },
       { status: 500 }
     );
   }
@@ -109,7 +110,7 @@ export async function DELETE(
     return NextResponse.json({ success: true });
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Ralat tidak diketahui." },
+      { error: publicErrorMessage(error, "Ralat tidak diketahui.") },
       { status: 500 }
     );
   }

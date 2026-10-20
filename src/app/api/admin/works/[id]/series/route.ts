@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb, hasDb } from "../../../../../../lib/db";
+import { publicErrorMessage } from "../../../../../../lib/admin/api-errors";
 
 export const dynamic = "force-dynamic";
 
@@ -20,6 +21,6 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     if (!row) return NextResponse.json({ series: null });
     return NextResponse.json({ series: { id: row.seriesId, title: row.seriesTitle, slug: row.seriesSlug, position: row.position } });
   } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : "Ralat tidak diketahui." }, { status: 500 });
+    return NextResponse.json({ error: publicErrorMessage(error, "Ralat tidak diketahui.") }, { status: 500 });
   }
 }

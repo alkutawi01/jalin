@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "../../../../../../lib/db";
 import { attachVisualToWork } from "../../../../../../lib/admin/visual-generation";
 import { parseDbId } from "../../../../../../lib/admin/ids";
+import { publicErrorMessage } from "../../../../../../lib/admin/api-errors";
 
 /**
  * POST /api/admin/visual-requests/[id]/attach
@@ -35,7 +36,7 @@ export async function POST(
     });
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Ralat tidak diketahui." },
+      { error: publicErrorMessage(error, "Ralat tidak diketahui.") },
       { status: 500 }
     );
   }

@@ -6,6 +6,7 @@ import {
   pollVisualGeneration,
 } from "../../../../../../lib/admin/visual-generation";
 import { parseDbId } from "../../../../../../lib/admin/ids";
+import { publicErrorMessage } from "../../../../../../lib/admin/api-errors";
 
 /**
  * POST /api/admin/visual-requests/[id]/poll
@@ -54,7 +55,7 @@ export async function POST(
     return NextResponse.json(result);
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Ralat tidak diketahui." },
+      { error: publicErrorMessage(error, "Ralat tidak diketahui.") },
       { status: 500 }
     );
   }

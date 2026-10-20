@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { confirmFragmenMalayText } from "../../../../../../../lib/admin/source-rights";
 import { getCurrentAdmin } from "../../../../../../../lib/admin/auth";
+import { publicErrorMessage } from "../../../../../../../lib/admin/api-errors";
 
 /** Human confirmation that a Fragmen's displayed text is Bahasa Melayu. Reviewer and time come from the session. */
 export async function POST(
@@ -17,7 +18,7 @@ export async function POST(
     const view = await confirmFragmenMalayText(id, body?.confirmed === true, { id: admin.id, email: admin.email });
     return NextResponse.json(view);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Ralat tidak diketahui.";
+    const message = publicErrorMessage(error, "Ralat tidak diketahui.");
     return NextResponse.json({ error: message }, { status: message.includes("tidak ditemui") ? 404 : message.includes("hanya untuk") ? 400 : 500 });
   }
 }

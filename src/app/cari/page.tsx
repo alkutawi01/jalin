@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { plainDek } from "../../lib/reader/plain-dek";
 import { gateSite } from "../../lib/reader/access-gate";
 import { formatMalayDate } from "../../lib/reader/format-date";
 import { SiteFooter, SiteHeader } from "../../components/reader/StoryChrome";
@@ -153,7 +154,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
                     </p>
                     <h2 className="search-result-title"><a href={doc.href}><Marked parts={titleParts} /></a></h2>
                     {doc.summary.attribution ? <p className="work-attribution">{renderAttribution(doc.summary.attribution.primary)}</p> : null}
-                    {doc.dek ? <p className="search-result-dek">{doc.dek}</p> : null}
+                    {doc.dek ? <p className="search-result-dek">{plainDek(doc.dek)}</p> : null}
                     {snippet ? (
                       <p className="search-snippet">
                         {snippet.label ? <span className="search-snippet-label">{snippet.label} </span> : null}

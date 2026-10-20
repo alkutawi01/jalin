@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { plainDek } from "../../../../lib/reader/plain-dek";
 import { gateSite } from "../../../../lib/reader/access-gate";
 import { smartQuotes } from "../../../../lib/admin/smart-quotes";
 import { spacedDashes } from "../../../../lib/reader/spaced-dash";
@@ -36,7 +37,7 @@ export async function generateMetadata({ params }: { params: Promise<{ seriesSlu
   if (repo.source !== "database") return {};
   const series = repo.getSeriesBySlug(seriesSlug);
   if (!series || repo.getPublishedSeriesEpisodes(series.id).length === 0) return {};
-  const description = clipDescription(series.dek ? spacedDashes(smartQuotes(series.dek)) : `Siri ${series.title} di Jalin.`);
+  const description = clipDescription(series.dek ? plainDek(series.dek) : `Siri ${series.title} di Jalin.`);
   const path = `/kategori/bersiri/${series.slug}`;
   const image = [series.hero?.src ? shareImage(series.hero.src, series.hero.alt) : DEFAULT_SHARE_IMAGE];
   return {

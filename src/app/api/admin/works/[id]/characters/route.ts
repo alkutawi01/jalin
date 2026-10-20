@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getWork, updateWorkCharacters } from "../../../../../../lib/admin/work-service";
+import { publicErrorMessage } from "../../../../../../lib/admin/api-errors";
 
 /**
  * Character metadata for a Work — see work-service.ts for the field
@@ -24,7 +25,7 @@ export async function GET(
     return NextResponse.json(characters);
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Ralat tidak diketahui." },
+      { error: publicErrorMessage(error, "Ralat tidak diketahui.") },
       { status: 500 }
     );
   }
@@ -45,7 +46,7 @@ export async function PATCH(
     const work = await updateWorkCharacters(id, body.characters);
     return NextResponse.json((work.metadata?.characters as unknown[]) ?? []);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Ralat tidak diketahui.";
+    const message = publicErrorMessage(error, "Ralat tidak diketahui.");
     const status = message === "Karya tidak ditemui." ? 404 : 400;
     return NextResponse.json({ error: message }, { status });
   }

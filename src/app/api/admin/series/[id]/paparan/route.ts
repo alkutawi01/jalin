@@ -3,6 +3,7 @@ import { getSeries, listSeriesEntries } from "../../../../../../lib/admin/series
 import { archiveWork, getWork, updateWork } from "../../../../../../lib/admin/work-service";
 import { getCurrentAdmin } from "../../../../../../lib/admin/auth";
 import { logActivity } from "../../../../../../lib/admin/activity";
+import { publicErrorMessage } from "../../../../../../lib/admin/api-errors";
 
 export const dynamic = "force-dynamic";
 
@@ -55,6 +56,6 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     return NextResponse.json({ ok: true, action, count: changed.length, titles: changed.reverse() });
   } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : "Ralat tidak diketahui." }, { status: 500 });
+    return NextResponse.json({ error: publicErrorMessage(error, "Ralat tidak diketahui.") }, { status: 500 });
   }
 }

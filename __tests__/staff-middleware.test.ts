@@ -73,6 +73,19 @@ async function call(method: string, path: string, claims?: Record<string, unknow
   assert((await call("GET", "/api/admin/auth/status", editor)).next && statusCalls.length === 0, "the question itself is let through, so it cannot loop");
   assert((await call("GET", "/admin/series", editor)).status !== 401, "pages are checked where they render (getCurrentAdmin), not by an extra call here");
   tableSays = "claims";
+
+  // A change that names another site as its origin is refused (audit 19 Okt); no Origin (a script) and the same origin pass.
+  async function withOrigin(method: string, path: string, origin: string | null) {
+    const headers: Record<string, string> = { cookie: `jalin-admin-session=${token(owner)}` };
+    if (origin) headers.origin = origin;
+    const res = await middleware(new NextRequest(`http://localhost${path}`, { method, headers: { ...headers, host: "localhost" } }));
+    return { status: res.status, next: res.headers.get("x-middleware-next") === "1" };
+  }
+  assert((await withOrigin("POST", "/api/admin/works", "https://evil.example")).status === 403, "a POST from another site is refused");
+  assert((await withOrigin("DELETE", "/api/admin/works/1", "https://evil.example")).status === 403, "so is a DELETE");
+  assert((await withOrigin("POST", "/api/admin/works", "http://localhost")).next, "the same site is let through");
+  assert((await withOrigin("POST", "/api/admin/works", null)).next, "a request with no Origin is judged by its cookie alone");
+  assert((await withOrigin("GET", "/api/admin/works", "https://evil.example")).next, "a read is not a change");
   console.log(`\n${passed} passed, ${failed} failed`);
   if (failed) process.exit(1);
 })();

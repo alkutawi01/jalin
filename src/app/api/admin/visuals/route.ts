@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { listVisualsForWork, createVisual, reorderVisuals } from "../../../../lib/admin/visual-service";
+import { publicErrorMessage } from "../../../../lib/admin/api-errors";
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,7 +15,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(visuals);
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Ralat tidak diketahui." },
+      { error: publicErrorMessage(error, "Ralat tidak diketahui.") },
       { status: 500 }
     );
   }
@@ -54,7 +55,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(visual, { status: 201 });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Ralat tidak diketahui.";
+    const message = publicErrorMessage(error, "Ralat tidak diketahui.");
     return NextResponse.json({ error: message }, { status: message.includes("sudah mempunyai hero") ? 409 : 500 });
   }
 }
@@ -70,7 +71,7 @@ export async function PATCH(request: NextRequest) {
     const visuals = await reorderVisuals(body.workId, body.visualIds);
     return NextResponse.json(visuals);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Ralat tidak diketahui.";
+    const message = publicErrorMessage(error, "Ralat tidak diketahui.");
     return NextResponse.json({ error: message }, { status: message.includes("tidak sah") ? 400 : 500 });
   }
 }
