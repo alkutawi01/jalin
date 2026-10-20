@@ -1558,7 +1558,7 @@ export default function EditWorkPage() {
   }
 
   async function handleSaveGlossary() {
-    if (!editingGlossary) return;
+    if (!editingGlossary || glossaryBusy) return;
     const missing = !(editingGlossary.term ?? "").trim() ? "term" : !(editingGlossary.meaning ?? "").trim() ? "meaning" : null;
     if (missing) {
       setGlossaryError(missing === "term" ? "Istilah diperlukan." : "Maksud diperlukan.");
@@ -1573,6 +1573,7 @@ export default function EditWorkPage() {
     };
 
     setGlossaryError(null);
+    setGlossaryBusy(true);
 
     try {
       if (editingGlossary.id) {
@@ -1611,6 +1612,8 @@ export default function EditWorkPage() {
       await loadReadiness();
     } catch (err) {
       setGlossaryError(errorText(err));
+    } finally {
+      setGlossaryBusy(false);
     }
   }
 
@@ -2956,6 +2959,7 @@ export default function EditWorkPage() {
                   type="button"
                   className="admin-btn admin-btn-primary"
                   onClick={handleSaveGlossary}
+                  disabled={glossaryBusy}
                 >
                   Simpan istilah
                 </button>
@@ -3030,7 +3034,7 @@ export default function EditWorkPage() {
                             type="button"
                             className="admin-btn admin-btn-sm admin-btn-danger"
                             onClick={() => handleDeleteGlossary(term.id)}
-                            aria-label={`Padam istilah ${term.term}`}
+                            aria-label={`Padam istilah ${term.term.replace(/\*/g, "")}`}
                           >
                             Padam
                           </button>
@@ -3091,7 +3095,7 @@ export default function EditWorkPage() {
                 <tbody>
                   {characters.map((character, index) => (
                     <tr key={index}>
-                      <td><input type="checkbox" aria-label={`Pilih watak ${(character.name ?? "").trim() || index + 1}`} checked={selectedCharacters.includes(index)} onChange={(event) => setSelectedCharacters((prev) => event.target.checked ? [...prev, index] : prev.filter((item) => item !== index))} /></td>
+                      <td><input type="checkbox" aria-label={`Pilih watak ${(character.name ?? "").replace(/\*/g, "").trim() || index + 1}`} checked={selectedCharacters.includes(index)} onChange={(event) => setSelectedCharacters((prev) => event.target.checked ? [...prev, index] : prev.filter((item) => item !== index))} /></td>
                       <td>
                         <InlineRichField
                           value={character.name}
@@ -3126,7 +3130,7 @@ export default function EditWorkPage() {
                           type="button"
                           className="admin-btn admin-btn-sm admin-btn-danger"
                           onClick={() => removeCharacterRow(index)}
-                          aria-label={`Padam watak ${(character.name ?? "").trim() || index + 1}`}
+                          aria-label={`Padam watak ${(character.name ?? "").replace(/\*/g, "").trim() || index + 1}`}
                         >
                           Padam
                         </button>

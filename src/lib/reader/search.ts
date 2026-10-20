@@ -83,6 +83,12 @@ export interface SearchDoc {
 /** The text as a reader sees it: no Markdown marks (headings, emphasis, note references), one line. */
 export function readable(markdown: string): string {
   return markdown
+    .replace(/\[\[gambar:\d+\]\]/gi, " ")
+    .replace(/^\s*:::.*$/gm, " ")
+    .replace(/^\s*(?:---+|\*\*\*+)\s*$/gm, " ")
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, " ")
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
+    .replace(/^\s*>\s?/gm, "")
     .replace(/^\s{0,3}#{1,6}\s+/gm, "")
     .replace(/\[\^[^\]]+\]:?/g, "")
     .replace(/\*+/g, "")

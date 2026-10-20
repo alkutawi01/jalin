@@ -44,7 +44,7 @@ export default function FootnoteInserter({
     );
   }
   return (
-    <div className="a-footnote-inserter a-footnote-panel" role="group" aria-label="Sisip nota sisi" onKeyDown={(e) => e.key === "Escape" && close()}>
+    <div className="a-footnote-inserter a-footnote-panel" role="group" aria-label="Sisip nota sisi" onKeyDown={(e) => e.key === "Escape" && !text.trim() && close()}>
       <span id={`${id}-label`} className="a-field-label">Isi nota sisi</span>
       <InlineRichField id={id} labelledBy={`${id}-label`} multiline rows={3} maxLength={600} autoFocus value={text} onChange={setText} placeholder="cth. Pasar malam itu ditutup pada tahun 2019." />
       <span className="admin-form-hint">Nombor nota diletakkan di tempat kursor tadi; pembaca melihat nota ini di sisi teks.</span>

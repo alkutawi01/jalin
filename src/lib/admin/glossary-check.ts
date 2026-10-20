@@ -1,4 +1,5 @@
 import { glossaryPattern } from "../reader/glossary-first";
+import { stripItalicMarks } from "../reader/inline-italics";
 
 export interface GlossaryTermProblem {
   term: string;
@@ -13,7 +14,7 @@ export interface GlossaryTermProblem {
 export function glossaryTermsMissingFromText(terms: string[], text: string): GlossaryTermProblem[] {
   const problems: GlossaryTermProblem[] = [];
   for (const raw of terms) {
-    const term = raw.trim();
+    const term = stripItalicMarks(raw).trim();
     if (!term) continue;
     const pattern = glossaryPattern([term]);
     if (pattern && pattern.test(text)) continue;
