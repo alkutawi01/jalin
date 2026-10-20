@@ -3,6 +3,7 @@ import { getCurrentAdmin } from "../../../../../../lib/admin/auth";
 import { getDb, hasDb } from "../../../../../../lib/db";
 import { applyManualUpload } from "../../../../../../lib/admin/visual-generation/manual-upload";
 import { parseDbId } from "../../../../../../lib/admin/ids";
+import { publicErrorMessage } from "../../../../../../lib/admin/api-errors";
 
 /**
  * POST /api/admin/visual-requests/[id]/upload  (multipart/form-data)
@@ -47,7 +48,7 @@ export async function POST(
     return NextResponse.json({ success: true, assetPath: result.assetPath, backend: result.backend });
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Ralat tidak diketahui." },
+      { error: publicErrorMessage(error, "Ralat tidak diketahui.") },
       { status: 500 }
     );
   }

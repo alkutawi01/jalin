@@ -11,6 +11,7 @@ import { normaliseCountries } from "../../../../../lib/reader/countries";
 import { logActivity, workSaveSummary } from "../../../../../lib/admin/activity";
 import { can, roleFromClaim } from "../../../../../lib/admin/permissions";
 import { EDITOR_NOTE_LABEL, EDITOR_NOTE_MAX, READER_NOTE_LABEL, READER_NOTE_MAX, noteTooLongMessage } from "../../../../../lib/admin/note-limits";
+import { publicErrorMessage } from "../../../../../lib/admin/api-errors";
 
 export async function GET(
   request: NextRequest,
@@ -27,7 +28,7 @@ export async function GET(
     return NextResponse.json(work);
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Ralat tidak diketahui." },
+      { error: publicErrorMessage(error, "Ralat tidak diketahui.") },
       { status: 500 }
     );
   }
@@ -197,7 +198,7 @@ export async function PATCH(
     await logActivity({ action: "work.update", subjectType: "work", subjectId: id, workId: id, summary: workSaveSummary(existing.title, body), collapse: true });
     return NextResponse.json(work);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Ralat tidak diketahui.";
+    const message = publicErrorMessage(error, "Ralat tidak diketahui.");
     const status = message.includes("already exists") || message.includes("sudah digunakan") ? 409 : 500;
     return NextResponse.json({ error: message }, { status });
   }
@@ -219,7 +220,7 @@ export async function DELETE(
     await logActivity({ action: "work.delete", subjectType: "work", subjectId: id, workId: id, summary: doomed?.title ?? id });
     return NextResponse.json({ success: true });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Ralat tidak diketahui.";
+    const message = publicErrorMessage(error, "Ralat tidak diketahui.");
     const status = message.includes("tidak ditemui") ? 404 : message.includes("pernah diterbitkan") ? 409 : 500;
     return NextResponse.json({ error: message }, { status });
   }

@@ -5,6 +5,7 @@ import {
 } from "../../../../../../lib/admin/section-service";
 import { getCurrentAdmin } from "../../../../../../lib/admin/auth";
 import { logActivity } from "../../../../../../lib/admin/activity";
+import { publicErrorMessage } from "../../../../../../lib/admin/api-errors";
 
 export async function GET(
   request: NextRequest,
@@ -18,7 +19,7 @@ export async function GET(
     return NextResponse.json(sections);
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Ralat tidak diketahui." },
+      { error: publicErrorMessage(error, "Ralat tidak diketahui.") },
       { status: 500 }
     );
   }
@@ -56,7 +57,7 @@ export async function POST(
     await logActivity({ action: "section.create", subjectType: "section", subjectId: (section as { id?: number }).id, workId: id, summary: String(body.title || body.slug) });
     return NextResponse.json(section, { status: 201 });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Ralat tidak diketahui.";
+    const message = publicErrorMessage(error, "Ralat tidak diketahui.");
     const status = message.includes("tidak ditemui")
       ? 404
       : message.includes("tidak sah") || message.includes("diperlukan") || message.includes("sudah digunakan") || message.includes("hanya untuk")

@@ -1,4 +1,5 @@
 import { DEFAULT_SHARE_IMAGE, SITE_URL, absoluteUrl, shareImageUrl } from "./seo";
+import { plainDek } from "./reader/plain-dek";
 import { audienceAgeRange } from "./audience";
 
 /** Structured data for the reader pages (schema.org). Only what is public: no credits' private fields, no rights notes. */
@@ -71,7 +72,7 @@ export function workJsonLd(work: JsonLdWork, sectionSlug?: string): Record<strin
   const common = {
     inLanguage: work.inLanguage ?? "ms",
     ...(work.genre ? { genre: work.genre } : {}),
-    ...(work.dek ? { description: work.dek } : {}),
+    ...(work.dek ? { description: plainDek(work.dek) } : {}),
     ...(work.publishedAt ? { datePublished: work.publishedAt } : {}),
     ...(work.updatedAt ? { dateModified: laterOf(work.updatedAt, work.publishedAt) } : {}),
     ...(work.heroSrc ? { image: shareImageUrl(work.heroSrc) } : {}),
@@ -169,7 +170,7 @@ export function seriesJsonLd(series: JsonLdSeries): Record<string, unknown> {
         name: series.title,
         url: absoluteUrl(path),
         inLanguage: "ms",
-        ...(series.dek ? { description: series.dek } : {}),
+        ...(series.dek ? { description: plainDek(series.dek) } : {}),
         ...(series.genre ? { genre: series.genre } : {}),
         ...(series.heroSrc ? { image: shareImageUrl(series.heroSrc) } : {}),
         ...(series.authors && series.authors.length > 0 ? { author: people(series.authors) } : {}),
@@ -206,7 +207,7 @@ export function episodeJsonLd(work: JsonLdWork, series: { slug: string; title: s
         position,
         inLanguage: "ms",
         ...(work.genre ? { genre: work.genre } : {}),
-        ...(work.dek ? { description: work.dek } : {}),
+        ...(work.dek ? { description: plainDek(work.dek) } : {}),
         ...(work.publishedAt ? { datePublished: work.publishedAt } : {}),
         ...(work.updatedAt ? { dateModified: laterOf(work.updatedAt, work.publishedAt) } : {}),
         ...(work.heroSrc ? { image: shareImageUrl(work.heroSrc) } : {}),

@@ -151,6 +151,9 @@ export default function FootnoteMargin({ notes }: { notes: Note[] }) {
       if (!anchor || !anchor.closest(".story-body")) return;
       const number = Number((anchor.getAttribute("href") ?? "").replace("#nota-", ""));
       if (!Number.isFinite(number) || !notes.some((note) => note.number === number)) return;
+      // Enter on a note number (a click with no pointer, detail 0) follows the link to the list of notes at the end of the chapter: the popover
+      // and the lit margin note are for the pointer, and they left a keyboard or screen-reader reader with nowhere to go.
+      if (event.detail === 0) return;
       if (window.matchMedia(NARROW).matches) {
         event.preventDefault();
         triggerRef.current = anchor;

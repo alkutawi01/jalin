@@ -6,6 +6,7 @@ import { getCurrentAdmin } from "../../../../../lib/admin/auth";
 import { getDb } from "../../../../../lib/db";
 import { DEFAULT_AUDIENCE } from "../../../../../lib/audience";
 import { draftDefaults } from "../../../../../lib/admin/series-inheritance";
+import { publicErrorMessage } from "../../../../../lib/admin/api-errors";
 
 const types = new Set(["cerpen", "novela", "bersiri", "fragmen", "sinopsis"]);
 
@@ -59,6 +60,6 @@ export async function POST(request: NextRequest) {
     });
     return NextResponse.json(result, { status: 201 });
   } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : "Draf gagal dibuat." }, { status: 409 });
+    return NextResponse.json({ error: publicErrorMessage(error, "Draf gagal dibuat.") }, { status: 409 });
   }
 }

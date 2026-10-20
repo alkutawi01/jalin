@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { plainDek } from "../../../../../lib/reader/plain-dek";
 import { laterOf } from "../../../../../lib/seo-jsonld";
 import { notFound } from "next/navigation";
 import { OG_SITE, absoluteUrl, clipDescription, shareImage, DEFAULT_SHARE_IMAGE } from "../../../../../lib/seo";
@@ -41,7 +42,7 @@ export async function generateMetadata({ params }: { params: Promise<{ seriesSlu
   const mine = episodes.find((e) => e.slug === work.slug);
   const label = mine ? `Episod ${mine.position}: ` : "";
   const title = `${label}${work.title} · ${work.series.title}`;
-  const description = clipDescription(work.dek ?? `${work.title}, ${work.series.title}. Siri Jalin.`);
+  const description = clipDescription(work.dek ? plainDek(work.dek) : `${work.title}, ${work.series.title}. Siri Jalin.`);
   const path = `/kategori/bersiri/${work.series.slug}/${work.slug}`;
   // An episode without a picture of its own shares the series' picture.
   const hero = episodeHeroOf(work.visuals.find((visual) => visual.role === "hero"), work.series.hero);

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { listWorks, listWorksByIds, createWork } from "../../../../lib/admin/work-service";
 import { listUnattachedEpisodes } from "../../../../lib/admin/series-service";
 import { logActivity, cleanSummary } from "../../../../lib/admin/activity";
+import { publicErrorMessage } from "../../../../lib/admin/api-errors";
 
 /** GET /api/admin/works; ?tanpaSiri=1 for the Bersiri episodes that belong to no series yet; ?ids=a,b,c for just those works. */
 export async function GET(request: NextRequest) {
@@ -13,7 +14,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(works);
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Ralat tidak diketahui." },
+      { error: publicErrorMessage(error, "Ralat tidak diketahui.") },
       { status: 500 }
     );
   }
@@ -60,7 +61,7 @@ export async function POST(request: NextRequest) {
     await logActivity({ action: "work.create", subjectType: "work", subjectId: (work as { id?: string }).id, workId: (work as { id?: string }).id, summary: `${cleanSummary(body.title)} (${body.type})` });
     return NextResponse.json(work, { status: 201 });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Ralat tidak diketahui.";
+    const message = publicErrorMessage(error, "Ralat tidak diketahui.");
     const status = message.includes("already exists") || message.includes("sudah digunakan") ? 409 : 500;
     return NextResponse.json({ error: message }, { status });
   }

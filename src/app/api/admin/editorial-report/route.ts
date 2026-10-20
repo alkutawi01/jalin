@@ -3,6 +3,7 @@ import { getEditorialReport } from "../../../../lib/admin/editorial-health";
 import { getCurrentAdmin } from "../../../../lib/admin/auth";
 import { saveAuditRun } from "../../../../lib/admin/audit-history";
 import { syncEditorialIssues } from "../../../../lib/admin/editorial-issues";
+import { publicErrorMessage } from "../../../../lib/admin/api-errors";
 
 export async function GET(_request: NextRequest) {
   try {
@@ -29,7 +30,7 @@ export async function GET(_request: NextRequest) {
     
     return NextResponse.json(report);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Ralat tidak diketahui.";
+    const message = publicErrorMessage(error, "Ralat tidak diketahui.");
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

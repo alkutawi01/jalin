@@ -3,6 +3,7 @@ import { archiveWork, getWork, updateWork } from "../../../../../lib/admin/work-
 import { getCurrentAdmin } from "../../../../../lib/admin/auth";
 import { logActivity } from "../../../../../lib/admin/activity";
 import { can, roleFromClaim } from "../../../../../lib/admin/permissions";
+import { publicErrorMessage } from "../../../../../lib/admin/api-errors";
 
 export const dynamic = "force-dynamic";
 
@@ -64,7 +65,7 @@ export async function POST(request: NextRequest) {
           changed.push({ id, title: work.title });
         }
       } catch (error) {
-        skipped.push({ id, title: work.title, reason: error instanceof Error ? error.message : "Tidak dapat diubah." });
+        skipped.push({ id, title: work.title, reason: publicErrorMessage(error, "Tidak dapat diubah.") });
       }
     }
 
@@ -79,6 +80,6 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ ok: true, action, changed, skipped });
   } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : "Ralat tidak diketahui." }, { status: 500 });
+    return NextResponse.json({ error: publicErrorMessage(error, "Ralat tidak diketahui.") }, { status: 500 });
   }
 }

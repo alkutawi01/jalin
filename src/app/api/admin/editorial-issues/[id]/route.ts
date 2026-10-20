@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCurrentAdmin } from "../../../../../lib/admin/auth";
 import { getDb } from "../../../../../lib/db";
 import { recordIssueEvent } from "../../../../../lib/admin/issue-events";
+import { publicErrorMessage } from "../../../../../lib/admin/api-errors";
 
 export async function PATCH(
   _request: NextRequest,
@@ -42,7 +43,7 @@ export async function PATCH(
     
     return NextResponse.json({ success: true });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Ralat tidak diketahui.";
+    const message = publicErrorMessage(error, "Ralat tidak diketahui.");
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

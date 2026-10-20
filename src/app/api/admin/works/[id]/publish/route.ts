@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { publishWorkExplicit, republishWork } from "../../../../../../lib/admin/publication-service";
 import { getCurrentAdmin } from "../../../../../../lib/admin/auth";
+import { publicErrorMessage } from "../../../../../../lib/admin/api-errors";
 
 export async function POST(
   request: NextRequest,
@@ -30,7 +31,7 @@ export async function POST(
     });
     return NextResponse.json(result);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Ralat tidak diketahui.";
+    const message = publicErrorMessage(error, "Ralat tidak diketahui.");
     const status =
       message.includes("tidak ditemui") ? 404
       : message.includes("readiness") || message.includes("Status") ? 422

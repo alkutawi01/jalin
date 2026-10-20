@@ -3189,7 +3189,7 @@ main:focus { outline: none; }
 .footnote-text { display: inline; }
 .footnote-text p { display: inline; margin: 0; }
 .footnote-text p + p { display: block; margin-top: 6px; }
-.footnote-back { margin-left: 6px; color: var(--clay-text); text-decoration: none; }
+.footnote-back { display: inline-block; min-width: 24px; min-height: 24px; margin-left: 6px; text-align: center; color: var(--clay-text); text-decoration: none; }
 .footnote-back:hover, .footnote-back:focus-visible { text-decoration: underline; }
 .footnotes li:target { background: rgb(var(--clay-rgb) / .1); border-radius: 4px; }
 @media print { .footnote-back { display: none; } }
@@ -4327,10 +4327,12 @@ body:has(.save-work) .back-to-top { bottom: 76px; }
 .series-carousel-arrow { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; padding: 0; border: 1px solid var(--line); border-radius: 50%; background: transparent; color: var(--ink); cursor: pointer; transition: border-color .18s ease, opacity .18s ease; }
 .series-carousel-arrow:hover:not(:disabled), .series-carousel-arrow:focus-visible { border-color: var(--ink); }
 .series-carousel-arrow:disabled { opacity: .35; cursor: default; }
-.series-carousel-dots { display: flex; gap: 8px; }
-.series-carousel-dot { width: 8px; height: 8px; padding: 0; border: 0; border-radius: 50%; background: rgb(var(--ink-rgb) / .25); cursor: pointer; transition: background-color .18s ease, transform .18s ease; }
-.series-carousel-dot.is-active { background: var(--ink); transform: scale(1.25); }
-@media (prefers-reduced-motion: reduce) { .series-carousel-track { scroll-behavior: auto; } .series-carousel-dot, .series-carousel-arrow { transition: none; } }
+/* The dot is drawn 8px but the button is 24px, the least a finger or a pointer should have to hit (the hero dots do the same). */
+.series-carousel-dots { display: flex; gap: 0; }
+.series-carousel-dot { position: relative; width: 24px; height: 24px; padding: 0; border: 0; background: transparent; cursor: pointer; }
+.series-carousel-dot::after { content: ""; position: absolute; left: 50%; top: 50%; width: 8px; height: 8px; border-radius: 50%; background: rgb(var(--ink-rgb) / .25); transform: translate(-50%, -50%); transition: background-color .18s ease, transform .18s ease; }
+.series-carousel-dot.is-active::after { background: var(--ink); transform: translate(-50%, -50%) scale(1.25); }
+@media (prefers-reduced-motion: reduce) { .series-carousel-track { scroll-behavior: auto; } .series-carousel-dot::after, .series-carousel-arrow { transition: none; } }
 
 /* Hero title: the picture's left fade (a veil of the page's own colour, drawn above the picture) reaches 64px into the text column. The text sat at the
    same level and later elements win, so the veil covered the end of a long title (the last "i" of "Sunyi"). The text column is above it now. */

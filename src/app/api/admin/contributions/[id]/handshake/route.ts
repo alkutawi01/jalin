@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { registerIdentityHandshake } from "../../../../../../lib/admin/contribution-service";
 import { parseDbId } from "../../../../../../lib/admin/ids";
+import { publicErrorMessage } from "../../../../../../lib/admin/api-errors";
 
 /**
  * POST /api/admin/contributions/[id]/handshake
@@ -53,7 +54,7 @@ export async function POST(
 
     return NextResponse.json(contribution);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Ralat tidak diketahui.";
+    const message = publicErrorMessage(error, "Ralat tidak diketahui.");
     const status = message.includes("validation failed") ? 400 : 500;
     return NextResponse.json({ error: message }, { status });
   }

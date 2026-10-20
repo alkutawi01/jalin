@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { reorderSections } from "../../../../../../../lib/admin/section-service";
 import { getCurrentAdmin } from "../../../../../../../lib/admin/auth";
+import { publicErrorMessage } from "../../../../../../../lib/admin/api-errors";
 
 export async function POST(
   request: NextRequest,
@@ -22,7 +23,7 @@ export async function POST(
     const sections = await reorderSections(id, body.sectionIds.map(Number));
     return NextResponse.json(sections);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Ralat tidak diketahui.";
+    const message = publicErrorMessage(error, "Ralat tidak diketahui.");
     const status =
       message.includes("tidak sepadan") ||
       message.includes("berulang") ||

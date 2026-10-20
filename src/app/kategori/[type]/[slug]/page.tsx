@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { plainDek } from "../../../../lib/reader/plain-dek";
 import { laterOf } from "../../../../lib/seo-jsonld";
 import { chapterPageLabel } from "../../../../lib/reader/chapter-label";
 import { notFound } from "next/navigation";
@@ -36,7 +37,7 @@ export async function generateMetadata({
   if (!work || work.type !== type) return {};
 
   const typeLabel = TYPE_LABELS[type] ?? type;
-  const description = work.dek ?? `${typeLabel} Jalin — ${work.title}.`;
+  const description = work.dek ? plainDek(work.dek) : `${typeLabel} Jalin — ${work.title}.`;
   const workHero = work.visuals.find((visual) => visual.role === "hero");
 
   const sections = work.sections && work.sections.length > 0 ? work.sections : [];

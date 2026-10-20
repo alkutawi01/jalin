@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentAdmin } from "../../../../../../lib/admin/auth";
 import { getIssueEvents } from "../../../../../../lib/admin/issue-events";
+import { publicErrorMessage } from "../../../../../../lib/admin/api-errors";
 
 export async function GET(
   _request: NextRequest,
@@ -16,7 +17,7 @@ export async function GET(
     const events = await getIssueEvents(id);
     return NextResponse.json({ events });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Ralat tidak diketahui.";
+    const message = publicErrorMessage(error, "Ralat tidak diketahui.");
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

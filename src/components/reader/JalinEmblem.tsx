@@ -1,3 +1,4 @@
+import { useId } from "react";
 /**
  * The Jalin emblem, drawn from public/brand/jalin-icon-color.svg (nine woven blades, original colours).
  * Each blade is wrapped on the emblem's centre (1042, 525) so CSS rotation turns it about the middle, not about the SVG origin.
@@ -47,18 +48,19 @@ const TEAL = "rgb(19,47,56)";
 const ORDER = [0,3,1,5,6,4,2,7,8];
 
 export default function JalinEmblem({ animated = false, size = 96, label, tone = "color", variant = "tenun" }: { animated?: boolean; size?: number; label?: string; tone?: "color" | "on-teal"; variant?: "tenun" | "gelombang" }) {
+  const uid = useId().replace(/[^a-zA-Z0-9]/g, "");
   return (
     <span className={`jalin-emblem${animated ? " is-live" : ""} v-${variant}`} style={{ width: size, height: size }} role={label ? "img" : undefined} aria-label={label} aria-hidden={label ? undefined : true}>
       <svg viewBox="692 175 700 700" focusable="false">
         <defs>
-          <linearGradient id="je-Gradient1" gradientUnits="userSpaceOnUse" x1="1068.53" y1="1262.03" x2="1094.94" y2="1258.21"><stop offset="0" stopColor="rgb(16,37,48)" /><stop offset="1" stopColor="rgb(25,61,70)" /></linearGradient>
-          <linearGradient id="je-Gradient2" gradientUnits="userSpaceOnUse" x1="907.5" y1="658.046" x2="1028.03" y2="820.882"><stop offset="0" stopColor="rgb(163,87,62)" /><stop offset="1" stopColor="rgb(198,132,111)" /></linearGradient>
-          <linearGradient id="je-Gradient3" gradientUnits="userSpaceOnUse" x1="1248.36" y1="624.441" x2="1123.17" y2="505.332"><stop offset="0" stopColor="rgb(165,88,65)" /><stop offset="1" stopColor="rgb(187,116,95)" /></linearGradient>
+          <linearGradient id={`je${uid}-Gradient1`} gradientUnits="userSpaceOnUse" x1="1068.53" y1="1262.03" x2="1094.94" y2="1258.21"><stop offset="0" stopColor="rgb(16,37,48)" /><stop offset="1" stopColor="rgb(25,61,70)" /></linearGradient>
+          <linearGradient id={`je${uid}-Gradient2`} gradientUnits="userSpaceOnUse" x1="907.5" y1="658.046" x2="1028.03" y2="820.882"><stop offset="0" stopColor="rgb(163,87,62)" /><stop offset="1" stopColor="rgb(198,132,111)" /></linearGradient>
+          <linearGradient id={`je${uid}-Gradient3`} gradientUnits="userSpaceOnUse" x1="1248.36" y1="624.441" x2="1123.17" y2="505.332"><stop offset="0" stopColor="rgb(165,88,65)" /><stop offset="1" stopColor="rgb(187,116,95)" /></linearGradient>
         </defs>
         {BLADES.map((b, i) => (
           <g key={i} transform="translate(1042 525)">
             <g className="jalin-blade" style={{ ["--i" as string]: ORDER.indexOf(i) }}>
-              <path className={tone !== "on-teal" && b.fill === TEAL ? "emblem-teal" : undefined} transform="translate(-1042 -525)" fill={tone === "on-teal" && b.fill === TEAL ? "#fff" : b.fill.replace("url(#", "url(#je-")} d={b.d} />
+              <path className={tone !== "on-teal" && b.fill === TEAL ? "emblem-teal" : undefined} transform="translate(-1042 -525)" fill={tone === "on-teal" && b.fill === TEAL ? "#fff" : b.fill.replace("url(#", `url(#je${uid}-`)} d={b.d} />
             </g>
           </g>
         ))}

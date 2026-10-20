@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { listSeriesEntries, reorderSeriesEntries } from "../../../../../../../lib/admin/series-service";
 import { getCurrentAdmin } from "../../../../../../../lib/admin/auth";
 import { getDb } from "../../../../../../../lib/db";
+import { publicErrorMessage } from "../../../../../../../lib/admin/api-errors";
 
 export async function POST(
   request: NextRequest,
@@ -46,7 +47,7 @@ export async function POST(
       entries: result.entries,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Ralat tidak diketahui.";
+    const message = publicErrorMessage(error, "Ralat tidak diketahui.");
     const status =
       message.includes("tidak sepadan") ||
       message.includes("berulang") ||
