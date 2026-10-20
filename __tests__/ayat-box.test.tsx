@@ -4,7 +4,7 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import StoryMarkdown from "../src/components/reader/StoryMarkdown";
 import VisualManuscriptEditor, { canEditVisually } from "../src/components/admin/VisualManuscriptEditor";
-import { AYAT_PLACEHOLDER_LINES, hasAyatPlaceholder, parseAyat, splitCommunicationBlocks } from "../src/lib/reader/communication-blocks";
+import { AYAT_PLACEHOLDER_LINES, ayatLineKind, hasAyatPlaceholder, parseAyat, splitCommunicationBlocks } from "../src/lib/reader/communication-blocks";
 import { normalizeAyatMarks } from "../src/lib/reader/arabic-text";
 import { readFileSync } from "node:fs";
 
@@ -76,6 +76,17 @@ assert.ok(bare.includes("story-ayat") && !bare.includes("figcaption"), "a verse 
 assert.ok(render(box("Maksud: Demi masa.")).includes("figcaption") && !render(box("Maksud: Demi masa.")).includes("ayat-text"), "a box with only a meaning still renders");
 assert.match(render(verse), /<p class="arabic-block" lang="ar" dir="rtl">/, "an Arabic paragraph outside a box is unchanged");
 
+// Maksud and Rujukan are optional: an Arabic-only box, and Arabic with a reference but no meaning, show no empty label or dangling rule
+const arabicOnly = render(box(verse));
+assert.ok(arabicOnly.includes("ayat-text") && !arabicOnly.includes("figcaption") && !arabicOnly.includes("Maksud") && !arabicOnly.includes("ayat-reference"), "an Arabic-only box has no caption, no label and no rule");
+const noMeaning = render(box(verse + "\nSurah al-Asr, ayat 1-3"));
+assert.ok(noMeaning.includes('<p class="ayat-reference">Surah al-Asr, ayat 1\u20133</p>') && !noMeaning.includes("ayat-caption-label") && !noMeaning.includes("ayat-meaning"), "Arabic with a reference but no meaning shows no Maksud label");
+const noRef = render(box(verse + "\nMaksud: Demi masa."));
+assert.ok(noRef.includes("ayat-caption-label") && !noRef.includes("ayat-reference"), "Arabic with a meaning but no reference shows no reference line");
+const refFirst = render(box(verse + "\nSurah al-Asr, ayat 1-3\nMaksud: Demi masa."));
+assert.ok(refFirst.indexOf("ayat-meaning") < refFirst.indexOf("ayat-reference"), "the reference is set after the meaning, as its own line");
+assert.deepEqual(["", "وَالْعَصْرِ", "Maksud: Demi masa.", "Demi masa.", "Surah al-Asr, ayat 1", "Rujukan: Surah al-Asr"].map(ayatLineKind), ["empty", "verse", "maksud", "maksud", "ref", "ref"], "the kind of each line");
+
 // Editor
 const editorMarkup = renderToStaticMarkup(<VisualManuscriptEditor value="" onChange={() => {}} existingAnchors={[]} onMarkerInserted={() => {}} />);
 assert.match(editorMarkup, /aria-label="Sisip kotak ayat"[^>]*data-label="Kotak ayat"/, "the toolbar has a verse box button");
@@ -87,19 +98,24 @@ const has = (needle: string) => editorSource.replace(/\r\n/g, "\n").includes(nee
 assert.ok(has("AYAT_PLACEHOLDER_LINES.map(") && has("import { AYAT_PLACEHOLDER_LINES"), "the editor builds a new box from the same placeholder lines publication readiness refuses");
 assert.deepEqual([...AYAT_PLACEHOLDER_LINES].map((l) => hasAyatPlaceholder(l)), [true, true, true], "each placeholder line is recognised");
 assert.equal(hasAyatPlaceholder(box(verse)), false, "a real verse is not a placeholder");
-assert.ok(has('class="ayat-line${hasArabic(text) ? " ayat-line-ar" : ""}" dir="auto"'), "every line of a loaded verse box is a dir=auto block, Arabic ones marked");
+assert.ok(has('class="ayat-line ${ayatLineClass(text)}" dir="auto"'), "every line of a loaded verse box is a dir=auto block, Arabic ones marked");
 assert.ok(has("normalizeAyatBoxes(editor);"), "lines are kept as blocks on every change");
 assert.ok(has("A verse box keeps one block per line: the browser's own Enter splits the line into two."), "Enter in a verse box is left to the browser, which splits the line block");
 assert.ok(has('every pasted line becomes a line block of its own'), "pasting several lines into a verse box makes one block per line");
+assert.ok(has("ayat-line-maksud") && has("ayat-line-ref") && has("ayatLineClass(el.textContent"), "each line is marked as verse, meaning or reference while loading and typing, so the editor looks like the reader");
 assert.ok(has("ayatMarkdown(element)"), "a verse box is written back to Markdown one line per block");
 assert.ok(has("this box is built in the page itself"), "wrapping selected paragraphs builds the verse box in the page (insertHTML would tear its line blocks apart)");
 assert.ok(has("Backspace at the very start of a verse box"), "Backspace and Delete cannot pull text out of or into a verse box at its edges");
 assert.match(editorSource, /insertBlock\("ayat"\)/, "the button inserts a verse box");
 
 // Authoring guide
+const css = readFileSync(new URL("../src/app/globals.css", import.meta.url), "utf8");
 const page = readFileSync(new URL("../src/app/admin/works/[id]/page.tsx", import.meta.url), "utf8");
 assert.ok((page.match(/:::ayat/g) ?? []).length >= 2, "the guide names :::ayat in the hint and the list");
 assert.ok(page.includes("۝١") && page.includes("Nombor ayat"), "the guide explains the circle mark and the Nombor ayat button");
+assert.ok(css.includes(".story-ayat .ayat-reference") && css.includes(".visual-manuscript-communication-ayat .ayat-line-ref"), "the reference has its own style in the reader and in the editor");
+assert.ok(/\.ayat-reference \{[^}]*font-style: normal[^}]*letter-spacing/.test(css), "the reference is not italic and is letter-spaced");
+assert.ok(page.includes("Maksud dan rujukan adalah pilihan") && editorSource.includes("Maksud dan rujukan adalah pilihan"), "the guide and the editor hint say Maksud and Rujukan are optional");
 assert.ok(page.includes("Maksud: ...") && page.includes("Surah al-Asr, ayat 1–3"), "the guide explains the Maksud and Surah lines");
 
 console.log("ayat-box: passed");

@@ -19,6 +19,14 @@ export function splitCommunicationBlocks(markdown: string): CommunicationSegment
   return result;
 }
 
+/** What a line of a verse box is: Arabic letters make it the verse, "Surah ..." or "Rujukan:" the reference, anything else (with or without "Maksud:") the meaning. */
+export function ayatLineKind(line: string): "verse" | "maksud" | "ref" | "empty" {
+  const text = line.trim();
+  if (!text) return "empty";
+  if (hasArabic(text)) return "verse";
+  return /^(Surah\s|Rujukan:)/i.test(text) ? "ref" : "maksud";
+}
+
 /** The parts of a verse box (:::ayat), each in the order the reader sees them: the verse, its meaning, its reference. */
 export interface AyatParts { verses: string[]; meanings: string[]; references: string[] }
 
@@ -33,14 +41,15 @@ export function parseAyat(content: string): AyatParts {
   for (const raw of content.replace(/\r\n/g, "\n").split("\n")) {
     const line = raw.trim();
     if (!line) continue;
-    if (hasArabic(line)) parts.verses.push(line);
-    else if (/^Maksud:/i.test(line)) {
+    const kind = ayatLineKind(line);
+    if (kind === "verse") parts.verses.push(line);
+    else if (kind === "maksud") {
       const meaning = line.replace(/^Maksud:\s*/i, "");
       if (meaning) parts.meanings.push(meaning);
-    } else if (/^(Surah\s|Rujukan:)/i.test(line)) {
+    } else if (kind === "ref") {
       const reference = line.replace(/^Rujukan:\s*/i, "").replace(/(\d)\s*-\s*(\d)/g, "$1–$2");
       if (reference) parts.references.push(reference);
-    } else parts.meanings.push(line);
+    }
   }
   return parts;
 }

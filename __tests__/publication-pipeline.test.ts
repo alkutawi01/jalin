@@ -1285,6 +1285,10 @@ console.log("\n=== Structure gate (4D-8) ===");
   assert(blocked.blockers.find((b) => b.code === "ayat_placeholder")?.message === "Kotak ayat masih mengandungi teks pemegang tempat. Gantikan dengan ayat, maksud dan rujukan sebenar.", "the blocker explains what to replace");
   const replaced = withBody("Awal.\n\n" + filled + "\n\nAkhir.");
   assert(!replaced.blockers.some((b) => b.code === "ayat_placeholder") && replaced.ready, "a filled-in verse box is ready");
+  for (const kept of [filled, ":::ayat\nوَالْعَصْرِ ﴿١﴾\n:::", ":::ayat\nوَالْعَصْرِ ﴿١﴾\nSurah al-Asr, ayat 1–3\n:::"]) {
+    assert(withBody("Awal.\n\n" + kept).ready, "a box whose placeholder lines were deleted or replaced is ready");
+  }
+  assert(!withBody("Awal.\n\n:::ayat\nوَالْعَصْرِ ﴿١﴾\n" + AYAT_PLACEHOLDER_LINES[1] + "\n:::").ready, "a placeholder line left in beside a real verse still blocks");
   assert(!replaced.warnings.some((w) => w.code === "arabic_mixed_with_latin"), "a verse inside its box is not a mixed paragraph");
   const mixed = withBody("Dia membaca وَالْعَصْرِ dengan perlahan.");
   assert(mixed.warnings.some((w) => w.code === "arabic_mixed_with_latin") && !mixed.blockers.some((b) => b.code === "arabic_mixed_with_latin"), "Arabic mixed with Latin in a paragraph is a warning, not a blocker");

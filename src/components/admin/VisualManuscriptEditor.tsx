@@ -4,7 +4,7 @@ import { dashInSelection, quotesInAllBlocks } from "../../lib/admin/auto-dash";
 import { pastedHtmlToMarkdown } from "../../lib/admin/paste-format";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { nextImageMarker } from "../../lib/reader/image-markers";
-import { AYAT_PLACEHOLDER_LINES, splitCommunicationBlocks } from "../../lib/reader/communication-blocks";
+import { AYAT_PLACEHOLDER_LINES, ayatLineKind, splitCommunicationBlocks } from "../../lib/reader/communication-blocks";
 import { hasArabic, toArabicIndic } from "../../lib/reader/arabic-text";
 import { confirmAction, toast } from "../../lib/admin/dialogs";
 import { cleanFootnoteText, nextFootnoteLabel } from "../../lib/admin/footnote-insert";
@@ -14,11 +14,17 @@ import FootnoteInserter from "./FootnoteInserter";
 import { escapeHtml, unescapeLiteral, inlineHtml, inlineMarkdown } from "../../lib/admin/inline-format";
 
 /** A new verse box shows the three kinds of line: the verse (replaced by pasting), its meaning and its reference. */
-const AYAT_PLACEHOLDER = AYAT_PLACEHOLDER_LINES.map((line, index) => `<div class="ayat-line${index === 0 ? " ayat-line-ar" : ""}" dir="auto">${line}</div>`).join("");
+const AYAT_PLACEHOLDER = AYAT_PLACEHOLDER_LINES.map((line) => `<div class="ayat-line ${ayatLineClass(line)}" dir="auto">${line}</div>`).join("");
+
+/** The look of a line of a verse box, the same as the reader's: the verse, the meaning (Maksud) or the reference (Surah ...). An empty line has none. */
+function ayatLineClass(text: string): string {
+  const kind = ayatLineKind(text);
+  return kind === "verse" ? "ayat-line-ar" : kind === "maksud" ? "ayat-line-maksud" : kind === "ref" ? "ayat-line-ref" : "";
+}
 
 /** One line of a verse box is a block of its own with dir="auto", so an Arabic line is right to left and right aligned and a Malay line is left to right (a <br> would not split the bidi paragraph). */
 function ayatLineHtml(text: string, notes?: NoteContext): string {
-  return `<div class="ayat-line${hasArabic(text) ? " ayat-line-ar" : ""}" dir="auto">${text ? inlineHtml(text, notes) : "<br>"}</div>`;
+  return `<div class="ayat-line ${ayatLineClass(text)}" dir="auto">${text ? inlineHtml(text, notes) : "<br>"}</div>`;
 }
 
 const LINE_BLOCK = /^(DIV|P)$/;
@@ -42,7 +48,9 @@ function normalizeAyatBoxes(editor: HTMLElement) {
     box.querySelectorAll<HTMLElement>(":scope > div, :scope > p").forEach((el) => {
       el.classList.add("ayat-line");
       el.setAttribute("dir", "auto");
-      el.classList.toggle("ayat-line-ar", hasArabic(el.textContent ?? ""));
+      el.classList.remove("ayat-line-ar", "ayat-line-maksud", "ayat-line-ref");
+      const cls = ayatLineClass(el.textContent ?? "");
+      if (cls) el.classList.add(cls);
     });
     // Moving a node out and back drops the caret to the edge of its parent; put it back where it was.
     if (anchor?.node && box.contains(anchor.node) && selection) {
@@ -697,6 +705,6 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
         </div>
       </div>
     ) : null}
-    <p className="admin-form-hint">Nota sisi ialah nombor kecil dalam teks: klik nombor itu untuk membaca, menukar atau memadam notanya. Untuk nota baharu, letakkan kursor di tempat nombor patut berada dan tekan ikon nota di bar alat. Pilih teks untuk Tebal atau Condong. Dalam kotak ayat, baris Arab ialah ayat, baris yang bermula "Maksud:" ialah terjemahan dan baris yang bermula "Surah" ialah rujukan. Letakkan kursor selepas ayat dan tekan butang Nombor ayat untuk tanda akhir ayat berbentuk bulatan (۝١); nombor dalam kurungan selepas ayat, cth. (1), yang ditaip juga dipaparkan sebagai bulatan. Penanda gambar boleh dibuang di sini; simpan teks untuk menerapkan perubahan. Gambar yang sudah dimuat naik dipadam secara berasingan melalui kadnya.</p>
+    <p className="admin-form-hint">Nota sisi ialah nombor kecil dalam teks: klik nombor itu untuk membaca, menukar atau memadam notanya. Untuk nota baharu, letakkan kursor di tempat nombor patut berada dan tekan ikon nota di bar alat. Pilih teks untuk Tebal atau Condong. Dalam kotak ayat, baris Arab ialah ayat, baris yang bermula "Maksud:" ialah terjemahan dan baris yang bermula "Surah" ialah rujukan. Maksud dan rujukan adalah pilihan: padam baris yang tidak perlu (cth. apabila ayat digunakan untuk menguji hafalan). Letakkan kursor selepas ayat dan tekan butang Nombor ayat untuk tanda akhir ayat berbentuk bulatan (۝١); nombor dalam kurungan selepas ayat, cth. (1), yang ditaip juga dipaparkan sebagai bulatan. Penanda gambar boleh dibuang di sini; simpan teks untuk menerapkan perubahan. Gambar yang sudah dimuat naik dipadam secara berasingan melalui kadnya.</p>
   </div>;
 }
