@@ -1,6 +1,8 @@
 /* Written once, by a script, from the literal colours of globals.css (each became a --x-HEX-KIND token). Values are edited here by hand; overrides go in themes-overrides below.
    The light theme leaves every colour as it was; Sepia and Gelap are the same tokens re-valued. Screen only: print stays on paper. */
 :root {
+  --clay-rgb: 167 100 80;
+  --x-ecd9cc-ln: #ecd9cc;
   --ink-rgb: 24 52 60;
   --on-clay: #fff;
   --x-4b5f64-fg: #4b5f64;
@@ -82,6 +84,8 @@
   html[data-theme="sepia"] {
     color-scheme: light;
     --ink-rgb: 59 47 30;
+    --clay-rgb: 143 79 58;
+    --x-ecd9cc-ln: #dcc9a8;
     --ink: #3b2f1e; --ink-soft: #6b5a42; --paper: #f1e4cc; --white: #f8eed9; --line: #d6c3a1; --beige: #d8b9a6;
     --clay: #8f4f3a; --clay-text: #85452f;
     --x-084298-fg: #3a4e6d;
@@ -159,6 +163,8 @@
   html[data-theme="gelap"] {
     color-scheme: dark;
     --ink-rgb: 238 232 221;
+    --clay-rgb: 217 165 140;
+    --x-ecd9cc-ln: #2c3f43;
     --on-ink-a: #101e22; --on-ink-b: #101e22; --on-clay: #101e22;
     --ink: #eee8dd; --ink-soft: #b4c2bf; --paper: #101e22; --white: #192c31; --line: #35494d; --beige: #4a3a33;
     --clay: #d9a58c; --clay-text: #d9a58c;
@@ -290,4 +296,10 @@
 /* The emblem's deep teal blades would vanish on a dark page: they turn ivory (as they do on the teal boot screen); terracotta and peach keep their colours. */
 @media screen {
   html[data-theme="gelap"] .jalin-emblem .emblem-teal { fill: #eee8dd; }
+}
+
+/* Harmony in the dark theme: underlines of links and the dotted mark under a glossary word take the soft clay of this theme. */
+@media screen {
+  html[data-theme="gelap"] .info-body a { text-decoration-color: rgb(var(--clay-rgb) / .45); }
+  html[data-theme="sepia"] .info-body a { text-decoration-color: rgb(var(--clay-rgb) / .4); }
 }
