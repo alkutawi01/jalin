@@ -34,7 +34,7 @@ Senarai ini berasaskan kajian awal dan semakan ChatGPT (sumber: JPDP, KPDN, MCMC
 | 7 | Sahkan lokasi pemprosesan dan perjanjian pemprosesan data Vercel, Neon dan Resend (log, sandaran, subpemproses) | PDPA seksyen 129: pemindahan rentas sempadan |
 | 8 | Pastikan alamat e-mel editorial@adjung.com dipantau (telefon tidak diperlukan) |
 | 9 | Cipta tapak Cloudflare Turnstile (percuma, mod Managed, domain jalin.adjung.com); tetapkan `TURNSTILE_SITE_KEY` dan `TURNSTILE_SECRET_KEY` pada Vercel Production | Tanpa kunci, cabaran bot mati dan skrip boleh menghabiskan kuota e-mel harian; admin Langganan memberi amaran selagi tiada |
-| 10 | Naikkan pelan Resend dan tetapkan `READER_MAIL_DAILY_CAP` selaras; sahkan SPF, DKIM dan DMARC domain penghantar | Had asal 90 sehari mengikut pelan percuma; setiap pendaftaran dan log masuk menghantar satu e-mel | Hak akses, pembetulan dan prosedur pelanggaran |
+| 10 | Resend (disemak 20 Oktober 2026): domain penghantar `mail.adjung.com` Verified; SPF, DKIM dan DMARC (`p=none`, tanpa alamat laporan) ada. Pelan percuma: 3,000 e-mel sebulan dan 100 sehari (penggunaan 5/3,000). Naikkan pelan dan tetapkan `READER_MAIL_DAILY_CAP` apabila Izzat bersedia; had dalaman 90 sehari muat dalam had bulanan (90 x 30 = 2,700) | Setiap pendaftaran dan log masuk menghantar satu e-mel; jika kuota habis, kod tidak dapat dihantar |
 
 ## Dinilai, tidak menghalang pelancaran (keyakinan sederhana)
 
