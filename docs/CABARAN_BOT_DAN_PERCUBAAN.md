@@ -41,7 +41,10 @@ Skrip boleh menghabiskan bajet itu dan menutup pendaftaran untuk semua orang.
 (sentiasa gagal), `3x00000000000000000000FF` (paksa cabaran interaktif); kunci rahsia `1x0000000000000000000000000000000AA` (sentiasa sah),
 `2x0000000000000000000000000000000AA` (sentiasa gagal). Hanya untuk ujian tempatan.
 
-## 3. Tindakan Izzat sebelum suis dibuka
+## 3. Tindakan Izzat
+
+Turnstile ialah **pilihan** (keputusan Izzat 20 Oktober 2026): kod kekal tetapi tidur tanpa kunci. Langkah 1 dan 2 hanya jika penyalahgunaan
+berlaku. Langkah 3 (Resend) diperlukan sebelum pelancaran.
 
 1. Cipta tapak Turnstile di dashboard Cloudflare (percuma), mod **Managed**, domain `jalin.adjung.com`.
 2. Tetapkan pada Vercel Production: `TURNSTILE_SITE_KEY` dan `TURNSTILE_SECRET_KEY` (rahsia ditanda Sensitive). Jangan letak dalam repo.

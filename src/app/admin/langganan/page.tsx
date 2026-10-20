@@ -83,7 +83,7 @@ export default async function LanggananPage() {
           {mailUsed >= Math.ceil(mailCap * 0.7) ? <div className="admin-alert admin-alert-warning" role="status">Penggunaan e-mel kod mencapai sekurang-kurangnya 70% kuota harian. Semak aktiviti dan kapasiti penghantaran.</div> : null}
           {turnstileConfig()
             ? <p>Cabaran bot Turnstile aktif: ia disoal hanya apabila ada tanda penyalahgunaan atau kuota e-mel hampir habis.</p>
-            : <div className="admin-alert admin-alert-warning" role="status">Cabaran bot Turnstile belum dikonfigurasi (TURNSTILE_SITE_KEY dan TURNSTILE_SECRET_KEY). Tetapkan kedua-duanya sebelum akaun dibuka kepada umum.</div>}
+            : <p>Cabaran bot Turnstile tidak dihidupkan (pilihan). Hidupkan hanya jika ada penyalahgunaan pada borang log masuk: tetapkan TURNSTILE_SITE_KEY dan TURNSTILE_SECRET_KEY pada Vercel.</p>}
           <h2>Salinan kod di luar pangkalan data</h2>
           <p>Setiap malam, satu fail disulitkan dan bertandatangan berisi semua kod dan penebusan disimpan di luar pangkalan data. Jika pangkalan data dipulihkan ke masa lampau, fail inilah yang menghalang kad yang sudah digunakan daripada digunakan semula.</p>
           {exportWarning ? <div className="admin-alert admin-alert-error" role="alert">{exportWarning}</div> : null}
