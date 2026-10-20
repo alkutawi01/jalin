@@ -89,6 +89,8 @@ Tiada komen, profil sosial, follower atau badge pada MVP.
 
 **Pindaan 9 Okt 2026 (arahan Izzat, pemilik produk):** akaun pembaca kelak juga menjadi syarat untuk membaca (lihat Access). Tetapan bacaan (saiz font, kecerahan, tema) hanya boleh diubah oleh pembaca yang mempunyai akaun. Akaun menggunakan kod sekali guna melalui emel (OTP), maksimum 2 peranti aktif bagi satu akaun. Belum dilaksanakan.
 
+**Pindaan 20 Okt 2026 (arahan Izzat, pemilik produk):** tema laman (Ikut peranti, Cerah, Sepia, Gelap) boleh dipilih oleh sesiapa sahaja melalui suis di kaki halaman; pilihan disimpan pada pelayar itu sahaja (tiada akaun, tiada data dihantar). Pelawat yang tidak memilih mengikut tema peranti. Saiz huruf, jarak, lebar dan kecerahan teks kekal untuk pembaca berakaun sahaja.
+
 ## Access
 
 **Pindaan 9 Okt 2026 (arahan Izzat, pemilik produk), menggantikan "semua kandungan percuma":** Jalin ialah satu produk, bukan dua peringkat. Tiada "Jalin Plus". Jalin ialah manfaat yang disertakan dengan produk syarikat Izzat (pembelian produk memberi akses 12 bulan) dan alat pemasaran, bukan perniagaan langganan.
