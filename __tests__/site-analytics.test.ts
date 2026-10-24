@@ -14,7 +14,7 @@ for (const path of ["/", "/kategori/cerpen", "/kategori/cerpen/baki-hari", "/mul
 const layout = fs.readFileSync("src/app/layout.tsx", "utf8");
 assert(layout.includes("SiteAnalytics") && layout.includes('process.env.VERCEL_ENV === "production"') && layout.includes("CF_ANALYTICS_TOKEN"), "the layout loads the statistics on the live site only, and Cloudflare only with a token");
 const notice = fs.readFileSync("src/components/reader/PrivacyNotice.tsx", "utf8");
-assert(notice.includes("Vercel Web Analytics") && notice.match(/Vercel Web Analytics/g)!.length === 2, "the Dasar privasi names the statistics provider in both languages");
+assert(notice.includes("Cloudflare Web Analytics") && notice.match(/Cloudflare Web Analytics/g)!.length === 2, "the Dasar privasi names the statistics provider in both languages");
 
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);
