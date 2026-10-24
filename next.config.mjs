@@ -21,7 +21,11 @@ const nextConfig = {
   },
   images: {
     // Uploaded/generated visuals live in Vercel Blob (public store).
-    remotePatterns: [{ protocol: "https", hostname: "*.public.blob.vercel-storage.com" }],
+    remotePatterns: [
+      { protocol: "https", hostname: "*.public.blob.vercel-storage.com" },
+      // Pictures moved to a private Cloudflare R2 bucket, served by the site's own /media route.
+      { protocol: "https", hostname: "jalin.adjung.com", pathname: "/media/**" }
+    ],
     qualities: [75, 85],
     // Hostinger release branch: no image CDN in front, so optimised images must stay cached on the server. The default is 60 s, which
     // re-optimised every size every minute (about 1.4 s of CPU each). Visual file names carry a version and hash, so a year is safe.

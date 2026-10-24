@@ -21,6 +21,8 @@
  *   URLs (no expiring signed URLs in visuals.src). Credentials never leave server.
  */
 
+import { mediaPublicUrl } from "../../storage/object-store";
+
 export interface AssetStorageResult {
   /** Stable asset path/URL usable by Jalin (durable object URL or local path). */
   stableAssetPath: string | null;
@@ -319,19 +321,7 @@ async function persistAssetBytes(
   const version = options.version ?? 1;
   const key = buildImmutableObjectKey(visualRequestId, ext, version, contentHash);
 
-  // Vercel Blob first (simplest on Vercel), then S3-compatible storage.
-  if (blobConfigured()) {
-    const blob = await putVercelBlob(buffer, key, mimeType);
-    if (blob.ok && blob.url) {
-      return { stableAssetPath: blob.url, finalized: true, providerAssetUrl, backend: "object_storage" };
-    }
-    console.error("[asset-storage] Vercel Blob upload failed:", blob.error);
-    if (localFsIsEphemeral()) {
-      return { stableAssetPath: null, finalized: false, providerAssetUrl, backend: "none" };
-    }
-  }
-
-  // Preferred durable path: object storage → canonical = durable object URL
+  // Cloudflare R2 / S3-compatible storage first → canonical = durable object URL
   if (objectStorageConfigured()) {
     const put = await putObjectStorage(buffer, key, mimeType);
     if (put.ok && put.url) {
@@ -348,8 +338,19 @@ async function persistAssetBytes(
     }
   }
 
-  // Production without working object storage: local FS is ephemeral.
-  if (localFsIsEphemeral()) {
+  // Vercel Blob only when no object storage is configured (or it failed).
+  if (blobConfigured()) {
+    const blob = await putVercelBlob(buffer, key, mimeType);
+    if (blob.ok && blob.url) {
+      return { stableAssetPath: blob.url, finalized: true, providerAssetUrl, backend: "object_storage" };
+    }
+    if (isVercelRuntime()) {
+      return { stableAssetPath: null, finalized: false, providerAssetUrl, backend: "none" };
+    }
+  }
+
+  // Vercel runtime without working object storage: local FS is ephemeral.
+  if (isVercelRuntime()) {
     return { stableAssetPath: null, finalized: false, providerAssetUrl, backend: "none" };
   }
 
