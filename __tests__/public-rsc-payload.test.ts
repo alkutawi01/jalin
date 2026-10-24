@@ -47,6 +47,19 @@ import BackToTop from "../src/components/reader/BackToTop";
 import ShareRow from "../src/components/reader/ShareRow";
 import SeriesCarousel from "../src/components/reader/SeriesCarousel";
 import HeaderAutoHide from "../src/components/reader/HeaderAutoHide";
+import ThemeSwitch from "../src/components/reader/ThemeSwitch";
+import ThemeSync from "../src/components/reader/ThemeSync";
+import SiteAnalytics from "../src/components/reader/SiteAnalytics";
+import HeaderAccount from "../src/components/reader/HeaderAccount";
+import CategoryControlsAutoApply from "../src/components/reader/CategoryControlsAutoApply";
+import AccountPanel from "../src/components/reader/AccountPanel";
+import BootOut from "../src/components/reader/BootOut";
+import ChapterPicker from "../src/components/reader/ChapterPicker";
+import HeroCarousel from "../src/components/reader/HeroCarousel";
+import LockDialog from "../src/components/reader/LockDialog";
+import LoginForm from "../src/components/reader/LoginForm";
+import RedeemForm from "../src/components/reader/RedeemForm";
+import JalinEmblem from "../src/components/reader/JalinEmblem";
 import { initContentRepository } from "../src/lib/content";
 
 let passed = 0;
@@ -91,7 +104,7 @@ const FORBIDDEN_STRINGS = [
 ];
 
 /** Client components receive their data as props; do not execute them. */
-const CLIENT_COMPONENTS = new Set<unknown>([MobileStoryInfo, MobileNavMenu, GlossaryTerm, ReadingProgress, FootnoteMargin, HeaderSearch, CountUp, StoryCollection, NavMenu, ReadingTracker, SaveWorkButton, ExpiryNotice, BackToTop, ShareRow, SeriesCarousel, HeaderAutoHide, ReadMore, AiRating]);
+const CLIENT_COMPONENTS = new Set<unknown>([MobileStoryInfo, MobileNavMenu, GlossaryTerm, ReadingProgress, FootnoteMargin, HeaderSearch, CountUp, StoryCollection, NavMenu, ReadingTracker, SaveWorkButton, ExpiryNotice, BackToTop, ShareRow, SeriesCarousel, HeaderAutoHide, ReadMore, AiRating, ThemeSwitch, ThemeSync, SiteAnalytics, HeaderAccount, CategoryControlsAutoApply, AccountPanel, BootOut, ChapterPicker, HeroCarousel, LockDialog, LoginForm, RedeemForm, JalinEmblem]);
 
 function scanValue(value: unknown, path: string, hits: string[]) {
   if (typeof value === "string") {
