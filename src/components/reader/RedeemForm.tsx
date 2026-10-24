@@ -1,16 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import RedeemCardGuide, { type CardField } from "./RedeemCardGuide";
 
-/** Redeem a card code (code and batch number, both printed on the card) or a shared code (the code alone). */
+/**
+ * Redeem a code. The box is drawn as the back of the card ("kad maya"): the code goes where the scratch sticker is on a real card. A code that
+ * came by e-mail (bought in Jalin) is the code alone; a printed card also has a batch number, which the reader adds with the link under the card.
+ */
 export default function RedeemForm({ embedded = false }: { embedded?: boolean }) {
   const [code, setCode] = useState("");
   const [batch, setBatch] = useState("");
   const [error, setError] = useState("");
   const [done, setDone] = useState("");
   const [busy, setBusy] = useState(false);
-  const [field, setField] = useState<CardField>(null);
+  const [physical, setPhysical] = useState(false);
 
   const looksShared = /^\s*jln[\s-]*[a-z0-9]/i.test(code);
 
@@ -19,10 +21,10 @@ export default function RedeemForm({ embedded = false }: { embedded?: boolean })
     if (busy) return;
     setError(""); setDone("");
     if (!code.trim()) { setError("Masukkan kod."); return; }
-    if (!looksShared && !batch.trim()) { setError("Masukkan nombor batch yang tercetak pada kad."); return; }
+    if (physical && !looksShared && !batch.trim()) { setError("Masukkan nombor batch yang tercetak pada kad."); return; }
     setBusy(true);
     try {
-      const response = await fetch("/api/akaun/tebus", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ code, batch: looksShared ? "" : batch }) });
+      const response = await fetch("/api/akaun/tebus", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ code, batch: looksShared || !physical ? "" : batch }) });
       let data: Record<string, unknown> = {};
       try { data = await response.json(); } catch { /* not JSON */ }
       if (response.status === 401) { window.location.href = embedded ? window.location.pathname : "/log-masuk"; return; }
@@ -32,6 +34,8 @@ export default function RedeemForm({ embedded = false }: { embedded?: boolean })
         if (embedded) window.setTimeout(() => window.location.reload(), 900);
         return;
       }
+      // A card code needs its batch number: if the reader did not open that box, open it now so the way forward is in front of them.
+      if (!physical && !looksShared) setPhysical(true);
       setError(String(data.error ?? "Kod tidak dapat ditebus. Semak kod dan nombor batch, jika berkenaan, kemudian cuba lagi."));
     } catch {
       setError("Tiada sambungan. Semak internet anda dan cuba lagi.");
@@ -41,21 +45,52 @@ export default function RedeemForm({ embedded = false }: { embedded?: boolean })
   }
 
   return (
-    <div className="auth-card">
+    <div className={`auth-card${embedded ? "" : " auth-card--card"}`}>
       <form onSubmit={submit} noValidate>
         <h1 className="auth-title">Tebus kod langganan</h1>
-        {looksShared ? null : <RedeemCardGuide active={field} compact={embedded} />}
-        <p className="auth-intro">Jika menggunakan kad langganan, kikis bahagian yang menutupi kod. Masukkan juga nombor batch yang tercetak pada kad.</p>
-        <label className="auth-label" htmlFor="redeem-code">Kod langganan</label>
-        <input id="redeem-code" className="auth-input auth-code auth-code--long" type="text" autoComplete="off" autoCapitalize="characters" spellCheck={false} placeholder="XXXX-XXXX-XXXX-XXXX-X" value={code} onChange={(e) => setCode(e.target.value)} onFocus={() => setField("code")} onBlur={() => setField(null)} aria-invalid={!!error} aria-describedby={error ? "redeem-error" : undefined} />
-        {!looksShared ? (
-          <>
-            <label className="auth-label auth-label--gap" htmlFor="redeem-batch">Nombor batch</label>
-            <input id="redeem-batch" className="auth-input" type="text" autoComplete="off" autoCapitalize="characters" spellCheck={false} placeholder="Contoh: B2610-001" value={batch} onChange={(e) => setBatch(e.target.value)} onFocus={() => setField("batch")} onBlur={() => setField(null)} />
-          </>
-        ) : (
-          <p className="auth-fine">Jika menggunakan kod kongsi, biarkan ruangan nombor batch kosong.</p>
-        )}
+        <p className="auth-intro">Masukkan kod yang dihantar ke e-mel anda selepas pembayaran. Jika anda ada kad fizikal, tekan pautan di bawah kad.</p>
+
+        <div className="vcard-wrap">
+        <div className={`vcard${embedded ? " vcard--stack" : ""}`}>
+          <div className="vcard-left">
+            <h2 className="vcard-h">Kaedah penebusan</h2>
+            <ol className="vcard-steps">
+              <li>Log masuk ke akaun Jalin.</li>
+              <li>Pergi ke jalin.adjung.com/tebus.</li>
+              <li>Masukkan kod dan nombor batch.</li>
+              <li>Langganan aktif sebaik kod berjaya ditebus.</li>
+            </ol>
+            <h2 className="vcard-h vcard-h--sub">Maklumat penting</h2>
+            <ul className="vcard-notes">
+              <li>Kod hanya boleh ditebus sekali.</li>
+              <li>Kikis pelekat hanya apabila mahu menebus.</li>
+              <li>Simpan kad ini di tempat selamat.</li>
+            </ul>
+          </div>
+          <div className="vcard-divider" aria-hidden="true" />
+          <div className="vcard-right">
+            <p className="vcard-help">Masalah langganan atau penebusan? Hubungi editorial@adjung.com.</p>
+            <div className="vcard-panel">
+              {physical && !looksShared ? (
+                <div className="vcard-row">
+                  <label className="vcard-label" htmlFor="redeem-batch">NO. BATCH:</label>
+                  <input id="redeem-batch" className="vcard-batch" type="text" autoComplete="off" autoCapitalize="characters" spellCheck={false} placeholder="B2610-001" value={batch} onChange={(e) => setBatch(e.target.value)} />
+                </div>
+              ) : null}
+              <label className="vcard-label vcard-label--code" htmlFor="redeem-code">KOD:</label>
+              <div className="vcard-codebox">
+                <input id="redeem-code" className="vcard-code" type="text" autoComplete="off" autoCapitalize="characters" spellCheck={false} placeholder={physical ? "Taip kod di sini" : "Taip atau tampal kod"} value={code} onChange={(e) => setCode(e.target.value)} aria-invalid={!!error} aria-describedby={error ? "redeem-error" : undefined} />
+              </div>
+            </div>
+          </div>
+          <p className="vcard-copy" aria-hidden="true">© {new Date().getFullYear()} Adjung Press Platform (202603277981 (PG0594995-P))</p>
+        </div>
+        </div>
+        <button type="button" className="auth-link vcard-toggle" aria-pressed={physical} onClick={() => setPhysical((v) => !v)}>
+          {physical ? "Saya tiada kad fizikal (kod daripada e-mel)" : "Saya ada kad fizikal (masukkan nombor batch juga)"}
+        </button>
+        {looksShared && physical ? <p className="auth-fine">Kod kongsi tidak memerlukan nombor batch.</p> : null}
+
         {error ? <p id="redeem-error" className="auth-error" role="alert">{error}</p> : null}
         {done ? <p className="auth-notice auth-notice--ok" role="status">{done}</p> : null}
         <button className="auth-button" type="submit" disabled={busy}>{busy ? "Menebus…" : "Tebus kod"}</button>
