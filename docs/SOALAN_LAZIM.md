@@ -9,3 +9,5 @@ Pembetulan yang diterapkan: peraturan penyambungan tempoh dijelaskan (tidak lagi
 Sengaja TIDAK dijanjikan (belum diputuskan): bayaran balik, penggantian kad, masa balasan e-mel.
 
 Dua perkara untuk disahkan apabila kad dan label sebenar siap: lokasi nombor siri dan kod pada kad, dan label tindakan pada halaman Akaun jika diubah.
+
+Nota (24 Okt 2026): maksud setiap bahagian nombor siri dirahsiakan atas arahan Izzat, jadi soalan "Apakah maksud nombor siri" dan contoh format telah dibuang daripada halaman awam. Semakan ChatGPT di atas dibuat sebelum pembuangan itu.
