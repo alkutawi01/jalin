@@ -71,7 +71,7 @@ export default function PrivacyNotice() {
       <h2>Siapa yang menerima data anda</h2>
       <ul>
         <li>Penyedia hos laman (Hostinger, pelayan di Kuala Lumpur, Malaysia) memproses permintaan teknikal biasa (alamat IP, jenis pelayar, masa) untuk keselamatan dan kestabilan.</li>
-        <li>Penyedia storan fail (Vercel Blob) menyimpan gambar dan fail sandaran yang disulitkan; ia tidak menyimpan kata laluan kerana Jalin tidak menggunakan kata laluan.</li>
+        <li>Penyedia storan fail (Cloudflare R2) menyimpan gambar karya dan fail sandaran yang disulitkan; ia tidak menyimpan kata laluan kerana Jalin tidak menggunakan kata laluan.</li>
         <li>Penyedia pangkalan data (Neon) menyimpan data akaun anda. Pangkalan data berada di Singapura.</li>
         <li>Penyedia penghantaran e-mel (Resend) menerima alamat e-mel anda dan kandungan e-mel kod log masuk untuk tujuan penghantaran.</li>
         <li>Statistik laman (Cloudflare Web Analytics, jika dihidupkan) mengira bilangan paparan halaman awam secara agregat, tanpa kuki dan tanpa pengecam peribadi. Halaman akaun, pentadbir dan API tidak dikira.</li>
@@ -195,7 +195,7 @@ export default function PrivacyNotice() {
         <h2>Who receives your data</h2>
         <ul>
           <li>The site hosting provider (Hostinger, servers in Kuala Lumpur, Malaysia) processes ordinary technical requests (IP address, browser type, time) for security and stability.</li>
-          <li>The file storage provider (Vercel Blob) stores images and encrypted backup files; it holds no passwords because Jalin does not use passwords.</li>
+          <li>The file storage provider (Cloudflare R2) stores artwork images and encrypted backup files; it holds no passwords because Jalin does not use passwords.</li>
           <li>The database provider (Neon) stores your account data. The database is in Singapore.</li>
           <li>The e-mail delivery provider (Resend) receives your e-mail address and the content of the sign-in e-mail, for delivery.</li>
           <li>Site statistics (Cloudflare Web Analytics, if switched on) count page views of public pages in aggregate, without cookies and without a personal identifier. Account, admin and API pages are not counted.</li>
