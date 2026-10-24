@@ -4437,21 +4437,21 @@ body:has(.save-work) .back-to-top { bottom: 76px; }
 .vcard-toggle { display: block; margin: 0 0 14px; padding: 0; background: none; border: 0; font: inherit; font-size: 14px; text-align: left; cursor: pointer; }
 @container (min-width: 520px) {
   .vcard { aspect-ratio: 252 / 144; padding: 0; }
-  .vcard-left { position: absolute; left: 4.76%; top: 6%; width: 38.1%; }
-  .vcard-h { margin-bottom: 1.3cqw; font-size: 3.3cqw; }
-  .vcard-h--sub { margin-top: 2.6cqw; font-size: 3cqw; }
-  .vcard-steps, .vcard-notes { padding-left: 3.4cqw; font-size: 2.2cqw; line-height: 1.32; }
-  .vcard-steps li, .vcard-notes li { margin-bottom: .45cqw; }
-  .vcard-divider { position: absolute; left: 45.2%; top: 8.3%; width: 0.32cqw; height: 83.3%; margin: 0; }
-  .vcard-right { position: absolute; left: 48.4%; top: 8.5%; width: 46%; }
-  .vcard-help { margin: 0 0 4cqw; font-size: 2.2cqw; line-height: 1.3; width: 78%; }
-  .vcard-panel { border-radius: 2.8cqw; padding: 2.8cqw; height: 25.4cqw; box-sizing: content-box; min-height: 0; }
+  .vcard-left { position: absolute; left: 6.2%; top: 5%; width: 28%; }
+  .vcard-h { margin-bottom: 1.1cqw; font-size: 2.7cqw; }
+  .vcard-h--sub { margin-top: 3.6cqw; font-size: 2.7cqw; }
+  .vcard-steps, .vcard-notes { padding-left: 1.9cqw; font-size: 1.9cqw; line-height: 1.22; }
+  .vcard-steps li, .vcard-notes li { margin-bottom: .4cqw; }
+  .vcard-divider { position: absolute; left: 35.5%; top: 5.3%; width: 0.32cqw; height: 89.2%; margin: 0; }
+  .vcard-right { position: absolute; left: 0; top: 0; width: 100%; height: 100%; }
+  .vcard-help { position: absolute; left: 41.7%; top: 11%; width: 47.2%; margin: 0; font-size: 2cqw; line-height: 1.3; }
+  .vcard-panel { position: absolute; left: 38.3%; top: 31%; width: 56.2%; height: 58.7%; box-sizing: border-box; border-radius: 2.5cqw; padding: 3.2cqw 3.2cqw 2cqw; }
   .vcard-label { font-size: 2.4cqw; }
-  .vcard-row { padding-bottom: 1.4cqw; margin-bottom: 1.6cqw; gap: 1cqw; }
-  .vcard-batch { font-size: 2.9cqw; }
-  .vcard-label--code { margin-bottom: 1.2cqw; }
-  .vcard-codebox { padding: 1.2cqw 1.4cqw; border-radius: 2cqw; border-width: .5cqw; }
-  .vcard-code { font-size: 2.9cqw; padding: 1cqw 0; letter-spacing: .02em; }
-  .vcard-copy { position: absolute; right: 1.1%; bottom: 7%; margin: 0; writing-mode: vertical-rl; transform: rotate(180deg); font-size: 1.85cqw; white-space: nowrap; }
+  .vcard-row { padding-bottom: 0; margin-bottom: 1.4cqw; border-bottom: 0; gap: 1cqw; }
+  .vcard-batch { font-size: 2.6cqw; }
+  .vcard-label--code { margin-bottom: 1.6cqw; }
+  .vcard-codebox { padding: 1cqw 1.4cqw; border-radius: 1.8cqw; border-width: .45cqw; }
+  .vcard-code { font-size: 2.7cqw; padding: 1cqw 0; letter-spacing: .02em; }
+  .vcard-copy { position: absolute; right: 0.9%; bottom: 5.5%; margin: 0; writing-mode: vertical-rl; transform: rotate(180deg); font-size: 1.6cqw; white-space: nowrap; }
 }
 @media (max-width: 380px) { .vcard-code { font-size: 16px; letter-spacing: .01em; } }
