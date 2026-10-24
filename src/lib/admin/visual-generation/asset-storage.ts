@@ -137,10 +137,8 @@ export function publicLocalPath(visualRequestId: number, ext: string, version: n
 }
 
 function objectPublicUrl(key: string): string {
-  const endpoint = (process.env.OBJECT_STORAGE_ENDPOINT || "").replace(/\/$/, "");
-  const bucket = process.env.OBJECT_STORAGE_BUCKET || "";
-  // Path-style URL works for most S3-compatible providers (R2, MinIO, Spaces).
-  return `${endpoint}/${bucket}/${key}`;
+  // The bucket is private; the public reads the file through this site's /media route.
+  return mediaPublicUrl(key);
 }
 
 /** Minimal AWS SigV4 signer for S3-compatible PutObject (no SDK dependency). */
