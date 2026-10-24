@@ -14,6 +14,7 @@ import { useFileDrop } from "@/components/admin/useFileDrop";
 import { useState, useEffect, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import WorkVisualUpload from "../../../../components/admin/WorkVisualUpload";
+import WorkThemePanel from "../../../../components/admin/WorkThemePanel";
 import { imageMarkerLabel, imageMarkers, insertImageMarker, isImageMarker } from "../../../../lib/reader/image-markers";
 import CreditRoleSelect from "../../../../components/admin/CreditRoleSelect";
 import AiCreditPicker from "../../../../components/admin/AiCreditPicker";
@@ -2836,6 +2837,7 @@ export default function EditWorkPage() {
               {markerMigration.canRestore && <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" disabled={markerMigrationBusy || dirty} onClick={() => void runMarkerMigration("restore")}>Pulihkan penanda asal</button>}
             </div>
           )}
+          <WorkThemePanel workId={workId} hasHero={visuals.some((v) => v.role === "hero")} />
           <div id="work-image-upload">
             <WorkVisualUpload workId={workId} hasHero={visuals.some((v) => v.role === "hero")} published={form.status === "published"} suggestedAnchor={selectedImageAnchor} markers={imageMarkers(savedBody).filter((marker) => !visuals.some((visual) => visual.anchor === marker))} onDone={loadVisuals} />
           </div>

@@ -168,6 +168,8 @@ export interface Work {
     fragmenTextLanguage?: string;
     /** Free-form note from the editor, shown at the end of the work (origin, what is interesting, ...). */
     editorNote?: string;
+    /** The work's own colour (see lib/reader/story-theme.ts): the editor's, or read from the hero picture. */
+    theme?: { mode: "auto" | "manual"; color: string };
   };
 
   reader?: ReaderMeta;

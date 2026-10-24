@@ -57,7 +57,8 @@ export default function FilePicker({
           }}
         />
       </label>
-      <span className="a-file-picker-name" aria-live="polite">{name || "Tiada fail dipilih (atau seret fail ke sini)"}</span>
+      <span className="a-file-picker-name" aria-live="polite">{name || "Tiada fail dipilih"}</span>
+      {name ? null : <span className="a-file-picker-hint"> atau seret fail ke sini</span>}
     </span>
   );
 }
