@@ -4409,3 +4409,19 @@ body:has(.save-work) .back-to-top { bottom: 76px; }
 .theme-switch-btn:focus-visible { outline: 2px solid #f3e9df; outline-offset: 2px; }
 .theme-switch-btn[aria-pressed="true"] { background: #f3e9df; border-color: #f3e9df; color: #0b2935; font-weight: 600; }
 @media print { .theme-switch { display: none; } }
+
+/* The card shown on the redeem page (RedeemCardGuide): the picture is the real back of the card; the glow marks the box being typed in.
+   Percentages are of the card (252 x 144 pt): the batch row sits at x 49-94%, y 31-44%; the scratch sticker at x 50-93%, y 53-85%. */
+.card-guide { margin: 4px 0 18px; }
+.card-guide-art { position: relative; border-radius: 10px; overflow: hidden; box-shadow: 0 6px 18px rgb(var(--ink-rgb) / .18); line-height: 0; }
+.card-guide-art img { width: 100%; height: auto; display: block; }
+.card-guide-hit { position: absolute; border-radius: 6px; border: 2px solid transparent; transition: border-color .2s ease, box-shadow .2s ease, background-color .2s ease; pointer-events: none; }
+.card-guide-hit--batch { left: 49.5%; top: 31%; width: 44%; height: 13%; }
+.card-guide-hit--code { left: 49.6%; top: 53.2%; width: 43.2%; height: 32.2%; border-radius: 9px; }
+.card-guide-hit.is-on { border-color: #e9c2ae; box-shadow: 0 0 0 4px rgb(233 194 174 / .35), 0 0 22px rgb(233 194 174 / .55); background: rgb(233 194 174 / .12); }
+.card-guide-caption { display: flex; justify-content: space-between; gap: 10px; margin-top: 8px; font-size: 13px; color: var(--ink-soft); line-height: 1.35; }
+.card-guide-caption .is-on { color: var(--clay-text); font-weight: 600; }
+.card-guide--compact { margin-bottom: 12px; }
+.card-guide--compact .card-guide-caption { font-size: 12px; }
+@media (max-width: 420px) { .card-guide-caption { flex-direction: column; gap: 2px; } }
+@media (prefers-reduced-motion: reduce) { .card-guide-hit { transition: none; } }
