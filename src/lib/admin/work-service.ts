@@ -474,3 +474,38 @@ export async function updateWorkCharacters(
 
   return work;
 }
+
+/**
+ * The work's own colour (works.metadata.theme). mode "manual": the editor's colour as it is. mode "auto": the colour read from the hero
+ * picture and kept (so a page never has to read the picture again); it is re-read when the hero changes (see refreshAutoTheme). null
+ * removes the colour and the work follows the site's own theme again.
+ */
+export async function updateWorkTheme(id: string, theme: { mode: "auto" | "manual"; color: string } | null): Promise<WorkRecord> {
+  const db = getAdminDb();
+  const existing = await getWork(id);
+  if (!existing) throw new Error("Karya tidak ditemui.");
+  await db.transaction().execute(async (trx) => {
+    const current = await trx.selectFrom("works").where("id", "=", id).select("metadata").forUpdate().executeTakeFirst();
+    const metadata = { ...((current?.metadata ?? {}) as Record<string, unknown>) };
+    if (theme) metadata.theme = theme;
+    else delete metadata.theme;
+    await trx.updateTable("works").where("id", "=", id).set({ metadata, updated_at: new Date().toISOString() }).execute();
+  });
+  const work = await getWork(id);
+  if (!work) throw new Error("Karya tidak ditemui selepas dikemas kini.");
+  return work;
+}
+
+/** The work's own hero picture (not a chapter's). */
+export async function workHeroSrc(id: string): Promise<string | null> {
+  const row = await getAdminDb()
+    .selectFrom("visuals")
+    .where("work_id", "=", id)
+    .where("role", "=", "hero")
+    .where((eb) => eb.or([eb("section_slug", "is", null), eb("section_slug", "=", "")]))
+    .select("src")
+    .orderBy("sort_order", "asc")
+    .orderBy("id", "desc")
+    .executeTakeFirst();
+  return row?.src ?? null;
+}

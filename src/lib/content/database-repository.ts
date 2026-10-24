@@ -211,11 +211,19 @@ export class DatabaseContentRepository implements ContentRepository {
     }
     if (frozen.size > 0) {
       const isFrozen = (id: unknown) => frozen.has(String(id));
-      dbWorks = dbWorks.map((r) =>
-        String(r.status) === "published" && isFrozen(r.id)
-          ? ({ ...frozen.get(String(r.id)).work, status: "published" } as typeof r)
-          : r
-      );
+      // The work's colour (metadata.theme) is a way of showing the page, not part of the approved text, so it is taken from the live row:
+      // an editor sees a change at once, without publishing a new revision.
+      const metaOf = (value: unknown): Record<string, unknown> =>
+        (typeof value === "string" ? parseJsonbField<Record<string, unknown>>(value) : (value as Record<string, unknown> | null | undefined)) ?? {};
+      dbWorks = dbWorks.map((r) => {
+        if (String(r.status) !== "published" || !isFrozen(r.id)) return r;
+        const frozenRow = { ...frozen.get(String(r.id)).work, status: "published" } as typeof r;
+        const { theme: _old, ...rest } = metaOf((frozenRow as { metadata?: unknown }).metadata);
+        void _old;
+        const liveTheme = metaOf((r as { metadata?: unknown }).metadata).theme;
+        (frozenRow as { metadata?: unknown }).metadata = liveTheme ? { ...rest, theme: liveTheme } : rest;
+        return frozenRow;
+      });
       const take = <T,>(live: T[], key: string, pick: (raw: any) => any[], order: string): T[] =>
         [...live.filter((r) => !isFrozen((r as any)[key])), ...[...frozen.values()].flatMap((raw) => pick(raw) as T[])].sort(
           (a: any, b: any) => Number(a[order] ?? 0) - Number(b[order] ?? 0) || Number(a.id ?? 0) - Number(b.id ?? 0)

@@ -5,6 +5,7 @@ import { replaceVisualImage } from "../../../../../../lib/admin/visual-generatio
 import { parseDbId } from "../../../../../../lib/admin/ids";
 import { logActivity } from "../../../../../../lib/admin/activity";
 import { publicErrorMessage } from "../../../../../../lib/admin/api-errors";
+import { refreshAutoTheme } from "../../../../../../lib/admin/auto-theme";
 
 /**
  * POST /api/admin/visuals/[id]/replace  (multipart/form-data)
@@ -39,6 +40,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     if (!result.ok) return NextResponse.json({ error: result.error }, { status: result.status });
     const owner = await getDb().selectFrom("visuals").select("work_id").where("id", "=", visualId).executeTakeFirst().catch(() => undefined);
     await logActivity({ action: "visual.replace", subjectType: "visual", subjectId: visualId, workId: owner?.work_id ?? null, summary: `Gambar #${visualId}` });
+    if (owner?.work_id) await refreshAutoTheme(owner.work_id);
     return NextResponse.json({ success: true, visualId: result.visualId, assetPath: result.assetPath });
   } catch (error) {
     return NextResponse.json({ error: publicErrorMessage(error, "Ralat tidak diketahui.") }, { status: 500 });

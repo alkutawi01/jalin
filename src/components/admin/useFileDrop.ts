@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type DragEvent } from "react";
+import { toast } from "../../lib/admin/dialogs";
 
 /**
  * Drag a file from a folder onto a box. The box gets `is-dropping` while a file is over it; a dropped file that does not match the
@@ -22,7 +23,7 @@ export function useFileDrop({
   accept,
   disabled,
   onFile,
-  onRefuse = (message) => window.alert(message)
+  onRefuse = (message) => toast(message, "error")
 }: {
   accept: string;
   disabled?: boolean;
