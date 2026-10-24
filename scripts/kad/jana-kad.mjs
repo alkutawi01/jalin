@@ -91,27 +91,30 @@ const bidai = (id, stroke, opacity) =>
 const wrapSvg = (body, defs = "") =>
   `<svg xmlns="http://www.w3.org/2000/svg" width="3.5in" height="2in" viewBox="0 0 ${W} ${H}">` + (defs ? `<defs>${defs}</defs>` : "") + body + `</svg>`;
 
+// ── layout numbers ────────────────────────────────────────────────────────────────────────────────────────────────────
+// Measured from the Sains untuk Semua card (Kad kod langganan.zip), in points on the same 252 x 144 card, so Jalin keeps its sizes and margins:
+//   front: title 7 pt at x 14.6, length 14.6 pt bold at the right margin (238), logo block centred, rule at y 88, tagline 6.5 pt, address 7 pt at y 128
+//   back : left column x 15.6 to 86 (text 4.8 pt), divider x 89.5, help text x 105 to 224 (5 pt), white panel x 96.5 to 238 and y 44.6 to 129 (radius 6.3)
+// Only the type is Jalin's own (Source Serif 4 where SUS uses a sans); the sizes are SUS's.
+
 // ── front ────────────────────────────────────────────────────────────────────────────────────────────────────────────
 const ACCENT = { 1: BEIGE, 6: CLAY, 12: INK };
 function front(months) {
   const label = `${months} BULAN`;
   const bleedRect = `x="${-BLEED}" y="${-BLEED}" width="${W + 2 * BLEED}" height="${H + 2 * BLEED}"`;
   let b = `<rect ${bleedRect} fill="${PAPER}"/><rect ${bleedRect} fill="url(#bidai)"/>`;
-  b += text(serif, "Kad langganan", { x: 14, y: 21, size: 10.5, fill: INK, wght: 600 });
-  b += `<rect x="14" y="26" width="22" height="2.2" rx="1.1" fill="${ACCENT[months]}"/>`;
-  b += text(serif, label, { x: 238, y: 26, size: 21, fill: INK, wght: 700, anchor: "end" });
-  const right = 238;
-  const w2 = measure(serif, "1 pengguna", 7.4, { wght: 400 });
-  b += text(serif, "1 pengguna", { x: right, y: 38, size: 7.4, fill: INK, anchor: "end" });
-  b += `<rect x="${right - w2 - 6}" y="31.6" width="0.9" height="8" fill="${INK}"/>`;
-  b += text(serif, "akses", { x: right - w2 - 10, y: 38, size: 7.4, fill: INK, wght: 700, anchor: "end" });
-  // logo (emblem + Jalin + oleh Adjung) on the left, the line about the library on the right
-  b += nest("jalin-logo-primary.svg", "470 215 1110 1110", 18, 46, 84, 84, "f");
-  b += `<rect x="116" y="60" width="122" height="0.8" fill="${CLAY}"/>`;
-  const tag = block(serif, "Cerpen, novela dan cerita bersiri berilustrasi", { x: 116, y: 76, size: 11, lead: 14, maxWidth: 122, fill: INK, wght: 500 });
-  b += tag.svg;
-  b += text(serif, "jalin.adjung.com", { x: 116, y: 76 + tag.height + 8, size: 8.2, fill: CLAY, wght: 600, ls: 0.8 });
-  b += text(serif, "Satu kad, satu pengguna. Tebus di jalin.adjung.com/tebus.", { x: 14, y: 136, size: 5.6, fill: MUTED });
+  b += text(serif, "Kad langganan", { x: 14.6, y: 20.8, size: 7.2, fill: INK, wght: 700 });
+  b += `<rect x="14.6" y="24.4" width="16" height="1.6" rx="0.8" fill="${ACCENT[months]}"/>`;
+  b += text(serif, label, { x: 238, y: 25.7, size: 15.5, fill: INK, wght: 700, anchor: "end" });
+  const w2 = measure(serif, "1 pengguna", 5.8, { wght: 400 });
+  b += text(serif, "1 pengguna", { x: 238, y: 36, size: 5.8, fill: INK, anchor: "end" });
+  b += `<rect x="${238 - w2 - 4.2}" y="31.4" width="0.7" height="6" fill="${INK}"/>`;
+  b += text(serif, "akses", { x: 238 - w2 - 6.4, y: 36, size: 5.8, fill: INK, wght: 700, anchor: "end" });
+  // logo block centred as on the SUS card (emblem, Jalin, oleh Adjung): the Jalin mark is upright, so it is tall where SUS's is wide
+  b += nest("jalin-logo-primary.svg", "470 215 1110 1110", 128 - 30, 36.5, 60, 60, "f");
+  b += `<rect x="73" y="97.6" width="106" height="0.6" fill="${MUTED}"/>`;
+  b += text(serif, "Cerpen, novela dan cerita bersiri berilustrasi", { x: 126, y: 106.2, size: 6.2, fill: INK, anchor: "middle" });
+  b += text(serif, "jalin.adjung.com", { x: 126, y: 129.4, size: 7, fill: CLAY, wght: 600, anchor: "middle", ls: 0.9 });
   return wrapSvg(b, bidai("bidai", INK, 0.07));
 }
 
@@ -119,45 +122,42 @@ function front(months) {
 function back({ batch, year }) {
   const bleedRect = `x="${-BLEED}" y="${-BLEED}" width="${W + 2 * BLEED}" height="${H + 2 * BLEED}"`;
   let b = `<rect ${bleedRect} fill="${INK}"/><rect ${bleedRect} fill="url(#bidai)"/>`;
-  const L = 12, LW = 96;
-  b += text(serif, "Kaedah penebusan", { x: L, y: 19, size: 8.4, fill: PAPER, wght: 700 });
-  let y = 28.5;
+  const L = 15.6, LW = 70.5;
+  b += text(serif, "Kaedah penebusan", { x: L, y: 17, size: 6.8, fill: PAPER, wght: 700 });
+  let y = 25.8;
   const steps = ["Log masuk ke akaun Jalin.", "Pergi ke jalin.adjung.com/tebus.", "Masukkan kod dan nombor batch.", "Langganan aktif sebaik kod berjaya ditebus."];
   steps.forEach((s, i) => {
-    b += text(serif, `${i + 1}.`, { x: L, y, size: 5.5, fill: PAPER });
-    const t = block(serif, s, { x: L + 8, y, size: 5.5, lead: 6.7, maxWidth: LW - 8, fill: PAPER });
+    b += text(serif, `${i + 1}.`, { x: L - 1, y, size: 4.8, fill: PAPER });
+    const t = block(serif, s, { x: L + 4.6, y, size: 4.8, lead: 5.9, maxWidth: LW - 4.6, fill: PAPER });
     b += t.svg; y += t.height + 1;
   });
-  y += 2.5;
-  b += `<rect x="${L}" y="${y - 3}" width="${LW}" height="0.5" fill="${PAPER}" fill-opacity="0.4"/>`;
-  y += 7.5;
-  b += text(serif, "Maklumat penting", { x: L, y, size: 7.6, fill: PAPER, wght: 700 });
-  y += 8.5;
+  y += 3;
+  b += `<rect x="${L}" y="${y}" width="${LW}" height="0.5" fill="${PAPER}" fill-opacity="0.45"/>`;
+  y += 10;
+  b += text(serif, "Maklumat penting", { x: L, y, size: 6.8, fill: PAPER, wght: 700 });
+  y += 8.4;
   ["Kod hanya boleh ditebus sekali.", "Kikis pelekat hanya apabila mahu menebus.", "Simpan kad ini di tempat selamat."].forEach((s) => {
-    b += `<circle cx="${L + 2}" cy="${y - 1.8}" r="0.8" fill="${PAPER}"/>`;
-    const t = block(serif, s, { x: L + 7, y, size: 5.5, lead: 6.7, maxWidth: LW - 7, fill: PAPER });
+    b += `<circle cx="${L + 1.4}" cy="${y - 1.5}" r="0.7" fill="${PAPER}"/>`;
+    const t = block(serif, s, { x: L + 4.4, y, size: 4.8, lead: 5.9, maxWidth: LW - 4.4, fill: PAPER });
     b += t.svg; y += t.height + 1;
   });
   console.log("    belakang: butir terakhir berakhir pada y =", y.toFixed(1), "(had 134)");
-  b += `<rect x="114" y="12" width="0.8" height="120" fill="${PAPER}" fill-opacity="0.35"/>`;
-  // right column: a help line, then the panel that carries the batch number and the (stickered) code
-  const R = 122, RW = 116;
-  const help = block(serif, "Masalah langganan atau penebusan? Hubungi editorial@adjung.com.", { x: R, y: 19, size: 5.5, lead: 6.8, maxWidth: RW - 26, fill: PAPER });
-  b += help.svg;
-  const PX = R, PY = 42, PW = RW, PH = 90;
-  b += `<rect x="${PX}" y="${PY}" width="${PW}" height="${PH}" rx="7" fill="#ffffff"/>`;
-  b += text(mono, "NO. BATCH:", { x: PX + 7, y: PY + 13, size: 6.2, fill: INK });
-  b += text(mono, batch || "B0000-000", { x: PX + PW - 7, y: PY + 13, size: 7.2, fill: INK, anchor: "end" });
-  b += `<rect x="${PX + 7}" y="${PY + 18}" width="${PW - 14}" height="0.5" fill="${INK}" fill-opacity="0.25"/>`;
-  b += text(mono, "KOD:", { x: PX + 7, y: PY + 29, size: 6.2, fill: INK });
-  // the scratch sticker (38 x 16 mm = 108 x 45 pt) sits over the thermal label with the code; drawn as the grey area it will be
+  b += `<rect x="89.5" y="7.6" width="0.8" height="128.4" fill="${PAPER}" fill-opacity="0.4"/>`;
+  // help text, then the panel
+  b += block(serif, "Jika terdapat sebarang masalah berkaitan langganan dan penebusan, sila hubungi editorial@adjung.com.", { x: 105, y: 20.4, size: 5, lead: 6.5, maxWidth: 119, fill: PAPER }).svg;
+  const PX = 96.5, PY = 44.6, PW = 141.5, PH = 84.4;
+  b += `<rect x="${PX}" y="${PY}" width="${PW}" height="${PH}" rx="6.3" fill="#ffffff"/>`;
+  b += text(mono, "NO. BATCH:", { x: 105.8, y: 57, size: 6, fill: INK });
+  b += text(mono, batch || "B0000-000", { x: 230, y: 57, size: 6.4, fill: INK, anchor: "end" });
+  b += text(mono, "KOD:", { x: 105.8, y: 74.4, size: 6, fill: INK });
+  // the scratch sticker (38 x 16 mm = 108 x 45.4 pt) goes over the thermal label with the code; drawn as the grey area it will be
   const SW = (38 / 25.4) * 72, SH = (16 / 25.4) * 72;
-  const sx = PX + (PW - SW) / 2, sy = PY + 35;
-  b += `<rect x="${sx.toFixed(2)}" y="${sy}" width="${SW.toFixed(2)}" height="${SH.toFixed(2)}" rx="5" fill="#8d9a98"/>`;
-  b += text(serif, "Kikis untuk lihat kod", { x: sx + SW / 2, y: sy + SH / 2 + 2, size: 6, fill: "#ffffff", anchor: "middle", opacity: 0.9 });
+  const sx = PX + (PW - SW) / 2, sy = 78.2;
+  b += `<rect x="${sx.toFixed(2)}" y="${sy}" width="${SW.toFixed(2)}" height="${SH.toFixed(2)}" rx="4.5" fill="#8d9a98"/>`;
+  b += text(serif, "Kikis untuk lihat kod", { x: sx + SW / 2, y: sy + SH / 2 + 1.8, size: 5.4, fill: "#ffffff", anchor: "middle", opacity: 0.9 });
   // vertical copyright, as on the Sains untuk Semua card
   const notice = `© ${year} Adjung Press Platform (202603277981 (PG0594995-P))`;
-  b += `<g transform="translate(246.5 ${H - 10}) rotate(-90)">${text(serif, notice, { x: 0, y: 0, size: 4.6, fill: PAPER, opacity: 0.85 })}</g>`;
+  b += `<g transform="translate(247 136) rotate(-90)">${text(serif, notice, { x: 0, y: 0, size: 4, fill: PAPER, opacity: 0.85 })}</g>`;
   return wrapSvg(b, bidai("bidai", "#f3e9df", 0.1));
 }
 
