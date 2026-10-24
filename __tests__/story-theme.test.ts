@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { contrastRatio, derivePalettes, hexToRgb, rgbToHsl, normaliseHex, parseThemeSetting, storyThemeVars } from "../src/lib/reader/story-theme";
+import { contrastRatio, derivePalettes, storyPageCss, hexToRgb, rgbToHsl, normaliseHex, parseThemeSetting, storyThemeVars } from "../src/lib/reader/story-theme";
 
 assert.equal(normaliseHex("#ABC"), "#aabbcc", "short hex expands");
 assert.equal(normaliseHex("red"), null, "names are refused");
@@ -39,4 +39,9 @@ for (const base of bases) {
 const vars = storyThemeVars({ mode: "manual", color: "#a76450" })!;
 assert.equal(Object.keys(vars).length, 21, "three themes of seven values");
 assert.equal(storyThemeVars(null), null);
+const css = storyPageCss({ mode: "manual", color: "#a76450" })!;
+assert.ok(css.includes('html[data-theme="gelap"]') && css.includes('html[data-theme="sepia"]') && css.includes("::-webkit-scrollbar-thumb"), "the page and its scrollbar are painted for all three themes");
+const bare = css.replace(/\[data-theme="[a-z]+"\]/g, "");
+assert.ok(!/[<>"'`\\]/.test(bare), "the page css holds nothing but selectors and hex colours (the only quotes are in the data-theme selectors)");
+assert.equal(storyPageCss(null), null);
 console.log(`story-theme: ok (${checked} palettes checked)`);

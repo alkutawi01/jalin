@@ -170,3 +170,24 @@ export function storyThemeVars(setting: StoryThemeSetting | null): Record<string
   }
   return vars;
 }
+
+/**
+ * The page behind the page: the area outside the wrapper (overscroll, the strip beside a short page) and the page scrollbar are painted by
+ * <html>, not by the wrapper, so a themed work page also says its colours there, once per site theme. Rendered only on that work's page,
+ * so it disappears when the reader goes to another page. All values are hex colours made by this file, never user text.
+ */
+export function storyPageCss(setting: StoryThemeSetting | null): string | null {
+  if (!setting) return null;
+  const palettes = derivePalettes(setting.color);
+  const root = ":root:not(:has(.a-nav, .admin-login-page))";
+  const rule = (selector: string, p: StoryPalette) =>
+    `${selector}${root}{--paper:${p.bg};background:${p.bg};scrollbar-color:${p.inkSoft} ${p.bg}}` +
+    `${selector}${root}::-webkit-scrollbar-track,${selector}${root}::-webkit-scrollbar-corner{background:${p.bg}}` +
+    `${selector}${root}::-webkit-scrollbar-thumb{background:${p.inkSoft};border-color:${p.bg}}`;
+  return [
+    rule("html:not([data-theme])", palettes.cerah),
+    rule('html[data-theme="cerah"]', palettes.cerah),
+    rule('html[data-theme="sepia"]', palettes.sepia),
+    rule('html[data-theme="gelap"]', palettes.gelap)
+  ].join("");
+}
