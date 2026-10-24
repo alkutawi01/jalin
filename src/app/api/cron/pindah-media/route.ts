@@ -25,7 +25,7 @@ const COLUMNS: { table: string; column: string }[] = [
   { table: "series", column: "hero_src" },
   { table: "reader_switches", column: "value" },
 ];
-const BLOB_URL = "https://[a-z0-9-]+\\.public\\.blob\\.vercel-storage\\.com/[^\"\\s)\\\\?]+";
+const BLOB_URL = "https://[a-z0-9-]+\\.public\\.blob\\.vercel-storage\\.com/[^\"\\s)\\\\?|]+";
 
 function authorised(request: Request): boolean {
   const secret = process.env.MIGRASI_TOKEN?.trim();
