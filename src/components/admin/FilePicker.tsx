@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type Ref } from "react";
+import { useFileDrop } from "./useFileDrop";
 
 /**
  * The browser's own file box says "Choose File / No file chosen" in the browser's language, which on a Malay admin is English
@@ -29,8 +30,16 @@ export default function FilePicker({
 }) {
   const [own, setOwn] = useState<string | null>(null);
   const name = selectedName !== undefined ? selectedName : own;
+  const { dropping, dropProps } = useFileDrop({
+    accept,
+    disabled,
+    onFile: (file) => {
+      setOwn(file.name);
+      onFile(file);
+    }
+  });
   return (
-    <span className="a-file-picker">
+    <span className={`a-file-picker${dropping ? " is-dropping" : ""}`} {...dropProps}>
       <label className={`admin-btn admin-btn-sm${disabled ? " is-disabled" : ""}`}>
         {label}
         <input
@@ -48,7 +57,7 @@ export default function FilePicker({
           }}
         />
       </label>
-      <span className="a-file-picker-name" aria-live="polite">{name || "Tiada fail dipilih"}</span>
+      <span className="a-file-picker-name" aria-live="polite">{name || "Tiada fail dipilih (atau seret fail ke sini)"}</span>
     </span>
   );
 }

@@ -980,3 +980,7 @@
   .a-shell .admin-table.a-kv-table:not(.a-todo-table) td { grid-column: auto; width: auto; }
   .a-shell .admin-table.a-device-table:not(.a-todo-table) td:last-child { grid-column: auto; }
 }
+
+/* A file dragged over a box that accepts it (picker, picture card): a dashed outline so the writer sees where it will land. */
+.a-shell .a-file-picker.is-dropping,
+.a-shell .work-image-card.is-dropping { outline: 2px dashed var(--a-accent, #1c4a57); outline-offset: 3px; background: rgba(28, 74, 87, 0.06); border-radius: 8px; }
