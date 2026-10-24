@@ -6,6 +6,7 @@ import { importPlanAsDraft } from "../../../../../lib/admin/import/import-servic
 import { loadSeriesInheritance, type SeriesInheritance } from "../../../../../lib/admin/series-inheritance";
 import { buildImportPlan, type ImportOptions, type ImportPlan } from "../../../../../lib/admin/import/plan";
 import type { ImportIssue } from "../../../../../lib/admin/import/parser-output";
+import { publicErrorMessage } from "../../../../../lib/admin/api-errors";
 
 const MAX_ANSWER_CHARS = 400_000;
 const MAX_MANUSCRIPT_CHARS = 1_500_000;
@@ -198,7 +199,7 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Ralat tidak diketahui.";
+    const message = publicErrorMessage(error, "Ralat tidak diketahui.");
     return NextResponse.json({ error: message }, { status: message.includes("already exists") || message.includes("sudah digunakan") ? 409 : 500 });
   }
 }

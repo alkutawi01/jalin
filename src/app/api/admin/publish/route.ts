@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { publishWork, generatePublishPreview, rollbackWork, listBackups, workExistsAsMarkdown } from "../../../../lib/admin/publishing/publish-work";
+import { publicErrorMessage } from "../../../../lib/admin/api-errors";
 
 export async function GET(request: NextRequest) {
   try {
@@ -38,7 +39,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Tindakan tidak sah." }, { status: 400 });
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Ralat tidak diketahui." },
+      { error: publicErrorMessage(error, "Ralat tidak diketahui.") },
       { status: 500 }
     );
   }
@@ -61,7 +62,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Tindakan tidak sah." }, { status: 400 });
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Ralat tidak diketahui." },
+      { error: publicErrorMessage(error, "Ralat tidak diketahui.") },
       { status: 500 }
     );
   }

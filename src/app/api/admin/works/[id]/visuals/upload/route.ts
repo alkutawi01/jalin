@@ -3,6 +3,7 @@ import { getCurrentAdmin } from "../../../../../../../lib/admin/auth";
 import { getDb, hasDb } from "../../../../../../../lib/db";
 import { uploadVisualForWork } from "../../../../../../../lib/admin/visual-generation/work-visual-upload";
 import { logActivity } from "../../../../../../../lib/admin/activity";
+import { publicErrorMessage } from "../../../../../../../lib/admin/api-errors";
 
 /**
  * POST /api/admin/works/[id]/visuals/upload  (multipart/form-data)
@@ -58,7 +59,7 @@ export async function POST(
     );
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Ralat tidak diketahui." },
+      { error: publicErrorMessage(error, "Ralat tidak diketahui.") },
       { status: 500 }
     );
   }

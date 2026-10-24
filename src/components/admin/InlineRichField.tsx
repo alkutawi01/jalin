@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, type KeyboardEvent } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { fieldValueFromNodes, inlineHtml, type InlineNode } from "../../lib/admin/inline-format";
 import { dashInSelection, quotesInBlock } from "../../lib/admin/auto-dash";
 
@@ -23,6 +23,8 @@ export default function InlineRichField({
   className = "",
   disabled = false,
   autoFocus = false,
+  required = false,
+  invalid = false,
   typography = false,
   onKeyDown
 }: {
@@ -38,6 +40,9 @@ export default function InlineRichField({
   className?: string;
   disabled?: boolean;
   autoFocus?: boolean;
+  /** A box is not a form control, so the field says itself that it must be filled and when it was left empty. */
+  required?: boolean;
+  invalid?: boolean;
   /** For text that is read as prose: two hyphens become a dash and straight quotes the house style, as the manuscript does. */
   typography?: boolean;
   onKeyDown?: (event: KeyboardEvent<HTMLDivElement>) => void;
@@ -47,12 +52,15 @@ export default function InlineRichField({
   // never while the editor types, so the cursor does not jump.
   const emitted = useRef<string | null>(null);
   const lastGoodHtml = useRef("");
+  const lastLength = useRef(0);
+  const [refused, setRefused] = useState(false);
 
   useEffect(() => {
     const el = ref.current;
     if (!el || value === emitted.current) return;
     el.innerHTML = inlineHtml(value ?? "");
     lastGoodHtml.current = el.innerHTML;
+    lastLength.current = (value ?? "").length;
     emitted.current = value;
   }, [value]);
 
@@ -72,12 +80,17 @@ export default function InlineRichField({
       quotesInBlock(el);
     }
     const next = read();
-    if (maxLength !== undefined && next.length > maxLength) {
-      // Over the limit: put back what was there (the browser cannot be told to refuse a character it has already taken).
+    // Over the limit only counts when the text GREW: a value stored before the limit existed (or longer than it) can still be cut down,
+    // one character at a time, instead of every keystroke being put back.
+    if (maxLength !== undefined && next.length > maxLength && next.length > lastLength.current) {
+      // Put back what was there (the browser cannot be told to refuse a character it has already taken), and say so.
       el.innerHTML = lastGoodHtml.current;
       placeCaretAtEnd(el);
+      setRefused(true);
       return;
     }
+    if (refused) setRefused(false);
+    lastLength.current = next.length;
     // An emptied box keeps a stray <br>; without this its placeholder never comes back.
     if (next === "" && el.innerHTML !== "") el.innerHTML = "";
     lastGoodHtml.current = el.innerHTML;
@@ -117,6 +130,7 @@ export default function InlineRichField({
   }
 
   return (
+    <>
     <div
       ref={ref}
       id={id}
@@ -126,6 +140,8 @@ export default function InlineRichField({
       aria-label={ariaLabel}
       aria-labelledby={labelledBy}
       aria-disabled={disabled || undefined}
+      aria-required={required || undefined}
+      aria-invalid={invalid || undefined}
       aria-description="Ctrl+I untuk condong, Ctrl+B untuk tebal"
       data-placeholder={placeholder}
       contentEditable={!disabled}
@@ -137,6 +153,8 @@ export default function InlineRichField({
       onPaste={handlePaste}
       onDrop={(event) => event.preventDefault()}
     />
+    {refused ? <span className="admin-form-hint" role="status">Had {maxLength} aksara dicapai; teks tambahan tidak dimasukkan. Penanda condong dan tebal turut dikira.</span> : null}
+    </>
   );
 }
 

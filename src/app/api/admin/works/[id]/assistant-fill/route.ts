@@ -4,6 +4,7 @@ import { can, roleFromClaim } from "../../../../../../lib/admin/permissions";
 import { applyAssistantAnswer } from "../../../../../../lib/admin/authoring/apply-answer";
 import { logActivity } from "../../../../../../lib/admin/activity";
 import { processEditorAnswer } from "../../../../../../lib/admin/authoring/editor-answer-service";
+import { publicErrorMessage } from "../../../../../../lib/admin/api-errors";
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -24,6 +25,6 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     await logActivity({ action: "work.update", subjectType: "work", subjectId: id, workId: id, summary: `Mengisi cadangan bot sembang (${body.scope}) selepas pengesahan editor.` });
     return NextResponse.json(result);
   } catch (error) {
-    return NextResponse.json({ error: `${error instanceof Error ? error.message : "Tidak dapat mengisi jawapan."} Semua perubahan transaksi dibatalkan.` }, { status: 400 });
+    return NextResponse.json({ error: `${publicErrorMessage(error, "Tidak dapat mengisi jawapan.")} Semua perubahan transaksi dibatalkan.` }, { status: 400 });
   }
 }

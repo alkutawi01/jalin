@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { evaluatePublicationReadiness } from "../../../../../../lib/admin/publication-service";
 import { getWork } from "../../../../../../lib/admin/work-service";
 import { getUnpublishedChanges } from "../../../../../../lib/admin/revision-service";
+import { publicErrorMessage } from "../../../../../../lib/admin/api-errors";
 
 export async function GET(
   _request: NextRequest,
@@ -19,7 +20,7 @@ export async function GET(
     return NextResponse.json({ ...readiness, unpublished });
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Ralat tidak diketahui." },
+      { error: publicErrorMessage(error, "Ralat tidak diketahui.") },
       { status: 500 }
     );
   }

@@ -3,6 +3,7 @@ import { getDb } from "../../../../../../lib/db";
 import { promoteSubmissionToWork } from "../../../../../../lib/admin/promotion-service";
 import type { PromotionCreditConfig } from "../../../../../../lib/admin/promotion-service";
 import { parseDbId } from "../../../../../../lib/admin/ids";
+import { publicErrorMessage } from "../../../../../../lib/admin/api-errors";
 
 /**
  * POST /api/admin/submissions/[id]/promote
@@ -78,7 +79,7 @@ export async function POST(
       warnings: result.warnings,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Ralat tidak diketahui.";
+    const message = publicErrorMessage(error, "Ralat tidak diketahui.");
     return NextResponse.json({ error: message }, { status: message.startsWith("Status tidak sah") ? 400 : 500 });
   }
 }

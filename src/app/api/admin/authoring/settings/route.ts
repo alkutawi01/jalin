@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCurrentAdmin } from "../../../../../lib/admin/auth";
 import { resetPrompt, saveGlobalRules, saveRecipeText } from "../../../../../lib/admin/authoring/prompt-store";
 import { isRecipeKey } from "../../../../../lib/admin/authoring/recipes";
+import { publicErrorMessage } from "../../../../../lib/admin/api-errors";
 
 /**
  * POST /api/admin/authoring/settings
@@ -30,6 +31,6 @@ export async function POST(request: NextRequest) {
     else await saveRecipeText(target as never, text);
     return NextResponse.json({ ok: true });
   } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : "Ralat." }, { status: 500 });
+    return NextResponse.json({ error: publicErrorMessage(error, "Ralat.") }, { status: 500 });
   }
 }

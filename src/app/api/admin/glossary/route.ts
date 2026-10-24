@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { capitaliseFirst } from "../../../../lib/capitalise-first";
 import { listGlossaryForWork, createGlossaryTerm, DuplicateTermError } from "../../../../lib/admin/glossary-service";
 import { findDuplicateTerm } from "../../../../lib/admin/metadata-rules";
+import { publicErrorMessage } from "../../../../lib/admin/api-errors";
 
 export async function GET(request: NextRequest) {
   try {
@@ -16,7 +17,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(terms);
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Ralat tidak diketahui." },
+      { error: publicErrorMessage(error, "Ralat tidak diketahui.") },
       { status: 500 }
     );
   }
@@ -58,7 +59,7 @@ export async function POST(request: NextRequest) {
     // A second request that lost the race to the first: the same answer as the check above.
     if (error instanceof DuplicateTermError) return NextResponse.json({ error: error.message }, { status: 409 });
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Ralat tidak diketahui." },
+      { error: publicErrorMessage(error, "Ralat tidak diketahui.") },
       { status: 500 }
     );
   }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentAdmin } from "../../../../lib/admin/auth";
 import { DEFAULT_GROUNDS, GROUNDS, HOME_BLOCKS, isGroundKey, isHomeBlockKey, listSavedGrounds, saveHomeGround } from "../../../../lib/site-theme";
+import { publicErrorMessage } from "../../../../lib/admin/api-errors";
 
 /** GET: the background of each home page block (the saved one, or the default) and the colours that can be picked. */
 export async function GET() {
@@ -24,6 +25,6 @@ export async function POST(request: NextRequest) {
     await saveHomeGround(body.block, body.ground);
     return NextResponse.json({ ok: true });
   } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : "Ralat." }, { status: 500 });
+    return NextResponse.json({ error: publicErrorMessage(error, "Ralat.") }, { status: 500 });
   }
 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { listSeries, createSeries } from "../../../../lib/admin/series-service";
 import { getCurrentAdmin } from "../../../../lib/admin/auth";
+import { publicErrorMessage } from "../../../../lib/admin/api-errors";
 
 export async function GET() {
   try {
@@ -8,7 +9,7 @@ export async function GET() {
     return NextResponse.json(series);
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Ralat tidak diketahui." },
+      { error: publicErrorMessage(error, "Ralat tidak diketahui.") },
       { status: 500 }
     );
   }
@@ -38,7 +39,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(series, { status: 201 });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Ralat tidak diketahui.";
+    const message = publicErrorMessage(error, "Ralat tidak diketahui.");
     const status = message.includes("sudah wujud")
       ? 409
       : message.includes("tidak sah") || message.includes("diperlukan")

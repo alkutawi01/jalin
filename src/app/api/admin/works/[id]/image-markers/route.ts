@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCurrentAdmin } from "../../../../../../lib/admin/auth";
 import { getDb } from "../../../../../../lib/db";
 import { planLegacyImageMarkers } from "../../../../../../lib/admin/legacy-image-marker-plan";
+import { publicErrorMessage } from "../../../../../../lib/admin/api-errors";
 
 type Context = { params: Promise<{ id: string }> };
 type Backup = { beforeBody: string; afterBody: string; changes: { id: number; from: string; to: string }[] };
@@ -62,6 +63,6 @@ export async function POST(request: NextRequest, { params }: Context) {
     });
     return NextResponse.json(result);
   } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : "Ralat migrasi gambar." }, { status: 409 });
+    return NextResponse.json({ error: publicErrorMessage(error, "Ralat migrasi gambar.") }, { status: 409 });
   }
 }

@@ -1,9 +1,13 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Figtree } from "next/font/google";
 import "./globals.css";
+import "./themes.css";
 import { SITE_URL, DEFAULT_SHARE_IMAGE } from "../lib/seo";
 import BootScreen from "../components/reader/BootScreen";
 import SiteAnalytics from "../components/reader/SiteAnalytics";
+import ThemeSync from "../components/reader/ThemeSync";
+import { readerAccountsEnabled } from "../lib/reader-auth/enabled";
+import { THEME_INIT_SCRIPT } from "../lib/site-theme-mode";
 
 /**
  * The sans-serif the stylesheet has always named (Inter) is now actually loaded, self-hosted by Next at build time, with a
@@ -16,7 +20,7 @@ const figtree = Figtree({ subsets: ["latin", "latin-ext"], display: "swap", vari
 /** The browser's own bar (address bar on a phone, status bar on iOS) takes the page's paper colour instead of white. */
 export const viewport: Viewport = {
   themeColor: "#fbf8f2",
-  colorScheme: "light"
+  colorScheme: "light dark"
 };
 
 export const metadata: Metadata = {
@@ -50,13 +54,16 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="ms" className={`${inter.variable} ${figtree.variable}`}>
+    <html lang="ms" className={`${inter.variable} ${figtree.variable}`} suppressHydrationWarning>
       <head>
+        {/* Sets the theme before the first paint so a dark device never sees a flash of the light page. */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         {/* Feed readers and browsers find the feed of the newest works from any page. A page's own metadata alternates (its canonical)
             replaces the layout's, so this is a plain link rather than metadata. */}
         <link rel="alternate" type="application/rss+xml" title="Jalin: karya terbaharu" href="/feed.xml" />
       </head>
       <body>
+        <ThemeSync accounts={readerAccountsEnabled()} />
         <BootScreen />
         {children}
         <SiteAnalytics vercel={process.env.VERCEL_ENV === "production"} cloudflareToken={(process.env.CF_ANALYTICS_TOKEN ?? "").trim()} />

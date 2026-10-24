@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { performRightsReview } from "../../../../../../../lib/admin/source-rights";
 import { getCurrentAdmin } from "../../../../../../../lib/admin/auth";
+import { publicErrorMessage } from "../../../../../../../lib/admin/api-errors";
 
 /**
  * Explicit human/admin rights review.
@@ -56,7 +57,7 @@ export async function POST(
 
     return NextResponse.json(result.view);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Ralat tidak diketahui.";
+    const message = publicErrorMessage(error, "Ralat tidak diketahui.");
     const status = message.includes("tidak ditemui")
       ? 404
       : message.includes("wajib") || message.includes("tidak sah") || message.includes("hanya untuk") || message.includes("memerlukan")

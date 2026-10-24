@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentAdmin } from "../../../../lib/admin/auth";
 import { getAuditHistory } from "../../../../lib/admin/audit-history";
+import { publicErrorMessage } from "../../../../lib/admin/api-errors";
 
 export async function GET(_request: NextRequest) {
   try {
@@ -12,7 +13,7 @@ export async function GET(_request: NextRequest) {
     const history = await getAuditHistory(20);
     return NextResponse.json({ runs: history });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Ralat tidak diketahui.";
+    const message = publicErrorMessage(error, "Ralat tidak diketahui.");
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

@@ -3,8 +3,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import ReactMarkdown from "react-markdown";
-import { fixEmphasisBeforeSuffix } from "../../lib/reader/emphasis-fix";
-import { unitaliciseDictionaryWords } from "../../lib/reader/dictionary-words";
+import { noteMarkdown } from "../../lib/reader/note-text";
 import { placeMarginNotes, trackOffsets } from "../../lib/reader/margin-notes";
 
 type Note = { number: number; text: string };
@@ -16,7 +15,7 @@ const MAX_SHIFT = 220;
 
 /** A link inside a margin note is reachable by touch or mouse, but not by Tab: the list at the end of the chapter is the keyboard route. */
 const noteComponents = {
-  a: ({ href, children }: { href?: string; children?: ReactNode }) => <a href={href} tabIndex={-1}>{children}</a>
+  a: ({ href, children }: { href?: string; children?: ReactNode }) => <a href={href} tabIndex={-1} target="_blank" rel="noopener noreferrer">{children}</a>
 };
 
 /**
@@ -152,6 +151,9 @@ export default function FootnoteMargin({ notes }: { notes: Note[] }) {
       if (!anchor || !anchor.closest(".story-body")) return;
       const number = Number((anchor.getAttribute("href") ?? "").replace("#nota-", ""));
       if (!Number.isFinite(number) || !notes.some((note) => note.number === number)) return;
+      // Enter on a note number (a click with no pointer, detail 0) follows the link to the list of notes at the end of the chapter: the popover
+      // and the lit margin note are for the pointer, and they left a keyboard or screen-reader reader with nowhere to go.
+      if (event.detail === 0) return;
       if (window.matchMedia(NARROW).matches) {
         event.preventDefault();
         triggerRef.current = anchor;
@@ -232,7 +234,7 @@ export default function FootnoteMargin({ notes }: { notes: Note[] }) {
         {notes.map((note) => (
           <div key={note.number} className="footnote-margin-note" data-margin-note={note.number}>
             <span className="footnote-margin-number">{note.number}</span>
-            <ReactMarkdown components={noteComponents}>{unitaliciseDictionaryWords(fixEmphasisBeforeSuffix(note.text))}</ReactMarkdown>
+            <ReactMarkdown components={noteComponents}>{noteMarkdown(note.text)}</ReactMarkdown>
           </div>
         ))}
       </div>
@@ -240,7 +242,7 @@ export default function FootnoteMargin({ notes }: { notes: Note[] }) {
         ? createPortal(
             <div ref={popoverRef} className="glossary-tooltip footnote-popover" role="dialog" aria-label={`Nota ${open.number}`} style={{ visibility: "hidden" }}>
               <span className="footnote-popover-number" aria-hidden="true">{open.number}</span>
-              <ReactMarkdown>{unitaliciseDictionaryWords(fixEmphasisBeforeSuffix(open.text))}</ReactMarkdown>
+              <ReactMarkdown>{noteMarkdown(open.text)}</ReactMarkdown>
             </div>,
             document.body
           )

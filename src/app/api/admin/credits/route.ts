@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { listCreditsForWork, createCredit, reorderCredits, DuplicateCreditError } from "../../../../lib/admin/credit-service";
 import { creditErrorStatus, findDuplicateCredit } from "../../../../lib/admin/metadata-rules";
 import { creditSummary, logActivity } from "../../../../lib/admin/activity";
+import { publicErrorMessage } from "../../../../lib/admin/api-errors";
 
 export async function GET(request: NextRequest) {
   try {
@@ -16,7 +17,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(credits);
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Ralat tidak diketahui." },
+      { error: publicErrorMessage(error, "Ralat tidak diketahui.") },
       { status: 500 }
     );
   }
@@ -62,7 +63,7 @@ export async function POST(request: NextRequest) {
     // A second request that lost the race to the first: the same answer as the check above.
     if (error instanceof DuplicateCreditError) return NextResponse.json({ error: error.message }, { status: 409 });
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Ralat tidak diketahui." },
+      { error: publicErrorMessage(error, "Ralat tidak diketahui.") },
       { status: creditErrorStatus(error) }
     );
   }
@@ -81,7 +82,7 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json(credits);
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Ralat tidak diketahui." },
+      { error: publicErrorMessage(error, "Ralat tidak diketahui.") },
       { status: creditErrorStatus(error) }
     );
   }

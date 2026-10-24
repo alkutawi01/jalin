@@ -2,6 +2,7 @@ import { renderItalics } from "../../lib/reader/inline-italics";
 import { unescapeItalicMarks } from "../../lib/reader/literal-emphasis";
 import LilitDivider from "./LilitDivider";
 import { capitaliseFirst } from "../../lib/capitalise-first";
+import { copyrightNotice } from "../../lib/company-notice";
 import { smartQuotes } from "../../lib/admin/smart-quotes";
 import { spacedDashes } from "../../lib/reader/spaced-dash";
 import type { ReactNode } from "react";
@@ -17,6 +18,7 @@ import BackToTop from "./BackToTop";
 import HeaderAutoHide from "./HeaderAutoHide";
 import HeaderAccount from "./HeaderAccount";
 import ExpiryNotice from "./ExpiryNotice";
+import ThemeSwitch from "./ThemeSwitch";
 import { readerAccountsEnabled } from "../../lib/reader-auth/enabled";
 import AiRating from "./AiRating";
 import type { PublicRatingSummary } from "../../lib/panel/public";
@@ -36,7 +38,8 @@ export async function SiteHeader({ active }: { active?: string }) {
       <div className="site-shell header-inner">
         <div className="header-brand">
           <a className="header-wordmark" href="/" aria-label="Jalin utama">
-            <img src="/brand/jalin-wordmark.svg" alt="Jalin" />
+            <img className="wordmark-light" src="/brand/jalin-wordmark.svg" alt="Jalin" />
+            <img className="wordmark-reversed" src="/brand/jalin-wordmark-reversed.svg" alt="" aria-hidden="true" />
           </a>
         </div>
         <div className="header-main">
@@ -318,7 +321,8 @@ export async function SiteFooter() {
         </div>
       </div>
       <div className="site-shell footer-base">
-        <p>© {year} Adjung Press. Hak cipta terpelihara.</p>
+        <ThemeSwitch />
+        <p>{copyrightNotice(year)}</p>
         <a className="footer-admin" href="/admin/login" aria-label="Log masuk pengurus" title="Log masuk pengurus">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <rect x="5" y="11" width="14" height="9" rx="2" />

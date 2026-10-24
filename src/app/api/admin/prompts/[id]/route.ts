@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPromptTemplate, updatePromptTemplate, deletePromptTemplate } from "../../../../../lib/admin/prompt-template-service";
 import { parseDbId } from "../../../../../lib/admin/ids";
+import { publicErrorMessage } from "../../../../../lib/admin/api-errors";
 
 export async function GET(
   request: NextRequest,
@@ -23,7 +24,7 @@ export async function GET(
     return NextResponse.json(template);
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Ralat tidak diketahui." },
+      { error: publicErrorMessage(error, "Ralat tidak diketahui.") },
       { status: 500 }
     );
   }
@@ -61,7 +62,7 @@ export async function PATCH(
     return NextResponse.json(template);
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Ralat tidak diketahui." },
+      { error: publicErrorMessage(error, "Ralat tidak diketahui.") },
       { status: 500 }
     );
   }
@@ -89,7 +90,7 @@ export async function DELETE(
     return NextResponse.json({ success: true });
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Ralat tidak diketahui." },
+      { error: publicErrorMessage(error, "Ralat tidak diketahui.") },
       { status: 500 }
     );
   }

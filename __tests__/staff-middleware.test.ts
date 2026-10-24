@@ -7,6 +7,20 @@ process.env.ADMIN_SECRET = "test-secret-for-middleware";
 import { NextRequest } from "next/server";
 import { middleware } from "../src/middleware";
 
+// The middleware asks /api/admin/auth/status (which reads the staff table) before a staff account reaches an admin API. Here the answer is
+// the signed claims themselves unless a test says the table disagrees.
+let tableSays: "claims" | "off" | { role: string; mustChangePassword?: boolean } = "claims";
+const statusCalls: string[] = [];
+globalThis.fetch = (async (input: unknown, init?: { headers?: Record<string, string> }) => {
+  statusCalls.push(String(input));
+  if (tableSays === "off") return new Response(JSON.stringify({ ok: false }), { status: 401 });
+  if (tableSays !== "claims") return new Response(JSON.stringify({ ok: true, ...tableSays }), { status: 200 });
+  const cookie = init?.headers?.cookie ?? "";
+  const payload = cookie.split("=")[1]?.split(".")[0] ?? "";
+  const claims = JSON.parse(Buffer.from(payload, "base64url").toString());
+  return new Response(JSON.stringify({ ok: true, role: claims.role, mustChangePassword: claims.mcp === true }), { status: 200 });
+}) as typeof fetch;
+
 let passed = 0, failed = 0;
 function assert(c: boolean, m: string) { if (c) { passed++; console.log(`  ✓ ${m}`); } else { failed++; console.error(`  ✗ ${m}`); } }
 function token(claims: Record<string, unknown>, signingKey = process.env.ADMIN_SECRET!) {
@@ -43,6 +57,35 @@ async function call(method: string, path: string, claims?: Record<string, unknow
   assert((await call("GET", "/api/admin/users", owner)).status === 401, "a token signed with ADMIN_SECRET is rejected after session-key rotation");
   assert((await call("GET", "/api/admin/users", owner, process.env.ADMIN_SESSION_KEY)).next, "a token signed with the dedicated session key is accepted");
   delete process.env.ADMIN_SESSION_KEY;
+
+  // The staff table decides for the API, not only the signed claims (audit 19 Okt: a switched-off account kept working for the cookie's life).
+  tableSays = "off";
+  assert((await call("POST", "/api/admin/works", editor)).status === 401, "an account switched off in the table gets 401 on an admin API at once");
+  assert((await call("GET", "/api/admin/works", editor)).status === 401, "for a read as well");
+  tableSays = { role: "chief_editor" };
+  assert((await call("POST", "/api/admin/works", editor)).status === 401, "a role changed in the table closes a session that still claims the old role");
+  tableSays = { role: "editor", mustChangePassword: true };
+  assert((await call("POST", "/api/admin/works", editor)).status === 403, "a temporary password set after the session began is enforced from the table");
+  assert((await call("POST", "/api/admin/auth/change-password", editor)).next, "but the password change itself stays open");
+  tableSays = "off";
+  statusCalls.length = 0;
+  assert((await call("POST", "/api/admin/works", owner)).next && statusCalls.length === 0, "the owner has no row and is never asked");
+  assert((await call("GET", "/api/admin/auth/status", editor)).next && statusCalls.length === 0, "the question itself is let through, so it cannot loop");
+  assert((await call("GET", "/admin/series", editor)).status !== 401, "pages are checked where they render (getCurrentAdmin), not by an extra call here");
+  tableSays = "claims";
+
+  // A change that names another site as its origin is refused (audit 19 Okt); no Origin (a script) and the same origin pass.
+  async function withOrigin(method: string, path: string, origin: string | null) {
+    const headers: Record<string, string> = { cookie: `jalin-admin-session=${token(owner)}` };
+    if (origin) headers.origin = origin;
+    const res = await middleware(new NextRequest(`http://localhost${path}`, { method, headers: { ...headers, host: "localhost" } }));
+    return { status: res.status, next: res.headers.get("x-middleware-next") === "1" };
+  }
+  assert((await withOrigin("POST", "/api/admin/works", "https://evil.example")).status === 403, "a POST from another site is refused");
+  assert((await withOrigin("DELETE", "/api/admin/works/1", "https://evil.example")).status === 403, "so is a DELETE");
+  assert((await withOrigin("POST", "/api/admin/works", "http://localhost")).next, "the same site is let through");
+  assert((await withOrigin("POST", "/api/admin/works", null)).next, "a request with no Origin is judged by its cookie alone");
+  assert((await withOrigin("GET", "/api/admin/works", "https://evil.example")).next, "a read is not a change");
   console.log(`\n${passed} passed, ${failed} failed`);
   if (failed) process.exit(1);
 })();

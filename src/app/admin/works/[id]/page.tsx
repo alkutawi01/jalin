@@ -578,7 +578,7 @@ export default function EditWorkPage() {
       const form = document.querySelector<HTMLElement>(".admin-credit-form");
       if (!form) return;
       form.scrollIntoView({ behavior: "smooth", block: "center" });
-      form.querySelector<HTMLElement>("input:not([type=hidden]):not([disabled]), select, textarea")?.focus({ preventScroll: true });
+      form.querySelector<HTMLElement>("input:not([type=hidden]):not([disabled]), select, textarea, [contenteditable=true]")?.focus({ preventScroll: true });
     }, 50);
     return () => window.clearTimeout(timer);
   }, [openEditorKey]);
@@ -1558,7 +1558,13 @@ export default function EditWorkPage() {
   }
 
   async function handleSaveGlossary() {
-    if (!editingGlossary) return;
+    if (!editingGlossary || glossaryBusy) return;
+    const missing = !(editingGlossary.term ?? "").trim() ? "term" : !(editingGlossary.meaning ?? "").trim() ? "meaning" : null;
+    if (missing) {
+      setGlossaryError(missing === "term" ? "Istilah diperlukan." : "Maksud diperlukan.");
+      document.getElementById(missing === "term" ? "glossary-term" : "glossary-meaning")?.focus();
+      return;
+    }
     // The API takes camelCase for the optional pronunciation and original spelling.
     const extras = {
       pronunciation: editingGlossary.pronunciation ?? "",
@@ -1567,6 +1573,7 @@ export default function EditWorkPage() {
     };
 
     setGlossaryError(null);
+    setGlossaryBusy(true);
 
     try {
       if (editingGlossary.id) {
@@ -1605,6 +1612,8 @@ export default function EditWorkPage() {
       await loadReadiness();
     } catch (err) {
       setGlossaryError(errorText(err));
+    } finally {
+      setGlossaryBusy(false);
     }
   }
 
@@ -2227,7 +2236,7 @@ export default function EditWorkPage() {
           </div>
 
           <div className="admin-form-group">
-            <label id="editorNote-label">Catatan</label>
+            <label id="editorNote-label" onClick={() => document.getElementById("editorNote")?.focus()}>Catatan</label>
             <InlineRichField
               id="editorNote"
               labelledBy="editorNote-label"
@@ -2245,7 +2254,7 @@ export default function EditWorkPage() {
             </span>
           </div>
           <div className="admin-form-group">
-            <label id="readerNote-label">Nota pada kad &quot;Tentang karya&quot;</label>
+            <label id="readerNote-label" onClick={() => document.getElementById("readerNote")?.focus()}>Nota pada kad &quot;Tentang karya&quot;</label>
             <InlineRichField
               id="readerNote"
               labelledBy="readerNote-label"
@@ -2855,8 +2864,11 @@ export default function EditWorkPage() {
           {editingGlossary && (
             <div className="admin-credit-form">
               <div className="admin-form-group">
-                <label id="glossary-term-label">Istilah *</label>
+                <label id="glossary-term-label" onClick={() => document.getElementById("glossary-term")?.focus()}>Istilah *</label>
                 <InlineRichField
+                  id="glossary-term"
+                  required
+                  invalid={!!glossaryError && !(editingGlossary.term ?? "").trim()}
                   labelledBy="glossary-term-label"
                   value={editingGlossary.term || ""}
                   onChange={(term) => setEditingGlossary((prev) => ({ ...prev, term }))}
@@ -2865,8 +2877,11 @@ export default function EditWorkPage() {
               </div>
 
               <div className="admin-form-group">
-                <label id="glossary-meaning-label">Maksud *</label>
+                <label id="glossary-meaning-label" onClick={() => document.getElementById("glossary-meaning")?.focus()}>Maksud *</label>
                 <InlineRichField
+                  id="glossary-meaning"
+                  required
+                  invalid={!!glossaryError && !(editingGlossary.meaning ?? "").trim()}
                   labelledBy="glossary-meaning-label"
                   multiline
                   rows={5}
@@ -2944,6 +2959,7 @@ export default function EditWorkPage() {
                   type="button"
                   className="admin-btn admin-btn-primary"
                   onClick={handleSaveGlossary}
+                  disabled={glossaryBusy}
                 >
                   Simpan istilah
                 </button>
@@ -3018,7 +3034,7 @@ export default function EditWorkPage() {
                             type="button"
                             className="admin-btn admin-btn-sm admin-btn-danger"
                             onClick={() => handleDeleteGlossary(term.id)}
-                            aria-label={`Padam istilah ${term.term}`}
+                            aria-label={`Padam istilah ${term.term.replace(/\*/g, "")}`}
                           >
                             Padam
                           </button>
@@ -3079,7 +3095,7 @@ export default function EditWorkPage() {
                 <tbody>
                   {characters.map((character, index) => (
                     <tr key={index}>
-                      <td><input type="checkbox" aria-label={`Pilih watak ${(character.name ?? "").trim() || index + 1}`} checked={selectedCharacters.includes(index)} onChange={(event) => setSelectedCharacters((prev) => event.target.checked ? [...prev, index] : prev.filter((item) => item !== index))} /></td>
+                      <td><input type="checkbox" aria-label={`Pilih watak ${(character.name ?? "").replace(/\*/g, "").trim() || index + 1}`} checked={selectedCharacters.includes(index)} onChange={(event) => setSelectedCharacters((prev) => event.target.checked ? [...prev, index] : prev.filter((item) => item !== index))} /></td>
                       <td>
                         <InlineRichField
                           value={character.name}
@@ -3114,7 +3130,7 @@ export default function EditWorkPage() {
                           type="button"
                           className="admin-btn admin-btn-sm admin-btn-danger"
                           onClick={() => removeCharacterRow(index)}
-                          aria-label={`Padam watak ${(character.name ?? "").trim() || index + 1}`}
+                          aria-label={`Padam watak ${(character.name ?? "").replace(/\*/g, "").trim() || index + 1}`}
                         >
                           Padam
                         </button>

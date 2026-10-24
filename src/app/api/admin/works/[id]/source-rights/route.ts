@@ -4,6 +4,7 @@ import {
   upsertSourceProvenance,
 } from "../../../../../../lib/admin/source-rights";
 import { getCurrentAdmin } from "../../../../../../lib/admin/auth";
+import { publicErrorMessage } from "../../../../../../lib/admin/api-errors";
 
 export async function GET(
   _request: NextRequest,
@@ -18,7 +19,7 @@ export async function GET(
     return NextResponse.json(view);
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Ralat tidak diketahui." },
+      { error: publicErrorMessage(error, "Ralat tidak diketahui.") },
       { status: 500 }
     );
   }
@@ -71,7 +72,7 @@ export async function PUT(
       invalidatedApproval: result.invalidatedApproval,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Ralat tidak diketahui.";
+    const message = publicErrorMessage(error, "Ralat tidak diketahui.");
     const status = message.includes("tidak ditemui")
       ? 404
       : message.includes("hanya untuk") || message.includes("source_url") || message.includes("Bahasa petikan")

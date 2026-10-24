@@ -25,6 +25,16 @@ export default function LockDialog({ gate, next, email }: { gate: Gate; next: st
     panelRef.current?.focus();
     function onKey(event: KeyboardEvent) {
       if (event.key === "Escape") setOpen(false);
+      if (event.key === "Tab" && panelRef.current) {
+        const focusable = Array.from(panelRef.current.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), input:not([disabled]), textarea, select, [tabindex]:not([tabindex="-1"])')).filter((el) => el.offsetParent !== null);
+        if (focusable.length === 0) { event.preventDefault(); return; }
+        const first = focusable[0]!;
+        const last = focusable[focusable.length - 1]!;
+        const active = document.activeElement;
+        if (event.shiftKey && (active === first || active === panelRef.current)) { event.preventDefault(); last.focus(); }
+        else if (!event.shiftKey && active === last) { event.preventDefault(); first.focus(); }
+        else if (!panelRef.current.contains(active)) { event.preventDefault(); first.focus(); }
+      }
     }
     document.addEventListener("keydown", onKey);
     document.documentElement.style.overflow = "hidden";

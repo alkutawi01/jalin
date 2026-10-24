@@ -138,6 +138,20 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/admin/ubah-kata-laluan", request.url));
   }
 
+  // A browser always names the site a change comes from. One that names another site is refused (the cookie is SameSite=Lax as well; this is
+  // the second lock). A request with no Origin (a script, a tool) is not a browser form and is judged by its cookie alone.
+  if (pathname.startsWith("/api/admin/") && request.method !== "GET" && request.method !== "HEAD") {
+    const origin = request.headers.get("origin");
+    if (origin) {
+      let host = "";
+      try { host = new URL(origin).host; } catch { host = ""; }
+      const own = request.headers.get("x-forwarded-host") ?? request.headers.get("host") ?? request.nextUrl.host;
+      if (!host || host !== own) {
+        return NextResponse.json({ error: "Permintaan dari laman lain ditolak." }, { status: 403 });
+      }
+    }
+  }
+
   // A valid session still needs the permission this address and method ask for (see lib/admin/permissions).
   if (!isAllowed(role, request.method, pathname)) {
     if (pathname.startsWith("/api/")) {
@@ -147,7 +161,36 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/admin?terhad=1", request.url));
   }
 
+  // A staff session is only a signed claim here. Before a staff account reaches an admin API, the table is asked (the owner has no row):
+  // an account switched off, or given another role, stops working at once, not only on the pages. The question itself is let through above.
+  if (role !== "owner" && pathname.startsWith("/api/admin/") && pathname !== "/api/admin/auth/status") {
+    const verdict = await staffVerdict(request, sessionCookie.value);
+    if (!verdict || verdict.role !== role) {
+      // The cookie is left alone: a database that cannot answer for a moment must not sign anyone out for good.
+      return NextResponse.json({ error: "Sesi anda telah tamat. Log masuk semula." }, { status: 401 });
+    }
+    // A temporary password set by the owner after this session began: the table says it must be changed before anything else.
+    if (verdict.mustChangePassword && !pathname.startsWith("/api/admin/auth/")) {
+      return NextResponse.json({ error: "Pilih kata laluan baharu dahulu." }, { status: 403 });
+    }
+  }
+
   return NextResponse.next();
+}
+
+/** Asks the status route (which can reach the database) what the table says about this staff session; null when it says no or cannot answer. */
+async function staffVerdict(request: NextRequest, token: string): Promise<{ role: string; mustChangePassword: boolean } | null> {
+  try {
+    const response = await fetch(new URL("/api/admin/auth/status", request.url), {
+      headers: { cookie: `jalin-admin-session=${token}` },
+      cache: "no-store"
+    });
+    if (!response.ok) return null;
+    const body = (await response.json()) as { ok?: boolean; role?: string; mustChangePassword?: boolean };
+    return body.ok && typeof body.role === "string" ? { role: body.role, mustChangePassword: body.mustChangePassword === true } : null;
+  } catch {
+    return null;
+  }
 }
 
 export const config = {

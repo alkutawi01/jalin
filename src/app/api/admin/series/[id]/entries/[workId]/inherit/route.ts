@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCurrentAdmin } from "../../../../../../../../lib/admin/auth";
 import { getDb, hasDb } from "../../../../../../../../lib/db";
 import { fillEpisodeFromSeries } from "../../../../../../../../lib/admin/series-inheritance";
+import { publicErrorMessage } from "../../../../../../../../lib/admin/api-errors";
 
 /**
  * POST /api/admin/series/[id]/entries/[workId]/inherit
@@ -24,7 +25,7 @@ export async function POST(
     const result = await getDb().transaction().execute((trx) => fillEpisodeFromSeries(trx, id, workId));
     return NextResponse.json(result);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Ralat tidak diketahui.";
+    const message = publicErrorMessage(error, "Ralat tidak diketahui.");
     const status = message.includes("tidak ditemui") ? 404 : message.includes("tidak boleh") ? 400 : 500;
     return NextResponse.json({ error: message }, { status });
   }

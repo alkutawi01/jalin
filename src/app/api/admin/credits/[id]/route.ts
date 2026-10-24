@@ -3,6 +3,7 @@ import { getCredit, updateCredit, deleteCredit, listCreditsForWork } from "../..
 import { creditErrorStatus, findDuplicateCredit } from "../../../../../lib/admin/metadata-rules";
 import { parseDbId } from "../../../../../lib/admin/ids";
 import { creditSummary, logActivity } from "../../../../../lib/admin/activity";
+import { publicErrorMessage } from "../../../../../lib/admin/api-errors";
 
 export async function GET(
   request: NextRequest,
@@ -25,7 +26,7 @@ export async function GET(
     return NextResponse.json(credit);
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Ralat tidak diketahui." },
+      { error: publicErrorMessage(error, "Ralat tidak diketahui.") },
       { status: 500 }
     );
   }
@@ -76,7 +77,7 @@ export async function PATCH(
     return NextResponse.json(credit);
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Ralat tidak diketahui." },
+      { error: publicErrorMessage(error, "Ralat tidak diketahui.") },
       { status: creditErrorStatus(error) }
     );
   }
@@ -106,7 +107,7 @@ export async function DELETE(
     return NextResponse.json({ success: true });
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Ralat tidak diketahui." },
+      { error: publicErrorMessage(error, "Ralat tidak diketahui.") },
       { status: 500 }
     );
   }

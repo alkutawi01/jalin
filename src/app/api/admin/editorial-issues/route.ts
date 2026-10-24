@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentAdmin } from "../../../../lib/admin/auth";
 import { getEditorialIssues, syncEditorialIssues } from "../../../../lib/admin/editorial-issues";
+import { publicErrorMessage } from "../../../../lib/admin/api-errors";
 
 export async function GET(_request: NextRequest) {
   try {
@@ -15,7 +16,7 @@ export async function GET(_request: NextRequest) {
     const issues = await getEditorialIssues(status || undefined);
     return NextResponse.json({ issues });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Ralat tidak diketahui.";
+    const message = publicErrorMessage(error, "Ralat tidak diketahui.");
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
@@ -30,7 +31,7 @@ export async function POST(_request: NextRequest) {
     const result = await syncEditorialIssues();
     return NextResponse.json(result);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Ralat tidak diketahui.";
+    const message = publicErrorMessage(error, "Ralat tidak diketahui.");
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

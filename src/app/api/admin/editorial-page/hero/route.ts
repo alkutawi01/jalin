@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentAdmin } from "../../../../../lib/admin/auth";
 import { clearEditorialHero, setEditorialHero, setEditorialHeroAlt } from "../../../../../lib/editorial-page";
+import { publicErrorMessage } from "../../../../../lib/admin/api-errors";
 
 const SESSION_ENDED = "Sesi anda telah tamat. Log masuk semula.";
-const failed = (error: unknown) => NextResponse.json({ error: error instanceof Error ? error.message : "Ralat tidak diketahui." }, { status: 500 });
+const failed = (error: unknown) => NextResponse.json({ error: publicErrorMessage(error, "Ralat tidak diketahui.") }, { status: 500 });
 
 /** Upload the picture across the top of the Editorial page (multipart: file, alt). */
 export async function POST(request: NextRequest) {
