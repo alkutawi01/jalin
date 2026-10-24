@@ -29,13 +29,9 @@ Nombor batch mesti sama dengan nombor batch yang dijana dalam admin (Langganan >
 
 Ujian fizikal yang sudah diputuskan dalam kajian (label haba, pelekat kikis, geseran, haba) masih perlu dibuat dengan label dan pelekat sebenar. Kad percubaan: cetak 10 kad, lekat label dan pelekat, kikis, semak kod masih jelas. Saiz tulisan terkecil pada belakang kad ialah kira-kira 5.5 pt (kira-kira 1.9 mm); semak kebolehbacaan pada cetakan sebenar dan besarkan jika perlu.
 
-## Halaman tebus (kad virtual)
+## Halaman tebus (kad maya)
 
-Halaman `/tebus` memaparkan belakang kad ini sebagai gambar (`public/kad/kad-belakang-contoh.webp`, dengan nombor batch contoh). Bila pembeli menaip dalam ruang "Nombor batch" atau "Kod", bahagian yang sama pada kad bercahaya. Jika reka bentuk belakang kad diubah, jana semula gambar itu:
+Halaman `/tebus` memaparkan belakang kad sebagai **kad maya** (HTML, bukan gambar): kotak kod berada di tempat pelekat kikis pada kad fizikal. Dua aliran:
 
-```
-node scripts/kad/jana-kad.mjs B2610-001
-node -e "require('sharp')(require('fs').readFileSync('docs/kad-langganan/jalin-kad-belakang-B2610-001.svg'),{density:288}).resize({width:840}).webp({quality:88}).toFile('public/kad/kad-belakang-contoh.webp')"
-```
-
-dan semak kedudukan bingkai cahaya (peratusan dalam `.card-guide-hit--batch` dan `.card-guide-hit--code` di `src/app/globals.css`).
+- **Dibayar dalam Jalin:** kod dihantar ke e-mel. Pembeli menaip atau menampal kod dalam kotak KOD. Tiada nombor batch.
+- **Kad fizikal:** pembeli menekan "Saya ada kad fizikal", ruang NO. BATCH muncul pada kad maya, kemudian kikis pelekat, taip kod dan nombor batch. Jika kod ditolak dan nombor batch belum dimasukkan, ruang itu dibuka secara automatik.
