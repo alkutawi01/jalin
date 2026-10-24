@@ -22,7 +22,7 @@ import {
   StoryHead
 } from "./StoryChrome";
 import StoryMarkdown from "./StoryMarkdown";
-import { parseThemeSetting, storyThemeVars } from "../../lib/reader/story-theme";
+import { parseThemeSetting, storyPageCss, storyThemeVars } from "../../lib/reader/story-theme";
 import FootnoteList from "./FootnoteList";
 import FootnoteMargin from "./FootnoteMargin";
 import ReadingProgress from "./ReadingProgress";
@@ -262,11 +262,14 @@ export default async function WorkView({
   );
 
   // The work's own colour, if the editor set one (or let it be read from the hero): applied to the whole page, in the reader's own Cerah, Sepia or Gelap.
-  const themeVars = storyThemeVars(parseThemeSetting(work.metadata?.theme));
+  const themeSetting = parseThemeSetting(work.metadata?.theme);
+  const themeVars = storyThemeVars(themeSetting);
+  const themePageCss = storyPageCss(themeSetting);
   // A work with no colour keeps exactly the markup it had (a fragment); only a coloured one gets a wrapper.
   const Shell: React.ElementType = themeVars ? "div" : React.Fragment;
   return (
     <Shell {...(themeVars ? { className: "story-themed", "data-story-theme": "", style: themeVars as React.CSSProperties } : {})}>
+      {themePageCss ? <style dangerouslySetInnerHTML={{ __html: themePageCss }} /> : null}
       <SiteHeader active={type as WorkType} />
       <ReaderTypography />
       {landing ? null : <ReadingProgress />}
