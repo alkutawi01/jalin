@@ -116,12 +116,10 @@ export async function listBatches(db: Db): Promise<BatchRow[]> {
   }));
 }
 
-/** A suggestion for the next batch number: the year and month, then the next free number that month (B2610-001). */
-export async function suggestBatchNumber(db: Db, now: Date = new Date()): Promise<string> {
-  const prefix = `B${String(now.getUTCFullYear()).slice(2)}${String(now.getUTCMonth() + 1).padStart(2, "0")}-`;
-  const rows = await db.selectFrom("code_batches").select("batch_number").where("batch_number", "like", `${prefix}%`).execute();
-  const used = rows.map((r) => parseInt(r.batch_number.slice(prefix.length), 10)).filter((x) => Number.isFinite(x));
-  return `${prefix}${String((used.length ? Math.max(...used) : 0) + 1).padStart(3, "0")}`;
+/** The month a batch is expected to be issued, offered by default: this month (Malaysian time), as the month input of the admin wants it (2026-10). */
+export function suggestIssueMonth(now: Date = new Date()): string {
+  const my = new Date(now.getTime() + 8 * 60 * 60 * 1000);
+  return `${my.getUTCFullYear()}-${String(my.getUTCMonth() + 1).padStart(2, "0")}`;
 }
 
 export type CodeInfo = {
@@ -286,7 +284,7 @@ export type MemberRow = {
   status: MemberStatus;
   /** The end of the last period given and not cancelled (or null when the reader never had access). */
   endsAt: Date | null;
-  /** Where the latest access came from: "Percubaan", "Kad JLN-26-000012", "Kod kongsi ...", "Diberi oleh pentadbir". */
+  /** Where the latest access came from: "Percubaan", "Kad JLN-12B0126-01", "Kod kongsi ...", "Diberi oleh pentadbir". */
   source: string | null;
   devices: number;
 };

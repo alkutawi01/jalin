@@ -31,7 +31,7 @@ async function main() {
   const readerKey = loadMacKey();
   const now = new Date();
   const HIGH = { failsPerAccountPer15Min: 1000, failsPerIpPerHour: 1000, failsAllPerHour: 100000 };
-  const redeem = (accountId: string, code: string, batch?: string) => redeemCode(db, { codeKey, now, limits: HIGH }, { accountId, ipMac: "drill", code, batch });
+  const redeem = (accountId: string, code: string, serial?: string) => redeemCode(db, { codeKey, now, limits: HIGH }, { accountId, ipMac: "drill", code, serial });
   const accountOf = async (n: string) => {
     const row = await sql<{ id: string }>`INSERT INTO reader_accounts (email, email_normalized) VALUES (${`${n}@e2e.invalid`}, ${`${n}@e2e.invalid`}) RETURNING id`.execute(db);
     await addTrial(db, row.rows[0].id, now, new Date(now.getTime() + 14 * 86400000));
@@ -43,29 +43,27 @@ async function main() {
     await sql`TRUNCATE redemptions, shared_redemptions, redeem_codes, code_batches, shared_codes, entitlements`.execute(db);
     await sql`DELETE FROM reader_accounts WHERE email_normalized LIKE '%@e2e.invalid'`.execute(db);
     await sql`DELETE FROM reader_switches WHERE key = 'redeem_halted'`.execute(db);
-    await sql`ALTER SEQUENCE redeem_serial_seq RESTART WITH 1`.execute(db);
 
     const A = await accountOf("drill-a"); const B = await accountOf("drill-b"); const C = await accountOf("drill-c"); const D = await accountOf("drill-d");
 
     // ------------------------------------------------------------ the world at the restore point
     console.log("\nThe world at the restore point");
-    const b1 = await createBatch(db, { codeKey, now }, { batchNumber: "DR-001", months: 6, quantity: 4 });
+    const b1 = await createBatch(db, { codeKey, now }, { months: 6, quantity: 4 });
     await confirmBatchPrinted(db, b1.batchId); await issueCodes(db, { batchId: b1.batchId });
     const s1 = await createSharedCode(db, { grant: { unit: "days", amount: 14 }, maxRedemptions: 3, channel: "Telegram" });
-    assert((await redeem(A, b1.codes[0].code, "DR-001")).status === "ok" && (await redeem(A, s1.code)).status === "ok", "reader A redeemed card 1 and the shared code");
+    assert((await redeem(A, b1.codes[0].code, b1.codes[0].serial)).status === "ok" && (await redeem(A, s1.code)).status === "ok", "reader A redeemed card 1 and the shared code");
     const ids = async (table: string) => (await sql<{ id: string }>`SELECT id FROM ${sql.table(table)}`.execute(db)).rows.map((r) => r.id);
     const atPoint: Record<string, string[]> = {};
     for (const t of ["shared_redemptions", "redemptions", "entitlements", "redeem_codes", "code_batches", "shared_codes"]) atPoint[t] = await ids(t);
-    const seqAtPoint = Number((await sql<{ v: string }>`SELECT last_value AS v FROM redeem_serial_seq`.execute(db)).rows[0].v);
     const countAtPoint = (await sql<{ c: number }>`SELECT redeemed_count AS c FROM shared_codes WHERE id = ${s1.id}`.execute(db)).rows[0].c;
 
     // ------------------------------------------------------------ what happens after, and will be lost
     console.log("\nWhat happens after the restore point");
-    assert((await redeem(B, b1.codes[1].code, "DR-001")).status === "ok" && (await redeem(C, b1.codes[2].code, "DR-001")).status === "ok", "readers B and C redeem cards 2 and 3");
+    assert((await redeem(B, b1.codes[1].code, b1.codes[1].serial)).status === "ok" && (await redeem(C, b1.codes[2].code, b1.codes[2].serial)).status === "ok", "readers B and C redeem cards 2 and 3");
     assert(await revokeCode(db, b1.codes[3].serial, "Kad hilang"), "card 4 is cancelled as lost");
-    const b2 = await createBatch(db, { codeKey, now }, { batchNumber: "DR-002", months: 12, quantity: 3 });
+    const b2 = await createBatch(db, { codeKey, now }, { months: 12, quantity: 3 });
     await confirmBatchPrinted(db, b2.batchId); await issueCodes(db, { batchId: b2.batchId });
-    assert((await redeem(B, b2.codes[0].code, "DR-002")).status === "ok", "a whole new batch is printed, issued, and B redeems one of its cards");
+    assert((await redeem(B, b2.codes[0].code, b2.codes[0].serial)).status === "ok", "a whole new batch is printed, issued, and B redeems one of its cards");
     const s2 = await createSharedCode(db, { grant: { unit: "months", amount: 1 }, maxRedemptions: 2, channel: "Acara" });
     assert((await redeem(C, s2.code)).status === "ok" && (await redeem(B, s1.code)).status === "ok" && (await redeem(C, s1.code)).status === "ok", "a second shared code is made and used; the first gets two more uses");
     const readerKeyMacB = emailLookupMac(readerKey, "drill-b@e2e.invalid");
@@ -95,7 +93,6 @@ async function main() {
     await sql`DELETE FROM shared_codes WHERE NOT (id = ANY(${atPoint.shared_codes}::uuid[]))`.execute(db);
     await sql`UPDATE redeem_codes SET state = 'issued', revoked_at = NULL, revoke_reason = NULL WHERE serial = ${b1.codes[3].serial}`.execute(db);
     await sql`UPDATE shared_codes SET redeemed_count = ${countAtPoint} WHERE id = ${s1.id}`.execute(db);
-    await sql`SELECT setval('redeem_serial_seq', ${seqAtPoint}, true)`.execute(db);
     const after = (await sql<{ n: string }>`SELECT (SELECT count(*) FROM redemptions) AS n`.execute(db)).rows[0].n;
     assert(Number(after) === 1, "only card 1 redemption survived the restore", after);
 
@@ -104,7 +101,7 @@ async function main() {
     let danger = "";
     try {
       await db.transaction().execute(async (trx) => {
-        const r = await redeemCode(trx, { codeKey, now, limits: HIGH }, { accountId: D, ipMac: "drill", code: b1.codes[1].code, batch: "DR-001" });
+        const r = await redeemCode(trx, { codeKey, now, limits: HIGH }, { accountId: D, ipMac: "drill", code: b1.codes[1].code, serial: b1.codes[1].serial });
         danger = r.status;
         throw new Undo();
       });
@@ -120,22 +117,22 @@ async function main() {
     assert(done.applied && done.batchesAdded === 1 && done.codesAdded === 3 && done.codesCancelledForLostRedemption === 3 && done.codesCancelledAsInExport === 1 && done.sharedAdded === 1 && done.sharedCountsRaised === 1, "applied: batch 2 and its 3 codes put back; cards 2, 3 and batch 2's used card cancelled; the lost cancellation of card 4 restored; shared code 2 put back; shared count raised", done);
     assert(done.lostRedemptions.length === 3 && done.lostRedemptions.every((l) => l.emailMac), "the report lists the three redemptions that were lost, with their e-mail hashes");
     assert(await isRedeemHalted(db), "the stop switch is ON and stays on until a person switches it off");
-    assert((await redeem(D, b2.codes[1].code, "DR-002")).status === "halted", "while it is on nothing can be redeemed");
+    assert((await redeem(D, b2.codes[1].code, b2.codes[1].serial)).status === "halted", "while it is on nothing can be redeemed");
     await setRedeemHalted(db, false, "latihan");
 
     // ------------------------------------------------------------ the result
     console.log("\nAfter the reconcile");
-    assert((await redeem(D, b1.codes[1].code, "DR-001")).status === "invalid" && (await redeem(D, b1.codes[2].code, "DR-001")).status === "invalid", "cards 2 and 3 can no longer be used by anyone else");
-    assert((await redeem(D, b1.codes[3].code, "DR-001")).status === "invalid", "card 4 is cancelled again, as it was in the file");
-    assert((await redeem(D, b2.codes[0].code, "DR-002")).status === "invalid", "the card of the lost batch that B had used cannot be used again");
-    assert((await redeem(D, b2.codes[1].code, "DR-002")).status === "ok", "another card of the lost batch, never used, works for its owner");
-    assert((await redeem(A, b1.codes[0].code, "DR-001")).status === "ok" && (await redeem(A, b1.codes[0].code, "DR-001").then((r) => r.status === "ok" && r.repeat === true)), "reader A, whose redemption survived, is still recognised as the owner of card 1");
+    assert((await redeem(D, b1.codes[1].code, b1.codes[1].serial)).status === "invalid" && (await redeem(D, b1.codes[2].code, b1.codes[2].serial)).status === "invalid", "cards 2 and 3 can no longer be used by anyone else");
+    assert((await redeem(D, b1.codes[3].code, b1.codes[3].serial)).status === "invalid", "card 4 is cancelled again, as it was in the file");
+    assert((await redeem(D, b2.codes[0].code, b2.codes[0].serial)).status === "invalid", "the card of the lost batch that B had used cannot be used again");
+    assert((await redeem(D, b2.codes[1].code, b2.codes[1].serial)).status === "ok", "another card of the lost batch, never used, works for its owner");
+    assert((await redeem(A, b1.codes[0].code, b1.codes[0].serial)).status === "ok" && (await redeem(A, b1.codes[0].code, b1.codes[0].serial).then((r) => r.status === "ok" && r.repeat === true)), "reader A, whose redemption survived, is still recognised as the owner of card 1");
     const sc = await sql<{ redeemed_count: number; status: string }>`SELECT redeemed_count, status FROM shared_codes WHERE code = ${s1.code}`.execute(db);
     assert(sc.rows[0].redeemed_count === 3, "shared code 1 is back to three uses, not one: the limit is not reset by the restore", sc.rows[0]);
     const s2row = await sql<{ redeemed_count: number }>`SELECT redeemed_count FROM shared_codes WHERE code = ${s2.code}`.execute(db);
     assert(s2row.rows[0]?.redeemed_count === 1, "shared code 2 is back with its use counted");
     assert((await redeem(D, s1.code)).status === "invalid", "so the full shared code stays full");
-    const next = await createBatch(db, { codeKey, now }, { batchNumber: "DR-003", months: 1, quantity: 2 });
+    const next = await createBatch(db, { codeKey, now }, { months: 1, quantity: 2 });
     const used = new Set([...b1.codes, ...b2.codes].map((c) => c.serial));
     assert(next.codes.every((c) => !used.has(c.serial)), "a batch made after the restore gets serial numbers nobody has used");
     const again = await reconcileWithExport(db, parsed, { apply: true, now });
@@ -155,7 +152,6 @@ async function main() {
     await sql`ALTER TABLE entitlements ENABLE TRIGGER entitlements_guard_trg`.execute(db).catch(() => undefined);
     await sql`DELETE FROM reader_accounts WHERE email_normalized LIKE '%@e2e.invalid'`.execute(db).catch(() => undefined);
     await sql`DELETE FROM reader_switches WHERE key = 'redeem_halted'`.execute(db).catch(() => undefined);
-    await sql`ALTER SEQUENCE redeem_serial_seq RESTART WITH 1`.execute(db).catch(() => undefined);
     const trig = await sql<{ enabled: string }>`SELECT tgenabled AS enabled FROM pg_trigger WHERE tgname = 'entitlements_guard_trg'`.execute(db);
     console.log(`\n(cleaned up; ledger trigger enabled: ${trig.rows[0]?.enabled === "O"})`);
     await closeDb();

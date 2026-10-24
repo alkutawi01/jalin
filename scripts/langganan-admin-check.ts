@@ -34,7 +34,7 @@ async function main() {
   let batchId: string | null = null;
   try {
     console.log("\nMaking a batch");
-    const made = await call("/api/admin/langganan/batch", { method: "POST", body: { months: 1, quantity: 3, batchNumber: "HTTP-001", note: "ujian http" } });
+    const made = await call("/api/admin/langganan/batch", { method: "POST", body: { months: 1, quantity: 3, note: "ujian http" } });
     assert(made.status === 200 && (made.headers.get("content-type") ?? "").includes("application/pdf") && made.buf.subarray(0, 4).toString() === "%PDF", "the batch answers with the label PDF", made.status);
     batchId = made.headers.get("x-batch-id");
     assert(!!batchId && made.headers.get("x-cards") === "3", "and says which batch and how many cards");
@@ -87,7 +87,7 @@ async function main() {
     assert(cronRefused.status === 401, "the scheduled job refuses a caller without the secret");
 
     console.log("\nThe pages");
-    for (const [path, needle] of [[`/admin/langganan/kad/${batchId}`, "HTTP-001"], ["/admin/langganan/pembaca", "Semua ahli"], ["/admin/langganan/contoh", "Cerita contoh"], ["/admin/langganan", "Dinding bayar"], ["/admin/langganan/kad", "Kad dan kelompok"]] as const) {
+    for (const [path, needle] of [[`/admin/langganan/kad/${batchId}`, "JLN-01B"], ["/admin/langganan/pembaca", "Semua ahli"], ["/admin/langganan/contoh", "Cerita contoh"], ["/admin/langganan", "Dinding bayar"], ["/admin/langganan/kad", "Kad dan kelompok"]] as const) {
       const page = await call(path);
       assert(page.status === 200 && page.text.includes(needle), `${path} opens and shows "${needle}"`, page.status);
     }

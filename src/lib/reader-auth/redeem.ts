@@ -1,7 +1,7 @@
 /**
  * Redeeming codes (study sections 5.6 to 5.8, 14 to 18, 24). Card codes and shared codes both end up as a period in the access ledger.
  *
- * What is kept, and what is not: a card code is NEVER stored. Only a keyed hash of (batch number, code) is, so a copy of the database
+ * What is kept, and what is not: a card code is NEVER stored. Only a keyed hash of (serial number, code) is, so a copy of the database
  * cannot be turned into working codes without the key. The plain codes exist in memory once, when a batch is made, to be printed.
  *
  * One transaction does the whole redemption: it locks the reader, finds the code, checks every rule, adds the period and writes the
@@ -11,7 +11,7 @@
 import { sql } from "kysely";
 import type { Kysely } from "kysely";
 import type { Database } from "../db/types";
-import { computeCodeMac, formatCode, generateCanonicalCode, normaliseBatch, normaliseCodeInput } from "../subscription/redeem-code";
+import { computeCodeMac, formatCode, formatSerial, generateCanonicalCode, mmyyFor, normaliseCodeInput, normaliseSerial, serialGroup, serialPrefix } from "../subscription/redeem-code";
 import { evaluateSharedRedemption, generateSharedCode, isValidSharedGrant, normaliseSharedCodeInput, type SharedGrant } from "../subscription/shared-code";
 import { addGrant, getAccess } from "./entitlements";
 import { countEvents, recordEvent, type Db } from "./service";
@@ -51,35 +51,47 @@ export async function setRedeemHalted(db: Db, halted: boolean, by: string, now: 
 export type MadeCode = { serial: string; code: string; canonical: string };
 export type MadeBatch = { batchId: string; batchNumber: string; months: 1 | 6 | 12; codes: MadeCode[] };
 
+/** The next free number of a serial group (JLN-12B0126): one more than the highest used so far, so a second batch of the same length and month goes on from the first. */
+async function nextSerialNumber(trx: Db, prefix: string): Promise<number> {
+  await sql`SELECT pg_advisory_xact_lock(hashtext(${prefix}))`.execute(trx);
+  const last = await sql<{ n: number | null }>`SELECT max(substring(serial from '[0-9]+$')::int) AS n FROM redeem_codes WHERE serial LIKE ${prefix + "-%"}`.execute(trx);
+  return Number(last.rows[0]?.n ?? 0) + 1;
+}
+
 /**
  * Make a batch of card codes. Returns the plain codes ONCE so they can be printed; only their keyed hashes are saved. The batch starts
  * as PENDING_PRINT and its codes as "generated": nothing can be redeemed until the print is confirmed and the codes are issued.
+ * Every card gets a serial number JLN-12B0126-01 (length, month of issue, own number); the batch itself is named by the first three
+ * parts (and -B2, -B3 ... if a second batch of the same length and month is made).
  */
 export async function createBatch(
   db: Db,
   deps: { codeKey: MacKey; now?: Date },
-  input: { batchNumber: string; months: 1 | 6 | 12; quantity: number; orderRef?: string; note?: string; createdBy?: string }
+  input: { months: 1 | 6 | 12; quantity: number; issueMmyy?: string; orderRef?: string; note?: string; createdBy?: string }
 ): Promise<MadeBatch> {
   const now = deps.now ?? new Date();
-  const batchNumber = normaliseBatch(input.batchNumber);
-  if (!batchNumber) throw new Error("Invalid batch number.");
   if (![1, 6, 12].includes(input.months)) throw new Error("A card is for 1, 6 or 12 months.");
   if (!Number.isInteger(input.quantity) || input.quantity < 1 || input.quantity > 5000) throw new Error("A batch is 1 to 5000 cards.");
+  const prefix = serialPrefix(input.months, input.issueMmyy ?? mmyyFor(now));
 
   return inTransaction(db, async (trx) => {
+    const start = await nextSerialNumber(trx, prefix);
+    const end = start + input.quantity - 1;
+    if (end > 99999) throw new Error("Too many cards for this length and month.");
+    const width = Math.max(2, String(end).length);
+    const earlier = await sql<{ n: string }>`SELECT count(*) AS n FROM code_batches WHERE batch_number = ${prefix} OR batch_number LIKE ${prefix + "-B%"}`.execute(trx);
+    const batchNumber = Number(earlier.rows[0].n) === 0 ? prefix : `${prefix}-B${Number(earlier.rows[0].n) + 1}`;
     const batch = await trx
       .insertInto("code_batches")
-      .values({ batch_number: batchNumber, months: input.months, quantity: input.quantity, order_ref: input.orderRef ?? null, note: input.note ?? null, key_id: deps.codeKey.keyId, created_by: input.createdBy ?? null, created_at: now })
+      .values({ batch_number: batchNumber, months: input.months, quantity: input.quantity, order_ref: input.orderRef ?? null, note: input.note ?? null, key_id: deps.codeKey.keyId, created_by: input.createdBy ?? null })
       .returning("id")
       .executeTakeFirstOrThrow();
-    const seqs = await sql<{ n: string }>`SELECT nextval('redeem_serial_seq') AS n FROM generate_series(1, ${input.quantity})`.execute(trx);
-    const yy = String(now.getUTCFullYear()).slice(2);
     const codes: MadeCode[] = [];
-    const rows = seqs.rows.map((r) => {
+    const rows = Array.from({ length: input.quantity }, (_unused, i) => {
       const canonical = generateCanonicalCode();
-      const serial = `JLN-${yy}-${String(r.n).padStart(6, "0")}`;
+      const serial = formatSerial(prefix, start + i, width);
       codes.push({ serial, code: formatCode(canonical), canonical });
-      return { batch_id: batch.id, serial, code_mac: computeCodeMac(deps.codeKey.key, batchNumber, canonical), key_id: deps.codeKey.keyId, created_at: now };
+      return { batch_id: batch.id, serial, code_mac: computeCodeMac(deps.codeKey.key, serial, canonical), key_id: deps.codeKey.keyId, created_at: now };
     });
     for (let i = 0; i < rows.length; i += 500) await trx.insertInto("redeem_codes").values(rows.slice(i, i + 500)).execute();
     return { batchId: batch.id, batchNumber, months: input.months, codes };
@@ -158,7 +170,7 @@ export type ReplacedCode = { oldSerial: string; serial: string; code: string; ca
 
 /**
  * Replace a card that has not been redeemed (lost in the post, damaged before use): the old code is cancelled and a new one is made in
- * the same batch, so the batch number printed on the card stays right. The new code starts in the state the old one had (issued if it was
+ * the same batch and group, with the next serial number of that group. The new code starts in the state the old one had (issued if it was
  * issued), so the new label can be stuck on and the card sent. The plain code is returned once, to be printed; it is not stored.
  */
 export async function replaceCode(db: Db, deps: { codeKey: MacKey; now?: Date }, input: { serial: string; reason: string }): Promise<ReplacedCode> {
@@ -180,12 +192,12 @@ export async function replaceCode(db: Db, deps: { codeKey: MacKey; now?: Date },
     if (old.state === "revoked") throw new Error("A cancelled card cannot be replaced.");
     if (old.batch_status !== "PRINT_CONFIRMED") throw new Error("Only a card of a batch whose print is confirmed can be replaced.");
     if (old.quantity >= 5000) throw new Error("A batch is 1 to 5000 cards.");
-    const seq = await sql<{ n: string }>`SELECT nextval('redeem_serial_seq') AS n`.execute(trx);
-    const serial = `JLN-${String(now.getUTCFullYear()).slice(2)}-${String(seq.rows[0].n).padStart(6, "0")}`;
+    const next = await nextSerialNumber(trx, serialGroup(oldSerial));
+    const serial = formatSerial(serialGroup(oldSerial), next, Math.max(2, String(next).length));
     const canonical = generateCanonicalCode();
     await trx
       .insertInto("redeem_codes")
-      .values({ batch_id: old.batch_id, serial, code_mac: computeCodeMac(deps.codeKey.key, old.batch_number, canonical), key_id: deps.codeKey.keyId, state: old.state, issued_at: old.state === "issued" ? now : null, created_at: now })
+      .values({ batch_id: old.batch_id, serial, code_mac: computeCodeMac(deps.codeKey.key, serial, canonical), key_id: deps.codeKey.keyId, state: old.state, issued_at: old.state === "issued" ? now : null, created_at: now })
       .execute();
     await trx.updateTable("redeem_codes").set({ state: "revoked", revoked_at: now, revoke_reason: `Diganti dengan ${serial}: ${reason}` }).where("id", "=", old.id).execute();
     await trx.updateTable("code_batches").set({ quantity: old.quantity + 1 }).where("id", "=", old.batch_id).execute();
@@ -232,7 +244,7 @@ export type RedeemResult =
   | { status: "halted" };
 
 type Deps = { codeKey: MacKey; previousCodeKeys?: MacKey[]; now?: Date; limits?: Partial<RedeemLimitSettings> };
-type Input = { accountId: string; ipMac: string; code: string; batch?: string };
+type Input = { accountId: string; ipMac: string; code: string; serial?: string };
 
 async function fail(trx: Db, accountId: string, ipMac: string, now: Date): Promise<RedeemResult> {
   await recordEvent(trx, "redeem_fail", "account", accountId, now);
@@ -263,12 +275,12 @@ export async function redeemCode(db: Db, deps: Deps, input: Input): Promise<Rede
 
 async function redeemCard(trx: Db, deps: Deps, input: Input, now: Date): Promise<RedeemResult> {
   const parsed = normaliseCodeInput(input.code);
-  const batch = normaliseBatch(input.batch ?? "");
-  if (!parsed.ok || !batch) return fail(trx, input.accountId, input.ipMac, now);
+  const serial = normaliseSerial(input.serial ?? "");
+  if (!parsed.ok || !serial) return fail(trx, input.accountId, input.ipMac, now);
 
   let code: { id: string; state: "generated" | "issued" | "revoked"; serial: string; months: number; batch_status: "PENDING_PRINT" | "PRINT_CONFIRMED" | "VOIDED" } | undefined;
   for (const key of [deps.codeKey, ...(deps.previousCodeKeys ?? [])]) {
-    const mac = computeCodeMac(key.key, batch, parsed.canonical);
+    const mac = computeCodeMac(key.key, serial, parsed.canonical);
     code = await trx
       .selectFrom("redeem_codes as c")
       .innerJoin("code_batches as b", "b.id", "c.batch_id")

@@ -27,13 +27,13 @@ void (async () => {
       const account = await sql<{ id: string }>`INSERT INTO reader_accounts (email, email_normalized) VALUES (${email}, ${email}) RETURNING id`.execute(trx);
       const accountId = account.rows[0].id;
       await addTrial(trx, accountId, now, new Date(now.getTime() + 14 * 86400000));
-      const batch = await createBatch(trx, { codeKey: previous, now }, { batchNumber: `ROT-${suffix}`, months: 1, quantity: 1 });
+      const batch = await createBatch(trx, { codeKey: previous, now }, { months: 1, quantity: 1 });
       await confirmBatchPrinted(trx, batch.batchId, now);
       await issueCodes(trx, { batchId: batch.batchId }, now);
       const deps = { codeKey: current, previousCodeKeys: [previous], now, limits };
-      const wrong = await redeemCode(trx, deps, { accountId, ipMac: "rotation-test", code: batch.codes[0].code, batch: "WRONG" });
+      const wrong = await redeemCode(trx, deps, { accountId, ipMac: "rotation-test", code: batch.codes[0].code, serial: "JLN-01B0101-99" });
       const failures = await countEvents(trx, "redeem_fail", "account", accountId, new Date(now.getTime() - 15 * 60 * 1000));
-      const good = await redeemCode(trx, deps, { accountId, ipMac: "rotation-test", code: batch.codes[0].code, batch: batch.batchNumber });
+      const good = await redeemCode(trx, deps, { accountId, ipMac: "rotation-test", code: batch.codes[0].code, serial: batch.codes[0].serial });
       assert.equal(wrong.status, "invalid");
       assert.equal(failures, 1, "multiple key candidates still count one failed guess");
       assert.equal(good.status, "ok", "an old-key printed card remains redeemable after rotation");

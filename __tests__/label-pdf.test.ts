@@ -8,7 +8,7 @@ function assert(cond: boolean, msg: string, detail?: unknown) {
 }
 const throws = (fn: () => unknown) => { try { fn(); return false; } catch { return true; } };
 const canonical = "7H3K9QM2XD5NPB84A";
-const content = (n: number): LabelContent => ({ canonical: canonical.slice(0, 16) + "AB"[n % 2], batchNumber: "T-001", serial: `JLN-26-${String(n).padStart(6, "0")}`, planText: "6 bulan" });
+const content = (n: number): LabelContent => ({ canonical: canonical.slice(0, 16) + "AB"[n % 2], batchNumber: "T-001", serial: `JLN-06B1026-${String(n).padStart(2, "0")}`, planText: "6 bulan" });
 
 // The code text.
 assert(codeText(canonical, "-") === "7H3K-9QM2-XD5N-PB84-A", "groups of four with the check character at the end");
@@ -57,7 +57,8 @@ assert(Math.abs(parseFloat(mb[1]) - 50 / 25.4 * 72) < 0.01 && Math.abs(parseFloa
   const lengths = [...pdf.matchAll(/<< \/Length (\d+) >>\nstream\n([\s\S]*?)\nendstream/g)];
   assert(lengths.length === 3 && lengths.every((m) => parseInt(m[1], 10) === m[2].length), "every stream is exactly as long as it says");
 }
-assert(labels.every((l) => pdf.includes(`(${codeText(l.canonical, "-")})`)) && pdf.includes("(Batch T-001 JLN-26-000002)") && pdf.includes("(Kod langganan 6 bulan)"), "each page carries its own code, batch and serial");
+assert(labels.every((l) => pdf.includes(`(${codeText(l.canonical, "-")})`)) && labels.every((l) => pdf.includes(`(${l.serial}) Tj`)), "each page carries its own code and its own serial number");
+assert(!pdf.includes("T-001") && !pdf.includes("Batch") && !pdf.includes("Kod langganan") && !pdf.includes("6 bulan") && !pdf.includes("Kikis") && !pdf.includes("jalin.adjung.com"), "nothing else is printed: no batch, no plan text, no instructions (the label shows the serial number and the code only)");
 assert(!pdf.includes("/Courier-Bold >>\n") || pdf.includes("/BaseFont /Courier-Bold"), "uses the standard Courier fonts, nothing to embed");
 // Nothing is drawn outside the label.
 {

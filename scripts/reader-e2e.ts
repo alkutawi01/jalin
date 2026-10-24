@@ -320,7 +320,7 @@ async function main() {
     const R = new Device("Penebus");
     await signIn(R, "e2e-tebus@e2e.invalid");
     assert((await R.req("/api/akaun/percubaan", { method: "POST", body: {} })).status === 200, "the redeeming reader starts the trial first, so the card is added after it");
-    const batchMade = await createBatch(db, { codeKey: key }, { batchNumber: "E2E-001", months: 6, quantity: 3, createdBy: "e2e" });
+    const batchMade = await createBatch(db, { codeKey: key }, { months: 6, quantity: 3, createdBy: "e2e" });
     await confirmBatchPrinted(db, batchMade.batchId);
     await issueCodes(db, { batchId: batchMade.batchId });
     const pageVisitor = await v.req("/tebus");
@@ -328,27 +328,27 @@ async function main() {
     const pageReader = await R.req("/tebus");
     assert(pageReader.status === 200 && pageReader.text.includes("Tebus kod langganan") && /noindex/.test(pageReader.text), "/tebus shows the form to a signed-in reader and is noindex");
     assert((await R.req("/akaun")).text.includes('href="/tebus"'), "the account page links to /tebus");
-    assert((await v.req("/api/akaun/tebus", { method: "POST", body: { code: batchMade.codes[0].code, batch: "E2E-001" } })).status === 401, "a visitor cannot redeem");
-    assert((await R.req("/api/akaun/tebus", { method: "POST", body: { code: batchMade.codes[0].code, batch: "E2E-001" }, origin: "https://evil.example" })).status === 403, "a redeem request from another site is refused");
+    assert((await v.req("/api/akaun/tebus", { method: "POST", body: { code: batchMade.codes[0].code, serial: batchMade.codes[0].serial } })).status === 401, "a visitor cannot redeem");
+    assert((await R.req("/api/akaun/tebus", { method: "POST", body: { code: batchMade.codes[0].code, serial: batchMade.codes[0].serial }, origin: "https://evil.example" })).status === 403, "a redeem request from another site is refused");
     for (const [label, raw] of [["not json", "{{{"], ["an array", "[1]"], ["empty", ""], ["a number", JSON.stringify({ code: 5 })]] as const) {
       assert((await R.req("/api/akaun/tebus", { method: "POST", raw })).status === 400, `redeeming with ${label} is a clean 400`);
     }
     await clearThrottle(); // every failed try counts toward the limit, so the earlier bad bodies are cleared before the next checks
-    const refusedWrongBatch = await R.req("/api/akaun/tebus", { method: "POST", body: { code: batchMade.codes[0].code, batch: "E2E-999" } });
-    const refusedNonsense = await R.req("/api/akaun/tebus", { method: "POST", body: { code: "bukan kod", batch: "E2E-001" } });
+    const refusedWrongBatch = await R.req("/api/akaun/tebus", { method: "POST", body: { code: batchMade.codes[0].code, serial: batchMade.codes[1].serial } });
+    const refusedNonsense = await R.req("/api/akaun/tebus", { method: "POST", body: { code: "bukan kod", serial: batchMade.codes[0].serial } });
     assert(refusedWrongBatch.status === 400 && refusedNonsense.status === 400 && refusedWrongBatch.text === refusedNonsense.text, "a wrong batch and nonsense get the identical refusal");
     await clearThrottle();
-    const okRedeem = await R.req("/api/akaun/tebus", { method: "POST", body: { code: batchMade.codes[0].code.toLowerCase(), batch: " e2e-001 " } });
+    const okRedeem = await R.req("/api/akaun/tebus", { method: "POST", body: { code: batchMade.codes[0].code.toLowerCase(), serial: ` ${batchMade.codes[0].serial.toLowerCase()} ` } });
     assert(okRedeem.status === 200 && okRedeem.json?.ok === true && /Kod berjaya ditebus\. Akses anda aktif sehingga .+\(MYT\)\./.test(okRedeem.json.message), "the right code and batch redeem with a message that gives the date", okRedeem.text);
     const afterRedeem = await R.req("/api/akaun/saya");
     assert(afterRedeem.json.access.state === "trial" && afterRedeem.json.access.endsAt !== afterRedeem.json.access.currentPeriodEndsAt, "the card period continues after the trial, as agreed");
     assert((await R.req("/akaun")).text.includes("Akses langganan anda aktif sehingga"), "and the account page says so");
-    const again = await R.req("/api/akaun/tebus", { method: "POST", body: { code: batchMade.codes[0].code, batch: "E2E-001" } });
+    const again = await R.req("/api/akaun/tebus", { method: "POST", body: { code: batchMade.codes[0].code, serial: batchMade.codes[0].serial } });
     assert(again.status === 200 && again.json?.ok === true, "pressing it a second time is answered ok");
     const thief = new Device("Pencuri");
     await signIn(thief, "e2e-pencuri@e2e.invalid");
     await clearThrottle();
-    const stolen = await thief.req("/api/akaun/tebus", { method: "POST", body: { code: batchMade.codes[0].code, batch: "E2E-001" } });
+    const stolen = await thief.req("/api/akaun/tebus", { method: "POST", body: { code: batchMade.codes[0].code, serial: batchMade.codes[0].serial } });
     assert(stolen.status === 400 && stolen.text === refusedNonsense.text, "another reader using the same code gets the same refusal as a nonsense code");
     const sharedMade = await createSharedCode(db, { grant: { unit: "days", amount: 7 }, maxRedemptions: 1, channel: "e2e" });
     const sharedOk = await thief.req("/api/akaun/tebus", { method: "POST", body: { code: sharedMade.code } });
@@ -356,12 +356,12 @@ async function main() {
     assert((await thief.req("/api/akaun/tebus", { method: "POST", body: { code: sharedMade.code } })).status === 409, "the same reader using it again is told so");
     assert((await R.req("/api/akaun/tebus", { method: "POST", body: { code: sharedMade.code } })).status === 400, "when the limit is reached the next reader is refused like any wrong code");
     await setRedeemHalted(db, true, "e2e");
-    assert((await R.req("/api/akaun/tebus", { method: "POST", body: { code: batchMade.codes[1].code, batch: "E2E-001" } })).status === 503, "with the stop switch on, redeeming answers 503");
+    assert((await R.req("/api/akaun/tebus", { method: "POST", body: { code: batchMade.codes[1].code, serial: batchMade.codes[1].serial } })).status === 503, "with the stop switch on, redeeming answers 503");
     await setRedeemHalted(db, false, "e2e");
     await clearThrottle();
     await sql`DELETE FROM reader_auth_events WHERE kind = 'redeem_fail'`.execute(db);
     let limited = -1;
-    for (let i = 0; i < 7; i++) { const r = await R.req("/api/akaun/tebus", { method: "POST", body: { code: "AAAA-AAAA-AAAA-AAAA-A", batch: "E2E-001" } }); if (r.status === 429 && limited < 0) limited = i; }
+    for (let i = 0; i < 7; i++) { const r = await R.req("/api/akaun/tebus", { method: "POST", body: { code: "AAAA-AAAA-AAAA-AAAA-A", serial: batchMade.codes[0].serial } }); if (r.status === 429 && limited < 0) limited = i; }
     assert(limited === 5, "after five wrong tries the answer is 429", limited);
 
     // ---------------------------------------------------------------- the admin: Langganan
@@ -385,16 +385,16 @@ async function main() {
     assert((await post({ months: 3, quantity: 2 })).status === 400 && (await post({ months: 6, quantity: 0 })).status === 400 && (await post({ months: 6, quantity: 6000 })).status === 400, "a wrong length or quantity is refused before anything is made");
     assert((await post({ months: 6, quantity: 2, layout: { scratchWidthMm: 500 } })).status === 400, "an impossible layout is refused before anything is made");
     const none = await sql<{ n: string }>`SELECT count(*) AS n FROM code_batches`.execute(db);
-    const small = await post({ months: 6, quantity: 2, batchNumber: "ADM-SMALL", layout: { scratchWidthMm: 28 } });
+    const small = await post({ months: 6, quantity: 2, layout: { scratchWidthMm: 28 } });
     assert(small.status === 409 && (await sql<{ n: string }>`SELECT count(*) AS n FROM code_batches`.execute(db)).rows[0].n === none.rows[0].n, "a code that would print too small waits for confirmation and makes no batch meanwhile");
     assert((await fetch(BASE + "/api/admin/langganan/batch", { method: "POST", headers: { "content-type": "application/json", origin: "https://evil.example" }, body: JSON.stringify({ months: 6, quantity: 2 }) })).status === 403, "making a batch from another site is refused");
 
-    const made = await post({ months: 6, quantity: 3, batchNumber: "adm-001", orderRef: "Ujian e2e", layout: {} });
+    const made = await post({ months: 6, quantity: 3, orderRef: "Ujian e2e", layout: {} });
     const pdfBytes = Buffer.from(await made.arrayBuffer()).toString("latin1");
     const batchId = made.headers.get("x-batch-id")!;
-    assert(made.status === 200 && made.headers.get("content-type") === "application/pdf" && /no-store/.test(made.headers.get("cache-control") ?? "") && made.headers.get("x-batch-number") === "ADM-001" && made.headers.get("x-cards") === "3", "a batch is made and the PDF comes back, never cached");
+    assert(made.status === 200 && made.headers.get("content-type") === "application/pdf" && /no-store/.test(made.headers.get("cache-control") ?? "") && /^JLN-06B\d{4}$/.test(made.headers.get("x-batch-number") ?? "") && made.headers.get("x-cards") === "3", "a batch is made and the PDF comes back, never cached");
     const printed = [...pdfBytes.matchAll(/\(([0-9A-Z]{4}-[0-9A-Z]{4}-[0-9A-Z]{4}-[0-9A-Z]{4}-[0-9A-Z])\) Tj/g)].map((m) => m[1]);
-    const serials = [...pdfBytes.matchAll(/\(Batch ADM-001 (JLN-\d{2}-\d{6})\)/g)].map((m) => m[1]);
+    const serials = [...pdfBytes.matchAll(/\((JLN-06B\d{4}-\d{2})\) Tj/g)].map((m) => m[1]);
     assert((pdfBytes.match(/\/Type \/Page /g) ?? []).length === 3 && printed.length === 3 && serials.length === 3 && new Set(printed).size === 3, "the PDF has three pages with three different codes and serials");
     const asStored = await sql<{ n: string }>`SELECT count(*) AS n FROM redeem_codes WHERE batch_id = ${batchId}::uuid`.execute(db);
     const leaked = await sql<{ n: string }>`SELECT count(*) AS n FROM redeem_codes WHERE code_mac = ANY(${printed.map((c) => c.replace(/-/g, ""))}) OR serial = ANY(${printed})`.execute(db);
@@ -403,18 +403,18 @@ async function main() {
     const X = new Device("Penebus admin");
     await signIn(X, "e2e-admin-tebus@e2e.invalid");
     await X.req("/api/akaun/percubaan", { method: "POST", body: {} });
-    const tryRedeem = (code: string) => X.req("/api/akaun/tebus", { method: "POST", body: { code, batch: "adm-001" } });
+    const tryRedeem = (code: string, serial: string) => X.req("/api/akaun/tebus", { method: "POST", body: { code, serial } });
     await clearThrottle();
-    assert((await tryRedeem(printed[0])).status === 400, "a printed code does not work before the print is confirmed and the codes are switched on");
+    assert((await tryRedeem(printed[0], serials[0])).status === 400, "a printed code does not work before the print is confirmed and the codes are switched on");
     assert((await post({ action: "issue" }, `/api/admin/langganan/batch/${batchId}`)).status === 409, "codes cannot be switched on before the print is confirmed");
     assert((await post({ action: "confirm" }, `/api/admin/langganan/batch/${batchId}`)).status === 200 && (await post({ action: "confirm" }, `/api/admin/langganan/batch/${batchId}`)).status === 409, "the print is confirmed once");
     const issuedOne = await post({ action: "issue", serials: [serials[0]] }, `/api/admin/langganan/batch/${batchId}`);
     assert(issuedOne.status === 200 && (await issuedOne.json()).issued === 1, "one card is switched on by its serial number");
     await clearThrottle();
-    const real = await tryRedeem(printed[0]);
+    const real = await tryRedeem(printed[0], serials[0]);
     assert(real.status === 200 && real.json?.ok === true, "the code printed on the label is the code that redeems", real.text);
     await clearThrottle();
-    assert((await tryRedeem(printed[1])).status === 400, "a card that is not switched on does not redeem");
+    assert((await tryRedeem(printed[1], serials[1])).status === 400, "a card that is not switched on does not redeem");
     const issuedRest = await post({ action: "issue" }, `/api/admin/langganan/batch/${batchId}`);
     assert(issuedRest.status === 200 && (await issuedRest.json()).issued === 2, "the rest are switched on together");
     const info = await admin.req(`/api/admin/langganan/kod/${serials[0]}`);
@@ -423,10 +423,10 @@ async function main() {
     assert((await post({ action: "revoke", reason: "" }, `/api/admin/langganan/kod/${serials[1]}`)).status === 400, "cancelling a card needs a reason");
     assert((await post({ action: "revoke", reason: "Kad hilang" }, `/api/admin/langganan/kod/${serials[1]}`)).status === 200, "a lost card is cancelled");
     await clearThrottle();
-    assert((await tryRedeem(printed[1])).status === 400, "the cancelled card no longer redeems");
+    assert((await tryRedeem(printed[1], serials[1])).status === 400, "the cancelled card no longer redeems");
     assert((await post({ action: "void", reason: "" }, `/api/admin/langganan/batch/${batchId}`)).status === 400 && (await post({ action: "void", reason: "Cetakan rosak" }, `/api/admin/langganan/batch/${batchId}`)).status === 200, "a batch is cancelled with a reason");
     await clearThrottle();
-    assert((await tryRedeem(printed[2])).status === 400, "after the batch is cancelled its remaining card does not redeem");
+    assert((await tryRedeem(printed[2], serials[2])).status === 400, "after the batch is cancelled its remaining card does not redeem");
     assert((await admin.req(`/api/admin/langganan/batch/${batchId}`, { method: "POST", body: { action: "dance" } })).status === 400 && (await post({ action: "confirm" }, "/api/admin/langganan/batch/not-a-uuid")).status === 400, "unknown actions and bad ids are refused cleanly");
 
     // Shared codes.

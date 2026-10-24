@@ -9,7 +9,12 @@ import {
   formatCode,
   generateCanonicalCode,
   generateCodeBody,
-  normaliseBatch,
+  formatSerial,
+  mmyyFor,
+  mmyyFromMonthInput,
+  normaliseSerial,
+  serialGroup,
+  serialPrefix,
   normaliseCodeInput,
 } from "../src/lib/subscription/redeem-code";
 import { addMonthsMYT, formatEndMYT, isActiveAt, redemptionPeriod, trialPeriod } from "../src/lib/subscription/periods";
@@ -95,22 +100,39 @@ const valid = (code: string) => normaliseCodeInput(code).ok;
   assert((normaliseCodeInput(wrongLast) as { reason: string }).reason === "check", "a wrong check character is reported");
 }
 
-// The MAC: deterministic, bound to the batch, strict about the key.
+// The serial number of a card: JLN-12B0126-01 (Jalin, length, month and year of issue, own number).
+{
+  assert(serialPrefix(12, "0126") === "JLN-12B0126" && serialPrefix(6, "1026") === "JLN-06B1026" && serialPrefix(1, "0327") === "JLN-01B0327", "the prefix is Jalin, the length as 01B, 06B or 12B, and MMYY");
+  let badLength = false; try { serialPrefix(3 as 1, "0126"); } catch { badLength = true; }
+  let badMonth = false; try { serialPrefix(12, "1326"); } catch { badMonth = true; }
+  assert(badLength && badMonth, "a length other than 1, 6, 12 and a month other than 01 to 12 are refused");
+  assert(formatSerial("JLN-12B0126", 1) === "JLN-12B0126-01" && formatSerial("JLN-12B0126", 100, 3) === "JLN-12B0126-100", "the card's own number is at least two digits");
+  assert(serialGroup("JLN-12B0126-01") === "JLN-12B0126" && serialGroup("JLN-12B0126-1234") === "JLN-12B0126", "the group is everything before the card's own number");
+  assert(normaliseSerial(" jln-12b0126-01 ") === "JLN-12B0126-01" && normaliseSerial("JLN\u201312B0126\u201401") === "JLN-12B0126-01" && normaliseSerial("JLN_12B0126_01") === null, "a serial is read in any case and with the long dashes some phones type");
+  assert(normaliseSerial("JLN-12B0126 -01") === "JLN-12B0126-01", "spaces are ignored");
+  for (const bad of ["", "JLN-12B0126", "JLN-12B0126-1", "JLN-3B0126-01", "JLN-12B1326-01", "JLN-12B0026-01", "JLN-12B0126-123456", "SUS-12B0126-01", "JLN-12B0126-01-02"]) {
+    assert(normaliseSerial(bad) === null, `not a serial: ${JSON.stringify(bad)}`);
+  }
+  assert(mmyyFromMonthInput("2026-10") === "1026" && mmyyFromMonthInput("2027-01") === "0127" && mmyyFromMonthInput("2026-13") === null && mmyyFromMonthInput("10/2026") === null, "the month input of the admin becomes MMYY");
+  assert(mmyyFor(new Date(Date.UTC(2026, 9, 31, 17, 0))) === "1126" && mmyyFor(new Date(Date.UTC(2026, 9, 31, 15, 59))) === "1026", "the month is the Malaysian month (UTC+8), so the last evening of October in Malaysia is still October");
+}
+
+// The MAC: deterministic, bound to the serial, strict about the key.
 {
   const key = Buffer.alloc(32, 7);
   const code = "7H3K9QM2XD5NPB84" + checkCharacterFor("7H3K9QM2XD5NPB84");
-  const a = computeCodeMac(key, "B2610-001", code);
+  const a = computeCodeMac(key, "JLN-12B0126-01", code);
   assert(/^[0-9a-f]{64}$/.test(a), "the MAC is 64 hex characters");
-  assert(a === computeCodeMac(key, "b2610-001", code), "the same batch and code give the same MAC, whatever the case of the batch");
-  assert(a !== computeCodeMac(key, "B2610-002", code), "the same code in another batch gives a different MAC");
-  assert(a !== computeCodeMac(Buffer.alloc(32, 8), "B2610-001", code), "another key gives a different MAC");
+  assert(a === computeCodeMac(key, "jln-12b0126-01", code), "the same serial and code give the same MAC, whatever the case of the serial");
+  assert(a !== computeCodeMac(key, "JLN-12B0126-02", code), "the same code with another card's serial gives a different MAC");
+  assert(a !== computeCodeMac(key, "JLN-06B0126-01", code), "the same code with another length gives a different MAC");
+  assert(a !== computeCodeMac(Buffer.alloc(32, 8), "JLN-12B0126-01", code), "another key gives a different MAC");
   let shortKeyRejected = false;
-  try { computeCodeMac(Buffer.alloc(16, 1), "B2610-001", code); } catch { shortKeyRejected = true; }
+  try { computeCodeMac(Buffer.alloc(16, 1), "JLN-12B0126-01", code); } catch { shortKeyRejected = true; }
   assert(shortKeyRejected, "a key under 256 bits is refused");
-  let badBatchRejected = false;
-  try { computeCodeMac(key, "no way!", code); } catch { badBatchRejected = true; }
-  assert(badBatchRejected, "a batch number with other characters is refused");
-  assert(normaliseBatch(" b26-10 ") === "B26-10" && normaliseBatch("-AB") === null && normaliseBatch("A") === null && normaliseBatch("AB CD") === "ABCD", "batch numbers are normalised to capitals, digits and inner hyphens");
+  let badSerialRejected = false;
+  try { computeCodeMac(key, "no way!", code); } catch { badSerialRejected = true; }
+  assert(badSerialRejected, "something that is not a serial number is refused");
 }
 
 // Dates, on the Malaysian clock. 31 January 2027 10:00 MYT is 02:00 UTC.

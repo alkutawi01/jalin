@@ -8,7 +8,7 @@ import { useState } from "react";
  */
 export default function RedeemForm({ embedded = false }: { embedded?: boolean }) {
   const [code, setCode] = useState("");
-  const [batch, setBatch] = useState("");
+  const [serial, setSerial] = useState("");
   const [error, setError] = useState("");
   const [done, setDone] = useState("");
   const [busy, setBusy] = useState(false);
@@ -21,22 +21,22 @@ export default function RedeemForm({ embedded = false }: { embedded?: boolean })
     if (busy) return;
     setError(""); setDone("");
     if (!code.trim()) { setError("Masukkan kod."); return; }
-    if (physical && !looksShared && !batch.trim()) { setError("Masukkan nombor batch yang tercetak pada kad."); return; }
+    if (physical && !looksShared && !serial.trim()) { setError("Masukkan nombor siri yang tercetak pada label di kad."); return; }
     setBusy(true);
     try {
-      const response = await fetch("/api/akaun/tebus", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ code, batch: looksShared || !physical ? "" : batch }) });
+      const response = await fetch("/api/akaun/tebus", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ code, serial: looksShared || !physical ? "" : serial }) });
       let data: Record<string, unknown> = {};
       try { data = await response.json(); } catch { /* not JSON */ }
       if (response.status === 401) { window.location.href = embedded ? window.location.pathname : "/log-masuk"; return; }
       if (response.ok && data.ok) {
-        setDone(String(data.message)); setCode(""); setBatch("");
+        setDone(String(data.message)); setCode(""); setSerial("");
         // Inside the lock dialog the page behind it is the work the reader wanted: show it now that there is access.
         if (embedded) window.setTimeout(() => window.location.reload(), 900);
         return;
       }
       // A card code needs its batch number: if the reader did not open that box, open it now so the way forward is in front of them.
       if (!physical && !looksShared) setPhysical(true);
-      setError(String(data.error ?? "Kod tidak dapat ditebus. Semak kod dan nombor batch, jika berkenaan, kemudian cuba lagi."));
+      setError(String(data.error ?? "Kod tidak dapat ditebus. Semak kod dan nombor siri, jika berkenaan, kemudian cuba lagi."));
     } catch {
       setError("Tiada sambungan. Semak internet anda dan cuba lagi.");
     } finally {
@@ -55,26 +55,26 @@ export default function RedeemForm({ embedded = false }: { embedded?: boolean })
           <div className="vcard-left">
             <h2 className="vcard-h">Kaedah penebusan</h2>
             <ol className="vcard-steps">
-              <li>Log masuk ke akaun Jalin.</li>
-              <li>Pergi ke jalin.adjung.com/tebus.</li>
-              <li>Masukkan kod dan nombor batch.</li>
-              <li>Langganan aktif sebaik kod berjaya ditebus.</li>
+              <li>Daftar atau log masuk ke akaun Jalin</li>
+              <li>Pergi ke <strong>jalin.adjung.com/tebus</strong></li>
+              <li>Masukkan nombor siri dan kod</li>
+              <li>Langganan diaktifkan selepas penebusan berjaya</li>
             </ol>
             <h2 className="vcard-h vcard-h--sub">Maklumat penting</h2>
             <ul className="vcard-notes">
               <li>Kod hanya boleh ditebus sekali.</li>
-              <li>Kikis pelekat hanya apabila mahu menebus.</li>
+              <li>Tempoh langganan bermula sebaik kod berjaya ditebus.</li>
               <li>Simpan kad ini di tempat selamat.</li>
             </ul>
           </div>
           <div className="vcard-divider" aria-hidden="true" />
           <div className="vcard-right">
-            <p className="vcard-help">Masalah langganan atau penebusan? Hubungi editorial@adjung.com.</p>
+            <p className="vcard-help">Jika terdapat sebarang masalah berkaitan langganan dan penebusan, sila hubungi <strong>editorial@adjung.com</strong> atau layari <a href="/soalanlazim"><strong>jalin.adjung.com/soalanlazim</strong></a>.</p>
             <div className="vcard-panel">
               {physical && !looksShared ? (
                 <div className="vcard-row">
-                  <label className="vcard-label" htmlFor="redeem-batch">NO. BATCH:</label>
-                  <input id="redeem-batch" className="vcard-batch" type="text" autoComplete="off" autoCapitalize="characters" spellCheck={false} placeholder="B2610-001" value={batch} onChange={(e) => setBatch(e.target.value)} />
+                  <label className="vcard-label" htmlFor="redeem-serial">NO. SIRI:</label>
+                  <input id="redeem-serial" className="vcard-batch" type="text" autoComplete="off" autoCapitalize="characters" spellCheck={false} placeholder="JLN-12B0126-01" value={serial} onChange={(e) => setSerial(e.target.value)} />
                 </div>
               ) : null}
               <label className="vcard-label vcard-label--code" htmlFor="redeem-code">KOD:</label>
@@ -87,9 +87,9 @@ export default function RedeemForm({ embedded = false }: { embedded?: boolean })
         </div>
         </div>
         <button type="button" className="auth-link vcard-toggle" aria-pressed={physical} onClick={() => setPhysical((v) => !v)}>
-          {physical ? "Saya tiada kad fizikal (kod daripada e-mel)" : "Saya ada kad fizikal (masukkan nombor batch juga)"}
+          {physical ? "Saya tiada kad fizikal (kod daripada e-mel)" : "Saya ada kad fizikal (masukkan nombor siri juga)"}
         </button>
-        {looksShared && physical ? <p className="auth-fine">Kod kongsi tidak memerlukan nombor batch.</p> : null}
+        {looksShared && physical ? <p className="auth-fine">Kod kongsi tidak memerlukan nombor siri.</p> : null}
 
         {error ? <p id="redeem-error" className="auth-error" role="alert">{error}</p> : null}
         {done ? <p className="auth-notice auth-notice--ok" role="status">{done}</p> : null}

@@ -3,7 +3,7 @@ import { logActivity } from "../../../../../lib/admin/activity";
 import { actor, bad, guarded, layoutFrom, pdfResponse, readBody, sameOriginOrRefuse, str } from "../../../../../lib/admin/langganan-api";
 import { codeKey } from "../../../../../lib/reader-auth/http";
 import { createBatch, voidBatch } from "../../../../../lib/reader-auth/redeem";
-import { suggestBatchNumber } from "../../../../../lib/reader-auth/admin";
+import { mmyyFromMonthInput } from "../../../../../lib/subscription/redeem-code";
 import { buildLabelPdf, computeLayout } from "../../../../../lib/subscription/label";
 
 export const dynamic = "force-dynamic";
@@ -30,9 +30,10 @@ export async function POST(request: Request) {
     if (errors.length) return bad(errors.map((p) => p.text).join(" "));
     if (layout.problems.length && body.acceptSmall !== true) return bad(`${layout.problems.map((p) => p.text).join(" ")} Sahkan untuk meneruskan.`, 409);
 
-    const batchNumber = str(body.batchNumber, 30) || (await suggestBatchNumber(db));
+    const issueMmyy = body.issueMonth ? mmyyFromMonthInput(str(body.issueMonth, 10)) : undefined;
+    if (body.issueMonth && !issueMmyy) return bad("Bulan dijangka dikeluarkan tidak sah.");
     const who = await actor();
-    const made = await createBatch(db, { codeKey: codeKey() }, { batchNumber, months: months as 1 | 6 | 12, quantity, orderRef: str(body.orderRef, 100) || undefined, note: str(body.note, 300) || undefined, createdBy: who.name });
+    const made = await createBatch(db, { codeKey: codeKey() }, { months: months as 1 | 6 | 12, quantity, issueMmyy: issueMmyy ?? undefined, orderRef: str(body.orderRef, 100) || undefined, note: str(body.note, 300) || undefined, createdBy: who.name });
 
     let pdf: string;
     try {

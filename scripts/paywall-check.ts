@@ -167,7 +167,7 @@ async function main() {
     const shared = await createSharedCode(db, { grant: { unit: "days", amount: 7 }, maxRedemptions: 5, channel: "paywall-check", createdBy: "paywall-check" });
     const before = await B.req(lockedPath);
     assert(!before.text.includes(locked.canary!.slice(0, 28)), "locked before redeeming");
-    const redeemed = await B.req("/api/akaun/tebus", { method: "POST", body: { code: shared.code, batch: "" } });
+    const redeemed = await B.req("/api/akaun/tebus", { method: "POST", body: { code: shared.code, serial: "" } });
     assert(redeemed.status === 200 && redeemed.json?.ok === true, "the shared code is redeemed", redeemed.text.slice(0, 200));
     const after = await B.req(lockedPath);
     assert(after.status === 200 && after.text.includes(locked.canary!.slice(0, 28)), "and the text is shown");

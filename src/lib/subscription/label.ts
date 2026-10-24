@@ -102,10 +102,11 @@ export function computeLayout(settings: LabelSettings, sampleCanonical = "0".rep
 export type LabelContent = {
   /** The code, canonical (17 characters). */
   canonical: string;
-  /** Printed outside the scratch area, so a card can be found without scratching it. */
+  /** The batch (admin only); NOT printed on the label. */
   batchNumber: string;
+  /** Printed outside the scratch area: the one thing printed besides the code (JLN-12B0126-01). */
   serial: string;
-  /** "6 bulan" and so on. */
+  /** "6 bulan" and so on; NOT printed on the label (it is part of the serial). */
   planText: string;
 };
 
@@ -149,14 +150,12 @@ function pageContent(settings: LabelSettings, layout: LabelLayout, content: Labe
   const lineMm = (size: number) => size * MM_PER_PT * 1.25;
   ops.push("0 g");
 
-  // Above the scratch area: what the card gives, and the batch and serial, so a card is found without scratching it.
-  const topLines = [`Kod langganan ${content.planText}`, `Batch ${content.batchNumber} ${content.serial}`];
-  const topSize = fit(topLines);
-  if (settings.scratchTopMm >= lineMm(topSize) * 2 + 3) {
-    topLines.forEach((line, i) => text("F2", topSize, W / 2, 2.2 + lineMm(topSize) * (i + 1) - topSize * MM_PER_PT * 0.25, line));
-  } else if (settings.scratchTopMm >= lineMm(topSize) + 2) {
-    const one = `${content.batchNumber} ${content.serial}`;
-    text("F2", fit([one]), W / 2, 1.5 + lineMm(fit([one])), one);
+  // Above the scratch area: the serial number, and nothing else (Izzat, 24 Oct 2026: the label shows the serial number and the code only; the
+  // card itself carries the instructions and the length of the subscription).
+  const topLine = content.serial;
+  const topSize = fit([topLine]);
+  if (settings.scratchTopMm >= lineMm(topSize) + 2) {
+    text("F2", topSize, W / 2, 1.5 + lineMm(topSize), topLine);
   }
 
   // The code, one line, centred in the scratch area.
@@ -165,15 +164,6 @@ function pageContent(settings: LabelSettings, layout: LabelLayout, content: Labe
     text("F1", layout.codeFontPt, W / 2, centreY + layout.codeCapHeightMm / 2, codeText(content.canonical, settings.separator));
   }
 
-  // Below the scratch area: how to use it.
-  const below = settings.scratchTopMm + settings.scratchHeightMm;
-  const botLines = ["Kikis, lalu tebus di", "jalin.adjung.com/tebus"];
-  const botSize = fit(botLines);
-  if (H - below >= lineMm(botSize) * 2 + 2) {
-    botLines.forEach((line, i) => text("F2", botSize, W / 2, below + 1.5 + lineMm(botSize) * (i + 1) - botSize * MM_PER_PT * 0.25, line));
-  } else if (H - below >= lineMm(botSize) + 1.5) {
-    text("F2", botSize, W / 2, H - 1.2, botLines[1]);
-  }
 
   return ops.join("\n");
 }
