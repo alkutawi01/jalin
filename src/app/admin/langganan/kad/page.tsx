@@ -1,5 +1,5 @@
 import { getDb, hasDb } from "../../../../lib/db";
-import { listBatches, suggestBatchNumber, type BatchRow } from "../../../../lib/reader-auth/admin";
+import { listBatches, suggestIssueMonth, type BatchRow } from "../../../../lib/reader-auth/admin";
 import { LanggananNav } from "../../../../components/admin/langganan-ui";
 import BatchManager from "./BatchManager";
 
@@ -7,12 +7,12 @@ export const dynamic = "force-dynamic";
 
 export default async function CardsPage() {
   let batches: BatchRow[] = [];
-  let suggested = "";
+  const suggested = suggestIssueMonth();
   let problem: string | null = null;
   if (!hasDb()) problem = "Pangkalan data tidak tersedia.";
   else {
     try {
-      [batches, suggested] = await Promise.all([listBatches(getDb()), suggestBatchNumber(getDb())]);
+      batches = await listBatches(getDb());
     } catch {
       problem = "Jadual langganan belum wujud pada pangkalan data ini. Migrasi 027 hingga 030 perlu dijalankan dahulu.";
     }

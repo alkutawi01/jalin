@@ -21,7 +21,7 @@ const DEFAULTS = { widthMm: "50", heightMm: "30", scratchWidthMm: "40", scratchH
 /** Card batches: make one (and get the PDF to print), confirm the print, switch the codes on, cancel, and find one card by its serial. */
 export default function BatchManager({ initialBatches, suggested }: { initialBatches: Batch[]; suggested: string }) {
   const [batches] = useState(initialBatches);
-  const [form, setForm] = useState({ batchNumber: suggested, months: "6", quantity: "50", orderRef: "", note: "" });
+  const [form, setForm] = useState({ issueMonth: suggested, months: "6", quantity: "50", orderRef: "", note: "" });
   const [layout, setLayout] = useState(DEFAULTS);
   const [answer, setAnswer] = useState<LayoutAnswer["layout"] | null>(null);
   const [busy, setBusy] = useState(false);
@@ -49,7 +49,7 @@ export default function BatchManager({ initialBatches, suggested }: { initialBat
   async function createBatch(acceptSmall = false) {
     setError(""); setWarning(""); setDone("");
     const quantity = Number(form.quantity);
-    if (!(await confirmAction(`Buat ${quantity} kod kad ${form.months} bulan dalam kelompok ${form.batchNumber || "baharu"}? Kod hanya ada dalam PDF yang dimuat turun sekarang. Jika PDF hilang, kelompok mesti dibatalkan dan dibuat semula.`, { confirmLabel: "Ya, buat kod dan PDF" }))) return;
+    if (!(await confirmAction(`Buat ${quantity} kod kad ${form.months} bulan untuk ${form.issueMonth}? Kod hanya ada dalam PDF yang dimuat turun sekarang. Jika PDF hilang, kelompok mesti dibatalkan dan dibuat semula.`, { confirmLabel: "Ya, buat kod dan PDF" }))) return;
     setBusy(true);
     try {
       const res = await fetch("/api/admin/langganan/batch", {
@@ -62,7 +62,7 @@ export default function BatchManager({ initialBatches, suggested }: { initialBat
         throw new Error(data.error || "Kelompok tidak berjaya dibuat.");
       }
       const blob = await res.blob();
-      const number = res.headers.get("X-Batch-Number") ?? form.batchNumber;
+      const number = res.headers.get("X-Batch-Number") ?? form.issueMonth;
       const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
       link.download = `kad-${number}.pdf`;
@@ -129,9 +129,12 @@ export default function BatchManager({ initialBatches, suggested }: { initialBat
       <h2>Buat kelompok kad</h2>
       <form className="admin-batch-form" onSubmit={(e) => { e.preventDefault(); void createBatch(); }}>
         <div className="admin-form-group">
-          <label htmlFor="bt-number">Nombor batch</label>
-          <input id="bt-number" value={form.batchNumber} onChange={(e) => setForm({ ...form, batchNumber: e.target.value })} />
-          <p className="admin-form-hint">Tercetak pada setiap kad dan perlu ditaip pembaca bersama kod. Huruf besar, nombor dan sengkang.</p>
+          <label htmlFor="bt-month">Bulan kod dijangka dikeluarkan</label>
+          <input id="bt-month" type="month" value={form.issueMonth} onChange={(e) => setForm({ ...form, issueMonth: e.target.value })} />
+          <p className="admin-form-hint">
+            Menjadi sebahagian nombor siri setiap kad, contohnya JLN-{String(form.months).padStart(2, "0")}B{form.issueMonth.slice(5, 7)}{form.issueMonth.slice(2, 4)}-01 (Jalin, tempoh, bulan dan tahun, nombor kad).
+            Pembaca menaip nombor siri bersama kod. Jika kelompok lain dengan tempoh dan bulan yang sama sudah ada, nombor kad bersambung daripadanya.
+          </p>
         </div>
         <div className="admin-form-group">
           <label htmlFor="bt-months">Tempoh langganan</label>
@@ -226,7 +229,7 @@ export default function BatchManager({ initialBatches, suggested }: { initialBat
 
       <h2>Cari satu kad</h2>
       <form onSubmit={lookup} className="admin-inline-form">
-        <input aria-label="Nombor siri" placeholder="JLN-26-000123" value={serial} onChange={(e) => setSerial(e.target.value)} />
+        <input aria-label="Nombor siri" placeholder="JLN-12B0126-01" value={serial} onChange={(e) => setSerial(e.target.value)} />
         <button type="submit" className="admin-btn admin-btn-sm">Cari</button>
       </form>
       {found ? (

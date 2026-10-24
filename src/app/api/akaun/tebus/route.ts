@@ -6,10 +6,10 @@ import { formatEndMYT } from "../../../../lib/subscription/periods";
 
 export const dynamic = "force-dynamic";
 
-const REFUSED = "Kod tidak dapat ditebus. Semak kod dan nombor batch pada kad, atau hubungi sokongan Jalin.";
+const REFUSED = "Kod tidak dapat ditebus. Semak kod dan nombor siri pada kad, atau hubungi sokongan Jalin.";
 
 /**
- * "Redeem this code." One endpoint for card codes (code and batch number) and shared codes (the code alone). Every kind of failure
+ * "Redeem this code." One endpoint for card codes (code and serial number) and shared codes (the code alone). Every kind of failure
  * gives the same refusal, so a wrong guess learns nothing; the only different answers are to a reader who already used the very code
  * and to the stop switch and the rate limit.
  */
@@ -24,7 +24,7 @@ export async function POST(request: Request) {
   const result = await redeemCode(
     getDb(),
     { codeKey: codeKey(), previousCodeKeys: previousCodeKeys() },
-    { accountId: current.session.account.id, ipMac: visitorMac(request), code: asString(body.code, 60), batch: asString(body.batch, 40) }
+    { accountId: current.session.account.id, ipMac: visitorMac(request), code: asString(body.code, 60), serial: asString(body.serial, 40) }
   );
 
   if (result.status === "ok") {

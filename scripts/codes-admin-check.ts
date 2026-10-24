@@ -39,7 +39,7 @@ async function main() {
     await db.transaction().execute(async (trx) => {
       // ---------------------------------------------------------- a batch and its cards
       console.log("\nA batch and its cards");
-      const batch = await createBatch(trx, { codeKey, now: day(0) }, { batchNumber: "ca-001", months: 6, quantity: 6, createdBy: "ujian" });
+      const batch = await createBatch(trx, { codeKey, now: day(0) }, { months: 6, quantity: 6, createdBy: "ujian" });
       const info0 = await batchInfo(trx, batch.batchId);
       assert(info0?.counts.total === 6 && info0.counts.generated === 6 && info0.status === "PENDING_PRINT" && info0.confirmedAt === null, "a new batch: six cards, none switched on, print not confirmed");
       assert((await listCodes(trx, batch.batchId)).total === 6, "all six are listed");
@@ -55,7 +55,7 @@ async function main() {
       const A = await account(trx, "ahli-a@e2e.invalid", "Aina");
       await addTrial(trx, A, day(3), day(17));
       const first = batch.codes[0];
-      const ok = await redeemCode(trx, { codeKey, now: day(5), limits: HIGH }, { accountId: A, ipMac: "ip", code: first.code, batch: "CA-001" });
+      const ok = await redeemCode(trx, { codeKey, now: day(5), limits: HIGH }, { accountId: A, ipMac: "ip", code: first.code, serial: first.serial });
       assert(ok.status === "ok", "the card is redeemed", ok);
       const redeemed = await listCodes(trx, batch.batchId, { filter: "redeemed" });
       assert(redeemed.total === 1 && redeemed.rows[0].serial === first.serial && redeemed.rows[0].redeemedBy === "ahli-a@e2e.invalid" && redeemed.rows[0].redeemedAt?.getTime() === day(5).getTime(), "it is listed as redeemed, with who and when");
@@ -68,7 +68,7 @@ async function main() {
       // ---------------------------------------------------------- cancelling cards that are not redeemed
       console.log("\nCancelling cards not yet redeemed");
       const [, s2, s3, s4, s5, s6] = batch.codes.map((c) => c.serial);
-      const res = await revokeUnredeemedCodes(trx, [first.serial, s2, s3, "JLN-26-999999"], "kad hilang dalam pos", day(6));
+      const res = await revokeUnredeemedCodes(trx, [first.serial, s2, s3, `${first.serial.replace(/-\d+$/, "")}-99`], "kad hilang dalam pos", day(6));
       assert(res.revoked.length === 2 && res.revoked.includes(s2) && res.revoked.includes(s3), "two unredeemed cards are cancelled");
       assert(res.skipped.some((x) => x.serial === first.serial && x.why === "redeemed") && res.skipped.some((x) => x.why === "not_found"), "a redeemed card and an unknown serial are skipped, and said so");
       const again = await revokeUnredeemedCodes(trx, [s2], "sekali lagi", day(7));
@@ -76,13 +76,13 @@ async function main() {
       assert(await throws(() => revokeUnredeemedCodes(trx, [s4], "  ")) !== null, "a reason is required");
       const revokedList = await listCodes(trx, batch.batchId, { filter: "revoked" });
       assert(revokedList.total === 2 && revokedList.rows.every((r) => r.revokeReason === "kad hilang dalam pos" && r.revokedAt?.getTime() === day(6).getTime()), "the cancelled cards show the reason and the date");
-      const stolen = await redeemCode(trx, { codeKey, now: day(8), limits: HIGH }, { accountId: A, ipMac: "ip", code: batch.codes[1].code, batch: "CA-001" });
+      const stolen = await redeemCode(trx, { codeKey, now: day(8), limits: HIGH }, { accountId: A, ipMac: "ip", code: batch.codes[1].code, serial: batch.codes[1].serial });
       assert(stolen.status === "invalid", "a cancelled card can no longer be redeemed");
 
       // ---------------------------------------------------------- replacing a card
       console.log("\nReplacing a card");
       const replaced = await replaceCode(trx, { codeKey, now: day(9) }, { serial: s4, reason: "label rosak" });
-      assert(replaced.oldSerial === s4 && replaced.serial !== s4 && replaced.batchNumber === "CA-001" && replaced.months === 6 && /^JLN-26-\d{6}$/.test(replaced.serial), "a replacement is made in the same batch");
+      assert(replaced.oldSerial === s4 && replaced.serial !== s4 && replaced.batchNumber === batch.batchNumber && replaced.months === 6 && replaced.serial === `${first.serial.replace(/-\d+$/, "")}-07`, "a replacement is made in the same batch, with the next serial number of its group");
       const afterReplace = await listCodes(trx, batch.batchId, { q: s4 });
       assert(afterReplace.rows[0].state === "revoked" && (afterReplace.rows[0].revokeReason ?? "").includes(replaced.serial) && (afterReplace.rows[0].revokeReason ?? "").includes("label rosak"), "the old card is cancelled and says which card replaced it");
       const newRow = await listCodes(trx, batch.batchId, { q: replaced.serial });
@@ -90,9 +90,9 @@ async function main() {
       assert((await batchInfo(trx, batch.batchId))?.counts.total === 7 && (await batchInfo(trx, batch.batchId))?.quantity === 7, "the batch counts one more card");
       const dump = await sql<{ t: string }>`SELECT string_agg(r::text, ' ') AS t FROM redeem_codes r WHERE batch_id = ${batch.batchId}`.execute(trx);
       assert(!dump.rows[0].t.includes(replaced.canonical) && !dump.rows[0].t.includes(replaced.code), "the new plain code is not stored");
-      const useNew = await redeemCode(trx, { codeKey, now: day(10), limits: HIGH }, { accountId: A, ipMac: "ip", code: replaced.code, batch: "CA-001" });
-      assert(useNew.status === "ok", "the new code redeems with the same batch number", useNew);
-      const useOld = await redeemCode(trx, { codeKey, now: day(11), limits: HIGH }, { accountId: await account(trx, "ahli-x@e2e.invalid"), ipMac: "ip", code: batch.codes[3].code, batch: "CA-001" });
+      const useNew = await redeemCode(trx, { codeKey, now: day(10), limits: HIGH }, { accountId: A, ipMac: "ip", code: replaced.code, serial: replaced.serial });
+      assert(useNew.status === "ok", "the new code redeems with its own serial number", useNew);
+      const useOld = await redeemCode(trx, { codeKey, now: day(11), limits: HIGH }, { accountId: await account(trx, "ahli-x@e2e.invalid"), ipMac: "ip", code: batch.codes[3].code, serial: batch.codes[3].serial });
       assert(useOld.status === "invalid", "the old code no longer works");
       assert((await throws(() => replaceCode(trx, { codeKey, now: day(12) }, { serial: first.serial, reason: "x" })))?.includes("redeemed") === true, "a redeemed card cannot be replaced");
       assert((await throws(() => replaceCode(trx, { codeKey, now: day(12) }, { serial: s4, reason: "x" })))?.includes("cancelled") === true, "a cancelled card cannot be replaced");
@@ -124,7 +124,7 @@ async function main() {
       const sharedRow = byEmail.get("ahli-shared@e2e.invalid");
       assert(sharedRow?.status === "aktif" && (sharedRow?.source ?? "").includes("Kod kongsi") && sharedRow.endsAt !== null, "a shared code: active, with its source and end date");
       const cardRow = byEmail.get("ahli-a@e2e.invalid");
-      assert(cardRow?.status === "aktif" && (cardRow.source ?? "").includes("Kad JLN-26-") && cardRow.displayName === "Aina", "a card: active, the serial number as source, and the name");
+      assert(cardRow?.status === "aktif" && (cardRow.source ?? "").includes("Kad JLN-06B") && cardRow.displayName === "Aina", "a card: active, the serial number as source, and the name");
       assert(all.counts.aktif >= 2 && all.counts.percubaan >= 1 && all.counts.tamat >= 1 && all.counts.tiada >= 1 && all.counts.semua === all.total, "the counts add up");
       const onlyActive = await listMembers(trx, { status: "aktif", pageSize: 500 }, now);
       assert(onlyActive.rows.every((r) => r.status === "aktif") && onlyActive.total === onlyActive.rows.length, "filtering by status shows only that status");
