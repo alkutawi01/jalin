@@ -575,6 +575,9 @@ export interface ReaderAccounts {
   created_at: Generated<Date>;
   last_login_at: Date | null;
   deletion_requested_at: Date | null;
+  terms_version: string | null;
+  terms_accepted_at: Date | null;
+  adult_confirmed_at: Date | null;
 }
 
 export interface ReaderTrialClaims {

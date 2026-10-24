@@ -7,6 +7,8 @@ import HaltSwitch from "./HaltSwitch";
 import PaywallSwitch from "./PaywallSwitch";
 import { isPaywallSwitchOn, countSamples } from "../../../lib/reader-auth/switches";
 import { countEvents, readerMailDailyCap } from "../../../lib/reader-auth/service";
+import { controllerMissing } from "../../../lib/legal-identity";
+import { turnstileConfig } from "../../../lib/reader-auth/turnstile";
 
 export const dynamic = "force-dynamic";
 
@@ -50,6 +52,12 @@ export default async function LanggananPage() {
       {!readerAccountsEnabled() ? (
         <div className="admin-alert admin-alert-info" role="status">Akaun pembaca belum dihidupkan pada laman ini (READER_ACCOUNTS_ENABLED). Pembaca belum boleh mendaftar atau menebus kod.</div>
       ) : null}
+      {controllerMissing().length > 0 ? (
+        <div className="admin-alert admin-alert-warning" role="status">
+          Maklumat pengawal data dalam Dasar privasi belum lengkap: {controllerMissing().join(", ")}. Isi dalam src/lib/legal-identity.ts selepas Adjung Press didaftarkan di SSM,
+          sebelum akaun dihidupkan. Lihat docs/KESEDIAAN_PELANCARAN.md.
+        </div>
+      ) : null}
       {problem || !data ? (
         <div className="admin-alert admin-alert-error" role="alert">{problem}</div>
       ) : (
@@ -66,6 +74,18 @@ export default async function LanggananPage() {
               </tbody>
             </table>
           </div>
+          <h2>Pergerakan terkini</h2>
+          <div className="admin-table-wrap">
+            <table className="admin-table a-kv-table">
+              <tbody>
+                <tr><th scope="row">Pendaftaran baharu</th><td>{data.recent.signups1d} dalam 24 jam · {data.recent.signups7d} dalam 7 hari</td></tr>
+                <tr><th scope="row">Percubaan dimulakan (7 hari)</th><td>{data.recent.trialsStarted7d}</td></tr>
+                <tr><th scope="row">Percubaan akan tamat dalam 7 hari</th><td>{data.recent.trialsEnding7d}{data.recent.trialsEnding7d > 0 ? " (belum ada akses lain; belum ada e-mel peringatan)" : ""}</td></tr>
+                <tr><th scope="row">Percubaan tamat dalam 7 hari lalu tanpa akses</th><td>{data.recent.trialsExpired7d}</td></tr>
+                <tr><th scope="row">Kad dan kod kongsi ditebus (7 hari)</th><td>{data.recent.redeemed7d}</td></tr>
+              </tbody>
+            </table>
+          </div>
           <h2>Dinding bayar</h2>
           <PaywallSwitch initialOn={paywall} accountsEnabled={readerAccountsEnabled()} samples={samples} />
           <h2>Suis henti penebusan</h2>
@@ -73,6 +93,9 @@ export default async function LanggananPage() {
           <h2>Kuota e-mel kod</h2>
           <p>{mailUsed} daripada {mailCap} e-mel kod digunakan dalam 24 jam terakhir.</p>
           {mailUsed >= Math.ceil(mailCap * 0.7) ? <div className="admin-alert admin-alert-warning" role="status">Penggunaan e-mel kod mencapai sekurang-kurangnya 70% kuota harian. Semak aktiviti dan kapasiti penghantaran.</div> : null}
+          {turnstileConfig()
+            ? <p>Cabaran bot Turnstile aktif: ia disoal hanya apabila ada tanda penyalahgunaan atau kuota e-mel hampir habis.</p>
+            : <p>Cabaran bot Turnstile tidak dihidupkan (pilihan). Hidupkan hanya jika ada penyalahgunaan pada borang log masuk: tetapkan TURNSTILE_SITE_KEY dan TURNSTILE_SECRET_KEY pada Vercel.</p>}
           <h2>Salinan kod di luar pangkalan data</h2>
           <p>Setiap malam, satu fail disulitkan dan bertandatangan berisi semua kod dan penebusan disimpan di luar pangkalan data. Jika pangkalan data dipulihkan ke masa lampau, fail inilah yang menghalang kad yang sudah digunakan daripada digunakan semula.</p>
           {exportWarning ? <div className="admin-alert admin-alert-error" role="alert">{exportWarning}</div> : null}

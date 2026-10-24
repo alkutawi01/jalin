@@ -6,6 +6,21 @@ type Device = { id: string; label: string; lastSeenAt: string };
 type Step = "email" | "code" | "device";
 
 const RESEND_AFTER_SECONDS = 60;
+const TURNSTILE_SRC = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+
+type TurnstileApi = { render: (el: HTMLElement, options: { sitekey: string; callback: (token: string) => void; "error-callback"?: () => void; "expired-callback"?: () => void }) => string; reset: (id?: string) => void; remove: (id?: string) => void };
+declare global { interface Window { turnstile?: TurnstileApi } }
+
+/** The Cloudflare script, loaded once and only when the server asks for the challenge. */
+function loadTurnstile(): Promise<TurnstileApi> {
+  return new Promise((resolve, reject) => {
+    if (window.turnstile) { resolve(window.turnstile); return; }
+    let script = document.querySelector<HTMLScriptElement>(`script[src="${TURNSTILE_SRC}"]`);
+    if (!script) { script = document.createElement("script"); script.src = TURNSTILE_SRC; script.async = true; document.head.appendChild(script); }
+    script.addEventListener("load", () => (window.turnstile ? resolve(window.turnstile) : reject(new Error("turnstile"))));
+    script.addEventListener("error", () => reject(new Error("turnstile")));
+  });
+}
 
 function deviceLabel(): string {
   const ua = navigator.userAgent;
@@ -29,7 +44,15 @@ export default function LoginForm({ next = "/akaun", compact = false }: { next?:
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
   const [wait, setWait] = useState(0);
+  // Unticked by default. Needed before a code is sent, and sent again with the code so the account records it.
+  const [agreed, setAgreed] = useState(false);
   const codeRef = useRef<HTMLInputElement>(null);
+  // The bot challenge: the server answers "challenge: true" only when it is needed; the widget then gives a token and the request is sent again.
+  const [challengeKey, setChallengeKey] = useState("");
+  const challengeRef = useRef<HTMLDivElement>(null);
+  const widgetId = useRef<string | undefined>(undefined);
+  // The widget's callback runs later than the render that made it: it must send the e-mail and consent as they are THEN.
+  const sendCodeRef = useRef<(event?: React.FormEvent, token?: string) => Promise<void>>(async () => {});
 
   useEffect(() => {
     if (wait <= 0) return;
@@ -48,15 +71,40 @@ export default function LoginForm({ next = "/akaun", compact = false }: { next?:
     return { ok: response.ok, status: response.status, data };
   }
 
-  async function sendCode(event?: React.FormEvent) {
+  useEffect(() => {
+    if (!challengeKey || !challengeRef.current) return;
+    let cancelled = false;
+    loadTurnstile().then((api) => {
+      if (cancelled || !challengeRef.current) return;
+      if (widgetId.current !== undefined) api.remove(widgetId.current);
+      widgetId.current = api.render(challengeRef.current, {
+        sitekey: challengeKey,
+        callback: (token) => { void sendCodeRef.current(undefined, token); },
+        "error-callback": () => setError("Pengesahan keselamatan tidak dapat dimuatkan. Muat semula halaman dan cuba lagi."),
+      });
+    }).catch(() => setError("Pengesahan keselamatan tidak dapat dimuatkan. Semak sambungan anda dan cuba lagi."));
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [challengeKey]);
+
+  async function sendCode(event?: React.FormEvent, turnstileToken?: string) {
     event?.preventDefault();
     if (busy) return;
     setError(""); setNotice("");
     if (!email.trim()) { setError("Masukkan e-mel anda."); return; }
+    if (!agreed) { setError("Tandakan pengesahan umur dan persetujuan untuk meneruskan."); return; }
     setBusy(true);
     try {
-      const { ok, data } = await post("/api/akaun/kod", { email });
+      const { ok, data } = await post("/api/akaun/kod", { email, turnstileToken });
+      if (data.challenge && typeof data.siteKey === "string") {
+        // Needed now: show the widget (it asks nothing of most readers), then it sends the request again with its token.
+        if (data.error) setError(String(data.error));
+        if (turnstileToken && widgetId.current !== undefined) window.turnstile?.reset(widgetId.current);
+        setChallengeKey(data.siteKey);
+        return;
+      }
       if (!ok) { setError(String(data.error ?? "Kod tidak dapat dihantar. Cuba lagi.")); return; }
+      setChallengeKey("");
       setCode("");
       setStep("code");
       setWait(RESEND_AFTER_SECONDS);
@@ -67,6 +115,8 @@ export default function LoginForm({ next = "/akaun", compact = false }: { next?:
     }
   }
 
+  sendCodeRef.current = sendCode;
+
   async function verify(event?: React.FormEvent, replaceDeviceId?: string) {
     event?.preventDefault();
     if (busy) return;
@@ -74,7 +124,7 @@ export default function LoginForm({ next = "/akaun", compact = false }: { next?:
     if (!/^\d{6}$/.test(code.replace(/[\s-]/g, ""))) { setError("Masukkan kod enam digit."); return; }
     setBusy(true);
     try {
-      const { ok, status, data } = await post("/api/akaun/sahkan", { email, code, label: deviceLabel(), replaceDeviceId });
+      const { ok, status, data } = await post("/api/akaun/sahkan", { email, code, label: deviceLabel(), replaceDeviceId, consent: agreed });
       if (ok && data.needsDeviceChoice) {
         setDevices((data.devices as Device[]) ?? []);
         setStep("device");
@@ -100,10 +150,22 @@ export default function LoginForm({ next = "/akaun", compact = false }: { next?:
           {compact ? null : <p className="auth-intro">Masukkan e-mel anda. Kami hantar kod enam digit. Tiada kata laluan.</p>}
           <label className="auth-label" htmlFor="auth-email">E-mel</label>
           <input id="auth-email" className="auth-input" type="email" inputMode="email" autoComplete="email" placeholder="nama@contoh.my" value={email} onChange={(e) => setEmail(e.target.value)} aria-invalid={!!error} aria-describedby={error ? "auth-error" : undefined} />
+          <label className="auth-consent" htmlFor="auth-consent">
+            <input id="auth-consent" type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} />
+            <span>
+              Saya mengesahkan bahawa saya berumur 18 tahun atau lebih, dan bersetuju dengan <a href="/terma" target="_blank" rel="noopener">Terma penggunaan</a> serta
+              telah membaca <a href="/privasi" target="_blank" rel="noopener">Dasar privasi</a> Jalin.
+            </span>
+          </label>
           {error ? <p id="auth-error" className="auth-error" role="alert">{error}</p> : null}
+          {challengeKey ? (
+            <div className="auth-challenge">
+              <p className="auth-fine">Satu semakan keselamatan ringkas diperlukan sebelum kod dihantar.</p>
+              <div ref={challengeRef} />
+            </div>
+          ) : null}
           <button className="auth-button" type="submit" disabled={busy}>{busy ? "Menghantar…" : "Hantar kod"}</button>
           <p className="auth-fine">Percubaan percuma 14 hari bermula apabila anda memilih untuk memulakannya.</p>
-          <p className="auth-fine">Dengan menghantar kod, anda mengesahkan telah membaca <a href="/privasi">Dasar privasi</a> dan <a href="/terma">Terma penggunaan</a>.</p>
         </form>
       ) : null}
 

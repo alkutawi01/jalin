@@ -63,7 +63,7 @@ async function signIn(device: Device, email: string) {
   await sleep(350);
   const code = mailCountFor(email) > before ? lastCodeFor(email) : null;
   if (!code) throw new Error(`no code was mailed to ${email}`);
-  const res = await device.req("/api/akaun/sahkan", { method: "POST", body: { email, code, label: "Ujian" } });
+  const res = await device.req("/api/akaun/sahkan", { method: "POST", body: { email, code, label: "Ujian", consent: true } });
   if (res.status !== 200) throw new Error(`sign-in failed for ${email}: ${res.status} ${res.text.slice(0, 120)}`);
 }
 

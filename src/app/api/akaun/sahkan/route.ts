@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getDb } from "../../../../lib/db";
 import { asString, isSameOrigin, macKey, noStore, notFoundWhenOff, readJson, setReaderCookie, visitorMac } from "../../../../lib/reader-auth/http";
 import { verifyLoginCode } from "../../../../lib/reader-auth/service";
+import { TERMS_VERSION } from "../../../../lib/reader-auth/terms-version";
 
 export const dynamic = "force-dynamic";
 
@@ -21,6 +22,9 @@ export async function POST(request: Request) {
       ipMac: visitorMac(request),
       deviceLabel: asString(body.label, 60),
       replaceDeviceId: asString(body.replaceDeviceId, 64) || undefined,
+      // The box on the sign-in form: 18 or older, and the terms and the privacy notice accepted. A new account needs it.
+      consent: body.consent === true ? { termsVersion: TERMS_VERSION } : undefined,
+      requireConsent: true,
     }
   );
 
@@ -31,6 +35,9 @@ export async function POST(request: Request) {
   }
   if (result.status === "choose_device") {
     return noStore(NextResponse.json({ needsDeviceChoice: true, devices: result.devices }));
+  }
+  if (result.status === "consent_required") {
+    return noStore(NextResponse.json({ error: "Tandakan pengesahan umur dan persetujuan sebelum meneruskan.", consentRequired: true }, { status: 400 }));
   }
   if (result.status === "throttled") {
     return noStore(NextResponse.json({ error: "Terlalu banyak cubaan. Cuba lagi kemudian." }, { status: 429 }));

@@ -59,13 +59,28 @@ function TermsWithAccounts() {
       kicker="Dasar"
       title="Terma penggunaan"
       intro="Karya di Jalin ditulis dan dilukis dengan teliti. Terma ini menerangkan cara Jalin digunakan, termasuk akaun, percubaan percuma dan langganan."
-      updated="10 Oktober 2026"
+      updated="12 Oktober 2026"
     >
       <h2>Akaun</h2>
       <p>
-        Akaun dibuka dengan alamat e-mel anda dan satu akaun digunakan oleh seorang pembaca sahaja. Satu akaun boleh log masuk pada
+        Akaun dibuka dengan alamat e-mel anda dan dipegang oleh seorang individu dewasa. Satu akaun boleh log masuk pada
         sehingga dua peranti pada satu masa; untuk menambah peranti ketiga, anda perlu menggantikan salah satu daripada dua itu.
         Anda bertanggungjawab ke atas akses ke e-mel anda dan aktiviti pada akaun anda.
+      </p>
+
+      <h2>Umur minimum dan penggunaan oleh kanak-kanak</h2>
+      <p>
+        Akaun Jalin hanya boleh dibuka oleh individu yang berumur 18 tahun atau lebih. Dengan menandakan kotak pengesahan semasa log masuk, anda mengesahkan bahawa anda
+        memenuhi syarat umur tersebut dan bersetuju dengan Terma ini serta telah membaca Dasar privasi.
+      </p>
+      <p>
+        Ibu bapa atau penjaga boleh membenarkan kanak-kanak membaca karya Jalin menggunakan akaun mereka di bawah pengawasan masing-masing. Pemegang akaun bertanggungjawab
+        mengurus peranti, akses akaun dan penggunaan perkhidmatan oleh kanak-kanak di bawah jagaan mereka. Rekod bacaan, karya yang disimpan dan tetapan bacaan daripada penggunaan
+        bersama dikaitkan dengan akaun pemegang akaun.
+      </p>
+      <p>
+        Jika kami mempunyai alasan munasabah untuk mempercayai bahawa sesuatu akaun didaftarkan oleh individu di bawah 18 tahun, kami boleh meminta pengesahan yang sesuai atau
+        menghadkan akses buat sementara semasa perkara itu disemak.
       </p>
 
       <h2>Percubaan percuma dan langganan</h2>
@@ -95,7 +110,10 @@ function TermsWithAccounts() {
         akaun. Membaca karya penuh memerlukan akaun dengan percubaan percuma atau langganan yang aktif; akaun yang akses bacaannya
         tidak aktif masih boleh log masuk untuk menguruskan akaun dan menebus kod.
       </p>
-      <p>Akses anda adalah untuk bacaan peribadi anda sendiri. Berkongsi kod log masuk atau akaun dengan orang lain tidak dibenarkan.</p>
+      <p>
+        Akses anda adalah untuk bacaan peribadi anda dan keluarga di bawah pengawasan anda. Berkongsi kod log masuk atau akaun dengan orang lain di luar itu tidak dibenarkan.
+        Anak anda yang membaca dengan kebenaran dan pengawasan anda tidak dianggap sebagai perkongsian akaun, selagi had peranti dipatuhi.
+      </p>
 
       <h2>Hak cipta</h2>
       <p>
@@ -119,9 +137,11 @@ function TermsWithAccounts() {
       <h2>Menggantung atau menamatkan akaun</h2>
       <p>
         Kami boleh menggantung atau menamatkan akaun yang menyalahgunakan Jalin, contohnya dengan cuba meneka kod, menggunakan
-        kad yang dibatalkan, atau mengelak had percubaan percuma. Anda boleh berhenti menggunakan akaun pada bila-bila masa dan
+        kad yang dibatalkan, atau mengelak had percubaan percuma. Kami berbuat demikian hanya atas sebab yang munasabah dan, apabila sesuai,
+        memberitahu sebabnya serta memberi anda peluang menjawab sebelum keputusan dibuat. Anda boleh berhenti menggunakan akaun pada bila-bila masa dan
         memadam akaun anda sendiri pada bila-bila masa di halaman Akaun (lihat Dasar privasi). Pemadaman menamatkan akses bacaan serta-merta,
         termasuk baki tempoh percubaan percuma atau langganan yang masih aktif; akaun dan baki akses itu tidak boleh dipulihkan.
+        Jika anda masih mempunyai akses aktif, halaman Akaun memaklumkan tarikh tamatnya dan memberi pilihan untuk mengekalkan akaun sehingga tamat atau memadam sekarang.
         Pemadaman secara sukarela tidak memberi hak automatik kepada bayaran balik bagi tempoh yang belum digunakan, tanpa menjejaskan
         apa-apa hak pengguna yang diperuntukkan oleh undang-undang.
       </p>
@@ -129,7 +149,8 @@ function TermsWithAccounts() {
       <h2>Tanpa jaminan</h2>
       <p>
         Jalin disediakan sebagaimana adanya. Kami berusaha agar maklumat tepat dan laman sentiasa tersedia, tetapi
-        tidak dapat menjaminnya, dan kandungan boleh diubah atau ditarik balik tanpa notis awal.
+        tidak dapat menjaminnya, dan kandungan boleh diubah atau ditarik balik tanpa notis awal. Jika perubahan atau penutupan perkhidmatan menjejaskan langganan berbayar anda
+        secara material, kami akan menyediakan penyelesaian yang munasabah. Perenggan ini tidak menjejaskan hak anda di bawah undang-undang pengguna yang terpakai.
       </p>
 
       <h2>Perubahan</h2>

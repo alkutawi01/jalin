@@ -4,6 +4,7 @@ import "./globals.css";
 import "./themes.css";
 import { SITE_URL, DEFAULT_SHARE_IMAGE } from "../lib/seo";
 import BootScreen from "../components/reader/BootScreen";
+import SiteAnalytics from "../components/reader/SiteAnalytics";
 import ThemeSync from "../components/reader/ThemeSync";
 import { readerAccountsEnabled } from "../lib/reader-auth/enabled";
 import { THEME_INIT_SCRIPT } from "../lib/site-theme-mode";
@@ -65,6 +66,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <ThemeSync accounts={readerAccountsEnabled()} />
         <BootScreen />
         {children}
+        <SiteAnalytics vercel={process.env.VERCEL_ENV === "production"} cloudflareToken={(process.env.CF_ANALYTICS_TOKEN ?? "").trim()} />
       </body>
     </html>
   );

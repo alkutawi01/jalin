@@ -37,6 +37,8 @@ class Device {
   cookie() { return Object.entries(this.jar).map(([k, v]) => `${k}=${v}`).join("; "); }
   async req(path: string, init: { method?: string; body?: unknown; origin?: string | null; raw?: string; base?: string } = {}) {
     const headers: Record<string, string> = { cookie: this.cookie() };
+    // Every sign-in through the route carries the form's consent box unless a test says otherwise (consent: false).
+    if (path === "/api/akaun/sahkan" && init.body && typeof init.body === "object" && !("consent" in (init.body as object))) init = { ...init, body: { ...(init.body as object), consent: true } };
     if (init.origin !== null) headers.origin = init.origin ?? (init.base ?? BASE);
     if (init.body !== undefined || init.raw !== undefined) headers["content-type"] = "application/json";
     const res = await fetch((init.base ?? BASE) + path, {

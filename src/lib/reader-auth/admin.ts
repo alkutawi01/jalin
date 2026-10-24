@@ -16,12 +16,28 @@ export type Overview = {
   batches: { pending: number; confirmed: number; voided: number };
   codes: { generated: number; issued: number; revoked: number; redeemed: number };
   shared: { active: number; paused: number; revoked: number; redemptions: number };
+  /** What happened lately, so the owner can see how a launch is going without reading rows. */
+  recent: {
+    signups1d: number;
+    signups7d: number;
+    trialsStarted7d: number;
+    /** Trials that end in the next 7 days and whose reader has no other access: the people to remind. */
+    trialsEnding7d: number;
+    /** Trials that ended in the last 7 days and whose reader has no access now. */
+    trialsExpired7d: number;
+    /** Cards and shared codes redeemed in the last 7 days. */
+    redeemed7d: number;
+  };
 };
 
 const n = (value: unknown) => Number(value ?? 0);
 
 export async function overview(db: Db, now: Date = new Date()): Promise<Overview> {
-  const [accounts, access, batches, codes, redeemed, shared, sharedUse, halted] = await Promise.all([
+  const DAY = 24 * 60 * 60 * 1000;
+  const since1d = new Date(now.getTime() - DAY);
+  const since7d = new Date(now.getTime() - 7 * DAY);
+  const until7d = new Date(now.getTime() + 7 * DAY);
+  const [accounts, access, batches, codes, redeemed, shared, sharedUse, halted, recent] = await Promise.all([
     sql<{ n: string }>`SELECT count(*) AS n FROM reader_accounts WHERE status <> 'deleted'`.execute(db),
     sql<{ paid: string; trial: string }>`
       SELECT count(DISTINCT account_id) FILTER (WHERE kind <> 'TRIAL') AS paid,
@@ -34,6 +50,16 @@ export async function overview(db: Db, now: Date = new Date()): Promise<Overview
     sql<{ status: string; n: string }>`SELECT status, count(*) AS n FROM shared_codes GROUP BY status`.execute(db),
     sql<{ n: string }>`SELECT count(*) AS n FROM shared_redemptions`.execute(db),
     isRedeemHalted(db),
+    sql<{ s1: string; s7: string; started: string; ending: string; expired: string; red: string }>`
+      SELECT
+        (SELECT count(*) FROM reader_accounts WHERE status <> 'deleted' AND created_at > ${since1d}) AS s1,
+        (SELECT count(*) FROM reader_accounts WHERE status <> 'deleted' AND created_at > ${since7d}) AS s7,
+        (SELECT count(*) FROM reader_accounts WHERE status <> 'deleted' AND trial_starts_at > ${since7d}) AS started,
+        (SELECT count(*) FROM reader_accounts a WHERE a.status <> 'deleted' AND a.trial_ends_at > ${now} AND a.trial_ends_at <= ${until7d}
+           AND NOT EXISTS (SELECT 1 FROM entitlements e WHERE e.account_id = a.id AND e.kind <> 'TRIAL' AND e.revoked_at IS NULL AND e.starts_at <= ${now} AND e.ends_at > ${now})) AS ending,
+        (SELECT count(*) FROM reader_accounts a WHERE a.status <> 'deleted' AND a.trial_ends_at <= ${now} AND a.trial_ends_at > ${since7d}
+           AND NOT EXISTS (SELECT 1 FROM entitlements e WHERE e.account_id = a.id AND e.revoked_at IS NULL AND e.starts_at <= ${now} AND e.ends_at > ${now})) AS expired,
+        ((SELECT count(*) FROM redemptions WHERE redeemed_at > ${since7d}) + (SELECT count(*) FROM shared_redemptions WHERE redeemed_at > ${since7d})) AS red`.execute(db),
   ]);
   const by = (rows: object[], key: string, value: string) => n((rows as Record<string, unknown>[]).find((r) => r[key] === value)?.n);
   return {
@@ -44,6 +70,14 @@ export async function overview(db: Db, now: Date = new Date()): Promise<Overview
     batches: { pending: by(batches.rows, "status", "PENDING_PRINT"), confirmed: by(batches.rows, "status", "PRINT_CONFIRMED"), voided: by(batches.rows, "status", "VOIDED") },
     codes: { generated: by(codes.rows, "state", "generated"), issued: by(codes.rows, "state", "issued"), revoked: by(codes.rows, "state", "revoked"), redeemed: n(redeemed.rows[0]?.n) },
     shared: { active: by(shared.rows, "status", "active"), paused: by(shared.rows, "status", "paused"), revoked: by(shared.rows, "status", "revoked"), redemptions: n(sharedUse.rows[0]?.n) },
+    recent: {
+      signups1d: n(recent.rows[0]?.s1),
+      signups7d: n(recent.rows[0]?.s7),
+      trialsStarted7d: n(recent.rows[0]?.started),
+      trialsEnding7d: n(recent.rows[0]?.ending),
+      trialsExpired7d: n(recent.rows[0]?.expired),
+      redeemed7d: n(recent.rows[0]?.red),
+    },
   };
 }
 

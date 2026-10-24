@@ -1,0 +1,50 @@
+# Kesediaan undang-undang sebelum akaun dibuka (12 Oktober 2026)
+
+Senarai ini berasaskan kajian awal dan semakan ChatGPT (sumber: JPDP, KPDN, MCMC). Ia bukan nasihat guaman. Tiada peguam digunakan atas keputusan Izzat. Keputusan menghidupkan akaun (`READER_ACCOUNTS_ENABLED`) dan dinding bayar kekal pada Izzat (AGENTS.md peraturan 26).
+
+## Keputusan yang sudah dibuat
+
+- Hanya individu berumur 18 tahun ke atas boleh membuka akaun. Kanak-kanak membaca melalui peranti dan akaun ibu bapa atau penjaga.
+- Adjung Press didaftarkan di SSM sebagai milikan tunggal pada 19 Oktober 2026 (Adjung Press Platform, no. 202603277981, sah hingga 18 Oktober 2027; perbaharui sebelum tarikh itu). Nombor telefon tidak dipaparkan; hanya e-mel editorial.
+- Kad langganan dijual melalui Shopee; tiada pembayaran dalam tapak Jalin.
+- Tiada cukai jualan atau perkhidmatan didaftarkan buat masa ini kerana perniagaan kecil (lihat catatan LHDN di bawah).
+
+## Sudah dibina dalam produk
+
+- Kotak pengesahan umur dan persetujuan pada borang log masuk (tidak ditanda lalai), direkod pada akaun: versi terma (`src/lib/reader-auth/terms-version.ts`), masa persetujuan, masa pengesahan umur (migrasi 034).
+- Akaun baharu tidak dibuka tanpa kotak itu (kod tidak digunakan habis).
+- Dasar privasi (BM dan English): bahagian Kanak-kanak ditulis semula, data pengesahan umur disenaraikan, pemadaman dengan baki langganan, identiti pengawal data (apabila diisi).
+- Terma: umur minimum, penggunaan oleh kanak-kanak, perkongsian akaun dalam keluarga, penamatan atas sebab munasabah, pemadaman dengan baki, pengecualian liabiliti tidak menjejaskan hak pengguna.
+- Halaman Akaun: padam akaun menunjukkan tarikh tamat akses, memberi pilihan "Kekalkan akaun sehingga tamat" dan "Padam sekarang juga".
+- Admin Langganan: amaran jika maklumat pengawal data belum lengkap.
+- Prosedur pelanggaran data: `docs/PROSEDUR_PELANGGARAN_DATA.md`.
+- Percubaan percuma sekali bagi setiap peti e-mel: alias Gmail (titik, +tag, googlemail.com) dan +tag pada domain lain dikira satu percubaan (19 Oktober 2026, lihat `docs/CABARAN_BOT_DAN_PERCUBAAN.md`).
+- Papan pemuka: Langganan > Ringkasan memaparkan "Pergerakan terkini" (pendaftaran 24 jam dan 7 hari, percubaan dimulakan, percubaan akan tamat dalam 7 hari, percubaan tamat tanpa akses, penebusan 7 hari). Statistik trafik: Vercel Web Analytics (hanya di produksi) dan Cloudflare Web Analytics (tidur sehingga `CF_ANALYTICS_TOKEN` ditetapkan); halaman admin, akaun dan API tidak dikira.
+- Cabaran bot Cloudflare Turnstile pada permintaan kod log masuk, disoal hanya apabila perlu; mati selagi kunci tidak ditetapkan (sama dokumen).
+
+## Perlu dilakukan oleh Izzat sebelum akaun dihidupkan
+
+| # | Perkara | Kenapa |
+|---|---|---|
+| 1 | ~~Daftar Adjung Press di SSM~~ SELESAI 19 Oktober 2026 | Identiti pengawal data diisi dalam `legal-identity.ts` |
+| 2 | ~~Isi `src/lib/legal-identity.ts`: nama pemilik, nombor SSM, alamat~~ SELESAI (telefon sengaja tidak dipaparkan) | Notis privasi (PDPA seksyen 7) perlu identiti dan cara hubung; admin memberi amaran selagi kosong |
+| 3 | Jalankan migrasi 034 (034_reader_consent) pada pangkalan data produksi (`npm run db:schema:migrate` dengan kebenaran Izzat) | Lajur rekod persetujuan; tanpanya log masuk gagal merekod |
+| 4 | Hantar pertanyaan bertulis kepada JPDP: adakah penerbitan sastera digital dengan jualan kad akses perlu mendaftar sebagai pengawal data di bawah seksyen 14 dan 15? | ChatGPT keyakinan sederhana; jangan mengisytiharkan dikecualikan tanpa pengesahan |
+| 5 | Kedai Shopee: nama penjual, e-mel, telefon, alamat, harga penuh, syarat dan polisi pulangan dalam Bahasa Melayu | Peraturan Perlindungan Pengguna (Urus Niaga Perdagangan Elektronik) 2024 |
+| 6 | Semak tanggungjawab cukai dengan LHDN dan JKDM (cukai pendapatan, rekod jualan, ambang cukai perkhidmatan) | Ketiadaan pendaftaran cukai tidak bermaksud pendapatan boleh diabaikan |
+| 7 | Sahkan lokasi pemprosesan dan perjanjian pemprosesan data Vercel, Neon dan Resend (log, sandaran, subpemproses) | PDPA seksyen 129: pemindahan rentas sempadan |
+| 8 | Pastikan alamat e-mel editorial@adjung.com dipantau (telefon tidak diperlukan) |
+| 9 | PILIHAN, tidak diperlukan untuk pelancaran (keputusan Izzat 20 Oktober 2026: Resend dan had e-mel dahulu). Jika penyalahgunaan berlaku: cipta tapak Cloudflare Turnstile (percuma, mod Managed, domain jalin.adjung.com) dan tetapkan `TURNSTILE_SITE_KEY` dan `TURNSTILE_SECRET_KEY` pada Vercel Production | Tanpa kunci, cabaran bot mati; kod kekal tidur dan tidak berkos |
+| 10 | Resend (disemak 20 Oktober 2026): domain penghantar `mail.adjung.com` Verified; SPF, DKIM dan DMARC (`p=none`, tanpa alamat laporan) ada. Pelan percuma: 3,000 e-mel sebulan dan 100 sehari (penggunaan 5/3,000). Naikkan pelan dan tetapkan `READER_MAIL_DAILY_CAP` apabila Izzat bersedia; had dalaman 90 sehari muat dalam had bulanan (90 x 30 = 2,700) | Setiap pendaftaran dan log masuk menghantar satu e-mel; jika kuota habis, kod tidak dapat dihantar |
+| 11 | Hidupkan Web Analytics pada projek Vercel (Analytics > Enable) untuk melihat trafik di dashboard Vercel. Pilihan: cipta tapak di Cloudflare Web Analytics, salin token, tetapkan `CF_ANALYTICS_TOKEN` pada Vercel Production | Tanpa itu, tiada angka trafik; skrip Vercel dimuat tetapi tidak merekod selagi tidak dihidupkan |
+
+## Dinilai, tidak menghalang pelancaran (keyakinan sederhana)
+
+- Pegawai Perlindungan Data: wajib hanya jika melebihi 20,000 data subjek, atau 10,000 data sensitif, atau pemantauan sistematik. Semak semula apabila pembaca berkembang.
+- Lesen CMA dan Akta Keselamatan Dalam Talian 2025: kemungkinan tidak terpakai pada laman penerbitan teks; sahkan jika Jalin menambah fungsi komunikasi atau komuniti.
+- Pendaftaran pengguna data: lihat item 4.
+
+## Yang sengaja tidak dibina
+
+- Pengesahan umur melalui MyKad atau tarikh lahir (tidak perlu dan menambah data).
+- Pemadaman berjadual, bayaran balik automatik berdasarkan baki, atau pegawai undang-undang tetap, sebelum ada keperluan.

@@ -4397,6 +4397,10 @@ body:has(.save-work) .back-to-top { bottom: 76px; }
 .story-communication-mesej .message-group p { margin: 0 0 0.25em; }
 .story-communication-mesej .message-group:last-child p:last-child { margin-bottom: 0; }
 
+/* The age and terms box on the sign-in form: unticked by default, a plain checkbox with the sentence beside it. */
+.auth-consent { display: flex; align-items: flex-start; gap: 10px; margin: 14px 0 0; text-align: left; font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: 13.5px; line-height: 1.5; color: var(--ink); cursor: pointer; }
+.auth-consent input { flex: none; width: 18px; height: 18px; margin: 2px 0 0; accent-color: var(--ink); cursor: pointer; }
+.auth-consent a { color: var(--clay-text); text-decoration: underline; text-underline-offset: 3px; }
 /* The theme switch in the footer: the footer is dark in every theme, so the pills are drawn for a dark ground. */
 .theme-switch { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; margin: 0 0 6px; font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; }
 .theme-switch-label { margin-right: 4px; font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: #d7ae96; }
