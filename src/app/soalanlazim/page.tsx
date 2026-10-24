@@ -49,24 +49,9 @@ const GROUPS: Group[] = [
         q: "Di manakah saya boleh menemukan nombor siri dan kod pada kad?",
         a: (
           <p>
-            Label pada kad memaparkan nombor siri (contohnya <code>JLN-12B0126-01</code>) dan kod langganan. Kod berada di bawah pelekat kikis; kikis
+            Label pada kad memaparkan nombor siri dan kod langganan. Kod berada di bawah pelekat kikis; kikis
             pelekat itu untuk melihatnya.
           </p>
-        )
-      },
-      {
-        q: "Apakah maksud nombor siri pada kad?",
-        a: (
-          <>
-            <p>Nombor siri seperti <code>JLN-12B0126-01</code> mempunyai empat bahagian:</p>
-            <ul>
-              <li><strong>JLN</strong>: Jalin.</li>
-              <li><strong>12B</strong>: tempoh langganan 12 bulan. Kod 01B bermaksud 1 bulan, manakala 06B bermaksud 6 bulan.</li>
-              <li><strong>0126</strong>: bulan dan tahun kod dijangka dikeluarkan, iaitu Januari 2026.</li>
-              <li><strong>01</strong>: nombor kad tersebut.</li>
-            </ul>
-            <p>Anda perlu memasukkan nombor siri bersama kod langganan semasa menebus.</p>
-          </>
         )
       },
       {

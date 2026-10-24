@@ -74,7 +74,7 @@ export default function RedeemForm({ embedded = false }: { embedded?: boolean })
               {physical && !looksShared ? (
                 <div className="vcard-row">
                   <label className="vcard-label" htmlFor="redeem-serial">NO. SIRI:</label>
-                  <input id="redeem-serial" className="vcard-batch" type="text" autoComplete="off" autoCapitalize="characters" spellCheck={false} placeholder="JLN-12B0126-01" value={serial} onChange={(e) => setSerial(e.target.value)} />
+                  <input id="redeem-serial" className="vcard-batch" type="text" autoComplete="off" autoCapitalize="characters" spellCheck={false} placeholder="Nombor siri pada label" value={serial} onChange={(e) => setSerial(e.target.value)} />
                 </div>
               ) : null}
               <label className="vcard-label vcard-label--code" htmlFor="redeem-code">KOD:</label>
