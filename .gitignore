@@ -11,6 +11,7 @@ dist/
 coverage/
 .vercel/
 storage/
+!src/lib/storage/
 backups/
 .vercel
 .env*

@@ -137,7 +137,7 @@ async function getSeriesHighlights(): Promise<SeriesHighlightData[]> {
       slug: "satu-daerah-yang-paling-sunyi",
       title: "Satu Daerah yang Paling Sunyi",
       genre: "Rumah Tangga",
-      hero: { src: "https://hinxqignbwjdoi92.public.blob.vercel-storage.com/assets/visuals/vr-5894790-v1-54cf7d5e.png", alt: "Ilustrasi siri Satu Daerah yang Paling Sunyi" },
+      hero: { src: "https://jalin.adjung.com/media/assets/visuals/vr-5894790-v1-54cf7d5e.png", alt: "Ilustrasi siri Satu Daerah yang Paling Sunyi" },
       first: { slug: "garing-bukan-hangit", position: 1 },
       latest: { slug: "garing-bukan-hangit", position: 1, title: "Garing, Bukan Hangit" },
       authors: [],

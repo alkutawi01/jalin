@@ -20,7 +20,11 @@ const nextConfig = {
   },
   images: {
     // Uploaded/generated visuals live in Vercel Blob (public store).
-    remotePatterns: [{ protocol: "https", hostname: "*.public.blob.vercel-storage.com" }],
+    remotePatterns: [
+      { protocol: "https", hostname: "*.public.blob.vercel-storage.com" },
+      // Pictures moved to a private Cloudflare R2 bucket, served by the site's own /media route.
+      { protocol: "https", hostname: "jalin.adjung.com", pathname: "/media/**" }
+    ],
     qualities: [75, 85]
   }
 };
