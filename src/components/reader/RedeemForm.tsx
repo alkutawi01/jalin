@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import RedeemCardGuide, { type CardField } from "./RedeemCardGuide";
 
 /** Redeem a card code (code and batch number, both printed on the card) or a shared code (the code alone). */
 export default function RedeemForm({ embedded = false }: { embedded?: boolean }) {
@@ -9,6 +10,7 @@ export default function RedeemForm({ embedded = false }: { embedded?: boolean })
   const [error, setError] = useState("");
   const [done, setDone] = useState("");
   const [busy, setBusy] = useState(false);
+  const [field, setField] = useState<CardField>(null);
 
   const looksShared = /^\s*jln[\s-]*[a-z0-9]/i.test(code);
 
@@ -42,13 +44,14 @@ export default function RedeemForm({ embedded = false }: { embedded?: boolean })
     <div className="auth-card">
       <form onSubmit={submit} noValidate>
         <h1 className="auth-title">Tebus kod langganan</h1>
+        {looksShared ? null : <RedeemCardGuide active={field} compact={embedded} />}
         <p className="auth-intro">Jika menggunakan kad langganan, kikis bahagian yang menutupi kod. Masukkan juga nombor batch yang tercetak pada kad.</p>
         <label className="auth-label" htmlFor="redeem-code">Kod langganan</label>
-        <input id="redeem-code" className="auth-input auth-code auth-code--long" type="text" autoComplete="off" autoCapitalize="characters" spellCheck={false} placeholder="XXXX-XXXX-XXXX-XXXX-X" value={code} onChange={(e) => setCode(e.target.value)} aria-invalid={!!error} aria-describedby={error ? "redeem-error" : undefined} />
+        <input id="redeem-code" className="auth-input auth-code auth-code--long" type="text" autoComplete="off" autoCapitalize="characters" spellCheck={false} placeholder="XXXX-XXXX-XXXX-XXXX-X" value={code} onChange={(e) => setCode(e.target.value)} onFocus={() => setField("code")} onBlur={() => setField(null)} aria-invalid={!!error} aria-describedby={error ? "redeem-error" : undefined} />
         {!looksShared ? (
           <>
             <label className="auth-label auth-label--gap" htmlFor="redeem-batch">Nombor batch</label>
-            <input id="redeem-batch" className="auth-input" type="text" autoComplete="off" autoCapitalize="characters" spellCheck={false} placeholder="Contoh: B2610-001" value={batch} onChange={(e) => setBatch(e.target.value)} />
+            <input id="redeem-batch" className="auth-input" type="text" autoComplete="off" autoCapitalize="characters" spellCheck={false} placeholder="Contoh: B2610-001" value={batch} onChange={(e) => setBatch(e.target.value)} onFocus={() => setField("batch")} onBlur={() => setField(null)} />
           </>
         ) : (
           <p className="auth-fine">Jika menggunakan kod kongsi, biarkan ruangan nombor batch kosong.</p>
