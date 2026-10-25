@@ -8,13 +8,28 @@ Sudah dibina dan berada di produksi, tetapi tersembunyi: akaun pembaca, percubaa
 
 Belum ada: bayaran dalam Jalin (pilih pakej, bayar, kod dihantar ke e-mel); dasar bayaran balik dan penggantian kad.
 
+## Keputusan Izzat (25 Okt 2026)
+
+- **Urutan pelancaran: kod e-mel dahulu, kad fizikal kemudian.** Jadi bayaran dalam Jalin (bahagian C) ialah laluan kritikal. Kad fizikal (bahagian B) menyusul.
+- **Pakej:** 1, 6 dan 12 bulan. Harga belum ditetapkan.
+- **Tarikh tebus sebelum:** ada, ditetapkan bagi setiap kelompok (seperti SUS). BELUM DIBINA (lihat C3).
+- **Kad hilang atau rosak:** diganti jika kod belum ditebus (sistem sudah menyokongnya). Sekiranya sudah ditebus, tiada penggantian. Soalan Lazim perlu dikemas kini (lihat A1).
+- **Bayaran balik:** belum diputuskan; Soalan Lazim kekal senyap tentangnya.
+- **SUS tidak mempunyai sistem kad langganan** (disahkan daripada sesi SUS, 25 Okt); "samakan dengan SUS" bermaksud samakan rupa dan nada kad, bukan sistem sedia ada. Tiada dasar SUS untuk disalin.
+
+## Perkara teknikal yang mesti diselesaikan sebelum kod e-mel dihantar
+
+- **Kod e-mel perlu membawa nombor siri juga.** Nombor siri ialah faktor kedua bagi semua kod kad. Borang tebus kini hanya menghantar nombor siri jika pembaca memilih "ada kad fizikal"; kod kad yang diterima melalui e-mel tanpa nombor siri akan ditolak. Penyelesaian: e-mel "kad maya" memaparkan nombor siri dan kod bersama, dan borang sentiasa meminta kedua-duanya untuk kod kad. Kod kongsi (cth JLN-...) tidak memerlukan nombor siri.
+- **Tarikh tebus sebelum:** tambah medan pada kelompok, semakan semasa tebus (tolak jika lepas tarikh), dan paparan pada label dan kad maya.
+- **Jualan dalam talian tidak menggunakan pelekat kikis.** Kod dalam e-mel dilihat terus. Tentukan sama ada mahu kod disimpan sebagai kad maya (gambar dalam e-mel) atau teks sahaja.
+
 ## Bahagian A. Keputusan yang perlu dibuat (tiada kod)
 
-- [ ] **A1. Dasar bayaran balik dan penggantian kad.** Putuskan: ada atau tiada bayaran balik, bila; kad rosak atau hilang diganti atau tidak (sistem sudah boleh menggantikan kad yang belum ditebus). Selepas putus, Soalan Lazim perlu dikemas kini dan disemak ChatGPT semula (sertakan fakta sumber).
-- [ ] **A2. Harga** kad 1, 6 dan 12 bulan.
+- [ ] **A1. Bayaran balik** belum diputuskan. Penggantian kad hilang atau rosak sudah diputuskan (diganti jika belum ditebus): kemas kini Soalan Lazim, kemudian hantar ChatGPT semula dengan fakta sumber.
+- [ ] **A2. Harga** pakej 1, 6 dan 12 bulan.
 - [ ] **A3. Padam atau kurangkan** perbualan ChatGPT "Semakan bahasa dan fakta" (folder Jalin) dan `docs/NOMBOR_SIRI_KAD.md`, jika maksud nombor siri mahu dirahsiakan sepenuhnya.
 
-## Bahagian B. Kad fizikal
+## Bahagian B. Kad fizikal (selepas kod e-mel dilancarkan)
 
 - [ ] **B1. Reka kad** dalam Canva atau Illustrator (hadapan 1, 6 dan 12 bulan; belakang). Jalin tidak mereka bentuk kad; sistem hanya mencetak label.
 - [ ] **B2. Pilih kedudukan label** pada belakang kad, dan kedudukan pelekat kikis di atas kod.
@@ -23,15 +38,15 @@ Belum ada: bayaran dalam Jalin (pilih pakej, bayar, kod dihantar ke e-mel); dasa
 - [ ] **B5. Tetapkan saiz muktamad** label dan pelekat kikis (nilai awal 50 x 30 mm dan 40 x 8 mm hanyalah andaian). Jika saiz berubah, kemas kini `DEFAULT_LABEL` dalam `src/lib/subscription/label.ts`.
 - [ ] **B6. Cetak kelompok percubaan kecil** (contoh 10 kad) dan uji dengan satu akaun ujian (lihat bahagian D).
 
-## Bahagian C. Bayaran dalam Jalin (belum dibina)
+## Bahagian C. Bayaran dalam Jalin dan kod e-mel (DIDAHULUKAN, belum dibina)
 
 - [ ] **C1. Kaji penyedia bayaran** untuk Malaysia: FPX dan kad, yuran, syarat akaun perniagaan (SSM milikan tunggal), API, tempoh pengeluaran wang, bayaran balik. Minta Claude menyediakan perbandingan dan cadangan. Tiada kod ditulis dan tiada akaun dibuka sehingga awak pilih.
 - [ ] **C2. Buka akaun penyedia** yang dipilih dan sediakan kunci API (mod ujian dahulu).
-- [ ] **C3. Bina aliran:** pilih pakej, bayar, kod dijana dan dihantar ke e-mel, tebus. Kod dari e-mel perlu ditebus melalui mekanisme yang sama (satu kod, satu akaun).
+- [ ] **C3. Bina aliran (termasuk nombor siri dalam e-mel dan tarikh tebus sebelum):** pilih pakej, bayar, kod dijana dan dihantar ke e-mel, tebus. Kod dari e-mel perlu ditebus melalui mekanisme yang sama (satu kod, satu akaun).
 - [ ] **C4. Uji dalam mod ujian penyedia**, kemudian satu pembelian sebenar bernilai kecil.
 - [ ] **C5. Kemas kini Terma penggunaan dan Dasar privasi** untuk memasukkan pembayaran, dan semak melalui ChatGPT.
 
-C hanya perlu jika mahu jual terus dalam Jalin. Kad fizikal boleh dilancarkan tanpa C.
+C kini laluan kritikal, kerana kod e-mel dilancarkan dahulu. Selesaikan juga perkara teknikal di atas (nombor siri dalam e-mel, tarikh tebus sebelum) sebagai sebahagian C3.
 
 ## Bahagian D. Ujian sebelum hidup
 
