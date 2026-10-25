@@ -40,7 +40,7 @@ export async function buildCodesExport(db: Db, deps: { codeKey: MacKey; readerKe
   const codes = await db
     .selectFrom("redeem_codes as c")
     .innerJoin("code_batches as b", "b.id", "c.batch_id")
-    .select(["c.serial", "c.code_mac", "c.key_id", "c.state", "c.issued_at", "c.revoked_at", "c.revoke_reason", "b.batch_number"])
+    .select(["c.serial", "c.code_mac", "c.key_id", "c.state", "c.issued_at", "c.revoked_at", "c.revoke_reason", "c.redeem_by", "b.batch_number"])
     .orderBy("c.serial", "asc")
     .execute();
   const redemptions = await db
@@ -63,10 +63,10 @@ export async function buildCodesExport(db: Db, deps: { codeKey: MacKey; readerKe
 
   lines.push({ t: "meta", v: EXPORT_VERSION, at: now.toISOString(), halted, keyIds: [...new Set(codes.map((c) => c.key_id))].sort(), counts: { batches: batches.length, codes: codes.length, redemptions: redemptions.length, shared: shared.length, sharedRedemptions: sharedUse.length } });
   for (const b of batches) {
-    lines.push({ t: "batch", number: b.batch_number, months: b.months, quantity: b.quantity, status: b.status, orderRef: b.order_ref, note: b.note, keyId: b.key_id, createdBy: b.created_by, createdAt: iso(b.created_at), confirmedAt: iso(b.confirmed_at), voidedAt: iso(b.voided_at), voidReason: b.void_reason });
+    lines.push({ t: "batch", number: b.batch_number, channel: b.channel, months: b.months, quantity: b.quantity, status: b.status, orderRef: b.order_ref, note: b.note, keyId: b.key_id, createdBy: b.created_by, createdAt: iso(b.created_at), confirmedAt: iso(b.confirmed_at), voidedAt: iso(b.voided_at), voidReason: b.void_reason });
   }
   for (const c of codes) {
-    lines.push({ t: "code", batch: c.batch_number, serial: c.serial, mac: c.code_mac, keyId: c.key_id, state: c.state, issuedAt: iso(c.issued_at), revokedAt: iso(c.revoked_at), revokeReason: c.revoke_reason });
+    lines.push({ t: "code", batch: c.batch_number, serial: c.serial, mac: c.code_mac, keyId: c.key_id, state: c.state, issuedAt: iso(c.issued_at), revokedAt: iso(c.revoked_at), revokeReason: c.revoke_reason, redeemBy: iso(c.redeem_by) });
   }
   for (const r of redemptions) {
     lines.push({ t: "redemption", serial: r.serial, at: iso(r.redeemed_at), months: r.months, from: iso(r.starts_at), to: iso(r.ends_at), emailMac: r.email_normalized ? emailLookupMac(deps.readerKey, r.email_normalized) : null });
@@ -173,7 +173,7 @@ export async function reconcileWithExport(db: Db, input: ParsedExport | string, 
       if (options.apply) {
         const row = await trx
           .insertInto("code_batches")
-          .values({ batch_number: number, months: Number(b.months), quantity: Number(b.quantity), status: b.status as "PENDING_PRINT" | "PRINT_CONFIRMED" | "VOIDED", order_ref: (b.orderRef as string) ?? null, note: (b.note as string) ?? null, key_id: String(b.keyId), created_by: (b.createdBy as string) ?? null, created_at: date(b.createdAt) ?? now, confirmed_at: date(b.confirmedAt), voided_at: date(b.voidedAt), void_reason: (b.voidReason as string) ?? null })
+          .values({ batch_number: number, channel: b.channel === "virtual" ? "virtual" : "physical", months: Number(b.months), quantity: Number(b.quantity), status: b.status as "PENDING_PRINT" | "PRINT_CONFIRMED" | "VOIDED", order_ref: (b.orderRef as string) ?? null, note: (b.note as string) ?? null, key_id: String(b.keyId), created_by: (b.createdBy as string) ?? null, created_at: date(b.createdAt) ?? now, confirmed_at: date(b.confirmedAt), voided_at: date(b.voidedAt), void_reason: (b.voidReason as string) ?? null })
           .returning("id")
           .executeTakeFirstOrThrow();
         batchIds.set(number, row.id);
@@ -190,7 +190,7 @@ export async function reconcileWithExport(db: Db, input: ParsedExport | string, 
         report.codesAdded++;
         if (options.apply) {
           const batchId = batchIds.get(String(c.batch)) ?? (await trx.selectFrom("code_batches").select("id").where("batch_number", "=", String(c.batch)).executeTakeFirstOrThrow()).id;
-          await trx.insertInto("redeem_codes").values({ batch_id: batchId, serial, code_mac: String(c.mac), key_id: String(c.keyId), state: c.state as "generated" | "issued" | "revoked", issued_at: date(c.issuedAt), revoked_at: date(c.revokedAt), revoke_reason: (c.revokeReason as string) ?? null }).execute();
+          await trx.insertInto("redeem_codes").values({ batch_id: batchId, serial, code_mac: String(c.mac), key_id: String(c.keyId), state: c.state as "generated" | "issued" | "revoked", issued_at: date(c.issuedAt), revoked_at: date(c.revokedAt), revoke_reason: (c.revokeReason as string) ?? null, redeem_by: date(c.redeemBy) }).execute();
         }
         continue;
       }

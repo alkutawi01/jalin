@@ -3,7 +3,7 @@ import { logActivity } from "../../../../../lib/admin/activity";
 import { actor, bad, guarded, layoutFrom, pdfResponse, readBody, sameOriginOrRefuse, str } from "../../../../../lib/admin/langganan-api";
 import { codeKey } from "../../../../../lib/reader-auth/http";
 import { createBatch, voidBatch } from "../../../../../lib/reader-auth/redeem";
-import { mmyyFromMonthInput } from "../../../../../lib/subscription/redeem-code";
+import { mmyyFromMonthInput, redeemByFromDateInput, redeemByLabel } from "../../../../../lib/subscription/redeem-code";
 import { buildLabelPdf, computeLayout } from "../../../../../lib/subscription/label";
 
 export const dynamic = "force-dynamic";
@@ -32,12 +32,15 @@ export async function POST(request: Request) {
 
     const issueMmyy = body.issueMonth ? mmyyFromMonthInput(str(body.issueMonth, 10)) : undefined;
     if (body.issueMonth && !issueMmyy) return bad("Bulan dijangka dikeluarkan tidak sah.");
+    const redeemBy = redeemByFromDateInput(str(body.redeemBy, 12));
+    if (!redeemBy) return bad("Tarikh tebus sebelum diperlukan (hari terakhir kod boleh ditebus).");
+    if (redeemBy.getTime() <= Date.now()) return bad("Tarikh tebus sebelum mesti pada masa depan.");
     const who = await actor();
-    const made = await createBatch(db, { codeKey: codeKey() }, { months: months as 1 | 6 | 12, quantity, issueMmyy: issueMmyy ?? undefined, orderRef: str(body.orderRef, 100) || undefined, note: str(body.note, 300) || undefined, createdBy: who.name });
+    const made = await createBatch(db, { codeKey: codeKey() }, { months: months as 1 | 6 | 12, quantity, redeemBy, issueMmyy: issueMmyy ?? undefined, orderRef: str(body.orderRef, 100) || undefined, note: str(body.note, 300) || undefined, createdBy: who.name });
 
     let pdf: string;
     try {
-      pdf = buildLabelPdf(settings, made.codes.map((c) => ({ canonical: c.canonical, batchNumber: made.batchNumber, serial: c.serial, planText: `${months} bulan` }))).pdf;
+      pdf = buildLabelPdf(settings, made.codes.map((c) => ({ canonical: c.canonical, batchNumber: made.batchNumber, serial: c.serial, planText: `${months} bulan`, redeemBy: redeemByLabel(redeemBy) }))).pdf;
     } catch (error) {
       await voidBatch(db, made.batchId, "PDF tidak dapat dibina").catch(() => undefined);
       throw error;

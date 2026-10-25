@@ -17,6 +17,6 @@ export async function GET(request: Request) {
   }
   const errors = layout.problems.filter((p) => p.level === "error");
   if (errors.length) return bad(errors.map((p) => p.text).join(" "));
-  const { pdf } = buildLabelPdf(settings, [{ canonical: "TESTTESTTESTTESTT", batchNumber: "UJIAN", serial: "BUKAN-KOD-SEBENAR", planText: "6 bulan" }], { guides: true });
+  const { pdf } = buildLabelPdf(settings, [{ canonical: "TESTTESTTESTTESTT", batchNumber: "UJIAN", serial: "BUKAN-KOD-SEBENAR", planText: "6 bulan", redeemBy: "31 DIS 2027" }], { guides: true });
   return pdfResponse(pdf, "label-ujian.pdf");
 }

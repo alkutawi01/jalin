@@ -113,6 +113,8 @@ export const hashSessionToken = (token: string) => createHash("sha256").update(t
 export type Mailer = {
   name: string;
   sendLoginCode(input: { to: string; code: string; ttlMinutes: number }): Promise<void>;
+  /** Any other message (the e-mail with a bought code). Throws when the provider refuses it; never put a code in the error text. */
+  sendMessage(input: { to: string; subject: string; text: string; html: string }): Promise<void>;
 };
 
 export function loginCodeMessage(code: string, ttlMinutes: number): { subject: string; text: string; html: string } {
@@ -148,6 +150,10 @@ export function consoleMailer(log: (line: string) => void = console.log): Mailer
     async sendLoginCode({ to, code, ttlMinutes }) {
       log(`[mail:console] Kod log masuk untuk ${to}: ${code} (sah ${ttlMinutes} minit)`);
     },
+    async sendMessage({ to, subject, text }) {
+      log(`[mail:console] Kepada ${to}: ${subject}
+${text}`);
+    },
   };
 }
 
@@ -160,6 +166,14 @@ export function resendMailer(apiKey: string, from: string, fetchImpl: typeof fet
         method: "POST",
         headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
         body: JSON.stringify({ from, to: [to], subject: message.subject, text: message.text, html: message.html }),
+      });
+      if (!response.ok) throw new Error(`Mail provider refused the message (${response.status}).`);
+    },
+    async sendMessage({ to, subject, text, html }) {
+      const response = await fetchImpl("https://api.resend.com/emails", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ from, to: [to], subject, text, html }),
       });
       if (!response.ok) throw new Error(`Mail provider refused the message (${response.status}).`);
     },

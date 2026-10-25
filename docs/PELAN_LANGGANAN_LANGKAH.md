@@ -14,8 +14,8 @@ Belum ada: bayaran dalam Jalin (pilih pakej, bayar, kod dihantar ke e-mel); dasa
 - **Pakej:** 1, 6 dan 12 bulan. Harga belum ditetapkan.
 - **Tarikh tebus sebelum:** ada, ditetapkan bagi setiap kelompok (seperti SUS). BELUM DIBINA (lihat C3).
 - **Kad hilang atau rosak:** diganti jika kod belum ditebus (sistem sudah menyokongnya). Sekiranya sudah ditebus, tiada penggantian. Soalan Lazim perlu dikemas kini (lihat A1).
-- **Nombor siri fizikal dan maya dibezakan dengan satu huruf sebelum nombor kad:** F untuk kad fizikal, M untuk kad maya (kod e-mel). Contoh bentuk: `...-F01` dan `...-M01`. Fizikal dan maya mempunyai urutan nombor masing-masing. Keputusan Izzat, 25 Okt 2026. BELUM DIBINA (kod semasa hanya menerima nombor kad dua digit atau lebih tanpa huruf).
-- **Tarikh tebus sebelum, kod maya:** tetap satu tahun selepas kod dijana (tiada pilihan setiap kelompok). **Kod fizikal:** ditetapkan setiap kelompok. Kedua-duanya perlu dibina.
+- **Nombor siri fizikal dan maya dibezakan dengan satu huruf sebelum nombor kad:** F untuk kad fizikal, M untuk kad maya (kod e-mel). Contoh bentuk: `...-F01` dan `...-M01`. Fizikal dan maya mempunyai urutan nombor masing-masing. Keputusan Izzat, 25 Okt 2026. DIBINA 25 Okt 2026.
+- **Tarikh tebus sebelum, kod maya:** tetap satu tahun selepas kod dijana (tiada pilihan setiap kelompok). **Kod fizikal:** ditetapkan setiap kelompok. **DIBINA 25 Okt 2026** (migrasi 036).
 - **Gateway:** ChatGPT dan kajian Claude sama-sama mencadangkan Billplz Basic dahulu (`docs/KAJIAN_PENYEDIA_BAYARAN.md`). Satu akaun gateway cukup untuk SUS dan Jalin; guna rujukan berasingan. Belum dipilih secara rasmi.
 - **Saluran pengeluaran kod mesti direkod:** kad fizikal, bayaran dalam talian, hadiah. Satu sistem tebus untuk semua; kod Jalin tidak sah di SUS dan sebaliknya.
 - **Kod digital:** salinan terenkripsi disimpan sehingga e-mel berjaya dihantar, kemudian dipadam (enjin sedia ada hanya menyimpan cincang, jadi ini perlu dibina).
@@ -48,7 +48,9 @@ Belum ada: bayaran dalam Jalin (pilih pakej, bayar, kod dihantar ke e-mel); dasa
 - [x] **C1. Kajian penyedia bayaran** siap (25 Okt 2026): lihat `docs/KAJIAN_PENYEDIA_BAYARAN.md`. Senarai pendek: Billplz dan CHIP Collect. Tiada kod ditulis dan tiada akaun dibuka.
 - [ ] **C1b. Izzat:** lihat senarai dokumen pendaftaran Billplz dan CHIP, tanya sama ada pemilik tunggal boleh terima ke akaun bank yang ada (atau mesti atas nama perniagaan), tanya SST ke atas yuran dan masa kelulusan, dan (CHIP) bayaran balik dan mod ujian. Kemudian pilih satu.
 - [ ] **C2. Buka akaun penyedia** yang dipilih dan sediakan kunci API (mod ujian dahulu).
-- [ ] **C3. Bina aliran (termasuk nombor siri dalam e-mel dan tarikh tebus sebelum):** pilih pakej, bayar, kod dijana dan dihantar ke e-mel, tebus. Kod dari e-mel perlu ditebus melalui mekanisme yang sama (satu kod, satu akaun).
+- [x] **C3. Aliran jualan dalam talian dibina (25 Okt 2026)** dan diuji hujung ke hujung pada pangkalan data pembangunan dengan kunci palsu: pesanan, bayaran (callback bertandatangan), satu kod bagi satu bayaran, kod tersulit sehingga e-mel dihantar, hantar semula, tebus dengan nombor siri F/M, tarikh tebus sebelum. Lihat `docs/JUALAN_DALAM_TALIAN.md`. **Belum diuji dengan Billplz sebenar.**
+- [ ] **C3b. Izzat:** buka akaun Billplz sandbox, tetapkan pemboleh ubah dalam `docs/JUALAN_DALAM_TALIAN.md`, jalankan migrasi 036 dan 037 pada produksi (selepas migrasi 035 `web-push` digabungkan), dan lakukan satu pembelian sandbox.
+- [ ] **C3c. Claude (kemudian):** pautan ke `/beli` dalam menu atau halaman, kemas kini Soalan Lazim (tarikh tebus sebelum, beli dalam talian) dan semakan bahasa ChatGPT; butang penggantian kod maya.
 - [ ] **C4. Uji dalam mod ujian penyedia**, kemudian satu pembelian sebenar bernilai kecil.
 - [ ] **C5. Kemas kini Terma penggunaan dan Dasar privasi** untuk memasukkan pembayaran, dan semak melalui ChatGPT.
 

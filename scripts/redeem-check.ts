@@ -10,9 +10,9 @@ config({ path: ".env.local", override: true });
 import { sql } from "kysely";
 import { closeDb, getDb } from "../src/lib/db";
 import { addTrial, getAccess, listLedger } from "../src/lib/reader-auth/entitlements";
-import { confirmBatchPrinted, createBatch, createSharedCode, isRedeemHalted, issueCodes, redeemCode, revokeCode, setRedeemHalted, setSharedCodeStatus, voidBatch } from "../src/lib/reader-auth/redeem";
+import { confirmBatchPrinted, createBatch, createSharedCode, isRedeemHalted, issueCodes, issueVirtualCode, redeemCode, revokeCode, setRedeemHalted, setSharedCodeStatus, voidBatch } from "../src/lib/reader-auth/redeem";
 import type { Db } from "../src/lib/reader-auth/service";
-import { formatCode } from "../src/lib/subscription/redeem-code";
+import { formatCode, redeemByFromDateInput, redeemByLastDayInput } from "../src/lib/subscription/redeem-code";
 import { addMonthsMYT } from "../src/lib/subscription/periods";
 import type { MacKey } from "../src/lib/reader-auth/primitives";
 
@@ -47,8 +47,8 @@ async function main() {
       const B = await newAccount(trx, "tebus-b@e2e.invalid");
 
       // ---------------------------------------------------------- making a batch
-      const batch = await createBatch(trx, { codeKey, now: day(0) }, { months: 6, quantity: 4, orderRef: "Sekolah X", createdBy: "ujian" });
-      assert(/^JLN-06B\d{4}$/.test(batch.batchNumber) && batch.codes.length === 4 && new Set(batch.codes.map((c) => c.serial)).size === 4 && batch.codes.every((c, i) => c.serial === `${batch.batchNumber}-0${i + 1}`), "a batch of four cards gets the serial numbers JLN-06B<MMYY>-01 to -04");
+      const batch = await createBatch(trx, { codeKey, now: day(0) }, { months: 6, quantity: 4, redeemBy: redeemByFromDateInput("2030-12-31")!, orderRef: "Sekolah X", createdBy: "ujian" });
+      assert(/^JLN-06B\d{4}-F$/.test(batch.batchNumber) && batch.codes.length === 4 && new Set(batch.codes.map((c) => c.serial)).size === 4 && batch.codes.every((c, i) => c.serial === `${batch.batchNumber}0${i + 1}`), "a batch of four physical cards gets the serial numbers JLN-06B<MMYY>-F01 to F04");
       const stored = await sql<{ n: string }>`SELECT count(*) AS n FROM redeem_codes WHERE ${batch.codes[0].canonical} = ANY (ARRAY[code_mac, serial])`.execute(trx);
       const dump = await sql<{ t: string }>`SELECT string_agg(r::text, ' ') AS t FROM redeem_codes r WHERE batch_id = ${batch.batchId}`.execute(trx);
       assert(Number(stored.rows[0].n) === 0 && batch.codes.every((c) => !dump.rows[0].t.includes(c.canonical) && !dump.rows[0].t.includes(c.code)), "the plain codes are not stored anywhere: only keyed hashes");
@@ -59,7 +59,7 @@ async function main() {
 
       // ---------------------------------------------------------- issuing
       assert(await confirmBatchPrinted(trx, batch.batchId, day(1)) && !(await confirmBatchPrinted(trx, batch.batchId, day(1))), "the print is confirmed once");
-      assert((await issueCodes(trx, { serials: [batch.codes[0].serial, `${batch.batchNumber}-99`] }, day(1))) === 1, "issuing by serial number switches on only the cards named");
+      assert((await issueCodes(trx, { serials: [batch.codes[0].serial, `${batch.batchNumber}99`] }, day(1))) === 1, "issuing by serial number switches on only the cards named");
       assert((await redeem(trx, A, batch.codes[1].code, batch.codes[1].serial)).status === "invalid", "a card not yet issued still cannot be redeemed");
 
       // ---------------------------------------------------------- redeeming
@@ -90,15 +90,15 @@ async function main() {
       assert(await revokeCode(trx, batch.codes[1].serial, "Kad hilang", day(2)) && !(await revokeCode(trx, batch.codes[1].serial, "lagi", day(2))), "a lost card is cancelled once");
       assert((await redeem(trx, B, batch.codes[1].code, batch.codes[1].serial, 5)).status === "invalid", "a cancelled code cannot be redeemed");
       assert((await redeem(trx, B, batch.codes[2].code, batch.codes[2].serial, 5)).status === "ok", "the other cards of the batch still work");
-      const v = await createBatch(trx, { codeKey, now: day(0) }, { months: 1, quantity: 2 });
+      const v = await createBatch(trx, { codeKey, now: day(0) }, { months: 1, quantity: 2, redeemBy: redeemByFromDateInput("2030-12-31")! });
       await confirmBatchPrinted(trx, v.batchId); await issueCodes(trx, { batchId: v.batchId });
       assert(await voidBatch(trx, v.batchId, "Cetakan rosak") && !(await voidBatch(trx, v.batchId, "lagi")), "a bad print is voided once");
       assert((await redeem(trx, A, v.codes[0].code, v.codes[0].serial, 6)).status === "invalid", "no card of a voided batch can be redeemed");
       let noReason = false; try { await voidBatch(trx, batch.batchId, " "); } catch { noReason = true; }
       assert(noReason, "voiding needs a reason");
-      let badQty = false; try { await createBatch(trx, { codeKey }, { months: 6, quantity: 0 }); } catch { badQty = true; }
-      let badMonths = false; try { await createBatch(trx, { codeKey }, { months: 3 as 1, quantity: 1 }); } catch { badMonths = true; }
-      let badNumber = false; try { await createBatch(trx, { codeKey }, { months: 6, quantity: 1, issueMmyy: "1326" }); } catch { badNumber = true; }
+      let badQty = false; try { await createBatch(trx, { codeKey }, { months: 6, quantity: 0, redeemBy: redeemByFromDateInput("2030-12-31")! }); } catch { badQty = true; }
+      let badMonths = false; try { await createBatch(trx, { codeKey }, { months: 3 as 1, quantity: 1, redeemBy: redeemByFromDateInput("2030-12-31")! }); } catch { badMonths = true; }
+      let badNumber = false; try { await createBatch(trx, { codeKey }, { months: 6, quantity: 1, redeemBy: redeemByFromDateInput("2030-12-31")!, issueMmyy: "1326" }); } catch { badNumber = true; }
       assert(badQty && badMonths && badNumber, "a bad quantity, length or issue month is refused");
 
       // ---------------------------------------------------------- stop switch and limits
@@ -148,8 +148,46 @@ async function main() {
       await sql`DELETE FROM reader_accounts WHERE id = ${A}`.execute(trx);
       const kept = await sql<{ n: string; linked: string }>`SELECT count(*) AS n, count(account_id) AS linked FROM redemptions WHERE code_id IN (SELECT id FROM redeem_codes WHERE batch_id = ${batch.batchId}) AND redeemed_at = ${day(3)}`.execute(trx);
       assert(Number(kept.rows[0].n) === 1 && Number(kept.rows[0].linked) === 0, "deleting the reader keeps the redemption, without the link to them");
-      const more = await createBatch(trx, { codeKey, now: day(0) }, { months: 6, quantity: 2 });
-      assert(more.batchNumber === `${batch.batchNumber}-B2` && more.codes[0].serial === `${batch.batchNumber}-05` && more.codes[1].serial === `${batch.batchNumber}-06` && v.codes[0].serial.endsWith("-01"), "a second batch of the same length and month goes on numbering (-05, -06) while another length starts again at -01");
+      const more = await createBatch(trx, { codeKey, now: day(0) }, { months: 6, quantity: 2, redeemBy: redeemByFromDateInput("2030-12-31")! });
+      assert(more.batchNumber === `${batch.batchNumber}-B2` && more.codes[0].serial === `${batch.batchNumber}05` && more.codes[1].serial === `${batch.batchNumber}06` && v.codes[0].serial.endsWith("-F01"), "a second batch of the same length, month and kind goes on numbering (F05, F06) while another length starts again at F01");
+      // ---------------------------------------------------------- the last day to redeem, and virtual codes
+      const lastDay = redeemByFromDateInput(redeemByLastDayInput(day(20)))!;
+      const tight = await createBatch(trx, { codeKey, now: day(0) }, { months: 1, quantity: 2, redeemBy: lastDay });
+      await confirmBatchPrinted(trx, tight.batchId); await issueCodes(trx, { batchId: tight.batchId });
+      const R1 = await newAccount(trx, "tebus-r1@e2e.invalid"); const R2 = await newAccount(trx, "tebus-r2@e2e.invalid");
+      const late = await redeem(trx, R1, tight.codes[0].code, tight.codes[0].serial, 21);
+      assert(late.status === "expired" && same((late as { redeemBy: Date }).redeemBy, lastDay), "a code redeemed the day after its last day is refused as expired, and says the date", late);
+      const onTime = await redeem(trx, R2, tight.codes[1].code, tight.codes[1].serial, 20);
+      assert(onTime.status === "ok", "a code redeemed on its last day still works", onTime);
+      assert((await redeem(trx, R1, tight.codes[0].code, "JLN-01B0101-F99", 21)).status === "invalid", "an expired code with a wrong serial is not told apart from any other wrong try");
+      const none = await createBatch(trx, { codeKey, now: day(0) }, { months: 1, quantity: 1, redeemBy: redeemByFromDateInput("2027-01-31")! });
+      assert(same(none.codes[0].redeemBy!, redeemByFromDateInput("2027-01-31")!), "the batch keeps the date it was made with");
+      let pastDate = false; try { await createBatch(trx, { codeKey, now: day(0) }, { months: 1, quantity: 1, redeemBy: day(-1) }); } catch { pastDate = true; }
+      let farDate = false; try { await createBatch(trx, { codeKey, now: day(0) }, { months: 1, quantity: 1, redeemBy: redeemByFromDateInput("2060-01-01")! }); } catch { farDate = true; }
+      assert(pastDate && farDate, "a redeem-by date in the past, or more than ten years away, is refused");
+
+      const v1 = await issueVirtualCode(trx, { codeKey, now: day(0) }, { months: 6 });
+      const v2 = await issueVirtualCode(trx, { codeKey, now: day(0) }, { months: 6 });
+      const v12 = await issueVirtualCode(trx, { codeKey, now: day(0) }, { months: 12 });
+      assert(/^JLN-06B\d{4}-M01$/.test(v1.serial) && v2.serial === v1.serial.replace("M01", "M02") && /^JLN-12B\d{4}-M01$/.test(v12.serial), "virtual codes are numbered M01, M02 within a length and month, and another length starts at M01");
+      assert(v1.batchNumber === v1.serial.slice(0, -2) && v1.batchNumber === v2.batchNumber, "virtual codes of one length and month share one batch");
+      const vb = await sql<{ quantity: number; channel: string; status: string }>`SELECT quantity, channel, status FROM code_batches WHERE batch_number = ${v1.batchNumber}`.execute(trx);
+      assert(vb.rows.length === 1 && vb.rows[0].quantity === 2 && vb.rows[0].channel === "virtual" && vb.rows[0].status === "PRINT_CONFIRMED", "that batch counts both codes, is virtual, and needs no print confirmation");
+      const vdump = await sql<{ t: string }>`SELECT string_agg(r::text, ' ') AS t FROM redeem_codes r WHERE serial IN (${v1.serial}, ${v2.serial})`.execute(trx);
+      assert(!vdump.rows[0].t.includes(v1.canonical) && !vdump.rows[0].t.includes(v1.code), "a virtual code is not stored as it was sent: only its keyed hash");
+      const V1 = await newAccount(trx, "tebus-v1@e2e.invalid");
+      const vok = await redeem(trx, V1, v1.code, v1.serial, 3);
+      assert(vok.status === "ok" && same(vok.startsAt, day(14)) && same(vok.endsAt, addMonthsMYT(day(14), 6)), "a virtual code is issued at once and redeems the same way as a card: 6 months after the trial", vok);
+      const V2 = await newAccount(trx, "tebus-v2@e2e.invalid");
+      assert((await redeem(trx, V2, v1.code, v2.serial, 3)).status === "invalid" && (await redeem(trx, V2, v2.code, v1.serial, 3)).status === "invalid", "a code does not work with another card's serial, physical or virtual");
+      assert(same(v1.redeemBy!, redeemByFromDateInput("2027-11-01")!), "a virtual code made on 1 Nov 2026 can be redeemed up to and including 1 Nov 2027");
+      const V3 = await newAccount(trx, "tebus-v3@e2e.invalid");
+      const vlate = await redeem(trx, V3, v2.code, v2.serial, 400);
+      assert(vlate.status === "expired", "a virtual code is expired a year after it was made", vlate);
+      const V4 = await newAccount(trx, "tebus-v4@e2e.invalid");
+      const vlast = await redeem(trx, V4, v12.code, v12.serial, 365);
+      assert(vlast.status === "ok", "and still works on the last day of that year", vlast);
+
       assert(formatCode(batch.codes[0].canonical) === batch.codes[0].code, "the printed form is the display form of the canonical code");
 
       throw new Rollback();
@@ -164,7 +202,7 @@ async function main() {
     const key = codeKey;
     const accounts: string[] = [];
     for (let i = 0; i < 12; i++) accounts.push(await newAccount(db, `par-${i}@e2e.invalid`));
-    const b = await createBatch(db, { codeKey: key }, { months: 1, quantity: 2 });
+    const b = await createBatch(db, { codeKey: key }, { months: 1, quantity: 2, redeemBy: redeemByFromDateInput("2030-12-31")! });
     await confirmBatchPrinted(db, b.batchId); await issueCodes(db, { batchId: b.batchId });
     const now = new Date();
     const race = await Promise.all(accounts.slice(0, 10).map((acc, i) => redeemCode(db, { codeKey: key, now }, { accountId: acc, ipMac: `race-${i}`, code: b.codes[0].code, serial: b.codes[0].serial })));

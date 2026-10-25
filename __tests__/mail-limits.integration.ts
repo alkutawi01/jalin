@@ -12,7 +12,7 @@ if (process.env.ALLOW_NON_DEV_DATABASE === "yes") throw new Error("Ujian kuota e
 class Rollback extends Error {}
 const key = { keyId: "mail-test", key: Buffer.alloc(32, 21) };
 const sent = new Map<string, string>();
-const mailer: Mailer = { name: "test", async sendLoginCode({ to, code }) { sent.set(to, code); } };
+const mailer: Mailer = { name: "test", async sendLoginCode({ to, code }) { sent.set(to, code); }, async sendMessage() {} };
 const now = new Date("2035-01-01T12:00:00.000Z");
 const limits = { requestsPerDayAll: 6, requestsPerDayNew: 4, requestsPerEmailPerHour: 10, requestsPerIpPerHour: 100 };
 let checked = false;

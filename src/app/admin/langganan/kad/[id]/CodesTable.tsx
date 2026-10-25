@@ -109,7 +109,7 @@ export default function CodesTable({ batchId, batchNumber, batchStatus }: { batc
         </div>
         <div className="admin-form-group">
           <label htmlFor="codes-q">Nombor siri</label>
-          <input id="codes-q" type="search" value={q} placeholder="JLN-12B0126" onChange={(e) => { setQ(e.target.value); setPage(1); }} />
+          <input id="codes-q" type="search" value={q} placeholder="JLN-12B0126-F" onChange={(e) => { setQ(e.target.value); setPage(1); }} />
         </div>
       </div>
       {!data ? <p className="admin-form-hint">Memuatkan…</p> : (
