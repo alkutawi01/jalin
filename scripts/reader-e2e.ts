@@ -13,6 +13,7 @@ import { config } from "dotenv";
 config({ path: ".env.local", override: true });
 import fs from "node:fs";
 import { sql } from "kysely";
+import { redeemByFromDateInput } from "../src/lib/subscription/redeem-code";
 import { closeDb, getDb } from "../src/lib/db";
 import { addGrant, listLedger } from "../src/lib/reader-auth/entitlements";
 import { confirmBatchPrinted, createBatch, createSharedCode, issueCodes, setRedeemHalted } from "../src/lib/reader-auth/redeem";
@@ -320,7 +321,7 @@ async function main() {
     const R = new Device("Penebus");
     await signIn(R, "e2e-tebus@e2e.invalid");
     assert((await R.req("/api/akaun/percubaan", { method: "POST", body: {} })).status === 200, "the redeeming reader starts the trial first, so the card is added after it");
-    const batchMade = await createBatch(db, { codeKey: key }, { months: 6, quantity: 3, createdBy: "e2e" });
+    const batchMade = await createBatch(db, { codeKey: key }, { months: 6, quantity: 3, redeemBy: redeemByFromDateInput("2030-12-31")!, createdBy: "e2e" });
     await confirmBatchPrinted(db, batchMade.batchId);
     await issueCodes(db, { batchId: batchMade.batchId });
     const pageVisitor = await v.req("/tebus");
@@ -389,12 +390,12 @@ async function main() {
     assert(small.status === 409 && (await sql<{ n: string }>`SELECT count(*) AS n FROM code_batches`.execute(db)).rows[0].n === none.rows[0].n, "a code that would print too small waits for confirmation and makes no batch meanwhile");
     assert((await fetch(BASE + "/api/admin/langganan/batch", { method: "POST", headers: { "content-type": "application/json", origin: "https://evil.example" }, body: JSON.stringify({ months: 6, quantity: 2 }) })).status === 403, "making a batch from another site is refused");
 
-    const made = await post({ months: 6, quantity: 3, orderRef: "Ujian e2e", layout: {} });
+    const made = await post({ months: 6, quantity: 3, redeemBy: "2030-12-31", orderRef: "Ujian e2e", layout: {} });
     const pdfBytes = Buffer.from(await made.arrayBuffer()).toString("latin1");
     const batchId = made.headers.get("x-batch-id")!;
-    assert(made.status === 200 && made.headers.get("content-type") === "application/pdf" && /no-store/.test(made.headers.get("cache-control") ?? "") && /^JLN-06B\d{4}$/.test(made.headers.get("x-batch-number") ?? "") && made.headers.get("x-cards") === "3", "a batch is made and the PDF comes back, never cached");
+    assert(made.status === 200 && made.headers.get("content-type") === "application/pdf" && /no-store/.test(made.headers.get("cache-control") ?? "") && /^JLN-06B\d{4}-F$/.test(made.headers.get("x-batch-number") ?? "") && made.headers.get("x-cards") === "3", "a batch is made and the PDF comes back, never cached");
     const printed = [...pdfBytes.matchAll(/\(([0-9A-Z]{4}-[0-9A-Z]{4}-[0-9A-Z]{4}-[0-9A-Z]{4}-[0-9A-Z])\) Tj/g)].map((m) => m[1]);
-    const serials = [...pdfBytes.matchAll(/\((JLN-06B\d{4}-\d{2})\) Tj/g)].map((m) => m[1]);
+    const serials = [...pdfBytes.matchAll(/\((JLN-06B\d{4}-F\d{2})\) Tj/g)].map((m) => m[1]);
     assert((pdfBytes.match(/\/Type \/Page /g) ?? []).length === 3 && printed.length === 3 && serials.length === 3 && new Set(printed).size === 3, "the PDF has three pages with three different codes and serials");
     const asStored = await sql<{ n: string }>`SELECT count(*) AS n FROM redeem_codes WHERE batch_id = ${batchId}::uuid`.execute(db);
     const leaked = await sql<{ n: string }>`SELECT count(*) AS n FROM redeem_codes WHERE code_mac = ANY(${printed.map((c) => c.replace(/-/g, ""))}) OR serial = ANY(${printed})`.execute(db);

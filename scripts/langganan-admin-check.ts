@@ -34,7 +34,7 @@ async function main() {
   let batchId: string | null = null;
   try {
     console.log("\nMaking a batch");
-    const made = await call("/api/admin/langganan/batch", { method: "POST", body: { months: 1, quantity: 3, note: "ujian http" } });
+    const made = await call("/api/admin/langganan/batch", { method: "POST", body: { months: 1, quantity: 3, redeemBy: "2030-12-31", note: "ujian http" } });
     assert(made.status === 200 && (made.headers.get("content-type") ?? "").includes("application/pdf") && made.buf.subarray(0, 4).toString() === "%PDF", "the batch answers with the label PDF", made.status);
     batchId = made.headers.get("x-batch-id");
     assert(!!batchId && made.headers.get("x-cards") === "3", "and says which batch and how many cards");

@@ -11,7 +11,7 @@
 import { sql } from "kysely";
 import type { Kysely } from "kysely";
 import type { Database } from "../db/types";
-import { computeCodeMac, formatCode, formatSerial, generateCanonicalCode, mmyyFor, normaliseCodeInput, normaliseSerial, serialGroup, serialPrefix } from "../subscription/redeem-code";
+import { computeCodeMac, formatCode, formatSerial, generateCanonicalCode, mmyyFor, normaliseCodeInput, normaliseSerial, serialGroup, serialPrefix, virtualRedeemBy } from "../subscription/redeem-code";
 import { evaluateSharedRedemption, generateSharedCode, isValidSharedGrant, normaliseSharedCodeInput, type SharedGrant } from "../subscription/shared-code";
 import { addGrant, getAccess } from "./entitlements";
 import { countEvents, recordEvent, type Db } from "./service";
@@ -48,31 +48,35 @@ export async function setRedeemHalted(db: Db, halted: boolean, by: string, now: 
 
 // ------------------------------------------------------------------ batches of card codes
 
-export type MadeCode = { serial: string; code: string; canonical: string };
+export type MadeCode = { serial: string; code: string; canonical: string; redeemBy: Date | null };
 export type MadeBatch = { batchId: string; batchNumber: string; months: 1 | 6 | 12; codes: MadeCode[] };
 
-/** The next free number of a serial group (JLN-12B0126): one more than the highest used so far, so a second batch of the same length and month goes on from the first. */
+/** The next free number of a serial group (JLN-12B0126-F): one more than the highest used so far, so a second batch of the same length, month and kind goes on from the first. */
 async function nextSerialNumber(trx: Db, prefix: string): Promise<number> {
   await sql`SELECT pg_advisory_xact_lock(hashtext(${prefix}))`.execute(trx);
-  const last = await sql<{ n: number | null }>`SELECT max(substring(serial from '[0-9]+$')::int) AS n FROM redeem_codes WHERE serial LIKE ${prefix + "-%"}`.execute(trx);
+  const last = await sql<{ n: number | null }>`SELECT max(substring(serial from '[0-9]+$')::int) AS n FROM redeem_codes WHERE serial LIKE ${prefix + "%"}`.execute(trx);
   return Number(last.rows[0]?.n ?? 0) + 1;
 }
 
 /**
  * Make a batch of card codes. Returns the plain codes ONCE so they can be printed; only their keyed hashes are saved. The batch starts
  * as PENDING_PRINT and its codes as "generated": nothing can be redeemed until the print is confirmed and the codes are issued.
- * Every card gets a serial number JLN-12B0126-01 (length, month of issue, own number); the batch itself is named by the first three
- * parts (and -B2, -B3 ... if a second batch of the same length and month is made).
+ * Every card gets a serial number JLN-12B0126-F01 (length, month of issue, F for physical, own number); the batch itself is named by the
+ * first parts (JLN-12B0126-F, and -B2, -B3 ... if a second batch of the same length and month is made). The whole batch shares one
+ * redeemBy date, the stored moment after which its codes are refused (see redeemByFromDateInput).
  */
 export async function createBatch(
   db: Db,
   deps: { codeKey: MacKey; now?: Date },
-  input: { months: 1 | 6 | 12; quantity: number; issueMmyy?: string; orderRef?: string; note?: string; createdBy?: string }
+  input: { months: 1 | 6 | 12; quantity: number; redeemBy: Date; issueMmyy?: string; orderRef?: string; note?: string; createdBy?: string }
 ): Promise<MadeBatch> {
   const now = deps.now ?? new Date();
   if (![1, 6, 12].includes(input.months)) throw new Error("A card is for 1, 6 or 12 months.");
   if (!Number.isInteger(input.quantity) || input.quantity < 1 || input.quantity > 5000) throw new Error("A batch is 1 to 5000 cards.");
-  const prefix = serialPrefix(input.months, input.issueMmyy ?? mmyyFor(now));
+  if (!(input.redeemBy instanceof Date) || Number.isNaN(input.redeemBy.getTime())) throw new Error("A redeem-by date is required.");
+  if (input.redeemBy.getTime() <= now.getTime()) throw new Error("The redeem-by date must be in the future.");
+  if (input.redeemBy.getTime() > now.getTime() + 10 * 366 * 24 * 60 * 60 * 1000) throw new Error("The redeem-by date is too far away.");
+  const prefix = serialPrefix(input.months, input.issueMmyy ?? mmyyFor(now), "physical");
 
   return inTransaction(db, async (trx) => {
     const start = await nextSerialNumber(trx, prefix);
@@ -83,18 +87,54 @@ export async function createBatch(
     const batchNumber = Number(earlier.rows[0].n) === 0 ? prefix : `${prefix}-B${Number(earlier.rows[0].n) + 1}`;
     const batch = await trx
       .insertInto("code_batches")
-      .values({ batch_number: batchNumber, months: input.months, quantity: input.quantity, order_ref: input.orderRef ?? null, note: input.note ?? null, key_id: deps.codeKey.keyId, created_by: input.createdBy ?? null })
+      .values({ batch_number: batchNumber, months: input.months, quantity: input.quantity, channel: "physical", order_ref: input.orderRef ?? null, note: input.note ?? null, key_id: deps.codeKey.keyId, created_by: input.createdBy ?? null })
       .returning("id")
       .executeTakeFirstOrThrow();
     const codes: MadeCode[] = [];
     const rows = Array.from({ length: input.quantity }, (_unused, i) => {
       const canonical = generateCanonicalCode();
       const serial = formatSerial(prefix, start + i, width);
-      codes.push({ serial, code: formatCode(canonical), canonical });
-      return { batch_id: batch.id, serial, code_mac: computeCodeMac(deps.codeKey.key, serial, canonical), key_id: deps.codeKey.keyId, created_at: now };
+      codes.push({ serial, code: formatCode(canonical), canonical, redeemBy: input.redeemBy });
+      return { batch_id: batch.id, serial, code_mac: computeCodeMac(deps.codeKey.key, serial, canonical), key_id: deps.codeKey.keyId, redeem_by: input.redeemBy, created_at: now };
     });
     for (let i = 0; i < rows.length; i += 500) await trx.insertInto("redeem_codes").values(rows.slice(i, i + 500)).execute();
     return { batchId: batch.id, batchNumber, months: input.months, codes };
+  });
+}
+
+/**
+ * One virtual code (a code e-mailed after payment), made at the moment the payment is confirmed. It belongs to the open virtual batch of
+ * its length and month (JLN-12B0126-M, one batch a month for each length, made the first time one is needed), is issued at once (nothing
+ * is printed, so there is no print to confirm) and is good for one year. Returns the plain code ONCE, to be sent; only the keyed hash is
+ * saved. The same order reference can never make two codes: the caller checks its own order record first, and `orderRef` is kept on the
+ * batch only as the last order, so the order record is the proof, not this.
+ */
+export async function issueVirtualCode(
+  db: Db,
+  deps: { codeKey: MacKey; now?: Date },
+  input: { months: 1 | 6 | 12; createdBy?: string }
+): Promise<MadeCode & { batchNumber: string; months: 1 | 6 | 12 }> {
+  const now = deps.now ?? new Date();
+  if (![1, 6, 12].includes(input.months)) throw new Error("A code is for 1, 6 or 12 months.");
+  const prefix = serialPrefix(input.months, mmyyFor(now), "virtual");
+  const redeemBy = virtualRedeemBy(now);
+  return inTransaction(db, async (trx) => {
+    const number = await nextSerialNumber(trx, prefix);
+    if (number > 99999) throw new Error("Too many virtual codes for this length and month.");
+    const batch = await trx
+      .insertInto("code_batches")
+      .values({ batch_number: prefix, months: input.months, quantity: 1, channel: "virtual", status: "PRINT_CONFIRMED", confirmed_at: now, key_id: deps.codeKey.keyId, created_by: input.createdBy ?? "pembayaran" })
+      .onConflict((oc) => oc.column("batch_number").doUpdateSet({ quantity: sql<number>`code_batches.quantity + 1` }))
+      .returning(["id", "quantity"])
+      .executeTakeFirstOrThrow();
+    if (Number(batch.quantity) > 5000) throw new Error("The virtual batch of this length and month is full.");
+    const canonical = generateCanonicalCode();
+    const serial = formatSerial(prefix, number, Math.max(2, String(number).length));
+    await trx
+      .insertInto("redeem_codes")
+      .values({ batch_id: batch.id, serial, code_mac: computeCodeMac(deps.codeKey.key, serial, canonical), key_id: deps.codeKey.keyId, state: "issued", issued_at: now, redeem_by: redeemBy, created_at: now })
+      .execute();
+    return { serial, code: formatCode(canonical), canonical, redeemBy, batchNumber: prefix, months: input.months };
   });
 }
 
@@ -166,7 +206,7 @@ export async function revokeUnredeemedCodes(db: Db, serials: string[], reason: s
   });
 }
 
-export type ReplacedCode = { oldSerial: string; serial: string; code: string; canonical: string; batchNumber: string; months: 1 | 6 | 12 };
+export type ReplacedCode = { oldSerial: string; serial: string; code: string; canonical: string; batchNumber: string; months: 1 | 6 | 12; redeemBy: Date | null };
 
 /**
  * Replace a card that has not been redeemed (lost in the post, damaged before use): the old code is cancelled and a new one is made in
@@ -183,7 +223,7 @@ export async function replaceCode(db: Db, deps: { codeKey: MacKey; now?: Date },
       .selectFrom("redeem_codes as c")
       .innerJoin("code_batches as b", "b.id", "c.batch_id")
       .leftJoin("redemptions as r", "r.code_id", "c.id")
-      .select(["c.id", "c.state", "c.batch_id", "b.batch_number", "b.months", "b.status as batch_status", "b.quantity", "r.id as redemption"])
+      .select(["c.id", "c.state", "c.batch_id", "c.redeem_by", "b.batch_number", "b.months", "b.status as batch_status", "b.quantity", "r.id as redemption"])
       .where("c.serial", "=", oldSerial)
       .forUpdate("c")
       .executeTakeFirst();
@@ -197,11 +237,11 @@ export async function replaceCode(db: Db, deps: { codeKey: MacKey; now?: Date },
     const canonical = generateCanonicalCode();
     await trx
       .insertInto("redeem_codes")
-      .values({ batch_id: old.batch_id, serial, code_mac: computeCodeMac(deps.codeKey.key, serial, canonical), key_id: deps.codeKey.keyId, state: old.state, issued_at: old.state === "issued" ? now : null, created_at: now })
+      .values({ batch_id: old.batch_id, serial, code_mac: computeCodeMac(deps.codeKey.key, serial, canonical), key_id: deps.codeKey.keyId, state: old.state, issued_at: old.state === "issued" ? now : null, redeem_by: old.redeem_by, created_at: now })
       .execute();
     await trx.updateTable("redeem_codes").set({ state: "revoked", revoked_at: now, revoke_reason: `Diganti dengan ${serial}: ${reason}` }).where("id", "=", old.id).execute();
     await trx.updateTable("code_batches").set({ quantity: old.quantity + 1 }).where("id", "=", old.batch_id).execute();
-    return { oldSerial, serial, code: formatCode(canonical), canonical, batchNumber: old.batch_number, months: old.months as 1 | 6 | 12 };
+    return { oldSerial, serial, code: formatCode(canonical), canonical, batchNumber: old.batch_number, months: old.months as 1 | 6 | 12, redeemBy: old.redeem_by };
   });
 }
 
@@ -240,6 +280,7 @@ export type RedeemResult =
   | { status: "ok"; kind: "card" | "shared"; startsAt: Date; endsAt: Date; accessEndsAt: Date | null; repeat?: boolean }
   | { status: "invalid" }
   | { status: "already" }
+  | { status: "expired"; redeemBy: Date }
   | { status: "throttled" }
   | { status: "halted" };
 
@@ -278,13 +319,13 @@ async function redeemCard(trx: Db, deps: Deps, input: Input, now: Date): Promise
   const serial = normaliseSerial(input.serial ?? "");
   if (!parsed.ok || !serial) return fail(trx, input.accountId, input.ipMac, now);
 
-  let code: { id: string; state: "generated" | "issued" | "revoked"; serial: string; months: number; batch_status: "PENDING_PRINT" | "PRINT_CONFIRMED" | "VOIDED" } | undefined;
+  let code: { id: string; state: "generated" | "issued" | "revoked"; serial: string; months: number; redeem_by: Date | null; batch_status: "PENDING_PRINT" | "PRINT_CONFIRMED" | "VOIDED" } | undefined;
   for (const key of [deps.codeKey, ...(deps.previousCodeKeys ?? [])]) {
     const mac = computeCodeMac(key.key, serial, parsed.canonical);
     code = await trx
       .selectFrom("redeem_codes as c")
       .innerJoin("code_batches as b", "b.id", "c.batch_id")
-      .select(["c.id", "c.state", "c.serial", "b.months", "b.status as batch_status"])
+      .select(["c.id", "c.state", "c.serial", "c.redeem_by", "b.months", "b.status as batch_status"])
       .where("c.key_id", "=", key.keyId)
       .where("c.code_mac", "=", mac)
       .forUpdate("c")
@@ -304,6 +345,9 @@ async function redeemCard(trx: Db, deps: Deps, input: Input, now: Date): Promise
   if (used) {
     return used.account_id === input.accountId ? repeatOfCard(trx, input.accountId, used.entitlement_id, now) : fail(trx, input.accountId, input.ipMac, now);
   }
+
+  // The serial and the code were both right, so telling the holder the date is no help to a guesser; it is not counted as a failed try.
+  if (code.redeem_by && now.getTime() >= code.redeem_by.getTime()) return { status: "expired", redeemBy: code.redeem_by };
 
   const months = code.months as 1 | 6 | 12;
   const grant = await addGrant(trx, { accountId: input.accountId, kind: "CARD", grant: { unit: "months", amount: months }, sourceRef: code.id, reason: `Kad ${code.serial}`, createdBy: "tebus", now });

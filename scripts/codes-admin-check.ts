@@ -7,6 +7,7 @@ import "dotenv/config";
 import { config } from "dotenv";
 config({ path: ".env.local", override: true });
 import { sql } from "kysely";
+import { redeemByFromDateInput } from "../src/lib/subscription/redeem-code";
 import { closeDb, getDb } from "../src/lib/db";
 import { addGrant, addTrial } from "../src/lib/reader-auth/entitlements";
 import { batchInfo, listCodes, listMembers } from "../src/lib/reader-auth/admin";
@@ -39,7 +40,7 @@ async function main() {
     await db.transaction().execute(async (trx) => {
       // ---------------------------------------------------------- a batch and its cards
       console.log("\nA batch and its cards");
-      const batch = await createBatch(trx, { codeKey, now: day(0) }, { months: 6, quantity: 6, createdBy: "ujian" });
+      const batch = await createBatch(trx, { codeKey, now: day(0) }, { months: 6, quantity: 6, redeemBy: redeemByFromDateInput("2030-12-31")!, createdBy: "ujian" });
       const info0 = await batchInfo(trx, batch.batchId);
       assert(info0?.counts.total === 6 && info0.counts.generated === 6 && info0.status === "PENDING_PRINT" && info0.confirmedAt === null, "a new batch: six cards, none switched on, print not confirmed");
       assert((await listCodes(trx, batch.batchId)).total === 6, "all six are listed");
@@ -68,7 +69,7 @@ async function main() {
       // ---------------------------------------------------------- cancelling cards that are not redeemed
       console.log("\nCancelling cards not yet redeemed");
       const [, s2, s3, s4, s5, s6] = batch.codes.map((c) => c.serial);
-      const res = await revokeUnredeemedCodes(trx, [first.serial, s2, s3, `${first.serial.replace(/-\d+$/, "")}-99`], "kad hilang dalam pos", day(6));
+      const res = await revokeUnredeemedCodes(trx, [first.serial, s2, s3, `${first.serial.replace(/\d+$/, "")}99`], "kad hilang dalam pos", day(6));
       assert(res.revoked.length === 2 && res.revoked.includes(s2) && res.revoked.includes(s3), "two unredeemed cards are cancelled");
       assert(res.skipped.some((x) => x.serial === first.serial && x.why === "redeemed") && res.skipped.some((x) => x.why === "not_found"), "a redeemed card and an unknown serial are skipped, and said so");
       const again = await revokeUnredeemedCodes(trx, [s2], "sekali lagi", day(7));
@@ -82,7 +83,7 @@ async function main() {
       // ---------------------------------------------------------- replacing a card
       console.log("\nReplacing a card");
       const replaced = await replaceCode(trx, { codeKey, now: day(9) }, { serial: s4, reason: "label rosak" });
-      assert(replaced.oldSerial === s4 && replaced.serial !== s4 && replaced.batchNumber === batch.batchNumber && replaced.months === 6 && replaced.serial === `${first.serial.replace(/-\d+$/, "")}-07`, "a replacement is made in the same batch, with the next serial number of its group");
+      assert(replaced.oldSerial === s4 && replaced.serial !== s4 && replaced.batchNumber === batch.batchNumber && replaced.months === 6 && replaced.serial === `${first.serial.replace(/\d+$/, "")}07`, "a replacement is made in the same batch, with the next serial number of its group");
       const afterReplace = await listCodes(trx, batch.batchId, { q: s4 });
       assert(afterReplace.rows[0].state === "revoked" && (afterReplace.rows[0].revokeReason ?? "").includes(replaced.serial) && (afterReplace.rows[0].revokeReason ?? "").includes("label rosak"), "the old card is cancelled and says which card replaced it");
       const newRow = await listCodes(trx, batch.batchId, { q: replaced.serial });

@@ -32,6 +32,7 @@ export const ACTIVITY_ACTIONS = {
   "subscription.batch.create": "Membuat kelompok kod kad",
   "subscription.batch.update": "Mengurus kelompok kod kad",
   "subscription.code.revoke": "Membatalkan kod kad",
+  "subscription.order.resend": "Menghantar semula e-mel kod pesanan",
   "subscription.shared.create": "Membuat kod kongsi",
   "subscription.shared.update": "Mengurus kod kongsi",
   "subscription.access.grant": "Memberi akses kepada pembaca",

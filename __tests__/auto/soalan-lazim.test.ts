@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
-import { TRIAL_DAYS } from "../src/lib/subscription/periods";
-import { CODE_ALPHABET, normaliseCodeInput } from "../src/lib/subscription/redeem-code";
+import { TRIAL_DAYS } from "../../src/lib/subscription/periods";
+import { CODE_ALPHABET, normaliseCodeInput } from "../../src/lib/subscription/redeem-code";
 
-const root = path.join(__dirname, "..");
+const root = path.join(__dirname, "..", "..");
 const read = (p: string) => fs.readFileSync(path.join(root, p), "utf8").replace(/\r\n/g, "\n");
 const faq = read("src/app/soalanlazim/page.tsx");
 const form = read("src/components/reader/RedeemForm.tsx");

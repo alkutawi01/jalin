@@ -9,6 +9,7 @@ type Batch = {
   id: string; batchNumber: string; months: number; quantity: number; status: "PENDING_PRINT" | "PRINT_CONFIRMED" | "VOIDED";
   orderRef: string | null; note: string | null; createdAt: string; voidReason: string | null;
   generated: number; issued: number; revoked: number; redeemed: number;
+  channel: "physical" | "virtual"; redeemBy: string | null;
 };
 type CodeInfo = { serial: string; batchNumber: string; months: number; state: string; batchStatus: string; revokeReason: string | null; redeemedAt: string | null; redeemedBy: string | null };
 type LayoutAnswer = { layout: { problems: { level: "error" | "warning"; text: string }[]; code: string; codeFontPt: number; codeWidthMm: number; dotsPerLetter203: number } };
@@ -19,9 +20,9 @@ const STATE: Record<string, string> = { generated: "belum diaktifkan", issued: "
 const DEFAULTS = { widthMm: "50", heightMm: "30", scratchWidthMm: "40", scratchHeightMm: "8", scratchTopMm: "11", scratchPaddingMm: "2", separator: "-" };
 
 /** Card batches: make one (and get the PDF to print), confirm the print, switch the codes on, cancel, and find one card by its serial. */
-export default function BatchManager({ initialBatches, suggested }: { initialBatches: Batch[]; suggested: string }) {
+export default function BatchManager({ initialBatches, suggested, suggestedRedeemBy }: { initialBatches: Batch[]; suggested: string; suggestedRedeemBy: string }) {
   const [batches] = useState(initialBatches);
-  const [form, setForm] = useState({ issueMonth: suggested, months: "6", quantity: "50", orderRef: "", note: "" });
+  const [form, setForm] = useState({ issueMonth: suggested, redeemBy: suggestedRedeemBy, months: "6", quantity: "50", orderRef: "", note: "" });
   const [layout, setLayout] = useState(DEFAULTS);
   const [answer, setAnswer] = useState<LayoutAnswer["layout"] | null>(null);
   const [busy, setBusy] = useState(false);
@@ -132,9 +133,14 @@ export default function BatchManager({ initialBatches, suggested }: { initialBat
           <label htmlFor="bt-month">Bulan kod dijangka dikeluarkan</label>
           <input id="bt-month" type="month" value={form.issueMonth} onChange={(e) => setForm({ ...form, issueMonth: e.target.value })} />
           <p className="admin-form-hint">
-            Menjadi sebahagian nombor siri setiap kad, contohnya JLN-{String(form.months).padStart(2, "0")}B{form.issueMonth.slice(5, 7)}{form.issueMonth.slice(2, 4)}-01 (Jalin, tempoh, bulan dan tahun, nombor kad).
+            Menjadi sebahagian nombor siri setiap kad, contohnya JLN-{String(form.months).padStart(2, "0")}B{form.issueMonth.slice(5, 7)}{form.issueMonth.slice(2, 4)}-F01 (Jalin, tempoh, bulan dan tahun, F untuk kad fizikal, nombor kad).
             Pembaca menaip nombor siri bersama kod. Jika kelompok lain dengan tempoh dan bulan yang sama sudah ada, nombor kad bersambung daripadanya.
           </p>
+        </div>
+        <div className="admin-form-group">
+          <label htmlFor="bt-redeemby">Tebus sebelum (hari terakhir kod boleh ditebus)</label>
+          <input id="bt-redeemby" type="date" value={form.redeemBy} onChange={(e) => setForm({ ...form, redeemBy: e.target.value })} required />
+          <p className="admin-form-hint">Dicetak pada setiap label. Selepas tarikh ini kod ditolak, tetapi kod yang sudah ditebus kekal sah sehingga langganannya tamat. Nilai awal: setahun dari hari ini; tukar mengikut keputusan awak.</p>
         </div>
         <div className="admin-form-group">
           <label htmlFor="bt-months">Tempoh langganan</label>
@@ -202,7 +208,7 @@ export default function BatchManager({ initialBatches, suggested }: { initialBat
               {batches.map((b) => (
                 <tr key={b.id}>
                   <td><a href={`/admin/langganan/kad/${b.id}`}><strong>{b.batchNumber}</strong></a><div className="admin-form-hint">{fmtDate(b.createdAt)}{b.orderRef ? ` · ${b.orderRef}` : ""}</div></td>
-                  <td>{b.months} bulan</td>
+                  <td>{b.months} bulan<div className="admin-form-hint">{b.channel === "virtual" ? "maya (e-mel)" : "fizikal"}{b.redeemBy ? ` · tebus sebelum ${fmtDate(b.redeemBy)}` : ""}</div></td>
                   <td>{b.quantity}</td>
                   <td>{STATUS[b.status]}{b.voidReason ? <div className="admin-form-hint">{b.voidReason}</div> : null}</td>
                   <td>{b.issued}{b.generated > 0 ? <span className="admin-form-hint"> ({b.generated} belum)</span> : null}</td>
@@ -229,7 +235,7 @@ export default function BatchManager({ initialBatches, suggested }: { initialBat
 
       <h2>Cari satu kad</h2>
       <form onSubmit={lookup} className="admin-inline-form">
-        <input aria-label="Nombor siri" placeholder="JLN-12B0126-01" value={serial} onChange={(e) => setSerial(e.target.value)} />
+        <input aria-label="Nombor siri" placeholder="JLN-12B0126-F01" value={serial} onChange={(e) => setSerial(e.target.value)} />
         <button type="submit" className="admin-btn admin-btn-sm">Cari</button>
       </form>
       {found ? (

@@ -1,5 +1,5 @@
 import { getDb, hasDb } from "../../../../lib/db";
-import { listBatches, suggestIssueMonth, type BatchRow } from "../../../../lib/reader-auth/admin";
+import { listBatches, suggestIssueMonth, suggestRedeemByDate, type BatchRow } from "../../../../lib/reader-auth/admin";
 import { LanggananNav } from "../../../../components/admin/langganan-ui";
 import BatchManager from "./BatchManager";
 
@@ -17,7 +17,7 @@ export default async function CardsPage() {
       problem = "Jadual langganan belum wujud pada pangkalan data ini. Migrasi 027 hingga 030 perlu dijalankan dahulu.";
     }
   }
-  const plain = batches.map((b) => ({ ...b, createdAt: b.createdAt.toISOString(), confirmedAt: b.confirmedAt ? b.confirmedAt.toISOString() : null }));
+  const plain = batches.map((b) => ({ ...b, redeemBy: b.redeemBy ? b.redeemBy.toISOString() : null, createdAt: b.createdAt.toISOString(), confirmedAt: b.confirmedAt ? b.confirmedAt.toISOString() : null }));
   return (
     <div className="admin-langganan">
       <header className="admin-page-header">
@@ -25,7 +25,7 @@ export default async function CardsPage() {
         <p className="admin-page-sub">Buat kod kad, cetak labelnya, sahkan cetakan, kemudian aktifkan kod apabila kad meninggalkan tempat anda.</p>
       </header>
       <LanggananNav current="/admin/langganan/kad" />
-      {problem ? <div className="admin-alert admin-alert-error" role="alert">{problem}</div> : <BatchManager initialBatches={plain} suggested={suggested} />}
+      {problem ? <div className="admin-alert admin-alert-error" role="alert">{problem}</div> : <BatchManager initialBatches={plain} suggested={suggested} suggestedRedeemBy={suggestRedeemByDate()} />}
     </div>
   );
 }

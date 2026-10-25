@@ -1,3 +1,4 @@
+import { redeemByLabel } from "../../../../../../lib/subscription/redeem-code";
 import { getDb } from "../../../../../../lib/db";
 import { logActivity } from "../../../../../../lib/admin/activity";
 import { actor, bad, guarded, json, layoutFrom, pdfResponse, readBody, sameOriginOrRefuse, str } from "../../../../../../lib/admin/langganan-api";
@@ -38,7 +39,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ ser
       const who = await actor();
       let pdf: string;
       try {
-        pdf = buildLabelPdf(settings, [{ canonical: made.canonical, batchNumber: made.batchNumber, serial: made.serial, planText: `${made.months} bulan` }]).pdf;
+        pdf = buildLabelPdf(settings, [{ canonical: made.canonical, batchNumber: made.batchNumber, serial: made.serial, planText: `${made.months} bulan`, redeemBy: made.redeemBy ? redeemByLabel(made.redeemBy) : undefined }]).pdf;
       } catch (error) {
         // The new code was never shown to anyone: cancel it and say so, the old one is already cancelled and can be replaced again.
         await revokeCode(getDb(), made.serial, "PDF tidak dapat dibina").catch(() => undefined);

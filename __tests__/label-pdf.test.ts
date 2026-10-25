@@ -8,7 +8,7 @@ function assert(cond: boolean, msg: string, detail?: unknown) {
 }
 const throws = (fn: () => unknown) => { try { fn(); return false; } catch { return true; } };
 const canonical = "7H3K9QM2XD5NPB84A";
-const content = (n: number): LabelContent => ({ canonical: canonical.slice(0, 16) + "AB"[n % 2], batchNumber: "T-001", serial: `JLN-06B1026-${String(n).padStart(2, "0")}`, planText: "6 bulan" });
+const content = (n: number): LabelContent => ({ canonical: canonical.slice(0, 16) + "AB"[n % 2], batchNumber: "T-001", serial: `JLN-06B1026-F${String(n).padStart(2, "0")}`, planText: "6 bulan", redeemBy: "31 DIS 2027" });
 
 // The code text.
 assert(codeText(canonical, "-") === "7H3K-9QM2-XD5N-PB84-A", "groups of four with the check character at the end");

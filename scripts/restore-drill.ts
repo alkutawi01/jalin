@@ -11,6 +11,7 @@ import "dotenv/config";
 import { config } from "dotenv";
 config({ path: ".env.local", override: true });
 import { sql } from "kysely";
+import { redeemByFromDateInput } from "../src/lib/subscription/redeem-code";
 import { closeDb, getDb } from "../src/lib/db";
 import { buildCodesExport, findRedemptionsByEmailMac, parseCodesExport, reconcileWithExport } from "../src/lib/reader-auth/codes-export";
 import { encryptBackup } from "../src/lib/reader-auth/backup-crypto";
@@ -48,7 +49,7 @@ async function main() {
 
     // ------------------------------------------------------------ the world at the restore point
     console.log("\nThe world at the restore point");
-    const b1 = await createBatch(db, { codeKey, now }, { months: 6, quantity: 4 });
+    const b1 = await createBatch(db, { codeKey, now }, { months: 6, quantity: 4, redeemBy: redeemByFromDateInput("2030-12-31")! });
     await confirmBatchPrinted(db, b1.batchId); await issueCodes(db, { batchId: b1.batchId });
     const s1 = await createSharedCode(db, { grant: { unit: "days", amount: 14 }, maxRedemptions: 3, channel: "Telegram" });
     assert((await redeem(A, b1.codes[0].code, b1.codes[0].serial)).status === "ok" && (await redeem(A, s1.code)).status === "ok", "reader A redeemed card 1 and the shared code");
@@ -61,7 +62,7 @@ async function main() {
     console.log("\nWhat happens after the restore point");
     assert((await redeem(B, b1.codes[1].code, b1.codes[1].serial)).status === "ok" && (await redeem(C, b1.codes[2].code, b1.codes[2].serial)).status === "ok", "readers B and C redeem cards 2 and 3");
     assert(await revokeCode(db, b1.codes[3].serial, "Kad hilang"), "card 4 is cancelled as lost");
-    const b2 = await createBatch(db, { codeKey, now }, { months: 12, quantity: 3 });
+    const b2 = await createBatch(db, { codeKey, now }, { months: 12, quantity: 3, redeemBy: redeemByFromDateInput("2030-12-31")! });
     await confirmBatchPrinted(db, b2.batchId); await issueCodes(db, { batchId: b2.batchId });
     assert((await redeem(B, b2.codes[0].code, b2.codes[0].serial)).status === "ok", "a whole new batch is printed, issued, and B redeems one of its cards");
     const s2 = await createSharedCode(db, { grant: { unit: "months", amount: 1 }, maxRedemptions: 2, channel: "Acara" });
@@ -115,6 +116,8 @@ async function main() {
     assert(!(await isRedeemHalted(db)) && Number((await sql<{ n: string }>`SELECT count(*) AS n FROM code_batches`.execute(db)).rows[0].n) === 1, "the dry run left the database and the stop switch alone");
     const done = await reconcileWithExport(db, parsed, { apply: true, now, by: "latihan" });
     assert(done.applied && done.batchesAdded === 1 && done.codesAdded === 3 && done.codesCancelledForLostRedemption === 3 && done.codesCancelledAsInExport === 1 && done.sharedAdded === 1 && done.sharedCountsRaised === 1, "applied: batch 2 and its 3 codes put back; cards 2, 3 and batch 2's used card cancelled; the lost cancellation of card 4 restored; shared code 2 put back; shared count raised", done);
+    const restoredDates = await sql<{ n: string; late: string }>`SELECT count(*) AS n, count(*) FILTER (WHERE redeem_by = ${redeemByFromDateInput("2030-12-31")!}) AS late FROM redeem_codes c JOIN code_batches b ON b.id = c.batch_id WHERE b.channel = 'physical'`.execute(db);
+    assert(Number(restoredDates.rows[0].n) > 0 && restoredDates.rows[0].n === restoredDates.rows[0].late, "every code, including those put back from the file, keeps its redeem-by date after the restore", restoredDates.rows[0]);
     assert(done.lostRedemptions.length === 3 && done.lostRedemptions.every((l) => l.emailMac), "the report lists the three redemptions that were lost, with their e-mail hashes");
     assert(await isRedeemHalted(db), "the stop switch is ON and stays on until a person switches it off");
     assert((await redeem(D, b2.codes[1].code, b2.codes[1].serial)).status === "halted", "while it is on nothing can be redeemed");
@@ -132,7 +135,7 @@ async function main() {
     const s2row = await sql<{ redeemed_count: number }>`SELECT redeemed_count FROM shared_codes WHERE code = ${s2.code}`.execute(db);
     assert(s2row.rows[0]?.redeemed_count === 1, "shared code 2 is back with its use counted");
     assert((await redeem(D, s1.code)).status === "invalid", "so the full shared code stays full");
-    const next = await createBatch(db, { codeKey, now }, { months: 1, quantity: 2 });
+    const next = await createBatch(db, { codeKey, now }, { months: 1, quantity: 2, redeemBy: redeemByFromDateInput("2030-12-31")! });
     const used = new Set([...b1.codes, ...b2.codes].map((c) => c.serial));
     assert(next.codes.every((c) => !used.has(c.serial)), "a batch made after the restore gets serial numbers nobody has used");
     const again = await reconcileWithExport(db, parsed, { apply: true, now });

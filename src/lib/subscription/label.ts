@@ -108,6 +108,8 @@ export type LabelContent = {
   serial: string;
   /** "6 bulan" and so on; NOT printed on the label (it is part of the serial). */
   planText: string;
+  /** The last day the code can be redeemed, as printed (31 DIS 2027). Left out for a code with no limit. */
+  redeemBy?: string;
 };
 
 export type PdfOptions = {
@@ -165,6 +167,14 @@ function pageContent(settings: LabelSettings, layout: LabelLayout, content: Labe
   }
 
 
+  // Below the scratch area: the last day the code can be redeemed (the cards are printed in bulk, so this changes only on the label).
+  if (content.redeemBy) {
+    const below = settings.scratchTopMm + settings.scratchHeightMm;
+    const dateLine = `TEBUS SEBELUM ${content.redeemBy}`;
+    const dateSize = fit([dateLine]);
+    if (H - below >= lineMm(dateSize) + 1.5) text("F2", dateSize, W / 2, below + 1.5 + lineMm(dateSize) - dateSize * MM_PER_PT * 0.25, dateLine);
+  }
+
   return ops.join("\n");
 }
 
@@ -173,7 +183,7 @@ export function buildLabelPdf(settings: LabelSettings, labels: LabelContent[], o
   if (labels.length === 0) throw new Error("Nothing to print.");
   const layout = computeLayout(settings, labels[0].canonical);
   if (layout.problems.some((p) => p.level === "error")) throw new Error(layout.problems.filter((p) => p.level === "error").map((p) => p.text).join(" "));
-  for (const l of labels) { ascii(l.canonical); ascii(l.batchNumber); ascii(l.serial); ascii(l.planText); }
+  for (const l of labels) { ascii(l.canonical); ascii(l.batchNumber); ascii(l.serial); ascii(l.planText); if (l.redeemBy) ascii(l.redeemBy); }
 
   const objects: string[] = [];
   // 1 catalog, 2 pages, 3 and 4 fonts, then (page, content) pairs.

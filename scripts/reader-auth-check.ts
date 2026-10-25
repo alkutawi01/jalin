@@ -38,6 +38,7 @@ const sent: { to: string; code: string }[] = [];
 let failMail = false;
 const mailer: Mailer = {
   name: "test",
+  async sendMessage() {},
   async sendLoginCode({ to, code }) {
     if (failMail) throw new Error("down");
     sent.push({ to, code });

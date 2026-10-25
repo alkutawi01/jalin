@@ -3,6 +3,7 @@ import { getDb } from "../../../../lib/db";
 import { asString, codeKey, currentSession, isSameOrigin, noStore, notFoundWhenOff, previousCodeKeys, readJson, visitorMac } from "../../../../lib/reader-auth/http";
 import { redeemCode } from "../../../../lib/reader-auth/redeem";
 import { formatEndMYT } from "../../../../lib/subscription/periods";
+import { redeemByLabel } from "../../../../lib/subscription/redeem-code";
 
 export const dynamic = "force-dynamic";
 
@@ -31,6 +32,7 @@ export async function POST(request: Request) {
     const until = result.accessEndsAt ? formatEndMYT(result.accessEndsAt) : formatEndMYT(result.endsAt);
     return noStore(NextResponse.json({ ok: true, message: `Kod berjaya ditebus. Akses anda aktif sehingga ${until}.`, accessEndsAt: result.accessEndsAt ?? result.endsAt }));
   }
+  if (result.status === "expired") return noStore(NextResponse.json({ error: `Kod ini sudah tamat tempoh penebusan (tarikh akhir ${redeemByLabel(result.redeemBy)}). Hubungi editorial@adjung.com untuk bantuan.` }, { status: 400 }));
   if (result.status === "already") return noStore(NextResponse.json({ error: "Anda sudah menebus kod ini." }, { status: 409 }));
   if (result.status === "throttled") return noStore(NextResponse.json({ error: "Terlalu banyak cubaan. Cuba lagi sebentar lagi." }, { status: 429 }));
   if (result.status === "halted") return noStore(NextResponse.json({ error: "Penebusan dihentikan buat sementara. Cuba lagi nanti." }, { status: 503 }));
