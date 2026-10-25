@@ -14,6 +14,11 @@ Belum ada: bayaran dalam Jalin (pilih pakej, bayar, kod dihantar ke e-mel); dasa
 - **Pakej:** 1, 6 dan 12 bulan. Harga belum ditetapkan.
 - **Tarikh tebus sebelum:** ada, ditetapkan bagi setiap kelompok (seperti SUS). BELUM DIBINA (lihat C3).
 - **Kad hilang atau rosak:** diganti jika kod belum ditebus (sistem sudah menyokongnya). Sekiranya sudah ditebus, tiada penggantian. Soalan Lazim perlu dikemas kini (lihat A1).
+- **Nombor siri kad fizikal dan kad maya (kod e-mel) boleh diasingkan** (siri berbeza bagi setiap jenis). Format dan cara pengasingan belum ditetapkan; tanya Izzat sebelum membina C3.
+- **Tarikh tebus sebelum perlu dibina.** Ia berbeza daripada tempoh akses: tebus sebelum 31 Dis 2027 dengan akses 12 bulan bermakna tebus pada 30 Dis 2027 masih dapat 12 bulan penuh. Tempoh tebus rasmi belum diputuskan (cadangan ChatGPT: hadiah sekolah 12 bulan, jualan 24 bulan).
+- **Gateway:** ChatGPT dan kajian Claude sama-sama mencadangkan Billplz Basic dahulu (`docs/KAJIAN_PENYEDIA_BAYARAN.md`). Satu akaun gateway cukup untuk SUS dan Jalin; guna rujukan berasingan. Belum dipilih secara rasmi.
+- **Saluran pengeluaran kod mesti direkod:** kad fizikal, bayaran dalam talian, hadiah. Satu sistem tebus untuk semua; kod Jalin tidak sah di SUS dan sebaliknya.
+- **Kod digital:** salinan terenkripsi disimpan sehingga e-mel berjaya dihantar, kemudian dipadam (enjin sedia ada hanya menyimpan cincang, jadi ini perlu dibina).
 - **Bayaran balik:** belum diputuskan; Soalan Lazim kekal senyap tentangnya.
 - **SUS tidak mempunyai sistem kad langganan** (disahkan daripada sesi SUS, 25 Okt); "samakan dengan SUS" bermaksud samakan rupa dan nada kad, bukan sistem sedia ada. Tiada dasar SUS untuk disalin.
 
@@ -40,7 +45,8 @@ Belum ada: bayaran dalam Jalin (pilih pakej, bayar, kod dihantar ke e-mel); dasa
 
 ## Bahagian C. Bayaran dalam Jalin dan kod e-mel (DIDAHULUKAN, belum dibina)
 
-- [ ] **C1. Kaji penyedia bayaran** untuk Malaysia: FPX dan kad, yuran, syarat akaun perniagaan (SSM milikan tunggal), API, tempoh pengeluaran wang, bayaran balik. Minta Claude menyediakan perbandingan dan cadangan. Tiada kod ditulis dan tiada akaun dibuka sehingga awak pilih.
+- [x] **C1. Kajian penyedia bayaran** siap (25 Okt 2026): lihat `docs/KAJIAN_PENYEDIA_BAYARAN.md`. Senarai pendek: Billplz dan CHIP Collect. Tiada kod ditulis dan tiada akaun dibuka.
+- [ ] **C1b. Izzat:** lihat senarai dokumen pendaftaran Billplz dan CHIP, tanya sama ada pemilik tunggal boleh terima ke akaun bank yang ada (atau mesti atas nama perniagaan), tanya SST ke atas yuran dan masa kelulusan, dan (CHIP) bayaran balik dan mod ujian. Kemudian pilih satu.
 - [ ] **C2. Buka akaun penyedia** yang dipilih dan sediakan kunci API (mod ujian dahulu).
 - [ ] **C3. Bina aliran (termasuk nombor siri dalam e-mel dan tarikh tebus sebelum):** pilih pakej, bayar, kod dijana dan dihantar ke e-mel, tebus. Kod dari e-mel perlu ditebus melalui mekanisme yang sama (satu kod, satu akaun).
 - [ ] **C4. Uji dalam mod ujian penyedia**, kemudian satu pembelian sebenar bernilai kecil.
