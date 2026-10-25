@@ -14,8 +14,8 @@ Belum ada: bayaran dalam Jalin (pilih pakej, bayar, kod dihantar ke e-mel); dasa
 - **Pakej:** 1, 6 dan 12 bulan. Harga belum ditetapkan.
 - **Tarikh tebus sebelum:** ada, ditetapkan bagi setiap kelompok (seperti SUS). BELUM DIBINA (lihat C3).
 - **Kad hilang atau rosak:** diganti jika kod belum ditebus (sistem sudah menyokongnya). Sekiranya sudah ditebus, tiada penggantian. Soalan Lazim perlu dikemas kini (lihat A1).
-- **Nombor siri kad fizikal dan kad maya (kod e-mel) boleh diasingkan** (siri berbeza bagi setiap jenis). Format dan cara pengasingan belum ditetapkan; tanya Izzat sebelum membina C3.
-- **Tarikh tebus sebelum perlu dibina.** Ia berbeza daripada tempoh akses: tebus sebelum 31 Dis 2027 dengan akses 12 bulan bermakna tebus pada 30 Dis 2027 masih dapat 12 bulan penuh. Tempoh tebus rasmi belum diputuskan (cadangan ChatGPT: hadiah sekolah 12 bulan, jualan 24 bulan).
+- **Nombor siri fizikal dan maya dibezakan dengan satu huruf sebelum nombor kad:** F untuk kad fizikal, M untuk kad maya (kod e-mel). Contoh bentuk: `...-F01` dan `...-M01`. Fizikal dan maya mempunyai urutan nombor masing-masing. Keputusan Izzat, 25 Okt 2026. BELUM DIBINA (kod semasa hanya menerima nombor kad dua digit atau lebih tanpa huruf).
+- **Tarikh tebus sebelum, kod maya:** tetap satu tahun selepas kod dijana (tiada pilihan setiap kelompok). **Kod fizikal:** ditetapkan setiap kelompok. Kedua-duanya perlu dibina.
 - **Gateway:** ChatGPT dan kajian Claude sama-sama mencadangkan Billplz Basic dahulu (`docs/KAJIAN_PENYEDIA_BAYARAN.md`). Satu akaun gateway cukup untuk SUS dan Jalin; guna rujukan berasingan. Belum dipilih secara rasmi.
 - **Saluran pengeluaran kod mesti direkod:** kad fizikal, bayaran dalam talian, hadiah. Satu sistem tebus untuk semua; kod Jalin tidak sah di SUS dan sebaliknya.
 - **Kod digital:** salinan terenkripsi disimpan sehingga e-mel berjaya dihantar, kemudian dipadam (enjin sedia ada hanya menyimpan cincang, jadi ini perlu dibina).
