@@ -96,7 +96,7 @@ const throws = (fn: () => unknown) => { try { fn(); return false; } catch { retu
   const msg = purchaseMessage(good);
   assert(msg.subject === "Kod langganan Jalin anda (12 bulan)" && msg.text.includes("Nombor siri: JLN-12B1026-M01") && msg.text.includes("Kod: 7H3K-9QM2-XD5N-PB84-X") && msg.text.includes("Tebus sebelum: 25 OKT 2027") && msg.text.includes("JP-ABCDEFGHJK"), "the e-mail names the serial, code, length, last day and order");
   assert(msg.html.includes("JLN-12B1026-M01") && msg.html.includes("7H3K-9QM2-XD5N-PB84-X") && msg.html.includes("https://jalin.adjung.com/tebus") && msg.html.includes("lang=\"ms\""), "and so does the HTML part");
-  assert(msg.text.includes("Jangan hantar kod penuh melalui e-mel") && msg.text.includes("editorial@adjung.com"), "it says where to ask, and not to send the code by e-mail");
+  assert(msg.text.includes("Jangan sertakan kod langganan penuh dalam e-mel") && msg.text.includes("editorial@adjung.com"), "it says where to ask, and not to put the full code in an e-mail");
   for (const [name, bad] of [
     ["a physical serial", { ...good, serial: "JLN-12B1026-F01" }], ["markup in the serial", { ...good, serial: "JLN-12B1026-M01<script>" }],
     ["a code in the wrong shape", { ...good, code: "<b>HELLO</b>" }], ["a code with the letter U", { ...good, code: "7H3K-9QM2-XD5N-PB84-U" }],

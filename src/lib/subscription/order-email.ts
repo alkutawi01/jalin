@@ -1,7 +1,7 @@
 /**
- * The e-mail that carries a bought code. The wording reuses what the Soalan Lazim already says (checked by ChatGPT, 24 Oct 2026); the
- * whole message should still be read by ChatGPT before purchases are switched on (plan C5). Every value that goes into markup is checked
- * against the exact shape it must have, so nothing can be injected: refuse rather than escape.
+ * The e-mail that carries a bought code. The wording was read by ChatGPT on 26 Oct 2026 against the facts of the system (docs/SOALAN_LAZIM.md,
+ * docs/JUALAN_DALAM_TALIAN.md). Every value that goes into markup is checked against the exact shape it must have, so nothing can be
+ * injected: refuse rather than escape.
  */
 import { EMAIL_LOGO_URL } from "../reader-auth/primitives";
 
@@ -20,41 +20,51 @@ export function purchaseMessage(input: PurchaseMessageInput): { subject: string;
   if (!/^(https:\/\/[A-Za-z0-9.-]+|http:\/\/localhost:\d{2,5})\/[A-Za-z0-9/_-]*$/.test(input.redeemUrl)) throw new Error("The redeem address is not a plain https address (or localhost, for development).");
   const period = `${input.months} bulan`;
   const subject = `Kod langganan Jalin anda (${period})`;
+  const paragraphs = {
+    intro: "Terima kasih kerana membeli kod langganan Jalin. Pembayaran anda telah disahkan.",
+    startsNow: "Jika anda belum mempunyai akses aktif, langganan bermula sebaik sahaja kod berjaya ditebus.",
+    startsAfter: "Jika anda masih mempunyai percubaan percuma atau langganan aktif, tempoh langganan baharu bermula selepas akses semasa tamat.",
+    deadline: "Kod ini mesti ditebus selewat-lewatnya pada tarikh \"Tebus sebelum\" yang dinyatakan di atas. Kod masih sah sepanjang tarikh tersebut mengikut waktu Malaysia.",
+    notEnd: "Tarikh itu ialah tarikh akhir penebusan, bukan tarikh tamat langganan. Kod yang sudah ditebus tidak terjejas oleh tarikh tersebut.",
+    once: "Setiap kod hanya boleh ditebus sekali oleh satu akaun. Simpan e-mel ini dan jangan kongsikan nombor siri atau kod anda dengan orang lain.",
+    help: "Jika anda menghadapi masalah, hubungi editorial@adjung.com dan nyatakan nombor pesanan anda. Jangan sertakan kod langganan penuh dalam e-mel.",
+    thanks: "Terima kasih kerana membaca bersama Jalin.",
+  };
   const text = [
-    "Terima kasih. Pembayaran anda telah diterima.",
-    "",
-    `Nombor siri: ${input.serial}`,
-    `Kod: ${input.code}`,
-    `Tempoh: ${period}`,
-    `Tebus sebelum: ${input.redeemByLabel}`,
-    `Nombor pesanan: ${input.orderReference}`,
-    "",
-    "Cara menebus:",
+    paragraphs.intro, "",
+    "Maklumat kod langganan anda:", "",
+    `Nombor siri: ${input.serial}`, `Kod: ${input.code}`, `Tempoh: ${period}`, `Tebus sebelum: ${input.redeemByLabel}`, `Nombor pesanan: ${input.orderReference}`, "",
+    "CARA MENEBUS KOD", "",
     "1. Daftar akaun Jalin atau log masuk jika anda sudah mempunyai akaun.",
-    `2. Buka ${input.redeemUrl}.`,
-    "3. Masukkan nombor siri dan kod di atas, kemudian tekan \"Tebus kod\".",
-    "",
-    "Langganan bermula sebaik sahaja penebusan berjaya. Jika anda masih mempunyai percubaan percuma atau langganan yang aktif, tempoh baharu bermula selepas akses semasa tamat.",
-    "",
-    "Simpan e-mel ini. Nombor siri dan kod hanya boleh ditebus sekali, dan jangan kongsikannya kepada orang lain.",
-    "Jika ada masalah, hubungi editorial@adjung.com dan nyatakan nombor pesanan anda. Jangan hantar kod penuh melalui e-mel.",
+    `2. Buka ${input.redeemUrl}`,
+    "3. Masukkan nombor siri dan kod di atas, kemudian tekan \"Tebus kod\".", "",
+    "BILAKAH LANGGANAN BERMULA?", "",
+    paragraphs.startsNow, "", paragraphs.startsAfter, "",
+    "PENTING", "",
+    paragraphs.deadline, "", paragraphs.notEnd, "", paragraphs.once, "", paragraphs.help, "",
+    paragraphs.thanks, "",
+    "Jalin", "Selami dunia melalui cerita",
   ].join("\n");
   const row = (label: string, value: string, big = false) =>
     `<tr><td style="padding:6px 0;font-family:${sans};font-size:13px;color:#dbe3e4;width:120px">${label}</td><td style="padding:6px 0;font-family:${mono};font-size:${big ? 18 : 14}px;letter-spacing:.04em;color:#fbf8f2">${value}</td></tr>`;
+  const heading = (title: string) => `<tr><td style="padding:20px 32px 4px;font-family:${sans};font-size:13px;letter-spacing:.06em;font-weight:700;color:#18343c">${title}</td></tr>`;
+  const para = (body: string, color = "#18343c", size = 14) => `<tr><td style="padding:6px 32px;font-family:${sans};font-size:${size}px;line-height:1.6;color:${color}">${body}</td></tr>`;
   const html = `<!doctype html><html lang="ms"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><title>${subject}</title></head>
 <body style="margin:0;padding:0;background:#fbf8f2">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#fbf8f2"><tr><td align="center" style="padding:32px 16px">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;background:#fffefa;border:1px solid #ddd7cc;border-radius:12px">
 <tr><td align="center" style="padding:32px 24px 8px"><img src="${EMAIL_LOGO_URL}" width="96" alt="Jalin" style="display:block;border:0;height:auto;width:96px"></td></tr>
 <tr><td align="center" style="padding:20px 32px 4px;font-family:${serif};font-size:22px;line-height:1.3;color:#18343c">Kod langganan anda</td></tr>
-<tr><td align="center" style="padding:0 32px 20px;font-family:${sans};font-size:14px;line-height:1.6;color:#52656a">Terima kasih. Pembayaran anda telah diterima.</td></tr>
+<tr><td align="center" style="padding:0 32px 20px;font-family:${sans};font-size:14px;line-height:1.6;color:#52656a">${paragraphs.intro}</td></tr>
 <tr><td style="padding:0 24px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#18343c;border-radius:10px"><tr><td style="padding:18px 22px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
 ${row("Nombor siri", input.serial, true)}${row("Kod", input.code, true)}${row("Tempoh", period)}${row("Tebus sebelum", input.redeemByLabel)}${row("Nombor pesanan", input.orderReference)}
 </table></td></tr></table></td></tr>
-<tr><td style="padding:22px 32px 6px;font-family:${sans};font-size:14px;line-height:1.6;color:#18343c"><strong>Cara menebus</strong><ol style="margin:8px 0 0;padding-left:20px"><li>Daftar akaun Jalin atau log masuk jika anda sudah mempunyai akaun.</li><li>Buka <a href="${input.redeemUrl}" style="color:#a76450">${input.redeemUrl.replace("https://", "")}</a>.</li><li>Masukkan nombor siri dan kod di atas, kemudian tekan &ldquo;Tebus kod&rdquo;.</li></ol></td></tr>
-<tr><td style="padding:12px 32px 6px;font-family:${sans};font-size:14px;line-height:1.6;color:#18343c">Langganan bermula sebaik sahaja penebusan berjaya. Jika anda masih mempunyai percubaan percuma atau langganan yang aktif, tempoh baharu bermula selepas akses semasa tamat.</td></tr>
-<tr><td style="padding:6px 32px 28px;font-family:${sans};font-size:13px;line-height:1.6;color:#52656a">Simpan e-mel ini. Nombor siri dan kod hanya boleh ditebus sekali, dan jangan kongsikannya kepada orang lain. Jika ada masalah, hubungi editorial@adjung.com dan nyatakan nombor pesanan anda. Jangan hantar kod penuh melalui e-mel.</td></tr>
-<tr><td align="center" style="padding:16px 24px;border-top:1px solid #ddd7cc;font-family:${sans};font-size:12px;color:#52656a">Jalin oleh Adjung Press<br>Selami dunia melalui cerita</td></tr>
+${heading("CARA MENEBUS KOD")}
+<tr><td style="padding:6px 32px;font-family:${sans};font-size:14px;line-height:1.6;color:#18343c"><ol style="margin:0;padding-left:20px"><li>Daftar akaun Jalin atau log masuk jika anda sudah mempunyai akaun.</li><li>Buka <a href="${input.redeemUrl}" style="color:#a76450">${input.redeemUrl.replace("https://", "")}</a></li><li>Masukkan nombor siri dan kod di atas, kemudian tekan &ldquo;Tebus kod&rdquo;.</li></ol></td></tr>
+${heading("BILAKAH LANGGANAN BERMULA?")}${para(paragraphs.startsNow)}${para(paragraphs.startsAfter)}
+${heading("PENTING")}${para(paragraphs.deadline)}${para(paragraphs.notEnd)}${para(paragraphs.once)}${para(paragraphs.help, "#52656a", 13)}
+<tr><td style="padding:14px 32px 28px;font-family:${sans};font-size:14px;line-height:1.6;color:#18343c">${paragraphs.thanks}</td></tr>
+<tr><td align="center" style="padding:16px 24px;border-top:1px solid #ddd7cc;font-family:${sans};font-size:12px;color:#52656a">Jalin<br>Selami dunia melalui cerita</td></tr>
 </table></td></tr></table></body></html>`;
   return { subject, text, html };
 }

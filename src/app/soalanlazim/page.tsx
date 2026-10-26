@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { notFound } from "next/navigation";
 import { SiteFooter, SiteHeader } from "../../components/reader/StoryChrome";
 import { accountsPageMetadata, readerAccountsEnabled } from "../../lib/reader-auth/enabled";
+import { purchaseStatus } from "../../lib/subscription/prices";
 
 /**
  * Soalan lazim: the address printed on the card (jalin.adjung.com/soalanlazim). Like the other account pages it exists only when reader
@@ -23,6 +24,36 @@ type Item = { q: string; a: ReactNode };
 type Group = { id: string; label: string; items: Item[] };
 
 const MAIL = "editorial@adjung.com";
+
+/** Shown only while buying online is switched on, so nobody is told about a page that is not there. */
+const PURCHASE_ITEMS: Item[] = [
+  {
+    q: "Bagaimanakah saya membeli kod langganan dalam talian?",
+    a: (
+      <>
+        <ol>
+          <li>Buka halaman <a href="/beli">Beli kod langganan</a>.</li>
+          <li>Pilih tempoh langganan 1, 6 atau 12 bulan, kemudian masukkan alamat e-mel untuk menerima kod.</li>
+          <li>Buat pembayaran melalui Billplz menggunakan FPX atau kad.</li>
+        </ol>
+        <p>
+          Sebaik sahaja pembayaran disahkan, nombor siri dan kod langganan akan dihantar ke e-mel anda. Selepas menerimanya, buka halaman{" "}
+          <a href="/tebus">Tebus kod</a> untuk mengaktifkan langganan.
+        </p>
+      </>
+    )
+  },
+  {
+    q: "Saya sudah membayar tetapi tidak menerima e-mel kod. Apakah yang perlu saya lakukan?",
+    a: (
+      <p>
+        Semak folder spam atau sampah dan semak semula alamat e-mel yang digunakan semasa pembelian. Penghantaran e-mel dimulakan sebaik sahaja pembayaran
+        disahkan. Jika e-mel masih belum diterima selepas beberapa minit, hubungi <a href={`mailto:${MAIL}`}>{MAIL}</a> dan nyatakan nombor pesanan anda yang
+        bermula dengan JP-. Nombor pesanan dipaparkan pada halaman selepas pembayaran. Jangan sertakan kod langganan penuh dalam e-mel kepada kami.
+      </p>
+    )
+  }
+];
 
 const GROUPS: Group[] = [
   {
@@ -55,6 +86,23 @@ const GROUPS: Group[] = [
         )
       },
       {
+        q: "Adakah kod langganan mempunyai tarikh akhir penebusan?",
+        a: (
+          <>
+            <p>
+              Ya. Setiap kod mesti ditebus selewat-lewatnya pada tarikh yang tertera di bawah &ldquo;Tebus sebelum&rdquo;, sama ada pada label kad atau dalam e-mel
+              yang mengandungi kod langganan. Kod masih boleh ditebus sepanjang hari terakhir tersebut mengikut waktu Malaysia. Selepas tarikh itu, kod tidak
+              boleh ditebus lagi.
+            </p>
+            <p>
+              Tarikh ini ialah tarikh akhir penebusan, bukan tarikh tamat langganan. Jika anda belum mempunyai akses aktif, tempoh langganan bermula sebaik
+              sahaja kod berjaya ditebus. Jika anda masih mempunyai percubaan percuma atau langganan aktif, tempoh baharu bermula selepas akses semasa tamat.
+              Kod yang sudah ditebus tidak terjejas oleh tarikh akhir penebusan.
+            </p>
+          </>
+        )
+      },
+      {
         q: "Bagaimanakah saya perlu memasukkan kod?",
         a: (
           <>
@@ -72,7 +120,7 @@ const GROUPS: Group[] = [
           <>
             <p>
               Semak semula setiap aksara pada kod langganan dan nombor siri pada kad. Pastikan kedua-duanya dimasukkan dengan betul. Setiap kod hanya
-              boleh ditebus sekali, jadi kod yang sudah ditebus tidak boleh digunakan lagi.
+              boleh ditebus sekali, jadi kod yang sudah ditebus tidak boleh digunakan lagi. Kod juga tidak boleh ditebus selepas tarikh yang tertera di bawah &ldquo;Tebus sebelum&rdquo;.
             </p>
             <p>
               Jika kod masih ditolak, hubungi kami di <a href={`mailto:${MAIL}`}>{MAIL}</a> dan nyatakan nombor siri pada kad. Jangan hantar kod
@@ -171,6 +219,8 @@ const GROUPS: Group[] = [
 
 export default function FaqPage() {
   if (!readerAccountsEnabled()) notFound();
+  const buying = purchaseStatus().enabled;
+  const groups = GROUPS.map((group, i) => (i === 0 && buying ? { ...group, items: [...PURCHASE_ITEMS, ...group.items] } : group));
   return (
     <>
       <SiteHeader />
@@ -181,13 +231,13 @@ export default function FaqPage() {
             <h1 className="faq-title">Soalan lazim</h1>
             <p className="faq-intro">Jawapan untuk pembaca yang menggunakan kod langganan atau akaun Jalin.</p>
             <nav className="faq-jump" aria-label="Kumpulan soalan">
-              {GROUPS.map((g) => <a key={g.id} href={`#${g.id}`}>{g.label}</a>)}
+              {groups.map((g) => <a key={g.id} href={`#${g.id}`}>{g.label}</a>)}
             </nav>
           </div>
         </header>
 
         <div className="site-shell faq-body">
-          {GROUPS.map((group) => (
+          {groups.map((group) => (
             <section key={group.id} id={group.id} className="faq-group" aria-labelledby={`${group.id}-h`}>
               <h2 id={`${group.id}-h`} className="faq-group-title">{group.label}</h2>
               {group.items.map((item) => (

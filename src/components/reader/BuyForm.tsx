@@ -26,7 +26,7 @@ export default function BuyForm({ plans }: { plans: Plan[] }) {
       }
       window.location.href = data.url;
     } catch {
-      setError("Sambungan terputus. Semak rangkaian anda dan cuba lagi.");
+      setError("Sambungan terputus. Semak sambungan internet anda dan cuba lagi.");
       setBusy(false);
     }
   }
@@ -34,7 +34,7 @@ export default function BuyForm({ plans }: { plans: Plan[] }) {
   return (
     <div className="auth-card auth-card--card">
       <h1 className="auth-title">Beli kod langganan</h1>
-      <p className="auth-intro">Pilih tempoh, bayar, dan kod langganan dihantar ke e-mel anda. Selepas itu, tebus kod pada halaman <a href="/tebus">Tebus kod</a>.</p>
+      <p className="auth-intro">Pilih tempoh langganan dan buat pembayaran. Nombor siri dan kod langganan akan dihantar ke e-mel anda selepas pembayaran disahkan. Kemudian, tebus kod pada halaman <a href="/tebus">Tebus kod</a>.</p>
       <form onSubmit={submit} noValidate>
         <fieldset className="buy-plans">
           <legend className="buy-legend">Tempoh langganan</legend>
@@ -49,9 +49,9 @@ export default function BuyForm({ plans }: { plans: Plan[] }) {
         <label className="auth-label" htmlFor="buy-email">E-mel untuk menerima kod</label>
         <input id="buy-email" className="auth-input" type="email" inputMode="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} aria-invalid={!!error} aria-describedby={error ? "buy-error" : undefined} />
         {error ? <p id="buy-error" className="auth-error" role="alert">{error}</p> : null}
-        <button className="auth-button" type="submit" disabled={busy}>{busy ? "Membuka halaman pembayaran…" : "Teruskan ke pembayaran"}</button>
+        <button className="auth-button" type="submit" disabled={busy}>{busy ? "Sedang membuka halaman pembayaran…" : "Teruskan ke pembayaran"}</button>
       </form>
-      <p className="auth-fine">Pembayaran dibuat melalui Billplz (FPX dan kad). Kod dihantar sebaik pembayaran disahkan. Ada soalan? Lihat <a href="/soalanlazim">Soalan lazim</a>.</p>
+      <p className="auth-fine">Pembayaran dibuat melalui Billplz menggunakan FPX atau kad. Kod dihantar selepas pembayaran disahkan. Ada soalan? Lihat <a href="/soalanlazim">Soalan Lazim</a>.</p>
     </div>
   );
 }
