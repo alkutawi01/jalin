@@ -303,3 +303,43 @@
   html[data-theme="gelap"] .info-body a { text-decoration-color: rgb(var(--clay-rgb) / .45); }
   html[data-theme="sepia"] .info-body a { text-decoration-color: rgb(var(--clay-rgb) / .4); }
 }
+
+/* A work's own colour (lib/reader/story-theme.ts). The wrapper carries all three palettes as --st-<theme>-<part>; the reader's own Cerah, Sepia or Gelap
+   picks one. The base tokens the pages already use (--paper, --white, --ink, --ink-soft, --line, --clay, --clay-text) are re-valued here, so every
+   component inside follows without being touched. Screen only: print stays on paper. */
+@media screen {
+  .story-themed,
+  html[data-theme="cerah"] .story-themed {
+    --st-bg: var(--st-cerah-bg); --st-surface: var(--st-cerah-surface); --st-ink: var(--st-cerah-ink); --st-ink-soft: var(--st-cerah-ink-soft);
+    --st-line: var(--st-cerah-line); --st-accent: var(--st-cerah-accent); --st-accent-text: var(--st-cerah-accent-text);
+  }
+  html[data-theme="sepia"] .story-themed {
+    --st-bg: var(--st-sepia-bg); --st-surface: var(--st-sepia-surface); --st-ink: var(--st-sepia-ink); --st-ink-soft: var(--st-sepia-ink-soft);
+    --st-line: var(--st-sepia-line); --st-accent: var(--st-sepia-accent); --st-accent-text: var(--st-sepia-accent-text);
+  }
+  html[data-theme="gelap"] .story-themed {
+    --st-bg: var(--st-gelap-bg); --st-surface: var(--st-gelap-surface); --st-ink: var(--st-gelap-ink); --st-ink-soft: var(--st-gelap-ink-soft);
+    --st-line: var(--st-gelap-line); --st-accent: var(--st-gelap-accent); --st-accent-text: var(--st-gelap-accent-text);
+  }
+  .story-themed {
+    background: var(--st-bg);
+    color: var(--st-ink);
+    min-height: 100vh;
+    --paper: var(--st-bg);
+    --white: var(--st-surface);
+    --ink: var(--st-ink);
+    --ink-soft: var(--st-ink-soft);
+    --line: var(--st-line);
+    --clay: var(--st-accent);
+    --clay-text: var(--st-accent-text);
+    transition: background-color .3s ease, color .3s ease;
+  }
+  /* The header carries its own colour for each site theme, so it needs the work's colour said again with more weight (the dark footer is the brand's and stays). */
+  .story-themed .site-header,
+  html[data-theme] .story-themed .site-header {
+    background: var(--st-bg);
+    background: color-mix(in srgb, var(--st-bg) 94%, transparent);
+    border-bottom-color: var(--st-line);
+  }
+  @media (prefers-reduced-motion: reduce) { .story-themed { transition: none; } }
+}

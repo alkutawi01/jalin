@@ -3,13 +3,14 @@ import { getDb } from "../../../../lib/db";
 import { asString, codeKey, currentSession, isSameOrigin, noStore, notFoundWhenOff, previousCodeKeys, readJson, visitorMac } from "../../../../lib/reader-auth/http";
 import { redeemCode } from "../../../../lib/reader-auth/redeem";
 import { formatEndMYT } from "../../../../lib/subscription/periods";
+import { redeemByLabel } from "../../../../lib/subscription/redeem-code";
 
 export const dynamic = "force-dynamic";
 
-const REFUSED = "Kod tidak dapat ditebus. Semak kod dan nombor batch pada kad, atau hubungi sokongan Jalin.";
+const REFUSED = "Kod tidak dapat ditebus. Semak kod dan nombor siri pada kad, atau hubungi sokongan Jalin.";
 
 /**
- * "Redeem this code." One endpoint for card codes (code and batch number) and shared codes (the code alone). Every kind of failure
+ * "Redeem this code." One endpoint for card codes (code and serial number) and shared codes (the code alone). Every kind of failure
  * gives the same refusal, so a wrong guess learns nothing; the only different answers are to a reader who already used the very code
  * and to the stop switch and the rate limit.
  */
@@ -24,13 +25,14 @@ export async function POST(request: Request) {
   const result = await redeemCode(
     getDb(),
     { codeKey: codeKey(), previousCodeKeys: previousCodeKeys() },
-    { accountId: current.session.account.id, ipMac: visitorMac(request), code: asString(body.code, 60), batch: asString(body.batch, 40) }
+    { accountId: current.session.account.id, ipMac: visitorMac(request), code: asString(body.code, 60), serial: asString(body.serial, 40) }
   );
 
   if (result.status === "ok") {
     const until = result.accessEndsAt ? formatEndMYT(result.accessEndsAt) : formatEndMYT(result.endsAt);
     return noStore(NextResponse.json({ ok: true, message: `Kod berjaya ditebus. Akses anda aktif sehingga ${until}.`, accessEndsAt: result.accessEndsAt ?? result.endsAt }));
   }
+  if (result.status === "expired") return noStore(NextResponse.json({ error: `Tempoh penebusan kod ini telah tamat. Tarikh akhir penebusan ialah ${redeemByLabel(result.redeemBy)}. Hubungi editorial@adjung.com untuk mendapatkan bantuan.` }, { status: 400 }));
   if (result.status === "already") return noStore(NextResponse.json({ error: "Anda sudah menebus kod ini." }, { status: 409 }));
   if (result.status === "throttled") return noStore(NextResponse.json({ error: "Terlalu banyak cubaan. Cuba lagi sebentar lagi." }, { status: 429 }));
   if (result.status === "halted") return noStore(NextResponse.json({ error: "Penebusan dihentikan buat sementara. Cuba lagi nanti." }, { status: 503 }));

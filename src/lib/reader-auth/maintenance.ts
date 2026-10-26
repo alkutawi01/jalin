@@ -4,6 +4,7 @@
  * the admin can also fetch a fresh file by hand. If keeping the file fails, the chore says so and the admin shows the last time it worked.
  */
 import { sql } from "kysely";
+import { deleteObject, listObjects, objectStoreConfig, putObject } from "../storage/object-store";
 import { buildCodesExport } from "./codes-export";
 import { encryptBackup, loadBackupEncKey } from "./backup-crypto";
 import { loadCodeKey, loadMacKey } from "./primitives";
@@ -35,6 +36,20 @@ async function remember(db: Db, value: LastExport, now: Date) {
 
 /** Store only ciphertext in the public Blob store; retention never touches the older plaintext prefix. */
 async function keepOutsideDatabase(ciphertext: string, now: Date): Promise<{ url?: string; error?: string }> {
+  const store = objectStoreConfig();
+  if (store) {
+    // Cloudflare R2 (private bucket): ciphertext only; the folder is never served by /media.
+    try {
+      const key = `${PREFIX}${now.toISOString().replace(/[:.]/g, "-")}.enc`;
+      const put = await putObject(store, key, ciphertext, "application/octet-stream");
+      if (!put.ok) return { error: "Muat naik gagal." };
+      const old = (await listObjects(store, PREFIX)).sort((a, b) => b.lastModified.getTime() - a.lastModified.getTime()).slice(KEEP);
+      for (const o of old) await deleteObject(store, o.key);
+      return { url: `r2://${key}` };
+    } catch {
+      return { error: "Muat naik gagal." };
+    }
+  }
   const token = process.env.BLOB_READ_WRITE_TOKEN?.trim();
   if (!token) return { error: "BLOB_READ_WRITE_TOKEN belum ditetapkan: fail tidak disimpan di luar pangkalan data." };
   try {

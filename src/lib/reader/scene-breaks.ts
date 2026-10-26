@@ -10,7 +10,8 @@
 const ORNAMENT = /^([-*_~=#•·◆◇✦✧⁂])(?:[ \t]*\1){2,}$/u;
 
 export function isSceneBreakLine(line: string): boolean {
-  return ORNAMENT.test(line.trim());
+  // A rich-text copy writes the symbols escaped ("\* \* \*"); that is still the same scene break.
+  return ORNAMENT.test(line.trim().replace(/\\([-*_~=#•·◆◇✦✧⁂])/gu, "$1"));
 }
 
 export function normalizeSceneBreaks(markdown: string): string {

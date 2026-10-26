@@ -659,7 +659,7 @@ async function main() {
     assertEqual(stored.backend, "object_storage", "Object storage backend used");
     assertEqual(stored.finalized, true, "Object storage success → finalized");
     assert(stored.stableAssetPath !== null, "stableAssetPath set");
-    assertIncludes(stored.stableAssetPath || "", "https://storage.example.test/jalin-assets/", "Canonical path is durable object URL (put.url kept)");
+    assertIncludes(stored.stableAssetPath || "", "/media/assets/visuals/", "Canonical path is the site's own /media URL (the bucket itself is private)");
     assertIncludes(stored.stableAssetPath || "", "vr-42-v3-", "Canonical path uses immutable key with version");
     assertNotIncludes(stored.stableAssetPath || "", "cdn-magnific", "Canonical path is never provider URL");
     assertNotIncludes(stored.stableAssetPath || "", "/assets/visuals/vr-42.png", "Canonical path is NOT legacy local path when object storage used");

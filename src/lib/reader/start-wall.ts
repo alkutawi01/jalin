@@ -6,6 +6,7 @@
  */
 import fs from "node:fs/promises";
 import path from "node:path";
+import { mediaPublicUrl, objectStoreConfig, putObject } from "../storage/object-store";
 import type { Db } from "../reader-auth/service";
 
 const KEY = "mula_wall";
@@ -88,6 +89,14 @@ export async function composeWall(sources: string[], month: string): Promise<Buf
 }
 
 async function store(buffer: Buffer, month: string): Promise<string> {
+  const r2 = objectStoreConfig();
+  if (r2) {
+    // The wall is the one object that is overwritten each month, so its address carries the build time to defeat the year-long cache.
+    const key = `assets/mula/wall-${month}-${Date.now().toString(36)}.webp`;
+    const put = await putObject(r2, key, buffer, "image/webp");
+    if (!put.ok) throw new Error(put.error ?? "Object storage upload failed.");
+    return mediaPublicUrl(key);
+  }
   if (process.env.BLOB_READ_WRITE_TOKEN?.trim()) {
     const { put } = await import("@vercel/blob");
     const result = await put(`assets/mula/wall-${month}.webp`, buffer, {

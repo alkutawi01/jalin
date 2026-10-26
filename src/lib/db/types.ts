@@ -503,6 +503,7 @@ export interface Database {
   entitlements: Entitlements;
   code_batches: CodeBatches;
   redeem_codes: RedeemCodes;
+  purchase_orders: PurchaseOrders;
   redemptions: Redemptions;
   shared_codes: SharedCodes;
   shared_redemptions: SharedRedemptions;
@@ -575,6 +576,9 @@ export interface ReaderAccounts {
   created_at: Generated<Date>;
   last_login_at: Date | null;
   deletion_requested_at: Date | null;
+  terms_version: string | null;
+  terms_accepted_at: Date | null;
+  adult_confirmed_at: Date | null;
 }
 
 export interface ReaderTrialClaims {
@@ -659,6 +663,7 @@ export interface CodeBatches {
   months: number;
   quantity: number;
   status: Generated<"PENDING_PRINT" | "PRINT_CONFIRMED" | "VOIDED">;
+  channel: Generated<"physical" | "virtual">;
   order_ref: string | null;
   note: string | null;
   key_id: string;
@@ -679,6 +684,30 @@ export interface RedeemCodes {
   issued_at: Date | null;
   revoked_at: Date | null;
   revoke_reason: string | null;
+  redeem_by: Date | null;
+  created_at: Generated<Date>;
+}
+
+export interface PurchaseOrders {
+  id: Generated<string>;
+  reference: string;
+  months: number;
+  amount_sen: number;
+  email: string;
+  status: Generated<"PENDING" | "PAID" | "CANCELLED">;
+  provider: Generated<string>;
+  provider_bill_id: string | null;
+  paid_at: Date | null;
+  paid_amount_sen: number | null;
+  code_id: string | null;
+  serial: string | null;
+  code_cipher: string | null;
+  delivery_status: Generated<"NONE" | "PENDING" | "SENT">;
+  delivery_attempts: Generated<number>;
+  last_attempt_at: Date | null;
+  last_delivery_error: string | null;
+  delivered_at: Date | null;
+  note: string | null;
   created_at: Generated<Date>;
 }
 

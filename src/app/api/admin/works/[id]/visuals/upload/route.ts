@@ -4,6 +4,7 @@ import { getDb, hasDb } from "../../../../../../../lib/db";
 import { uploadVisualForWork } from "../../../../../../../lib/admin/visual-generation/work-visual-upload";
 import { logActivity } from "../../../../../../../lib/admin/activity";
 import { publicErrorMessage } from "../../../../../../../lib/admin/api-errors";
+import { refreshAutoTheme } from "../../../../../../../lib/admin/auto-theme";
 
 /**
  * POST /api/admin/works/[id]/visuals/upload  (multipart/form-data)
@@ -53,6 +54,7 @@ export async function POST(
       );
     }
     await logActivity({ action: "visual.upload", subjectType: "visual", subjectId: result.visualId, workId: id, summary: `Gambar ${text("role") || "inline"}` });
+    if (text("role") === "hero") await refreshAutoTheme(id);
     return NextResponse.json(
       { success: true, visualId: result.visualId, visualRequestId: result.visualRequestId, assetPath: result.assetPath },
       { status: 201 }

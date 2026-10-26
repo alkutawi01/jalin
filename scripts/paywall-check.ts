@@ -63,7 +63,7 @@ async function signIn(device: Device, email: string) {
   await sleep(350);
   const code = mailCountFor(email) > before ? lastCodeFor(email) : null;
   if (!code) throw new Error(`no code was mailed to ${email}`);
-  const res = await device.req("/api/akaun/sahkan", { method: "POST", body: { email, code, label: "Ujian" } });
+  const res = await device.req("/api/akaun/sahkan", { method: "POST", body: { email, code, label: "Ujian", consent: true } });
   if (res.status !== 200) throw new Error(`sign-in failed for ${email}: ${res.status} ${res.text.slice(0, 120)}`);
 }
 
@@ -167,7 +167,7 @@ async function main() {
     const shared = await createSharedCode(db, { grant: { unit: "days", amount: 7 }, maxRedemptions: 5, channel: "paywall-check", createdBy: "paywall-check" });
     const before = await B.req(lockedPath);
     assert(!before.text.includes(locked.canary!.slice(0, 28)), "locked before redeeming");
-    const redeemed = await B.req("/api/akaun/tebus", { method: "POST", body: { code: shared.code, batch: "" } });
+    const redeemed = await B.req("/api/akaun/tebus", { method: "POST", body: { code: shared.code, serial: "" } });
     assert(redeemed.status === 200 && redeemed.json?.ok === true, "the shared code is redeemed", redeemed.text.slice(0, 200));
     const after = await B.req(lockedPath);
     assert(after.status === 200 && after.text.includes(locked.canary!.slice(0, 28)), "and the text is shown");

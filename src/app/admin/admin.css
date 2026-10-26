@@ -980,3 +980,23 @@
   .a-shell .admin-table.a-kv-table:not(.a-todo-table) td { grid-column: auto; width: auto; }
   .a-shell .admin-table.a-device-table:not(.a-todo-table) td:last-child { grid-column: auto; }
 }
+
+/* A file dragged over a box that accepts it (picker, picture card): a dashed outline so the writer sees where it will land. */
+.a-shell .a-file-picker.is-dropping,
+.a-shell .work-image-card.is-dropping { outline: 2px dashed var(--a-accent); outline-offset: 3px; background: var(--a-accent-soft); border-radius: var(--a-radius); }
+.a-shell .a-file-picker-hint { color: var(--a-muted); font-size: 12px; }
+
+/* Warna tema karya (WorkThemePanel): the three sources as a column of radios, and a small preview of what Cerah, Sepia and Gelap readers will see. */
+.a-shell .a-theme-choices { display: grid; gap: 6px; margin: 8px 0 12px; }
+.a-shell .a-theme-choices label { display: flex; gap: 8px; align-items: center; font-weight: 500; }
+.a-shell .a-theme-previews { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 10px 0 12px; }
+.a-shell .a-theme-preview { display: grid; gap: 6px; padding: 10px; border: 1px solid var(--p-line); border-radius: var(--a-radius); background: var(--p-bg); color: var(--p-ink); }
+.a-shell .a-theme-preview-name { color: var(--p-accent-text); font-weight: 600; }
+.a-shell .a-theme-preview-soft { color: var(--p-ink-soft); font-size: 12px; }
+.a-shell .a-theme-preview-card { background: var(--p-surface); padding: 4px 6px; border-radius: var(--a-radius-sm); border: 1px solid var(--p-line); font-size: 12px; }
+.a-shell .a-theme-preview-bar { background: var(--p-accent); height: 6px; border-radius: var(--a-radius-sm); }
+.a-shell .a-theme-swatch-pick { width: 64px; height: 40px; padding: 2px; }
+.a-shell .a-theme-panel { margin-bottom: 16px; }
+.a-shell .a-theme-row-end { align-items: end; }
+@media (max-width: 520px) { .a-shell .a-theme-previews { grid-template-columns: 1fr; } }
+.a-shell .a-theme-title { margin: 0 0 8px; }

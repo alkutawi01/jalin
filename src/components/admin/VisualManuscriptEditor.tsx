@@ -6,6 +6,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { nextImageMarker } from "../../lib/reader/image-markers";
 import { AYAT_PLACEHOLDER_LINES, ayatLineKind, splitCommunicationBlocks } from "../../lib/reader/communication-blocks";
 import { hasArabic, toArabicIndic } from "../../lib/reader/arabic-text";
+import { isSceneBreakLine } from "../../lib/reader/scene-breaks";
 import { confirmAction, toast } from "../../lib/admin/dialogs";
 import { cleanFootnoteText, nextFootnoteLabel } from "../../lib/admin/footnote-insert";
 import { splitFootnotes } from "../../lib/admin/footnote-edit";
@@ -109,15 +110,15 @@ export function firstUnsupportedLine(markdown: string): string | null {
   const colonBlock = segments.find((segment) => segment.content.includes(":::"));
   if (colonBlock) return colonBlock.content.split("\n").find((line) => line.includes(":::")) ?? colonBlock.content;
   const blocks = segments.flatMap((segment) => segment.kind === "prose" ? segment.content.split(/\n{2,}/) : [segment.content]);
-  const mixed = blocks.find((block) => block.split("\n").length > 1 && block.split("\n").some((line) => MARKER.test(line.trim()) || /^(---|\*\*\*)$/.test(line.trim()) || /^## /.test(line)));
-  if (mixed) return mixed.split("\n").find((line) => MARKER.test(line.trim()) || /^(---|\*\*\*)$/.test(line.trim()) || /^## /.test(line)) ?? mixed;
+  const mixed = blocks.find((block) => block.split("\n").length > 1 && block.split("\n").some((line) => MARKER.test(line.trim()) || isSceneBreakLine(line) || /^## /.test(line)));
+  if (mixed) return mixed.split("\n").find((line) => MARKER.test(line.trim()) || isSceneBreakLine(line) || /^## /.test(line)) ?? mixed;
   const lines = blocks.flatMap((block) => block.split("\n"));
   return lines.find((line) => !lineEditableVisually(line)) ?? null;
 }
 
 function lineEditableVisually(line: string): boolean {
   {
-    if (!line.trim() || MARKER.test(line.trim()) || /^(---|\*\*\*)$/.test(line.trim())) return true;
+    if (!line.trim() || MARKER.test(line.trim()) || isSceneBreakLine(line)) return true;
     // "\*" and "\\" are what this editor itself writes for a literal * or \, so they are not unsupported syntax.
     const text = line.replace(/\\[\\*]/g, "");
     // Ordinary characters such as [10:32], <a@b.com>, _ and | are plain text in the visual editor and survive the round
@@ -139,7 +140,7 @@ function toHtml(markdown: string, notes?: NoteContext): string {
       const number = trimmed.match(/\d+/)?.[0];
       return `<div class="visual-manuscript-marker" contenteditable="false" data-marker="${trimmed}"><span data-marker-label>Gambar ${number}</span><button type="button" data-remove-marker aria-label="Buang penanda Gambar ${number}" title="Buang penanda Gambar ${number}">Buang</button></div>`;
     }
-    if (/^(---|\*\*\*)$/.test(trimmed)) return '<hr class="visual-manuscript-break">';
+    if (isSceneBreakLine(trimmed)) return '<hr class="visual-manuscript-break">';
     if (trimmed.startsWith("## ")) return `<h2>${inlineHtml(trimmed.slice(3), notes)}</h2>`;
     return `<p>${inlineHtml(block, notes)}</p>`;
   }).join("") : `<div class="visual-manuscript-communication visual-manuscript-communication-${segment.kind}" data-communication="${segment.kind}">${segment.kind === "ayat" ? segment.content.split("\n").map((line) => ayatLineHtml(line, notes)).join("") : inlineHtml(segment.content, notes)}</div>`).join("");

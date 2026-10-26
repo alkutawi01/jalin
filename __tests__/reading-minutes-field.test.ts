@@ -25,9 +25,9 @@ for (const bad of [2.5, "2.5", -3, "-3", 0, READING_MINUTES_MAX + 1, "sepuluh", 
 const route = read("src/app/api/admin/works/[id]/route.ts");
 assert(route.includes("readingMinutes = parseReadingMinutes(body.readingMinutes);") && /catch \(error\) \{\s*return NextResponse\.json\(\{ error: \(error as Error\)\.message \}, \{ status: 400 \}\);/.test(route) && !route.includes("readingMinutes: body.readingMinutes"), "the route checks the number and answers 400, before anything is written");
 const service = read("src/lib/admin/work-service.ts");
-assert(service.includes("if (input.readingMinutes !== undefined) updateData.reading_minutes = input.readingMinutes || null;"), "and null clears the column");
+assert(service.includes("updateData.reading_minutes = readingMinutesFor(undefined, input.body ?? currentText?.body") && !service.includes("input.readingMinutes"), "the stored number is always the estimate from the text (the manual box was removed)");
 const page = read("src/app/admin/works/[id]/page.tsx");
-assert(page.includes("readingMinutes: form.readingMinutes.trim() ? Number(form.readingMinutes) : null,") && !page.includes("Number(form.readingMinutes) : undefined"), "the form sends an emptied box as null, not as nothing");
+assert(page.includes("Tempoh bacaan (automatik)") && !page.includes("Number(form.readingMinutes)"), "the form shows the automatic estimate and no longer sends a number of its own");
 
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);

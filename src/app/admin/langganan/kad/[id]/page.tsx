@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { getDb, hasDb } from "../../../../../lib/db";
 import { LanggananNav } from "../../../../../components/admin/langganan-ui";
 import { batchInfo } from "../../../../../lib/reader-auth/admin";
+import { redeemByLabel } from "../../../../../lib/subscription/redeem-code";
 import CodesTable from "./CodesTable";
 
 export const dynamic = "force-dynamic";
@@ -18,7 +19,7 @@ export default async function BatchPage({ params }: { params: Promise<{ id: stri
       <header className="admin-page-header">
         <h1>Kelompok {batch.batchNumber}</h1>
         <p className="admin-page-sub">
-          {batch.months} bulan · {batch.counts.total} kad{batch.orderRef ? ` · ${batch.orderRef}` : ""}. <a href="/admin/langganan/kad">Kembali ke senarai kelompok</a>
+          {batch.months} bulan · {batch.channel === "virtual" ? "maya (e-mel)" : "fizikal"} · {batch.counts.total} kad{batch.redeemBy ? ` · tebus sebelum ${redeemByLabel(batch.redeemBy)}` : ""}{batch.orderRef ? ` · ${batch.orderRef}` : ""}. <a href="/admin/langganan/kad">Kembali ke senarai kelompok</a>
         </p>
       </header>
       <LanggananNav current="/admin/langganan/kad" />

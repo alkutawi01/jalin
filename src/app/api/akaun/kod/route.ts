@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { getDb } from "../../../../lib/db";
 import { asString, isSameOrigin, macKey, mailer, noStore, notFoundWhenOff, readJson, visitorMac } from "../../../../lib/reader-auth/http";
-import { requestLoginCode } from "../../../../lib/reader-auth/service";
+import { loginChallengeNeeded, requestLoginCode } from "../../../../lib/reader-auth/service";
+import { turnstileConfig, verifyTurnstile } from "../../../../lib/reader-auth/turnstile";
 
 export const dynamic = "force-dynamic";
 
@@ -12,6 +13,21 @@ export async function POST(request: Request) {
   if (!isSameOrigin(request)) return NextResponse.json({ error: "Permintaan tidak dibenarkan." }, { status: 403 });
 
   const body = await readJson(request);
+
+  // The bot challenge, only when this visitor or the day's mail budget calls for it and only when its keys are set.
+  // Without a token the answer asks for one and nothing is sent or counted.
+  const turnstile = turnstileConfig();
+  if (turnstile && (await loginChallengeNeeded(getDb(), {}, { ipMac: visitorMac(request) }))) {
+    const token = asString(body.turnstileToken);
+    if (!token) return noStore(NextResponse.json({ ok: false, challenge: true, siteKey: turnstile.siteKey }));
+    const verdict = await verifyTurnstile(token, turnstile.secret);
+    if (verdict === "fail") {
+      return noStore(NextResponse.json({ ok: false, challenge: true, siteKey: turnstile.siteKey, error: "Pengesahan keselamatan tidak berjaya. Cuba lagi." }));
+    }
+    // Cloudflare could not be reached: carry on rather than close sign-in for everyone, and say so in the log.
+    if (verdict === "unavailable") console.warn("Turnstile unavailable: continuing without the challenge.");
+  }
+
   const result = await requestLoginCode(getDb(), { key: macKey(), mailer: mailer() }, { email: asString(body.email), ipMac: visitorMac(request) });
 
   if (!result.ok && result.reason === "invalid_email") {

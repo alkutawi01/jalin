@@ -10,9 +10,11 @@ import ImageFocusPicker from "@/components/admin/ImageFocusPicker";
 import { useAdminCan } from "@/components/admin/AdminRole";
 import PanelTab from "@/components/admin/PanelTab";
 import ChapterImages from "@/components/admin/ChapterImages";
+import { useFileDrop } from "@/components/admin/useFileDrop";
 import { useState, useEffect, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import WorkVisualUpload from "../../../../components/admin/WorkVisualUpload";
+import WorkThemePanel from "../../../../components/admin/WorkThemePanel";
 import { imageMarkerLabel, imageMarkers, insertImageMarker, isImageMarker } from "../../../../lib/reader/image-markers";
 import CreditRoleSelect from "../../../../components/admin/CreditRoleSelect";
 import AiCreditPicker from "../../../../components/admin/AiCreditPicker";
@@ -144,8 +146,10 @@ function WorkImageCard({ visual, body, onEdit, onReplace, onDelete }: {
   onDelete: (id: number) => void;
 }) {
   const numbered = !visual.section_slug && visual.role !== "hero" && isImageMarker(visual.anchor);
+  // A picture file dragged from a folder onto the card replaces this picture (the same as "Ganti gambar").
+  const { dropping, dropProps } = useFileDrop({ accept: "image/png,image/jpeg,image/webp", onFile: (file) => onReplace(visual.id, file) });
   return (
-    <article className="work-image-card">
+    <article className={`work-image-card${dropping ? " is-dropping" : ""}`} {...dropProps}>
       <a className="work-image-card-preview" href={visual.src} target="_blank" rel="noreferrer" title="Buka gambar saiz penuh">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={visual.src} alt={visual.alt || ""} />
@@ -167,7 +171,7 @@ function WorkImageCard({ visual, body, onEdit, onReplace, onDelete }: {
         ) : <p className="admin-form-hint">Dipaparkan pada kad dan kepala halaman karya.</p>}
         <div className="work-image-card-actions">
           <button type="button" className="admin-btn admin-btn-sm" onClick={() => onEdit(visual)}>Ubah butiran</button>
-          <label className="admin-btn admin-btn-sm">
+          <label className="admin-btn admin-btn-sm" title="Atau seret fail gambar ke kad ini">
             Ganti gambar
             <input type="file" accept="image/png,image/jpeg,image/webp" hidden onChange={(e) => {
               const file = e.target.files?.[0];
@@ -2834,6 +2838,7 @@ export default function EditWorkPage() {
               {markerMigration.canRestore && <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" disabled={markerMigrationBusy || dirty} onClick={() => void runMarkerMigration("restore")}>Pulihkan penanda asal</button>}
             </div>
           )}
+          <WorkThemePanel workId={workId} hasHero={visuals.some((v) => v.role === "hero")} />
           <div id="work-image-upload">
             <WorkVisualUpload workId={workId} hasHero={visuals.some((v) => v.role === "hero")} published={form.status === "published"} suggestedAnchor={selectedImageAnchor} markers={imageMarkers(savedBody).filter((marker) => !visuals.some((visual) => visual.anchor === marker))} onDone={loadVisuals} />
           </div>

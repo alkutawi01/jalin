@@ -16,6 +16,7 @@ import {
   resendMailer,
   selectMailer,
   trialClaimMac,
+  trialIdentity,
 } from "../src/lib/reader-auth/primitives";
 import { clientIp, isSameOrigin, rateLimitIp, readerAccountsEnabled, readerCookieName, readerTokenFrom } from "../src/lib/reader-auth/http";
 import { newReaderMailDailyCap, readerMailDailyCap } from "../src/lib/reader-auth/service";
@@ -31,6 +32,13 @@ const throws = (fn: () => unknown) => { try { fn(); return false; } catch { retu
 assert(normaliseEmail("  Aina@Contoh.MY ") === "aina@contoh.my", "trimmed and lower case");
 assert(normaliseEmail("a.b+c@contoh.my") === "a.b+c@contoh.my" && normaliseEmail("ab@contoh.my") !== normaliseEmail("a.b@contoh.my"), "dots and +tags are kept: two different people may own a.b@ and ab@");
 assert(normaliseEmail("ａｉｎａ@contoh.my") === "aina@contoh.my", "full-width letters are folded");
+// One trial per person behind the aliases of a mailbox (the account itself still keeps the address as typed).
+assert(trialIdentity("ali.baba+1@gmail.com") === "alibaba@gmail.com" && trialIdentity("alibaba@googlemail.com") === "alibaba@gmail.com" && trialIdentity("a.l.i.baba@gmail.com") === "alibaba@gmail.com", "Gmail aliases (dots, +tag, googlemail.com) are one trial identity");
+assert(trialIdentity("ali@gmail.com") !== trialIdentity("abu@gmail.com") && trialIdentity("ali@gmail.com") !== trialIdentity("ali@yahoo.com") && trialIdentity("ali@gmail.com") !== trialIdentity("al.ix@gmail.com"), "different people are never joined: the identity keeps the rest of the address");
+assert(trialIdentity("aina+jalin@contoh.my") === "aina@contoh.my" && trialIdentity("aina+a+b@contoh.my") === "aina@contoh.my", "+tag is dropped on every domain");
+assert(trialIdentity("a.b@contoh.my") !== trialIdentity("ab@contoh.my") && trialIdentity("a.b@contoh.my") === "a.b@contoh.my", "dots are kept outside Gmail (a.b@ and ab@ can be two people)");
+assert(trialIdentity("aina@contoh.my") === "aina@contoh.my" && trialIdentity("+x@contoh.my") === "+x@contoh.my", "an ordinary address is unchanged, and a leading + is not stripped to nothing");
+assert(trialIdentity("ali@gmail.com.my") === "ali@gmail.com.my" && trialIdentity("ali@notgmail.com") === "ali@notgmail.com", "only exactly gmail.com and googlemail.com are treated as Gmail");
 for (const bad of ["", "aina", "aina@", "@contoh.my", "aina@contoh", "aina@@contoh.my", "ai na@contoh.my", "aina@contoh..my", "aina@-contoh.my", "a@b.c" + "x".repeat(260)]) {
   assert(normaliseEmail(bad) === null, `refused: ${JSON.stringify(bad.slice(0, 30))}`);
 }

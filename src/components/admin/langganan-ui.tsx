@@ -26,6 +26,7 @@ const TABS = [
   { href: "/admin/langganan", label: "Ringkasan" },
   { href: "/admin/langganan/kad", label: "Kad dan kelompok" },
   { href: "/admin/langganan/kod-kongsi", label: "Kod kongsi" },
+  { href: "/admin/langganan/pesanan", label: "Pesanan dalam talian" },
   { href: "/admin/langganan/pembaca", label: "Pembaca" },
   { href: "/admin/langganan/contoh", label: "Cerita contoh" },
 ];

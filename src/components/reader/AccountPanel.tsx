@@ -293,11 +293,20 @@ export default function AccountPanel(props: {
           <p id="padam-title"><strong>Padam akaun ini?</strong></p>
           <p className="auth-fine">E-mel, nama, tetapan bacaan dan senarai Bacaan saya akan dipadamkan. Anda juga akan dilog keluar daripada semua peranti.</p>
           <p className="auth-fine">Tindakan ini tidak boleh dibatalkan dan akaun tidak boleh dipulihkan.</p>
-          {props.access.state === "trial" || props.access.state === "subscribed" ? <p className="auth-fine">Anda masih mempunyai akses bacaan aktif sehingga {formatDate(props.access.endsAt)}. Baki akses itu akan hilang. Tiada bayaran balik automatik, tertakluk kepada hak anda di bawah undang-undang.</p> : null}
+          {props.access.state === "trial" || props.access.state === "subscribed" ? <p className="auth-fine"><strong>Anda masih mempunyai akses bacaan aktif sehingga {formatDate(props.access.endsAt)}.</strong> Jika anda padam sekarang, baki akses itu hilang dan tidak boleh dipulihkan, tanpa bayaran balik automatik (hak anda di bawah undang-undang tidak terjejas). Anda boleh mengekalkan akaun dan memadamnya selepas tarikh itu.</p> : null}
           <p className="auth-fine">Percubaan percuma tidak boleh diaktifkan semula menggunakan e-mel yang sama.</p>
           <div className="auth-actions">
-            <button type="button" className="auth-button" disabled={busy} onClick={deleteAccount}>Ya, padam akaun saya</button>
-            <button type="button" className="auth-button auth-button--ghost" disabled={busy} onClick={() => setConfirmingDelete(false)}>Batal</button>
+            {props.access.state === "trial" || props.access.state === "subscribed" ? (
+              <>
+                <button type="button" className="auth-button" disabled={busy} onClick={() => setConfirmingDelete(false)}>Kekalkan akaun sehingga tamat</button>
+                <button type="button" className="auth-button auth-button--ghost" disabled={busy} onClick={deleteAccount}>Padam sekarang juga</button>
+              </>
+            ) : (
+              <>
+                <button type="button" className="auth-button" disabled={busy} onClick={deleteAccount}>Ya, padam akaun saya</button>
+                <button type="button" className="auth-button auth-button--ghost" disabled={busy} onClick={() => setConfirmingDelete(false)}>Batal</button>
+              </>
+            )}
           </div>
         </div>
       ) : (

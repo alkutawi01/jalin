@@ -2,6 +2,7 @@
  * What the Langganan pages of the admin read from the database: overview, batches, shared codes, and a reader's access. Reading only;
  * the changes go through redeem.ts and entitlements.ts. The plain codes of a card are never here: they are not stored.
  */
+import { redeemByLastDayInput, virtualRedeemBy } from "../subscription/redeem-code";
 import { sql } from "kysely";
 import { getAccess, listLedger, type LedgerRow } from "./entitlements";
 import { isRedeemHalted } from "./redeem";
@@ -16,12 +17,28 @@ export type Overview = {
   batches: { pending: number; confirmed: number; voided: number };
   codes: { generated: number; issued: number; revoked: number; redeemed: number };
   shared: { active: number; paused: number; revoked: number; redemptions: number };
+  /** What happened lately, so the owner can see how a launch is going without reading rows. */
+  recent: {
+    signups1d: number;
+    signups7d: number;
+    trialsStarted7d: number;
+    /** Trials that end in the next 7 days and whose reader has no other access: the people to remind. */
+    trialsEnding7d: number;
+    /** Trials that ended in the last 7 days and whose reader has no access now. */
+    trialsExpired7d: number;
+    /** Cards and shared codes redeemed in the last 7 days. */
+    redeemed7d: number;
+  };
 };
 
 const n = (value: unknown) => Number(value ?? 0);
 
 export async function overview(db: Db, now: Date = new Date()): Promise<Overview> {
-  const [accounts, access, batches, codes, redeemed, shared, sharedUse, halted] = await Promise.all([
+  const DAY = 24 * 60 * 60 * 1000;
+  const since1d = new Date(now.getTime() - DAY);
+  const since7d = new Date(now.getTime() - 7 * DAY);
+  const until7d = new Date(now.getTime() + 7 * DAY);
+  const [accounts, access, batches, codes, redeemed, shared, sharedUse, halted, recent] = await Promise.all([
     sql<{ n: string }>`SELECT count(*) AS n FROM reader_accounts WHERE status <> 'deleted'`.execute(db),
     sql<{ paid: string; trial: string }>`
       SELECT count(DISTINCT account_id) FILTER (WHERE kind <> 'TRIAL') AS paid,
@@ -34,6 +51,16 @@ export async function overview(db: Db, now: Date = new Date()): Promise<Overview
     sql<{ status: string; n: string }>`SELECT status, count(*) AS n FROM shared_codes GROUP BY status`.execute(db),
     sql<{ n: string }>`SELECT count(*) AS n FROM shared_redemptions`.execute(db),
     isRedeemHalted(db),
+    sql<{ s1: string; s7: string; started: string; ending: string; expired: string; red: string }>`
+      SELECT
+        (SELECT count(*) FROM reader_accounts WHERE status <> 'deleted' AND created_at > ${since1d}) AS s1,
+        (SELECT count(*) FROM reader_accounts WHERE status <> 'deleted' AND created_at > ${since7d}) AS s7,
+        (SELECT count(*) FROM reader_accounts WHERE status <> 'deleted' AND trial_starts_at > ${since7d}) AS started,
+        (SELECT count(*) FROM reader_accounts a WHERE a.status <> 'deleted' AND a.trial_ends_at > ${now} AND a.trial_ends_at <= ${until7d}
+           AND NOT EXISTS (SELECT 1 FROM entitlements e WHERE e.account_id = a.id AND e.kind <> 'TRIAL' AND e.revoked_at IS NULL AND e.starts_at <= ${now} AND e.ends_at > ${now})) AS ending,
+        (SELECT count(*) FROM reader_accounts a WHERE a.status <> 'deleted' AND a.trial_ends_at <= ${now} AND a.trial_ends_at > ${since7d}
+           AND NOT EXISTS (SELECT 1 FROM entitlements e WHERE e.account_id = a.id AND e.revoked_at IS NULL AND e.starts_at <= ${now} AND e.ends_at > ${now})) AS expired,
+        ((SELECT count(*) FROM redemptions WHERE redeemed_at > ${since7d}) + (SELECT count(*) FROM shared_redemptions WHERE redeemed_at > ${since7d})) AS red`.execute(db),
   ]);
   const by = (rows: object[], key: string, value: string) => n((rows as Record<string, unknown>[]).find((r) => r[key] === value)?.n);
   return {
@@ -44,6 +71,14 @@ export async function overview(db: Db, now: Date = new Date()): Promise<Overview
     batches: { pending: by(batches.rows, "status", "PENDING_PRINT"), confirmed: by(batches.rows, "status", "PRINT_CONFIRMED"), voided: by(batches.rows, "status", "VOIDED") },
     codes: { generated: by(codes.rows, "state", "generated"), issued: by(codes.rows, "state", "issued"), revoked: by(codes.rows, "state", "revoked"), redeemed: n(redeemed.rows[0]?.n) },
     shared: { active: by(shared.rows, "status", "active"), paused: by(shared.rows, "status", "paused"), revoked: by(shared.rows, "status", "revoked"), redemptions: n(sharedUse.rows[0]?.n) },
+    recent: {
+      signups1d: n(recent.rows[0]?.s1),
+      signups7d: n(recent.rows[0]?.s7),
+      trialsStarted7d: n(recent.rows[0]?.started),
+      trialsEnding7d: n(recent.rows[0]?.ending),
+      trialsExpired7d: n(recent.rows[0]?.expired),
+      redeemed7d: n(recent.rows[0]?.red),
+    },
   };
 }
 
@@ -62,15 +97,19 @@ export type BatchRow = {
   issued: number;
   revoked: number;
   redeemed: number;
+  channel: "physical" | "virtual";
+  /** The shared last day to redeem (a physical batch has one); null for a virtual batch, whose codes each have their own. */
+  redeemBy: Date | null;
 };
 
 export async function listBatches(db: Db): Promise<BatchRow[]> {
   const rows = await sql<Record<string, unknown>>`
-    SELECT b.id, b.batch_number, b.months, b.quantity, b.status, b.order_ref, b.note, b.created_at, b.confirmed_at, b.void_reason,
+    SELECT b.id, b.batch_number, b.months, b.quantity, b.status, b.channel, b.order_ref, b.note, b.created_at, b.confirmed_at, b.void_reason,
            count(c.id) FILTER (WHERE c.state = 'generated') AS generated,
            count(c.id) FILTER (WHERE c.state = 'issued') AS issued,
            count(c.id) FILTER (WHERE c.state = 'revoked') AS revoked,
-           count(r.id) AS redeemed
+           count(r.id) AS redeemed,
+           CASE WHEN min(c.redeem_by) = max(c.redeem_by) THEN min(c.redeem_by) ELSE NULL END AS redeem_by
     FROM code_batches b
     LEFT JOIN redeem_codes c ON c.batch_id = b.id
     LEFT JOIN redemptions r ON r.code_id = c.id
@@ -79,15 +118,14 @@ export async function listBatches(db: Db): Promise<BatchRow[]> {
     id: String(r.id), batchNumber: String(r.batch_number), months: n(r.months), quantity: n(r.quantity), status: r.status as BatchRow["status"],
     orderRef: (r.order_ref as string | null) ?? null, note: (r.note as string | null) ?? null, createdAt: r.created_at as Date, confirmedAt: (r.confirmed_at as Date | null) ?? null,
     voidReason: (r.void_reason as string | null) ?? null, generated: n(r.generated), issued: n(r.issued), revoked: n(r.revoked), redeemed: n(r.redeemed),
+    channel: (r.channel as BatchRow["channel"]) ?? "physical", redeemBy: (r.redeem_by as Date | null) ?? null,
   }));
 }
 
-/** A suggestion for the next batch number: the year and month, then the next free number that month (B2610-001). */
-export async function suggestBatchNumber(db: Db, now: Date = new Date()): Promise<string> {
-  const prefix = `B${String(now.getUTCFullYear()).slice(2)}${String(now.getUTCMonth() + 1).padStart(2, "0")}-`;
-  const rows = await db.selectFrom("code_batches").select("batch_number").where("batch_number", "like", `${prefix}%`).execute();
-  const used = rows.map((r) => parseInt(r.batch_number.slice(prefix.length), 10)).filter((x) => Number.isFinite(x));
-  return `${prefix}${String((used.length ? Math.max(...used) : 0) + 1).padStart(3, "0")}`;
+/** The month a batch is expected to be issued, offered by default: this month (Malaysian time), as the month input of the admin wants it (2026-10). */
+export function suggestIssueMonth(now: Date = new Date()): string {
+  const my = new Date(now.getTime() + 8 * 60 * 60 * 1000);
+  return `${my.getUTCFullYear()}-${String(my.getUTCMonth() + 1).padStart(2, "0")}`;
 }
 
 export type CodeInfo = {
@@ -99,6 +137,8 @@ export type CodeInfo = {
   revokeReason: string | null;
   redeemedAt: Date | null;
   redeemedBy: string | null;
+  channel: "physical" | "virtual";
+  redeemBy: Date | null;
 };
 
 /** One card, found by its serial number (printed outside the scratch area, so a card can be found without scratching it). */
@@ -108,11 +148,11 @@ export async function findCodeBySerial(db: Db, serial: string): Promise<CodeInfo
     .innerJoin("code_batches as b", "b.id", "c.batch_id")
     .leftJoin("redemptions as r", "r.code_id", "c.id")
     .leftJoin("reader_accounts as a", "a.id", "r.account_id")
-    .select(["c.serial", "b.batch_number", "b.months", "c.state", "b.status as batch_status", "c.revoke_reason", "r.redeemed_at", "a.email"])
+    .select(["c.serial", "c.redeem_by", "b.batch_number", "b.months", "b.channel", "c.state", "b.status as batch_status", "c.revoke_reason", "r.redeemed_at", "a.email"])
     .where("c.serial", "=", serial.trim().toUpperCase())
     .executeTakeFirst();
   if (!row) return null;
-  return { serial: row.serial, batchNumber: row.batch_number, months: row.months, state: row.state, batchStatus: row.batch_status, revokeReason: row.revoke_reason, redeemedAt: row.redeemed_at, redeemedBy: row.email };
+  return { serial: row.serial, batchNumber: row.batch_number, months: row.months, state: row.state, batchStatus: row.batch_status, revokeReason: row.revoke_reason, redeemedAt: row.redeemed_at, redeemedBy: row.email, channel: row.channel, redeemBy: row.redeem_by };
 }
 
 export type SharedRow = {
@@ -182,6 +222,8 @@ export type BatchInfo = {
   confirmedAt: Date | null;
   voidedAt: Date | null;
   voidReason: string | null;
+  channel: "physical" | "virtual";
+  redeemBy: Date | null;
   counts: { total: number; generated: number; issued: number; revoked: number; redeemed: number; unredeemedIssued: number };
 };
 
@@ -196,10 +238,12 @@ export async function batchInfo(db: Db, id: string): Promise<BatchInfo | null> {
            count(r.id) AS redeemed,
            count(*) FILTER (WHERE c.state = 'issued' AND r.id IS NULL) AS unredeemed_issued
     FROM redeem_codes c LEFT JOIN redemptions r ON r.code_id = c.id WHERE c.batch_id = ${id}`.execute(db);
+  const dates = await sql<{ a: Date | null; z: Date | null }>`SELECT min(redeem_by) AS a, max(redeem_by) AS z FROM redeem_codes WHERE batch_id = ${id}`.execute(db);
   const x = c.rows[0] ?? {};
   return {
     id: b.id, batchNumber: b.batch_number, months: b.months, quantity: b.quantity, status: b.status, orderRef: b.order_ref, note: b.note,
     createdAt: b.created_at, createdBy: b.created_by, confirmedAt: b.confirmed_at, voidedAt: b.voided_at, voidReason: b.void_reason,
+    channel: b.channel, redeemBy: dates.rows[0]?.a && dates.rows[0].a.getTime() === dates.rows[0].z?.getTime() ? dates.rows[0].a : null,
     counts: { total: n(x.total), generated: n(x.generated), issued: n(x.issued), revoked: n(x.revoked), redeemed: n(x.redeemed), unredeemedIssued: n(x.unredeemed_issued) },
   };
 }
@@ -252,7 +296,7 @@ export type MemberRow = {
   status: MemberStatus;
   /** The end of the last period given and not cancelled (or null when the reader never had access). */
   endsAt: Date | null;
-  /** Where the latest access came from: "Percubaan", "Kad JLN-26-000012", "Kod kongsi ...", "Diberi oleh pentadbir". */
+  /** Where the latest access came from: "Percubaan", "Kad JLN-12B0126-F01", "Kod kongsi ...", "Diberi oleh pentadbir". */
   source: string | null;
   devices: number;
 };
@@ -319,4 +363,9 @@ export async function listMembers(db: Db, filter: MemberFilter = {}, now: Date =
       };
     }),
   };
+}
+
+/** The last day to redeem offered by default for a physical batch: one year from today, as the date input of the admin wants it (2027-10-25). */
+export function suggestRedeemByDate(now: Date = new Date()): string {
+  return redeemByLastDayInput(virtualRedeemBy(now));
 }

@@ -9,9 +9,11 @@ config({ path: ".env.local", override: true });
 import { sql } from "kysely";
 import { closeDb, getDb } from "../src/lib/db";
 import {
+  canStartTrial,
   deleteAccount,
   getSession,
   listDevices,
+  loginChallengeNeeded,
   requestLoginCode,
   setDisplayName,
   signOut,
@@ -20,8 +22,9 @@ import {
   verifyLoginCode,
   type Db,
 } from "../src/lib/reader-auth/service";
+import { overview } from "../src/lib/reader-auth/admin";
 import { clearReading, isSaved, listReading, listSaved, recordProgress, setSaved } from "../src/lib/reader-auth/library";
-import { emailLookupMac, ipMac, type MacKey, type Mailer } from "../src/lib/reader-auth/primitives";
+import { emailLookupMac, ipMac, trialClaimMac, type MacKey, type Mailer } from "../src/lib/reader-auth/primitives";
 
 let passed = 0;
 let failed = 0;
@@ -35,6 +38,7 @@ const sent: { to: string; code: string }[] = [];
 let failMail = false;
 const mailer: Mailer = {
   name: "test",
+  async sendMessage() {},
   async sendLoginCode({ to, code }) {
     if (failMail) throw new Error("down");
     sent.push({ to, code });
@@ -158,6 +162,48 @@ async function main() {
       if (back.ver.status !== "ok") throw new Error("cannot continue");
       assert((await startTrial(trx, { key, now: at(61) }, back.ver.accountId)).status === "used", "and gets no second trial: the address has used it");
 
+      // The owner's overview of recent movement (deltas, since the development database may hold other rows).
+      const dayMin = 24 * 60;
+      const nowAfterStart = at(3 * dayMin);   // 3 days in: the trial begun at minute 71 started within the last 7 days
+      const nowNearEnd = at(10 * dayMin);     // 10 days in: it ends within the next 7 days
+      const nowAfterEnd = at(16 * dayMin);    // 16 days in: it ended 1 day ago and nothing else gives access
+      const base = { real: await overview(trx, new Date()), started: await overview(trx, nowAfterStart), ending: await overview(trx, nowNearEnd), gone: await overview(trx, nowAfterEnd) };
+      // Aliases of one mailbox share one trial.
+      const alias1 = await signIn(trx, "ali.baba@gmail.com", 70);
+      assert(alias1.ver.status === "ok", "a Gmail address signs in");
+      if (alias1.ver.status !== "ok") throw new Error("cannot continue");
+      assert((await startTrial(trx, { key, now: at(71) }, alias1.ver.accountId)).status === "ok", "and starts its trial");
+      assert((await overview(trx, new Date())).recent.signups1d === base.real.recent.signups1d + 1 && (await overview(trx, new Date())).recent.signups7d === base.real.recent.signups7d + 1, "the overview counts the new sign-up in 24 hours and in 7 days");
+      assert((await overview(trx, nowAfterStart)).recent.trialsStarted7d === base.started.recent.trialsStarted7d + 1, "the overview counts a trial started in the last 7 days");
+      assert((await overview(trx, nowNearEnd)).recent.trialsEnding7d === base.ending.recent.trialsEnding7d + 1, "the overview counts a trial that ends within 7 days");
+      assert((await overview(trx, nowAfterStart)).recent.trialsEnding7d === base.started.recent.trialsEnding7d, "a trial that ends later than 7 days from now is not counted as ending");
+      assert((await overview(trx, nowAfterEnd)).recent.trialsExpired7d === base.gone.recent.trialsExpired7d + 1, "the overview counts a trial that ended in the last 7 days with no other access");
+      const alias2 = await signIn(trx, "alibaba+jalin@googlemail.com", 72);
+      assert(alias2.ver.status === "ok" && alias2.ver.isNewAccount, "an alias of the same mailbox is its own account (the address is kept as typed)");
+      if (alias2.ver.status !== "ok") throw new Error("cannot continue");
+      assert(!(await canStartTrial(trx, { key }, alias2.ver.accountId)), "but it is told the trial is already taken");
+      assert((await startTrial(trx, { key, now: at(73) }, alias2.ver.accountId)).status === "used", "and gets no second trial");
+      // Two different Gmail users are not joined.
+      const other = await signIn(trx, "abu.bakar@gmail.com", 76);
+      if (other.ver.status !== "ok") throw new Error("cannot continue");
+      assert(await canStartTrial(trx, { key }, other.ver.accountId), "a different Gmail user can still start a trial");
+      // A claim made before aliases were joined (the address as typed) still counts.
+      const olderClaim = await signIn(trx, "lama+x@contoh.my", 74);
+      if (olderClaim.ver.status !== "ok") throw new Error("cannot continue");
+      await trx.insertInto("reader_trial_claims").values({ email_mac: trialClaimMac(key, "lama+x@contoh.my"), key_id: key.keyId, claimed_at: at(74) }).execute();
+      assert((await startTrial(trx, { key, now: at(75) }, olderClaim.ver.accountId)).status === "used", "an older claim made with the address as typed is still honoured");
+
+      // The bot challenge is asked for by network address and by how much of the mail budget is used, never by the e-mail address.
+      const quiet = ipMac(key, "198.51.100.20");
+      assert(!(await loginChallengeNeeded(trx, { now: at(800), limits: { requestsPerDayAll: 1000 } }, { ipMac: quiet })), "a quiet visitor on a quiet day is not challenged");
+      await requestLoginCode(trx, { key, mailer, now: at(801), limits: { requestsPerDayAll: 1000 } }, { email: "satu@contoh.my", ipMac: quiet });
+      assert(!(await loginChallengeNeeded(trx, { now: at(802), limits: { requestsPerDayAll: 1000 } }, { ipMac: quiet })), "one request from an address is not enough to challenge it");
+      await requestLoginCode(trx, { key, mailer, now: at(803), limits: { requestsPerDayAll: 1000 } }, { email: "dua@contoh.my", ipMac: quiet });
+      assert(await loginChallengeNeeded(trx, { now: at(804), limits: { requestsPerDayAll: 1000 } }, { ipMac: quiet }), "the second request from the same address within an hour calls for the challenge");
+      assert(!(await loginChallengeNeeded(trx, { now: at(805), limits: { requestsPerDayAll: 1000 } }, { ipMac: ipMac(key, "198.51.100.21") })), "another visitor is not challenged for it");
+      assert(await loginChallengeNeeded(trx, { now: at(806), limits: { requestsPerDayAll: 4 } }, { ipMac: ipMac(key, "198.51.100.22") }), "when 40% of a small daily budget is used, everyone is challenged");
+      assert(!(await loginChallengeNeeded(trx, { now: at(2000), limits: { requestsPerDayAll: 1000 } }, { ipMac: quiet })), "an hour later the same address is not challenged any more");
+
       // One address: five codes an hour.
       let hourly = -1;
       for (let i = 0; i < 8; i++) {
@@ -204,6 +250,21 @@ async function main() {
       failMail = false;
       const open = await trx.selectFrom("reader_auth_challenges").select("id").where("email_lookup_mac", "=", emailLookupMac(key, "rosak@contoh.my")).where("consumed_at", "is", null).execute();
       assert(open.length === 0, "a code that was never delivered is retired");
+
+      // Being an adult and accepting the terms: a new account is not made without it, and what was accepted is recorded.
+      await requestLoginCode(trx, { key, mailer, now: at(700) }, { email: "dewasa@contoh.my", ipMac: ipMac(key, "203.0.113.70") });
+      const noBox = await verifyLoginCode(trx, { key, now: at(700.1) }, { email: "dewasa@contoh.my", code: last().code, ipMac: ipMac(key, "203.0.113.70"), requireConsent: true });
+      assert(noBox.status === "consent_required", "a new account is not made without the age and terms box");
+      const none = await trx.selectFrom("reader_accounts").select("id").where("email_normalized", "=", "dewasa@contoh.my").execute();
+      assert(none.length === 0, "no account row exists after that refusal");
+      const sameCode = await verifyLoginCode(trx, { key, now: at(700.2) }, { email: "dewasa@contoh.my", code: last().code, ipMac: ipMac(key, "203.0.113.70"), requireConsent: true, consent: { termsVersion: "2026-10-12" } });
+      assert(sameCode.status === "ok" && sameCode.isNewAccount, "the same code still works once the box is ticked (it was not used up)");
+      const row = await trx.selectFrom("reader_accounts").select(["terms_version", "terms_accepted_at", "adult_confirmed_at"]).where("email_normalized", "=", "dewasa@contoh.my").executeTakeFirstOrThrow();
+      assert(row.terms_version === "2026-10-12" && row.terms_accepted_at !== null && row.adult_confirmed_at !== null, "the version, the time and the age confirmation are recorded on the account");
+      await requestLoginCode(trx, { key, mailer, now: at(710) }, { email: "dewasa@contoh.my", ipMac: ipMac(key, "203.0.113.71") });
+      const later = await verifyLoginCode(trx, { key, now: at(710.1) }, { email: "dewasa@contoh.my", code: last().code, ipMac: ipMac(key, "203.0.113.71"), requireConsent: true, consent: { termsVersion: "2027-01-01" } });
+      const row2 = await trx.selectFrom("reader_accounts").select("terms_version").where("email_normalized", "=", "dewasa@contoh.my").executeTakeFirstOrThrow();
+      assert(later.status === "ok" && row2.terms_version === "2027-01-01", "a returning reader who accepts a newer version is recorded against it");
 
       throw new Rollback();
     });
