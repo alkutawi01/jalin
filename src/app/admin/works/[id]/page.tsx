@@ -2840,7 +2840,7 @@ export default function EditWorkPage() {
           )}
           <WorkThemePanel workId={workId} hasHero={visuals.some((v) => v.role === "hero")} />
           <div id="work-image-upload">
-            <WorkVisualUpload workId={workId} hasHero={visuals.some((v) => v.role === "hero")} published={form.status === "published"} suggestedAnchor={selectedImageAnchor} markers={imageMarkers(savedBody).filter((marker) => !visuals.some((visual) => visual.anchor === marker))} onDone={loadVisuals} />
+            <WorkVisualUpload workId={workId} promptContext={{ title: form.title, type: form.type, dek: form.dek, genre: form.genre, body: savedBody }} hasHero={visuals.some((v) => v.role === "hero")} published={form.status === "published"} suggestedAnchor={selectedImageAnchor} markers={imageMarkers(savedBody).filter((marker) => !visuals.some((visual) => visual.anchor === marker))} onDone={loadVisuals} />
           </div>
         </div>
       )}

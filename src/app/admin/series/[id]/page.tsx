@@ -9,6 +9,8 @@ import AudiencePicker from "../../../../components/admin/AudiencePicker";
 import ImageFocusPicker, { type FocusValue } from "../../../../components/admin/ImageFocusPicker";
 import { MAX_UPLOAD_LABEL, uploadTooLargeMessage } from "../../../../lib/admin/upload-limit";
 import { errorText } from "../../../../lib/admin/error-text";
+import CopyButton from "../../../../components/admin/CopyButton";
+import { composeImageProtocolPrompt } from "../../../../lib/admin/visual-generation/image-protocol-prompt";
 
 /** An episode's status in the editor's words, as the works list shows it. */
 const EPISODE_STATUS: Record<string, string> = { draft: "Draf", review: "Semakan", ready: "Sedia", published: "Diterbitkan", archived: "Diarkibkan" };
@@ -48,6 +50,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [saveNote, setSaveNote] = useState<{ kind: "success" | "error"; text: string } | null>(null);
   const [attachWorkId, setAttachWorkId] = useState("");
   const [visibilityBusy, setVisibilityBusy] = useState(false);
   /** One episode action at a time: a second click while the first is still running is ignored. */
@@ -156,7 +159,10 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
     setSaving(true);
     setError(null);
     setSuccess(null);
+    setSaveNote(null);
     try {
+      // A picture chosen but not uploaded yet is saved together with the form, so "Simpan" never leaves it behind.
+      if (heroFile) await uploadHero();
       let res = await fetch(`/api/admin/series/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -174,11 +180,15 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
         data = await res.json().catch(() => ({}));
       }
       if (!res.ok) throw new Error(data.error || "Tidak dapat disimpan.");
-      setSuccess("Siri disimpan.");
+      // The result is told where the button is (beside it, and as a toast), not only at the top of a long page.
+      toast("Siri disimpan.", "success");
+      setSaveNote({ kind: "success", text: "Siri disimpan." });
+      setTimeout(() => setSaveNote(null), 6000);
       await loadSeries();
-      setTimeout(() => setSuccess(null), 4000);
     } catch (err) {
       setError(errorText(err));
+      toast(errorText(err), "error");
+      setSaveNote({ kind: "error", text: errorText(err) });
     } finally {
       setSaving(false);
     }
@@ -453,6 +463,10 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
           </details>
         ) : null}
         <div className="admin-form-group">
+          <CopyButton label="Salin arahan AI" text={composeImageProtocolPrompt({ role: "series", title: series.title, dek: series.dek ?? "", genre: series.genre ?? "" })} />
+          <span className="admin-form-hint">Arahan protokol imej Jalin untuk gambar siri (satu bingkai, simbolik, tiada wajah jelas, tiada teks, semi-realistik). Tampal ke ChatGPT, muat turun imej, kemudian muat naik di bawah.</span>
+        </div>
+        <div className="admin-form-group">
           <label htmlFor="series-hero-file">Fail gambar (PNG, JPEG atau WebP, maksimum {MAX_UPLOAD_LABEL})</label>
           <FilePicker id="series-hero-file" accept="image/png,image/jpeg,image/webp" selectedName={heroFile?.name ?? null} onFile={setHeroFile} />
         </div>
@@ -527,6 +541,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
           <button type="submit" className="admin-btn admin-btn-primary" disabled={saving}>
             {saving ? "Menyimpan…" : "Simpan"}
           </button>
+          {saveNote ? <span role="status" className={saveNote.kind === "success" ? "admin-form-hint admin-save-note-ok" : "admin-form-hint admin-save-note-error"}>{saveNote.text}</span> : null}
         </div>
       </form>
 
