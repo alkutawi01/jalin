@@ -42,8 +42,7 @@ Urutan yang disyorkan:
 
 - Akaun Billplz dan ujian sandbox sebenar (hanya Izzat boleh membukanya).
 - Harga (plan A2) dan dasar bayaran balik (bayaran balik dibuat dengan tangan di Billplz; sistem belum membatalkan kod secara automatik).
-- Kata-kata e-mel kod, halaman `/beli` dan `/beli/selesai` belum disemak bahasa oleh ChatGPT (lihat C5 dalam pelan).
-- Soalan Lazim belum menyebut tarikh tebus sebelum, dan pembelian dalam talian (perlu dikemas kini dan disemak ChatGPT).
+- Teks e-mel kod, `/beli`, `/beli/selesai`, ralat tebus dan Soalan Lazim baharu **sudah disemak ChatGPT (26 Okt 2026)**; lihat `docs/SOALAN_LAZIM.md`. Terma dan Dasar privasi belum menyebut pembayaran (C5 dalam pelan).
 - E-mel penggantian: jika pembeli kehilangan e-mel selepas dihantar, kod tersulit sudah dipadam. Penyelesaian: Izzat membatalkan kod itu dan mengeluarkan kod baharu (belum ada butang untuk kod maya).
 - Pautan ke `/beli` belum diletakkan di mana-mana (halaman ada, tetapi tiada menu menuju ke sana).
 - Penyedia lain (CHIP Collect) boleh ditambah kemudian dengan modul serupa `billplz.ts`.

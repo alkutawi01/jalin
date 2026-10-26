@@ -20,7 +20,7 @@ export default function RedeemForm({ embedded = false }: { embedded?: boolean })
     if (busy) return;
     setError(""); setDone("");
     if (!code.trim()) { setError("Masukkan kod."); return; }
-    if (!looksShared && !serial.trim()) { setError("Masukkan nombor siri yang tertera bersama kod (pada label kad atau dalam e-mel)."); return; }
+    if (!looksShared && !serial.trim()) { setError("Masukkan nombor siri yang tertera bersama kod langganan pada label kad atau dalam e-mel."); return; }
     setBusy(true);
     try {
       const response = await fetch("/api/akaun/tebus", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ code, serial: looksShared ? "" : serial }) });
@@ -45,7 +45,7 @@ export default function RedeemForm({ embedded = false }: { embedded?: boolean })
     <div className={`auth-card${embedded ? "" : " auth-card--card"}`}>
       <form onSubmit={submit} noValidate>
         <h1 className="auth-title">Tebus kod langganan</h1>
-        <p className="auth-intro">Masukkan nombor siri dan kod langganan anda. Kedua-duanya tertera pada label kad, atau dalam e-mel yang anda terima selepas pembayaran.</p>
+        <p className="auth-intro">Masukkan nombor siri dan kod langganan anda. Kedua-duanya tertera pada label kad atau dalam e-mel yang anda terima selepas pembayaran.</p>
 
         <div className="vcard-wrap">
         <div className={`vcard${embedded ? " vcard--stack" : ""}`}>

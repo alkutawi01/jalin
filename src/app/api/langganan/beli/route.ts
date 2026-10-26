@@ -29,14 +29,14 @@ export async function POST(request: Request) {
   const months = Number(body.months);
   if (months !== 1 && months !== 6 && months !== 12) return noStore(NextResponse.json({ error: "Pilih tempoh langganan." }, { status: 400 }));
   const email = normaliseEmail(asString(body.email, 254));
-  if (!email) return noStore(NextResponse.json({ error: "Masukkan alamat e-mel yang sah. Kod akan dihantar ke alamat itu." }, { status: 400 }));
+  if (!email) return noStore(NextResponse.json({ error: "Masukkan alamat e-mel yang sah. Kod akan dihantar ke alamat tersebut." }, { status: 400 }));
 
   const db = getDb();
   const now = new Date();
   const since = new Date(now.getTime() - HOUR);
   const visitor = `beli:${visitorMac(request)}`;
   if ((await countEvents(db, "request", "ip", visitor, since)) >= PER_VISITOR_PER_HOUR || (await countRecentOrdersByEmail(db, email, since)) >= PER_EMAIL_PER_HOUR) {
-    return noStore(NextResponse.json({ error: "Terlalu banyak cubaan. Cuba lagi kemudian." }, { status: 429 }));
+    return noStore(NextResponse.json({ error: "Terlalu banyak percubaan. Cuba lagi kemudian." }, { status: 429 }));
   }
   await recordEvent(db, "request", "ip", visitor, now);
 

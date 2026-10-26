@@ -41,28 +41,34 @@ export default async function OrderDonePage({ searchParams }: { searchParams: Pr
             {!order.found ? (
               <>
                 <h1 className="auth-title">Pesanan tidak ditemui</h1>
-                <p className="auth-intro">Semak alamat yang anda buka. Jika anda sudah membayar, kod akan sampai ke e-mel anda. Hubungi <a href="mailto:editorial@adjung.com">editorial@adjung.com</a> jika perlu.</p>
+                <p className="auth-intro">Kami tidak dapat menemukan pesanan ini. Semak semula alamat halaman yang anda buka.</p>
+                <p className="auth-fine">Jika anda sudah membuat pembayaran, hubungi <a href="mailto:editorial@adjung.com">editorial@adjung.com</a> untuk mendapatkan bantuan. Sertakan nombor pesanan anda jika ada.</p>
               </>
             ) : order.status === "CANCELLED" ? (
               <>
                 <h1 className="auth-title">Pesanan dibatalkan</h1>
-                <p className="auth-intro">Pesanan <strong>{reference}</strong> tidak diteruskan dan tiada caj dibuat. Anda boleh <a href="/beli">membuat pesanan baharu</a>.</p>
+                <p className="auth-intro">Pesanan <strong>{reference}</strong> telah dibatalkan. Tiada caj dibuat bagi pesanan ini.</p>
+                <p className="auth-fine">Anda boleh <a href="/beli">membuat pesanan baharu</a>.</p>
               </>
             ) : order.status === "PENDING" ? (
               <>
                 <h1 className="auth-title">Menunggu pengesahan bayaran</h1>
-                <p className="auth-intro">Kami belum menerima pengesahan bayaran bagi pesanan <strong>{reference}</strong>. Jika anda sudah membayar, kod akan dihantar ke e-mel anda sebaik pembayaran disahkan; anda tidak perlu membayar semula. <a href={`/beli/selesai?ref=${reference}`}>Muat semula halaman ini</a>.</p>
+                <p className="auth-intro">Kami belum menerima pengesahan bayaran bagi pesanan <strong>{reference}</strong>.</p>
+                <p className="auth-fine">Jika anda sudah membuat pembayaran, kod langganan akan dihantar ke e-mel anda sebaik sahaja pembayaran disahkan. Jangan buat pembayaran semula untuk pesanan yang sama sementara menunggu pengesahan. <a href={`/beli/selesai?ref=${reference}`}>Muat semula halaman ini</a> untuk menyemak status pesanan.</p>
               </>
             ) : order.delivery === "SENT" ? (
               <>
                 <h1 className="auth-title">Kod telah dihantar</h1>
-                <p className="auth-intro">Pembayaran diterima. Kod langganan {order.months} bulan telah dihantar ke <strong>{order.emailHint}</strong>. Jika tiada dalam peti masuk, semak folder spam atau sampah.</p>
-                <p className="auth-fine">Seterusnya: daftar atau log masuk, kemudian <a href="/tebus">tebus kod anda</a>. Nombor pesanan anda: {reference}.</p>
+                <p className="auth-intro">Pembayaran anda telah disahkan. Nombor siri dan kod langganan {order.months} bulan telah dihantar ke <strong>{order.emailHint}</strong>.</p>
+                <p className="auth-fine">Jika e-mel itu tiada dalam peti masuk, semak folder spam atau sampah.</p>
+                <p className="auth-fine">Seterusnya, daftar akaun Jalin atau log masuk jika anda sudah mempunyai akaun. Kemudian, buka halaman <a href="/tebus">Tebus kod</a> dan masukkan nombor siri serta kod langganan anda.</p>
+                <p className="auth-fine">Nombor pesanan anda: <strong>{reference}</strong></p>
               </>
             ) : (
               <>
                 <h1 className="auth-title">Pembayaran diterima</h1>
-                <p className="auth-intro">E-mel dengan kod langganan {order.months} bulan sedang dihantar ke <strong>{order.emailHint}</strong>. Jika ia tidak sampai dalam beberapa minit, hubungi <a href="mailto:editorial@adjung.com">editorial@adjung.com</a> dan nyatakan nombor pesanan <strong>{reference}</strong>.</p>
+                <p className="auth-intro">Pembayaran bagi pesanan <strong>{reference}</strong> telah disahkan. E-mel yang mengandungi kod langganan {order.months} bulan sedang dihantar ke <strong>{order.emailHint}</strong>.</p>
+                <p className="auth-fine">Jika e-mel masih belum diterima selepas beberapa minit, semak folder spam atau sampah. Anda juga boleh menghubungi <a href="mailto:editorial@adjung.com">editorial@adjung.com</a> dan menyatakan nombor pesanan <strong>{reference}</strong> untuk mendapatkan bantuan.</p>
               </>
             )}
           </div>

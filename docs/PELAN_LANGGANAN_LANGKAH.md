@@ -50,7 +50,8 @@ Belum ada: bayaran dalam Jalin (pilih pakej, bayar, kod dihantar ke e-mel); dasa
 - [ ] **C2. Buka akaun penyedia** yang dipilih dan sediakan kunci API (mod ujian dahulu).
 - [x] **C3. Aliran jualan dalam talian dibina (25 Okt 2026)** dan diuji hujung ke hujung pada pangkalan data pembangunan dengan kunci palsu: pesanan, bayaran (callback bertandatangan), satu kod bagi satu bayaran, kod tersulit sehingga e-mel dihantar, hantar semula, tebus dengan nombor siri F/M, tarikh tebus sebelum. Lihat `docs/JUALAN_DALAM_TALIAN.md`. **Belum diuji dengan Billplz sebenar.**
 - [ ] **C3b. Izzat:** buka akaun Billplz sandbox, tetapkan pemboleh ubah dalam `docs/JUALAN_DALAM_TALIAN.md`, jalankan migrasi 036 dan 037 pada produksi (selepas migrasi 035 `web-push` digabungkan), dan lakukan satu pembelian sandbox.
-- [ ] **C3c. Claude (kemudian):** pautan ke `/beli` dalam menu atau halaman, kemas kini Soalan Lazim (tarikh tebus sebelum, beli dalam talian) dan semakan bahasa ChatGPT; butang penggantian kod maya.
+- [x] **C3c-1 (26 Okt 2026):** Soalan Lazim dikemas kini (tarikh tebus sebelum, beli dalam talian) dan teks baharu disemak ChatGPT.
+- [ ] **C3c-2 Claude (kemudian):** pautan ke `/beli` dalam menu atau halaman (Izzat tentukan tempat), dan butang penggantian kod maya.
 - [ ] **C4. Uji dalam mod ujian penyedia**, kemudian satu pembelian sebenar bernilai kecil.
 - [ ] **C5. Kemas kini Terma penggunaan dan Dasar privasi** untuk memasukkan pembayaran, dan semak melalui ChatGPT.
 
