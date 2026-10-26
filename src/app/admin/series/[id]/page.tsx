@@ -50,6 +50,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [saveNote, setSaveNote] = useState<{ kind: "success" | "error"; text: string } | null>(null);
   const [attachWorkId, setAttachWorkId] = useState("");
   const [visibilityBusy, setVisibilityBusy] = useState(false);
   /** One episode action at a time: a second click while the first is still running is ignored. */
@@ -158,7 +159,10 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
     setSaving(true);
     setError(null);
     setSuccess(null);
+    setSaveNote(null);
     try {
+      // A picture chosen but not uploaded yet is saved together with the form, so "Simpan" never leaves it behind.
+      if (heroFile) await uploadHero();
       let res = await fetch(`/api/admin/series/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -176,11 +180,15 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
         data = await res.json().catch(() => ({}));
       }
       if (!res.ok) throw new Error(data.error || "Tidak dapat disimpan.");
-      setSuccess("Siri disimpan.");
+      // The result is told where the button is (beside it, and as a toast), not only at the top of a long page.
+      toast("Siri disimpan.", "success");
+      setSaveNote({ kind: "success", text: "Siri disimpan." });
+      setTimeout(() => setSaveNote(null), 6000);
       await loadSeries();
-      setTimeout(() => setSuccess(null), 4000);
     } catch (err) {
       setError(errorText(err));
+      toast(errorText(err), "error");
+      setSaveNote({ kind: "error", text: errorText(err) });
     } finally {
       setSaving(false);
     }
@@ -533,6 +541,7 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
           <button type="submit" className="admin-btn admin-btn-primary" disabled={saving}>
             {saving ? "Menyimpan…" : "Simpan"}
           </button>
+          {saveNote ? <span role="status" className={saveNote.kind === "success" ? "admin-form-hint admin-save-note-ok" : "admin-form-hint admin-save-note-error"}>{saveNote.text}</span> : null}
         </div>
       </form>
 

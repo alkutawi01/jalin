@@ -407,6 +407,9 @@
 .a-shell .admin-alert { border-radius: var(--a-radius); padding: 10px 14px; margin: 0 0 12px; font-size: 14px; border: 1px solid transparent; }
 .a-shell .admin-alert-error { background: var(--a-danger-bg); color: var(--a-danger); border-color: var(--a-danger-line); }
 .a-shell .admin-alert-success { background: var(--a-ok-bg); color: var(--a-ok); border-color: var(--a-ok-line); }
+/* The result of a save, told beside the Simpan button so nobody scrolls to the top to find out. */
+.a-shell .admin-save-note-ok { color: var(--a-ok); font-weight: 600; margin: 0; }
+.a-shell .admin-save-note-error { color: var(--a-danger); font-weight: 600; margin: 0; }
 .a-shell .admin-alert-warning { background: var(--a-warn-bg); color: var(--a-warn); border-color: var(--a-warn-line); }
 .a-shell .admin-loading, .a-shell .admin-placeholder-content { color: var(--a-muted); }
 
