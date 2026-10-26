@@ -5,7 +5,7 @@
   "scripts": {
     "pretest": "npx tsx --tsconfig tsconfig.test.json __tests__/image-marker-glossary.test.tsx && npx tsx __tests__/fragmen-kind.test.ts && npx tsx --tsconfig tsconfig.test.json __tests__/visual-manuscript-editor.test.tsx && npx tsx __tests__/homepage-editor-picks-hero.test.ts",
     "test:editor-ui": "node __tests__/editor-workflow.browser.mjs",
-    "test:visual-editor-ui": "node __tests__/visual-manuscript-editor.browser.mjs && node __tests__/visual-notes.browser.mjs",
+    "test:visual-editor-ui": "node __tests__/visual-manuscript-editor.browser.mjs && node __tests__/visual-select-format.browser.mjs && node __tests__/visual-notes.browser.mjs",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",

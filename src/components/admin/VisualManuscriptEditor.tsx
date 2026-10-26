@@ -378,7 +378,9 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
     const saved = selectionRef.current;
     // Text is selected: turn the paragraphs it touches into one message or e-mail box (their wording and emphasis kept),
     // instead of adding an empty box beside it.
-    if ((kind === "mesej" || kind === "emel" || kind === "ayat") && saved && !saved.collapsed && editor.contains(saved.commonAncestorContainer)) {
+    // A selection that is only a scene-break symbol ("* * *", "---") becomes the break itself; any other selected words are never replaced by one.
+    const ornamentOnly = !!saved && !saved.collapsed && saved.toString().split(/\n/).every((line) => !line.trim() || isSceneBreakLine(line)) && saved.toString().trim() !== "";
+    if ((kind === "mesej" || kind === "emel" || kind === "ayat" || kind === "heading" || (kind === "scene" && ornamentOnly)) && saved && !saved.collapsed && editor.contains(saved.commonAncestorContainer)) {
       // The part of a block that is inside the selection (a selection that merely begins at the end of a paragraph has none).
       const partOf = (block: Element) => {
         const part = document.createRange();
@@ -411,6 +413,19 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
         const before = beforeRange.toString().trim() ? htmlOf(beforeRange) : "";
         const after = afterRange.toString().trim() ? htmlOf(afterRange) : "";
         const tag = (block: Element) => block.tagName.toLowerCase();
+        if (kind === "scene" || kind === "heading") {
+          // The selection itself becomes the break, or a section heading (each selected paragraph its own); the words around it stay as they were.
+          const made: Element[] = kind === "scene"
+            ? [Object.assign(document.createElement("hr"), { className: "visual-manuscript-break" })]
+            : touched.map((block) => { const heading = document.createElement("h2"); heading.innerHTML = htmlOf(partOf(block)); return heading; });
+          const rebuild = (block: Element, html: string) => { const part = document.createElement(tag(block)); part.innerHTML = html; return part; };
+          first.before(...(before ? [rebuild(first, before)] : []), ...made);
+          if (after) last.after(rebuild(last, after));
+          touched.forEach((block) => block.remove());
+          sync();
+          rememberSelection();
+          return;
+        }
         if (kind === "ayat") {
           // The browser's insertHTML would tear a box of several line blocks apart (and merge the rest into the paragraph after it), so this box is built in the page itself.
           const box = document.createElement("div");
