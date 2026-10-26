@@ -1,10 +1,12 @@
-export type CommunicationKind = "mesej" | "emel";
+import { hasArabic } from "./arabic-text";
+
+export type CommunicationKind = "mesej" | "emel" | "ayat";
 export type CommunicationSegment = { kind: "prose"; content: string } | { kind: CommunicationKind; content: string };
 
 /** A small, explicit authoring extension; unmatched delimiters stay ordinary text. */
 export function splitCommunicationBlocks(markdown: string): CommunicationSegment[] {
   const normalized = markdown.replace(/\r\n/g, "\n");
-  const pattern = /(?:^|\n{2,}):::(mesej|emel)\n([\s\S]*?)\n:::(?=\n{2,}|$)/g;
+  const pattern = /(?:^|\n{2,}):::(mesej|emel|ayat)\n([\s\S]*?)\n:::(?=\n{2,}|$)/g;
   const result: CommunicationSegment[] = [];
   let cursor = 0;
   for (const match of normalized.matchAll(pattern)) {
@@ -15,4 +17,54 @@ export function splitCommunicationBlocks(markdown: string): CommunicationSegment
   }
   if (cursor < normalized.length || result.length === 0) result.push({ kind: "prose", content: normalized.slice(cursor) });
   return result;
+}
+
+/** What a line of a verse box is: Arabic letters make it the verse, "Surah ..." or "Rujukan:" the reference, anything else (with or without "Maksud:") the meaning. */
+export function ayatLineKind(line: string): "verse" | "maksud" | "ref" | "empty" {
+  const text = line.trim();
+  if (!text) return "empty";
+  if (hasArabic(text)) return "verse";
+  return /^(Surah\s|Rujukan:)/i.test(text) ? "ref" : "maksud";
+}
+
+/** The parts of a verse box (:::ayat), each in the order the reader sees them: the verse, its meaning, its reference. */
+export interface AyatParts { verses: string[]; meanings: string[]; references: string[] }
+
+/**
+ * Sorts the lines of a verse box by what they are, whatever order they were written in (Izzat, 20 Oct 2026):
+ * a line with Arabic letters is the verse; "Maksud:" starts the Malay meaning; "Surah ..." or "Rujukan:" is the reference;
+ * any other line without Arabic is taken as the meaning. In a reference, a plain hyphen between two numbers is shown as an en dash
+ * (ayat 1-3 becomes 1–3); the meaning is left exactly as written ("hingga" and its own dashes stay).
+ */
+export function parseAyat(content: string): AyatParts {
+  const parts: AyatParts = { verses: [], meanings: [], references: [] };
+  for (const raw of content.replace(/\r\n/g, "\n").split("\n")) {
+    const line = raw.trim();
+    if (!line) continue;
+    const kind = ayatLineKind(line);
+    if (kind === "verse") parts.verses.push(line);
+    else if (kind === "maksud") {
+      const meaning = line.replace(/^Maksud:\s*/i, "");
+      if (meaning) parts.meanings.push(meaning);
+    } else if (kind === "ref") {
+      const reference = line.replace(/^Rujukan:\s*/i, "").replace(/(\d)\s*-\s*(\d)/g, "$1–$2");
+      if (reference) parts.references.push(reference);
+    }
+  }
+  return parts;
+}
+
+/** The three lines a new verse box starts with (the visual editor writes them; publication readiness refuses a work that still holds them). One source for both. */
+export const AYAT_PLACEHOLDER_LINES = ["الصق الآية هنا ۝١", "Maksud: terjemahan Melayu.", "Surah nama surah, ayat 1–3."] as const;
+
+/** True when any line of the text is still one of the verse box placeholder lines. */
+export function hasAyatPlaceholder(markdown: string): boolean {
+  const placeholders: readonly string[] = AYAT_PLACEHOLDER_LINES;
+  return markdown.split(/\r?\n/).some((line) => placeholders.includes(line.trim()));
+}
+
+/** True when a paragraph outside any box holds Arabic and Latin letters together (a verse belongs in a verse box or a paragraph of its own). Footnote definitions are left out. */
+export function hasMixedArabicParagraph(markdown: string): boolean {
+  return splitCommunicationBlocks(markdown).some((segment) => segment.kind === "prose"
+    && segment.content.split(/\n{2,}/).some((paragraph) => !/^\s*\[\^/.test(paragraph) && hasArabic(paragraph) && /[A-Za-z]/.test(paragraph.replace(/\[\[gambar:\d+\]\]/g, ""))));
 }

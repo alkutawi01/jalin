@@ -4410,6 +4410,40 @@ body:has(.save-work) .back-to-top { bottom: 76px; }
 .theme-switch-btn[aria-pressed="true"] { background: #f3e9df; border-color: #f3e9df; color: #0b2935; font-weight: 600; }
 @media print { .theme-switch { display: none; } }
 
+/* Arabic in a story (Izzat, 20 Oct 2026): a run of Arabic is its own language and direction, in the Amiri Naskh face, kept close to the body size: Arabic should stand alone in its own paragraph (Izzat), so a run inside a Malay sentence only appears in older notes and must not shout. */
+.arabic { font-family: var(--font-amiri), "Amiri", "Noto Naskh Arabic", "Traditional Arabic", serif; font-size: 1.08em; line-height: 1.7; font-style: normal; unicode-bidi: isolate; }
+/* A verse or quotation on its own line: right to left, centred, roomy. */
+p.arabic-block { font-family: var(--font-amiri), "Amiri", "Noto Naskh Arabic", "Traditional Arabic", serif; font-size: 1.55em; line-height: 2.1; text-align: center; margin-block: 1.1em; font-style: normal; unicode-bidi: isolate; }
+.footnote-text .arabic { font-size: 1.05em; }
+
+/* Verse box (:::ayat, Izzat 20 Oct 2026): the verse right to left and right aligned in Amiri; below it, in the same box, the Malay meaning and the reference, left to right. */
+.story-ayat {
+  margin: .4em 0 1.9em;
+  padding: .9em 1.25em 1.1em;
+  border: 1px solid var(--line);
+  border-right: 3px solid var(--clay);
+  border-radius: 5px;
+  background: var(--x-f8f5ef-bg);
+  break-inside: avoid;
+}
+.story-ayat .ayat-label,
+.story-ayat .ayat-caption-label { font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: .72em; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-soft); }
+.story-ayat .ayat-label { display: block; margin-bottom: .4em; text-align: left; }
+.story-ayat .ayat-text { margin: 0 0 .15em; font-family: var(--font-amiri), "Amiri", "Noto Naskh Arabic", "Traditional Arabic", serif; font-size: 1.6em; line-height: 2.1; text-align: right; font-style: normal; unicode-bidi: isolate; }
+.ayat-number { unicode-bidi: isolate; white-space: nowrap; font-size: 1.1em; margin-inline: .12em; }
+.story-ayat figcaption { margin-top: .7em; padding-top: .7em; border-top: 1px solid var(--line); direction: ltr; text-align: left; font-size: .9em; line-height: 1.65; }
+.story-ayat .ayat-meaning p { margin: 0 0 .4em; }
+.story-ayat .ayat-caption-label { display: block; margin-bottom: .15em; }
+.story-ayat .ayat-reference { margin: .8em 0 0; font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: .78em; font-style: normal; letter-spacing: .05em; line-height: 1.5; color: var(--ink-soft); }
+.story-ayat .ayat-reference::before, .visual-manuscript-communication-ayat .ayat-line-ref::before { content: "— "; }
+@media print { .story-ayat { background: none; border-color: currentColor; } }
+
+/* The same box in the visual editor (one block per line with dir=auto: an Arabic line is right to left and right aligned in Amiri, a Malay line left to right). */
+.visual-manuscript-communication-ayat { border-left-color: var(--line); border-right: 3px solid var(--clay); background: var(--x-f8f5ef-bg); white-space: normal; font-family: Georgia, "Times New Roman", var(--font-amiri), "Amiri", "Noto Naskh Arabic", serif; line-height: 1.8; }
+.visual-manuscript-toolbar button:disabled { opacity: .4; cursor: not-allowed; }
+.visual-manuscript-communication-ayat .ayat-line { min-height: 1.8em; text-align: start; unicode-bidi: isolate; }
+.visual-manuscript-communication-ayat .ayat-line-ref { margin-top: .5em; font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; font-size: .78em; font-style: normal; letter-spacing: .05em; color: var(--ink-soft); }
+.visual-manuscript-communication-ayat .ayat-line-ar { font-family: var(--font-amiri), "Amiri", "Noto Naskh Arabic", "Traditional Arabic", serif; font-size: 1.45em; line-height: 2; }
 /* The virtual card on the redeem page (RedeemForm): the back of the printed card (docs/kad-langganan, scripts/kad/jana-kad.mjs) drawn in HTML,
    with the code box where the scratch sticker is. In the proportions of the printed card (252 x 144 pt) while it is wide enough to type in comfortably;
    below that it stacks, with the same parts in the same order. Sizes in cqw so the card scales as one piece (1 pt of the printed card = 0.3968 cqw). */

@@ -5,6 +5,7 @@
  * public visibility semantics, privacy, grandfather compatibility.
  */
 
+import { AYAT_PLACEHOLDER_LINES } from "../src/lib/reader/communication-blocks";
 import { fragmenTextHash } from "../src/lib/content/fragmen-kind";
 import {
   computeMaterialHash,
@@ -1270,6 +1271,29 @@ console.log("\n=== Structure gate (4D-8) ===");
     );
     assert(r.gates.structure.pass, "Valid anthology membership passes structure");
   }
+}
+
+// A verse box that still holds its placeholder lines blocks publication; filled in, it does not. Arabic mixed with Latin in a paragraph is only a warning.
+{
+  const withBody = (body: string) => evaluatePublicationReadinessFromData(validInput({ work: baseWork({ body }) }));
+  const filled = ":::ayat\nوَالْعَصْرِ ﴿١﴾\nMaksud: Demi masa.\nSurah al-Asr, ayat 1–3\n:::";
+  for (const line of AYAT_PLACEHOLDER_LINES) {
+    const r = withBody("Awal.\n\n:::ayat\n" + line + "\n:::\n\nAkhir.");
+    assert(r.blockers.some((b) => b.code === "ayat_placeholder") && !r.ready, "placeholder line blocks publication: " + line);
+  }
+  const blocked = withBody("Awal.\n\n:::ayat\n" + AYAT_PLACEHOLDER_LINES.join("\n") + "\n:::");
+  assert(blocked.blockers.find((b) => b.code === "ayat_placeholder")?.message === "Kotak ayat masih mengandungi teks pemegang tempat. Gantikan dengan ayat, maksud dan rujukan sebenar.", "the blocker explains what to replace");
+  const replaced = withBody("Awal.\n\n" + filled + "\n\nAkhir.");
+  assert(!replaced.blockers.some((b) => b.code === "ayat_placeholder") && replaced.ready, "a filled-in verse box is ready");
+  for (const kept of [filled, ":::ayat\nوَالْعَصْرِ ﴿١﴾\n:::", ":::ayat\nوَالْعَصْرِ ﴿١﴾\nSurah al-Asr, ayat 1–3\n:::"]) {
+    assert(withBody("Awal.\n\n" + kept).ready, "a box whose placeholder lines were deleted or replaced is ready");
+  }
+  assert(!withBody("Awal.\n\n:::ayat\nوَالْعَصْرِ ﴿١﴾\n" + AYAT_PLACEHOLDER_LINES[1] + "\n:::").ready, "a placeholder line left in beside a real verse still blocks");
+  assert(!replaced.warnings.some((w) => w.code === "arabic_mixed_with_latin"), "a verse inside its box is not a mixed paragraph");
+  const mixed = withBody("Dia membaca وَالْعَصْرِ dengan perlahan.");
+  assert(mixed.warnings.some((w) => w.code === "arabic_mixed_with_latin") && !mixed.blockers.some((b) => b.code === "arabic_mixed_with_latin"), "Arabic mixed with Latin in a paragraph is a warning, not a blocker");
+  assert(!withBody("وَالْعَصْرِ ﴿١﴾\n\nDemi masa.").warnings.some((w) => w.code === "arabic_mixed_with_latin"), "Arabic and Malay in separate paragraphs give no warning");
+  assert(!withBody("Teks.\n\n[^1]: Rujuk وَالْعَصْرِ di sini.").warnings.some((w) => w.code === "arabic_mixed_with_latin"), "a footnote definition is left out of the mixed-paragraph warning");
 }
 
 console.log(`\n${passed} passed, ${failed} failed`);

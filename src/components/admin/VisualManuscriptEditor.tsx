@@ -4,8 +4,9 @@ import { dashInSelection, quotesInAllBlocks } from "../../lib/admin/auto-dash";
 import { pastedHtmlToMarkdown } from "../../lib/admin/paste-format";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { nextImageMarker } from "../../lib/reader/image-markers";
+import { AYAT_PLACEHOLDER_LINES, ayatLineKind, splitCommunicationBlocks } from "../../lib/reader/communication-blocks";
+import { hasArabic, toArabicIndic } from "../../lib/reader/arabic-text";
 import { isSceneBreakLine } from "../../lib/reader/scene-breaks";
-import { splitCommunicationBlocks } from "../../lib/reader/communication-blocks";
 import { confirmAction, toast } from "../../lib/admin/dialogs";
 import { cleanFootnoteText, nextFootnoteLabel } from "../../lib/admin/footnote-insert";
 import { splitFootnotes } from "../../lib/admin/footnote-edit";
@@ -13,9 +14,74 @@ import { buildNoteContext, joinProseAndNotes, noteChipHtml, noteWithText, notesT
 import FootnoteInserter from "./FootnoteInserter";
 import { escapeHtml, unescapeLiteral, inlineHtml, inlineMarkdown } from "../../lib/admin/inline-format";
 
+/** A new verse box shows the three kinds of line: the verse (replaced by pasting), its meaning and its reference. */
+const AYAT_PLACEHOLDER = AYAT_PLACEHOLDER_LINES.map((line) => `<div class="ayat-line ${ayatLineClass(line)}" dir="auto">${line}</div>`).join("");
+
+/** The look of a line of a verse box, the same as the reader's: the verse, the meaning (Maksud) or the reference (Surah ...). An empty line has none. */
+function ayatLineClass(text: string): string {
+  const kind = ayatLineKind(text);
+  return kind === "verse" ? "ayat-line-ar" : kind === "maksud" ? "ayat-line-maksud" : kind === "ref" ? "ayat-line-ref" : "";
+}
+
+/** One line of a verse box is a block of its own with dir="auto", so an Arabic line is right to left and right aligned and a Malay line is left to right (a <br> would not split the bidi paragraph). */
+function ayatLineHtml(text: string, notes?: NoteContext): string {
+  return `<div class="ayat-line ${ayatLineClass(text)}" dir="auto">${text ? inlineHtml(text, notes) : "<br>"}</div>`;
+}
+
+const LINE_BLOCK = /^(DIV|P)$/;
+
+/** Keeps every line of a verse box a block of its own (text typed straight into the box, or a lone <br>, is wrapped) and marks the Arabic ones. */
+function normalizeAyatBoxes(editor: HTMLElement) {
+  editor.querySelectorAll<HTMLElement>('[data-communication="ayat"]').forEach((box) => {
+    const selection = window.getSelection();
+    const anchor = selection?.isCollapsed ? { node: selection.anchorNode, offset: selection.anchorOffset } : null;
+    let line: HTMLElement | null = null;
+    for (const node of [...box.childNodes]) {
+      if (node instanceof HTMLElement && LINE_BLOCK.test(node.tagName)) { line = null; continue; }
+      if (!line) {
+        line = document.createElement("div");
+        box.insertBefore(line, node);
+      }
+      line.appendChild(node);
+      if (node instanceof HTMLElement && node.tagName === "BR") line = null;
+    }
+    if (!box.firstChild) box.innerHTML = '<div class="ayat-line" dir="auto"><br></div>';
+    box.querySelectorAll<HTMLElement>(":scope > div, :scope > p").forEach((el) => {
+      el.classList.add("ayat-line");
+      el.setAttribute("dir", "auto");
+      el.classList.remove("ayat-line-ar", "ayat-line-maksud", "ayat-line-ref");
+      const cls = ayatLineClass(el.textContent ?? "");
+      if (cls) el.classList.add(cls);
+    });
+    // Moving a node out and back drops the caret to the edge of its parent; put it back where it was.
+    if (anchor?.node && box.contains(anchor.node) && selection) {
+      const range = document.createRange();
+      range.setStart(anchor.node, Math.min(anchor.offset, anchor.node.nodeType === Node.TEXT_NODE ? anchor.node.textContent?.length ?? 0 : anchor.node.childNodes.length));
+      range.collapse(true);
+      selection.removeAllRanges();
+      selection.addRange(range);
+    }
+  });
+}
+
+/** A verse box back to Markdown: one line of text per line block (blank lines kept, so the round trip does not change the text). */
+function ayatMarkdown(box: HTMLElement): string {
+  const lines: string[] = [];
+  let loose: string | null = null;
+  const flush = () => { if (loose !== null) lines.push(loose.replace(/\n$/, "")); loose = null; };
+  for (const node of [...box.childNodes]) {
+    if (node instanceof HTMLElement && LINE_BLOCK.test(node.tagName)) {
+      flush();
+      lines.push([...node.childNodes].map(inlineMarkdown).join("").replace(/\n$/, ""));
+    } else loose = (loose ?? "") + inlineMarkdown(node);
+  }
+  flush();
+  return lines.join("\n").trimEnd();
+}
+
 const MARKER = /^\[\[gambar:[1-9]\d*\]\]$/;
 
-type ToolbarIconName = "bold" | "italic" | "paragraph" | "heading" | "scene" | "image" | "message" | "email" | "note";
+type ToolbarIconName = "bold" | "italic" | "paragraph" | "heading" | "scene" | "image" | "message" | "email" | "verse" | "verse-number" | "note";
 
 function ToolbarIcon({ name }: { name: ToolbarIconName }) {
   if (name === "bold") return <span className="visual-manuscript-glyph visual-manuscript-glyph-bold" aria-hidden="true">B</span>;
@@ -27,6 +93,8 @@ function ToolbarIcon({ name }: { name: ToolbarIconName }) {
     {name === "image" && <><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8" cy="9" r="1.4"/><path d="m4 17 5-5 3 3 3-3 5 5"/></>}
     {name === "message" && <path d="M4 5h16v11H9l-5 4V5Z"/>}
     {name === "email" && <><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></>}
+    {name === "verse" && <><path d="M4 5h6a2 2 0 0 1 2 2v12a2 2 0 0 0-2-2H4Z"/><path d="M20 5h-6a2 2 0 0 0-2 2v12a2 2 0 0 1 2-2h6Z"/></>}
+    {name === "verse-number" && <><circle cx="12" cy="12" r="8.5"/><path d="M10.5 9.5 12.5 8v8"/></>}
     {name === "note" && <><path d="M5 4h14v10l-6 6H5Z"/><path d="M13 20v-6h6"/><path d="M8.5 9h7"/></>}
   </svg>;
 }
@@ -75,7 +143,7 @@ function toHtml(markdown: string, notes?: NoteContext): string {
     if (isSceneBreakLine(trimmed)) return '<hr class="visual-manuscript-break">';
     if (trimmed.startsWith("## ")) return `<h2>${inlineHtml(trimmed.slice(3), notes)}</h2>`;
     return `<p>${inlineHtml(block, notes)}</p>`;
-  }).join("") : `<div class="visual-manuscript-communication visual-manuscript-communication-${segment.kind}" data-communication="${segment.kind}">${inlineHtml(segment.content, notes)}</div>`).join("");
+  }).join("") : `<div class="visual-manuscript-communication visual-manuscript-communication-${segment.kind}" data-communication="${segment.kind}">${segment.kind === "ayat" ? segment.content.split("\n").map((line) => ayatLineHtml(line, notes)).join("") : inlineHtml(segment.content, notes)}</div>`).join("");
 }
 
 /**
@@ -116,7 +184,7 @@ function fromHtml(root: HTMLElement): string {
     if (node.nodeType === Node.TEXT_NODE) return inlineMarkdown(node);
     const element = node as HTMLElement;
     if (element.dataset.marker) return element.dataset.marker;
-    if (element.dataset.communication) return `:::${element.dataset.communication}\n${[...element.childNodes].map(inlineMarkdown).join("").trimEnd()}\n:::`;
+    if (element.dataset.communication) return `:::${element.dataset.communication}\n${element.dataset.communication === "ayat" ? ayatMarkdown(element) : [...element.childNodes].map(inlineMarkdown).join("").trimEnd()}\n:::`;
     if (element.tagName === "HR") return "---";
     const body = [...element.childNodes].map(inlineMarkdown).join("").trimEnd();
     if (element.tagName === "H2") return `## ${body}`;
@@ -137,6 +205,8 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
   const selectionRef = useRef<Range | null>(null);
   const caretRef = useRef<{ block: number; offset: number } | null>(null);
   const [noteOpen, setNoteOpen] = useState(false);
+  /** The caret is in a verse box: the verse number button works only there. */
+  const [inAyat, setInAyat] = useState(false);
   /** The side notes of the manuscript: the words are kept here (not in the text of the editor) and written after the text on every change. */
   const notesRef = useRef<NoteContext>({ numbers: {}, definitions: new Map(), orphans: [] });
   /** What was last drawn into the editor from `value`; null once the editor has sent text of its own. */
@@ -165,6 +235,7 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
     const editor = editorRef.current;
     if (!editor) return;
     dashInSelection();
+    normalizeAyatBoxes(editor);
     renumberNotes(editor);
     const labels = [...new Set([...editor.querySelectorAll<HTMLElement>("[data-note]")].map((chip) => chip.dataset.note!))];
     const next = joinProseAndNotes(fromHtml(editor), notesToWrite(labels, notesRef.current));
@@ -249,6 +320,8 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
   function rememberSelection() {
     const selection = window.getSelection();
     const editor = editorRef.current;
+    const holder = selection?.anchorNode instanceof Element ? selection.anchorNode : selection?.anchorNode?.parentElement;
+    if (selection?.rangeCount && editor?.contains(selection.anchorNode)) setInAyat(!!holder?.closest('[data-communication="ayat"]'));
     if (selection?.rangeCount && editor?.contains(selection.anchorNode)) {
       selectionRef.current = selection.getRangeAt(0).cloneRange();
       // Also as a place (which block, how many characters in): the saved range is lost when the editor redraws its text before the first edit.
@@ -275,13 +348,39 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
     rememberSelection();
   }
 
-  function insertBlock(kind: "paragraph" | "heading" | "scene" | "image" | "mesej" | "emel") {
+  /** The end-of-verse mark at the caret in a verse box: U+06DD and the next number in Arabic-Indic digits (the circle of a printed Mushaf), one more than the highest in the box. */
+  function insertAyatNumber() {
+    const editor = editorRef.current;
+    // The caret as it is now (the button does not take focus); the remembered one only when the page has none.
+    const current = window.getSelection();
+    const inEditor = !!current?.rangeCount && !!editor?.contains(current.anchorNode);
+    const saved = inEditor ? current!.getRangeAt(0).cloneRange() : selectionRef.current;
+    const holder = saved?.startContainer instanceof Element ? saved.startContainer : saved?.startContainer.parentElement;
+    const box = holder?.closest<HTMLElement>('[data-communication="ayat"]');
+    if (!editor || !saved || !box || !editor.contains(box)) return;
+    editor.focus();
+    const selection = window.getSelection();
+    selection?.removeAllRanges();
+    selection?.addRange(saved);
+    const used = [...(box.textContent ?? "").matchAll(/۝([٠-٩]+)/g)].map((m) => Number([...m[1]!].map((d) => d.charCodeAt(0) - 0x0660).join("")));
+    const before = document.createRange();
+    before.selectNodeContents(box);
+    before.setEnd(saved.startContainer, saved.startOffset);
+    const spaced = /\S$/.test(before.toString());
+    document.execCommand("insertText", false, `${spaced ? " " : ""}۝${toArabicIndic(String(Math.max(0, ...used) + 1))}`);
+    sync();
+    rememberSelection();
+  }
+
+  function insertBlock(kind: "paragraph" | "heading" | "scene" | "image" | "mesej" | "emel" | "ayat") {
     const editor = editorRef.current;
     if (!editor) return;
     const saved = selectionRef.current;
     // Text is selected: turn the paragraphs it touches into one message or e-mail box (their wording and emphasis kept),
     // instead of adding an empty box beside it.
-    if ((kind === "mesej" || kind === "emel") && saved && !saved.collapsed && editor.contains(saved.commonAncestorContainer)) {
+    // A selection that is only a scene-break symbol ("* * *", "---") becomes the break itself; any other selected words are never replaced by one.
+    const ornamentOnly = !!saved && !saved.collapsed && saved.toString().split(/\n/).every((line) => !line.trim() || isSceneBreakLine(line)) && saved.toString().trim() !== "";
+    if ((kind === "mesej" || kind === "emel" || kind === "ayat" || kind === "heading" || (kind === "scene" && ornamentOnly)) && saved && !saved.collapsed && editor.contains(saved.commonAncestorContainer)) {
       // The part of a block that is inside the selection (a selection that merely begins at the end of a paragraph has none).
       const partOf = (block: Element) => {
         const part = document.createRange();
@@ -300,7 +399,9 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
         const first = touched[0]!;
         const last = touched[touched.length - 1]!;
         // Only the selected words go into the box; what is left of the first paragraph before it, and of the last after it, stays outside.
-        const selectedHtml = touched.map((block) => htmlOf(partOf(block))).join("<br>");
+        const selectedHtml = kind === "ayat"
+          ? touched.map((block) => `<div class="ayat-line" dir="auto">${htmlOf(partOf(block))}</div>`).join("")
+          : touched.map((block) => htmlOf(partOf(block))).join("<br>");
         const beforeRange = document.createRange();
         beforeRange.selectNodeContents(first);
         const firstPart = partOf(first);
@@ -312,6 +413,37 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
         const before = beforeRange.toString().trim() ? htmlOf(beforeRange) : "";
         const after = afterRange.toString().trim() ? htmlOf(afterRange) : "";
         const tag = (block: Element) => block.tagName.toLowerCase();
+        if (kind === "scene" || kind === "heading") {
+          // The selection itself becomes the break, or a section heading (each selected paragraph its own); the words around it stay as they were.
+          const made: Element[] = kind === "scene"
+            ? [Object.assign(document.createElement("hr"), { className: "visual-manuscript-break" })]
+            : touched.map((block) => { const heading = document.createElement("h2"); heading.innerHTML = htmlOf(partOf(block)); return heading; });
+          const rebuild = (block: Element, html: string) => { const part = document.createElement(tag(block)); part.innerHTML = html; return part; };
+          first.before(...(before ? [rebuild(first, before)] : []), ...made);
+          if (after) last.after(rebuild(last, after));
+          touched.forEach((block) => block.remove());
+          sync();
+          rememberSelection();
+          return;
+        }
+        if (kind === "ayat") {
+          // The browser's insertHTML would tear a box of several line blocks apart (and merge the rest into the paragraph after it), so this box is built in the page itself.
+          const box = document.createElement("div");
+          box.className = "visual-manuscript-communication visual-manuscript-communication-ayat";
+          box.dataset.communication = "ayat";
+          box.innerHTML = selectedHtml;
+          const keep = (block: Element, html: string) => {
+            const part = document.createElement(tag(block));
+            part.innerHTML = html;
+            return part;
+          };
+          first.before(...(before ? [keep(first, before)] : []), box);
+          if (after) last.after(keep(last, after));
+          touched.forEach((block) => block.remove());
+          sync();
+          rememberSelection();
+          return;
+        }
         editor.focus();
         const selection = window.getSelection();
         const whole = document.createRange();
@@ -341,7 +473,7 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
       const number = marker.match(/\d+/)?.[0];
       html = `<div class="visual-manuscript-marker" contenteditable="false" data-marker="${marker}"><span data-marker-label>Gambar ${number} · belum dipautkan</span><button type="button" data-remove-marker aria-label="Buang penanda Gambar ${number}" title="Buang penanda Gambar ${number}">Buang</button></div>`;
       onMarkerInserted(marker);
-    } else html = `<div class="visual-manuscript-communication visual-manuscript-communication-${kind}" data-communication="${kind}">Tulis kandungan di sini.</div>`;
+    } else html = `<div class="visual-manuscript-communication visual-manuscript-communication-${kind}" data-communication="${kind}">${kind === "ayat" ? AYAT_PLACEHOLDER : "Tulis kandungan di sini."}</div>`;
     // Inserted through the browser's own editing command, so Ctrl+Z (and Edit > Undo) takes the block away again.
     editor.focus();
     const selection = window.getSelection();
@@ -364,12 +496,14 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
     if (!(target!.tagName === "P" && !target!.textContent?.trim())) document.execCommand("insertParagraph");
     if (kind !== "paragraph") document.execCommand("insertHTML", false, html);
     sync();
-    if (kind === "mesej" || kind === "emel") {
-      // Select the placeholder text so the editor can type over it.
+    if (kind === "mesej" || kind === "emel" || kind === "ayat") {
+      // Select the placeholder text so the editor can type over it (in a verse box only the first line, so the Maksud and Surah lines keep showing the format).
       const box = (window.getSelection()?.anchorNode?.parentElement ?? null)?.closest("[data-communication]");
       if (box) {
         const inner = document.createRange();
         inner.selectNodeContents(box);
+        const firstLine = kind === "ayat" ? box.firstElementChild : null;
+        if (firstLine) inner.selectNodeContents(firstLine);
         selection?.removeAllRanges();
         selection?.addRange(inner);
       }
@@ -444,6 +578,8 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
       <button type="button" onClick={() => insertBlock("image")} aria-label="Sisip penanda gambar" data-label="Penanda gambar"><ToolbarIcon name="image" /></button>
       <button type="button" onClick={() => insertBlock("mesej")} aria-label="Sisip kotak mesej" data-label="Kotak mesej"><ToolbarIcon name="message" /></button>
       <button type="button" onClick={() => insertBlock("emel")} aria-label="Sisip kotak e-mel" data-label="Kotak e-mel"><ToolbarIcon name="email" /></button>
+      <button type="button" onClick={() => insertBlock("ayat")} aria-label="Sisip kotak ayat" data-label="Kotak ayat"><ToolbarIcon name="verse" /></button>
+      <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={insertAyatNumber} disabled={!inAyat} aria-label="Sisip nombor ayat" data-label="Nombor ayat"><ToolbarIcon name="verse-number" /></button>
       <span className="visual-manuscript-toolbar-divider" aria-hidden="true" />
       <button type="button" onClick={() => setNoteOpen((open) => !open)} aria-label="Sisip nota sisi" aria-expanded={noteOpen} data-label="Nota sisi"><ToolbarIcon name="note" /></button>
     </div>
@@ -471,16 +607,47 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
           return;
         }
       }
+      // Backspace at the very start of a verse box, or Delete at its very end, would pull the neighbouring paragraph into the box (or the line out of it).
+      if ((event.key === "Backspace" || event.key === "Delete") && !event.nativeEvent.isComposing) {
+        const selection = window.getSelection();
+        const node = selection?.anchorNode;
+        const holder = node instanceof Element ? node : node?.parentElement;
+        const box = holder?.closest<HTMLElement>('[data-communication="ayat"]');
+        if (selection && box && selection.isCollapsed) {
+          const edge = document.createRange();
+          edge.selectNodeContents(box);
+          if (event.key === "Backspace") edge.setEnd(selection.anchorNode!, selection.anchorOffset);
+          else edge.setStart(selection.anchorNode!, selection.anchorOffset);
+          const edgeLine = event.key === "Backspace" ? box.firstElementChild : box.lastElementChild;
+          if (!edge.toString().length && (edgeLine === node || edgeLine?.contains(node ?? null))) event.preventDefault();
+        }
+      }
       // Enter inside a message or e-mail box starts a new line in that box (the browser would split it into a second box).
       if (event.key !== "Enter" || event.shiftKey || event.nativeEvent.isComposing) return;
       const anchor = window.getSelection()?.anchorNode;
       const element = anchor instanceof Element ? anchor : anchor?.parentElement;
       if (!element?.closest("[data-communication]")) return;
+      // A verse box keeps one block per line: the browser's own Enter splits the line into two.
+      if (element.closest('[data-communication="ayat"]')) return;
       event.preventDefault();
       document.execCommand("insertLineBreak");
       sync();
     }} onKeyUp={rememberSelection} onMouseUp={rememberSelection} onBlur={rememberSelection} onPaste={(event) => {
       event.preventDefault();
+      // In a verse box every pasted line becomes a line block of its own (Arabic and Maksud together paste into the right lines); no formatting is kept.
+      const pasteAnchor = window.getSelection()?.anchorNode;
+      if ((pasteAnchor instanceof Element ? pasteAnchor : pasteAnchor?.parentElement)?.closest('[data-communication="ayat"]')) {
+        const lines = event.clipboardData.getData("text/plain").split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+        // Several lines pasted after text already on the line start on a line of their own instead of running into it.
+        const pasteLine = (pasteAnchor instanceof Element ? pasteAnchor : pasteAnchor?.parentElement)?.closest(".ayat-line");
+        const startNew = lines.length > 1 && !!pasteLine?.textContent?.trim();
+        lines.forEach((line, index) => {
+          if (index > 0 || startNew) document.execCommand("insertParagraph");
+          document.execCommand("insertText", false, line);
+        });
+        sync();
+        return;
+      }
       // Text from Word or Google Docs keeps its italics and bold; anything else goes in as plain text, as before.
       const html = event.clipboardData.getData("text/html");
       const pasted = html ? pastedHtmlToMarkdown(html) : null;
@@ -554,6 +721,6 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
         </div>
       </div>
     ) : null}
-    <p className="admin-form-hint">Nota sisi ialah nombor kecil dalam teks: klik nombor itu untuk membaca, menukar atau memadam notanya. Untuk nota baharu, letakkan kursor di tempat nombor patut berada dan tekan ikon nota di bar alat. Pilih teks untuk Tebal atau Condong. Penanda gambar boleh dibuang di sini; simpan teks untuk menerapkan perubahan. Gambar yang sudah dimuat naik dipadam secara berasingan melalui kadnya.</p>
+    <p className="admin-form-hint">Nota sisi ialah nombor kecil dalam teks: klik nombor itu untuk membaca, menukar atau memadam notanya. Untuk nota baharu, letakkan kursor di tempat nombor patut berada dan tekan ikon nota di bar alat. Pilih teks untuk Tebal atau Condong. Dalam kotak ayat, baris Arab ialah ayat, baris yang bermula "Maksud:" ialah terjemahan dan baris yang bermula "Surah" ialah rujukan. Maksud dan rujukan adalah pilihan: padam baris yang tidak perlu (cth. apabila ayat digunakan untuk menguji hafalan). Letakkan kursor selepas ayat dan tekan butang Nombor ayat untuk tanda akhir ayat berbentuk bulatan (۝١); nombor dalam kurungan selepas ayat, cth. (1), yang ditaip juga dipaparkan sebagai bulatan. Penanda gambar boleh dibuang di sini; simpan teks untuk menerapkan perubahan. Gambar yang sudah dimuat naik dipadam secara berasingan melalui kadnya.</p>
   </div>;
 }

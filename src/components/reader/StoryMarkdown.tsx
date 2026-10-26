@@ -4,7 +4,7 @@ import type { GlossaryMap } from "./types";
 import { headingId } from "../../lib/reader/inline-chapters";
 import GlossaryTerm from "./GlossaryTerm";
 import { glossaryPattern } from "../../lib/reader/glossary-first";
-import { splitCommunicationBlocks } from "../../lib/reader/communication-blocks";
+import { parseAyat, splitCommunicationBlocks } from "../../lib/reader/communication-blocks";
 import { splitMessageSender } from "../../lib/reader/message-sender";
 import { fixEmphasisBeforeSuffix } from "../../lib/reader/emphasis-fix";
 import { unitaliciseDictionaryWords } from "../../lib/reader/dictionary-words";
@@ -13,6 +13,7 @@ import { splitFootnoteTokens } from "../../lib/reader/footnotes";
 import { smartQuotes } from "../../lib/admin/smart-quotes";
 import { spacedDashes } from "../../lib/reader/spaced-dash";
 import { cleanLiteralEmphasis } from "../../lib/reader/literal-emphasis";
+import { ayatMarkChildren, ayatMarkNodes, isArabicOnly, wrapArabic } from "../../lib/reader/arabic-text";
 
 function plainText(node: ReactNode): string {
   if (typeof node === "string" || typeof node === "number") return String(node);
@@ -53,6 +54,15 @@ function decorateGlossary(text: string, glossary: GlossaryMap, used: Set<string>
   return result;
 }
 
+/** A verse line: the end-of-verse mark (۝ and its number, which Amiri draws as a circle round the number) is kept as one isolated piece so its digits keep their order; older forms such as ﴿١﴾ or (1) are shown the same way. */
+function VerseLine({ text, numbers }: { text: string; numbers: Record<string, number> }) {
+  return (
+    <p className="ayat-text" lang="ar" dir="rtl">
+      {ayatMarkNodes(text).map((piece, i) => typeof piece === "string" ? <React.Fragment key={i}>{withFootnotes(piece, numbers)}</React.Fragment> : piece)}
+    </p>
+  );
+}
+
 /** A reference in the text: a small number that links to its note. The first reference to a note is where "back" returns to. */
 function FootnoteRef({ number, first }: { number: number; first: boolean }) {
   return (
@@ -78,7 +88,7 @@ function withFootnotes(children: ReactNode, numbers: Record<string, number>): Re
 
 function decorateChildren(children: ReactNode, glossary: GlossaryMap, used: Set<string>, cleanMarks = true): ReactNode {
   return React.Children.map(children, (child) =>
-    typeof child === "string" ? decorateGlossary(cleanMarks ? cleanLiteralEmphasis(child) : child, glossary, used)
+    typeof child === "string" ? decorateGlossary(cleanMarks ? cleanLiteralEmphasis(child) : child, glossary, used).flatMap((piece) => typeof piece === "string" ? wrapArabic(piece) : [piece])
       : React.isValidElement<{ children?: ReactNode }>(child) && child.type !== FootnoteRef && child.type !== "a" && child.type !== "code" && child.type !== "button"
         ? React.cloneElement(child, { children: decorateChildren(child.props.children, glossary, used, cleanMarks) })
         : child
@@ -115,10 +125,33 @@ export default function StoryMarkdown({
       return <p><strong className="message-sender">{split.sender}:</strong>{decorateChildren(withFootnotes(parts, footnoteNumbers), glossary, used)}</p>;
     },
   };
+  // A verse box: the verse, then its meaning, then its reference, whatever order they were written in.
+  const ayatBox = (content: string, index: number) => {
+    const { verses, meanings, references } = parseAyat(content);
+    return (
+      <figure key={index} className="story-ayat" aria-label="Ayat al-Quran">
+        <span className="ayat-label" aria-hidden="true">Ayat al-Quran</span>
+        {verses.map((verse, v) => <VerseLine key={v} text={verse} numbers={footnoteNumbers} />)}
+        {meanings.length + references.length > 0 && (
+          <figcaption>
+            {meanings.map((meaning, m) => (
+              <div key={`m${m}`} className="ayat-meaning">
+                {m === 0 && <span className="ayat-caption-label">Maksud</span>}
+                <ReactMarkdown components={components}>{meaning}</ReactMarkdown>
+              </div>
+            ))}
+            {references.map((reference, r) => <p key={`r${r}`} className="ayat-reference">{reference}</p>)}
+          </figcaption>
+        )}
+      </figure>
+    );
+  };
   return (
     <>
-      {splitCommunicationBlocks(normalizeMarkdown(children)).map((segment, index) => segment.kind === "prose"
+      {splitCommunicationBlocks(normalizeMarkdown(children)).map((segment, index) => segment.kind === "ayat" ? ayatBox(segment.content, index) : segment.kind === "prose"
         ? <ReactMarkdown key={index} components={{ ...components, p: ({ node, children }) => {
+            // A paragraph that is only Arabic (a verse of the Quran on its own line) is set right to left, centred, in the Naskh face.
+            if (isArabicOnly(plainText(children))) return <p className="arabic-block" lang="ar" dir="rtl">{ayatMarkChildren(withFootnotes(children, footnoteNumbers))}</p>;
             const raw = segment.content.slice(node?.position?.start.offset ?? 0, node?.position?.end.offset ?? segment.content.length);
             return <p>{decorateChildren(withFootnotes(children, footnoteNumbers), glossary, used, !/\\\*/.test(raw))}</p>;
           } }}>{segment.content}</ReactMarkdown>
