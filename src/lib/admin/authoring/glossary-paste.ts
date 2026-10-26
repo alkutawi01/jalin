@@ -86,11 +86,16 @@ ${input.body.trim() || "[Manuskrip belum diisi. Tampal manuskrip di sini sebelum
 }
 
 function clean(value: string): string {
-  return value
+  const tidy = value
     .replace(/^(?:\s|[>•\-–—·]|\*(?=\s))+/, "")
     .replace(/^\d+[.)]\s+/, "")
-    .replace(/\*\*|__|`/g, "")
-    .replace(/^["“”']+|["“”']+$/g, "")
+    .replace(/\*\*|__|`/g, "");
+  // Quotes around a value are removed; a straight apostrophe that ends a word (tasmi', Ja'far-style transliteration) belongs to the word,
+  // so it is stripped only when the value opened with a quote of its own.
+  const quoted = /^["“”']/.test(tidy);
+  return tidy
+    .replace(/^["“”']+/, "")
+    .replace(quoted ? /["“”']+$/ : /["“”]+$/, "")
     .replace(/\s+/g, " ")
     .trim();
 }
