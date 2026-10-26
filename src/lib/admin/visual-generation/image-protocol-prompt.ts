@@ -94,7 +94,7 @@ export function composeImageProtocolPrompt(input: ImageProtocolInput): string {
     `8. GAYA: ${style.styleDirection}. Mesti SEMI-REALISTIK dan SINEMATIK (rupa lukisan digital semi-realistik seperti babak filem), BUKAN kartun, BUKAN lukisan rata atau pastel kanak-kanak, BUKAN fotografi. Cahaya hangat waktu emas atau cahaya tingkap, latar bercahaya, bayang lembut, kedalaman medan, tekstur kertas halus.`,
     `9. ELAK: ${style.avoid.join("; ")}.`,
     `10. SUDUT KAMERA: pilih satu yang tidak lazim dan sesuai dengan adegan, contoh: ${camera.join("; ")}.`,
-    "11. LATAR MALAYSIA yang realistik jika berkaitan (rumah, sekolah, surau, kampung); pakaian dan suasana yang sopan. Bilik darjah sekolah biasa: SEMUA meja menghadap ke hadapan (papan putih); tingkap berlangsir nipis atau bidai kerana bilik darjah sebenar perlu mengelak silau dan panas; tiada dinding atau pemisah tambahan; pelajar lelaki dan perempuan di barisan berasingan tetapi semua tetap menghadap ke hadapan.",
+    "11. LATAR MALAYSIA yang realistik jika berkaitan (rumah, sekolah, surau, kampung); pakaian dan suasana yang sopan. Bilik darjah sekolah biasa: SEMUA meja menghadap ke hadapan (papan putih); tingkap berlangsir nipis atau bidai kerana bilik darjah sebenar perlu mengelak silau dan panas; jika kipas siling kelihatan, ia BERPUSING (bilah kabur bergerak) kerana bilik darjah Malaysia panas; tiada dinding atau pemisah tambahan; pelajar lelaki dan perempuan di barisan berasingan tetapi semua tetap menghadap ke hadapan.",
     "12. JANGAN TAMBAH apa-apa yang tidak disebut atau tidak ada dalam teks (dinding, pemisah, papan tanda, watak tambahan, hiasan berlebihan). Jika editor memberi teguran, ikut teguran itu SAHAJA dan jangan mereka penyelesaian baharu.",
     "",
     "CARA MENJAWAB",
