@@ -5,6 +5,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { slugify } from "../../../../lib/admin/import/text-utils";
 import { errorText } from "../../../../lib/admin/error-text";
+import CopyButton from "../../../../components/admin/CopyButton";
+import { composeSeriesPrompt, parseSeriesAnswer } from "../../../../lib/admin/series-fill";
 
 export default function NewSeriesPage() {
   const router = useRouter();
@@ -12,6 +14,8 @@ export default function NewSeriesPage() {
   const [error, setError] = useState<string | null>(null);
   /** Until the editor types an address themselves, it follows the title. */
   const [slugEdited, setSlugEdited] = useState(false);
+  const [answer, setAnswer] = useState("");
+  const [fillNote, setFillNote] = useState<string | null>(null);
   const [form, setForm] = useState({
     title: "",
     slug: "",
@@ -21,6 +25,18 @@ export default function NewSeriesPage() {
     mode: "continuous",
     status: "ongoing",
   });
+
+  function fillFromAnswer() {
+    const found = parseSeriesAnswer(answer);
+    const count = Object.keys(found).length;
+    if (count === 0) {
+      setFillNote("Tiada medan dikenali. Pastikan jawapan ChatGPT menggunakan baris seperti 'Tajuk: ...'.");
+      return;
+    }
+    if (found.slug) setSlugEdited(true);
+    setForm((p) => ({ ...p, ...found }));
+    setFillNote(`${count} medan diisi. Semak sebelum menambah siri.`);
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -51,6 +67,19 @@ export default function NewSeriesPage() {
       </header>
 
       {error && <div className="admin-alert admin-alert-error" role="alert">{error}</div>}
+
+      <section className="admin-form" aria-label="Isi dengan AI">
+        <div className="admin-form-group">
+          <label htmlFor="ai-answer">Isi dengan AI</label>
+          <p className="admin-form-hint">Salin arahan, tampal ke ChatGPT bersama idea siri, kemudian tampal jawapannya di bawah.</p>
+          <CopyButton text={composeSeriesPrompt()} label="Salin Arahan AI" />
+          <textarea className="admin-textarea" rows={4} id="ai-answer" value={answer} onChange={(e) => setAnswer(e.target.value)} placeholder="Tampal jawapan ChatGPT di sini" />
+          <div className="admin-form-actions">
+            <button type="button" className="admin-btn admin-btn-outline" onClick={fillFromAnswer} disabled={!answer.trim()}>Isi borang</button>
+          </div>
+          {fillNote && <p className="admin-form-hint" role="status">{fillNote}</p>}
+        </div>
+      </section>
 
       <form onSubmit={handleSubmit} className="admin-form">
         <div className="admin-form-group">
