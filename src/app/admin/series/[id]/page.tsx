@@ -9,6 +9,8 @@ import AudiencePicker from "../../../../components/admin/AudiencePicker";
 import ImageFocusPicker, { type FocusValue } from "../../../../components/admin/ImageFocusPicker";
 import { MAX_UPLOAD_LABEL, uploadTooLargeMessage } from "../../../../lib/admin/upload-limit";
 import { errorText } from "../../../../lib/admin/error-text";
+import CopyButton from "../../../../components/admin/CopyButton";
+import { composeImageProtocolPrompt } from "../../../../lib/admin/visual-generation/image-protocol-prompt";
 
 /** An episode's status in the editor's words, as the works list shows it. */
 const EPISODE_STATUS: Record<string, string> = { draft: "Draf", review: "Semakan", ready: "Sedia", published: "Diterbitkan", archived: "Diarkibkan" };
@@ -452,6 +454,10 @@ export default function EditSeriesPage({ params }: { params: Promise<{ id: strin
             </div>
           </details>
         ) : null}
+        <div className="admin-form-group">
+          <CopyButton label="Salin arahan AI" text={composeImageProtocolPrompt({ role: "series", title: series.title, dek: series.dek ?? "", genre: series.genre ?? "" })} />
+          <span className="admin-form-hint">Arahan protokol imej Jalin untuk gambar siri (satu bingkai, simbolik, tiada wajah jelas, tiada teks, semi-realistik). Tampal ke ChatGPT, muat turun imej, kemudian muat naik di bawah.</span>
+        </div>
         <div className="admin-form-group">
           <label htmlFor="series-hero-file">Fail gambar (PNG, JPEG atau WebP, maksimum {MAX_UPLOAD_LABEL})</label>
           <FilePicker id="series-hero-file" accept="image/png,image/jpeg,image/webp" selectedName={heroFile?.name ?? null} onFile={setHeroFile} />

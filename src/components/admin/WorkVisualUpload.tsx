@@ -5,13 +5,17 @@ import { imageMarkerLabel } from "../../lib/reader/image-markers";
 import { MAX_UPLOAD_LABEL, uploadTooLargeMessage } from "../../lib/admin/upload-limit";
 import { errorText } from "../../lib/admin/error-text";
 import FilePicker from "./FilePicker";
+import CopyButton from "./CopyButton";
+import { composeImageProtocolPrompt } from "../../lib/admin/visual-generation/image-protocol-prompt";
+
+export interface ImagePromptContext { title: string; type?: string; dek?: string; genre?: string; body?: string }
 
 /**
  * Upload an image straight from a work. One step: the file is
  * stored, the editor's action is recorded as approval, and the image is attached to
  * the work. The work is never published by this.
  */
-export default function WorkVisualUpload({ workId, onDone, hasHero, published, suggestedAnchor = "", markers }: { workId: string; onDone: () => void; hasHero: boolean; published: boolean; suggestedAnchor?: string; markers: string[] }) {
+export default function WorkVisualUpload({ workId, onDone, hasHero, published, suggestedAnchor = "", markers, promptContext }: { workId: string; onDone: () => void; hasHero: boolean; published: boolean; promptContext?: ImagePromptContext; suggestedAnchor?: string; markers: string[] }) {
   const [role, setRole] = useState(hasHero ? "inline" : "hero");
   const [alt, setAlt] = useState("");
   const [anchor, setAnchor] = useState("");
@@ -71,6 +75,16 @@ export default function WorkVisualUpload({ workId, onDone, hasHero, published, s
       <p className="admin-form-hint">
         Pilih imej (PNG/JPEG/WebP, maksimum {MAX_UPLOAD_LABEL}). Muat naik menyimpan dan memautkan gambar terus; tidak perlu tekan “Simpan teks &amp; maklumat” selepasnya.
       </p>
+
+      {promptContext ? (
+        <div className="admin-form-group">
+          <CopyButton
+            label="Salin arahan AI"
+            text={composeImageProtocolPrompt({ role: role === "hero" ? "hero" : "inline", marker: role === "hero" ? undefined : anchor, ...promptContext })}
+          />
+          <span className="admin-form-hint">Arahan lengkap protokol imej Jalin (satu bingkai, tiada wajah jelas, tiada teks, semi-realistik, adegan daripada manuskrip). Tampal ke ChatGPT, muat turun imej, kemudian muat naik di bawah.{role !== "hero" && !markers.includes(anchor) ? " Pilih penanda gambar dahulu supaya arahan memakai petikan yang betul." : ""}</span>
+        </div>
+      ) : null}
 
       {error ? <div className="admin-alert admin-alert-error" role="alert">{error}</div> : null}
       {success ? <div className="admin-alert admin-alert-success" role="status">{success}</div> : null}
