@@ -2,6 +2,9 @@
 import { unescapeSeparatorRuns } from "../../separator-marks";
 import { collapseLinks, restoreFlatAnswer } from "./flat-answer";
 export function normaliseLabelledLayout(answer: string, labels: string[], proseSection = "KANDUNGAN", acceptStructured = true): string {
+  // A rich-text copy also ends lines with a backslash (Markdown hard break) and writes asterisks as \* ; neither belongs to the text.
+  // A trailing backslash on "Slug: abc\" used to make the whole paste fail.
+  answer = answer.replace(/\\[ \t]*(?=\r?\n|$)/g, "").replace(/\\\*/g, "*");
   // An answer copied with its line breaks lost gets them back first (flat-answer.ts).
   answer = restoreFlatAnswer(collapseLinks(answer), labels);
   // A chat window copies a row of underscores out as \_\_\_\_ ; that is the separator, not text.

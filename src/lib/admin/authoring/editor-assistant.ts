@@ -14,24 +14,25 @@ export interface EditorContext { /** The reader age bands as set in Tetapan (the
 /** What the chatbot is told about Audiens: only the bands that really suit the work, from Jalin's own list (Tetapan > Audiens, as it is now). */
 const audienceHint = (bands: AudienceBand[]) => `satu atau lebih peringkat pembaca yang sesuai dengan isi karya, dipisahkan koma, daripada: ${bands.map((b) => `${b.label} ${bandRangeLabel(b)} tahun`).join("; ")}. Tulis nama peringkat sahaja, contoh: ${bands.slice(1, 3).map((b) => b.label).join(", ") || bands[0]?.label || "Remaja"}`;
 const LABELLED_FORMATS: Record<Exclude<EditorScope, "all">, string> = {
-  content: `[KARYA]\nTajuk: (tajuk)\nSlug: (alamat-pautan)\nBlurb: (blurb ringkas)\n\n[KANDUNGAN]\n(teks penuh karya, bukan ulasan atau nasihat)`,
+  content: `[KARYA]\nTajuk: (tajuk)\nSlug: (alamat-pautan)\nBlurb: (blurb ringkas)`,
   metadata: `[MAKLUMAT]\nGenre: (genre)\nAudiens: ({{AUDIENS}})\nCatatan: (jika berkenaan)\nNota pembaca: (jika berkenaan)`,
   characters: `[WATAK]\nNama: (nama watak sebenar)\nPeranan: (2–6 patah perkataan)\nMuncul di: (slug bab jika novela)\n____\n\n[LATAR]\nJenis: tempat\nNama: (tempat)\nKeterangan: (ringkas)\n____\nJenis: masa\nNama: (tahun, tempoh atau era; bukan pagi/malam)\nKeterangan: (ringkas)\n____\nJenis: negara\nNama: (SATU negara atau wilayah UTAMA tempat kebanyakan cerita berlaku; bukan semua negara yang disebut)`,
   glossary: `[GLOSARI]\nIstilah: (istilah tepat dalam teks)\nMaksud: (maksud mengikut konteks)\nSebutan: (pilihan)\nBahasa asal: (pilihan)\nEjaan asal: (pilihan)\n____`,
   source: `[SUMBER]\nTajuk asal: (nilai atau tidak dinyatakan)\nPengarang asal: (nilai atau tidak dinyatakan)\nBahasa asal: (nilai atau tidak dinyatakan)\nTahun terbit pertama: (nilai atau tidak dinyatakan)\nPenerbit: (nilai atau tidak dinyatakan)\nTahun edisi: (nilai atau tidak dinyatakan)\nCetakan: (nilai atau tidak dinyatakan)\nPenyunting: (nilai atau tidak dinyatakan)\nPenterjemah: (nilai atau tidak dinyatakan)\nISBN: (nilai atau tidak dinyatakan)\nLokasi petikan: (nilai atau tidak dinyatakan)\nAsas teks: (nilai atau tidak dinyatakan)\nURL sumber: (nilai atau tidak dinyatakan)\nNama edisi: (nilai atau tidak dinyatakan)`,
   credits: `[KREDIT]\nSlug penyumbang: (slug sedia ada, atau kosong)\nNama tetamu: (nama sebenar jika bukan penyumbang, atau kosong)\nPeranan: (peranan sebenar)\nNama di bawah tajuk: ya atau tidak\nPaparan awam: ya atau tidak\n____`,
-  sections: `[BAB]\nSlug: (slug bab sedia ada)\nTajuk: (tajuk bab)\nTeks: (teks penuh bab)\n____`
+  sections: `[BAB]\nSlug: (slug bab sedia ada)\nTajuk: (tajuk bab)\n____`
 };
 
 export function buildEditorPrompt(scope: EditorScope, context: EditorContext, _task = ""): string {
   const { bands, ...shown } = context;
   context = shown as EditorContext;
+  // The manuscript is the editor's: the chatbot never writes or returns it (long, and it can be cut or reworded). It only returns data.
   const format = (scope === "all" ? Object.values(LABELLED_FORMATS).join("\n\n") : LABELLED_FORMATS[scope]).split("{{AUDIENS}}").join(audienceHint(bands && bands.length > 0 ? bands : DEFAULT_AUDIENCE_BANDS));
   const focus = scope === "all" ? "Lengkapkan medan editorial yang berkenaan di semua tab; keluarkan teks dan data untuk borang." : `Teliti tab ${EDITOR_SCOPE_NAMES[scope]} secara mendalam. Keluarkan hanya medan tab ini, bukan bahagian tab lain.`;
   return `Anda pembantu editorial Jalin. Jenis karya: ${context.type}. SKOP: ${EDITOR_SCOPE_NAMES[scope]}.
 ${focus}
 Jawapan mesti BOLEH MENGISI BORANG, bukan ulasan, senarai cadangan atau nasihat yang perlu ditaip manual.
-Jika ada manuskrip, ikut tugasan editor; jika tiada, hasilkan teks berdasarkan bahan/tugasan yang diberikan. Dalam work.body dan sections.body, pulangkan TEKS PENUH untuk editor. Jangan letak frasa "kekalkan teks asal" sebagai kandungan.
+Manuskrip ialah milik editor dan sudah ada dalam borang: JANGAN tulis, ulang, sunting atau pulangkan teks manuskrip (atau teks bab), dan jangan sertakan bahagian [KANDUNGAN]. Pulangkan data sahaja.
 Jangan menukar kategori. Jangan mereka fakta sumber atau penyumbang. Kredit hanya berdasarkan sumbangan yang dinyatakan editor, bukan gaya manuskrip; jika tiada bukti, pulangkan credits: []. Gunakan contributorSlug sedia ada atau guestName sebenar, bukan kedua-duanya. "initial_draft" ialah peranan Penulis. Fragmen/Sinopsis tidak mempunyai byline penyumbang Jalin.
 Bab hanya untuk novela: kekalkan slug bab sedia ada, semua perenggan dan urutan cerita. Jangan menggandakan teks bab dalam work.body. Kekalkan semua penanda imej dan nota kaki. Jangan mereka fail gambar, skor penilaian atau kelulusan hak. Tempoh bacaan dikira sistem.
 ${DEK_RULE}
@@ -39,7 +40,7 @@ ${context.type === "bersiri" ? "Ini episod siri. Jangan mereka canon episod lain
 ${scope === "glossary" || scope === "all" ? GLOSSARY_RULES : ""}
 ${scope === "source" ? "Semak setiap medan bibliografi secara berasingan. Medan yang tidak diketahui: null, bukan tekaan. Hak bukan output borang AI." : ""}
 ${scope === "characters" ? "Semak watak, tempat dan era yang benar-benar berguna kepada editor. Bezakan peranan dan hubungan, elakkan spoiler. Latar masa mesti tahun/era, bukan pagi atau malam. Pulangkan tempat yang penting sahaja; jangan jadikan objek kecil atau keterangan umum sebagai tempat. Untuk negara, pulangkan SATU negara atau wilayah UTAMA tempat kebanyakan cerita berlaku. Jangan senaraikan negara yang hanya disebut, dilalui atau menjadi asal-usul watak." : ""}
-${scope === "content" ? "Pulangkan manuskrip yang benar-benar sedia dimasukkan ke editor. Sunting atau tulis hanya seperti tugasan; jangan menggantikan manuskrip dengan penilaian struktur." : ""}
+${scope === "content" ? "Pulangkan hanya Tajuk, Slug dan Blurb; manuskrip tidak disentuh." : ""}
 FORMAT JAWAPAN: letakkan SELURUH jawapan dalam SATU blok kod (\`\`\` pada baris pertama dan \`\`\` pada baris terakhir, tanpa nama bahasa) supaya butang Salin pada blok itu menyalin setiap baris baharu dengan tepat. Di luar blok tiada pengenalan atau penutup. Di dalam blok: teks biasa berlabel seperti di bawah, SATU label pada SATU baris ("Label: nilai"), satu baris kosong antara bahagian, dan satu baris yang hanya mengandungi ____ antara item berulang (watak, tempat, glosari). Jangan gunakan JSON, jadual Markdown, pautan Markdown atau tag seperti <escape>; tulis alamat web sebagai teks biasa. Jangan sertakan bahagian luar skop.
 ${format}
 Jika editor mahu penulisan atau perubahan yang belum diterangkan dalam konteks, tanya editor dalam perbualan sebelum menghasilkan jawapan akhir berformat.
