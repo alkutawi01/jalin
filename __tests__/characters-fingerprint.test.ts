@@ -18,4 +18,6 @@ assert(charactersFingerprint(a) !== charactersFingerprint({ characters: [{ ...a.
 assert(charactersFingerprint("not json") === "", "unreadable metadata does not throw");
 
 console.log(`\n${passed} passed, ${failed} failed`);
-if (failed) process.exit(1);
+if (failed) process.exit(1);assert(charactersFingerprint({ theme: { mode: "manual", color: "#a76450" } }) !== "" && charactersFingerprint({ theme: { mode: "manual", color: "#a76450" } }) !== charactersFingerprint({ theme: { mode: "manual", color: "#336699" } }), "the work colour counts as a change readers see, and a different colour is a different change");
+assert(charactersFingerprint({ theme: { mode: "x", color: "nonsense" } }) === "" && charactersFingerprint({ theme: null }) === "", "no colour, or an invalid one, gives what it gave before");
+

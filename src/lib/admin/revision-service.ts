@@ -2,6 +2,7 @@ import type { Kysely, Transaction } from "kysely";
 import type { Database, WorkRevisions } from "../db/types";
 import { getDb, hasDb } from "../db";
 import { normaliseCountries } from "../reader/countries";
+import { parseThemeSetting } from "../reader/story-theme";
 import {
   evaluatePublicationReadinessFromData,
   type PublicationReadiness,
@@ -148,6 +149,10 @@ export function charactersFingerprint(metadata: unknown): string {
   // The countries (Negara latar) show on cards and on the work page: added only when set, as above.
   const countries = normaliseCountries((meta as { countries?: unknown } | null | undefined)?.countries);
   if (countries.length > 0) result += "|countries:" + countries.join(",");
+  // The work's own colour (Warna tema karya) is saved at once on the draft but readers see the published copy, so it must count as an unpublished
+  // change: without it the colour never reached readers, because "Terbitkan semula" was never offered. Added only when set, as above.
+  const theme = parseThemeSetting((meta as { theme?: unknown } | null | undefined)?.theme);
+  if (theme) result += "|theme:" + theme.mode + ":" + theme.color;
   return result;
 }
 
