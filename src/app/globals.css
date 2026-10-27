@@ -3003,6 +3003,9 @@ dd { margin: 0; color: var(--ink); text-align: left; }
    height, so with a picture capped at 560px the button of a slide with a long text hung below the picture's bottom edge. Now both end on the same line. */
 @media (min-width: 1051px) {
   .hero-carousel-slide .hero-featured-visual { max-height: none; aspect-ratio: auto; min-height: 440px; }
+  /* Every slide is as tall as the tallest slide's text, and the picture is as tall as the slide. Only a window up to 860px tall held the description to five
+     lines, so on a tall monitor one long description (twelve lines) made all three slides about 770px tall, with a gap above the button and a picture far larger than on a laptop. Five lines at every size. */
+  .hero-carousel-slide .hero-featured-dek { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 5; line-clamp: 5; overflow: hidden; }
 }
 @media (max-width: 1050px) { .hero-carousel-slide { grid-template-rows: auto minmax(0, 1fr); } }
 .hero-carousel-controls { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 0 26px; font-family: var(--font-inter), Inter, ui-sans-serif, sans-serif; }

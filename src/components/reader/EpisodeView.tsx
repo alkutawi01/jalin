@@ -1,3 +1,5 @@
+import React from "react";
+import { parseThemeSetting, storyPageCss, storyThemeVars } from "../../lib/reader/story-theme";
 import { displayVersion } from "@/lib/admin/version-label";
 import { ContinueNav } from "./ReadingNav";
 import { episodeJsonLd, jsonLdString } from "../../lib/seo-jsonld";
@@ -111,8 +113,14 @@ export default function EpisodeView({
   const segmentNodes = placeVisuals(markFootnoteReferences(footnotes.body, footnotes.numbers), work.visuals);
   const segmentGlossaries = firstGlossaryBySegment(segmentNodes, glossary);
 
+  // The episode's own colour, as on any other work page (WorkView): a coloured one gets a wrapper, one without keeps the markup it had.
+  const themeSetting = parseThemeSetting(work.metadata?.theme);
+  const themeVars = storyThemeVars(themeSetting);
+  const themePageCss = storyPageCss(themeSetting);
+  const Shell: React.ElementType = themeVars ? "div" : React.Fragment;
   return (
-    <>
+    <Shell {...(themeVars ? { className: "story-themed", "data-story-theme": "", style: themeVars as React.CSSProperties } : {})}>
+      {themePageCss ? <style dangerouslySetInnerHTML={{ __html: themePageCss }} /> : null}
       <SiteHeader active="bersiri" />
       <ReaderTypography />
       <ReadingProgress />
@@ -224,6 +232,6 @@ export default function EpisodeView({
       />}
 
       <SiteFooter />
-    </>
+    </Shell>
   );
 }

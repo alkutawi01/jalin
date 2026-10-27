@@ -18,6 +18,7 @@ assert(block.includes("font-size: clamp(38px, 3.5vw, 50px)"), "the title is a li
 assert(block.includes(".hero-featured-inner { min-height: 0; }"), "the fixed 520px minimum of the hero is lifted");
 assert(css.includes("@media (min-width: 1051px) {\n  .hero-carousel-slide .hero-featured-visual { max-height: none; aspect-ratio: auto; min-height: 440px; }"), "the original rule is untouched, so a taller window keeps its sizes");
 assert(css.indexOf("max-height: calc(100svh - 89px - 56px)") > css.indexOf("min-height: 440px; }"), "the compact rules come after the original one, so they win");
+assert(/@media \(min-width: 1051px\) \{\n  \.hero-carousel-slide \.hero-featured-visual \{[^\n]*\}\n(?:  \/\*[\s\S]*?\*\/\n)?  \.hero-carousel-slide \.hero-featured-dek \{[^}]*-webkit-line-clamp: 5/.test(css), "on a tall monitor too one long description does not make every slide (and the picture) taller");
 
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);

@@ -426,11 +426,11 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
           rememberSelection();
           return;
         }
-        if (kind === "ayat") {
-          // The browser's insertHTML would tear a box of several line blocks apart (and merge the rest into the paragraph after it), so this box is built in the page itself.
+        if (kind === "ayat" || kind === "mesej" || kind === "emel") {
+          // The browser's insertHTML tears a box of several paragraphs apart (only the first went in, and the next paragraph was merged into the one after it), so every box is built in the page itself.
           const box = document.createElement("div");
-          box.className = "visual-manuscript-communication visual-manuscript-communication-ayat";
-          box.dataset.communication = "ayat";
+          box.className = `visual-manuscript-communication visual-manuscript-communication-${kind}`;
+          box.dataset.communication = kind;
           box.innerHTML = selectedHtml;
           const keep = (block: Element, html: string) => {
             const part = document.createElement(tag(block));
@@ -444,21 +444,6 @@ export default function VisualManuscriptEditor({ value, onChange, existingAnchor
           rememberSelection();
           return;
         }
-        editor.focus();
-        const selection = window.getSelection();
-        const whole = document.createRange();
-        whole.setStartBefore(first);
-        whole.setEndAfter(last);
-        selection?.removeAllRanges();
-        selection?.addRange(whole);
-        document.execCommand(
-          "insertHTML",
-          false,
-          `${before ? `<${tag(first)}>${before}</${tag(first)}>` : ""}<div class="visual-manuscript-communication visual-manuscript-communication-${kind}" data-communication="${kind}">${selectedHtml}</div>${after ? `<${tag(last)}>${after}</${tag(last)}>` : ""}`
-        );
-        sync();
-        rememberSelection();
-        return;
       }
     }
     const anchor = saved && editor.contains(saved.startContainer)

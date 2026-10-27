@@ -1,4 +1,6 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { contrastRatio, derivePalettes, storyPageCss, hexToRgb, rgbToHsl, normaliseHex, parseThemeSetting, storyThemeVars } from "../src/lib/reader/story-theme";
 
 assert.equal(normaliseHex("#ABC"), "#aabbcc", "short hex expands");
@@ -44,4 +46,9 @@ assert.ok(css.includes('html[data-theme="gelap"]') && css.includes('html[data-th
 const bare = css.replace(/\[data-theme="[a-z]+"\]/g, "");
 assert.ok(!/[<>"'`\\]/.test(bare), "the page css holds nothing but selectors and hex colours (the only quotes are in the data-theme selectors)");
 assert.equal(storyPageCss(null), null);
+// A work's colour reaches every page that shows a work: the work page and a series episode (the episode page used to ignore it).
+for (const file of ["src/components/reader/WorkView.tsx", "src/components/reader/EpisodeView.tsx"]) {
+  const src = readFileSync(join(__dirname, "..", file), "utf8");
+  assert.ok(src.includes("parseThemeSetting(work.metadata?.theme)") && src.includes("storyPageCss(themeSetting)") && src.includes("story-themed"), `${file} applies the work colour`);
+}
 console.log(`story-theme: ok (${checked} palettes checked)`);
