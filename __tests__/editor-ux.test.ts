@@ -34,6 +34,7 @@ assert(page.includes("Paparan visual sahaja") && page.includes("admin-manuscript
 const visualEditor = fs.readFileSync(path.join(__dirname, "../src/components/admin/VisualManuscriptEditor.tsx"), "utf8");
 assert(visualEditor.includes("partOf") && visualEditor.includes("!saved.collapsed"), "selected text becomes the message/e-mail box (only the paragraphs that hold selected words)");
 assert(visualEditor.includes("beforeRange") && visualEditor.includes("afterRange"), "only the selected words go into the box; the rest of the first and last paragraph stays outside it");
+assert(!/insertHTML",\s*false,\s*`\$\{before/.test(visualEditor) && visualEditor.includes('kind === "ayat" || kind === "mesej" || kind === "emel"'), "a selection of several paragraphs is boxed in the page itself: the browser's insertHTML put only the first paragraph in the box and merged the next one into the paragraph after it");
 
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed) process.exit(1);
