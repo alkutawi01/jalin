@@ -5,6 +5,7 @@
  */
 import { readerAccountsEnabled } from "../reader-auth/enabled";
 import { billplzConfigFromEnv } from "./billplz";
+import { chipConfigFromEnv } from "./chip";
 
 export type PlanPrices = { 1: number; 6: number; 12: number };
 
@@ -24,13 +25,23 @@ export function parsePlanPrices(text: string | undefined): PlanPrices | null {
 
 export const formatRinggit = (sen: number): string => `RM${(sen / 100).toFixed(sen % 100 === 0 ? 0 : 2)}`;
 
-export type PurchaseStatus = { enabled: true; prices: PlanPrices } | { enabled: false; reason: string };
+export type PaymentProvider = "chip" | "billplz";
+
+/** PAYMENT_PROVIDER=billplz keeps Billplz; anything else (or nothing) is CHIP, the gateway Jalin is moving to. */
+export function paymentProviderFromEnv(env: Record<string, string | undefined> = process.env): PaymentProvider {
+  return env.PAYMENT_PROVIDER?.trim() === "billplz" ? "billplz" : "chip";
+}
+
+export const PROVIDER_NAME: Record<PaymentProvider, string> = { chip: "CHIP", billplz: "Billplz" };
+
+export type PurchaseStatus = { enabled: true; prices: PlanPrices; provider: PaymentProvider; providerName: string } | { enabled: false; reason: string };
 
 export function purchaseStatus(env: Record<string, string | undefined> = process.env): PurchaseStatus {
   if (!readerAccountsEnabled(env)) return { enabled: false, reason: "reader accounts are off" };
   if (env.PURCHASES_ENABLED !== "yes") return { enabled: false, reason: "PURCHASES_ENABLED is not yes" };
-  if (!billplzConfigFromEnv(env)) return { enabled: false, reason: "the gateway keys are missing" };
+  const provider = paymentProviderFromEnv(env);
+  if (!(provider === "chip" ? chipConfigFromEnv(env) : billplzConfigFromEnv(env))) return { enabled: false, reason: "the gateway keys are missing" };
   const prices = parsePlanPrices(env.PLAN_PRICES_MYR);
   if (!prices) return { enabled: false, reason: "PLAN_PRICES_MYR is missing or incomplete" };
-  return { enabled: true, prices };
+  return { enabled: true, prices, provider, providerName: PROVIDER_NAME[provider] };
 }

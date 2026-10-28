@@ -5,7 +5,7 @@ import { useState } from "react";
 type Plan = { months: 1 | 6 | 12; label: string; price: string };
 
 /** Choose a length, give the address the code is to be sent to, and go to the gateway's payment page. The price is only shown here; the server decides it. */
-export default function BuyForm({ plans }: { plans: Plan[] }) {
+export default function BuyForm({ plans, providerName }: { plans: Plan[]; providerName: string }) {
   const [months, setMonths] = useState<number>(plans[plans.length - 1]?.months ?? 12);
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
@@ -51,7 +51,7 @@ export default function BuyForm({ plans }: { plans: Plan[] }) {
         {error ? <p id="buy-error" className="auth-error" role="alert">{error}</p> : null}
         <button className="auth-button" type="submit" disabled={busy}>{busy ? "Sedang membuka halaman pembayaran…" : "Teruskan ke pembayaran"}</button>
       </form>
-      <p className="auth-fine">Pembayaran dibuat melalui Billplz menggunakan FPX atau kad. Kod dihantar selepas pembayaran disahkan. Ada soalan? Lihat <a href="/soalanlazim">Soalan Lazim</a>.</p>
+      <p className="auth-fine">Pembayaran dibuat melalui {providerName} menggunakan FPX atau kad. Kod dihantar selepas pembayaran disahkan. Ada soalan? Lihat <a href="/soalanlazim">Soalan Lazim</a>.</p>
     </div>
   );
 }

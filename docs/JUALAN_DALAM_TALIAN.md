@@ -46,3 +46,23 @@ Urutan yang disyorkan:
 - E-mel penggantian: jika pembeli kehilangan e-mel selepas dihantar, kod tersulit sudah dipadam. Penyelesaian: Izzat membatalkan kod itu dan mengeluarkan kod baharu (belum ada butang untuk kod maya).
 - Pautan ke `/beli` belum diletakkan di mana-mana (halaman ada, tetapi tiada menu menuju ke sana).
 - Penyedia lain (CHIP Collect) boleh ditambah kemudian dengan modul serupa `billplz.ts`.
+
+## CHIP (gerbang lalai sejak 28 Oktober 2026)
+
+Billplz tidak dapat mengesahkan pendaftaran Izzat, jadi **CHIP Collect ialah gerbang lalai**. Billplz masih ada dalam kod (`PAYMENT_PROVIDER=billplz`). Dibina daripada dokumen API CHIP (docs.chip-in.asia); **belum dicuba dengan CHIP sebenar** (diuji dengan pelayan palsu setempat dan 67 ujian unit).
+
+| Pemboleh ubah | Maksud |
+|---|---|
+| `PAYMENT_PROVIDER` | `chip` (lalai jika tiada) atau `billplz` |
+| `CHIP_SECRET_KEY` | kunci rahsia CHIP (kunci **ujian** menghasilkan pembelian ujian; kunci **sebenar**, wang sebenar) |
+| `CHIP_BRAND_ID` | ID Brand (UUID) dalam portal CHIP, Developers > Brands |
+| `ALLOW_TEST_PAYMENTS=yes` | hanya semasa menguji: membenarkan pembayaran ujian mengeluarkan kod. **Tanpanya**, pembayaran dengan kunci ujian tidak membuat kod (ditanda "Pembayaran ujian" pada pesanan). Buang selepas ujian. |
+| `PURCHASES_ENABLED`, `PLAN_PRICES_MYR`, `NEXT_PUBLIC_APP_URL`, `CRON_SECRET`, `MAIL_*` | seperti di atas |
+
+Aliran CHIP: `POST /api/langganan/beli` mencipta pesanan dan `POST https://gate.chip-in.asia/api/v1/purchases/` (jumlah dalam sen, `success_callback` = `/api/langganan/panggilan-balik-chip`, `success_redirect` dan `failure_redirect` = `/beli/selesai?ref=...`). Apabila dibayar, CHIP menghantar JSON `Purchase` kepada panggilan balik (ia mengulang sehingga 8 kali; boleh berulang selepas 200).
+
+**Cara bayaran dipercayai:** badan panggilan balik **tidak dipercayai**. Ia hanya menamakan nombor pembelian; keadaan sebenar (`status` dan jumlah bayar) dibaca semula daripada CHIP melalui `GET /purchases/{id}/` dengan kunci rahsia kita. Panggilan balik palsu hanya boleh membuat kita bertanya kepada CHIP. Hanya pembelian yang kita cipta sendiri (ada dalam `purchase_orders`) ditanya. Jika CHIP tidak dapat dihubungi, jawapan ialah 503 supaya CHIP mencuba lagi. Tandatangan `X-Signature` CHIP tidak digunakan untuk keselamatan (butiran formatnya tidak dapat dicuba tanpa akaun).
+
+Untuk pembangunan: `CHIP_BASE_URL=http://localhost:PORT/api/v1` mengarahkan panggilan ke pelayan palsu setempat, dan hanya diterima apabila `NODE_ENV` bukan `production`.
+
+**Ujian dengan CHIP sebenar (selamat, tanpa menyentuh produksi):** guna kunci ujian, pangkalan data cabang `pembangunan`, dan terowong awam (contohnya `cloudflared tunnel --url http://localhost:3100`) supaya CHIP dapat memanggil `success_callback`; tetapkan `NEXT_PUBLIC_APP_URL` kepada alamat terowong, `ALLOW_TEST_PAYMENTS=yes`, dan guna kad ujian CHIP (`4444 3333 2222 1111`, CVC `123`, tamat tempoh akan datang). Semak: pesanan menjadi Dibayar di `/admin/langganan/pesanan`, e-mel (konsol) mengandungi nombor siri dan kod, dan kod boleh ditebus di `/tebus`. Apa-apa ketidakpadanan (contohnya medan `payment.amount` atau `reference` dalam jawapan CHIP berbeza daripada dokumen) dibetulkan dalam `src/lib/subscription/chip.ts` (`parseChipPurchase`).

@@ -141,6 +141,22 @@ async function main() {
       const sweep = await retryPendingDeliveries(trx, { codeKey, mailer: n5.mailer, siteUrl: SITE, now: at(3100) }, 10);
       assert(sweep.sent >= 1 && n5.sent.some((s) => s.to === "retry@e2e.invalid"), "a sweep sends every e-mail still waiting");
 
+      console.log("\nA second gateway (CHIP), and a test payment");
+      const oc = await createOrder(trx, { months: 12, email: "chip@e2e.invalid", amountSen: 14900, provider: "chip" });
+      await attachBill(trx, oc.id, "00000000-0000-0000-0000-0000000000c1");
+      const wrongGateway = await fulfilPaidOrder(trx, { codeKey, now: at(4000) }, { billId: "00000000-0000-0000-0000-0000000000c1", paidAmountSen: 14900 });
+      assert(wrongGateway.status === "unknown", "a CHIP purchase is not found by a callback that says Billplz");
+      const chipPaid = await fulfilPaidOrder(trx, { codeKey, now: at(4001) }, { provider: "chip", billId: "00000000-0000-0000-0000-0000000000c1", paidAmountSen: 14900, isTest: false });
+      const chipAgain = await fulfilPaidOrder(trx, { codeKey, now: at(4002) }, { provider: "chip", billId: "00000000-0000-0000-0000-0000000000c1", paidAmountSen: 14900, isTest: false });
+      assert(chipPaid.status === "issued" && chipAgain.status === "already", "a paid CHIP order makes one code, and a repeated callback makes nothing more");
+      const ot = await createOrder(trx, { months: 1, email: "ujian@e2e.invalid", amountSen: 1500, provider: "chip" });
+      await attachBill(trx, ot.id, "00000000-0000-0000-0000-0000000000c2");
+      const testPay = await fulfilPaidOrder(trx, { codeKey, now: at(4100) }, { provider: "chip", billId: "00000000-0000-0000-0000-0000000000c2", paidAmountSen: 1500, isTest: true });
+      const rt = await trx.selectFrom("purchase_orders").selectAll().where("id", "=", ot.id).executeTakeFirstOrThrow();
+      assert(testPay.status === "test_payment" && rt.status === "PENDING" && rt.code_id === null && /ujian/.test(rt.note ?? ""), "a payment made with a test key makes no code, and leaves a note");
+      const testOn = await fulfilPaidOrder(trx, { codeKey, now: at(4101), allowTestPayments: true }, { provider: "chip", billId: "00000000-0000-0000-0000-0000000000c2", paidAmountSen: 1500, isTest: true });
+      assert(testOn.status === "issued", "when testing is switched on on purpose, a test payment makes a code");
+
       console.log("\nGuards");
       let badMonths = false; try { await createOrder(trx, { months: 3 as 1, email: "x@e2e.invalid", amountSen: 1000 }); } catch { badMonths = true; }
       let badAmount = false; try { await createOrder(trx, { months: 1, email: "x@e2e.invalid", amountSen: 50 }); } catch { badAmount = true; }

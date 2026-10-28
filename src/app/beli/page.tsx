@@ -21,7 +21,7 @@ export default function BuyPage() {
       <SiteHeader />
       <main id="kandungan" tabIndex={-1}>
         <div className="site-shell auth-page">
-          <BuyForm plans={plans} />
+          <BuyForm plans={plans} providerName={status.providerName} />
         </div>
       </main>
       <SiteFooter />
