@@ -26,7 +26,7 @@ type Group = { id: string; label: string; items: Item[] };
 const MAIL = "editorial@adjung.com";
 
 /** Shown only while buying online is switched on, so nobody is told about a page that is not there. */
-const PURCHASE_ITEMS: Item[] = [
+const purchaseItems = (providerName: string): Item[] => [
   {
     q: "Bagaimanakah saya membeli kod langganan dalam talian?",
     a: (
@@ -34,7 +34,7 @@ const PURCHASE_ITEMS: Item[] = [
         <ol>
           <li>Buka halaman <a href="/beli">Beli kod langganan</a>.</li>
           <li>Pilih tempoh langganan 1, 6 atau 12 bulan, kemudian masukkan alamat e-mel untuk menerima kod.</li>
-          <li>Buat pembayaran melalui Billplz menggunakan FPX atau kad.</li>
+          <li>Buat pembayaran melalui {providerName} menggunakan FPX atau kad.</li>
         </ol>
         <p>
           Sebaik sahaja pembayaran disahkan, nombor siri dan kod langganan akan dihantar ke e-mel anda. Selepas menerimanya, buka halaman{" "}
@@ -219,8 +219,8 @@ const GROUPS: Group[] = [
 
 export default function FaqPage() {
   if (!readerAccountsEnabled()) notFound();
-  const buying = purchaseStatus().enabled;
-  const groups = GROUPS.map((group, i) => (i === 0 && buying ? { ...group, items: [...PURCHASE_ITEMS, ...group.items] } : group));
+  const purchase = purchaseStatus();
+  const groups = GROUPS.map((group, i) => (i === 0 && purchase.enabled ? { ...group, items: [...purchaseItems(purchase.providerName), ...group.items] } : group));
   return (
     <>
       <SiteHeader />

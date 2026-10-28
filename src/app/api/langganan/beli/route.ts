@@ -6,6 +6,7 @@ import { normaliseEmail } from "../../../../lib/reader-auth/primitives";
 import { countEvents, recordEvent } from "../../../../lib/reader-auth/service";
 import { SITE_URL } from "../../../../lib/seo";
 import { billplzConfigFromEnv, createBillplzBill } from "../../../../lib/subscription/billplz";
+import { chipConfigFromEnv, createChipPurchase } from "../../../../lib/subscription/chip";
 import { purchaseStatus } from "../../../../lib/subscription/prices";
 
 export const dynamic = "force-dynamic";
@@ -40,16 +41,20 @@ export async function POST(request: Request) {
   }
   await recordEvent(db, "request", "ip", visitor, now);
 
-  const order = await createOrder(db, { months, email, amountSen: status.prices[months] });
+  const order = await createOrder(db, { months, email, amountSen: status.prices[months], provider: status.provider });
   try {
-    const bill = await createBillplzBill(
-      billplzConfigFromEnv()!,
-      {
-        name: "Pembaca Jalin", email, amountSen: status.prices[months], reference: order.reference,
-        description: `Langganan Jalin ${months} bulan (${order.reference})`,
-        callbackUrl: `${SITE_URL}/api/langganan/panggilan-balik`, redirectUrl: `${SITE_URL}/beli/selesai?ref=${order.reference}`,
-      }
-    );
+    const description = `Langganan Jalin ${months} bulan (${order.reference})`;
+    const redirectUrl = `${SITE_URL}/beli/selesai?ref=${order.reference}`;
+    const bill =
+      status.provider === "chip"
+        ? await createChipPurchase(chipConfigFromEnv()!, {
+            email, name: description, amountSen: status.prices[months], reference: order.reference,
+            successCallback: `${SITE_URL}/api/langganan/panggilan-balik-chip`, successRedirect: redirectUrl, failureRedirect: redirectUrl,
+          })
+        : await createBillplzBill(billplzConfigFromEnv()!, {
+            name: "Pembaca Jalin", email, amountSen: status.prices[months], reference: order.reference, description,
+            callbackUrl: `${SITE_URL}/api/langganan/panggilan-balik`, redirectUrl,
+          });
     await attachBill(db, order.id, bill.id);
     return noStore(NextResponse.json({ ok: true, url: bill.url, reference: order.reference }));
   } catch (error) {

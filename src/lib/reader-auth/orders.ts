@@ -14,6 +14,7 @@ import { sql } from "kysely";
 import type { Kysely } from "kysely";
 import type { Database } from "../db/types";
 import { decryptOrderCode, encryptOrderCode } from "../subscription/order-crypto";
+import type { PaymentProvider } from "../subscription/prices";
 import { purchaseMessage } from "../subscription/order-email";
 import { formatCode, generateCodeBody, redeemByLabel } from "../subscription/redeem-code";
 import type { MacKey, Mailer } from "./primitives";
@@ -29,14 +30,14 @@ export function newOrderReference(): string {
   return `JP-${generateCodeBody(10)}`;
 }
 
-export async function createOrder(db: Db, input: { months: 1 | 6 | 12; email: string; amountSen: number }): Promise<{ id: string; reference: string }> {
+export async function createOrder(db: Db, input: { months: 1 | 6 | 12; email: string; amountSen: number; provider?: PaymentProvider }): Promise<{ id: string; reference: string }> {
   if (![1, 6, 12].includes(input.months)) throw new Error("A code is for 1, 6 or 12 months.");
   if (!Number.isInteger(input.amountSen) || input.amountSen < 100) throw new Error("The amount must be at least RM1.00 (in sen).");
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
       return await db
         .insertInto("purchase_orders")
-        .values({ reference: newOrderReference(), months: input.months, amount_sen: input.amountSen, email: input.email })
+        .values({ reference: newOrderReference(), months: input.months, amount_sen: input.amountSen, email: input.email, provider: input.provider ?? "billplz" })
         .returning(["id", "reference"])
         .executeTakeFirstOrThrow();
     } catch (error) {
@@ -65,18 +66,24 @@ export type FulfilResult =
   | { status: "already"; orderId: string }
   | { status: "unknown" }
   | { status: "amount_mismatch"; orderId: string }
-  | { status: "cancelled_paid"; orderId: string };
+  | { status: "cancelled_paid"; orderId: string }
+  | { status: "test_payment"; orderId: string };
 
 /** The gateway says this bill is paid (signature already checked). Makes the code once, and keeps it encrypted for the e-mail. */
-export async function fulfilPaidOrder(db: Db, deps: { codeKey: MacKey; now?: Date }, input: { billId: string; paidAmountSen: number | null }): Promise<FulfilResult> {
+export async function fulfilPaidOrder(db: Db, deps: { codeKey: MacKey; now?: Date; allowTestPayments?: boolean }, input: { billId: string; paidAmountSen: number | null; provider?: PaymentProvider; isTest?: boolean }): Promise<FulfilResult> {
   const now = deps.now ?? new Date();
   return inTransaction(db, async (trx): Promise<FulfilResult> => {
-    const order = await trx.selectFrom("purchase_orders").selectAll().where("provider", "=", "billplz").where("provider_bill_id", "=", input.billId).forUpdate().executeTakeFirst();
+    const order = await trx.selectFrom("purchase_orders").selectAll().where("provider", "=", input.provider ?? "billplz").where("provider_bill_id", "=", input.billId).forUpdate().executeTakeFirst();
     if (!order) return { status: "unknown" };
     if (order.status === "PAID") return { status: "already", orderId: order.id };
     if (order.status === "CANCELLED") {
       await trx.updateTable("purchase_orders").set({ note: "Dibayar selepas pesanan dibatalkan: semak dengan tangan." }).where("id", "=", order.id).execute();
       return { status: "cancelled_paid", orderId: order.id };
+    }
+    // A payment made with a test key moves no money. It must not make a code that works for real, unless testing is on purpose.
+    if (input.isTest && !deps.allowTestPayments) {
+      await trx.updateTable("purchase_orders").set({ note: "Pembayaran ujian (kunci ujian gerbang): tiada kod dibuat." }).where("id", "=", order.id).execute();
+      return { status: "test_payment", orderId: order.id };
     }
     if (input.paidAmountSen === null || input.paidAmountSen < order.amount_sen) {
       await trx.updateTable("purchase_orders").set({ note: `Jumlah dibayar (${input.paidAmountSen ?? "tiada"} sen) kurang daripada ${order.amount_sen} sen: tiada kod dibuat. Semak dengan tangan.` }).where("id", "=", order.id).execute();

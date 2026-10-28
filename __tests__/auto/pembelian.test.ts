@@ -6,7 +6,8 @@ import { createHmac } from "node:crypto";
 import { billplzConfigFromEnv, billplzSignature, createBillplzBill, parseBillplzCallback, verifyBillplzSignature } from "../../src/lib/subscription/billplz";
 import { decryptOrderCode, encryptOrderCode } from "../../src/lib/subscription/order-crypto";
 import { purchaseMessage } from "../../src/lib/subscription/order-email";
-import { formatRinggit, parsePlanPrices, purchaseStatus } from "../../src/lib/subscription/prices";
+import { chipConfigFromEnv, chipPurchaseIdFromCallback, createChipPurchase, fetchChipPurchase, parseChipPurchase } from "../../src/lib/subscription/chip";
+import { formatRinggit, paymentProviderFromEnv, parsePlanPrices, purchaseStatus } from "../../src/lib/subscription/prices";
 
 let passed = 0;
 let failed = 0;
@@ -82,14 +83,54 @@ const throws = (fn: () => unknown) => { try { fn(); return false; } catch { retu
   assert(JSON.stringify(parsePlanPrices("1=15,6=79,12=149")) === JSON.stringify({ 1: 1500, 6: 7900, 12: 14900 }) && parsePlanPrices("1=15.5, 6=79.90, 12=149")?.[6] === 7990 && parsePlanPrices("1=15.5,6=79,12=149")?.[1] === 1550, "prices in ringgit become sen");
   assert(parsePlanPrices(undefined) === null && parsePlanPrices("") === null && parsePlanPrices("1=15,6=79") === null && parsePlanPrices("1=15,6=79,12=abc") === null && parsePlanPrices("3=10,6=79,12=149") === null && parsePlanPrices("1=0,6=79,12=149") === null, "missing, partial, odd or free prices mean nothing can be bought");
   assert(formatRinggit(14900) === "RM149" && formatRinggit(7990) === "RM79.90", "prices are shown as RM149 or RM79.90");
-  const full = { READER_ACCOUNTS_ENABLED: "yes", PURCHASES_ENABLED: "yes", BILLPLZ_API_KEY: "k", BILLPLZ_COLLECTION_ID: "c", BILLPLZ_X_SIGNATURE_KEY: "s", PLAN_PRICES_MYR: "1=15,6=79,12=149" };
+  const BRAND = "409eb80e-3782-4b1d-afa8-b779759266a5";
+  const full = { READER_ACCOUNTS_ENABLED: "yes", PURCHASES_ENABLED: "yes", CHIP_SECRET_KEY: "k", CHIP_BRAND_ID: BRAND, PLAN_PRICES_MYR: "1=15,6=79,12=149" };
   assert(purchaseStatus(full).enabled, "with everything set, buying is on");
-  for (const drop of ["READER_ACCOUNTS_ENABLED", "PURCHASES_ENABLED", "BILLPLZ_API_KEY", "PLAN_PRICES_MYR"]) {
+  for (const drop of ["READER_ACCOUNTS_ENABLED", "PURCHASES_ENABLED", "CHIP_SECRET_KEY", "CHIP_BRAND_ID", "PLAN_PRICES_MYR"]) {
     const env: Record<string, string | undefined> = { ...full };
     delete env[drop];
     assert(!purchaseStatus(env).enabled, `without ${drop}, buying is off`);
   }
   assert(!purchaseStatus({ ...full, PURCHASES_ENABLED: "true" }).enabled, "only the word yes switches it on");
+  const chipOn = purchaseStatus(full);
+  assert(chipOn.enabled && chipOn.provider === "chip" && chipOn.providerName === "CHIP" && paymentProviderFromEnv({}) === "chip", "CHIP is the gateway unless Billplz is asked for");
+  const billplzEnv = { READER_ACCOUNTS_ENABLED: "yes", PURCHASES_ENABLED: "yes", PAYMENT_PROVIDER: "billplz", BILLPLZ_API_KEY: "k", BILLPLZ_COLLECTION_ID: "c", BILLPLZ_X_SIGNATURE_KEY: "s", PLAN_PRICES_MYR: "1=15,6=79,12=149" };
+  const billplzOn = purchaseStatus(billplzEnv);
+  assert(billplzOn.enabled && billplzOn.provider === "billplz" && billplzOn.providerName === "Billplz", "PAYMENT_PROVIDER=billplz keeps Billplz");
+  assert(!purchaseStatus({ ...billplzEnv, PAYMENT_PROVIDER: undefined }).enabled, "Billplz keys alone do not open buying while CHIP is the gateway");
+  assert(!purchaseStatus({ ...full, CHIP_BRAND_ID: "not-a-uuid" }).enabled, "a brand id that is not a UUID means no gateway");
+
+  // CHIP: making a purchase, and asking what became of it.
+  const chip = chipConfigFromEnv({ CHIP_SECRET_KEY: "chip_secret", CHIP_BRAND_ID: BRAND })!;
+  assert(chip.baseUrl === "https://gate.chip-in.asia/api/v1" && chipConfigFromEnv({ CHIP_SECRET_KEY: "k" }) === null, "CHIP needs a key and a brand id");
+  let cSeen: { url: string; init: RequestInit } | null = null;
+  const PID = "00000000-0000-0000-0000-000000000001";
+  const chipOk: typeof fetch = async (url, init) => { cSeen = { url: String(url), init: init ?? {} }; return new Response(JSON.stringify({ id: PID, checkout_url: "https://gate.chip-in.asia/p/" + PID + "/" }), { status: 201 }); };
+  const cInput = { email: "a@b.my", name: "Langganan Jalin 6 bulan (JP-X)", amountSen: 7900, reference: "JP-X", successCallback: "https://jalin.adjung.com/api/langganan/panggilan-balik-chip", successRedirect: "https://jalin.adjung.com/beli/selesai?ref=JP-X", failureRedirect: "https://jalin.adjung.com/beli/selesai?ref=JP-X" };
+  const cp = await createChipPurchase(chip, cInput, chipOk);
+  const cBody = JSON.parse(String(cSeen!.init.body));
+  assert(cp.id === PID && cp.url.startsWith("https://gate.chip-in.asia/p/") && cSeen!.url === "https://gate.chip-in.asia/api/v1/purchases/" && cSeen!.init.method === "POST", "a purchase is made with POST to /purchases/ and the buyer is sent to the checkout address");
+  assert((cSeen!.init.headers as Record<string, string>).Authorization === "Bearer chip_secret" && !JSON.stringify(cBody).includes("chip_secret"), "the secret key goes in the header, never in the body");
+  assert(cBody.brand_id === BRAND && cBody.client.email === "a@b.my" && cBody.purchase.currency === "MYR" && cBody.purchase.products[0].price === 7900 && cBody.reference === "JP-X" && cBody.success_callback === cInput.successCallback && cBody.success_redirect === cInput.successRedirect, "the brand, buyer, amount in sen, order number, callback and redirect go");
+  let cRefused = ""; try { await createChipPurchase(chip, cInput, async () => new Response("no", { status: 401 })); } catch (e) { cRefused = String(e); }
+  assert(cRefused.includes("401") && !cRefused.includes("chip_secret"), "a refusal is reported without the key");
+  let cOdd = false; try { await createChipPurchase(chip, cInput, async () => new Response(JSON.stringify({ id: "x", checkout_url: "http://evil" }), { status: 201 })); } catch { cOdd = true; }
+  assert(cOdd, "an answer without a proper id and https checkout address is refused");
+  let cTiny = false; try { await createChipPurchase(chip, { ...cInput, amountSen: 50 }, chipOk); } catch { cTiny = true; }
+  assert(cTiny, "an amount under RM1 is refused before anything is sent");
+  const paidJson = { id: PID, status: "paid", is_test: false, reference: "JP-X", purchase: { total: 7900 }, payment: { amount: 7900 } };
+  const parsed = parseChipPurchase(paidJson);
+  assert(!!parsed && parsed.status === "paid" && parsed.totalSen === 7900 && parsed.paidSen === 7900 && !parsed.isTest && parsed.reference === "JP-X", "what CHIP says is read: status, amounts in sen, test or not, reference");
+  assert(parseChipPurchase({ ...paidJson, is_test: true })?.isTest === true && parseChipPurchase({ ...paidJson, payment: null })?.paidSen === null && parseChipPurchase({ ...paidJson, payment: { amount: 79.5 } })?.paidSen === null, "a test purchase is known, an unpaid one has no paid amount, and an amount that is not whole sen is not trusted");
+  assert(parseChipPurchase(null) === null && parseChipPurchase({ id: "short", status: "paid" }) === null && parseChipPurchase({ id: PID }) === null, "an answer without a proper id or status is refused");
+  const asked: string[] = [];
+  const got = await fetchChipPurchase(chip, PID, async (url, init) => { asked.push(String(url) + "|" + (init?.headers as Record<string, string>).Authorization); return new Response(JSON.stringify(paidJson), { status: 200 }); });
+  assert(got.status === "paid" && asked[0] === "https://gate.chip-in.asia/api/v1/purchases/" + PID + "/|Bearer chip_secret", "a payment is confirmed by asking CHIP itself, with our secret key");
+  let wrongOne = false; try { await fetchChipPurchase(chip, "00000000-0000-0000-0000-000000000009", async () => new Response(JSON.stringify(paidJson), { status: 200 })); } catch { wrongOne = true; }
+  let notThere = false; try { await fetchChipPurchase(chip, PID, async () => new Response("", { status: 404 })); } catch { notThere = true; }
+  let badId = false; try { await fetchChipPurchase(chip, "../etc", async () => new Response("{}", { status: 200 })); } catch { badId = true; }
+  assert(wrongOne && notThere && badId, "an answer about another purchase, an error from CHIP, or something that is not a purchase number is refused");
+  assert(chipPurchaseIdFromCallback({ id: PID.toUpperCase(), status: "paid" }) === PID && chipPurchaseIdFromCallback({ id: "'; DROP" }) === null && chipPurchaseIdFromCallback(null) === null && chipPurchaseIdFromCallback({ status: "paid" }) === null, "a callback is only used for the purchase number it names");
 
   // The e-mail.
   const good = { serial: "JLN-12B1026-M01", code: "7H3K-9QM2-XD5N-PB84-X", months: 12 as const, redeemByLabel: "25 OKT 2027", orderReference: "JP-ABCDEFGHJK", redeemUrl: "https://jalin.adjung.com/tebus" };
