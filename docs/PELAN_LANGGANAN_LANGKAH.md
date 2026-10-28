@@ -19,6 +19,7 @@ Belum ada: bayaran dalam Jalin (pilih pakej, bayar, kod dihantar ke e-mel); dasa
 - **Gateway:** ChatGPT dan kajian Claude sama-sama mencadangkan Billplz Basic dahulu (`docs/KAJIAN_PENYEDIA_BAYARAN.md`). Satu akaun gateway cukup untuk SUS dan Jalin; guna rujukan berasingan. Belum dipilih secara rasmi.
 - **Saluran pengeluaran kod mesti direkod:** kad fizikal, bayaran dalam talian, hadiah. Satu sistem tebus untuk semua; kod Jalin tidak sah di SUS dan sebaliknya.
 - **Kod digital:** salinan terenkripsi disimpan sehingga e-mel berjaya dihantar, kemudian dipadam (enjin sedia ada hanya menyimpan cincang, jadi ini perlu dibina).
+- **Struktur penjual (Izzat, 28 Okt 2026):** Adjung Press Platform (SSM pemilik tunggal) belum ada akaun bank perniagaan, dan Billplz memaklumkan akaun peribadi tidak boleh. Antakesuma Holdings Sdn Bhd (Izzat ialah pengarah urusan; kedua-dua entiti milik Izzat) akan menjadi **merchant dan penjual langganan sahaja**, manakala Adjung Press Platform kekal sebagai penerbit kandungan Jalin. Belum dilaksanakan; lihat langkah C0 di bawah.
 - **Bayaran balik:** belum diputuskan; Soalan Lazim kekal senyap tentangnya.
 - **SUS tidak mempunyai sistem kad langganan** (disahkan daripada sesi SUS, 25 Okt); "samakan dengan SUS" bermaksud samakan rupa dan nada kad, bukan sistem sedia ada. Tiada dasar SUS untuk disalin.
 
@@ -45,6 +46,7 @@ Belum ada: bayaran dalam Jalin (pilih pakej, bayar, kod dihantar ke e-mel); dasa
 
 ## Bahagian C. Bayaran dalam Jalin dan kod e-mel (DIDAHULUKAN, belum dibina)
 
+- [ ] **C0. Struktur penjual (Antakesuma menjual langganan).** Izzat: (a) pastikan Antakesuma ada akaun bank syarikat dan dokumen SSM syarikat; (b) tanya akauntan tentang perjanjian antara dua syarikat, SST atau e-Invois, dan skop aktiviti (SSIC) pada SSM Antakesuma; (c) berikan nombor SSM dan alamat berdaftar Antakesuma (maklumat awam syarikat sahaja, bukan nombor MyKad). Claude (selepas itu): kemas kini `src/lib/legal-identity.ts`, `src/lib/company-notice.ts`, Terma penggunaan, Dasar privasi (menyebut kedua-dua entiti), Tentang kami, kad maya `/tebus`; draf melalui ChatGPT dan semakan peguam. **Kad fizikal yang Izzat reka juga membawa SSM Adjung Press Platform: putuskan nama penjual pada kad sebelum dicetak.** Pendaftaran penyedia bayaran dibuat atas nama Antakesuma; pengesahan selfie dan MyKad pengarah mungkin berulang, jadi teruskan tiket sokongan Billplz dan cuba CHIP.
 - [x] **C1. Kajian penyedia bayaran** siap (25 Okt 2026): lihat `docs/KAJIAN_PENYEDIA_BAYARAN.md`. Senarai pendek: Billplz dan CHIP Collect. Tiada kod ditulis dan tiada akaun dibuka.
 - [ ] **C1b. Izzat:** lihat senarai dokumen pendaftaran Billplz dan CHIP, tanya sama ada pemilik tunggal boleh terima ke akaun bank yang ada (atau mesti atas nama perniagaan), tanya SST ke atas yuran dan masa kelulusan, dan (CHIP) bayaran balik dan mod ujian. Kemudian pilih satu.
 - [ ] **C2. Buka akaun penyedia** yang dipilih dan sediakan kunci API (mod ujian dahulu).
