@@ -49,7 +49,7 @@ Urutan yang disyorkan:
 
 ## CHIP (gerbang lalai sejak 28 Oktober 2026)
 
-Billplz tidak dapat mengesahkan pendaftaran Izzat, jadi **CHIP Collect ialah gerbang lalai**. Billplz masih ada dalam kod (`PAYMENT_PROVIDER=billplz`). Dibina daripada dokumen API CHIP (docs.chip-in.asia); **belum dicuba dengan CHIP sebenar** (diuji dengan pelayan palsu setempat dan 67 ujian unit).
+Billplz tidak dapat mengesahkan pendaftaran Izzat, jadi **CHIP Collect ialah gerbang lalai**. Billplz masih ada dalam kod (`PAYMENT_PROVIDER=billplz`). Dibina daripada dokumen API CHIP (docs.chip-in.asia); **diuji dengan CHIP sebenar dalam mod ujian oleh Codex pada 28 Okt 2026: lulus** (bayaran berjaya dan gagal, callback berulang, tebus). CHIP menolak bahasa `ms`, jadi bil menggunakan `en`. Belum diuji dengan kunci sebenar dan wang sebenar.
 
 | Pemboleh ubah | Maksud |
 |---|---|
