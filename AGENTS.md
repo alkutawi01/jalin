@@ -60,3 +60,7 @@ Jalin bukan platform novel penuh. Novel dan Novel Pendek tidak berada dalam taxo
 6. docs/CONTENT_MODEL.md
 7. docs/ARCHITECTURE.md
 8. docs/ADMIN_UI_STANDARD.md (every change under /admin follows it; `__tests__/admin-ui-standard.test.ts` keeps its numbers from rising)
+
+## Sistem langganan (kod, label, jualan dalam talian)
+
+Kerja langganan Jalin diserahkan pada 28 Okt 2026. Baca **`docs/SERAH_TUGAS_LANGGANAN.md`** dahulu (keadaan, keputusan yang dikunci, tugasan seterusnya mengikut urutan, cara menguji dan menerbitkan, dan apa yang tidak boleh dibuat), kemudian `docs/PELAN_LANGGANAN_LANGKAH.md`. Peraturan ringkas: tiada migrasi atau jualan pada produksi tanpa kebenaran Izzat; kunci API tidak masuk repo atau sembang; maksud nombor siri kad ialah rahsia; semua teks pengguna baharu disemak ChatGPT sebelum terbit.
