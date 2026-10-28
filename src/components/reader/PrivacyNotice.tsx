@@ -1,5 +1,5 @@
 import { InfoPage } from "./InfoPage";
-import { CONTROLLER, controllerComplete } from "../../lib/legal-identity";
+import { CONTROLLER, SALES_PARTNER, controllerComplete } from "../../lib/legal-identity";
 
 const CONTACT = CONTROLLER.email;
 
@@ -32,6 +32,14 @@ export default function PrivacyNotice() {
           <li><strong>E-mel untuk data peribadi:</strong> <a href={`mailto:${CONTACT}`}>{CONTACT}</a></li>
         </ul>
       ) : null}
+      <p>
+        Jalin dimiliki dan diuruskan oleh {CONTROLLER.tradeName} (No. pendaftaran SSM: {CONTROLLER.ssmNumber}) dan {SALES_PARTNER.name} (No. pendaftaran SSM: {SALES_PARTNER.ssmNumber}).
+        Alamat berdaftar {SALES_PARTNER.name} ialah {SALES_PARTNER.address}.
+      </p>
+      <p>
+        {CONTROLLER.tradeName} kekal sebagai pengawal data yang dikenal pasti dalam Dasar Privasi ini. Langganan Jalin dijual oleh {SALES_PARTNER.name}, yang menerima dan menguruskan pembayaran langganan.
+        {SALES_PARTNER.name} turut memproses alamat e-mel yang anda berikan semasa membeli langganan.
+      </p>
 
       <h2>Tanpa akaun</h2>
       <ul>
@@ -156,6 +164,14 @@ export default function PrivacyNotice() {
             <li><strong>E-mail for personal data matters:</strong> <a href={`mailto:${CONTACT}`}>{CONTACT}</a></li>
           </ul>
         ) : null}
+        <p>
+          Jalin is owned and managed by {CONTROLLER.tradeName} (SSM registration no.: {CONTROLLER.ssmNumber}) and {SALES_PARTNER.name} (SSM registration no.: {SALES_PARTNER.ssmNumber}).
+          The registered address of {SALES_PARTNER.name} is {SALES_PARTNER.address}, Malaysia.
+        </p>
+        <p>
+          {CONTROLLER.tradeName} remains the data controller identified in this Privacy Notice. Jalin subscriptions are sold by {SALES_PARTNER.name}, which receives and manages subscription payments.
+          {SALES_PARTNER.name} also processes the email address you provide when purchasing a subscription.
+        </p>
 
         <h2>Without an account</h2>
         <ul>

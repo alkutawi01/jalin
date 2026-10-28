@@ -99,6 +99,7 @@ function TermsWithAccounts() {
 
       <h2>Kad dan pembelian</h2>
       <ul>
+        <li>Jalin dimiliki dan diuruskan oleh Adjung Press Platform (No. pendaftaran SSM: 202603277981 (PG0594995-P)) dan Antakesuma Holdings Sdn. Bhd. (No. pendaftaran SSM: 200501023605 (705737-H)). Langganan Jalin dijual oleh Antakesuma Holdings Sdn. Bhd., yang menerima dan menguruskan pembayaran langganan tersebut.</li>
         <li>Kad atau kod bukan wang tunai dan tidak ditukar dengan wang tunai, tanpa menjejaskan hak anda di bawah undang-undang pengguna yang terpakai.</li>
         <li>Jika kad hilang, rosak, atau kod tidak dapat ditebus, hubungi Adjung Press. Setiap kes disemak berdasarkan bukti pembelian dan status kod; kad fizikal yang hilang tidak semestinya boleh diganti.</li>
         <li>Kad yang dibeli melalui pihak ketiga (contohnya kedai dalam talian) tertakluk kepada syarat penjual itu, termasuk untuk pesanan dan penghantaran; hubungi penjual bagi isu tersebut.</li>

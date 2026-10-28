@@ -2,7 +2,7 @@ import { renderItalics } from "../../lib/reader/inline-italics";
 import { unescapeItalicMarks } from "../../lib/reader/literal-emphasis";
 import LilitDivider from "./LilitDivider";
 import { capitaliseFirst } from "../../lib/capitalise-first";
-import { copyrightNotice } from "../../lib/company-notice";
+import { copyrightNotice, ownershipNotice } from "../../lib/company-notice";
 import { smartQuotes } from "../../lib/admin/smart-quotes";
 import { spacedDashes } from "../../lib/reader/spaced-dash";
 import type { ReactNode } from "react";
@@ -322,7 +322,7 @@ export async function SiteFooter() {
       </div>
       <div className="site-shell footer-base">
         <ThemeSwitch />
-        <p>{copyrightNotice(year)}</p>
+        <p>{copyrightNotice(year)} {ownershipNotice()}</p>
         <a className="footer-admin" href="/admin/login" aria-label="Log masuk pengurus" title="Log masuk pengurus">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <rect x="5" y="11" width="14" height="9" rx="2" />
