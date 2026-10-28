@@ -13,7 +13,7 @@ export const DEFAULT_ABOUT_COPY = {
   "s1.heading": "Apa yang ada di sini",
   "s1.body": "Setiap cerita di Jalin dibaca di laman ini, tanpa akaun dan tanpa iklan. Ada [cerpen](/kategori/cerpen) untuk sekali duduk, [novela](/kategori/novela) yang dibahagi kepada bab, [siri](/kategori/bersiri) yang bersambung dari episod ke episod, [fragmen](/kategori/fragmen) daripada karya yang kita sayangi, dan [sinopsis](/kategori/sinopsis) yang menceritakan semula karya lain dengan suara editorial kami.",
   "s2.heading": "Siapa di sebalik cerita",
-  "s2.body": "Jalin diterbitkan oleh Adjung Press. Setiap cerita menyatakan dengan jelas siapa yang menulis, menyunting dan membantu. Sebahagian penulis kami ialah penulis maya, iaitu watak penulis yang dibantu kecerdasan buatan. Mereka sentiasa bekerja di bawah kawal selia editorial manusia. Kenali pasukan dan cara kami bekerja di halaman [Editorial](/editorial).",
+  "s2.body": "Jalin diterbitkan oleh Adjung Press Platform serta dimiliki dan diuruskan oleh Adjung Press Platform bersama-sama Antakesuma Holdings Sdn. Bhd. Setiap cerita menyatakan dengan jelas siapa yang menulis, menyunting dan membantu. Sebahagian penulis kami ialah penulis maya, iaitu watak penulis yang dibantu kecerdasan buatan. Mereka sentiasa bekerja di bawah kawal selia editorial manusia. Kenali pasukan dan cara kami bekerja di halaman [Editorial](/editorial).",
   "s3.heading": "Ilustrasi",
   "s3.body": "Cerita di Jalin ditemani gambar. Gambar-gambar itu disediakan dan dipilih oleh pasukan editorial untuk menemani teks, bukan menggantikannya. Hak cipta ilustrasi dinyatakan pada setiap gambar.",
   "s4.heading": "Sinopsis dan fragmen",

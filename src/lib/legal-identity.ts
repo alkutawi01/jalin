@@ -38,3 +38,13 @@ export function controllerMissing(identity: ControllerIdentity = CONTROLLER): st
   if (!identity.address) out.push("alamat");
   return out;
 }
+
+/**
+ * The company that sells the subscriptions and receives and manages their payments (it runs the purchases; Adjung Press Platform above is
+ * the publisher). Named in the privacy notice next to the controller. Same source as company-notice.ts.
+ */
+export const SALES_PARTNER = {
+  name: "Antakesuma Holdings Sdn. Bhd.",
+  ssmNumber: "200501023605 (705737-H)",
+  address: "PT 189B-190B, Aras 1, Jalan Kelochor, 15300 Kota Bharu, Kelantan",
+} as const;

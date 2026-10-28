@@ -81,3 +81,12 @@ Lakukan hanya selepas B, D selesai dan A1 diputuskan.
 - **Penebusan disalahgunakan atau pangkalan data dipulihkan:** hidupkan "Suis henti penebusan" dahulu. Prosedur pemulihan fail eksport malam ada dalam `scripts/restore-drill.ts` (latihan lulus).
 - **Kad hilang atau rosak sebelum ditebus:** batalkan atau ganti di halaman kelompok (`/admin/langganan/kad/[id]`).
 - **Cetakan salah:** batalkan kelompok, semua kodnya mati.
+
+## Nota 28 Okt 2026: Antakesuma pada laman Jalin
+
+Atas arahan Izzat (supaya CHIP nampak laman dimiliki dan diuruskan oleh dua syarikat), nama dan nombor SSM Antakesuma Holdings Sdn. Bhd. ditambah pada Jalin: kaki laman (setiap halaman), Terma penggunaan (Kad dan pembelian), Dasar privasi (BM dan EN) dan Tentang kami. Sumber data: `src/lib/company-notice.ts` dan `src/lib/legal-identity.ts` (alamat berdaftar Antakesuma sahaja, bukan alamat perniagaan; tiada butiran peribadi pengarah). Teks disemak ChatGPT pada 28 Okt 2026.
+
+Perkara yang ChatGPT tandakan dan **perlu disahkan peguam atau akauntan**:
+- Peranan Antakesuma terhadap data pembelian: ChatGPT menyatakan memproses alamat e-mel tidak semestinya menjadikannya pemproses data bagi pihak Adjung Press Platform; jika Antakesuma menentukan tujuan atau kaedah pemprosesan sendiri, ia mungkin pengawal data juga (PDPA 2010 selepas pindaan 2024). Mungkin perlu perjanjian pemprosesan data antara dua syarikat.
+- Entiti merchant yang didaftarkan dengan CHIP, pemegang akaun bank penerima, nama pada rekod transaksi dan penjual langganan mesti konsisten (Antakesuma).
+- Aktiviti perniagaan (SSIC) pada SSM Antakesuma belum meliputi penerbitan atau langganan digital.
