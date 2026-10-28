@@ -109,6 +109,7 @@ const throws = (fn: () => unknown) => { try { fn(); return false; } catch { retu
   const cInput = { email: "a@b.my", name: "Langganan Jalin 6 bulan (JP-X)", amountSen: 7900, reference: "JP-X", successCallback: "https://jalin.adjung.com/api/langganan/panggilan-balik-chip", successRedirect: "https://jalin.adjung.com/beli/selesai?ref=JP-X", failureRedirect: "https://jalin.adjung.com/beli/selesai?ref=JP-X" };
   const cp = await createChipPurchase(chip, cInput, chipOk);
   const cBody = JSON.parse(String(cSeen!.init.body));
+  assert(cBody.purchase.language === "en", "CHIP checkout uses supported English; the real API rejects ms with invalid_choice (400)");
   assert(cp.id === PID && cp.url.startsWith("https://gate.chip-in.asia/p/") && cSeen!.url === "https://gate.chip-in.asia/api/v1/purchases/" && cSeen!.init.method === "POST", "a purchase is made with POST to /purchases/ and the buyer is sent to the checkout address");
   assert((cSeen!.init.headers as Record<string, string>).Authorization === "Bearer chip_secret" && !JSON.stringify(cBody).includes("chip_secret"), "the secret key goes in the header, never in the body");
   assert(cBody.brand_id === BRAND && cBody.client.email === "a@b.my" && cBody.purchase.currency === "MYR" && cBody.purchase.products[0].price === 7900 && cBody.reference === "JP-X" && cBody.success_callback === cInput.successCallback && cBody.success_redirect === cInput.successRedirect, "the brand, buyer, amount in sen, order number, callback and redirect go");

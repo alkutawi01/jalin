@@ -35,7 +35,8 @@ export async function createChipPurchase(config: ChipConfig, input: CreateChipPu
     body: JSON.stringify({
       brand_id: config.brandId,
       client: { email: input.email },
-      purchase: { currency: "MYR", language: "ms", products: [{ name: input.name.slice(0, 256), price: input.amountSen, quantity: 1 }] },
+      // CHIP's API rejects "ms" (invalid_choice); English is its supported checkout language.
+      purchase: { currency: "MYR", language: "en", products: [{ name: input.name.slice(0, 256), price: input.amountSen, quantity: 1 }] },
       reference: input.reference.slice(0, 128),
       send_receipt: false,
       success_callback: input.successCallback,
