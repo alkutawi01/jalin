@@ -18,7 +18,7 @@ export default function BuyPage() {
   const plans = ([1, 6, 12] as const).map((months) => ({ months, label: `${months} bulan`, price: formatRinggit(status.prices[months]) }));
   return (
     <>
-      <SiteHeader />
+      <SiteHeader active="langgan" />
       <main id="kandungan" tabIndex={-1}>
         <div className="site-shell auth-page">
           <BuyForm plans={plans} providerName={status.providerName} />

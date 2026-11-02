@@ -25,6 +25,12 @@ export const VISITOR_LINKS: NavItem[] = [
   { label: "Tentang Kami", href: "/tentang", match: "tentang" }
 ];
 
+/** A server-supplied boolean is enough for both menu layouts; payment configuration stays on the server. */
+export function publicNavLinks(visitor: boolean, purchasesEnabled: boolean): NavItem[] {
+  const links = visitor ? VISITOR_LINKS : NAV_LINKS;
+  return purchasesEnabled ? [...links, { label: "Langgan", href: "/beli", match: "langgan" }] : links;
+}
+
 /**
  * "bar" is the header on a laptop: Kandungan is a button that opens a menu. "list" is the phone menu: the same five links sit
  * under a plain "Kandungan" label, so nothing is hidden behind a second tap.

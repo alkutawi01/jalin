@@ -34,7 +34,7 @@ const purchaseItems = (providerName: string): Item[] => [
         <ol>
           <li>Buka halaman <a href="/beli">Beli kod langganan</a>.</li>
           <li>Pilih tempoh langganan 1, 6 atau 12 bulan, kemudian masukkan alamat e-mel untuk menerima kod.</li>
-          <li>Buat pembayaran melalui {providerName} menggunakan FPX atau kad.</li>
+          <li>Buat pembayaran melalui {providerName} menggunakan kaedah yang tersedia pada halaman pembayaran.</li>
         </ol>
         <p>
           Sebaik sahaja pembayaran disahkan, nombor siri dan kod langganan akan dihantar ke e-mel anda. Selepas menerimanya, buka halaman{" "}
@@ -254,7 +254,7 @@ export default function FaqPage() {
             <p>Hantar e-mel kepada pasukan Jalin.</p>
             <a className="faq-contact-btn" href={`mailto:${MAIL}`}>{MAIL}</a>
           </aside>
-          <p className="faq-updated">Dikemas kini: 24 Oktober 2026</p>
+          <p className="faq-updated">Dikemas kini: 2 November 2026</p>
         </div>
       </main>
       <SiteFooter />

@@ -51,7 +51,7 @@ export default function BuyForm({ plans, providerName }: { plans: Plan[]; provid
         {error ? <p id="buy-error" className="auth-error" role="alert">{error}</p> : null}
         <button className="auth-button" type="submit" disabled={busy}>{busy ? "Sedang membuka halaman pembayaran…" : "Teruskan ke pembayaran"}</button>
       </form>
-      <p className="auth-fine">Pembayaran dibuat melalui {providerName} menggunakan FPX atau kad. Kod dihantar selepas pembayaran disahkan. Ada soalan? Lihat <a href="/soalanlazim">Soalan Lazim</a>.</p>
+      <p className="auth-fine">Pembayaran diproses melalui {providerName}. Pilih kaedah yang tersedia pada halaman pembayaran. Kod dihantar selepas pembayaran disahkan. Ada soalan? Lihat <a href="/soalanlazim">Soalan Lazim</a>.</p>
     </div>
   );
 }

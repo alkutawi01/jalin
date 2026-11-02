@@ -2,6 +2,11 @@
 
 Untuk Codex dan sesiapa yang menyambung kerja ini selepas sesi Claude tamat. Baca `AGENTS.md` dahulu, kemudian dokumen ini, kemudian `docs/PELAN_LANGGANAN_LANGKAH.md` (senarai semak penuh) dan `docs/JUALAN_DALAM_TALIAN.md` (aliran jualan dan pemboleh ubah). Pemilik projek ialah Izzat (Wan Muhammad Izzat); bahasa kerja Bahasa Melayu, panggil beliau "awak".
 
+**Kemas kini 2 November 2026:** keputusan harga, bayaran balik, susunan pautan dan had sambungan yang lebih baharu,
+audit produksi serta pembaikan setempat direkodkan dalam `docs/PELAN_PELANCARAN_LANGGANAN_2026-11-01.md`.
+Gunakan bahagian 3, 8 dan 9 dokumen itu untuk status terkini; keadaan 28 Oktober di bawah ialah rekod sejarah.
+Pembaikan setempat belum digabung atau ditempatkan, dan jualan/dinding bayar belum dibuka oleh kerja ini.
+
 ## 1. Keadaan semasa (apa yang siap)
 
 Semuanya berada di produksi (Hostinger) tetapi **tertutup** (tiada orang awam boleh membeli). Komit terkini pada `main`: `07616dd9`; pada cabang `hostinger`: `ff228c4f`.

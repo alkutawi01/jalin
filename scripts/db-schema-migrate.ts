@@ -1,30 +1,25 @@
-import "dotenv/config";
-import { config } from "dotenv";
-config({ path: ".env.local", override: true });
 import fs from "node:fs";
 import path from "node:path";
 import { Kysely, PostgresDialect } from "kysely";
 import { Migrator } from "kysely/migration";
 import { Pool } from "pg";
-import {
-  databaseSslEnabled,
-  requireMigrationDatabaseUrl,
-} from "../src/lib/db/env";
+import { loadMigrationEnvironment } from "./lib/migration-env";
+import { migrationConnection, migrationExpectedHost, migrationFailureMessage } from "../src/lib/db/migration-connection";
 import type { Database } from "../src/lib/db/types";
 
-let databaseUrl: string;
+let connection: ReturnType<typeof migrationConnection>;
 try {
-  databaseUrl = requireMigrationDatabaseUrl();
+  connection = migrationConnection(
+    loadMigrationEnvironment(path.join(__dirname, "..")),
+    migrationExpectedHost(process.argv.slice(2)),
+  );
 } catch (error) {
   console.error(error instanceof Error ? error.message : "Invalid migration environment.");
   process.exit(1);
 }
 
-const pool = new Pool({
-  connectionString: databaseUrl,
-  ssl: databaseSslEnabled() ? { rejectUnauthorized: false } : false,
-  max: 1,
-});
+console.log(`Database host: ${connection.host}`);
+const pool = new Pool(connection.poolOptions);
 
 const db = new Kysely<Database>({
   dialect: new PostgresDialect({ pool }),
@@ -33,7 +28,7 @@ const db = new Kysely<Database>({
 const MIGRATIONS_DIR = path.join(__dirname, "..", "src", "lib", "db", "migrations");
 const MIGRATION_NAME = /^\d{3}_[a-z0-9_]+$/;
 
-type MigrationFunc = (db: Kysely<any>) => Promise<void>;
+type MigrationFunc = (db: Kysely<unknown>) => Promise<void>;
 
 type LoadedMigration = {
   up?: MigrationFunc;
@@ -58,6 +53,7 @@ async function loadMigrationsFromFiles(): Promise<Record<string, MigrationEntry>
     if (!MIGRATION_NAME.test(name)) {
       throw new Error(`Migration file name must match NNN_snake_case: ${file}`);
     }
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const loaded = require(path.join(MIGRATIONS_DIR, file)) as LoadedMigration;
     if (typeof loaded.up !== "function") {
       throw new Error(`Migration ${file} must export up(db).`);
@@ -87,11 +83,7 @@ async function main() {
     const { results, error } = await migrator.migrateToLatest();
 
     if (error) {
-      const code =
-        typeof error === "object" && error !== null && "code" in error
-          ? String(error.code)
-          : undefined;
-      console.error(`Migration failed${code ? ` (code ${code})` : ""}.`);
+      console.error(migrationFailureMessage(error));
       process.exitCode = 1;
       return;
     }
@@ -108,4 +100,7 @@ async function main() {
   }
 }
 
-void main();
+void main().catch((error: unknown) => {
+  console.error(migrationFailureMessage(error));
+  process.exitCode = 1;
+});
