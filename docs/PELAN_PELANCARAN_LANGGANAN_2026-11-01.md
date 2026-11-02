@@ -77,9 +77,11 @@ tetapan produksi, wang sebenar, pemadaman data atau penghidupan dinding bayar.
    sahaja untuk sambungan, maksimum satu tahun selepas tamat kad yang sedang aktif. Terpakai untuk semua tempoh pakej;
    had tidak dikira semula daripada tamat kod tambahan yang masih beratur. Contoh tahunan SUS turut menjadi rujukan:
    kad aktif bagi 2027 boleh disambung sekali bagi 2028, bukan ditebus berulang kali untuk menambah tahun seterusnya dalam tempoh itu.
-   Kod Jalin yang diperiksa masih menyambung tanpa had tersebut; keputusan ini belum dilaksanakan atau diuji.
-   Sebelum pelaksanaan, perincikan masa kelayakan sambungan seterusnya dibuka serta pengendalian kod yang dibeli sebagai hadiah
-   atau sebelum had dicapai. Pembelian Jalin boleh dibuat tanpa akaun, jadi jangan menyalin semakan pembeli-pemilik SUS secara
+   Semasa audit awal, kod Jalin masih menyambung tanpa had tersebut. Pelaksanaan setempat dan ujian susulan direkodkan dalam
+   bahagian 10; produksi belum diubah.
+   **PENJELASAN IZZAT, 2 November 2026:** apabila kod tambahan mula aktif, satu kod lagi boleh ditebus untuk tempoh selepasnya.
+   Dalam contoh tahunan, kod 2029 boleh ditebus mulai 1 Januari 2028 apabila kod 2028 mula aktif. Tidak perlu menunggu semua
+   tempoh habis. Pembelian Jalin boleh dibuat tanpa akaun, jadi jangan menyalin semakan pembeli-pemilik SUS secara
    terus atau menganggap pembeli semestinya penerima kod. Penolakan penebusan kerana had tidak boleh menggunakan kod atau
    menambah akses; penguatkuasaan mesti selamat terhadap permintaan serentak dan diuji pada DB pembangunan.
 5. Sahkan skop pelancaran: jualan awam dahulu, kemudian penguatkuasaan akses selepas ujian wang sebenar (cadangan pelan ini).
@@ -410,14 +412,14 @@ pembayaran sebenar dan pembukaan suis tetap memerlukan kelulusan operasi yang be
 
 ### Batas sebelum pakej seterusnya
 
-- Aturan membuka slot sambungan seterusnya masih perlu diperjelas: bolehkah kad untuk 2029 ditebus apabila sambungan 2028 mula
-  aktif, atau perlu menunggu semua tempoh habis? Soalan dikemukakan kepada Izzat; belum ada jawapan baharu semasa pakej ini dibuat.
-  Jangan menganggap salah satu pilihan sudah diluluskan. Saiz label/pelekat gores sebenar juga diminta untuk ujian cetakan.
+- Soalan pembukaan slot yang tertunggak ketika pakej pertama kini dijawab Izzat: slot dibuka apabila kod tambahan mula aktif.
+  Lihat bahagian 10. Izzat akan memberikan reka bentuk kad dan label kemudian; saiz cetakan tidak diubah atau dimuktamadkan.
 - `orders-check.ts` diperiksa sebelum pelaksanaan. Bahagian concurrency menyimpan baris sementara dan pembersihannya
   mempunyai `DELETE FROM code_batches WHERE quantity <= 0 AND channel = 'virtual'` tanpa mengehadkan ID kelompok ujian.
   Sapu penghantaran dalam bahagian transaksi juga memilih semua pesanan menunggu. Skrip tidak dijalankan pada DB pembangunan
   yang dikongsi, supaya kerja sesi lain tidak terjejas; asingkan fixture atau cabang ujian dahulu. Tiada dakwaan transaksi lulus dibuat.
-- Penggantian kod maya yang hilang, had sambungan, teks dasar/Terma/Privasi dan ujian hujung ke hujung masih kerja seterusnya.
+- Penggantian kod maya yang hilang, teks dasar/Terma/Privasi dan ujian hujung ke hujung masih kerja seterusnya.
+  Had sambungan kemudian dilaksanakan setempat dalam bahagian 10; ujian serentaknya masih memerlukan cabang terasing.
   Kod di cabang ini belum cukup untuk meluluskan pembukaan jualan atau dinding bayar.
 - Pelayan QA sementara dihentikan selepas semakan dan viewport browser dipulihkan. Tiada fail env diubah, tiada kunci CHIP
   sebenar digunakan, tiada kod sebenar dibuat dan tiada penulisan data DB dilakukan.
@@ -427,3 +429,54 @@ pembayaran sebenar dan pembukaan suis tetap memerlukan kelulusan operasi yang be
   Ini mengesahkan mod tertutup pada output binaan sebenar, bukan kod sumber sahaja; ia bukan bukti pembelian aktif lulus.
   Pelayan `next start` itu juga dihentikan. Ujian pembelian unit sedia ada lulus **68/68** selepas pembetulan teks, FAQ lulus,
   dan semakan TypeScript terakhir lulus. Lint kekal belum disahkan atas sebab konfigurasi di atas.
+
+## 10. Had sambungan selepas penjelasan Izzat, 2 November 2026
+
+Keputusan: satu kod kad yang belum bermula sahaja boleh berada dalam barisan. Apabila tempoh kod itu bermula (hujung tempoh
+sebelumnya ialah eksklusif), ia menjadi tempoh aktif dan satu slot sambungan baharu tersedia. Had masa ialah 12 bulan kalendar
+mengikut waktu Malaysia selepas kad yang sedang aktif tamat, bukannya 365 hari atau dikira daripada kad yang masih beratur.
+Semua pakej 1/6/12 bulan dan kod fizikal/maya mengikuti aturan sama. Tiada had baharu dikenakan pada kod kongsi atau pemberian admin.
+
+Pelaksanaan yang dirancang: semak ledger di dalam transaksi `addGrant` selepas baris akaun dikunci, sebelum INSERT entitlement
+dan redemption. Kod sah yang ditolak kerana had tidak digunakan dan tidak dikira sebagai cubaan kod salah. Penebusan berulang
+kod yang sudah berjaya kekal idempotent. Tempoh lama atau beratur yang sudah wujud tidak dipadam atau diubah. Tempoh percubaan
+dan akses lain kekal diambil kira bagi tarikh mula seperti kod semasa; jika tiada kad aktif, tempoh akses semasa menjadi asas
+had masa. Pembelian tanpa akaun/hadiah tidak disekat berdasarkan akaun pembeli; maklumat had dipaparkan sebelum pembelian.
+
+Ujian: semua kombinasi 1/6/12 bulan, sempadan mula tepat dan 1 ms sebelumnya, tamat akses, tahun lompat/akhir bulan,
+kod beratur dibatalkan, ledger lama dengan beberapa kod beratur, tempoh SHARED/ADMIN dan percubaan. Sediakan ujian DB baharu
+yang semua fixturenya digulung balik tanpa pembersihan global atau perubahan trigger. Bukti permintaan serentak memerlukan
+persekitaran terasing sebelum penerbitan; jangan menggunakan skrip pembersihan luas pada cabang pembangunan yang dikongsi.
+
+Tiada migrasi skema, env, suis produksi, reka bentuk kad atau nilai saiz label diperlukan untuk pembaikan aturan ini.
+
+### Hasil pelaksanaan dan pengesahan setempat
+
+- Semakan CARD kini dilaksanakan dalam `addGrant`, selepas kunci baris akaun dan sebelum entitlement/redemption ditulis.
+  Penolakan had memberikan HTTP 409 dengan mesej Melayu; kod kekal belum digunakan dan tidak menambah kiraan cubaan salah.
+  Permintaan ulangan berjaya tetap memberikan hasil asal. SHARED/ADMIN dan ledger lama tidak diubah.
+- Peringatan had dan pautan FAQ dipaparkan sebelum borang Beli/Tebus dihantar. Pembelian hadiah kekal dibenarkan.
+  Teks baharu disemak melalui **tiga pusingan sebenar** ChatGPT; respons lengkap dibaca dan wording diperhalus:
+  [Semakan had sambungan](https://chatgpt.com/g/g-p-6aa7d8eaff5c81918ed35b086fc59cd2-jalin/c/6ae8131d-bed8-83ec-b937-d98614b381fc).
+  Semakan ini meliputi bahasa dan penerangan aturan, bukan bukti ujian transaksi serentak.
+- Ujian aturan tulen: **13/13 lulus**. Ujian DB baharu `scripts/card-extension-check.ts`: **76 semakan lulus** pada pembangunan,
+  semuanya dalam transaksi yang digulung balik; ketiadaan akaun, kod dan entitlement fixture disahkan selepas rollback.
+  Termasuk semua sembilan kombinasi pakej 1/6/12, kod fizikal/maya, ulangan, hadiah selepas penolakan, percubaan, pembatalan,
+  tamat tempoh dan penyampaian tarikh had. Tiada e-mel, pesanan atau pembayaran dibuat.
+- Ujian render navigasi/borang **4/4**, unjuran props awam **14/14**, primitif langganan **65/65**, dan ujian FAQ lulus.
+  Suite auto terakhir: **43 fail lulus, 0 gagal**. `git diff --check` lulus. Ini tidak menghapuskan tiga kegagalan suite penuh
+  sedia ada yang direkodkan dalam bahagian 9; suite penuh itu tidak diulang untuk mendakwa semuanya lulus.
+  TypeScript, validasi kandungan dan binaan produksi dengan akaun/jualan **aktif dalam proses setempat sahaja** turut lulus.
+  Binaan menggunakan DB pembangunan dan konfigurasi CHIP palsu. Fail env dan tetapan produksi tidak disentuh.
+- Binaan sebenar dijalankan pada loopback: `/beli` dan `/soalanlazim` menjawab **200** dan mengandungi peringatan baharu.
+  Pemeriksaan HTML kedua-duanya tidak menemui penanda kunci/Brand palsu atau status dalaman had.
+  POST anonim `/api/akaun/tebus` menjawab **401** dengan `no-store`.
+- QA pelayar Beli dan FAQ pada lebar CSS **375, 390, 430, 1440** tidak menemui horizontal overflow.
+  Pautan had menuju seksyen Langganan; FAQ boleh dibuka/ditutup dengan papan kekunci dan teks lengkap kelihatan.
+  Tiada ralat/amaran konsol dilihat. Borang pembayaran tidak dihantar. Ini bukan ujian pembayaran sebenar atau sesi penebusan berautentikasi.
+- Ujian serentak **belum dijalankan**. Mod `--race` menolak operasi tanpa URL ujian, hos dijangka dan persetujuan eksplisit.
+  Permintaan kelulusan ialah mencipta `jalin-card-qa-20261102` daripada pembangunan, menguji, kemudian memadam cabang ujian itu sahaja.
+  Sehingga jawapan diterima, tiada cabang dicipta dan tiada fixture concurrency dikomit ke DB.
+- Reka bentuk kad/label menunggu fail daripada Izzat. Tiada saiz cetakan dimuktamadkan, kod sebenar dicetak, migrasi dijalankan,
+  push/deploy dibuat atau suis produksi dihidupkan. Lint masih belum disahkan kerana konfigurasi repo seperti bahagian 9.
+  Pelayan QA loopback telah dihentikan, port 3102 tidak lagi mendengar, viewport dipulihkan dan tab sementara ditutup.

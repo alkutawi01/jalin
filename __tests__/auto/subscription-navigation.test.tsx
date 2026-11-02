@@ -6,6 +6,8 @@ import { publicNavLinks, SiteNavLinks } from "../../src/components/reader/nav-li
 import MobileNavMenu from "../../src/components/reader/MobileNavMenu";
 import AccountPanel from "../../src/components/reader/AccountPanel";
 import { purchaseStatus } from "../../src/lib/subscription/prices";
+import BuyForm from "../../src/components/reader/BuyForm";
+import RedeemForm from "../../src/components/reader/RedeemForm";
 
 test("desktop and phone menus show a single active subscription link only when buying is available", () => {
   for (const visitor of [false, true]) {
@@ -51,5 +53,17 @@ test("account purchase link follows server availability while redeem, status and
     assert.match(html, /href="\/tebus">Tebus kod langganan<\/a>/);
     assert.match(html, /Langganan aktif sehingga/);
     assert.match(html, /2027/);
+  }
+});
+
+test("readers see the card limit and FAQ link before submitting a purchase or redemption", () => {
+  const forms = [
+    renderToStaticMarkup(<BuyForm plans={[{ months: 12, label: "12 bulan", price: "RM50" }]} providerName="CHIP" />),
+    renderToStaticMarkup(<RedeemForm />),
+  ];
+  for (const html of forms) {
+    const notice = html.indexOf("Setiap akaun hanya boleh mempunyai satu tempoh langganan tambahan");
+    assert.ok(notice >= 0 && notice < html.indexOf('type="submit"'));
+    assert.match(html, /href="\/soalanlazim#langganan">Lihat had sambungan<\/a>/);
   }
 });

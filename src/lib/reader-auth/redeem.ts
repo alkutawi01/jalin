@@ -281,6 +281,8 @@ export type RedeemResult =
   | { status: "invalid" }
   | { status: "already" }
   | { status: "expired"; redeemBy: Date }
+  | { status: "card_queued"; availableAt: Date }
+  | { status: "card_year_limit"; maximumEndsAt: Date }
   | { status: "throttled" }
   | { status: "halted" };
 
@@ -351,6 +353,8 @@ async function redeemCard(trx: Db, deps: Deps, input: Input, now: Date): Promise
 
   const months = code.months as 1 | 6 | 12;
   const grant = await addGrant(trx, { accountId: input.accountId, kind: "CARD", grant: { unit: "months", amount: months }, sourceRef: code.id, reason: `Kad ${code.serial}`, createdBy: "tebus", now });
+  if (!grant.added && grant.reason === "card_queued") return { status: "card_queued", availableAt: grant.availableAt };
+  if (!grant.added && grant.reason === "card_year_limit") return { status: "card_year_limit", maximumEndsAt: grant.maximumEndsAt };
   if (!grant.added) return fail(trx, input.accountId, input.ipMac, now);
   await trx.insertInto("redemptions").values({ code_id: code.id, account_id: input.accountId, entitlement_id: grant.id, redeemed_at: now }).execute();
   const access = await getAccess(trx, input.accountId, now);

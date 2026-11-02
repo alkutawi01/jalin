@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { SiteFooter, SiteHeader } from "../../components/reader/StoryChrome";
 import { accountsPageMetadata, readerAccountsEnabled } from "../../lib/reader-auth/enabled";
 import { purchaseStatus } from "../../lib/subscription/prices";
+import { CARD_EXTENSION_FAQ, CARD_EXTENSION_FAQ_QUESTION } from "../../lib/subscription/card-extension-copy";
 
 /**
  * Soalan lazim: the address printed on the card (jalin.adjung.com/soalanlazim). Like the other account pages it exists only when reader
@@ -135,6 +136,10 @@ const GROUPS: Group[] = [
     id: "langganan",
     label: "Langganan dan tempoh",
     items: [
+      {
+        q: CARD_EXTENSION_FAQ_QUESTION,
+        a: <>{CARD_EXTENSION_FAQ.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}</>
+      },
       {
         q: "Bilakah langganan saya bermula dan tamat?",
         a: (
