@@ -1,7 +1,7 @@
 /**
  * The sticker that carries a card code (study sections 5.8, 5.9, 16.1, 16.2): the code is printed on a label by a label printer, the label
- * is stuck on the card, and a scratch-off sticker goes over the code. Nothing about the sizes is final yet, so every size is a setting
- * and the layout is worked out from them.
+ * is stuck on the card, and a scratch-off sticker goes over the code. Izzat confirmed the label/scratch dimensions on 6 Nov 2026;
+ * settings remain adjustable for printer alignment and the layout is worked out from them.
  *
  * Pure functions only. The PDF is written by hand: one page per label, the page the size of the label, in Courier (a standard font that
  * every viewer and printer driver has, and whose letters are exactly 0.6 of their height wide, so the width of a line is exact).
@@ -25,7 +25,7 @@ export type LabelSettings = {
   separator: "-" | " " | "";
 };
 
-/** The sizes known so far (Izzat, 9 Oct 2026): code sticker 3 x 5 cm, scratch strip 0.8 x 4 cm. Not final. */
+/** Izzat confirmed 6 Nov 2026: landscape label 50 x 30 mm, scratch strip 40 x 8 mm. Physical printer calibration still required. */
 export const DEFAULT_LABEL: LabelSettings = {
   widthMm: 50,
   heightMm: 30,

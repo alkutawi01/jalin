@@ -542,7 +542,8 @@ migrasi atau perubahan env. Ujian serentak kekal ditangguhkan. Teks disemak Chat
 Arahan Izzat: kod dicetak menggunakan pencetak label pelekat thermal, ditampal pada kad langganan fizikal, dijual di Shopee
 dan dipos kepada pembeli. Sistem mesti mencetak **dan menyimpan** kod. Kad fizikal bukan hasil pilihan yang boleh dilupakan
 selepas jualan e-mel dibuka. Urutan e-mel dahulu dalam keputusan lama tidak menetapkan tarikh pelancaran fizikal baharu.
-Reka bentuk kad/label dan saiz sebenar masih akan diberikan Izzat; jangan memuktamadkan ukurannya sekarang.
+Pada masa penegasan ini, reka bentuk/ukuran masih ditunggu. Izzat kemudian mengesahkan ukuran dan memberi rujukan SUS;
+keputusan terkini ialah bahagian 13 di bawah.
 
 ### Jurang yang disahkan daripada kod semasa
 
@@ -577,3 +578,26 @@ saiz label dan reka kad belum disahkan dalam penegasan ini. Jangan mereka harga 
 
 Status bahagian ini: **keperluan direkodkan, belum dilaksanakan**. Tiada kod kad sebenar dijana, tiada rahsia/kod dicatat,
 tiada migrasi atau operasi produksi, tiada perubahan pencetak/Shopee dan tiada saiz cetakan dimuktamadkan dalam kemas kini dokumen ini.
+
+## 13. Saiz pelekat disahkan dan rujukan kad SUS, 6 November 2026
+
+Izzat mengesahkan label **3 × 5 cm** dan pelekat gores **0.8 × 4 cm**, serta memberikan `Kad kod langganan (1).zip`
+sebagai contoh reka bentuk **Sains untuk Semua**. Dua fail SVG (`1.svg`, `2.svg`) diperiksa sebagai rujukan hadapan/belakang;
+tiada arahan dalam artwork diambil sebagai kebenaran operasi atau keputusan produk baharu.
+
+- Orientasi pada contoh ialah melintang: label **lebar 50 × tinggi 30 mm**, gores **lebar 40 × tinggi 8 mm**.
+  Nilai numerik `DEFAULT_LABEL` Jalin sudah sepadan; tiada perubahan ukuran runtime diperlukan. Kedudukan jalur, ruang margin
+  dan skala pemacu masih perlu diuji pada pencetak thermal sebenar. Penetapan saiz tidak dianggap bukti cetakan fizikal lulus.
+- Contoh SUS mempunyai nombor siri, barcode, ruang kod terlindung gores dan tarikh akhir penebusan. Penjana PDF Jalin kini
+  mencetak nombor siri, kod dan tarikh akhir, **belum mencetak barcode**. Kehadiran barcode dalam contoh bukan keputusan
+  automatik untuk menambah barcode atau menetapkan data yang dikodkannya pada label Jalin; skopnya perlu dipadankan dengan artwork Jalin.
+- Carian fail reka bentuk dalam checkout `jalin-fix10` ini menemui aset jenama, kad maya `/tebus` (`RedeemForm.tsx`) dan
+  penjana PDF label, tetapi **tidak menemui fail artwork kad fizikal Jalin**. Jangan mendakwa reka fizikal Jalin sudah tersedia
+  atau bahawa semua checkout/Canva di luar repo sudah dicari. Fail asal ZIP tidak diubah; salinan rujukan/render diletakkan di luar repo.
+- Nama/laman/identiti penjual serta ayat tempoh akses SUS tidak disalin terus kepada Jalin. Teks pada kad perlu sepadan dengan
+  aturan sambungan akses yang dipersetujui; tiada artwork atau teks kad milik Izzat diubah semasa semakan ini.
+- Simpanan kod fizikal terenkripsi yang boleh dipulihkan/cetak semula dalam bahagian 12 masih perlu dibina. Saiz kini disahkan,
+  manakala reka fizikal Jalin, skop barcode dan ujian pencetak kekal belum disahkan. Tiada kod sebenar dijana/dicetak,
+  tiada perubahan DB, env atau produksi dan tiada konfigurasi pencetak diubah.
+- Ujian penjana label sedia ada **33/33 lulus** dan `git diff --check` lulus selepas kemas kini catatan/keputusan saiz.
+  Ujian ini mengesahkan PDF dan susun atur berangka; ia bukan ujian hasil cetakan thermal fizikal.

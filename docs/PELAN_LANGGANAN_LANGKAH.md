@@ -41,7 +41,9 @@ Belum ada: bayaran dalam Jalin (pilih pakej, bayar, kod dihantar ke e-mel); dasa
 - [ ] **B2. Pilih kedudukan label** pada belakang kad, dan kedudukan pelekat kikis di atas kod.
 - [ ] **B3. Semak teks kad dan Soalan Lazim sepadan:** lokasi nombor siri dan kod, arahan penebusan, alamat `jalin.adjung.com/tebus` dan `jalin.adjung.com/soalanlazim`.
 - [ ] **B4. Ujian cetak label.** Di `/admin/langganan/kad`, muat turun "label ujian". Cetak pada pencetak haba sebenar, lekatkan pelekat kikis, dan semak: kod tidak terpotong, kod masih boleh dibaca selepas dikikis, dan pelekat menutup kod sepenuhnya walaupun senget sedikit.
-- [ ] **B5. Tetapkan saiz muktamad** label dan pelekat kikis (nilai awal 50 x 30 mm dan 40 x 8 mm hanyalah andaian). Jika saiz berubah, kemas kini `DEFAULT_LABEL` dalam `src/lib/subscription/label.ts`.
+- [x] **B5. Saiz disahkan Izzat, 6 Nov 2026:** label 3 × 5 cm, melintang **50 × 30 mm**; pelekat gores 0.8 × 4 cm,
+  melintang **40 × 8 mm**. Nilai `DEFAULT_LABEL` sedia ada sudah sepadan. Kedudukan jalur gores, kalibrasi pencetak thermal
+  dan ujian cetakan sebenar masih B2/B4, belum dianggap lulus. Reka bentuk rujukan yang diberikan ialah kad SUS, bukan artwork fizikal Jalin.
 - [ ] **B6. Cetak kelompok percubaan kecil** (contoh 10 kad) dan uji dengan satu akaun ujian (lihat bahagian D).
 
 ## Bahagian C. Bayaran dalam Jalin dan kod e-mel (DIDAHULUKAN, belum dibina)
