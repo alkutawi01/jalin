@@ -476,7 +476,61 @@ Tiada migrasi skema, env, suis produksi, reka bentuk kad atau nilai saiz label d
   Tiada ralat/amaran konsol dilihat. Borang pembayaran tidak dihantar. Ini bukan ujian pembayaran sebenar atau sesi penebusan berautentikasi.
 - Ujian serentak **belum dijalankan**. Mod `--race` menolak operasi tanpa URL ujian, hos dijangka dan persetujuan eksplisit.
   Permintaan kelulusan ialah mencipta `jalin-card-qa-20261102` daripada pembangunan, menguji, kemudian memadam cabang ujian itu sahaja.
-  Sehingga jawapan diterima, tiada cabang dicipta dan tiada fixture concurrency dikomit ke DB.
+  Izzat menjawab **tunggu dulu**; ujian ini kekal ditangguhkan sehingga kelulusan baharu diterima. Tiada cabang dicipta dan
+  tiada fixture concurrency dikomit ke DB.
 - Reka bentuk kad/label menunggu fail daripada Izzat. Tiada saiz cetakan dimuktamadkan, kod sebenar dicetak, migrasi dijalankan,
   push/deploy dibuat atau suis produksi dihidupkan. Lint masih belum disahkan kerana konfigurasi repo seperti bahagian 9.
   Pelayan QA loopback telah dihentikan, port 3102 tidak lagi mendengar, viewport dipulihkan dan tab sementara ditutup.
+
+## 11. Pemulihan kod e-mel, 6 November 2026 — kerja setempat
+
+Izzat menangguhkan cabang/ujian serentak pada 2 November; arahan `next` pada 6 November menyambung kerja bebas ini sahaja.
+Tiada cabang Neon ujian dicipta. `origin/main` masih `0fa93f87`; `origin/hostinger` kini `10764727` selepas fetch baca sahaja.
+Kerja kekal di cabang kesediaan setempat; fail `_repro-fill.ts` tidak disentuh.
+
+Rancangan: tambah tindakan pemilik pada pesanan PAID yang e-melnya sudah dihantar, untuk mengganti kod maya yang masih sah
+dan belum ditebus. Kunci baris pesanan dan kod; minta nombor siri semasa sebagai prasyarat supaya permintaan lapuk/berulang
+tidak mengganti sekali lagi. Kekalkan pakej, pembeli, bayaran dan tarikh akhir penebusan asal. Batalkan kod lama, pautkan kod
+baharu dengan ciphertext menunggu penghantaran, serta rekod pelaku/sebab dalam satu transaksi yang wajib berjaya bersama.
+Tiada plaintext kod dalam respons admin, aktiviti atau log. Hantar selepas transaksi kepada alamat pesanan asal sahaja;
+jika e-mel gagal, cuba semula kod pengganti yang sama. Kod yang sudah ditebus, dibatalkan atau luput tidak diganti.
+
+Ujian dirancang: transaksi rollback pada pembangunan dengan mailer palsu dalam memori, penggantian berjaya/gagal/ulangan,
+tarikh asal, audit, plaintext tidak tersimpan, kegagalan e-mel dan percubaan semula. Tiada fixture kekal, pembayaran, e-mel sebenar,
+migrasi atau perubahan env. Ujian serentak kekal ditangguhkan. Teks disemak ChatGPT sebelum dianggap sedia diterbitkan.
+
+### Pelaksanaan dan hasil ujian
+
+- Fungsi `replaceOrderCode` dan tindakan `replace` pada API pesanan dilaksanakan. Penggantian tidak mendedahkan kod kepada admin;
+  ciphertext dan nombor siri pesanan ditukar dalam transaksi yang sama dengan pembatalan kod lama dan rekod `admin_activity`.
+  Audit wajib: kegagalannya menggagalkan transaksi. Sebab kosong/lebih 160 aksara atau pelaku tanpa identiti ditolak.
+- Permintaan menyertakan nombor siri yang dilihat ketika senarai dimuatkan. Ulangan lapuk ditolak selepas penggantian pertama;
+  kod pengganti yang e-melnya masih menunggu mesti dihantar semula, bukan diganti lagi. Kod telah ditebus/dibatalkan/luput tidak dihidupkan semula.
+- Penyelesaian penghantaran kini bersyarat pada kod/ciphertext/giliran yang sama. Respons penghantar lama tidak boleh memadam
+  ciphertext pengganti atau menulis status/ralatnya. Penerimaan penyedia tidak didakwa sebagai e-mel `delivered` ke peti masuk.
+  Bagi hasil gagal/terlangkau/pengecualian selepas commit, admin diminta menyemak status terlebih dahulu; ralat rangkaian mungkin
+  berlaku selepas penyedia menerima mesej, jadi teks tidak membuat dakwaan mutlak bahawa penyedia belum menerima e-mel.
+- Dua pusingan semakan bahasa sebenar dalam projek Jalin; respons penuh dibaca dan cadangan diperhalus berdasarkan fakta `skipped`:
+  [Semak Teks Admin Jalin](https://chatgpt.com/g/g-p-6aa7d8eaff5c81918ed35b086fc59cd2-jalin/c/6aed9784-b99c-83ec-8ec8-17102e9e26e5).
+  Teks ketidakpastian yang disemak digunakan untuk semua hasil selain penerimaan penyedia; ini mengelakkan andaian tentang kegagalan rangkaian.
+- `scripts/order-replacement-check.ts`: **94 lulus, 0 gagal**, semuanya pada pembangunan dalam satu transaksi rollback.
+  Tiada rangkaian gerbang atau e-mel sebenar: bayaran disimulasi melalui fungsi pemenuhan, mailer menangkap mesej dalam memori.
+  Meliputi pakej 1/6/12, tarikh/penerima/bayaran asal, audit, tiada plaintext tersimpan, penebusan kod lama/baharu, ulangan lapuk,
+  kegagalan e-mel dan percubaan semula, kod luput/dibatalkan/ditebus, serta rollback apabila audit gagal menggunakan savepoint.
+  Ketiadaan semua fixture pesanan/kod/akaun/aktiviti disahkan selepas rollback. Ujian penghantar lambat ialah susunan operasi
+  deterministik pada satu sambungan, **bukan** transaksi DB serentak; ujian serentak masih ditangguhkan.
+- Ujian auto **44 fail lulus, 0 gagal**; ujian render pesanan baharu **3/3**, RBAC **27/27**, piawaian admin **11/11** dan
+  `security-hardening-e` lulus. TypeScript, validasi kandungan dan `git diff --check` lulus. Lint khusus kekal belum disahkan
+  atas sebab konfigurasi yang direkodkan sebelum ini; tiada dakwaan bahawa suite penuh lama tanpa kegagalan dibuat.
+- Binaan produksi terakhir selepas pembaikan CSS/teks **lulus**. Ia menggunakan DB pembangunan dengan TLS disahkan, sumber markdown,
+  akaun aktif dan pembelian ditutup hanya dalam proses setempat. Output `.next` sebenar dijalankan pada loopback: `/` **200**,
+  `/beli` **404**, halaman pesanan admin anonim **307** ke log masuk dan POST penggantian anonim **401**, tanpa medan kod/ciphertext.
+  Ini menguji binaan serta penolakan anonim; tiada sesi pemilik sebenar, pesanan kekal atau e-mel sebenar digunakan dalam ujian HTTP ini.
+- QA interaktif menggunakan komponen sebenar `OrdersTable`/`DialogHost` dan CSS global/admin, tetapi router, data pesanan dan API palsu
+  pada loopback. Ini tidak memintas auth dalam aplikasi atau mengesahkan E2E admin sebenar. Sebab wajib, had 160 aksara, fokus pada Batal,
+  Tab, Escape dan tiada permintaan selepas pembatalan diperiksa; pengesahan membuat tepat satu panggilan palsu dan mengemas kini senarai.
+  Lebar CSS 375/390/430/1440: tiada overflow dokumen atau jadual. QA menemui borang melebarkan jadual desktop; lebar borang kini
+  dihadkan dan teks membalut. Bukti dengan data palsu disimpan di luar repo dalam `output/qa/20261106` ruang kerja Codex.
+  Pelayan pratonton dihentikan, viewport dipulihkan dan tab sementara ditutup.
+- Tiada migrasi, env, produksi, suis akaun/jualan/dinding bayar, pembayaran sebenar, push atau deploy diubah. Reka kad/label
+  masih menunggu Izzat. Ujian e-mel sebenar dan E2E admin berautentikasi untuk aliran penggantian ini belum disahkan.

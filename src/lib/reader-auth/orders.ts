@@ -134,11 +134,16 @@ export async function deliverOrder(db: Db, deps: DeliveryDeps, orderId: string):
     await deps.mailer.sendMessage({ to: claimed.email, ...message });
   } catch (error) {
     // The error text is kept for the admin, so it must never hold a code: only the message of the thrower, cut short.
-    await db.updateTable("purchase_orders").set({ last_delivery_error: String((error as Error)?.message ?? "Gagal").replace(/[0-9A-Z]{4}(-[0-9A-Z]{4}){3}-[0-9A-Z]/g, "[kod]").slice(0, 200) }).where("id", "=", orderId).execute();
+    await db.updateTable("purchase_orders").set({ last_delivery_error: String((error as Error)?.message ?? "Gagal").replace(/[0-9A-Z]{4}(-[0-9A-Z]{4}){3}-[0-9A-Z]/g, "[kod]").slice(0, 200) })
+      .where("id", "=", orderId).where("code_id", "=", claimed.code_id).where("code_cipher", "=", claimed.code_cipher)
+      .where("delivery_status", "=", "PENDING").where("last_attempt_at", "=", now).execute();
     return "failed";
   }
-  await db.updateTable("purchase_orders").set({ delivery_status: "SENT", delivered_at: now, code_cipher: null, last_delivery_error: null }).where("id", "=", orderId).execute();
-  return "sent";
+  // A slow former sender must not erase a newer replacement or another delivery claim.
+  const sent = await db.updateTable("purchase_orders").set({ delivery_status: "SENT", delivered_at: now, code_cipher: null, last_delivery_error: null })
+    .where("id", "=", orderId).where("code_id", "=", claimed.code_id).where("code_cipher", "=", claimed.code_cipher)
+    .where("delivery_status", "=", "PENDING").where("last_attempt_at", "=", now).executeTakeFirst();
+  return Number(sent.numUpdatedRows) === 1 ? "sent" : "skipped";
 }
 
 /** Try again for every paid order whose e-mail has not gone yet (oldest first). */
@@ -160,13 +165,21 @@ export async function orderPublicStatus(db: Db, reference: string): Promise<{ fo
 
 export type OrderRow = {
   id: string; reference: string; months: number; amountSen: number; email: string; status: string; deliveryStatus: string; deliveryAttempts: number;
-  lastDeliveryError: string | null; serial: string | null; createdAt: Date; paidAt: Date | null; deliveredAt: Date | null; note: string | null;
+  lastDeliveryError: string | null; serial: string | null; createdAt: Date; paidAt: Date | null; deliveredAt: Date | null; note: string | null; canReplace: boolean;
 };
 
 export async function listOrders(db: Db, limit = 200): Promise<OrderRow[]> {
-  const rows = await db.selectFrom("purchase_orders").selectAll().orderBy("created_at", "desc").limit(limit).execute();
+  const rows = await db.selectFrom("purchase_orders as o").selectAll("o")
+    .leftJoin("redeem_codes as c", "c.id", "o.code_id").leftJoin("code_batches as b", "b.id", "c.batch_id")
+    .leftJoin("redemptions as r", "r.code_id", "c.id")
+    .select(["c.serial as current_serial", "c.state as code_state", "c.redeem_by", "b.channel", "b.status as batch_status", "b.months as code_months", "b.quantity", "r.id as redemption"])
+    .orderBy("o.created_at", "desc").limit(limit).execute();
+  const now = new Date();
   return rows.map((r) => ({
     id: r.id, reference: r.reference, months: r.months, amountSen: r.amount_sen, email: r.email, status: r.status, deliveryStatus: r.delivery_status, deliveryAttempts: r.delivery_attempts,
     lastDeliveryError: r.last_delivery_error, serial: r.serial, createdAt: r.created_at, paidAt: r.paid_at, deliveredAt: r.delivered_at, note: r.note,
+    canReplace: r.status === "PAID" && r.delivery_status === "SENT" && r.code_cipher === null && !!r.code_id && r.current_serial === r.serial &&
+      r.code_state === "issued" && !r.redemption && r.channel === "virtual" && r.batch_status === "PRINT_CONFIRMED" && r.code_months === r.months &&
+      r.quantity !== null && r.quantity < 5000 && !!r.redeem_by && r.redeem_by > now,
   }));
 }

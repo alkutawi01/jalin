@@ -340,6 +340,9 @@
 .a-shell .admin-table td code { white-space: nowrap; max-width: 220px; overflow: hidden; text-overflow: ellipsis; display: inline-block; vertical-align: bottom; }
 .a-shell .admin-table td:nth-child(n+3) { white-space: nowrap; }
 .a-shell .admin-table-title { font-weight: 600; }
+.a-shell .admin-order-replacement { display: grid; gap: 8px; width: 280px; max-width: 100%; white-space: normal; }
+.a-shell .admin-order-replacement .admin-form-hint { margin: 0; }
+.a-shell .admin-order-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .a-shell .a-work-title-link { color: var(--a-ink); text-decoration: underline; text-decoration-color: var(--a-line-strong); text-underline-offset: 3px; }
 .a-shell .a-work-title-link:hover, .a-shell .a-work-title-link:focus-visible { color: var(--a-accent); text-decoration-color: currentColor; }
 .a-shell .admin-table-actions { display: flex; gap: 6px; justify-content: flex-end; }

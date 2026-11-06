@@ -4,8 +4,9 @@ Untuk Codex dan sesiapa yang menyambung kerja ini selepas sesi Claude tamat. Bac
 
 **Kemas kini 2 November 2026:** keputusan harga, bayaran balik, susunan pautan dan had sambungan yang lebih baharu,
 audit produksi serta pembaikan setempat direkodkan dalam `docs/PELAN_PELANCARAN_LANGGANAN_2026-11-01.md`.
-Gunakan bahagian 3, 8 dan 9 dokumen itu untuk status terkini; keadaan 28 Oktober di bawah ialah rekod sejarah.
+Gunakan bahagian 3, 8 hingga 11 dokumen itu untuk status terkini; keadaan 28 Oktober di bawah ialah rekod sejarah.
 Pembaikan setempat belum digabung atau ditempatkan, dan jualan/dinding bayar belum dibuka oleh kerja ini.
+Bahagian 11 merekodkan penggantian kod e-mel setempat (6 November); ujian transaksi serentak kekal ditangguhkan atas arahan Izzat.
 
 ## 1. Keadaan semasa (apa yang siap)
 

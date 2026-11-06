@@ -23,7 +23,7 @@ export default async function OrdersPage() {
     <div className="admin-langganan">
       <header className="admin-page-header">
         <h1>Pesanan dalam talian</h1>
-        <p className="admin-page-sub">Kod yang dibeli melalui laman. Kod dihantar ke e-mel pembeli selepas bayaran disahkan; di sini awak boleh menghantar semula e-mel yang gagal.</p>
+        <p className="admin-page-sub">Urus penghantaran e-mel dan penggantian kod yang belum ditebus bagi pesanan dalam talian.</p>
       </header>
       <LanggananNav current="/admin/langganan/pesanan" />
       <p className="admin-form-hint">Jualan dalam talian: <strong>{status.enabled ? "dibuka" : `ditutup (${status.reason})`}</strong>.</p>
