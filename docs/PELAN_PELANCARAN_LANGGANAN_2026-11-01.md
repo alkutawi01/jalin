@@ -3,6 +3,8 @@
 Pemilik keputusan: Izzat. Disediakan Codex pada 1 November 2026 (MYT).
 Status: DRAF UNTUK KELULUSAN, bukan kebenaran melaksanakan operasi produksi.
 Skop: Jalin sahaja, bukan SUS. Hasil akhir merangkumi langganan awam dan label pelekat kod untuk kad fizikal.
+Penegasan Izzat, 6 November 2026: kad fizikal juga dijual di Shopee dan dipos kepada pembeli. Sistem mesti mencetak label
+pelekat melalui pencetak thermal dan menyimpan kodnya. Lihat bahagian 12; aliran fizikal ialah hasil wajib tugas keseluruhan.
 
 ## 1. Hasil akhir yang hendak dicapai
 
@@ -534,3 +536,44 @@ migrasi atau perubahan env. Ujian serentak kekal ditangguhkan. Teks disemak Chat
   Pelayan pratonton dihentikan, viewport dipulihkan dan tab sementara ditutup.
 - Tiada migrasi, env, produksi, suis akaun/jualan/dinding bayar, pembayaran sebenar, push atau deploy diubah. Reka kad/label
   masih menunggu Izzat. Ujian e-mel sebenar dan E2E admin berautentikasi untuk aliran penggantian ini belum disahkan.
+
+## 12. Kad fizikal, label thermal dan pesanan Shopee — penegasan 6 November 2026
+
+Arahan Izzat: kod dicetak menggunakan pencetak label pelekat thermal, ditampal pada kad langganan fizikal, dijual di Shopee
+dan dipos kepada pembeli. Sistem mesti mencetak **dan menyimpan** kod. Kad fizikal bukan hasil pilihan yang boleh dilupakan
+selepas jualan e-mel dibuka. Urutan e-mel dahulu dalam keputusan lama tidak menetapkan tarikh pelancaran fizikal baharu.
+Reka bentuk kad/label dan saiz sebenar masih akan diberikan Izzat; jangan memuktamadkan ukurannya sekarang.
+
+### Jurang yang disahkan daripada kod semasa
+
+- `createBatch` menyimpan nombor siri, MAC kod, pakej, kelompok, tarikh akhir penebusan dan status. Kod yang boleh dibaca hanya
+  wujud ketika penjanaan dan dalam PDF yang dimuat turun sekali. PDF label sedia ada menggunakan satu halaman bagi setiap label.
+- Kod asal **tidak boleh dibina semula daripada MAC**. Eksport sandaran kod kad juga menyimpan MAC, bukannya kod boleh cetak.
+  Oleh itu simpanan semasa belum memenuhi keperluan menyimpan kod asal untuk pengambilan/cetakan semula dalam sistem.
+- Penggantian kod yang sudah ada membatalkan kod lama dan menghasilkan kod lain; itu tidak sama dengan mencetak semula label
+  kod asal selepas masalah pencetak. Jangan menggunakan penggantian secara senyap apabila permintaan ialah cetakan semula.
+
+### Keperluan pelaksanaan dan penerimaan
+
+1. Penjanaan kelompok kad fizikal mengaitkan kod unik dengan nombor siri dan pakej serta tarikh akhir penebusan.
+2. Simpan kod boleh pulih dalam bentuk **terenkripsi**, dengan akses pemilik dan jejak audit pengambilan/cetakan semula.
+   Kekalkan MAC bagi semakan penebusan. Jangan menyimpan plaintext dalam repo, log, senarai umum atau eksport terbuka.
+   Reka bentuk kunci/sandaran dan pemulihan simpanan terenkripsi mesti didokumenkan serta diuji sebelum digunakan untuk kad sebenar.
+3. Cetak label pada saiz fizikal yang Izzat beri, menggunakan pencetak thermal sebenar. Nombor siri, kod dan tarikh akhir mesti
+   lengkap dan boleh dibaca; pengambilan/cetakan semula menggunakan kod sama dan tidak menjana hak akses atau stok kad baharu.
+4. Sahkan cetakan dan rekod kad sebagai stok sedia. Urus status kad supaya kad sama tidak diperuntukkan kepada dua pesanan.
+5. Kaitkan kad/nombor siri dengan rujukan pesanan Shopee serta status penghantaran dan nombor penjejakan apabila tersedia.
+   Tentukan pelaksanaan manual atau integrasi API apabila skop pesanan diperincikan; tiada integrasi Shopee automatik telah diluluskan/dibina.
+6. Label ditampal pada kad; kad diperuntukkan kepada pesanan dan dipos kepada pembeli. Pengaktifan kod sebelum kad meninggalkan
+   penjual mengikuti aliran sedia ada sehingga ada keputusan lain. Pembelian/penghantaran tidak memulakan tempoh akses;
+   tempoh bermula melalui penebusan mengikut aturan akses dan had sambungan yang sudah dipersetujui.
+7. Uji kad fizikal hujung ke hujung: jana → simpan → pulihkan/cetak semula kod sama → cetak thermal → tampal → peruntukkan
+   kepada pesanan → aktifkan/pos → pembeli tebus. Uji cetakan gagal, pengambilan berulang dan penebusan berganda tanpa menambah stok/akses.
+
+Pemetaan kepada lapan fasa: B meliputi simpanan/cetakan dan pengurusan stok/pesanan fizikal; C meliputi pemulihan kod serta
+ujian pencetak/kad sebenar; D/E kekal memerlukan kelulusan khusus bagi migrasi/konfigurasi produksi; G bagi saluran fizikal
+memerlukan persediaan penyenaraian Shopee, stok, pembungkusan dan penghantaran. Akaun/saluran Shopee, model pencetak,
+saiz label dan reka kad belum disahkan dalam penegasan ini. Jangan mereka harga pos, dasar pemulangan atau butiran peribadi.
+
+Status bahagian ini: **keperluan direkodkan, belum dilaksanakan**. Tiada kod kad sebenar dijana, tiada rahsia/kod dicatat,
+tiada migrasi atau operasi produksi, tiada perubahan pencetak/Shopee dan tiada saiz cetakan dimuktamadkan dalam kemas kini dokumen ini.
