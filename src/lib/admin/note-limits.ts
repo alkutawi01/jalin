@@ -1,7 +1,6 @@
 /**
- * Length limits for the two reader-facing notes on a work. One source for every path that writes them: the form's save
- * (api/admin/works/[id]), the pasted chatbot answer (authoring/editor-answer-service) and the counters under the fields.
- * A pasted answer used to skip the check, so a note over the limit was accepted and only refused later, at the next save.
+ * Publication length targets for the two reader-facing notes. Draft saves and pasted answers retain full text;
+ * the editor can shorten it afterward. The counters, review notes and publication gate share these values.
  */
 export const READER_NOTE_MAX = 600;
 export const EDITOR_NOTE_MAX = 5000;

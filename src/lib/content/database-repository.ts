@@ -6,6 +6,7 @@ import { getDb, hasDb } from "../db";
 import { isSourcedWork } from "./source-origin";
 import { cropFromRow } from "../reader/crop";
 import { mergeSeriesGlossary } from "./glossary-merge";
+import { withoutDraftReviews } from "../admin/authoring/draft-review";
 
 /** Reader-safe public source provenance — never includes rights_notes/evidence/history/reviewed_by/reviewed_at/source_url. */
 function mapPublicSourceWork(row: any): SourceWorkRef | undefined {
@@ -114,7 +115,7 @@ function mapWork(
     visuals: withHeroAlt(visuals, String(row.title || "")),
     glossary,
     editorialHistory,
-    metadata: parseJsonbField<{ characters?: CharacterMeta[]; fragmenTextLanguage?: string }>(row.metadata),
+    metadata: withoutDraftReviews(parseJsonbField<{ characters?: CharacterMeta[]; fragmenTextLanguage?: string }>(row.metadata)),
     reader: parseJsonbField<{ note?: string }>(row.reader),
     sourceWork: sourceFor(row.type, row.metadata, sourceWork),
     sections: sections && sections.length > 0 ? sections : undefined,
@@ -582,7 +583,7 @@ export function workFromSnapshot(snapshot: any, workId: string): Work | undefine
       })), String(snapshot.title || "")),
       glossary: (snapshot.glossary || []).map((g: any) => ({ term: String(g.term || ""), meaning: String(g.meaning || ""), source: String(g.source || ""), ...(g.pronunciation ? { pronunciation: String(g.pronunciation) } : {}), ...(g.original_text ?? g.original ? { original: String(g.original_text ?? g.original) } : {}), ...(g.original_language ?? g.originalLanguage ? { originalLanguage: String(g.original_language ?? g.originalLanguage) } : {}) })),
       editorialHistory: snapshot.editorialHistory || [],
-      metadata: snapshot.metadata,
+      metadata: withoutDraftReviews(snapshot.metadata),
       reader: snapshot.reader,
       sourceWork: sourceFor(snapshot.type, snapshot.metadata, mapPublicSourceWork(snapshot.sourceWork)),
       sections: snapshot.sections?.map((section: any) => ({ ...section, readingMinutes: readingMinutesFor(undefined, section.body) })),

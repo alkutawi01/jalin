@@ -387,8 +387,7 @@ function validateSettingEntries(list: unknown, noun: string, max: number, listNa
     const name = String((entry as { name?: unknown }).name ?? "").trim();
     const description = tidyShort(String((entry as { description?: unknown }).description ?? ""));
     if (!name) throw new Error(`${noun} #${index + 1}: nama diperlukan.`);
-    if (name.length > PLACE_NAME_MAX) throw new Error(`${noun} #${index + 1}: nama terlalu panjang (maksimum ${PLACE_NAME_MAX} aksara).`);
-    if (description.length > PLACE_DESCRIPTION_MAX) throw new Error(`${noun} #${index + 1}: keterangan terlalu panjang (maksimum ${PLACE_DESCRIPTION_MAX} aksara).`);
+    // Editorial length targets are checked before publication; drafts retain the full text.
     const key = name.toLocaleLowerCase("ms");
     if (seen.has(key)) throw new Error(`${noun2} "${name}" disenaraikan dua kali.`);
     seen.add(key);

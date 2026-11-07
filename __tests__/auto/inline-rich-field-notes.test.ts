@@ -9,8 +9,8 @@ function assert(cond: boolean, msg: string) {
 }
 const read = (...p: string[]) => fs.readFileSync(path.join(__dirname, "..", "..", ...p), "utf8").replace(/\r\n/g, "\n");
 const page = read("src", "app", "admin", "works", "[id]", "page.tsx");
-assert(/<InlineRichField\n\s+id="editorNote"\n\s+labelledBy="editorNote-label"\n\s+multiline\n\s+typography\n\s+rows=\{8\}\n\s+maxLength=\{EDITOR_NOTE_MAX\}/.test(page), "the editor's note is the visual field (multi-line, typography, the shared limit)");
-assert(/<InlineRichField\n\s+id="readerNote"\n\s+labelledBy="readerNote-label"\n\s+multiline\n\s+typography\n\s+rows=\{3\}\n\s+maxLength=\{READER_NOTE_MAX\}/.test(page), "the card note is the visual field (the shared limit)");
+assert(/<InlineRichField\n\s+id="editorNote"\n\s+labelledBy="editorNote-label"\n\s+multiline\n\s+typography\n\s+rows=\{8\}/.test(page) && !page.includes("maxLength={EDITOR_NOTE_MAX}"), "the editor's note remains visual and accepts full draft text");
+assert(/<InlineRichField\n\s+id="readerNote"\n\s+labelledBy="readerNote-label"\n\s+multiline\n\s+typography\n\s+rows=\{3\}/.test(page) && !page.includes("maxLength={READER_NOTE_MAX}"), "the card note remains visual and accepts full draft text");
 const limits = read("src", "lib", "admin", "note-limits.ts");
 assert(/EDITOR_NOTE_MAX = 5000;/.test(limits) && /READER_NOTE_MAX = 600;/.test(limits), "the shared limits are 5000 (editor's note) and 600 (card note)");
 assert(!/<textarea[^>]*id="(editorNote|readerNote)"/.test(page), "no plain text box is left for them");

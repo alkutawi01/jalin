@@ -23,8 +23,8 @@ const read = (p: string) => fs.readFileSync(path.join(__dirname, "..", p), "utf8
 // validation
 assert(JSON.stringify(validatePlaceEntries([{ name: "  Beranda  ", description: " Kampung " }, { name: "Jalan" }])) === JSON.stringify([{ name: "Beranda", description: "Kampung" }, { name: "Jalan" }]), "names and descriptions are trimmed; an empty description is left out");
 assert(throws(() => validatePlaceEntries([{ name: "  " }]), "nama diperlukan"), "a place needs a name");
-assert(throws(() => validatePlaceEntries([{ name: "x".repeat(81) }]), "terlalu panjang"), "a name is limited to 80 characters");
-assert(throws(() => validatePlaceEntries([{ name: "A", description: "y".repeat(161) }]), "keterangan terlalu panjang"), "a description is limited to 160 characters");
+assert(validatePlaceEntries([{ name: "x".repeat(81) }])[0].name.length === 81, "a draft keeps the full name for later correction");
+assert(validatePlaceEntries([{ name: "A", description: "y".repeat(161) }])[0].description?.length === 161, "a draft keeps the full description for later correction");
 assert(throws(() => validatePlaceEntries([{ name: "Rumah" }, { name: "rumah" }]), "dua kali"), "the same place twice is refused (case does not matter)");
 assert(throws(() => validatePlaceEntries(Array.from({ length: PLACES_MAX + 1 }, (_, i) => ({ name: `T${i}` }))), "paling banyak"), `more than ${PLACES_MAX} places is refused`);
 assert(throws(() => validatePlaceEntries("x"), "senarai") && throws(() => validatePlaceEntries([null]), "bentuk tidak sah"), "a body that is not a list of places is refused");

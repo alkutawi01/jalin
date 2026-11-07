@@ -311,7 +311,7 @@ export function looksLikePrompt(text: string): boolean {
   return /Anda pembantu editorial Jalin/i.test(text) && /\nPRINSIP\b/.test(text);
 }
 
-export function parseWorkFill(answer: string, scope: WorkFillScope = "all"): WorkFillResult {
+export function parseWorkFill(answer: string, scope: WorkFillScope = "all", options: { draft?: boolean } = {}): WorkFillResult {
   answer = normaliseLabelledLayout(answer, AUTHORING_LABELS);
   // Copied chat responses may arrive as a single line; split only at exact structured labels.
   const normalised = answer.replace(/\r\n/g, "\n").replace(INVISIBLE, "").replace(/\u00a0/g, " ")
@@ -340,7 +340,7 @@ export function parseWorkFill(answer: string, scope: WorkFillScope = "all"): Wor
     for (const rows of characterBlocks(watak)) {
       const name = clean(field(rows, /nama|watak/));
       const role = clean(field(rows, /peranan|peranan watak/));
-      if (name && role) characters.push({ name, role, first: clean(field(rows, /muncul di|muncul|kemunculan pertama|bab/)) });
+      if (name && (role || options.draft)) characters.push({ name, role, first: clean(field(rows, /muncul di|muncul|kemunculan pertama|bab/)) });
     }
   }
 

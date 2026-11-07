@@ -13,6 +13,9 @@ import { isDerivativeType, roleNotAllowed } from "../credit-roles";
 import { classifyFragmen, fragmenTextHash, isIndonesianLanguage, isMalayLanguage, readFragmenTextReview } from "../content/fragmen-kind";
 import { hasMultipleGenres } from "../reader/genre-display";
 import { hasAyatPlaceholder, hasMixedArabicParagraph } from "../reader/communication-blocks";
+import { draftReviews, hasUnresolvedReview } from "./authoring/draft-review";
+import { characterProblems } from "./metadata-rules";
+import { EDITOR_NOTE_MAX, READER_NOTE_MAX } from "./note-limits";
 
 /** A work type as an editor reads it ("Novela"), not the stored key ("novela"). */
 function jenisKarya(type: unknown): string {
@@ -62,6 +65,7 @@ export interface ReadinessWorkInput {
   published_at: string | Date | null;
   editorial_history: unknown;
   metadata?: Record<string, unknown> | null;
+  reader?: { note?: string } | null;
 }
 
 export interface ReadinessCreditInput {
@@ -388,6 +392,21 @@ export function evaluatePublicationReadinessFromData(
   } else if (work.title.trim() === "Draf tanpa tajuk") {
     contentBlockers.push(issue("title_placeholder", "Ganti tajuk sementara sebelum menerbitkan karya."));
   }
+  if (Object.values(draftReviews(work.metadata)).some(hasUnresolvedReview)) {
+    contentBlockers.push(issue("assistant_draft_review", "Jawapan tersimpan masih memerlukan pembetulan atau pengesahan editor dalam Bantuan AI."));
+  }
+  const metadata = work.metadata ?? {};
+  const placeLists = [metadata.places, metadata.times];
+  if (placeLists.some(list => Array.isArray(list) && list.some(row => !row?.name || String(row.name).length > 80 || String(row.description ?? "").length > 160))) {
+    contentBlockers.push(issue("setting_needs_edit", "Semak latar: nama perlu diisi dan diringkaskan kepada 80 aksara; keterangan kepada 160 aksara sebelum terbit."));
+  }
+  const characters = Array.isArray(metadata.characters) ? metadata.characters : [];
+  if (characters.some(row => !row?.name || !row?.role) || characterProblems(characters, (input.readingSections ?? []).map(s => s.slug)).length) {
+    contentBlockers.push(issue("character_needs_edit", "Betulkan nama, peranan atau bab kemunculan watak sebelum terbit."));
+  }
+  if (String(metadata.editorNote ?? "").length > EDITOR_NOTE_MAX || String(work.reader?.note ?? "").length > READER_NOTE_MAX) {
+    contentBlockers.push(issue("note_needs_edit", "Ringkaskan catatan atau nota pembaca sebelum terbit."));
+  }
   if (!work.slug || !work.slug.trim()) {
     contentBlockers.push(issue("slug_missing", "Alamat pautan kosong."));
   } else if (work.slug.startsWith("draf-")) {
@@ -448,6 +467,9 @@ export function evaluatePublicationReadinessFromData(
     contentWarnings.push(
       issue("glossary_empty", "Glosari kosong. Disyorkan sekurang-kurangnya beberapa istilah.")
     );
+  }
+  if (glossary.some(entry => !entry.term?.trim() || !entry.meaning?.trim() || entry.term.length > 80 || entry.meaning.length > 600)) {
+    contentBlockers.push(issue("glossary_needs_edit", "Lengkapkan istilah dan maksud glosari, serta ringkaskan kepada 80 dan 600 aksara sebelum terbit."));
   }
 
   // --- Credits ---
