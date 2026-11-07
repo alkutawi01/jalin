@@ -398,7 +398,7 @@ export function evaluatePublicationReadinessFromData(
   const metadata = work.metadata ?? {};
   const placeLists = [metadata.places, metadata.times];
   if (placeLists.some(list => Array.isArray(list) && list.some(row => !row?.name || String(row.name).length > 80 || String(row.description ?? "").length > 160))) {
-    contentBlockers.push(issue("setting_needs_edit", "Semak latar: nama perlu diisi dan diringkaskan kepada 80 aksara; keterangan kepada 160 aksara sebelum terbit."));
+    contentBlockers.push(issue("setting_needs_edit", "Isi nama latar dan hadkannya kepada maksimum 80 aksara. Hadkan keterangan kepada maksimum 160 aksara sebelum terbit."));
   }
   const characters = Array.isArray(metadata.characters) ? metadata.characters : [];
   if (characters.some(row => !row?.name || !row?.role) || characterProblems(characters, (input.readingSections ?? []).map(s => s.slug)).length) {
@@ -469,7 +469,7 @@ export function evaluatePublicationReadinessFromData(
     );
   }
   if (glossary.some(entry => !entry.term?.trim() || !entry.meaning?.trim() || entry.term.length > 80 || entry.meaning.length > 600)) {
-    contentBlockers.push(issue("glossary_needs_edit", "Lengkapkan istilah dan maksud glosari, serta ringkaskan kepada 80 dan 600 aksara sebelum terbit."));
+    contentBlockers.push(issue("glossary_needs_edit", "Lengkapkan istilah dan maksud glosari. Sebelum terbit, hadkan istilah kepada maksimum 80 aksara dan maksud kepada maksimum 600 aksara."));
   }
 
   // --- Credits ---

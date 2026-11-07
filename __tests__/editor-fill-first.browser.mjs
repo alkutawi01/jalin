@@ -81,7 +81,7 @@ try {
   await page.evaluate(() => { window.allowSave = false; });
   const before = writes;
   await page.getByRole("button", { name: "Isi daripada jawapan", exact: true }).click();
-  await page.getByRole("alert").filter({ hasText: "Teks semasa belum dapat disimpan" }).waitFor();
+  await page.getByRole("alert").filter({ hasText: "Penyimpanan teks semasa belum dapat disahkan" }).waitFor();
   assert.equal(writes, before, "an unsaved manuscript is never discarded on a failed prerequisite save");
   for (const width of [375, 390, 430, 1440]) {
     await page.setViewportSize({ width, height: 900 });

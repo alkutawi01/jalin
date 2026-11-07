@@ -46,15 +46,18 @@ export default function EditorAssistant({ workId, scope, context, blocked, befor
     if ((blocked || document.querySelector('[data-unsaved="true"]')) && !await confirmAction("Ada perubahan pada borang yang belum disimpan. Jika jawapan AI diisi sekarang, perubahan itu akan hilang. Teruskan?", { title: "Perubahan belum disimpan", confirmLabel: "Isi dan buang perubahan", cancelLabel: "Batal" })) return;
     setError(""); setBusy(true);
     try {
-      if (beforeApply && !await beforeApply()) throw new Error("Teks semasa belum dapat disimpan. Jawapan AI kekal dalam kotak tampal; selesaikan masalah simpan dahulu.");
+      if (beforeApply && !await beforeApply()) throw new Error("Penyimpanan teks semasa belum dapat disahkan. Semak teks sebelum mencuba lagi.");
       const res = await fetch(`/api/admin/works/${workId}/assistant-fill`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ mode: "editor", action: "apply", scope, text }) });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Jawapan tidak dapat dibaca.");
       if (!Array.isArray(data.notes)) throw new Error("Respons pelayan tidak lengkap. Muat semula untuk menyemak status simpan.");
       setNote(data.notes.join(" "));
-      await loadReview().catch(() => setError("Isian sudah disimpan, tetapi jawapan tersimpan belum dapat dimuatkan. Cuba muat semula jawapan."));
+      await loadReview().catch(() => setError("Isian telah disimpan, tetapi jawapan tersimpan tidak dapat dimuatkan. Cuba muat semula jawapan."));
       onApplied();
-    } catch (e) { setError(errorText(e, "Sambungan terputus. Muat semula untuk menyemak status simpan.")); }
+    } catch (e) {
+      setManualPaste(true);
+      setError(errorText(e, "Sambungan terputus. Muat semula untuk menyemak status simpan."));
+    }
     finally { setBusy(false); }
   }
   async function paste() {
@@ -69,7 +72,7 @@ export default function EditorAssistant({ workId, scope, context, blocked, befor
   async function resolve() {
     setBusy(true); setError("");
     try {
-      if (beforeApply && !await beforeApply()) throw new Error("Teks semasa belum dapat disimpan. Jawapan tersimpan kekal untuk semakan.");
+      if (beforeApply && !await beforeApply()) throw new Error("Penyimpanan teks semasa belum dapat disahkan. Semak teks sebelum meneruskan pengesahan.");
       const res = await fetch(`/api/admin/works/${workId}/assistant-fill`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ mode: "editor", action: "resolve", scope, text: "", reviewVersion }) });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Semakan tidak dapat disimpan.");
@@ -92,7 +95,7 @@ export default function EditorAssistant({ workId, scope, context, blocked, befor
       <button type="button" className="admin-btn admin-btn-outline" disabled={busy} onClick={() => void paste()}>{busy ? "Mengisi…" : "2. Tampal jawapan"}</button>
     </div>
     {review && hasUnresolvedReview(review) && <div className="admin-alert admin-alert-warning">
-      <p>Jawapan asal sudah disimpan. Betulkan medan dalam borang, atau sunting jawapan di bawah dan isi semula. Isian lain kekal tersimpan.</p>
+      <p>Jawapan asal telah disimpan. Betulkan medan dalam borang atau sunting jawapan di bawah dan isi semula.</p>
       <ul>{review.issues.map((issue, index) => <li key={index}>{issue}</li>)}</ul>
       {review.previous?.map((older, index) => <details key={index}>
         <summary>Jawapan terdahulu yang belum disahkan ({index + 1})</summary>

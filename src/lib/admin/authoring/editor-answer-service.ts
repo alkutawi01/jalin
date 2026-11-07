@@ -74,10 +74,10 @@ export async function processEditorAnswer(id: string, input: EditorAnswerRequest
     if (input.action === "resolve") {
       const reviews = { ...draftReviews(state.work.metadata) };
       const current = createHash("sha256").update(JSON.stringify(reviews[input.scope] ?? null)).digest("hex");
-      if (current !== input.reviewVersion) throw new Error("Jawapan tersimpan berubah di tab lain. Muat jawapan terkini dan semak dahulu.");
+      if (current !== input.reviewVersion) throw new Error("Jawapan tersimpan telah berubah. Muat jawapan terkini dan semak semula sebelum meneruskan.");
       delete reviews[input.scope];
       await trx.updateTable("works").where("id", "=", id).set({ metadata: { ...state.work.metadata, [DRAFT_REVIEW_KEY]: reviews }, updated_at: new Date().toISOString() }).execute();
-      return { version, changes: [], notes: ["Semakan jawapan ditandakan selesai. Semakan penerbitan masih diperlukan."] };
+      return { version, changes: [], notes: ["Semakan jawapan telah ditandakan selesai. Semakan penerbitan masih diperlukan."] };
     }
     let planned: ReturnType<typeof planEditorAnswer> = [];
     const notes: string[] = [];
@@ -194,6 +194,9 @@ export async function processEditorAnswer(id: string, input: EditorAnswerRequest
     metadata[DRAFT_REVIEW_KEY] = reviews;
     await trx.updateTable("works").where("id", "=", id).set({ ...patch, metadata, reading_minutes: readingMinutesFor(undefined, patch.body ?? state.work.body, ...chapters.map(c => c.body)) ?? null, updated_at: now }).execute();
     if (Object.keys(sourcePatch).length) await upsertSourceProvenance(id, { ...sourcePatch, chatbotFields: Object.keys(sourcePatch) } as SourceProvenanceInput, actor, trx);
-    return { version, changes: [], notes: [notes.length ? "Isian disimpan. Buka jawapan tersimpan untuk membetulkan catatan semakan; medan lain sudah diisi." : "Isian diisi dan disimpan. Karya tidak diterbitkan secara automatik.", ...new Set(notes)] };
+    const summary = notes.length
+      ? "Isian yang berjaya diproses telah disimpan. Buka jawapan tersimpan untuk menyemak catatan dan membuat pembetulan."
+      : "Isian telah disimpan dalam draf. Karya tidak diterbitkan secara automatik.";
+    return { version, changes: [], notes: [summary, ...new Set(notes)] };
   });
 }
