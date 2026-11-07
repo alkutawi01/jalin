@@ -7,7 +7,8 @@
  * valid again; codes and batches that were printed after the restore point are put back; counters of shared codes never go down.
  *
  * The signed NDJSON contains shared codes in plaintext and therefore MUST be encrypted before storage or download.
- * Card codes and reader e-mail addresses are represented by keyed hashes; the encrypted backup still needs restricted handling.
+ * Reader addresses are keyed hashes. Physical cards may also carry serial-bound encrypted printable codes (migration 038);
+ * the encrypted backup still needs restricted handling and the corresponding code-key ring for label recovery.
  *
  * Pure parsing and signing live here with the database steps, so both can be tested.
  */
@@ -40,7 +41,7 @@ export async function buildCodesExport(db: Db, deps: { codeKey: MacKey; readerKe
   const codes = await db
     .selectFrom("redeem_codes as c")
     .innerJoin("code_batches as b", "b.id", "c.batch_id")
-    .select(["c.serial", "c.code_mac", "c.key_id", "c.state", "c.issued_at", "c.revoked_at", "c.revoke_reason", "c.redeem_by", "b.batch_number"])
+    .select(["c.serial", "c.code_mac", "c.key_id", "c.state", "c.issued_at", "c.revoked_at", "c.revoke_reason", "c.redeem_by", "c.label_cipher", "c.label_key_id", "b.batch_number"])
     .orderBy("c.serial", "asc")
     .execute();
   const redemptions = await db
@@ -63,10 +64,10 @@ export async function buildCodesExport(db: Db, deps: { codeKey: MacKey; readerKe
 
   lines.push({ t: "meta", v: EXPORT_VERSION, at: now.toISOString(), halted, keyIds: [...new Set(codes.map((c) => c.key_id))].sort(), counts: { batches: batches.length, codes: codes.length, redemptions: redemptions.length, shared: shared.length, sharedRedemptions: sharedUse.length } });
   for (const b of batches) {
-    lines.push({ t: "batch", number: b.batch_number, channel: b.channel, months: b.months, quantity: b.quantity, status: b.status, orderRef: b.order_ref, note: b.note, keyId: b.key_id, createdBy: b.created_by, createdAt: iso(b.created_at), confirmedAt: iso(b.confirmed_at), voidedAt: iso(b.voided_at), voidReason: b.void_reason });
+    lines.push({ t: "batch", number: b.batch_number, channel: b.channel, months: b.months, quantity: b.quantity, status: b.status, orderRef: b.order_ref, note: b.note, keyId: b.key_id, createdBy: b.created_by, createdAt: iso(b.created_at), confirmedAt: iso(b.confirmed_at), voidedAt: iso(b.voided_at), voidReason: b.void_reason, ...(b.label_layout ? { labelLayout: b.label_layout } : {}) });
   }
   for (const c of codes) {
-    lines.push({ t: "code", batch: c.batch_number, serial: c.serial, mac: c.code_mac, keyId: c.key_id, state: c.state, issuedAt: iso(c.issued_at), revokedAt: iso(c.revoked_at), revokeReason: c.revoke_reason, redeemBy: iso(c.redeem_by) });
+    lines.push({ t: "code", batch: c.batch_number, serial: c.serial, mac: c.code_mac, keyId: c.key_id, state: c.state, issuedAt: iso(c.issued_at), revokedAt: iso(c.revoked_at), revokeReason: c.revoke_reason, redeemBy: iso(c.redeem_by), ...(c.label_cipher && c.label_key_id ? { labelCipher: c.label_cipher, labelKeyId: c.label_key_id } : {}) });
   }
   for (const r of redemptions) {
     lines.push({ t: "redemption", serial: r.serial, at: iso(r.redeemed_at), months: r.months, from: iso(r.starts_at), to: iso(r.ends_at), emailMac: r.email_normalized ? emailLookupMac(deps.readerKey, r.email_normalized) : null });
@@ -116,6 +117,12 @@ export function parseCodesExport(file: string, codeKey: MacKey, options: ParseEx
   const meta = parsed[0];
   if (meta.t !== "meta" || meta.v !== EXPORT_VERSION) throw new Error("Versi fail eksport tidak dikenali.");
   const of = (t: string) => parsed.filter((l) => l.t === t);
+  // Optional additions to v1: legacy backups remain readable, but partial/corrupt retention metadata is never accepted.
+  for (const code of of("code")) {
+    if ((code.labelCipher !== undefined || code.labelKeyId !== undefined) &&
+      (typeof code.labelCipher !== "string" || !/^v1\.[A-Za-z0-9_-]{16}\.[A-Za-z0-9_-]{22}\.[A-Za-z0-9_-]{23}$/.test(code.labelCipher) ||
+       typeof code.labelKeyId !== "string" || !code.labelKeyId.length || code.labelKeyId.length > 200)) throw new Error("Maklumat simpanan label dalam eksport tidak sah.");
+  }
   return { at: new Date(String(meta.at)), halted: meta.halted === true, batches: of("batch"), codes: of("code"), redemptions: of("redemption"), shared: of("shared"), sharedRedemptions: of("shared_redemption") };
 }
 
@@ -160,9 +167,12 @@ export async function reconcileWithExport(db: Db, input: ParsedExport | string, 
     const batchIds = new Map<string, string>();
     for (const b of exported.batches) {
       const number = String(b.number);
-      const existing = await trx.selectFrom("code_batches").select(["id", "status"]).where("batch_number", "=", number).executeTakeFirst();
+      const existing = await trx.selectFrom("code_batches").select(["id", "status", "label_layout"]).where("batch_number", "=", number).executeTakeFirst();
       if (existing) {
         batchIds.set(number, existing.id);
+        if (options.apply && !existing.label_layout && b.labelLayout) {
+          await trx.updateTable("code_batches").set({ label_layout: b.labelLayout as Record<string, unknown> }).where("id", "=", existing.id).execute();
+        }
         if (b.status === "VOIDED" && existing.status !== "VOIDED") {
           if (options.apply) await trx.updateTable("code_batches").set({ status: "VOIDED", voided_at: date(b.voidedAt) ?? now, void_reason: String(b.voidReason ?? "Dibatalkan (pulihan)") }).where("id", "=", existing.id).execute();
           report.batchesVoided++;
@@ -173,7 +183,7 @@ export async function reconcileWithExport(db: Db, input: ParsedExport | string, 
       if (options.apply) {
         const row = await trx
           .insertInto("code_batches")
-          .values({ batch_number: number, channel: b.channel === "virtual" ? "virtual" : "physical", months: Number(b.months), quantity: Number(b.quantity), status: b.status as "PENDING_PRINT" | "PRINT_CONFIRMED" | "VOIDED", order_ref: (b.orderRef as string) ?? null, note: (b.note as string) ?? null, key_id: String(b.keyId), created_by: (b.createdBy as string) ?? null, created_at: date(b.createdAt) ?? now, confirmed_at: date(b.confirmedAt), voided_at: date(b.voidedAt), void_reason: (b.voidReason as string) ?? null })
+          .values({ batch_number: number, channel: b.channel === "virtual" ? "virtual" : "physical", months: Number(b.months), quantity: Number(b.quantity), status: b.status as "PENDING_PRINT" | "PRINT_CONFIRMED" | "VOIDED", order_ref: (b.orderRef as string) ?? null, note: (b.note as string) ?? null, key_id: String(b.keyId), created_by: (b.createdBy as string) ?? null, created_at: date(b.createdAt) ?? now, confirmed_at: date(b.confirmedAt), voided_at: date(b.voidedAt), void_reason: (b.voidReason as string) ?? null, label_layout: (b.labelLayout as Record<string, unknown>) ?? null })
           .returning("id")
           .executeTakeFirstOrThrow();
         batchIds.set(number, row.id);
@@ -185,14 +195,17 @@ export async function reconcileWithExport(db: Db, input: ParsedExport | string, 
     for (const c of exported.codes) {
       const serial = String(c.serial);
       maxSerial = Math.max(maxSerial, serialNumber(serial));
-      const existing = await trx.selectFrom("redeem_codes").select(["id", "state"]).where("serial", "=", serial).executeTakeFirst();
+      const existing = await trx.selectFrom("redeem_codes").select(["id", "state", "code_mac", "key_id", "label_cipher"]).where("serial", "=", serial).executeTakeFirst();
       if (!existing) {
         report.codesAdded++;
         if (options.apply) {
           const batchId = batchIds.get(String(c.batch)) ?? (await trx.selectFrom("code_batches").select("id").where("batch_number", "=", String(c.batch)).executeTakeFirstOrThrow()).id;
-          await trx.insertInto("redeem_codes").values({ batch_id: batchId, serial, code_mac: String(c.mac), key_id: String(c.keyId), state: c.state as "generated" | "issued" | "revoked", issued_at: date(c.issuedAt), revoked_at: date(c.revokedAt), revoke_reason: (c.revokeReason as string) ?? null, redeem_by: date(c.redeemBy) }).execute();
+          await trx.insertInto("redeem_codes").values({ batch_id: batchId, serial, code_mac: String(c.mac), key_id: String(c.keyId), state: c.state as "generated" | "issued" | "revoked", issued_at: date(c.issuedAt), revoked_at: date(c.revokedAt), revoke_reason: (c.revokeReason as string) ?? null, redeem_by: date(c.redeemBy), label_cipher: (c.labelCipher as string) ?? null, label_key_id: (c.labelKeyId as string) ?? null }).execute();
         }
         continue;
+      }
+      if (options.apply && !existing.label_cipher && c.labelCipher && c.labelKeyId && existing.code_mac === c.mac && existing.key_id === c.keyId) {
+        await trx.updateTable("redeem_codes").set({ label_cipher: String(c.labelCipher), label_key_id: String(c.labelKeyId) }).where("id", "=", existing.id).execute();
       }
       if (c.state === "revoked" && existing.state !== "revoked") {
         report.codesCancelledAsInExport++;

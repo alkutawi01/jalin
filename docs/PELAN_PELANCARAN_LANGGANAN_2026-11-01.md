@@ -601,3 +601,37 @@ tiada arahan dalam artwork diambil sebagai kebenaran operasi atau keputusan prod
   tiada perubahan DB, env atau produksi dan tiada konfigurasi pencetak diubah.
 - Ujian penjana label sedia ada **33/33 lulus** dan `git diff --check` lulus selepas kemas kini catatan/keputusan saiz.
   Ujian ini mengesahkan PDF dan susun atur berangka; ia bukan ujian hasil cetakan thermal fizikal.
+
+## 14. Keutamaan jana/simpan/cetak label, arahan Izzat 7 November 2026
+
+Izzat mengurus reka bentuk kad sendiri. Pelaksanaan penjanaan, simpanan dan cetakan label tidak perlu menunggu artwork kad.
+Skop pakej setempat ini: kod fizikal boleh dijana, disimpan terenkripsi, dimuat turun dalam PDF 50 × 30 mm dan dicetak semula
+secara terpilih tanpa mencipta kod/nombor siri/stok/hak akses baharu. Tiada barcode atau reka bentuk kad ditambah dalam pakej ini.
+
+Reka bentuk sebelum pelaksanaan:
+- Migrasi aditif **038_physical_label_storage**: dua lajur nullable pada `redeem_codes` (`label_cipher`, `label_key_id`),
+  serta susun atur label nullable pada `code_batches` (`label_layout`). Kod lama kekal sah tetapi tidak boleh dibina semula
+  daripada MAC jika tiada ciphertext. Jangan menjana pengganti sebagai kesan sampingan cetakan semula.
+- AES-256-GCM dengan kunci diterbitkan melalui HKDF daripada CODE_MAC_KEY sedia ada, tujuan berasingan daripada kod e-mel
+  dan sandaran. Ciphertext terikat pada nombor siri. Simpan pengecam kunci; cetakan semula menyokong ring kunci lama sedia ada.
+  Jangan memutar/menjana kunci produksi; kunci lama mesti disimpan untuk pemulihan label seperti keperluan kod sedia ada.
+- Semua kod fizikal baharu dan pengganti fizikal menyimpan ciphertext dalam transaksi penjanaan. Susun atur cetakan disimpan
+  bagi kelompok. PDF pertama dibina semula daripada simpanan tersebut sebelum transaksi disahkan, membuktikan kod tersimpan boleh dibuka.
+- Pemilik sahaja, same-origin POST, PDF `no-store`; cetakan semula mengunci kelompok/kod, menyemak MAC hasil nyahsulit,
+  menolak ciphertext rosak/kunci tiada dan merekod audit wajib. Tiada plaintext dalam JSON, aktiviti, senarai, log atau props React.
+- Cetakan semula hanya kod fizikal tersimpan yang belum ditebus/dibatalkan/luput dalam kelompok aktif. Pilihan tertentu mesti
+  sepadan sepenuhnya; jangan mengeluarkan PDF separa jika salah satu pilihan tidak layak. Muat turun semula tidak mengaktifkan kod.
+- Sandaran terenkripsi membawa ciphertext dan pengecamnya; pemulihan mengembalikan simpanan tanpa menghidupkan kod yang telah digunakan.
+  Fail lama tanpa medan baharu masih diterima, tetapi tidak boleh mencipta plaintext/ciphertext yang tidak pernah disimpan.
+- Ujian kriptografi/label tanpa DB, integrasi dengan migrasi 038 **di dalam transaksi rollback pembangunan sahaja**, pemulihan
+  ciphertext/penebusan, PDF tepat/tiada kod berganda, serta QA kawalan admin. Tiada migrasi kekal pada pembangunan atau produksi,
+  ujian transaksi serentak, cabang baharu, pembayaran, cetakan sebenar, env atau suis produksi dalam pakej ini.
+
+Pintu migrasi produksi kini perlu menyemak 038 juga sebelum kod ini boleh ditempatkan. Kelulusan operasi produksi terdahulu
+tidak dianggap meliputi migrasi baharu ini. Tiada dakwaan bahawa pencetak fizikal sudah diuji tanpa hasil cetakan sebenar.
+
+Semakan 7 November 2026: ujian PostgreSQL dalam memori menggunakan migrasi sebenar lulus untuk jana dua kod, cetak semula PDF yang sama, cetak satu pilihan, tolak kunci yang tiada, tebus satu kod, pulihkan sandaran terenkripsi dan kecualikan kod yang sudah ditebus. Kegagalan rekod audit membatalkan penjanaan tanpa meninggalkan kelompok atau kod tambahan. TypeScript, ujian kriptografi dan ujian ukuran PDF lulus. Sampel 50 × 30 mm diperiksa pada render 203 dpi. Pengesahan pada pelekat fizikal masih diperlukan.
+
+Inventori baca sahaja Neon `production` pada tarikh sama menunjukkan migrasi 034 direkodkan dan 035–038 belum direkodkan. Jadual `purchase_orders` dan lajur `redeem_codes.label_cipher` belum wujud. Bilangan kelompok, kod dan penebusan masing-masing 0. `/beli` dan `/tebus` memberi HTTP 404. Ini menjadi asas semakan sebelum pintu migrasi dan konfigurasi.
+
+[Semakan bahasa teks label pentadbir](https://chatgpt.com/g/g-p-6aa7d8eaff5c81918ed35b086fc59cd2/c/6aed9784-b99c-83ec-8ec8-17102e9e26e5) dibuat dalam projek ChatGPT Jalin pada 7 November. Teks cetakan semula menyebut kod yang layak, mengikut penapis sebenar. PDF penjana mengandungi satu halaman bagi setiap label, disahkan dalam ujian `label-pdf.test.ts`.

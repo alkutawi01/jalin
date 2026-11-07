@@ -672,6 +672,7 @@ export interface CodeBatches {
   confirmed_at: Date | null;
   voided_at: Date | null;
   void_reason: string | null;
+  label_layout: Record<string, unknown> | null;
 }
 
 export interface RedeemCodes {
@@ -685,6 +686,8 @@ export interface RedeemCodes {
   revoked_at: Date | null;
   revoke_reason: string | null;
   redeem_by: Date | null;
+  label_cipher: string | null;
+  label_key_id: string | null;
   created_at: Generated<Date>;
 }
 

@@ -36,7 +36,7 @@ export default async function BatchPage({ params }: { params: Promise<{ id: stri
           </tbody>
         </table>
       </div>
-      <CodesTable batchId={batch.id} batchNumber={batch.batchNumber} batchStatus={batch.status} />
+      <CodesTable batchId={batch.id} batchNumber={batch.batchNumber} batchStatus={batch.status} physical={batch.channel === "physical"} />
     </div>
   );
 }

@@ -31,6 +31,7 @@ export const ACTIVITY_ACTIONS = {
   "visual.replace": "Menukar gambar",
   "subscription.batch.create": "Membuat kelompok kod kad",
   "subscription.batch.update": "Mengurus kelompok kod kad",
+  "subscription.labels.print": "Menyediakan PDF label kad",
   "subscription.code.revoke": "Membatalkan kod kad",
   "subscription.order.resend": "Menghantar semula e-mel kod pesanan",
   "subscription.order.replace": "Penggantian kod e-mel pesanan",

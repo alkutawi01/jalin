@@ -1,8 +1,11 @@
 import { getDb } from "../../../../../../lib/db";
 import { logActivity } from "../../../../../../lib/admin/activity";
-import { bad, guarded, json, readBody, sameOriginOrRefuse, str } from "../../../../../../lib/admin/langganan-api";
+import { actor, bad, guarded, json, pdfResponse, readBody, sameOriginOrRefuse, str } from "../../../../../../lib/admin/langganan-api";
 import { confirmBatchPrinted, issueCodes, revokeUnredeemedCodes, voidBatch } from "../../../../../../lib/reader-auth/redeem";
 import { batchInfo, listCodes, type CodeFilter } from "../../../../../../lib/reader-auth/admin";
+import { codeKey, previousCodeKeys } from "../../../../../../lib/reader-auth/http";
+import { LabelPrintError, printPhysicalLabels } from "../../../../../../lib/reader-auth/physical-labels";
+import { PHYSICAL_LABEL_COPY as COPY } from "../../../../../../lib/subscription/physical-label-copy";
 
 export const dynamic = "force-dynamic";
 
@@ -33,6 +36,17 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     const body = await readBody(request, 200_000);
     const db = getDb();
     const action = str(body.action, 20);
+
+    if (action === "labels") {
+      if (body.serials !== undefined && (!Array.isArray(body.serials) || body.serials.some((value) => typeof value !== "string") || body.serials.length > 5000)) return bad(COPY.selection);
+      try {
+        const printed = await printPhysicalLabels(db, { keys: [codeKey(), ...previousCodeKeys()], actor: await actor() }, { batchId: id, serials: body.serials as string[] | undefined });
+        return pdfResponse(printed.pdf, `label-${printed.batchNumber}.pdf`, { "X-Cards": String(printed.count) });
+      } catch (error) {
+        if (error instanceof LabelPrintError) return bad(error.reason === "actor" ? "Sesi pentadbir telah tamat. Log masuk semula." : COPY[error.reason], error.reason === "actor" ? 403 : 409);
+        return bad(COPY.failed, 503);
+      }
+    }
 
     if (action === "confirm") {
       const done = await confirmBatchPrinted(db, id);
