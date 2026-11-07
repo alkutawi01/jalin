@@ -1,10 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createHash } from "node:crypto";
 import { getCurrentAdmin } from "../../../../../../lib/admin/auth";
 import { can, roleFromClaim } from "../../../../../../lib/admin/permissions";
 import { applyAssistantAnswer } from "../../../../../../lib/admin/authoring/apply-answer";
 import { logActivity } from "../../../../../../lib/admin/activity";
 import { processEditorAnswer } from "../../../../../../lib/admin/authoring/editor-answer-service";
 import { publicErrorMessage } from "../../../../../../lib/admin/api-errors";
+import { getDb } from "../../../../../../lib/db";
+import { draftReviews } from "../../../../../../lib/admin/authoring/draft-review";
+
+export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const admin = await getCurrentAdmin();
+  const role = roleFromClaim(admin?.role);
+  if (!admin || !role) return NextResponse.json({ error: "Sesi tamat." }, { status: 401 });
+  if (!can(role, "work.write") || admin.mustChangePassword) return NextResponse.json({ error: "Tiada kebenaran." }, { status: 403 });
+  const work = await getDb().selectFrom("works").where("id", "=", (await params).id).select("metadata").executeTakeFirst();
+  if (!work) return NextResponse.json({ error: "Karya tidak ditemui." }, { status: 404 });
+  const reviews = draftReviews(work.metadata);
+  const versions = Object.fromEntries(Object.entries(reviews).map(([scope, review]) => [scope, createHash("sha256").update(JSON.stringify(review)).digest("hex")]));
+  return NextResponse.json({ reviews, versions }, { headers: { "Cache-Control": "private, no-store" } });
+}
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -25,6 +40,6 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     await logActivity({ action: "work.update", subjectType: "work", subjectId: id, workId: id, summary: `Mengisi cadangan bot sembang (${body.scope}) selepas pengesahan editor.` });
     return NextResponse.json(result);
   } catch (error) {
-    return NextResponse.json({ error: `${publicErrorMessage(error, "Tidak dapat mengisi jawapan.")} Semua perubahan transaksi dibatalkan.` }, { status: 400 });
+    return NextResponse.json({ error: publicErrorMessage(error, "Isian tidak dapat disimpan. Jawapan masih tersedia dalam kotak tampal; cuba lagi selepas sambungan pulih.") }, { status: 400 });
   }
 }

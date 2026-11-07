@@ -124,7 +124,7 @@ function fold(value: string): string {
 /** A meaning the chatbot did not know ("Tidak dinyatakan" is the word the Tambah Karya prompts teach it): not a meaning. */
 const NO_MEANING = /^(tiada|tidak ada|tidak dinyatakan|tidak diketahui|n\/a|-|—|\.\.\.)\.?$/i;
 
-export function parseGlossaryPaste(answer: string, body: string, existingTerms: string[]): GlossaryPasteResult {
+export function parseGlossaryPaste(answer: string, body: string, existingTerms: string[], options: { draft?: boolean } = {}): GlossaryPasteResult {
   answer = normaliseLabelledLayout(answer, AUTHORING_LABELS);
   const text = responseSectionText(answer, "GLOSARI")
     .replace(/\r\n/g, "\n")
@@ -146,7 +146,7 @@ export function parseGlossaryPaste(answer: string, body: string, existingTerms: 
   const flush = () => {
     if (term === null && meaning.length === 0) return;
     const m = meaning.join(" ").trim();
-    if (term && m && !NO_MEANING.test(m) && !isPlaceholder(term) && !isPlaceholder(m)) {
+    if (term && (options.draft || (m && !NO_MEANING.test(m) && !isPlaceholder(term) && !isPlaceholder(m)))) {
       pairs.push({
         term,
         meaning: m,
@@ -229,10 +229,10 @@ export function parseGlossaryPaste(answer: string, body: string, existingTerms: 
   const existing: string[] = [];
   const notInText: string[] = [];
   for (const pair of pairs) {
-    const termText = italicise(pair.term.slice(0, MAX_TERM), pair.foreign);
-    const meaningText = italicise(pair.meaning.slice(0, MAX_MEANING), pair.foreign);
+    const termText = italicise(options.draft ? pair.term : pair.term.slice(0, MAX_TERM), pair.foreign);
+    const meaningText = italicise(options.draft ? pair.meaning : pair.meaning.slice(0, MAX_MEANING), pair.foreign);
     const key = fold(termText);
-    if (!key || !meaningText) {
+    if (!key || (!meaningText && !options.draft)) {
       unreadable += 1;
       continue;
     }
@@ -244,7 +244,7 @@ export function parseGlossaryPaste(answer: string, body: string, existingTerms: 
     seen.add(key);
     if (haystack && !haystack.includes(key)) {
       notInText.push(termText);
-      continue;
+      if (!options.draft) continue;
     }
     items.push({
       term: termText,

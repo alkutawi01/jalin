@@ -24,7 +24,7 @@ assert(/readerNoteOf\(\(live\.work as \{ reader\?: unknown \}\)\.reader\) !== sn
 assert(revision.includes("snapshotReaderNote(row.snapshot) === liveReaderNote"), "republishing does not reuse a revision whose note differs");
 const route = read("src/app/api/admin/works/[id]/route.ts");
 const limits = read("src/lib/admin/note-limits.ts");
-assert(route.includes("readerNote") && route.includes("READER_NOTE_MAX") && /READER_NOTE_MAX = 600/.test(limits), "the work API accepts the note, limited to 600 characters (the shared limit)");
+assert(route.includes("readerNote") && !route.includes("noteTooLongMessage") && /READER_NOTE_MAX = 600/.test(limits), "draft notes save in full; the 600-character publication target remains shared");
 const service = read("src/lib/admin/work-service.ts");
 assert(/updateData\.reader = note \? \{ note \} : null/.test(service), "an empty note removes it");
 const page = read("src/app/admin/works/[id]/page.tsx");

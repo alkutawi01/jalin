@@ -1,0 +1,27 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { parseGlossaryPaste } from "../../src/lib/admin/authoring/glossary-paste";
+import { planEditorAnswer } from "../../src/lib/admin/authoring/editor-assistant";
+import { workFromSnapshot } from "../../src/lib/content/database-repository";
+import { validatePlaceEntries, validateTimeEntries } from "../../src/lib/admin/work-service";
+
+const long = "Keterangan lengkap yang perlu dikekalkan. ".repeat(12).trim();
+assert.equal(validatePlaceEntries([{ name: "Tempat", description: long }])[0].description, long);
+assert.equal(validateTimeEntries([{ name: "Era", description: long }])[0].description, long);
+const glossary = `[GLOSARI]\nIstilah: tanggam\nMaksud: ${long.repeat(3)}\n____\nIstilah: belum-ada\nMaksud:`;
+const draft = parseGlossaryPaste(glossary, "Teks lain.", [], { draft: true });
+assert.equal(draft.items.length, 2);
+assert.equal(draft.items[0].meaning, long.repeat(3));
+assert.equal(draft.items[1].meaning, "");
+assert.equal(parseGlossaryPaste(glossary, "Teks lain.", []).items.length, 0, "existing strict parser remains available outside draft filling");
+const changes = planEditorAnswer(`[WATAK]\nNama: Tokoh belum lengkap\n[LATAR]\nJenis: tempat\nNama: Tempat\nKeterangan: ${long}`, "all", { work: { type: "cerpen", metadata: {} }, chapters: [], credits: [], glossary: [], source: null });
+assert.equal(changes.find(c => c.key.startsWith("places/"))?.value.description, long);
+assert.equal(changes.find(c => c.key.startsWith("characters/"))?.value.role, "");
+const sentinel = "PRIVATE_UNPUBLISHED_ANSWER_FIXTURE";
+const snapshot = workFromSnapshot({ id: "fixture", title: "Ujian", slug: "ujian", type: "cerpen", body: "Teks", metadata: { places: [{ name: "Tempat" }], assistantDraftReview: { all: { text: sentinel, issues: ["Semak"] } } } }, "fixture");
+assert.ok(snapshot);
+assert.equal(JSON.stringify(snapshot).includes(sentinel), false, "saved answers cannot leak through legacy/preview reader snapshots");
+assert.deepEqual(snapshot.metadata?.places, [{ name: "Tempat" }]);
+const revisionSource = readFileSync("src/lib/admin/revision-service.ts", "utf8");
+assert.match(revisionSource, /work: \{ \.\.\.input.work, metadata: withoutDraftReviews\(input.work.metadata\) \}/, "new raw snapshots omit private answers too");
+console.log("PASS: draft fields retain full text and incomplete rows; reader snapshot excludes saved answers.");

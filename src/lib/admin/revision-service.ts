@@ -3,6 +3,7 @@ import type { Database, WorkRevisions } from "../db/types";
 import { getDb, hasDb } from "../db";
 import { normaliseCountries } from "../reader/countries";
 import { parseThemeSetting } from "../reader/story-theme";
+import { withoutDraftReviews } from "./authoring/draft-review";
 import {
   evaluatePublicationReadinessFromData,
   type PublicationReadiness,
@@ -226,7 +227,7 @@ function buildSnapshot(input: Awaited<ReturnType<typeof loadWorkForRevision>>) {
     // Complete rows as they were at publish time. The public repository maps THESE (with the same
     // mapping it uses for live rows) so a published work never changes until it is published again.
     raw: {
-      work: input.work,
+      work: { ...input.work, metadata: withoutDraftReviews(input.work.metadata) },
       credits: input.credits,
       visuals: input.visuals,
       glossary: input.glossary,
@@ -249,7 +250,7 @@ function buildSnapshot(input: Awaited<ReturnType<typeof loadWorkForRevision>>) {
     versionLabel: input.work.version_label,
     revisionCount: input.work.revision_count,
     publishedBy: input.work.published_by,
-    metadata: input.work.metadata,
+    metadata: withoutDraftReviews(input.work.metadata),
     firstPublishedAt: input.work.first_published_at,
     publishedRevisionId: input.work.published_revision_id,
     body: input.work.body,

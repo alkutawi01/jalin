@@ -24,11 +24,11 @@ ok(noteTooLongMessage("X", 10, 5) === "X terlalu panjang (10 aksara; maksimum 5)
 
 // every path that writes a note uses the shared limit rather than its own number
 const route = src("src/app/api/admin/works/[id]/route.ts");
-ok(route.includes("READER_NOTE_MAX") && route.includes("EDITOR_NOTE_MAX") && !/readerNote\.length > 600|editorNote\.length > 5000/.test(route), "the form's save uses the shared limits");
+ok(!route.includes("noteTooLongMessage"), "the form saves the full draft note; length is checked at publication");
 const service = src("src/lib/admin/authoring/editor-answer-service.ts");
-ok(service.includes("assertNoteFits(READER_NOTE_LABEL") && service.includes("assertNoteFits(EDITOR_NOTE_LABEL"), "a pasted chatbot answer is held to the same limits");
+ok(service.includes("noteTooLongMessage(READER_NOTE_LABEL") && service.includes("noteTooLongMessage(EDITOR_NOTE_LABEL") && !service.includes("assertNoteFits("), "pasted notes are saved whole with editorial review notes");
 const page = src("src/app/admin/works/[id]/page.tsx");
-ok(page.includes("maxLength={READER_NOTE_MAX}") && page.includes("maxLength={EDITOR_NOTE_MAX}"), "the fields take their limit from the same constants");
+ok(!page.includes("maxLength={READER_NOTE_MAX}") && !page.includes("maxLength={EDITOR_NOTE_MAX}"), "note fields allow correction after an overlength import");
 ok(page.includes("form.readerNote.length") && page.includes("form.editorNote.length"), "both fields show how many characters are used");
 
 console.log(`\n${passed} passed, ${failed} failed`);
