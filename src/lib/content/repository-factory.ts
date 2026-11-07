@@ -40,9 +40,12 @@ export function getContentRepository(): ContentRepository {
 /**
  * The database repository loads every work once. A long-lived server instance
  * would otherwise keep showing old content (a new image, a status change)
- * until the next deploy, so it is reloaded when older than this.
+ * until the next deploy, so it is reloaded when older than this. The five-minute
+ * window bounds public staleness without re-reading the entire corpus every
+ * thirty seconds under traffic. This refresh is request-driven, not a timer.
+ * Admin reads/writes use their own database boundary and remain fresh.
  */
-const DB_REFRESH_MS = 30_000;
+const DB_REFRESH_MS = 5 * 60_000;
 let loadedAt = 0;
 
 export async function initContentRepository(): Promise<ContentRepository> {

@@ -9,8 +9,6 @@ interface Place {
   description?: string;
 }
 
-const NAME_MAX = 80;
-const DESCRIPTION_MAX = 160;
 const SETTINGS = {
   places: {
     path: "places",
@@ -109,7 +107,7 @@ export default function PlacesEditor({ workId, kind = "places" }: { workId: stri
         </div>
       </div>
       <p className="admin-form-hint">
-        {cfg.hint} Keterangan: paling banyak 160 aksara.{kind === "times" ? ` Paling banyak ${PLACES_MAX} masa.` : ""}
+        {cfg.hint} Teks penuh disimpan dalam draf. Sebelum terbit, ringkaskan nama kepada 80 aksara dan keterangan kepada 160 aksara.{kind === "times" ? ` Paling banyak ${PLACES_MAX} masa.` : ""}
       </p>
       {error ? <div className="admin-alert admin-alert-error" role="alert">{error}</div> : null}
       {success ? <div className="admin-alert admin-alert-success" role="status">{success}</div> : null}
@@ -133,7 +131,6 @@ export default function PlacesEditor({ workId, kind = "places" }: { workId: stri
                   <td>
                     <InlineRichField
                       value={place.name}
-                      maxLength={NAME_MAX}
                       ariaLabel={`${cfg.nameLabel} ${index + 1}`}
                       placeholder={cfg.namePlaceholder}
                       onChange={(name) => setPlaces(places.map((p, i) => (i === index ? { ...p, name } : p)))}
@@ -142,7 +139,6 @@ export default function PlacesEditor({ workId, kind = "places" }: { workId: stri
                   <td>
                     <InlineRichField
                       value={place.description ?? ""}
-                      maxLength={DESCRIPTION_MAX}
                       ariaLabel={`Keterangan ${cfg.noun} ${index + 1}`}
                       placeholder={cfg.descriptionPlaceholder}
                       onChange={(description) => setPlaces(places.map((p, i) => (i === index ? { ...p, description } : p)))}

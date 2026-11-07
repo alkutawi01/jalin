@@ -48,6 +48,11 @@ export function isVercelRuntime(): boolean {
   return process.env.VERCEL === "1" || process.env.VERCEL === "true";
 }
 
+/** Hostinger release branch: a production server's local disk is replaced on every deployment, so never write assets there. */
+function localFsIsEphemeral(): boolean {
+  return isVercelRuntime() || process.env.NODE_ENV === "production";
+}
+
 /** Vercel Blob (public store). Set by Vercel when a Blob store is connected to the project. */
 export function blobConfigured(): boolean {
   return Boolean(process.env.BLOB_READ_WRITE_TOKEN?.trim());
@@ -325,8 +330,8 @@ async function persistAssetBytes(
         backend: "object_storage",
       };
     }
-    // Object storage failed — do not fall back to ephemeral FS on Vercel.
-    if (isVercelRuntime()) {
+    // Object storage failed — do not fall back to ephemeral FS on Vercel or any production server.
+    if (localFsIsEphemeral()) {
       return { stableAssetPath: null, finalized: false, providerAssetUrl, backend: "none" };
     }
   }

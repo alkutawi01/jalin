@@ -81,19 +81,19 @@ export function isDraftPlaceholder(change: { key: string; before: string }): boo
   return (change.key === "title" && change.before === "Draf tanpa tajuk") || (change.key === "slug" && /^draf-/.test(change.before));
 }
 
-/** The same limits the save enforces (work-service), told at the review step instead of after "Isi borang" rolled everything back. */
+/** Publication length targets. Draft filling keeps the complete value and records a review note. */
 export const PLACE_NAME_LIMIT = 80;
 export const PLACE_DESCRIPTION_LIMIT = 160;
 
 export function placeEntryProblem(row: { name?: unknown; description?: unknown }): string | undefined {
   const name = String(row.name ?? "").trim();
   const description = String(row.description ?? "").trim();
-  if (name.length > PLACE_NAME_LIMIT) return `Nama ${name.length} aksara; paling banyak ${PLACE_NAME_LIMIT}. Pendekkan nama dalam jawapan.`;
-  if (description.length > PLACE_DESCRIPTION_LIMIT) return `Keterangan ${description.length} aksara; paling banyak ${PLACE_DESCRIPTION_LIMIT}. Pendekkan keterangan dalam jawapan.`;
+  if (name.length > PLACE_NAME_LIMIT) return `Nama ${name.length} aksara. Nilai penuh disimpan; ringkaskan kepada ${PLACE_NAME_LIMIT} aksara sebelum terbit.`;
+  if (description.length > PLACE_DESCRIPTION_LIMIT) return `Keterangan ${description.length} aksara. Nilai penuh disimpan; ringkaskan kepada ${PLACE_DESCRIPTION_LIMIT} aksara sebelum terbit.`;
   return undefined;
 }
 
-export interface EditorChange { id: string; group: Exclude<EditorScope, "all">; label: string; before: string; after: string; selected: boolean; /** Set when this change would be refused on save: the review step shows it and holds "Isi borang". */ problem?: string; value: any; key: string }
+export interface EditorChange { id: string; group: Exclude<EditorScope, "all">; label: string; before: string; after: string; selected: boolean; /** Editorial review note; never prevents draft filling. */ problem?: string; value: any; key: string }
 const record = (v: unknown): Record<string, any> => v && typeof v === "object" && !Array.isArray(v) ? v as Record<string, any> : {};
 /** "Tiada nota tambahan.", "Tidak berkenaan", "Tiada": a chatbot's way of saying there is nothing to put in the field. It is not a note, a genre or a place. */
 const NOTHING = /^(?:tiada|tidak ada|tidak berkenaan|tidak dinyatakan|tiada (?:nota|catatan|maklumat|amaran)(?: (?:tambahan|khas|untuk dinyatakan))?|n\/a|-|—)\.?$/i;
@@ -114,10 +114,10 @@ export function planEditorAnswer(answer: string, scope: EditorScope, state: Edit
   const extracted = extractParserJson(answer);
   if (extracted) { try { data = record(JSON.parse(stripTrailingCommas(extracted.jsonText))); } catch { throw new Error("JSON tidak lengkap. Salin keseluruhan jawapan AI."); } }
   else {
-    const fill = parseWorkFill(answer);
+    const fill = parseWorkFill(answer, "all", { draft: true });
     const raw = parseLabelledAnswer(/^\s*\[KARYA\]/im.test(answer) ? answer : `[KARYA]\n${answer}`)?.raw ?? {};
     const extra = labelledEditorFields(answer, scope);
-    data = { ...extra, work: { title: raw.title, slug: raw.slug, body: raw.content, dek: fill.dek, genre: fill.genre, audience: fill.audience, ...extra.work }, characters: fill.characters.map(c => ({ ...c, firstAppearanceSection: c.first })), places: fill.places, times: fill.times, countries: fill.countries, glossary: parseGlossaryPaste(answer, String(state.work.body ?? ""), []).items };
+    data = { ...extra, work: { title: raw.title, slug: raw.slug, body: raw.content, dek: fill.dek, genre: fill.genre, audience: fill.audience, ...extra.work }, characters: fill.characters.map(c => ({ ...c, firstAppearanceSection: c.first })), places: fill.places, times: fill.times, countries: fill.countries, glossary: parseGlossaryPaste(answer, String(state.work.body ?? ""), [], { draft: true }).items };
     if (fill.source) data.source = { originalTitle: fill.source.title, author: fill.source.author, originalLanguage: fill.source.language, publicationYear: fill.source.firstPublished, publisher: fill.source.publisher, editionYear: fill.source.editionYear, printing: fill.source.printing, editorName: fill.source.editor, translatorName: fill.source.translator, isbn: fill.source.isbn, sourceLocator: fill.source.locator, sourceTextBasis: fill.source.basis, sourceUrl: /^https?:\/\//i.test(fill.source.url) ? fill.source.url : undefined, sourceEdition: fill.source.edition };
   }
   const changes: EditorChange[] = [];

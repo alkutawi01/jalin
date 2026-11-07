@@ -298,8 +298,6 @@ export default function EditWorkPage() {
   const router = useRouter();
   const params = useParams();
   const workId = params.id as string;
-  const provisionalVisit = useRef(false);
-  const leavingProvisional = useRef(false);
 
   const [activeTab, setActiveTab] = useState<Tab>("content");
   const manuscriptRef = useRef<HTMLTextAreaElement>(null);
@@ -639,7 +637,10 @@ export default function EditWorkPage() {
     async function loadWork() {
       try {
         const res = await fetch(`/api/admin/works/${workId}`);
-        if (!res.ok) throw new Error("Karya tidak ditemui.");
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.error || (res.status === 404 ? "Karya tidak ditemui. Kekalkan teks anda dalam tab ini." : "Karya tidak dapat dimuatkan. Kekalkan teks anda dan cuba lagi."));
+        }
         const work: WorkData = await res.json();
         setManuscriptMode(canEditVisually(work.body || "") ? "visual" : "markdown");
 
@@ -710,49 +711,19 @@ export default function EditWorkPage() {
     || JSON.stringify(characters) !== charactersBaseline.current
     || JSON.stringify(sourceForm) !== sourceBaseline.current;
   const assistantContext = { type: form.type, title: form.title, body: form.body, dek: form.dek, genre: form.genre, chapters: sections, credits, contributors, source: sourceForm, characters, glossary: glossaryTerms };
-  const assistantBlocked = dirty || unsavedElsewhere || !!restoreOffer;
+  const assistantBlocked = unsavedElsewhere || !!restoreOffer;
 
   useEffect(() => {
     if (!dirty && !unsavedElsewhere) return;
     const warn = (e: BeforeUnloadEvent) => {
-      if (leavingProvisional.current) return;
       e.preventDefault();
     };
     window.addEventListener("beforeunload", warn);
     return () => window.removeEventListener("beforeunload", warn);
   }, [dirty, unsavedElsewhere]);
 
-  useEffect(() => {
-    provisionalVisit.current = new URLSearchParams(window.location.search).get("baharu") === "1";
-    if (!provisionalVisit.current) return;
-    const discard = async () => {
-      const response = await fetch(`/api/admin/works/${workId}/discard-empty`, { method: "POST", keepalive: true });
-      if (!response.ok) throw new Error("Draf kosong tidak dapat dibuang.");
-    };
-    const pagehide = () => { if (!leavingProvisional.current) void discard().catch(() => undefined); };
-    const followLink = async (event: MouseEvent) => {
-      const anchor = (event.target as Element | null)?.closest<HTMLAnchorElement>("a[href]");
-      if (!anchor || anchor.target || anchor.download || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-      const next = new URL(anchor.href, window.location.href);
-      if (next.href === window.location.href || next.origin !== window.location.origin) return;
-      event.preventDefault();
-      if ((dirty || unsavedElsewhere) && !await confirmAction("Perubahan belum disimpan. Keluar tanpa menyimpan dan buang draf ini?", { title: "Simpan draf dahulu?", confirmLabel: "Keluar tanpa simpan", cancelLabel: "Kembali menyunting", danger: true })) return;
-      leavingProvisional.current = true;
-      try {
-        await discard();
-        window.location.href = next.href;
-      } catch (error) {
-        leavingProvisional.current = false;
-        setError(errorText(error, "Draf kosong tidak dapat dibuang. Cuba lagi."));
-      }
-    };
-    window.addEventListener("pagehide", pagehide);
-    document.addEventListener("click", followLink, true);
-    return () => {
-      window.removeEventListener("pagehide", pagehide);
-      document.removeEventListener("click", followLink, true);
-    };
-  }, [dirty, unsavedElsewhere, workId]);
+  // Keep the server draft across refresh, browser Back and pagehide. Unsaved text may exist
+  // only in this tab/local draft, so an apparently empty server row is not safe to delete.
 
   async function loadSections() {
     try {
@@ -1267,7 +1238,7 @@ export default function EditWorkPage() {
     const blankTitleOk = form.status === "draft";
     if ((!form.title.trim() && !blankTitleOk) || !form.slug.trim()) {
       setError("Tajuk dan alamat pautan perlu diisi sebelum menyimpan.");
-      return;
+      return false;
     }
     setSaving(true);
     setError(null);
@@ -1303,8 +1274,10 @@ export default function EditWorkPage() {
       }
       setTimeout(() => setSuccess(null), 3000);
       await loadReadiness();
+      return JSON.stringify(formRef.current) === JSON.stringify(sentForm);
     } catch (err) {
       setError(errorText(err));
+      return false;
     } finally {
       setSaving(false);
     }
@@ -1941,7 +1914,7 @@ export default function EditWorkPage() {
         </div>
       ) : null}
 
-      <EditorAssistant workId={workId} scope="all" context={assistantContext} blocked={assistantBlocked} onApplied={() => window.location.reload()} />
+      <EditorAssistant workId={workId} scope="all" context={assistantContext} blocked={assistantBlocked} beforeApply={async () => !dirty || !!await handleSubmit()} onApplied={() => window.location.reload()} />
 
       <div className="admin-tabs">
         <button
@@ -2008,7 +1981,7 @@ export default function EditWorkPage() {
         )}
       </div>
 
-      {activeTab !== "panel" && <EditorAssistant key={activeTab} workId={workId} scope={activeTab} context={assistantContext} blocked={assistantBlocked} onApplied={() => window.location.reload()} />}
+      {activeTab !== "panel" && <EditorAssistant key={activeTab} workId={workId} scope={activeTab} context={assistantContext} blocked={assistantBlocked} beforeApply={async () => !dirty || !!await handleSubmit()} onApplied={() => window.location.reload()} />}
 
       {activeTab === "content" && (
         <form onSubmit={handleSubmit} onChange={() => setDirty(true)} className="admin-form">
@@ -2248,7 +2221,6 @@ export default function EditWorkPage() {
               multiline
               typography
               rows={8}
-              maxLength={EDITOR_NOTE_MAX}
               value={form.editorNote}
               onChange={(value) => { setForm((prev) => ({ ...prev, editorNote: value })); setDirty(true); }}
               placeholder="Cerita asal usul karya ini, apa yang menarik tentangnya, atau apa-apa yang editor mahu kongsi dengan pembaca."
@@ -2266,7 +2238,6 @@ export default function EditWorkPage() {
               multiline
               typography
               rows={3}
-              maxLength={READER_NOTE_MAX}
               value={form.readerNote}
               onChange={(value) => { setForm((prev) => ({ ...prev, readerNote: value })); setDirty(true); }}
               placeholder="Satu atau dua ayat pendek di bawah jadual Jenis, Genre, Bacaan dan Versi."

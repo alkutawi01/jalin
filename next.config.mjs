@@ -16,7 +16,8 @@ const nextConfig = {
   // A second dev server (a test run, another session) can use its own build folder: NEXT_DIST_DIR=.next-test npx next dev -p 3100
   distDir: process.env.NEXT_DIST_DIR || ".next",
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    // Hostinger release branch: Vercel added Strict-Transport-Security itself; Hostinger does not.
+    return [{ source: "/:path*", headers: [...securityHeaders, { key: "Strict-Transport-Security", value: "max-age=63072000" }] }];
   },
   images: {
     // Uploaded/generated visuals live in Vercel Blob (public store).
@@ -25,7 +26,12 @@ const nextConfig = {
       // Pictures moved to a private Cloudflare R2 bucket, served by the site's own /media route.
       { protocol: "https", hostname: "jalin.adjung.com", pathname: "/media/**" }
     ],
-    qualities: [75, 85]
+    qualities: [75, 85],
+    // Hostinger release branch: no image CDN in front, so optimised images must stay cached on the server. The default is 60 s, which
+    // re-optimised every size every minute (about 1.4 s of CPU each). Visual file names carry a version and hash, so a year is safe.
+    minimumCacheTTL: 31536000,
+    // Fewer widths means fewer variants to generate on a shared CPU.
+    deviceSizes: [640, 1080, 1920]
   }
 };
 

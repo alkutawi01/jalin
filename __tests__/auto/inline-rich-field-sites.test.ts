@@ -16,8 +16,8 @@ assert(!page.includes("italicShortcut") && !page.includes("toggleItalicSelection
 assert(!/atau tulis \*teks\*/.test(page), "no instruction to type asterisks remains");
 assert(page.includes("ariaLabel={`Nama watak ${index + 1}`}") && page.includes("ariaLabel={`Peranan watak ${index + 1}`}"), "a character's name and role are the visual field");
 assert(places.includes("ariaLabel={`${cfg.nameLabel} ${index + 1}`}") && places.includes("ariaLabel={`Keterangan ${cfg.noun} ${index + 1}`}"), "a place's or time's name and note are the visual field");
-// the places editor keeps its limits (80 and 160 characters)
-assert(places.includes("maxLength={NAME_MAX}") && places.includes("maxLength={DESCRIPTION_MAX}"), "the length limits stay");
+// Drafts retain the full text so the editor can shorten it afterward.
+assert(!places.includes("maxLength={NAME_MAX}") && !places.includes("maxLength={DESCRIPTION_MAX}") && places.includes("Sebelum terbit"), "draft fields allow correction after import; publication targets stay visible");
 // nothing in these blocks asks for Markdown or an asterisk
 for (const [name, src] of [["page", page], ["places", places]] as const) {
   assert(!/<input[^>]*value=\{(character\.name|character\.role|place\.name|place\.description)/.test(src), `${name}: no plain <input> is left for those fields`);

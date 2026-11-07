@@ -10,7 +10,6 @@ import { imageMarkers, isImageMarker } from "../../../../../lib/reader/image-mar
 import { normaliseCountries } from "../../../../../lib/reader/countries";
 import { logActivity, workSaveSummary } from "../../../../../lib/admin/activity";
 import { can, roleFromClaim } from "../../../../../lib/admin/permissions";
-import { EDITOR_NOTE_LABEL, EDITOR_NOTE_MAX, READER_NOTE_LABEL, READER_NOTE_MAX, noteTooLongMessage } from "../../../../../lib/admin/note-limits";
 import { publicErrorMessage } from "../../../../../lib/admin/api-errors";
 
 export async function GET(
@@ -143,18 +142,12 @@ export async function PATCH(
     let editorNote: string | undefined;
     if (body.editorNote !== undefined) {
       editorNote = String(body.editorNote ?? "");
-      if (editorNote.length > EDITOR_NOTE_MAX) {
-        return NextResponse.json({ error: noteTooLongMessage(EDITOR_NOTE_LABEL, editorNote.length, EDITOR_NOTE_MAX) }, { status: 400 });
-      }
     }
 
     // The note in the reader's "Tentang karya" card.
     let readerNote: string | undefined;
     if (body.readerNote !== undefined) {
       readerNote = String(body.readerNote ?? "");
-      if (readerNote.length > READER_NOTE_MAX) {
-        return NextResponse.json({ error: noteTooLongMessage(READER_NOTE_LABEL, readerNote.length, READER_NOTE_MAX) }, { status: 400 });
-      }
     }
 
     // Negara latar: one principal country or historical region.

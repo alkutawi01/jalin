@@ -160,6 +160,7 @@ async function loadReadinessInput(
           : work.published_at,
       editorial_history: work.editorial_history,
       metadata: work.metadata,
+      reader: work.reader,
     },
     credits,
     visuals,

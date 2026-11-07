@@ -269,11 +269,11 @@ export function buildImportPlan(answer: string, manuscript: string, options: Imp
     const seen = new Set<string>();
     const out: { name: string; description?: string }[] = [];
     for (const item of list) {
-      const entryName = item.name.trim().slice(0, 80);
+      const entryName = item.name.trim();
       const key = entryName.toLocaleLowerCase("ms");
       if (!entryName || seen.has(key) || out.length >= max) continue;
       seen.add(key);
-      const note = tidyShort(item.description ?? "").slice(0, 160);
+      const note = tidyShort(item.description ?? "");
       out.push(note ? { name: entryName, description: note } : { name: entryName });
     }
     return out;
@@ -496,11 +496,11 @@ function applyEdits(plan: ImportPlan, edits: ReviewEdits, foldedText: string, wa
     const seenNames = new Set<string>();
     const out: { name: string; description?: string }[] = [];
     for (const item of list) {
-      const name = String(item.name ?? "").trim().slice(0, 80);
+      const name = String(item.name ?? "").trim();
       const key = name.toLocaleLowerCase("ms");
       if (!name || seenNames.has(key) || out.length >= max) continue;
       seenNames.add(key);
-      const note = tidyShort(item.description ?? "").slice(0, 160);
+      const note = tidyShort(item.description ?? "");
       out.push(note ? { name, description: note } : { name });
     }
     return out;
