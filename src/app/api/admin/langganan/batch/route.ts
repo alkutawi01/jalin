@@ -1,17 +1,15 @@
 import { getDb } from "../../../../../lib/db";
-import { logActivity } from "../../../../../lib/admin/activity";
 import { actor, bad, guarded, layoutFrom, pdfResponse, readBody, sameOriginOrRefuse, str } from "../../../../../lib/admin/langganan-api";
 import { codeKey } from "../../../../../lib/reader-auth/http";
-import { createBatch, voidBatch } from "../../../../../lib/reader-auth/redeem";
-import { mmyyFromMonthInput, redeemByFromDateInput, redeemByLabel } from "../../../../../lib/subscription/redeem-code";
-import { buildLabelPdf, computeLayout } from "../../../../../lib/subscription/label";
+import { generatePhysicalLabels, LabelPrintError } from "../../../../../lib/reader-auth/physical-labels";
+import { mmyyFromMonthInput, redeemByFromDateInput } from "../../../../../lib/subscription/redeem-code";
+import { computeLayout } from "../../../../../lib/subscription/label";
+import { PHYSICAL_LABEL_COPY as COPY } from "../../../../../lib/subscription/physical-label-copy";
 
 export const dynamic = "force-dynamic";
 
 /**
- * Make a batch of card codes and answer with the PDF to print. The plain codes exist only in this request and in the PDF it returns:
- * they are not stored, so a PDF that is lost means the batch is cancelled and made again. The label sizes are checked BEFORE anything is
- * made, so a layout that cannot work never uses up a batch.
+ * Store encrypted physical codes and recover them for the first PDF in one audited transaction.
  */
 export async function POST(request: Request) {
   return guarded(async () => {
@@ -36,16 +34,12 @@ export async function POST(request: Request) {
     if (!redeemBy) return bad("Tarikh tebus sebelum diperlukan (hari terakhir kod boleh ditebus).");
     if (redeemBy.getTime() <= Date.now()) return bad("Tarikh tebus sebelum mesti pada masa depan.");
     const who = await actor();
-    const made = await createBatch(db, { codeKey: codeKey() }, { months: months as 1 | 6 | 12, quantity, redeemBy, issueMmyy: issueMmyy ?? undefined, orderRef: str(body.orderRef, 100) || undefined, note: str(body.note, 300) || undefined, createdBy: who.name });
-
-    let pdf: string;
     try {
-      pdf = buildLabelPdf(settings, made.codes.map((c) => ({ canonical: c.canonical, batchNumber: made.batchNumber, serial: c.serial, planText: `${months} bulan`, redeemBy: redeemByLabel(redeemBy) }))).pdf;
+      const made = await generatePhysicalLabels(db, { codeKey: codeKey(), actor: who }, { months: months as 1 | 6 | 12, quantity, redeemBy, issueMmyy: issueMmyy ?? undefined, orderRef: str(body.orderRef, 100) || undefined, note: str(body.note, 300) || undefined, labelLayout: settings });
+      return pdfResponse(made.pdf, `kad-${made.batchNumber}.pdf`, { "X-Batch-Id": made.batchId, "X-Batch-Number": made.batchNumber, "X-Cards": String(made.count) });
     } catch (error) {
-      await voidBatch(db, made.batchId, "PDF tidak dapat dibina").catch(() => undefined);
-      throw error;
+      // Never log driver errors: they can contain encrypted/secret SQL parameters.
+      return bad(error instanceof LabelPrintError && error.reason === "layout" ? COPY.layout : COPY.failed, 503);
     }
-    await logActivity({ action: "subscription.batch.create", subjectType: "batch", subjectId: made.batchId, summary: `Kelompok ${made.batchNumber}: ${quantity} kad ${months} bulan` });
-    return pdfResponse(pdf, `kad-${made.batchNumber}.pdf`, { "X-Batch-Id": made.batchId, "X-Batch-Number": made.batchNumber, "X-Cards": String(quantity) });
   });
 }

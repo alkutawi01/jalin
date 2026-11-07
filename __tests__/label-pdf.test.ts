@@ -58,6 +58,20 @@ assert(Math.abs(parseFloat(mb[1]) - 50 / 25.4 * 72) < 0.01 && Math.abs(parseFloa
   assert(lengths.length === 3 && lengths.every((m) => parseInt(m[1], 10) === m[2].length), "every stream is exactly as long as it says");
 }
 assert(labels.every((l) => pdf.includes(`(${codeText(l.canonical, "-")})`)) && labels.every((l) => pdf.includes(`(${l.serial}) Tj`)), "each page carries its own code and its own serial number");
+assert((pdf.match(/TEBUS SEBELUM 31 DIS 2027/g) ?? []).length === labels.length, "each dated label prints its redemption deadline");
+assert(computeLayout({ ...DEFAULT_LABEL, scratchTopMm: 0 }).problems.some((p) => p.level === "error") &&
+  throws(() => buildLabelPdf({ ...DEFAULT_LABEL, scratchTopMm: 0 }, labels)), "preflight and PDF generation reject a label without space for the serial");
+assert(computeLayout({ ...DEFAULT_LABEL, scratchTopMm: 22 }).problems.some((p) => p.level === "error") &&
+  throws(() => buildLabelPdf({ ...DEFAULT_LABEL, scratchTopMm: 22 }, labels)), "preflight and PDF generation reject a label without space for its deadline");
+{
+  const noDate = { ...content(1), redeemBy: undefined };
+  const result = buildLabelPdf({ ...DEFAULT_LABEL, scratchTopMm: 22 }, [noDate]);
+  assert(!result.pdf.includes("TEBUS SEBELUM") && result.pdf.includes(noDate.serial) &&
+    !computeLayout({ ...DEFAULT_LABEL, scratchTopMm: 22 }, undefined, { hasRedeemBy: false }).problems.some((p) => p.level === "error"),
+  "a legacy label without an expiry date does not require a date line");
+  assert(throws(() => buildLabelPdf({ ...DEFAULT_LABEL, scratchTopMm: 22 }, [noDate, content(2)])),
+    "a later dated label is checked even when the first label has no date");
+}
 assert(!pdf.includes("T-001") && !pdf.includes("Batch") && !pdf.includes("Kod langganan") && !pdf.includes("6 bulan") && !pdf.includes("Kikis") && !pdf.includes("jalin.adjung.com"), "nothing else is printed: no batch, no plan text, no instructions (the label shows the serial number and the code only)");
 assert(!pdf.includes("/Courier-Bold >>\n") || pdf.includes("/BaseFont /Courier-Bold"), "uses the standard Courier fonts, nothing to embed");
 // Nothing is drawn outside the label.

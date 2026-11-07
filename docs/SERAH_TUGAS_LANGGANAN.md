@@ -2,6 +2,16 @@
 
 Untuk Codex dan sesiapa yang menyambung kerja ini selepas sesi Claude tamat. Baca `AGENTS.md` dahulu, kemudian dokumen ini, kemudian `docs/PELAN_LANGGANAN_LANGKAH.md` (senarai semak penuh) dan `docs/JUALAN_DALAM_TALIAN.md` (aliran jualan dan pemboleh ubah). Pemilik projek ialah Izzat (Wan Muhammad Izzat); bahasa kerja Bahasa Melayu, panggil beliau "awak".
 
+**Kemas kini 2 November 2026:** keputusan harga, bayaran balik, susunan pautan dan had sambungan yang lebih baharu,
+audit produksi serta pembaikan setempat direkodkan dalam `docs/PELAN_PELANCARAN_LANGGANAN_2026-11-01.md`.
+Gunakan bahagian 3, 8 hingga 13 dokumen itu untuk status terkini; keadaan 28 Oktober di bawah ialah rekod sejarah.
+Pembaikan setempat belum digabung atau ditempatkan, dan jualan/dinding bayar belum dibuka oleh kerja ini.
+Bahagian 11 merekodkan penggantian kod e-mel setempat (6 November); ujian transaksi serentak kekal ditangguhkan atas arahan Izzat.
+Bahagian 12 merekodkan arahan Izzat: kod pada label thermal ditampal pada kad fizikal, dijual di Shopee dan dipos kepada pembeli.
+Simpanan kod boleh pulih/cetak semula masih perlu dibina; MAC dan PDF sekali muat turun sedia ada belum memenuhi keperluan itu.
+Bahagian 13: saiz label disahkan 50 × 30 mm dan pelekat gores 40 × 8 mm (melintang); ZIP rujukan mengandungi dua SVG kad SUS.
+Kad maya/penjana label Jalin ada dalam repo ini, tetapi artwork kad fizikal Jalin belum ditemui; ujian pencetak sebenar belum dibuat.
+
 ## 1. Keadaan semasa (apa yang siap)
 
 Semuanya berada di produksi (Hostinger) tetapi **tertutup** (tiada orang awam boleh membeli). Komit terkini pada `main`: `07616dd9`; pada cabang `hostinger`: `ff228c4f`.
@@ -11,7 +21,7 @@ Semuanya berada di produksi (Hostinger) tetapi **tertutup** (tiada orang awam bo
 | Akaun pembaca, percubaan 14 hari, dinding bayar (suis), penebusan kod kad dan kod kongsi, admin `/admin/langganan` | siap, tertutup (`READER_ACCOUNTS_ENABLED` belum `yes` di produksi) |
 | Nombor siri `JLN-12B0126-F01` (fizikal) dan `-M01` (maya), terikat pada kod dalam HMAC | siap |
 | Tarikh tebus sebelum (`redeem_codes.redeem_by`): fizikal ditetapkan setiap kelompok, maya setahun selepas dijana | siap |
-| Label pelekat PDF: nombor siri, kod, tarikh tebus sebelum | siap (saiz label belum muktamad, nilai awal 50 x 30 mm) |
+| Label pelekat PDF: nombor siri, kod, tarikh tebus sebelum | siap; 6 Nov: saiz disahkan 50 × 30 mm, gores 40 × 8 mm; belum diuji pada pencetak fizikal |
 | Kad maya `/tebus`, Soalan Lazim `/soalanlazim`, halaman Beli `/beli`, halaman selesai `/beli/selesai` | siap, teks disemak ChatGPT (26 Okt 2026) |
 | Jualan dalam talian: pesanan (`purchase_orders`), satu bayaran satu kod, kod tersulit sehingga e-mel dihantar, hantar semula, admin `/admin/langganan/pesanan`, kerja berjadual `/api/cron/pesanan` | siap, diuji dengan pelayan palsu |
 | Gerbang bayaran **CHIP Collect** (lalai), Billplz masih ada (`PAYMENT_PROVIDER=billplz`) | siap, **diuji dengan CHIP sebenar dalam mod ujian oleh Codex (28 Okt): lulus** |

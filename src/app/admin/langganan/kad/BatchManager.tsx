@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { confirmAction, toast } from "../../../../lib/admin/dialogs";
 import { errorText } from "../../../../lib/admin/error-text";
 import { api, fmtDate, Notice } from "../../../../components/admin/langganan-ui";
+import { PHYSICAL_LABEL_COPY as LABEL_COPY } from "../../../../lib/subscription/physical-label-copy";
 
 type Batch = {
   id: string; batchNumber: string; months: number; quantity: number; status: "PENDING_PRINT" | "PRINT_CONFIRMED" | "VOIDED";
@@ -50,7 +51,7 @@ export default function BatchManager({ initialBatches, suggested, suggestedRedee
   async function createBatch(acceptSmall = false) {
     setError(""); setWarning(""); setDone("");
     const quantity = Number(form.quantity);
-    if (!(await confirmAction(`Buat ${quantity} kod kad ${form.months} bulan untuk ${form.issueMonth}? Kod hanya ada dalam PDF yang dimuat turun sekarang. Jika PDF hilang, kelompok mesti dibatalkan dan dibuat semula.`, { confirmLabel: "Ya, buat kod dan PDF" }))) return;
+    if (!(await confirmAction(`Buat ${quantity} kod kad ${form.months} bulan untuk ${form.issueMonth}? ${LABEL_COPY.confirmGenerate}`, { confirmLabel: "Ya, buat kod dan PDF" }))) return;
     setBusy(true);
     try {
       const res = await fetch("/api/admin/langganan/batch", {
@@ -163,7 +164,7 @@ export default function BatchManager({ initialBatches, suggested, suggestedRedee
         </div>
 
         <h3>Saiz label dan pelekat gores</h3>
-        <p className="admin-form-hint">Saiz belum muktamad: ubah di sini dan lihat kesannya pada saiz kod. Nilai awal: label 50 x 30 mm, jalur gores 40 x 8 mm.</p>
+        <p className="admin-form-hint">{LABEL_COPY.dimensions}</p>
         <div className="admin-batch-sizes">
           {num("widthMm", "Lebar label (mm)")}
           {num("heightMm", "Tinggi label (mm)")}
@@ -188,6 +189,7 @@ export default function BatchManager({ initialBatches, suggested, suggestedRedee
         ) : null}
         <p><a className="admin-btn admin-btn-outline admin-btn-sm" href={`/api/admin/langganan/label-ujian?${query}`}>Muat turun label ujian (PDF, kod palsu)</a></p>
         <p className="admin-form-hint">Cetak label ujian dahulu pada pencetak sebenar, lekatkan pelekat gores, dan semak sama ada semuanya muat sebelum membuat kod sebenar.</p>
+        <p className="admin-form-hint">{LABEL_COPY.printHelp}</p>
 
         {warning ? (
           <Notice kind="warning">

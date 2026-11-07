@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { CARD_EXTENSION_HELP_LABEL, CARD_EXTENSION_NOTICE } from "../../lib/subscription/card-extension-copy";
 
 /**
  * Redeem a code. The box is drawn as the back of the card ("kad maya"): the code goes where the scratch sticker is on a real card. A code that
@@ -46,6 +47,7 @@ export default function RedeemForm({ embedded = false }: { embedded?: boolean })
       <form onSubmit={submit} noValidate>
         <h1 className="auth-title">Tebus kod langganan</h1>
         <p className="auth-intro">Masukkan nombor siri dan kod langganan anda. Kedua-duanya tertera pada label kad atau dalam e-mel yang anda terima selepas pembayaran.</p>
+        {looksShared ? null : <p className="auth-fine">{CARD_EXTENSION_NOTICE} <a href="/soalanlazim#langganan">{CARD_EXTENSION_HELP_LABEL}</a>.</p>}
 
         <div className="vcard-wrap">
         <div className={`vcard${embedded ? " vcard--stack" : ""}`}>

@@ -205,6 +205,7 @@ export type CodeRow = {
   redeemedAt: Date | null;
   redeemedBy: string | null;
   accessEndsAt: Date | null;
+  printable: boolean;
 };
 
 export type CodeFilter = "all" | "unredeemed" | "redeemed" | "revoked" | "generated" | "issued";
@@ -248,7 +249,7 @@ export async function batchInfo(db: Db, id: string): Promise<BatchInfo | null> {
   };
 }
 
-/** The cards of a batch with their state and dates, 100 to a page. The plain codes are not here: they are not stored. */
+/** Safe code list, 100 to a page; printable is a boolean, never the retained encrypted/plain code. */
 export async function listCodes(db: Db, batchId: string, options: { filter?: CodeFilter; q?: string; page?: number } = {}): Promise<{ rows: CodeRow[]; total: number; page: number; pageSize: number }> {
   const pageSize = 100;
   const page = Math.max(1, Math.floor(Number.isFinite(options.page) ? (options.page as number) : 1));
@@ -264,7 +265,8 @@ export async function listCodes(db: Db, batchId: string, options: { filter?: Cod
   const search = q ? sql`AND c.serial LIKE ${`%${q}%`}` : sql``;
   const total = await sql<{ n: string }>`SELECT count(*) AS n FROM redeem_codes c LEFT JOIN redemptions r ON r.code_id = c.id WHERE c.batch_id = ${batchId} ${where} ${search}`.execute(db);
   const rows = await sql<Record<string, unknown>>`
-    SELECT c.serial, c.state, c.issued_at, c.revoked_at, c.revoke_reason, r.redeemed_at, a.email, e.ends_at
+    SELECT c.serial, c.state, c.issued_at, c.revoked_at, c.revoke_reason, r.redeemed_at, a.email, e.ends_at,
+           (c.label_cipher IS NOT NULL AND c.label_key_id IS NOT NULL AND c.state <> 'revoked' AND r.id IS NULL AND (c.redeem_by IS NULL OR c.redeem_by > now())) AS printable
     FROM redeem_codes c
     LEFT JOIN redemptions r ON r.code_id = c.id
     LEFT JOIN reader_accounts a ON a.id = r.account_id
@@ -279,6 +281,7 @@ export async function listCodes(db: Db, batchId: string, options: { filter?: Cod
       serial: String(r.serial), state: r.state as CodeRow["state"], issuedAt: (r.issued_at as Date | null) ?? null, revokedAt: (r.revoked_at as Date | null) ?? null,
       revokeReason: (r.revoke_reason as string | null) ?? null, redeemedAt: (r.redeemed_at as Date | null) ?? null, redeemedBy: (r.email as string | null) ?? null,
       accessEndsAt: (r.ends_at as Date | null) ?? null,
+      printable: r.printable === true,
     })),
   };
 }

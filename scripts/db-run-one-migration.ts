@@ -5,33 +5,35 @@
  * would go to the database too. This runs only the one named, for the case where just that one is wanted on a database (the production
  * rollout of an additive migration). It prints the host it is about to change, so the editor can see which database that is. The migration must be idempotent (all of them are): the next `db:schema:migrate` finds it unrecorded
  * in the ledger, runs it again as a no-op and records it. Like every database command here it uses the direct (unpooled) address and
- * refuses a database that is not the development branch unless ALLOW_NON_DEV_DATABASE=yes is set for this one command.
+ * refuses a database that is not the development branch unless ALLOW_NON_DEV_DATABASE=yes is set for this one command,
+ * together with --expected-host <hostname>. Both runners use certificate-verified TLS for remote connections.
  */
-import "dotenv/config";
-import { config } from "dotenv";
-// No override: a DATABASE_URL_UNPOOLED set in the shell for this one command wins over .env.local (which holds the development branch).
-config({ path: ".env.local", override: false });
 import path from "node:path";
 import { Kysely, PostgresDialect } from "kysely";
 import { Pool } from "pg";
-import { databaseSslEnabled, requireMigrationDatabaseUrl } from "../src/lib/db/env";
+import { loadMigrationEnvironment } from "./lib/migration-env";
+import { migrationConnection, migrationExpectedHost, migrationFailureMessage } from "../src/lib/db/migration-connection";
 
 const name = process.argv[2] ?? "";
 if (!/^\d{3}_[a-z0-9_]+$/.test(name)) {
-  console.error("Usage: npx tsx scripts/db-run-one-migration.ts NNN_snake_case_name");
+  console.error("Usage: npx tsx scripts/db-run-one-migration.ts NNN_snake_case_name [--expected-host hostname]");
+  process.exit(1);
+}
+
+let connection: ReturnType<typeof migrationConnection>;
+try {
+  connection = migrationConnection(
+    loadMigrationEnvironment(path.join(__dirname, "..")),
+    migrationExpectedHost(process.argv.slice(3)),
+  );
+} catch (error) {
+  console.error(error instanceof Error ? error.message : "Invalid migration environment.");
   process.exit(1);
 }
 
 async function main() {
-  const url = requireMigrationDatabaseUrl();
-  let host = "?";
-  try {
-    host = new URL(url).hostname;
-  } catch {
-    throw new Error("DATABASE_URL_UNPOOLED is not a valid address (did you paste a placeholder?).");
-  }
-  console.log(`Database host: ${host}`);
-  const pool = new Pool({ connectionString: url, ssl: databaseSslEnabled() ? { rejectUnauthorized: false } : false, max: 1 });
+  console.log(`Database host: ${connection.host}`);
+  const pool = new Pool(connection.poolOptions);
   const db = new Kysely<unknown>({ dialect: new PostgresDialect({ pool }) });
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -45,6 +47,6 @@ async function main() {
 }
 
 main().catch((error) => {
-  console.error(error instanceof Error ? error.message : "Migration failed.");
+  console.error(migrationFailureMessage(error));
   process.exit(1);
 });

@@ -1,7 +1,7 @@
 /**
  * The sticker that carries a card code (study sections 5.8, 5.9, 16.1, 16.2): the code is printed on a label by a label printer, the label
- * is stuck on the card, and a scratch-off sticker goes over the code. Nothing about the sizes is final yet, so every size is a setting
- * and the layout is worked out from them.
+ * is stuck on the card, and a scratch-off sticker goes over the code. Izzat confirmed the label/scratch dimensions on 6 Nov 2026;
+ * settings remain adjustable for printer alignment and the layout is worked out from them.
  *
  * Pure functions only. The PDF is written by hand: one page per label, the page the size of the label, in Courier (a standard font that
  * every viewer and printer driver has, and whose letters are exactly 0.6 of their height wide, so the width of a line is exact).
@@ -25,7 +25,7 @@ export type LabelSettings = {
   separator: "-" | " " | "";
 };
 
-/** The sizes known so far (Izzat, 9 Oct 2026): code sticker 3 x 5 cm, scratch strip 0.8 x 4 cm. Not final. */
+/** Izzat confirmed 6 Nov 2026: landscape label 50 x 30 mm, scratch strip 40 x 8 mm. Physical printer calibration still required. */
 export const DEFAULT_LABEL: LabelSettings = {
   widthMm: 50,
   heightMm: 30,
@@ -73,12 +73,24 @@ export type LabelLayout = {
 
 const COURIER_WIDTH = 0.6;
 const COURIER_CAP = 0.57;
+const MAX_SMALL_TEXT_PT = 9;
+const textLineMm = (size: number) => size * MM_PER_PT * 1.25;
 /** Below this size the code is hard to read on a thermal label under scratch coating. */
 export const MIN_READABLE_PT = 8;
 
-export function computeLayout(settings: LabelSettings, sampleCanonical = "0".repeat(17)): LabelLayout {
+export function computeLayout(settings: LabelSettings, sampleCanonical = "0".repeat(17), options: { hasRedeemBy: boolean } = { hasRedeemBy: true }): LabelLayout {
   const problems = validateSettings(settings);
   const code = codeText(sampleCanonical, settings.separator);
+  // Reserve space for the largest small print the renderer can use. Preflight must work before a serial/code is issued.
+  // Messages reviewed in the Jalin ChatGPT project, 2 Nov 2026 (see launch plan).
+  if (problems.length === 0) {
+    if (settings.scratchTopMm < textLineMm(MAX_SMALL_TEXT_PT) + 2) {
+      problems.push({ level: "error", text: "Ruang di atas jalur gores tidak mencukupi untuk nombor siri. Alihkan jalur gores ke bawah atau besarkan label." });
+    }
+    if (options.hasRedeemBy && settings.heightMm - settings.scratchTopMm - settings.scratchHeightMm < textLineMm(MAX_SMALL_TEXT_PT) + 1.5) {
+      problems.push({ level: "error", text: "Ruang di bawah jalur gores tidak mencukupi untuk tarikh akhir penebusan. Alihkan jalur gores ke atas atau besarkan label." });
+    }
+  }
   if (problems.some((p) => p.level === "error")) return { problems, code, codeFontPt: 0, codeWidthMm: 0, codeCapHeightMm: 0, dotsPerLetter203: 0 };
   const usableW = settings.scratchWidthMm - settings.scratchPaddingMm * 2;
   const usableH = settings.scratchHeightMm - settings.scratchPaddingMm * 2;
@@ -148,17 +160,14 @@ function pageContent(settings: LabelSettings, layout: LabelLayout, content: Labe
   }
 
   // The small print is as large as the longest of its lines allows, within 5 to 9 pt, so nothing runs off the label.
-  const fit = (lines: string[]) => Math.max(5, Math.min(9, Math.floor((((W - 4) / (Math.max(...lines.map((l) => l.length)) * COURIER_WIDTH)) * PT_PER_MM) * 10) / 10));
-  const lineMm = (size: number) => size * MM_PER_PT * 1.25;
+  const fit = (lines: string[]) => Math.max(5, Math.min(MAX_SMALL_TEXT_PT, Math.floor((((W - 4) / (Math.max(...lines.map((l) => l.length)) * COURIER_WIDTH)) * PT_PER_MM) * 10) / 10));
   ops.push("0 g");
 
   // Above the scratch area: the serial number, and nothing else (Izzat, 24 Oct 2026: the label shows the serial number and the code only; the
   // card itself carries the instructions and the length of the subscription).
   const topLine = content.serial;
   const topSize = fit([topLine]);
-  if (settings.scratchTopMm >= lineMm(topSize) + 2) {
-    text("F2", topSize, W / 2, 1.5 + lineMm(topSize), topLine);
-  }
+  text("F2", topSize, W / 2, 1.5 + textLineMm(topSize), topLine);
 
   // The code, one line, centred in the scratch area.
   if (layout.codeFontPt > 0) {
@@ -172,7 +181,7 @@ function pageContent(settings: LabelSettings, layout: LabelLayout, content: Labe
     const below = settings.scratchTopMm + settings.scratchHeightMm;
     const dateLine = `TEBUS SEBELUM ${content.redeemBy}`;
     const dateSize = fit([dateLine]);
-    if (H - below >= lineMm(dateSize) + 1.5) text("F2", dateSize, W / 2, below + 1.5 + lineMm(dateSize) - dateSize * MM_PER_PT * 0.25, dateLine);
+    text("F2", dateSize, W / 2, below + 1.5 + textLineMm(dateSize) - dateSize * MM_PER_PT * 0.25, dateLine);
   }
 
   return ops.join("\n");
@@ -181,7 +190,7 @@ function pageContent(settings: LabelSettings, layout: LabelLayout, content: Labe
 /** A PDF with one page per label, each page exactly the size of the label. */
 export function buildLabelPdf(settings: LabelSettings, labels: LabelContent[], options: PdfOptions = {}): { pdf: string; layout: LabelLayout; pages: number } {
   if (labels.length === 0) throw new Error("Nothing to print.");
-  const layout = computeLayout(settings, labels[0].canonical);
+  const layout = computeLayout(settings, labels[0].canonical, { hasRedeemBy: labels.some((label) => !!label.redeemBy) });
   if (layout.problems.some((p) => p.level === "error")) throw new Error(layout.problems.filter((p) => p.level === "error").map((p) => p.text).join(" "));
   for (const l of labels) { ascii(l.canonical); ascii(l.batchNumber); ascii(l.serial); ascii(l.planText); if (l.redeemBy) ascii(l.redeemBy); }
 

@@ -59,8 +59,8 @@ function validatePostgresUrl(value: string, variableName: string): URL {
   return parsed;
 }
 
-export function requireMigrationDatabaseUrl(): string {
-  const value = process.env.DATABASE_URL_UNPOOLED?.trim();
+export function requireMigrationDatabaseUrl(env: Record<string, string | undefined> = process.env): string {
+  const value = env.DATABASE_URL_UNPOOLED?.trim();
 
   if (!value) {
     throw new Error(
@@ -69,7 +69,7 @@ export function requireMigrationDatabaseUrl(): string {
   }
 
   const parsed = validatePostgresUrl(value, "DATABASE_URL_UNPOOLED");
-  assertDatabaseAllowedHere(parsed, "DATABASE_URL_UNPOOLED");
+  assertDatabaseAllowedHere(parsed, "DATABASE_URL_UNPOOLED", env);
 
   if (parsed.hostname.includes("-pooler")) {
     throw new Error(

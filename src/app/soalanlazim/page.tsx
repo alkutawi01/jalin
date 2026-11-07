@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { SiteFooter, SiteHeader } from "../../components/reader/StoryChrome";
 import { accountsPageMetadata, readerAccountsEnabled } from "../../lib/reader-auth/enabled";
 import { purchaseStatus } from "../../lib/subscription/prices";
+import { CARD_EXTENSION_FAQ, CARD_EXTENSION_FAQ_QUESTION } from "../../lib/subscription/card-extension-copy";
 
 /**
  * Soalan lazim: the address printed on the card (jalin.adjung.com/soalanlazim). Like the other account pages it exists only when reader
@@ -34,7 +35,7 @@ const purchaseItems = (providerName: string): Item[] => [
         <ol>
           <li>Buka halaman <a href="/beli">Beli kod langganan</a>.</li>
           <li>Pilih tempoh langganan 1, 6 atau 12 bulan, kemudian masukkan alamat e-mel untuk menerima kod.</li>
-          <li>Buat pembayaran melalui {providerName} menggunakan FPX atau kad.</li>
+          <li>Buat pembayaran melalui {providerName} menggunakan kaedah yang tersedia pada halaman pembayaran.</li>
         </ol>
         <p>
           Sebaik sahaja pembayaran disahkan, nombor siri dan kod langganan akan dihantar ke e-mel anda. Selepas menerimanya, buka halaman{" "}
@@ -135,6 +136,10 @@ const GROUPS: Group[] = [
     id: "langganan",
     label: "Langganan dan tempoh",
     items: [
+      {
+        q: CARD_EXTENSION_FAQ_QUESTION,
+        a: <>{CARD_EXTENSION_FAQ.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}</>
+      },
       {
         q: "Bilakah langganan saya bermula dan tamat?",
         a: (
@@ -254,7 +259,7 @@ export default function FaqPage() {
             <p>Hantar e-mel kepada pasukan Jalin.</p>
             <a className="faq-contact-btn" href={`mailto:${MAIL}`}>{MAIL}</a>
           </aside>
-          <p className="faq-updated">Dikemas kini: 24 Oktober 2026</p>
+          <p className="faq-updated">Dikemas kini: 2 November 2026</p>
         </div>
       </main>
       <SiteFooter />

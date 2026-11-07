@@ -8,6 +8,7 @@ import { randomUUID } from "node:crypto";
 import type { Db } from "./service";
 import { stackStart, summariseAccess, type AccessPeriod, type AccessSummary, type EntitlementKind } from "../subscription/access";
 import { sharedGrantPeriod, type SharedGrant } from "../subscription/shared-code";
+import { cardExtensionDecision } from "../subscription/card-extension";
 
 async function inTransaction<T>(db: Db, run: (trx: Db) => Promise<T>): Promise<T> {
   return db.isTransaction ? run(db) : (db as import("kysely").Kysely<import("../db/types").Database>).transaction().execute((trx) => run(trx));
@@ -43,7 +44,12 @@ export async function addTrial(db: Db, accountId: string, startsAt: Date, endsAt
     .execute();
 }
 
-export type AddGrantResult = { added: true; id: string; startsAt: Date; endsAt: Date } | { added: false; reason: "duplicate"; id: string } | { added: false; reason: "no_account" };
+export type AddGrantResult =
+  | { added: true; id: string; startsAt: Date; endsAt: Date }
+  | { added: false; reason: "duplicate"; id: string }
+  | { added: false; reason: "no_account" }
+  | { added: false; reason: "card_queued"; availableAt: Date }
+  | { added: false; reason: "card_year_limit"; maximumEndsAt: Date };
 
 /**
  * Give access of a set length, starting when the access the reader already has ends (the trial included), so nothing already given is
@@ -62,8 +68,17 @@ export async function addGrant(
       const existing = await trx.selectFrom("entitlements").select("id").where("kind", "=", input.kind).where("source_ref", "=", input.sourceRef).executeTakeFirst();
       if (existing) return { added: false, reason: "duplicate", id: existing.id } as const;
     }
-    const start = stackStart(await listLedger(trx, input.accountId), now);
+    const ledger = await listLedger(trx, input.accountId);
+    const start = stackStart(ledger, now);
     const { startsAt, endsAt } = sharedGrantPeriod(start, null, input.grant);
+    if (input.kind === "CARD") {
+      const decision = cardExtensionDecision(ledger, now, endsAt);
+      if (!decision.allowed) {
+        return decision.reason === "queued"
+          ? { added: false, reason: "card_queued", availableAt: decision.availableAt } as const
+          : { added: false, reason: "card_year_limit", maximumEndsAt: decision.maximumEndsAt } as const;
+      }
+    }
     const id = randomUUID();
     await trx
       .insertInto("entitlements")
