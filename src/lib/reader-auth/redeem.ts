@@ -1,8 +1,8 @@
 /**
  * Redeeming codes (study sections 5.6 to 5.8, 14 to 18, 24). Card codes and shared codes both end up as a period in the access ledger.
  *
- * What is kept, and what is not: a card code is NEVER stored. Only a keyed hash of (serial number, code) is, so a copy of the database
- * cannot be turned into working codes without the key. The plain codes exist in memory once, when a batch is made, to be printed.
+ * Card codes are never stored as plaintext. Physical codes retain serial-bound ciphertext for owner-only reprinting (migration 038),
+ * alongside the keyed hash used for redemption. Without the retained code-key ring a database copy cannot recover printable codes.
  *
  * One transaction does the whole redemption: it locks the reader, finds the code, checks every rule, adds the period and writes the
  * redemption. `redemptions.code_id` is UNIQUE, so even two requests that slip past every check cannot both succeed. There is no
@@ -16,6 +16,8 @@ import { evaluateSharedRedemption, generateSharedCode, isValidSharedGrant, norma
 import { addGrant, getAccess } from "./entitlements";
 import { countEvents, recordEvent, type Db } from "./service";
 import type { MacKey } from "./primitives";
+import { encryptLabelCode } from "../subscription/label-crypto";
+import { computeLayout, DEFAULT_LABEL, type LabelSettings } from "../subscription/label";
 
 export const REDEEM_LIMITS = {
   failsPerAccountPer15Min: 5,
@@ -59,7 +61,7 @@ async function nextSerialNumber(trx: Db, prefix: string): Promise<number> {
 }
 
 /**
- * Make a batch of card codes. Returns the plain codes ONCE so they can be printed; only their keyed hashes are saved. The batch starts
+ * Make a batch of card codes. Save the keyed hashes and encrypted codes for authorised reprints. The batch starts
  * as PENDING_PRINT and its codes as "generated": nothing can be redeemed until the print is confirmed and the codes are issued.
  * Every card gets a serial number JLN-12B0126-F01 (length, month of issue, F for physical, own number); the batch itself is named by the
  * first parts (JLN-12B0126-F, and -B2, -B3 ... if a second batch of the same length and month is made). The whole batch shares one
@@ -68,7 +70,7 @@ async function nextSerialNumber(trx: Db, prefix: string): Promise<number> {
 export async function createBatch(
   db: Db,
   deps: { codeKey: MacKey; now?: Date },
-  input: { months: 1 | 6 | 12; quantity: number; redeemBy: Date; issueMmyy?: string; orderRef?: string; note?: string; createdBy?: string }
+  input: { months: 1 | 6 | 12; quantity: number; redeemBy: Date; issueMmyy?: string; orderRef?: string; note?: string; createdBy?: string; labelLayout?: LabelSettings }
 ): Promise<MadeBatch> {
   const now = deps.now ?? new Date();
   if (![1, 6, 12].includes(input.months)) throw new Error("A card is for 1, 6 or 12 months.");
@@ -77,6 +79,8 @@ export async function createBatch(
   if (input.redeemBy.getTime() <= now.getTime()) throw new Error("The redeem-by date must be in the future.");
   if (input.redeemBy.getTime() > now.getTime() + 10 * 366 * 24 * 60 * 60 * 1000) throw new Error("The redeem-by date is too far away.");
   const prefix = serialPrefix(input.months, input.issueMmyy ?? mmyyFor(now), "physical");
+  const labelLayout = { ...(input.labelLayout ?? DEFAULT_LABEL) };
+  if (computeLayout(labelLayout).problems.some((problem) => problem.level === "error")) throw new Error("Invalid physical label layout.");
 
   return inTransaction(db, async (trx) => {
     const start = await nextSerialNumber(trx, prefix);
@@ -87,7 +91,7 @@ export async function createBatch(
     const batchNumber = Number(earlier.rows[0].n) === 0 ? prefix : `${prefix}-B${Number(earlier.rows[0].n) + 1}`;
     const batch = await trx
       .insertInto("code_batches")
-      .values({ batch_number: batchNumber, months: input.months, quantity: input.quantity, channel: "physical", order_ref: input.orderRef ?? null, note: input.note ?? null, key_id: deps.codeKey.keyId, created_by: input.createdBy ?? null })
+      .values({ batch_number: batchNumber, months: input.months, quantity: input.quantity, channel: "physical", order_ref: input.orderRef ?? null, note: input.note ?? null, key_id: deps.codeKey.keyId, created_by: input.createdBy ?? null, label_layout: labelLayout })
       .returning("id")
       .executeTakeFirstOrThrow();
     const codes: MadeCode[] = [];
@@ -95,7 +99,9 @@ export async function createBatch(
       const canonical = generateCanonicalCode();
       const serial = formatSerial(prefix, start + i, width);
       codes.push({ serial, code: formatCode(canonical), canonical, redeemBy: input.redeemBy });
-      return { batch_id: batch.id, serial, code_mac: computeCodeMac(deps.codeKey.key, serial, canonical), key_id: deps.codeKey.keyId, redeem_by: input.redeemBy, created_at: now };
+      return { batch_id: batch.id, serial, code_mac: computeCodeMac(deps.codeKey.key, serial, canonical), key_id: deps.codeKey.keyId,
+        label_cipher: encryptLabelCode(deps.codeKey.key, serial, canonical), label_key_id: deps.codeKey.keyId,
+        redeem_by: input.redeemBy, created_at: now };
     });
     for (let i = 0; i < rows.length; i += 500) await trx.insertInto("redeem_codes").values(rows.slice(i, i + 500)).execute();
     return { batchId: batch.id, batchNumber, months: input.months, codes };
@@ -223,7 +229,7 @@ export async function replaceCode(db: Db, deps: { codeKey: MacKey; now?: Date },
       .selectFrom("redeem_codes as c")
       .innerJoin("code_batches as b", "b.id", "c.batch_id")
       .leftJoin("redemptions as r", "r.code_id", "c.id")
-      .select(["c.id", "c.state", "c.batch_id", "c.redeem_by", "b.batch_number", "b.months", "b.status as batch_status", "b.quantity", "r.id as redemption"])
+      .select(["c.id", "c.state", "c.batch_id", "c.redeem_by", "b.batch_number", "b.months", "b.channel", "b.status as batch_status", "b.quantity", "r.id as redemption"])
       .where("c.serial", "=", oldSerial)
       .forUpdate("c")
       .executeTakeFirst();
@@ -237,7 +243,10 @@ export async function replaceCode(db: Db, deps: { codeKey: MacKey; now?: Date },
     const canonical = generateCanonicalCode();
     await trx
       .insertInto("redeem_codes")
-      .values({ batch_id: old.batch_id, serial, code_mac: computeCodeMac(deps.codeKey.key, serial, canonical), key_id: deps.codeKey.keyId, state: old.state, issued_at: old.state === "issued" ? now : null, redeem_by: old.redeem_by, created_at: now })
+      .values({ batch_id: old.batch_id, serial, code_mac: computeCodeMac(deps.codeKey.key, serial, canonical), key_id: deps.codeKey.keyId,
+        label_cipher: old.channel === "physical" ? encryptLabelCode(deps.codeKey.key, serial, canonical) : null,
+        label_key_id: old.channel === "physical" ? deps.codeKey.keyId : null,
+        state: old.state, issued_at: old.state === "issued" ? now : null, redeem_by: old.redeem_by, created_at: now })
       .execute();
     await trx.updateTable("redeem_codes").set({ state: "revoked", revoked_at: now, revoke_reason: `Diganti dengan ${serial}: ${reason}` }).where("id", "=", old.id).execute();
     await trx.updateTable("code_batches").set({ quantity: old.quantity + 1 }).where("id", "=", old.batch_id).execute();
@@ -281,6 +290,8 @@ export type RedeemResult =
   | { status: "invalid" }
   | { status: "already" }
   | { status: "expired"; redeemBy: Date }
+  | { status: "card_queued"; availableAt: Date }
+  | { status: "card_year_limit"; maximumEndsAt: Date }
   | { status: "throttled" }
   | { status: "halted" };
 
@@ -351,6 +362,8 @@ async function redeemCard(trx: Db, deps: Deps, input: Input, now: Date): Promise
 
   const months = code.months as 1 | 6 | 12;
   const grant = await addGrant(trx, { accountId: input.accountId, kind: "CARD", grant: { unit: "months", amount: months }, sourceRef: code.id, reason: `Kad ${code.serial}`, createdBy: "tebus", now });
+  if (!grant.added && grant.reason === "card_queued") return { status: "card_queued", availableAt: grant.availableAt };
+  if (!grant.added && grant.reason === "card_year_limit") return { status: "card_year_limit", maximumEndsAt: grant.maximumEndsAt };
   if (!grant.added) return fail(trx, input.accountId, input.ipMac, now);
   await trx.insertInto("redemptions").values({ code_id: code.id, account_id: input.accountId, entitlement_id: grant.id, redeemed_at: now }).execute();
   const access = await getAccess(trx, input.accountId, now);

@@ -10,7 +10,7 @@ import Image from "next/image";
 import { cropStyle } from "../../lib/reader/crop";
 import type { ImageCrop } from "../../lib/content/types";
 import type { BylineCredit, CharacterMeta, EditorialCredit, PlaceMeta, WorkMetaRow } from "./types";
-import { CONTENT_LINKS, NAV_LINKS, SiteNavLinks, VISITOR_LINKS } from "./nav-links";
+import { CONTENT_LINKS, publicNavLinks, SiteNavLinks } from "./nav-links";
 import { siteOpenForViewer } from "../../lib/reader/access-gate";
 import HeaderSearch from "./HeaderSearch";
 import MobileNavMenu from "./MobileNavMenu";
@@ -22,14 +22,16 @@ import ThemeSwitch from "./ThemeSwitch";
 import { readerAccountsEnabled } from "../../lib/reader-auth/enabled";
 import AiRating from "./AiRating";
 import type { PublicRatingSummary } from "../../lib/panel/public";
+import { purchaseStatus } from "../../lib/subscription/prices";
 
-function SiteNav({ active, className, visitor = false }: { active?: string; className: string; visitor?: boolean }) {
-  return <SiteNavLinks active={active} className={className} links={visitor ? VISITOR_LINKS : NAV_LINKS} />;
+function SiteNav({ active, className, visitor = false, purchasesEnabled = false }: { active?: string; className: string; visitor?: boolean; purchasesEnabled?: boolean }) {
+  return <SiteNavLinks active={active} className={className} links={publicNavLinks(visitor, purchasesEnabled)} />;
 }
 
 export async function SiteHeader({ active }: { active?: string }) {
   // Without access (paywall on) the header offers the information pages and the way in; the library is for readers with access.
   const visitor = !(await siteOpenForViewer());
+  const purchasesEnabled = purchaseStatus().enabled;
   return (
     <>
     <a className="skip-link" href="#kandungan">Langkau ke kandungan</a>
@@ -43,11 +45,11 @@ export async function SiteHeader({ active }: { active?: string }) {
           </a>
         </div>
         <div className="header-main">
-          <SiteNav active={active} className="header-nav" visitor={visitor} />
+          <SiteNav active={active} className="header-nav" visitor={visitor} purchasesEnabled={purchasesEnabled} />
           {visitor ? null : <HeaderSearch active={active === "cari"} />}
           {readerAccountsEnabled() ? <HeaderAccount /> : null}
         </div>
-        <MobileNavMenu active={active} accounts={readerAccountsEnabled()} visitor={visitor} />
+        <MobileNavMenu active={active} accounts={readerAccountsEnabled()} visitor={visitor} purchasesEnabled={purchasesEnabled} />
       </div>
     </header>
     {readerAccountsEnabled() ? <ExpiryNotice /> : null}

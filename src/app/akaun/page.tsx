@@ -10,6 +10,7 @@ import { canStartTrial, getPrefs, listDevices } from "../../lib/reader-auth/serv
 import { getAccess, listLedger } from "../../lib/reader-auth/entitlements";
 import { listReading, listSaved } from "../../lib/reader-auth/library";
 import { initContentRepository } from "../../lib/content";
+import { purchaseStatus } from "../../lib/subscription/prices";
 
 export const dynamic = "force-dynamic";
 
@@ -69,6 +70,7 @@ export default async function AccountPage() {
       <main id="kandungan" tabIndex={-1}>
         <div className="site-shell auth-page">
           <AccountPanel
+            purchasesEnabled={purchaseStatus().enabled}
             email={session.account.email}
             displayName={session.account.displayName}
             access={{ state: access.state, endsAt: access.endsAt ? access.endsAt.toISOString() : null, currentPeriodEndsAt: access.currentPeriodEndsAt ? access.currentPeriodEndsAt.toISOString() : null }}

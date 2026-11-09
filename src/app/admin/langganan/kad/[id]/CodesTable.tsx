@@ -4,8 +4,9 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { confirmAction, toast } from "../../../../../lib/admin/dialogs";
 import { errorText } from "../../../../../lib/admin/error-text";
 import { api, fmtDate, Notice } from "../../../../../components/admin/langganan-ui";
+import { PHYSICAL_LABEL_COPY as COPY } from "../../../../../lib/subscription/physical-label-copy";
 
-type Row = { serial: string; state: "generated" | "issued" | "revoked"; issuedAt: string | null; revokedAt: string | null; revokeReason: string | null; redeemedAt: string | null; redeemedBy: string | null; accessEndsAt: string | null };
+type Row = { serial: string; state: "generated" | "issued" | "revoked"; issuedAt: string | null; revokedAt: string | null; revokeReason: string | null; redeemedAt: string | null; redeemedBy: string | null; accessEndsAt: string | null; printable: boolean };
 type Page = { rows: Row[]; total: number; page: number; pageSize: number };
 
 const FILTERS: { value: string; label: string }[] = [
@@ -25,7 +26,7 @@ function statusOf(row: Row): { text: string; tone: "ok" | "wait" | "off" | "done
 }
 
 /** Every card of one batch: its state, when it was switched on and redeemed, by whom; cancel unredeemed cards (several at once) or replace one. */
-export default function CodesTable({ batchId, batchNumber, batchStatus }: { batchId: string; batchNumber: string; batchStatus: string }) {
+export default function CodesTable({ batchId, batchNumber, batchStatus, physical = false }: { batchId: string; batchNumber: string; batchStatus: string; physical?: boolean }) {
   const [filter, setFilter] = useState("all");
   const [q, setQ] = useState("");
   const [page, setPage] = useState(1);
@@ -50,6 +51,24 @@ export default function CodesTable({ batchId, batchNumber, batchStatus }: { batc
   const allPicked = actionable.length > 0 && actionable.every((r) => picked.has(r.serial));
   const toggle = (serial: string) => setPicked((s) => { const n = new Set(s); if (n.has(serial)) n.delete(serial); else n.add(serial); return n; });
 
+  async function printLabels(serials?: string[]) {
+    if (busy || !(await confirmAction(COPY.confirmation, { confirmLabel: COPY.confirm }))) return;
+    setBusy(true); setError("");
+    try {
+      const res = await fetch(`/api/admin/langganan/batch/${batchId}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "labels", ...(serials ? { serials } : {}) }) });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error((body as { error?: string }).error || COPY.failed);
+      }
+      const url = URL.createObjectURL(await res.blob());
+      const a = document.createElement("a");
+      a.href = url; a.download = `label-${batchNumber}.pdf`; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+      toast("PDF label dimuat turun. Kod dan nombor siri kekal sama.", "success");
+    } catch (error) { setError(errorText(error, COPY.failed)); }
+    finally { setBusy(false); }
+  }
+
   async function revokePicked() {
     if (picked.size === 0) return;
     if (!reason.trim()) { setError("Tulis sebab pembatalan."); return; }
@@ -69,7 +88,7 @@ export default function CodesTable({ batchId, batchNumber, batchStatus }: { batc
 
   async function replace(row: Row) {
     if (!reason.trim()) { setError("Tulis sebab penggantian dahulu (kotak sebab di bawah jadual)."); return; }
-    if (!(await confirmAction(`Ganti kad ${row.serial}? Kod lama dibatalkan dan satu label baharu dimuat turun untuk dicetak (kod baharu hanya kelihatan dalam PDF itu).`, { confirmLabel: "Ya, ganti", danger: true }))) return;
+    if (!(await confirmAction(`Ganti kad ${row.serial}? Kod lama dibatalkan dan satu label baharu dimuat turun untuk dicetak. Ini menghasilkan kod baharu, bukan cetakan semula kod asal.`, { confirmLabel: "Ya, ganti", danger: true }))) return;
     setBusy(true); setError("");
     try {
       const res = await fetch(`/api/admin/langganan/kod/${encodeURIComponent(row.serial)}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "replace", reason }) });
@@ -100,6 +119,12 @@ export default function CodesTable({ batchId, batchNumber, batchStatus }: { batc
     <section aria-label={`Kad dalam kelompok ${batchNumber}`}>
       <h2>Kad</h2>
       {error ? <Notice kind="error">{error}</Notice> : null}
+      {physical && !disabled ? <>
+        <p className="admin-form-hint">{COPY.reprintHelp} {COPY.printHelp}</p>
+        <p><button type="button" className="admin-btn admin-btn-outline admin-btn-sm" disabled={busy} onClick={() => void printLabels()}>{COPY.remaining}</button>{" "}
+          <button type="button" className="admin-btn admin-btn-outline admin-btn-sm" disabled={busy || picked.size === 0} onClick={() => void printLabels([...picked])}>{COPY.selected}</button></p>
+      </> : null}
+      {busy ? <p role="status">Menyediakan tindakan kad…</p> : null}
       <div className="admin-form-row">
         <div className="admin-form-group">
           <label htmlFor="codes-filter">Tunjukkan</label>
@@ -136,7 +161,10 @@ export default function CodesTable({ batchId, batchNumber, batchStatus }: { batc
                       <td>{r.redeemedAt ? fmtDate(r.redeemedAt, true) : "—"}</td>
                       <td>{r.redeemedBy ?? "—"}</td>
                       <td>{r.accessEndsAt ? fmtDate(r.accessEndsAt) : "—"}</td>
-                      <td>{canAct ? <button type="button" className="admin-btn admin-btn-sm admin-btn-outline" disabled={busy} onClick={() => void replace(r)}>Ganti kad</button> : null}</td>
+                      <td>{canAct ? <>
+                        {physical && r.printable ? <button type="button" className="admin-btn admin-btn-sm admin-btn-outline" disabled={busy} onClick={() => void printLabels([r.serial])}>{COPY.one}</button> : null}{" "}
+                        <button type="button" className="admin-btn admin-btn-sm admin-btn-outline" disabled={busy} onClick={() => void replace(r)}>Ganti kad</button>
+                      </> : null}</td>
                     </tr>
                   );
                 })}

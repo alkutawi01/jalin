@@ -3,6 +3,7 @@ import { codeKey, mailer, notFoundWhenOff } from "../../../../lib/reader-auth/ht
 import { deliverOrder, fulfilPaidOrder } from "../../../../lib/reader-auth/orders";
 import { SITE_URL } from "../../../../lib/seo";
 import { chipConfigFromEnv, chipPurchaseIdFromCallback, fetchChipPurchase } from "../../../../lib/subscription/chip";
+import { testPaymentsAllowed } from "../../../../lib/subscription/prices";
 
 export const dynamic = "force-dynamic";
 
@@ -52,7 +53,7 @@ export async function POST(request: Request) {
 
   const result = await fulfilPaidOrder(
     db,
-    { codeKey: codeKey(), allowTestPayments: process.env.ALLOW_TEST_PAYMENTS === "yes" },
+    { codeKey: codeKey(), allowTestPayments: testPaymentsAllowed() },
     { provider: "chip", billId: purchaseId, paidAmountSen: purchase.paidSen ?? purchase.totalSen, isTest: purchase.isTest }
   );
   if (result.status === "issued" || result.status === "already") {

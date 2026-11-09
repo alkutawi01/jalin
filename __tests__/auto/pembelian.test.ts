@@ -7,7 +7,7 @@ import { billplzConfigFromEnv, billplzSignature, createBillplzBill, parseBillplz
 import { decryptOrderCode, encryptOrderCode } from "../../src/lib/subscription/order-crypto";
 import { purchaseMessage } from "../../src/lib/subscription/order-email";
 import { chipConfigFromEnv, chipPurchaseIdFromCallback, createChipPurchase, fetchChipPurchase, parseChipPurchase } from "../../src/lib/subscription/chip";
-import { formatRinggit, paymentProviderFromEnv, parsePlanPrices, purchaseStatus } from "../../src/lib/subscription/prices";
+import { formatRinggit, paymentProviderFromEnv, parsePlanPrices, purchaseStatus, testPaymentsAllowed } from "../../src/lib/subscription/prices";
 
 let passed = 0;
 let failed = 0;
@@ -86,6 +86,13 @@ const throws = (fn: () => unknown) => { try { fn(); return false; } catch { retu
   const BRAND = "409eb80e-3782-4b1d-afa8-b779759266a5";
   const full = { READER_ACCOUNTS_ENABLED: "yes", PURCHASES_ENABLED: "yes", CHIP_SECRET_KEY: "k", CHIP_BRAND_ID: BRAND, PLAN_PRICES_MYR: "1=15,6=79,12=149" };
   assert(purchaseStatus(full).enabled, "with everything set, buying is on");
+  const pilot = { ...full, NODE_ENV: "production", PURCHASES_ENABLED: "no", PURCHASES_PILOT_ENABLED: "yes" };
+  assert(!purchaseStatus(pilot).enabled && purchaseStatus(pilot, true).enabled, "a pilot opens checkout only for the authenticated owner");
+  assert(!purchaseStatus({ ...pilot, PURCHASES_ENABLED: "yes" }).enabled, "pilot restriction takes priority over the public switch");
+  assert(!purchaseStatus({ ...pilot, READER_ACCOUNTS_ENABLED: "no" }, true).enabled, "pilot does not bypass the reader-account switch");
+  assert(!purchaseStatus({ ...full, NODE_ENV: "production", ALLOW_TEST_PAYMENTS: "yes" }).enabled, "production cannot open public checkout with test payments allowed");
+  assert(!testPaymentsAllowed({ NODE_ENV: "production", ALLOW_TEST_PAYMENTS: "yes" }), "a leftover test payment cannot issue a code in public production mode");
+  assert(testPaymentsAllowed({ ...pilot, ALLOW_TEST_PAYMENTS: "yes" }) && !testPaymentsAllowed(pilot), "pilot code issuance for test payments still requires explicit opt-in");
   for (const drop of ["READER_ACCOUNTS_ENABLED", "PURCHASES_ENABLED", "CHIP_SECRET_KEY", "CHIP_BRAND_ID", "PLAN_PRICES_MYR"]) {
     const env: Record<string, string | undefined> = { ...full };
     delete env[drop];

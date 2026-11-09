@@ -4,6 +4,7 @@ import { asString, codeKey, currentSession, isSameOrigin, noStore, notFoundWhenO
 import { redeemCode } from "../../../../lib/reader-auth/redeem";
 import { formatEndMYT } from "../../../../lib/subscription/periods";
 import { redeemByLabel } from "../../../../lib/subscription/redeem-code";
+import { cardQueuedMessage, cardYearLimitMessage } from "../../../../lib/subscription/card-extension-copy";
 
 export const dynamic = "force-dynamic";
 
@@ -11,8 +12,8 @@ const REFUSED = "Kod tidak dapat ditebus. Semak kod dan nombor siri pada kad, at
 
 /**
  * "Redeem this code." One endpoint for card codes (code and serial number) and shared codes (the code alone). Every kind of failure
- * gives the same refusal, so a wrong guess learns nothing; the only different answers are to a reader who already used the very code
- * and to the stop switch and the rate limit.
+ * for a wrong code gives the same refusal, so a wrong guess learns nothing. A valid holder may also see its expiry or the account's
+ * extension limit; this never consumes the code. Repeated success, the stop switch and rate limits keep their distinct answers.
  */
 export async function POST(request: Request) {
   const off = notFoundWhenOff();
@@ -32,6 +33,8 @@ export async function POST(request: Request) {
     const until = result.accessEndsAt ? formatEndMYT(result.accessEndsAt) : formatEndMYT(result.endsAt);
     return noStore(NextResponse.json({ ok: true, message: `Kod berjaya ditebus. Akses anda aktif sehingga ${until}.`, accessEndsAt: result.accessEndsAt ?? result.endsAt }));
   }
+  if (result.status === "card_queued") return noStore(NextResponse.json({ error: cardQueuedMessage(result.availableAt) }, { status: 409 }));
+  if (result.status === "card_year_limit") return noStore(NextResponse.json({ error: cardYearLimitMessage(result.maximumEndsAt) }, { status: 409 }));
   if (result.status === "expired") return noStore(NextResponse.json({ error: `Tempoh penebusan kod ini telah tamat. Tarikh akhir penebusan ialah ${redeemByLabel(result.redeemBy)}. Hubungi editorial@adjung.com untuk mendapatkan bantuan.` }, { status: 400 }));
   if (result.status === "already") return noStore(NextResponse.json({ error: "Anda sudah menebus kod ini." }, { status: 409 }));
   if (result.status === "throttled") return noStore(NextResponse.json({ error: "Terlalu banyak cubaan. Cuba lagi sebentar lagi." }, { status: 429 }));

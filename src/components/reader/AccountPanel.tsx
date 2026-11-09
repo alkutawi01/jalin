@@ -31,6 +31,7 @@ function formatDate(iso: string | null): string {
 
 /** The signed-in reader's page: the trial, the name, reading settings with a preview, and the devices. Saved by the account, not the browser. */
 export default function AccountPanel(props: {
+  purchasesEnabled?: boolean;
   email: string;
   displayName: string | null;
   access: { state: "trial" | "subscribed" | "expired" | "none"; endsAt: string | null; currentPeriodEndsAt: string | null };
@@ -180,6 +181,7 @@ export default function AccountPanel(props: {
       {props.trialAvailable ? (
         <button type="button" className="auth-button auth-trial-start" disabled={busy} onClick={startTrial}>Mulakan percubaan percuma 14 hari</button>
       ) : null}
+      {props.purchasesEnabled ? <a className="auth-button auth-button--ghost auth-redeem-link" href="/beli">Beli kod</a> : null}
       <a className="auth-button auth-button--ghost auth-redeem-link" href="/tebus">Tebus kod langganan</a>
       {props.history.length > 0 ? (
         <ul className="auth-history" aria-label="Sejarah akses">

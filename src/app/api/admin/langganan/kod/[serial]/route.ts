@@ -33,7 +33,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ ser
     if (action === "replace") {
       // Check the label first, so a layout that cannot work never uses up a code.
       const settings = layoutFrom(body.layout as Record<string, unknown> | undefined);
-      const errors = computeLayout(settings).problems.filter((p) => p.level === "error");
+      const existing = await findCodeBySerial(getDb(), clean);
+      if (!existing) return bad("Nombor siri tidak dijumpai.", 404);
+      const errors = computeLayout(settings, undefined, { hasRedeemBy: !!existing.redeemBy }).problems.filter((p) => p.level === "error");
       if (errors.length) return bad(errors.map((p) => p.text).join(" "));
       const made = await replaceCode(getDb(), { codeKey: codeKey() }, { serial: clean, reason });
       const who = await actor();

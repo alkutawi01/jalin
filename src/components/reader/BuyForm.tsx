@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { CARD_EXTENSION_HELP_LABEL, CARD_EXTENSION_NOTICE } from "../../lib/subscription/card-extension-copy";
 
 type Plan = { months: 1 | 6 | 12; label: string; price: string };
 
@@ -35,6 +36,7 @@ export default function BuyForm({ plans, providerName }: { plans: Plan[]; provid
     <div className="auth-card auth-card--card">
       <h1 className="auth-title">Beli kod langganan</h1>
       <p className="auth-intro">Pilih tempoh langganan dan buat pembayaran. Nombor siri dan kod langganan akan dihantar ke e-mel anda selepas pembayaran disahkan. Kemudian, tebus kod pada halaman <a href="/tebus">Tebus kod</a>.</p>
+      <p className="auth-fine">{CARD_EXTENSION_NOTICE} <a href="/soalanlazim#langganan">{CARD_EXTENSION_HELP_LABEL}</a>.</p>
       <form onSubmit={submit} noValidate>
         <fieldset className="buy-plans">
           <legend className="buy-legend">Tempoh langganan</legend>
@@ -51,7 +53,7 @@ export default function BuyForm({ plans, providerName }: { plans: Plan[]; provid
         {error ? <p id="buy-error" className="auth-error" role="alert">{error}</p> : null}
         <button className="auth-button" type="submit" disabled={busy}>{busy ? "Sedang membuka halaman pembayaran…" : "Teruskan ke pembayaran"}</button>
       </form>
-      <p className="auth-fine">Pembayaran dibuat melalui {providerName} menggunakan FPX atau kad. Kod dihantar selepas pembayaran disahkan. Ada soalan? Lihat <a href="/soalanlazim">Soalan Lazim</a>.</p>
+      <p className="auth-fine">Pembayaran diproses melalui {providerName}. Pilih kaedah yang tersedia pada halaman pembayaran. Kod dihantar selepas pembayaran disahkan. Ada soalan? Lihat <a href="/soalanlazim">Soalan Lazim</a>.</p>
     </div>
   );
 }
