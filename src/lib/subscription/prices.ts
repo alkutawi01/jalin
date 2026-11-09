@@ -36,9 +36,20 @@ export const PROVIDER_NAME: Record<PaymentProvider, string> = { chip: "CHIP", bi
 
 export type PurchaseStatus = { enabled: true; prices: PlanPrices; provider: PaymentProvider; providerName: string } | { enabled: false; reason: string };
 
-export function purchaseStatus(env: Record<string, string | undefined> = process.env): PurchaseStatus {
+export function testPaymentsAllowed(env: Record<string, string | undefined> = process.env): boolean {
+  return env.ALLOW_TEST_PAYMENTS === "yes" && (env.NODE_ENV !== "production" || env.PURCHASES_PILOT_ENABLED === "yes");
+}
+
+export function purchaseStatus(env: Record<string, string | undefined> = process.env, isPilotOwner = false): PurchaseStatus {
   if (!readerAccountsEnabled(env)) return { enabled: false, reason: "reader accounts are off" };
-  if (env.PURCHASES_ENABLED !== "yes") return { enabled: false, reason: "PURCHASES_ENABLED is not yes" };
+  if (env.PURCHASES_PILOT_ENABLED === "yes") {
+    if (!isPilotOwner) return { enabled: false, reason: "pembelian terhad kepada pemilik" };
+  } else {
+    if (env.PURCHASES_ENABLED !== "yes") return { enabled: false, reason: "PURCHASES_ENABLED is not yes" };
+    if (env.NODE_ENV === "production" && env.ALLOW_TEST_PAYMENTS === "yes") {
+      return { enabled: false, reason: "mod bayaran ujian memerlukan pembelian terhad" };
+    }
+  }
   const provider = paymentProviderFromEnv(env);
   if (!(provider === "chip" ? chipConfigFromEnv(env) : billplzConfigFromEnv(env))) return { enabled: false, reason: "the gateway keys are missing" };
   const prices = parsePlanPrices(env.PLAN_PRICES_MYR);

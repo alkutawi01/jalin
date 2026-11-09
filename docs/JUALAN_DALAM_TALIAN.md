@@ -18,6 +18,7 @@ Tetapkan pada Hostinger (semuanya kata laluan atau rahsia, jangan masuk reposito
 | Pemboleh ubah | Maksud |
 |---|---|
 | `PURCHASES_ENABLED=yes` | suis jualan (juga memerlukan `READER_ACCOUNTS_ENABLED=yes`) |
+| `PURCHASES_PILOT_ENABLED=yes` | ujian terhad. Hanya pemilik yang mempunyai sesi pentadbir sah boleh membuka `/beli` dan memulakan pesanan melalui API. Suis ini mengatasi `PURCHASES_ENABLED`. |
 | `PLAN_PRICES_MYR=1=..,6=..,12=..` | harga dalam ringgit, contoh `1=15,6=79,12=149` (belum diputuskan, jadi tiada nilai lalai) |
 | `BILLPLZ_API_KEY`, `BILLPLZ_COLLECTION_ID`, `BILLPLZ_X_SIGNATURE_KEY` | daripada akaun Billplz |
 | `BILLPLZ_ENV=production` | tanpanya sistem menggunakan sandbox Billplz |

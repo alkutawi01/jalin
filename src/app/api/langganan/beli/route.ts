@@ -7,7 +7,7 @@ import { countEvents, recordEvent } from "../../../../lib/reader-auth/service";
 import { SITE_URL } from "../../../../lib/seo";
 import { billplzConfigFromEnv, createBillplzBill } from "../../../../lib/subscription/billplz";
 import { chipConfigFromEnv, createChipPurchase } from "../../../../lib/subscription/chip";
-import { purchaseStatus } from "../../../../lib/subscription/prices";
+import { purchaseStatusForRequest } from "../../../../lib/subscription/purchase-access";
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +22,7 @@ const PER_EMAIL_PER_HOUR = 5;
 export async function POST(request: Request) {
   const off = notFoundWhenOff();
   if (off) return off;
-  const status = purchaseStatus();
+  const status = await purchaseStatusForRequest();
   if (!status.enabled) return noStore(NextResponse.json({ error: "Pembelian belum dibuka." }, { status: 404 }));
   if (!isSameOrigin(request)) return NextResponse.json({ error: "Permintaan tidak dibenarkan." }, { status: 403 });
 

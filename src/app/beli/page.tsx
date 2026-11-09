@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import { SiteFooter, SiteHeader } from "../../components/reader/StoryChrome";
 import BuyForm from "../../components/reader/BuyForm";
 import { accountsPageMetadata } from "../../lib/reader-auth/enabled";
-import { formatRinggit, purchaseStatus } from "../../lib/subscription/prices";
+import { formatRinggit } from "../../lib/subscription/prices";
+import { purchaseStatusForRequest } from "../../lib/subscription/purchase-access";
 
 export const dynamic = "force-dynamic";
 
@@ -12,8 +13,8 @@ export function generateMetadata(): Metadata {
 }
 
 /** Buy a code online: choose the length, pay through the gateway, and the code is e-mailed. Exists only while buying is switched on. */
-export default function BuyPage() {
-  const status = purchaseStatus();
+export default async function BuyPage() {
+  const status = await purchaseStatusForRequest();
   if (!status.enabled) notFound();
   const plans = ([1, 6, 12] as const).map((months) => ({ months, label: `${months} bulan`, price: formatRinggit(status.prices[months]) }));
   return (

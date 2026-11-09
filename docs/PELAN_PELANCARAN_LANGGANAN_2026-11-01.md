@@ -194,6 +194,8 @@ Izzat memasukkan rahsia sendiri dalam hPanel. Nilai lama yang sah dikekalkan; ja
 - E-mel: `MAIL_PROVIDER=resend`, `RESEND_API_KEY`, `MAIL_FROM`; uji penghantaran sebenar dan pengendalian penolakan.
 - Operasi: `CRON_SECRET`, kunci sandaran terenkripsi dan token storan; jangan paparkan atau log nilai.
 - Suis: mula tertutup; buka hanya laluan penguji yang telah dilindungi. Dinding bayar kekal mati.
+- Untuk ujian produksi selepas kelulusan konfigurasi, gunakan `PURCHASES_PILOT_ENABLED=yes` dan kekalkan `PURCHASES_ENABLED` ditutup. Halaman `/beli` dan API pesanan memerlukan sesi pemilik Jalin yang sah. Pemilik boleh buka `/beli` secara langsung. Pautan jualan di menu, FAQ dan Akaun kekal tertutup kepada semua pelawat sehingga jualan awam dibuka.
+- Sebelum pembayaran ujian wang sebenar, sahkan kedua-dua laluan pembelian menolak pelawat tanpa sesi dan `ALLOW_TEST_PAYMENTS` sudah dibuang. Callback bayaran sebenar kekal boleh mengesahkan pesanan yang telah dibuat.
 - Jika menggunakan kunci ujian dengan `ALLOW_TEST_PAYMENTS=yes` pada produksi, sekatan pelayan kepada penguji wajib terbukti
   terlebih dahulu. Jika tidak boleh diasingkan dengan selamat, kekalkan ujian pada staging dan jangan buka mod ujian produksi.
 
@@ -217,7 +219,7 @@ Syarat lulus: aliran wang sebenar lengkap dan Izzat mengesahkan hasil. Jika gaga
 
 ### Fasa G: buka langganan kepada awam [PINTU JUALAN AWAM]
 
-- Sahkan gerbang sebenar dan tiada `ALLOW_TEST_PAYMENTS`; aktifkan akaun dan pembelian untuk awam, lepaskan sekatan penguji
+- Sahkan gerbang sebenar dan tiada `ALLOW_TEST_PAYMENTS`; aktifkan akaun dan pembelian untuk awam, buang `PURCHASES_PILOT_ENABLED`
   hanya dengan kelulusan ini. Terbitkan pautan Beli/Tebus/Akaun di tempat diluluskan dalam satu penempatan terkawal.
 - Semak pelawat tanpa sesi boleh melihat pakej sebenar, sampai ke CHIP, kembali ke halaman status dan mendapatkan bantuan.
   Jangan mewajibkan akaun sebelum bayaran tanpa keputusan produk; aliran Jalin semasa membenarkan pembelian melalui e-mel.
